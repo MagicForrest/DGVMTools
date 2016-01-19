@@ -1,0 +1,113 @@
+require(rgdal)
+require(raster)
+require(Cairo)
+
+GFED4.scale.factor <- 0.01
+
+getGFED4Annual <- function(first.year = 1996, last.year = 2012, plot.data = FALSE, as.fraction = TRUE, resolution = "QD"){
+  
+    
+  BA.allyears <- brick()
+  
+  for(year in first.year:last.year){
+    print(paste("Reading Year", year, sep = " "))
+        
+    # because we only want the annual totals, use the monthly data
+    for(month in 1:12){
+            
+      if(month < 10) {month.str <- paste0("0", month)}
+      else{month.str <- paste0(month)}
+      
+      # add the BA for the month
+      if(month == 1) {
+        BA <- raster(paste("HDF4_SDS:UNKNOWN:/data/forrest/Fire/GFED4/Monthly/GFED4.0_MQ_", year, month.str, "_BA.hdf:1", sep = ""))      
+      } 
+      else {
+        BA <- BA + raster(paste("HDF4_SDS:UNKNOWN:/data/forrest/Fire/GFED4/Monthly/GFED4.0_MQ_", year, month.str, "_BA.hdf:1", sep = ""))      
+      }
+    }
+    
+    
+    BA.allyears <-addLayer(BA.allyears, BA)
+    
+    rm(BA)
+    gc()
+    
+  }
+  
+  xmin(BA.allyears) <- -180
+  xmax(BA.allyears) <- 180
+  ymin(BA.allyears) <- -90
+  ymax(BA.allyears) <- 90
+  projection(BA.allyears) <- "+proj=longlat +datum=WGS84"
+  
+  
+  if(resolution == "HD"){
+    BA.allyears <- aggregate(BA.allyears, fun = sum)
+  }
+  else {
+    if(resolution != "QD") stop(paste("Unknown resolution attempted - ", resolution, sep = ""))
+  }
+  
+  # apply scale factor
+  BA.allyears <- BA.allyears * GFED4.scale.factor
+  
+  if(as.fraction){
+    # divide by gridcell areas (Note conversion km^2 to hectares)
+    BA.allyears <- BA.allyears / ((area(BA.allyears)) * 100)
+    names(BA.allyears) <- paste("BAFrac", first.year:last.year, sep = "_")
+  } 
+  else{
+    names(BA.allyears) <- paste("BA", first.year:last.year, sep = "_")
+  }
+    
+  print(BA.allyears)
+  
+  return(BA.allyears)
+  
+  
+}
+
+
+getGFED4AnnualFast <- function(first.year = 1996, last.year = 2012){
+
+		   print(subset(brick(gfed4.annual), paste("X", seq(first.year-1995,last.year-1995), sep="")))
+
+   return(subset(brick(gfed4.annual), paste("X", seq(first.year-1995,last.year-1995), sep="")))
+
+}
+
+
+#for.Adrian <- getGFED4Annual(first.year = 1997, last.year = 2006, plot.data = FALSE, as.fraction = TRUE, resolution = "HD")
+#for.Adrian <- calc(for.Adrian, fun = mean)
+#for.Adrian.table <- as.data.frame(as(for.Adrian, "SpatialGridDataFrame")) 
+#names(for.Adrian.table) <- c("BAFrac", "Lon", "Lat")
+#write.table(for.Adrian.table, "/home/forrest/Projects/Herbivores/Misc/GFED4.1997-2006.txt", row.names= FALSE, quote = FALSE)
+
+
+benchmarkVsGFED4<-function(model.raster, model.name="LPJ-GUESS", run = run, doScatterPlots = TRUE, doHistoPlots = TRUE){
+
+	 dataset.id <- "GFED4"
+	 diff.breaks <- seq(-1, 1, 0.02)
+	 plot.range <- c(-1,1)
+	 GFED4.period <- c(start = 2001, end = 2008) 
+	 original.data <-  getGFED4AnnualFast(first.year = 2001, last.year = 2008)
+	 original.data <- calc(original.data, mean)
+
+	 print(original.data)
+
+	 # crop all rasters to the same size
+	 common.extent <- intersect(model.raster, original.data)
+	 model.raster <- crop(model.raster, common.extent)
+	 data.raster <- crop(original.data, common.extent)
+
+	 # Do the generic analysis	 
+	 comparison.results <- compareTwoRasters(data.raster, model.raster,  dataset.id, model.name, diff.breaks = diff.breaks, plot.range = plot.range,  doScatterPlots=doScatterPlots, doHistoPlots=doHistoPlots, run = run, period = GFED4.period, quant = getVegQuantity("burntarea"))
+
+	 rm(original.data, common.extent, model.raster, data.raster)
+
+	 return(comparison.results)
+
+}
+
+  

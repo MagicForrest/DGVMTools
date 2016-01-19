@@ -1,0 +1,102 @@
+#!/usr/bin/Rscript
+
+######################################
+###
+###         ©©©©©©©©©©©©©
+###       ©©©©©©©©©©©©©©©©©
+###      ©©©             ©©©
+###     ©©©   ©©©©©©©©    ©©©
+###    ©©©   ©©       ©©   ©©©
+###   ©©©   ©©         ©©   ©©©
+###   ©©©               ©©  ©©©
+###   ©©©               ©©  ©©©
+###   ©©©               ©©  ©©©
+###   ©©©   ©©         ©©   ©©©
+###    ©©©   ©©       ©©   ©©©
+###     ©©©    ©©©©©©©    ©©© 
+###      ©©©             ©©©   
+###       ©©©©©©©©©©©©©©©©© 
+###         ©©©©©©©©©©©©©  
+###
+###  COPYLEFT:  ALL RIGHTS REVERSED
+###
+#####################################
+
+require("raster")
+
+
+readSaatchi2011 <- function(lonlat.offset = c(0,0),
+                            plot = TRUE,
+                            tolerance = 0.00001,
+			    london.centre=TRUE) {
+
+  Saatchi.data <- NULL
+  Saatchi.data <- read.table(saatchi2011.file, header = TRUE, stringsAsFactors=FALSE)
+
+  names(Saatchi.data)[which(names(Saatchi.data)=="lon")] <- "Lon"
+  names(Saatchi.data)[which(names(Saatchi.data)=="lat")] <- "Lat"
+  
+  # remove any rows with NaN
+  #row.has.na <- apply(Saatchi.data, 1, function(x){any(is.na(x))})
+  #Saatchi.data <- Saatchi.data[!row.has.na,]
+  
+  # apply offset
+  Saatchi.data$Lon <- Saatchi.data$Lon + lonlat.offset[1]
+  Saatchi.data$Lat <- Saatchi.data$Lat + lonlat.offset[2]
+  
+  # if london.centre is requested, make sure all negative longitudes are shifted to positive
+  if(london.centre){
+    Saatchi.data$Lon <- vapply(Saatchi.data$Lon, 1, FUN = LondonCentre)    
+  }
+
+  # remove the extra column
+  Saatchi.data[["total_MgC_per_ha"]] <- NULL
+   
+  # add coordinates
+  coordinates(Saatchi.data) = ~Lon+Lat
+
+  # make gridded
+  gridded(Saatchi.data) = TRUE
+
+  # make full SpatialGridDataFrame
+  Saatchi.data = as(Saatchi.data, "SpatialGridDataFrame") # to full grid
+ 
+  # make raster 
+  Saatchi.raster <- raster(Saatchi.data)
+  
+  
+  
+  # for Saatchi data need to build a mask
+  Saatchi.Africa.extent <- extent(-18, 51.5, -36, 22)
+  Saatchi.Africa.raster <- raster(Saatchi.Africa.extent)
+  res(Saatchi.Africa.raster) <- 0.5
+  Saatchi.Africa.raster[] <- 1
+  
+  Saatchi.America.extent <- extent(-113, -35, -55.5, 30.5)
+  Saatchi.America.raster <- raster(Saatchi.America.extent)
+  res(Saatchi.America.raster) <- 0.5
+  Saatchi.America.raster[] <- 1  
+  
+  Saatchi.Asia.extent <- extent(60, 155, -30, 40)
+  Saatchi.Asia.raster <- raster(Saatchi.Asia.extent)
+  res(Saatchi.Asia.raster) <- 0.5
+  Saatchi.Asia.raster[] <- 1 
+  
+  
+  temp <- merge(Saatchi.Africa.raster, Saatchi.America.raster)
+  Saatchi.mask <- merge(temp, Saatchi.Asia.raster)
+  Saatchi.mask <- extend(Saatchi.mask , Saatchi.raster)
+  
+  
+  Saatchi.raster <- mask(Saatchi.raster, Saatchi.mask)
+  
+  
+  if(plot){
+	pdf("Saatchi.Data.pdf")
+	print(spplot(Saatchi.raster, "total_kgC_per_sqm"))
+   	dev.off()
+  }
+
+  return(Saatchi.raster)
+
+}

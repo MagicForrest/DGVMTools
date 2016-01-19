@@ -1,0 +1,112 @@
+#!/usr/bin/Rscript
+
+######################################
+###
+###         ©©©©©©©©©©©©©
+###       ©©©©©©©©©©©©©©©©©
+###      ©©©             ©©©
+###     ©©©   ©©©©©©©©    ©©©
+###    ©©©   ©©       ©©   ©©©
+###   ©©©   ©©         ©©   ©©©
+###   ©©©               ©©  ©©©
+###   ©©©               ©©  ©©©
+###   ©©©               ©©  ©©©
+###   ©©©   ©©         ©©   ©©©
+###    ©©©   ©©       ©©   ©©©
+###     ©©©    ©©©©©©©    ©©© 
+###      ©©©             ©©©   
+###       ©©©©©©©©©©©©©©©©© 
+###         ©©©©©©©©©©©©©  
+###
+###  COPYLEFT:  ALL RIGHTS REVERSED
+###
+#####################################
+
+require("raster")
+
+AGBtoTotalCarbon <- function(AGB){
+
+  BGB <- 0.489 * AGB^0.89
+  total.carbon <- (AGB + BGB) / 2
+  return(total.carbon)
+  
+}
+
+readBaccini2012 <- function(lonlat.offset = c(0,0),
+                            plot = TRUE,
+                            tolerance = 0.00001,
+			    london.centre=FALSE) {
+
+  Baccini.data <- NULL
+  Baccini.data <- read.table(baccini2012.file, header = TRUE, stringsAsFactors=FALSE)
+
+   # remove any rows with NaN
+  #row.has.na <- apply(Baccini.data, 1, function(x){any(is.na(x))})
+  #Baccini.data <- Baccini.data[!row.has.na,]
+  
+  # apply offset
+  Baccini.data$Lon <- Baccini.data$Lon + lonlat.offset[1]
+  Baccini.data$Lat <- Baccini.data$Lat + lonlat.offset[2]
+  
+  # if london.centre is requested, make sure all negative longitudes are shifted to positive
+  if(london.centre){
+    Baccini.data$Lon <- vapply(Baccini.data$Lon, 1, FUN = LondonCentre)    
+  }
+   
+  # add coordinates
+  coordinates(Baccini.data) = ~Lon+Lat
+
+  # make gridded
+  gridded(Baccini.data) = TRUE
+
+  # make full SpatialGridDataFrame
+  Baccini.data = as(Baccini.data, "SpatialGridDataFrame") # to full grid
+ 
+  # make raster 
+  Baccini.raster <- brick(Baccini.data)
+
+  # subset to get the mean layer only
+  Baccini.raster <-subset(Baccini.raster, "MEAN")
+
+  # convert from AGB to total
+  Baccini.raster <- calc(Baccini.raster, AGBtoTotalCarbon)
+
+  # divide by 10 to go from tC/Ha to kgC/m^2
+  Baccini.raster <- Baccini.raster/10
+ 
+  if(plot){
+	pdf("Baccini.Data.pdf")
+	print(spplot(Baccini.raster, "layer"))
+   	dev.off()
+  }
+
+  return(Baccini.raster)
+
+}
+
+benchmarkVsBaccini<-function(model.raster, model.name="LPJ-GUESS", run = run, doScatterPlots = TRUE, doHistoPlots = TRUE){
+
+	 dataset.id <- "Baccini2011"
+	 diff.breaks <- seq(-55, 55, 1)
+	 plot.range <- c(-20,30)
+	 Baccini.period <- c(start = 1998, end = 2008) 
+	 original.data <- readBaccini2012()	 
+	 full.correction.data <- readNaturalLandCoverGC2009()
+
+   	 # crop all rasters to the same size
+	 common.extent <- intersect(model.raster, original.data)
+	 model.raster <- crop(model.raster, common.extent)
+	 data.raster <- crop(original.data, common.extent)
+	 correction.raster <- crop(full.correction.data, common.extent)
+
+	 # Land use correction
+         model.raster <- model.raster * correction.raster
+
+	 # Do the generic analysis	 
+	 comparison.results <- compareTwoRasters(data.raster, model.raster,  dataset.id, model.name, diff.breaks = diff.breaks, plot.range = plot.range,  doScatterPlots=doScatterPlots, doHistoPlots=doHistoPlots, run = run, period = Baccini.period, quant = getVegQuantity("cmass"))				
+
+	 rm(original.data, full.correction.data, common.extent, model.raster, data.raster,  correction.raster )
+
+	 return(comparison.results)
+
+}
