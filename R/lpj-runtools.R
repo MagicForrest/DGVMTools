@@ -53,13 +53,25 @@ openLPJOutputFile <- function(run,
     stop(paste("File (or gzipped file) not found:", file.string))
   }
   
-  
-  # Read using fread function from data.table but with the white spaces handled correctly using an awk command
-  # at time of writing fread does not handles multiple whitespaces as separators
-  # get the number of columns which is and read the file
-  ncols <- length(names(read.table(file.string, header=TRUE, dec=".",  colClasses="numeric", comment.char="", nrows = 1)))
-  dt <- awkFread(file.string, colNums = c(1:ncols), header=T)
-  
+  # Use the quite fantastic readr package to read the LPJ-GUESS files which have fixed width formatting
+  # Read the column names
+  column.names <- unlist(read.table(file.string, nrows = 1, header = FALSE, sep ='', stringsAsFactors = FALSE))
+  # Get the widths, and note that we also gotta broaden the widths because the fwf_empty() function reliably detects the end of a field but not the beginning
+  widths <- fwf_empty(file.string, skip = 1, col_names = column.names)
+  widths$begin[1] <- 0
+  for(counter in 2:length(widths$begin)){
+    widths$begin[counter] <- widths$end[counter-1]+1
+  }
+  # Read the file and put it straight into a data.table
+  dt <- as.data.table(read_fwf(file.string, widths, skip = 1))
+ 
+  ### OLD WAY!  Slower, also depends on awk, this is definitely deprecated by the 
+  ### Read using fread function from data.table but with the white spaces handled correctly using an awk command
+  ### at time of writing fread does not handles multiple whitespaces as separators
+  ### get the number of columns which is and read the file
+  #ncols <- length(names(read.table(file.string, header=TRUE, dec=".",  colClasses="numeric", comment.char="", nrows = 1)))
+  #dt <- awkFread(file.string, colNums = c(1:ncols), header=T)
+ 
   
   # Gzip the file again if that was requested or if the 
   if(gzip | was.gzipped){
