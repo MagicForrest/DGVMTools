@@ -1,4 +1,4 @@
-Package: RVCtools
+Package: RVCTools
 Version: 0.0.1
 Title: R Vegetation & Climate Tools
 Date: 2016-01-19
@@ -9,7 +9,7 @@ Authors@R: c(person("Matthew", "Forrst", role = c("aut", "cre"),
 Author: Matthew Forrest [aut, cre],
         Joerg Steinkamp [aut, cre]
 Maintainer: Matthew Forrest <mforrest@senckenberg.de>
-Depends: R (>= 2.15.0), methods, ncdf4, rgdal, raster, lattice, fields, data.table, xts, foreach, doParallel, rgeos, compiler, ggplot2, cairoDevice
+Depends: R (>= 2.15.0), methods, ncdf4, rgdal, raster, lattice, fields, data.table, xts, foreach, doParallel, rgeos, compiler, ggplot2, Cairo
 Suggests: zoo, mgcv
 Description: Process output data produced by dynamic global
         vegetation model (DGVM) LPJ-GUESS for use in R. Create standard figures and benchmarking.
