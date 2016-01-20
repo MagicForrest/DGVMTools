@@ -22,7 +22,6 @@
 ###
 ###################################### 
 
-require(compiler)
 
 
 ###################################################################################
@@ -238,6 +237,43 @@ addDominantPFT <- function(input.dt, PFT.data, do.all = TRUE, do.tree = FALSE, d
 }
 
 
+###################################################################################################
+######### BIOME CLASSIFICATION v2.9-STYLE WITH EXTRA FLEXIBILITY ##################################
+###################################################################################################
+
+
+addBiomes <-function(input.dt, PFT.data, scheme = Smith2014.scheme){
+  
+  message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
+  
+  
+  if(scheme@id %in% names(input.dt)) { input.dt[, scheme@id := NULL, with=FALSE] }
+    
+  # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
+  if(scheme@combineShadeTolerance) combineShadeTolerance(input.dt, PFT.data)
+  
+  # Get the dominant tree and dominant woody PFTs
+  addDominantPFT(input.dt, PFT.data, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
+  
+  # Get the totals required
+  addVegTotals(input.dt, PFT.data, c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
+  
+  # Get the fractions required
+  addVegFractions(input.dt, PFT.data, targets = scheme@fraction.of.total, of.total = TRUE,   of.tree = FALSE, of.woody = FALSE)
+  addVegFractions(input.dt, PFT.data, targets = scheme@fraction.of.tree,  of.total = FALSE,  of.tree = TRUE, of.woody = FALSE)
+  addVegFractions(input.dt, PFT.data, targets = scheme@fraction.of.woody, of.total = FALSE,  of.tree = FALSE, of.woody = TRUE)
+  
+  # Apply biome rules and return
+  input.dt[, scheme@id := apply(input.dt[,,with=FALSE],FUN=scheme@rules,MAR=1), with = FALSE]
+ 
+  return(input.dt)
+  
+}
+
+
+
+
+
 ###################################################################################
 ##### MAKE LIFEFORM, PHENOLOGY ETC TOTALS
 ##### Notes: The following functions perform adequately but could be combined into one function for better usability/maintenence
@@ -249,95 +285,26 @@ addLifeformTotals <- function(input.dt, PFT.data, lifeforms = c("Tree", "Grass",
   
   warning("addLifeformTotals is obselete,call addVegTotals() with targets = 'lifeforms")
   
-  do.woody <- FALSE
-  
-  # for each lifeform
-  for(lifeform in lifeforms){
-    if(tolower(lifeform) ==  "woody"){
-      do.woody <- TRUE
-    }
-    else {
-      total.str <- quote(paste(lifeform, sep = ""))
-      input.dt[, eval(total.str) := 0]
-      # for each column
-      for(PFT in names(input.dt)){
-        # if it is a PFT add it to the lifeform total
-        if(!is.null(PFT.data[[PFT]]) && tolower(PFT.data[[PFT]]@lifeform) == tolower(lifeform)){
-          input.dt[, eval(total.str) := get(PFT.data[[PFT]]@name) + get(eval(total.str))]
-        } # if it is a PFT add it to the lifeform total
-      } # for each column
-    } # is or is not woody
-  } #for each lifeform
-  
-  
-  # special case for woody, just add tree and shrub totals
-  if(do.woody){
-    # Fist make Tree/Shrubs totals if needed and not available
-    if(!(paste("Tree", sep = sep.char) %in% names(input.dt))){
-      input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Tree")
-    }
-    if(!(paste("Shrub", sep = sep.char) %in% names(input.dt))){
-      input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Shrub")
-    }
-    input.dt[, eval(quote(paste("Woody", sep = sep.char))) := get(eval(paste("Tree", sep = sep.char))) + get(eval(paste("Shrub", sep = sep.char)))]
-  }
-  
-  return(input.dt)
 }
 
 
 addPhenologyTotals <- function(input.dt, PFT.data, phenologies = c("Evergreen", "Raingreen", "Summergreen")){
   
   warning("addPhenologyTotals is obselete,call addVegTotals() with targets = c('phenology')")
-  
-  
-  # for each phenology
-  for(phenology in phenologies){
-    total.str <- quote(paste(phenology, sep = ""))
-    input.dt[, eval(total.str) := 0]
-    # for each column
-    for(PFT in names(input.dt)){
-      # if it is a PFT add it to the lifeform total
-      if(!is.null(PFT.data[[PFT]]) && tolower(PFT.data[[PFT]]@phenology) == tolower(phenology)){
-        input.dt[, eval(total.str) := get(PFT.data[[PFT]]@name) + get(eval(total.str))]
-      } # if it is a PFT add it to the phenology total
-    } # for each column
-  } #for each phenology
-  
-  return(input.dt)  
+ 
 }
 
 
 addZoneTotals <- function(input.dt, PFT.data, zones = c("Boreal", "Temperate", "Tropical")){
   
   warning("addZoneTotals is obselete,call addVegTotals() with targets = c('zones')")
-  
-  
-  # for each climate zone
-  for(zone in zones){
-    total.str <- quote(paste(zone, sep = ""))
-    input.dt[, eval(total.str) := 0]
-    # for each column
-    for(PFT in names(input.dt)){
-      # if it is a PFT add it to the zone total
-      if(!is.null(PFT.data[[PFT]]) && tolower(PFT.data[[PFT]]@zone) == tolower(zone)){
-        input.dt[, eval(total.str) := get(PFT.data[[PFT]]@name) + get(eval(total.str))]
-      } # if it is a PFT add it to the zone total
-    } # for each column
-  } #for each zone
-  
-  return(input.dt)
+
 }
 
 addAllVegTotals <- function(input.dt, PFT.data){
   
   warning("addAllVegTotals is obselete,call addVegTotals() with targets = c('all')")
-  
-  input.dt <- addLifeformTotals(input.dt, PFT.data)
-  input.dt <- addPhenologyTotals(input.dt, PFT.data)
-  input.dt <- addZoneTotals(input.dt, PFT.data)
-  
-  return(input.dt)
+ 
 }
 
 
@@ -384,57 +351,17 @@ addVegTotals <- function(input.dt, PFT.data, targets = c("pfts", "lifeforms")){
 
 
 
-
-
 addPFTFractions <- function(input.dt, PFT.data = PFT_MASTER_LIST){
-  
-  PFTs <- getPFTs(input.dt, PFT.data)
-  for(PFT in PFTs){
-    fraction.str <- quote(paste(PFT@name, "Fraction", sep = ""))
-    input.dt[, eval(fraction.str) := get(PFT@name)%/0%Total]
-  }
-  
-  return(input.dt)
+
+    warning("addPFTFractions() is obselete,call addVegFractions() with targets = c('pfts')")
   
 }
 
 
 addLifeformFractions <- function(input.dt, PFT.data, lifeforms = c("Tree", "Grass", "Shrub", "Woody"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE){
-  
-  # Fist make Tree/Woody totals if needed and not available
-  if(of.woody && !(paste("Tree", sep = sep.char) %in% names(input.dt))){
-    input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Tree")
-  }
-  if(of.woody && !(paste("Woody", sep = sep.char) %in% names(input.dt))){
-    input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Woody")
-  }
-  
-  
-  for(lifeform in lifeforms){
-    
-    # if lifeform total not already present then make it
-    if(!(paste(lifeform, "Total", sep = sep.char) %in% names(input.dt))){
-      input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = lifeform)
-    }
-    
-    # make fractions of total/tree/woody
-    if(of.total) {
-      input.dt[, eval(quote(paste(lifeform, "Fraction", sep = sep.char))) := get(paste(lifeform, sep = sep.char))%/0%Total]
-      input.dt[!is.finite(get(paste(lifeform, "Fraction", sep = sep.char))) , get(paste(lifeform, "Fraction", sep = sep.char)) := 0]
-    }
-    if(of.tree) {
-      input.dt[, eval(quote(paste(lifeform, "FractionofTree", sep = sep.char))) := get(paste(lifeform, sep = sep.char))%/0%get(paste("Tree", sep = sep.char))]
-      input.dt[!is.finite(get(paste(lifeform, "FractionofTree", sep = sep.char))) , get(paste(lifeform, "FractionofTree", sep = sep.char)) := 0]
-    }
-    if(of.woody) {
-      input.dt[, eval(quote(paste(lifeform, "FractionofWoody", sep = sep.char))) := get(paste(lifeform, sep = sep.char))%/0%get(paste("Woody", sep = sep.char))]
-      input.dt[!is.finite(get(paste(lifeform, "FractionofWoody", sep = sep.char))) , get(paste(lifeform, "FractionofWoody", sep = sep.char)) := 0]
-    }
-    
-  }
-  
-  return(input.dt)
-  
+
+      warning("addLifeformFractions() is obselete,call addVegFractions() with targets = c('lifeforms')")
+
 }
 
 
@@ -491,76 +418,16 @@ addVegFractions <- function(input.dt, PFT.data, targets = c("pfts", "lifeforms")
 
 
 addPhenologyFractions <- function(input.dt, PFT.data,  phenologies = c("Evergreen", "Raingreen", "Summergreen"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE){
-  
-  # Fist make Tree/Woody totals if needed and not available
-  if(of.woody && !(paste("Tree", sep = sep.char) %in% names(input.dt))){
-    input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Tree")
-  }
-  if(of.woody && !(paste("Woody", sep = sep.char) %in% names(input.dt))){
-    input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Woody")
-  }
-  
-  
-  for(phen in phenologies){
-    
-    if(!(paste(phen, "Total", sep = sep.char) %in% names(input.dt))){
-      input.dt <- addPhenologyTotals(input.dt, PFT.data, phenologies = phen)
-    }
-    
-    # make fractions of total/tree/woody
-    if(of.total) {
-      input.dt[, eval(quote(paste(phen, "Fraction", sep = sep.char))) := get(paste(phen, sep = sep.char)) %/0% Total]
-      #input.dt[!is.finite(eval(quote(paste(phen, "Fraction", sep = sep.char)))) , eval(quote(paste(phen, "Fraction", sep = sep.char))) := 0]
-    }
-    if(of.tree) {
-      input.dt[, eval(quote(paste(phen, "FractionofTree", sep = sep.char))) := get(paste(phen, sep = sep.char)) %/0% get(paste("Tree", sep = sep.char))]
-      #input.dt[!is.finite(eval(quote(paste(phen, "FractionofTree", sep = sep.char)))) , eval(quote(paste(phen, "FractionofTree", sep = sep.char))) := 0]
-    }
-    if(of.woody) {
-      input.dt[, eval(quote(paste(phen, "FractionofWoody", sep = sep.char))) := get(paste(phen, sep = sep.char)) %/0% get(paste("Woody", sep = sep.char))]
-      #input.dt[!is.finite(eval(quote(paste(phen, "FractionofWoody", sep = sep.char)))) , eval(quote(paste(phen, "FractionofWoody", sep = sep.char))) := 0]
-    }
-    
-  }
-  
-  return(input.dt)
+
+  warning("addPhenologyFractions() is obselete,call addVegFractions() with targets = c('phenologies')")
+ 
   
 }
 
 addZoneFractions <- function(input.dt, PFT.data,  zones = c("Boreal", "Temperate", "Tropical"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE){
-  
-  # Fist make Tree/Woody totals if needed and not available
-  if(of.woody && !(paste("Tree", sep = sep.char) %in% names(input.dt))){
-    input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Tree")
-  }
-  if(of.woody && !(paste("Woody", sep = sep.char) %in% names(input.dt))){
-    input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Woody")
-  }
-  
-  
-  for(zone in zones){
-    
-    if(!(paste(zone, sep = sep.char) %in% names(input.dt))){
-      input.dt <- addZoneTotals(input.dt, PFT.data, zone = zone)
-    }
-    
-    # make fractions of total/tree/woody
-    if(of.total) {
-      input.dt[, eval(quote(paste(zone, "Fraction", sep = sep.char))) := get(paste(zone, "Total", sep = sep.char)) %/0% Total]
-      #input.dt[!is.finite(eval(quote(paste(zone, "Fraction", sep = sep.char)))) , eval(quote(paste(zone, "Fraction", sep = sep.char))) := 0]
-    }
-    if(of.tree) {
-      input.dt[, eval(quote(paste(zone, "FractionofTree", sep = sep.char))) := get(paste(zone, sep = sep.char)) %/0% get(paste("Tree", sep = sep.char))]
-      #input.dt[!is.finite(eval(quote(paste(zone, "FractionofTree", sep = sep.char)))) , eval(quote(paste(zone, "FractionofTree", sep = sep.char))) := 0]
-    }
-    if(of.woody) {
-      input.dt[, eval(quote(paste(zone, "FractionofWoody", sep = sep.char))) := get(paste(zone, sep = sep.char)) %/0% get(paste("Woody", sep = sep.char))]
-      #input.dt[!is.finite(eval(quote(paste(zone, "FractionofWoody", sep = sep.char)))) , eval(quote(paste(zone, "FractionofWoody", sep = sep.char))) := 0]
-    }
-    
-  }
-  
-  return(input.dt)
+
+   warning("addZoneFractions() is obselete,call addVegFractions() with targets = c('zones')")
+
   
 }
 
@@ -569,244 +436,11 @@ addZoneFractions <- function(input.dt, PFT.data,  zones = c("Boreal", "Temperate
 
 
 addAllVegFractions <- function(input.dt, PFT.data, PFTs = TRUE, lifeforms = TRUE, phenologies = TRUE, zones = TRUE){
-  
-  input.dt <- addPFTFractions(input.dt, PFT.data)
-  input.dt <- addLifeformFractions(input.dt, PFT.data)
-  input.dt <- addPhenologyFractions(input.dt, PFT.data)
-  input.dt <- addZoneFractions(input.dt, PFT.data)
-  
-  return(input.dt)
-  
+
+  warning("addAllVegFractions() is obselete,call addVegFractions() with targets = c('all')")
+ 
 }
 
-
-
-
-#############################################################
-#####  GLOBAL BIOME CLASSIFICATION
-
-
-addGlobalBiomes <-function(input.dt, PFT.data){
-  
-  
-  if("GlobalBiome" %in% names(input.dt)) { input.dt[, GlobalBiome := NULL] }
-  
-  # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
-  combineShadeTolerance(input.dt, global.PFTs)
-  addDominantPFT(input.dt, PFT.data, do.all = FALSE, do.tree = TRUE, do.woody = FALSE)
-  addAllVegTotals(input.dt, global.PFTs)
-  addVegFractions(input.dt, PFT.data, targets = c("pft"), of.total = FALSE,  of.tree = TRUE, of.woody = FALSE)
-  addVegFractions(input.dt, PFT.data, targets = c("Tropical"), of.total = FALSE,  of.tree = TRUE, of.woody = FALSE)
-  addVegFractions(input.dt, PFT.data, targets = c("Grass"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE)
-  
-  
-  # Apply biome rules and return
-  input.dt[, GlobalBiome := apply(input.dt[,,with=FALSE],FUN=GlobalBiomeRules,MAR=1)]
-  return(input.dt)
-  
-}
-
-addGlobalBiomesWithShrubs <-function(input.dt, PFT.data){
-  
-  
-  if("GlobalBiome" %in% names(input.dt)) { input.dt[, GlobalBiome := NULL] }
-  
-  # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
-  combineShadeTolerance(input.dt, global.PFTs)
-  addDominantPFT(input.dt, PFT.data, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
-  addAllVegTotals(input.dt, global.PFTs)
-  addVegFractions(input.dt, PFT.data, targets = c("pft"), of.total = FALSE,  of.tree = TRUE, of.woody = FALSE)
-  addVegFractions(input.dt, PFT.data, targets = c("Tropical"), of.total = FALSE,  of.tree = TRUE, of.woody = FALSE)
-  addVegFractions(input.dt, PFT.data, targets = c("Grass"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE)
-  addVegFractions(input.dt, PFT.data, targets = c("Shrub"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE)
-  
-  # Apply biome rules and return
-  input.dt[, GlobalBiome := apply(input.dt[,,with=FALSE],FUN=GlobalBiomeRules.withshrubs,MAR=1)]
-  return(input.dt)
-  
-}
-
-
-GlobalBiomeRules <- function(lai){
-  
-  # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionofTree']]) > 0.6 &  lai[['DominantTree']] == "TrBE") {return(1)}
-  
-  # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionofTree']]) > 0.6 | as.numeric(lai[['TrBRFractionofTree']])) & (lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(2)}
-  
-  # BIOME 3 - Tropical Seasonal Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionofTree']] )> 0.5 &  (lai[['DominantTree']] == "TrBE" | lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(3)}
-  
-  # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
-  
-  # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  lai[['DominantTree']] == "BNS") {return(5)}
-  
-  # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionofTree']]) > 0.5 | as.numeric(lai[['TeBSFractionofTree']]) > 0.5) & lai[['DominantTree']] == "TeBE") {return(6)}
-  
-  # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionofTree']]) > 0.5 | as.numeric(lai[['TeBSFractionofTree']]) > 0.5) & lai[['DominantTree']] == "TeBS") {return(7)}
-  
-  # BIOME 8 - Temperate/Boreal Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return(8) }
-  
-  # BIOME 9 - Temperate Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return(9)}
-  
-  # BIOME 10 - Xeric Woodland/Shrubland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return(10)}
-  
-  # BIOME 11 - Moist Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return(11)}
-  
-  # BIOME 12 - Dry Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return(12)}
-  
-  # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & as.numeric(lai[['Lat']]) >= 54) {return(13)}
-  
-  # BIOME 14 - Tall Grassland
-  else if(as.numeric(lai[['Grass']]) > 2.0) {return(14)}
-  
-  # BIOME 16 (1) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Tree']]) > 0.2 & as.numeric(lai[['Grass']]) < 1.0) {return(16)}
-  
-  # BIOME 15 - Dry Grassland
-  else if(as.numeric(lai[['Grass']]) > 0.2) {return(15)}
-  
-  # BIOME 16 (2) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Total']]) > 0.2) {return(16)}
-  
-  # BIOME 17 - Desert
-  else if(as.numeric(lai[['Total']]) < 0.2) {return(17)}
-  
-  # REMAINDER
-  else {
-    print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
-    return(NA)
-  }
-  
-  
-  
-}
-
-
-GlobalBiomeRules.withshrubs <- function(lai){
-  
-  ########################################################################################
-  ####### FOREST BIOMES WITH TREE LAI OVER 2.5 (EXCEPT FOR BOREAL WHICH REQUIRE > 0.5)
-  
-  # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionofTree']]) > 0.6 &  lai[['DominantTree']] == "TrBE") {return(1)}
-  
-  # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionofTree']]) > 0.6 | as.numeric(lai[['TrBRFractionofTree']])) & (lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(2)}
-  
-  # BIOME 3 - Tropical Seasonal Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionofTree']] )> 0.5 &  (lai[['DominantTree']] == "TrBE" | lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(3)}
-  
-  # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 1.5 &  (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
-  
-  # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 1.5 &  lai[['DominantTree']] == "BNS") {return(5)}
-  
-  # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionofTree']]) > 0.5 | as.numeric(lai[['TeBSFractionofTree']]) > 0.5) & lai[['DominantTree']] == "TeBE") {return(6)}
-  
-  # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionofTree']]) > 0.5 | as.numeric(lai[['TeBSFractionofTree']]) > 0.5) & lai[['DominantTree']] == "TeBS") {return(7)}
-  
-  # BIOME 8 - Temperate/Boreal Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return(8) }
-  
-  # BIOME 9 - Temperate Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return(9)}
-  
-  ########################################################################################
-  ####### INTERMEDIATE BIOMES WHICH REQUIRE WOODY > 0.5 (TUNDRA, WOODLANDS, SHRUBSLANDS, SAVANNA)
-  
-  # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(lai[['Woody']]) > 0.5 & lai[['DominantWoody']] == "BESh") {return(13)}
-  
-  # BIOME 10 - Xeric Woodland/Shrubland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return(10)}
-  
-  # BIOME 11 - Moist Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return(11)}
-  
-  # BIOME 12 - Dry Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return(12)}
-  
-  # BIOME 13 - Arctic/alpine Tundra
-  #else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & as.numeric(lai[['Lat']]) >= 54) {return(13)}
-  
-  # BIOME 14 - Tall Grassland
-  else if(as.numeric(lai[['Grass']]) > 2.0) {return(14)}
-  
-  # BIOME 16 (1) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Tree']]) > 0.2 & as.numeric(lai[['Grass']]) < 1.0) {return(16)}
-  
-  # BIOME 15 - Dry Grassland
-  else if(as.numeric(lai[['Grass']]) > 0.2) {return(15)}
-  
-  # BIOME 16 (2) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Total']]) > 0.2) {return(16)}
-  
-  # BIOME 17 - Desert
-  else if(as.numeric(lai[['Total']]) < 0.2) {return(17)}
-  
-  # REMAINDER
-  else {
-    print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
-    return(NA)
-  }
-  
-  
-  
-}
-
-
-
-GlobalBiome.str <- c("Tropical Rain Forest",                     
-                     "Tropical Deciduous Forest", 
-                     "Tropical Seasonal Forest", 
-                     "Boreal Evergreen Forest/Woodland", 
-                     "Boreal Deciduous Forest/Woodland",
-                     "Temperate Broadleaved Evergreen Forest",
-                     "Temperate Deciduous Forest",
-                     "Temperate/Boreal Mixed Forest",
-                     "Temperate Mixed Forest",
-                     "Xeric Woodland/Shrubland",
-                     "Moist Savanna",
-                     "Dry Savanna",
-                     "Arctic/Alpine Tundra",
-                     "Tall Grassland",
-                     "Dry Grassland",
-                     "Arid Shrubland/Steppe",
-                     "Desert")
-
-
-GlobalBiome.cols <- c("Tropical Rain Forest" = "seagreen",                     
-                      "Tropical Deciduous Forest" = "orange3", 
-                      "Tropical Seasonal Forest" = "green3", 
-                      "Boreal Evergreen Forest/Woodland" = "turquoise4",
-                      "Boreal Deciduous Forest/Woodland"= "cyan",
-                      "Temperate Broadleaved Evergreen Forest" = "dodgerblue3",
-                      "Temperate Deciduous Forest" = "chartreuse",
-                      "Temperate/Boreal Mixed Forest" = "seagreen1",
-                      "Temperate Mixed Forest" =  "darkseagreen1",
-                      "Xeric Woodland/Shrubland" = "deeppink3",
-                      "Moist Savanna" = "olivedrab2",
-                      "Dry Savanna" = "goldenrod2",
-                      "Arctic/Alpine Tundra" = "mediumpurple1",
-                      "Tall Grassland" =  "gold",                     
-                      "Dry Grassland" = "lightgoldenrod2",
-                      "Arid Shrubland/Steppe"= "lightcyan",
-                      "Desert" = "grey75")
 
 
 
@@ -1343,136 +977,5 @@ doKappa <- function(stack, do.individual = FALSE, labels = NULL, verbose = TRUE)
     return(kappa)
   }
 }
-
-
-
-###################################################################################################
-######### BIOME CLASSIFICATION v2.9-STYLE WITH EXTRA FLEXIBILITY ##################################
-######### Eventually should make code above obselete ##############################################
-###################################################################################################
-
-
-addBiomes <-function(input.dt, PFT.data, scheme = Smith2014.scheme){
-  
-  message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
-  
-  
-  if(scheme@id %in% names(input.dt)) { input.dt[, scheme@id := NULL, with=FALSE] }
-    
-  # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
-  if(scheme@combineShadeTolerance) combineShadeTolerance(input.dt, PFT.data)
-  
-  # Get the dominant tree and dominant woody PFTs
-  addDominantPFT(input.dt, PFT.data, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
-  
-  # Get the totals required
-  addVegTotals(input.dt, PFT.data, c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
-  
-  # Get the fractions required
-  addVegFractions(input.dt, PFT.data, targets = scheme@fraction.of.total, of.total = TRUE,   of.tree = FALSE, of.woody = FALSE)
-  addVegFractions(input.dt, PFT.data, targets = scheme@fraction.of.tree,  of.total = FALSE,  of.tree = TRUE, of.woody = FALSE)
-  addVegFractions(input.dt, PFT.data, targets = scheme@fraction.of.woody, of.total = FALSE,  of.tree = FALSE, of.woody = TRUE)
-  
-  # Apply biome rules and return
-  input.dt[, scheme@id := apply(input.dt[,,with=FALSE],FUN=scheme@rules,MAR=1), with = FALSE]
- 
-  return(input.dt)
-  
-}
-
-
-
-#######################################################################################################
-################################## MEGABIOME CLASSIFICATION 
-
-
-GlobalMegabiomesRules <- function(lai){
-  
-  # BIOME 1 - Tropical Rain Forest
-  #if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionofTree']]) > 0.6 &  lai[['DominantTree']] == "TrBE") {return(1)}
-  if(as.numeric(lai[['Tree']]) > 2.5 &  lai[['DominantTree']] == "TrBE") {return(1)}
-  
-  # BIOME 2 - Tropical Deciduous Forest
-  #else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionofTree']]) > 0.6 | as.numeric(lai[['TrBRFractionofTree']])) & (lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(2)}
-  else if(as.numeric(lai[['Tree']]) > 2.5 & lai[['DominantTree']] == "TrBR") {return(2)}
-  
-  
-  # BIOME 3 - Tropical Seasonal Forest
-  #else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionofTree']] )> 0.5 &  (lai[['DominantTree']] == "TrBE" | lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(3)}
-  
-  # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
-  
-  # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  lai[['DominantTree']] == "BNS") {return(5)}
-  
-  # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TemperateFractionofTree']]) > 0.5 & (lai[['DominantTree']] == "TeBE" | lai[['DominantTree']] == "TeNE")) {return(6)}
-  
-  # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  as.numeric(lai[['TemperateFractionofTree']]) > 0.5 & lai[['DominantTree']] == "TeBS") {return(7)}
-  
-  # BIOME 8 - Xeric Woodland/Shrubland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return(8)}
-  #else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return(8)}
-  
-  # BIOME 9 - Moist Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return(9)}
-  #else if(as.numeric(lai[['Tree']]) > 0.5) {return(9)}
-  
-  # BIOME 10 - Dry Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return(10)}
-  
-  # BIOME 11 - Arctic/alpine Tundra
-  else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & (as.numeric(lai[['Lat']]) >= 54 | as.numeric(lai[['GDD5']]) < 400)) {return(11)}
-  
-  # BIOME 12 - Tall Grassland
-  else if(as.numeric(lai[['Grass']]) > 2.0) {return(12)}
-  
-  # BIOME 13  - Arid Shrubland/Grassland
-  else if(as.numeric(lai[['Total']]) > 0.2) {return(13)}
-  
-  # BIOME 14 - Desert
-  else if(as.numeric(lai[['Total']]) < 0.2) {return(14)}
-  
-  # REMAINDER
-  else {
-    print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
-    return(NA)
-  }
-  
-}
-
-
-Megabiome.str <- c("Tropical Rain Forest",                     
-                   "Tropical Deciduous Forest", 
-                   "Tropical Seasonal Forest", 
-                   "Boreal Evergreen Forest/Woodland", 
-                   "Boreal Deciduous Forest/Woodland",
-                   "Temperate Evergreen Forest",
-                   "Temperate Deciduous Forest",
-                   "Xeric Woodland/Shrubland",
-                   "Moist Savanna",
-                   "Dry Savanna",
-                   "Arctic/Alpine Tundra",
-                   "Tall Grassland",
-                   "Arid Shrubland/Grassland",
-                   "Desert")
-
-
-Megabiome.cols <- c("Tropical Rain Forest" = "seagreen",                     
-                    "Tropical Deciduous Forest" = "orange3", 
-                    "Tropical Seasonal Forest" = "green3", 
-                    "Boreal Evergreen Forest/Woodland" = "turquoise4",
-                    "Boreal Deciduous Forest/Woodland"= "cyan",
-                    "Temperate Evergreen Forest" = "dodgerblue3",
-                    "Temperate Deciduous Forest" = "chartreuse",
-                    "Xeric Woodland/Shrubland" = "deeppink3",
-                    "Moist Savanna" = "olivedrab2",
-                    "Dry Savanna" = "goldenrod2",
-                    "Arctic/Alpine Tundra" = "mediumpurple1",
-                    "Tall Grassland" =  "gold",                     
-                    "Arid Shrubland/Grassland"= "lightcyan",
-                    "Desert" = "grey75")
 
 
