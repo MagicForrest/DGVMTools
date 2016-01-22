@@ -33,7 +33,7 @@
 
 
 
-plotLPJMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegObj 
+plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegObj 
                         which.layers = NULL,
                         quant = NULL, 
                         period = NULL, 
