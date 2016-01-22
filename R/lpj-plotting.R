@@ -22,8 +22,6 @@
 ###
 #####################################
 
-require(rgdal)
-require(cairoDevice)
 
 
 ##########################################################################################################################################
@@ -35,8 +33,8 @@ require(cairoDevice)
 
 
 
-plotLPJMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster 
-                        which.layers = "all",
+plotLPJMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegObj 
+                        which.layers = NULL,
                         quant = NULL, 
                         period = NULL, 
                         doSummary = TRUE, 
@@ -70,6 +68,15 @@ plotLPJMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ##########################################################################################################
   ################# 
+  
+  # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
+  if(class(data) == "VegObj"){
+    run <- data@run
+    period <- data@time.span
+    PFT.set <- run@pft.set
+    if(is.null(quant)) quant <- data@quant  
+  }
+  
   
   # TOLERANCE - for when making grid
   if(is.null(run)) { tolerance <- 0.02 }
@@ -130,9 +137,12 @@ plotLPJMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   if(!is.null(override.cuts)) {quant@cuts <- override.cuts}
   
   
-  
   # parse layer names and promote to raster for plotting
-  which.layers <- parseLayerList(which.layers, data, PFT.set, force = FALSE)
+  if(is.null(which.layers)) {
+    if(class(data) == "VegObj") which.layers <- names(data@data)
+    else which.layers <- names(data)
+  }
+  which.layers <- expandTargets(which.layers, data, PFT.set)
   data.toplot <- promoteToRaster(data, which.layers, tolerance)
   
   # PLOT LABELS (if no titles are provided use the layer names)
@@ -190,6 +200,8 @@ plotLPJMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     doIndividual <- TRUE
   }
   
+ 
+  
   for(format in Cairo.type){
     
     # print all layers on one plot if summary is TRUE
@@ -211,7 +223,7 @@ plotLPJMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
             height = Cairo.height, 
             title = this.main.title, 
             bg = Cairo.bg)  
-      
+        
       print(spplot(data.toplot,
                    which.layers,
                    par.settings = list(panel.background=list(col=plot.bg.col)),
@@ -298,9 +310,10 @@ plotLPJMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 
 
 plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                         which.layers = "GlobalBiome",
-                         biome.strings,
-                         biome.cols,  
+                         which.layers = NULL,
+                         scheme = Smith2014.scheme,
+                         biome.strings = NULL,
+                         biome.cols = NULL,  
                          run = NULL, 
                          period = NULL, 
                          plot.dir = NULL, 
@@ -319,9 +332,21 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
                          Cairo.height = 1000,
                          Cairo.bg = "transparent",
                          plot.extent = NULL,
+                         maxpixels = 1E6,
                          ...){
   
   ##### Here take parameters from arguments or from supplied VegRun object
+  
+  # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
+  if(class(data) == "VegObj"){
+    run <- data@run
+    period <- data@time.span
+  }
+  
+  # IF NO LAYERS, COLS OR STRINGS SUPPLIED, USE THE  DEFAULTSOF THE SCHEME
+  if(is.null(which.layers)) which.layers = scheme@id
+  if(is.null(biome.strings)) biome.strings = biome.scheme@strings
+  if(is.null(biome.cols)) biome.cols = biome.scheme@cols
   
   # TOLERANCE - for when making grid
   if(is.null(run)) { tolerance <- 0.02 }
@@ -431,6 +456,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
                  par.strip.text = list(lines = 1.0, cex = 1.5),
                  sp.layout = layout.objs,
                  names.attr = plot.labels,
+                 maxpixels = maxpixels,
                  colorkey = list(col = rev(biome.cols), 
                                  space = "right",
                                  labels = list(labels = rev(biome.strings), 
@@ -571,7 +597,13 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
                                background.colour = "transparent"){
   
   
-  ##### Here take parameters from arguments or from supplied VegRun object
+  # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
+  if(class(data) == "VegObj"){
+    run <- data@run
+    period <- data@time.span
+    PFT.set <- run@pft.set
+  }
+  
   
   # TOLERANCE - for when making grid
   if(is.null(run)) { tolerance <- 0.02 }
@@ -584,14 +616,18 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   }
   
   
-  # parse layer names and promote to raster for plotting
-  which.layers <- parseLayerList(which.dominant, data, PFT.set, force = FALSE)
-  data.toplot <- makeSPDFfromDT(data, layers = which.layers, tolerance = run@tolerance)
+  # CONVERT TO SPDF FOR PLOTTING (PLOTTING FACTORS VIA RASTER IS ANNOYING)
+  data.toplot <- makeSPDFfromDT(data@data, layers = which.dominant, tolerance = run@tolerance)
   
   # COLORLIST
   dom.PFT.colourlist <- vector()
   DomPFTs <- vector()
-  if(length(which.dominant) == 1 ) {DomPFTs <- levels(data.toplot@data[which.dominant,])}
+  if(length(which.dominant) == 1 ) {
+    class.input.data <- class(data)
+    if(class.input.data == "VegObj") {
+      DomPFTs <- levels(data.toplot@data[,which.dominant])
+    }
+  }
   else{
     stop("Construction Site:  plotDominantPFTMaps() cannot currently deal with more than one map")
     #for(var in which.dominant){
@@ -642,79 +678,6 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
 
 
 ##########################################################################################################################################
-################################################## PLOT TURKEY BIOME MAPS ################################################################
-##########################################################################################################################################
-
-
-plotDifferenceMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                              layer.names = "all", 
-                              quant.id = "",
-                              quant.str = "",
-                              cuts = NULL,
-                              run = NULL, 
-                              period = NULL, 
-                              plot.dir = NULL, 
-                              file.name = NULL, 
-                              layout.objs = NULL, 
-                              plot.labels =  NULL,
-                              plot.title =  NULL,
-                              plot.width = 1800, 
-                              plot.height = 1000,
-                              background.colour = "transparent",
-                              ...){
-  
-  message("Use plotLPJMaps() with special = diff or special = perc.diff instead!!")
-  
-  
-  # standard difference palette
-  diff.palette <- colorRampPalette(c("green","blue","white","red", "yellow"))
-  
-  ##### Here take parameters from arguments or from supplied VegRun object
-  
-  # TOLERANCE - for when making grid
-  if(is.null(run)) { tolerance <- 0.02 }
-  else {tolerance <- run@tolerance}  
-  
-  # DIRECTORY TO SAVE PLOTS
-  if(is.null(plot.dir)){
-    if(!is.null(run)){ plot.dir <- run@run.dir} 
-    else { plot.dir = "." }
-  }
-  
-  # promote to raster for plotting
-  data.toplot <- promoteToRaster(data, layer.names, tolerance)
-  
-  # Make filename
-  this.file.name <- makeFileName(quant.id, file.name = file.name, run = run, period = period)
-  
-  # if no titles are provided use the layer names
-  if(is.null(plot.labels)){plot.labels <- names(data.toplot) }
-  
-  
-  CairoPNG(file.path(plot.dir, this.file.name), height = plot.height, width = plot.width, title = paste("Turkey Biomes", sep = " "), bg = background.colour)  
-  
-  print(spplot(data.toplot,
-               par.settings = list(panel.background=list(col="grey")),
-               xlab = list(label = "Longitude", cex = 3),
-               ylab = list(label = "Latitude", cex = 3),
-               col.regions = diff.palette,
-               scales = list(draw = TRUE, cex = 3),
-               as.table = TRUE,
-               main=list(label=makePlotTitle(quant.str, plot.title, run, period), 
-                         cex = 4),
-               par.strip.text = list(lines = 1.0, cex = 1.5),
-               sp.layout = layout.objs,
-               #names.attr = plot.labels,
-               colorkey = list(col = diff.palette, 
-                               labels = list(cex = 3)),
-               names.attr = plot.labels,
-               ...)
-  )
-  dev.off()
-  
-}
-
-##########################################################################################################################################
 ################################################## PLOT BA MAPS #########################################################################
 ##########################################################################################################################################
 
@@ -742,51 +705,6 @@ plotBAMaps <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegV
 }
 
 
-##########################################################################################################################################
-################################################## PLOT GLOBAL BIOME MAPS ################################################################
-##########################################################################################################################################
-
-
-plotGlobalBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                               which.layers = "GlobalBiome",
-                               run = NULL, 
-                               period = NULL, 
-                               plot.dir = NULL, 
-                               file.name = NULL, 
-                               layout.objs = NULL, 
-                               main.title =  NULL,
-                               plot.labels = NULL,
-                               addData = FALSE,
-                               plot.height = 1000,
-                               plot.width = 1800,
-                               background.colour = "transparent",
-                               ...){
-  
-  stop("Function plotGlobalBiomeMap() obselete.  Use plotBiomeMap() instead")
-  
-}
-
-
-##########################################################################################################################################
-################################################## PLOT FRACTION MAPS ####################################################################
-##########################################################################################################################################
-
-
-plotFractionMaps <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                             which.fractions = "all", 
-                             period = NULL, 
-                             doSummary = TRUE, 
-                             doIndividual = FALSE, 
-                             run = NULL, 
-                             plot.dir = NULL, 
-                             summary.filename = NULL, 
-                             layout.objs = NULL, 
-                             summary.plot.title =  NULL,
-                             background.colour = "transparent"){
-  
-  stop("Use plotLPJMaps() instead")
-  
-}
 
 
 

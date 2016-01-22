@@ -84,8 +84,28 @@ setClass("PFT",
 
 
 ##### VegRun - class to hold the metadata for an LPJ-GUESS run 
+
+
+
+checkVegRun <- function(object){
+  
+  support.veg.models <- c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")
+    
+  errors <- character()
+  if (!(object@model  %in% support.veg.models)) {
+    msg <- paste("Unsupported model type", object@model, sep = " ")
+    errors <- c(errors, msg)
+  }
+    
+  if (length(errors) == 0) TRUE else errors
+  
+}
+
+
 setClass("VegRun", 
          slots = c(id = "character",
+                   model = "character",
+                   pft.set = "list",
                    description = "character",
                    run.dir = "character",                              
                    driving.data = "character",
@@ -102,7 +122,9 @@ setClass("VegRun",
                    correct.for.landuse = "logical",
                    vars = "list" # not currently used
          ),
-         prototype = c(description = "?",
+         prototype = c(model = "LPJ-GUESS",
+                       pft.set = NULL,
+                       description = "?",
                        run.dir = "r",                              
                        driving.data = "?",
                        map.overlay = "lowres",
@@ -116,7 +138,8 @@ setClass("VegRun",
                        line.style = 1,
                        correct.for.landuse = TRUE,
                        vars = list()
-         )
+         ),
+         validity = checkVegRun
          
 )
 
@@ -141,6 +164,20 @@ setClass("VegQuant",
          )
          
          
+)
+
+
+
+##### VegQuant - class to hold the data for an LPJ quantity
+setClass("VegObj", 
+         slots = c(id = "character",
+                   data = "data.table",
+                   time.span = "TimeSpan",
+                   quant = "VegQuant",
+                   run = "VegRun"
+          ),
+          contains = "VegRun"
+      
 )
 
 

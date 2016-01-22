@@ -38,6 +38,8 @@ sep.char = ""
 
 getPFTs <- function(input, PFT.data = PFT_MASTER_LIST){
   
+  if(class(input)[1] == "VegVar") suppressWarnings(input <- input@data)
+  
   PFTs.present <- list()
   for(colname in names(input)){
     for(PFT in PFT.data){
@@ -53,15 +55,21 @@ getPFTs <- function(input, PFT.data = PFT_MASTER_LIST){
 
 
 
-expandTargets <- function(targets, input.dt, PFT.data){
+expandTargets <- function(targets, data, PFT.data){
   
+  # remove "Lon", "Lat" and "Year" if present
+  for(remove.header.from.header in c("Lat", "Lon", "Year")){
+   if(remove.header.from.header %in% targets) targets <- targets[-which(targets == remove.header.from.header)]
+  }
+  
+  # get PFTs
+  all.PFTs <- getPFTs(data, PFT.data)
+    
   # expand "all"
   if("all" %in% tolower(targets)) targets <- c("pfts", "lifeforms", "leafforms", "zones", "phenologies")
   
   # expands "pfts"
   if("pft" %in% targets || "pfts" %in% targets) {
-    message("PFTs")
-    all.PFTs <- getPFTs(input.dt, PFT.data)
     for(PFT in all.PFTs) {targets <- append(targets, PFT@name)}
     if("pft" %in% targets) targets <- targets[-which(targets == "pft")]
     if("pfts" %in% targets) targets <- targets[-which(targets == "pfts")]
@@ -72,7 +80,6 @@ expandTargets <- function(targets, input.dt, PFT.data){
   if("lifeforms" %in% tolower(targets) | "lifeform" %in% tolower(targets)){
     
     # Find all lifeforms present in PFTs 
-    all.PFTs <- getPFTs(input.dt, PFT.data)
     all.lifeforms <- vector()
     for(PFT in all.PFTs) {all.lifeforms <- append(all.lifeforms, PFT@lifeform)}
     all.lifeforms <- unique(all.lifeforms)
@@ -91,7 +98,6 @@ expandTargets <- function(targets, input.dt, PFT.data){
   if("zones" %in% tolower(targets) | "zone" %in% tolower(targets)){
     
     # Find all zones present in PFTs 
-    all.PFTs <- getPFTs(input.dt, PFT.data)
     all.zones <- vector()
     for(PFT in all.PFTs) {all.zones <- append(all.zones, PFT@zone)}
     all.zones <- unique(all.zones)
@@ -107,7 +113,6 @@ expandTargets <- function(targets, input.dt, PFT.data){
   if("leafforms" %in% tolower(targets) | "leafform" %in% tolower(targets)){
     
     # Find all leafforms present in PFTs 
-    all.PFTs <- getPFTs(input.dt, PFT.data)
     all.leafforms <- vector()
     for(PFT in all.PFTs) {all.leafforms <- append(all.leafforms, PFT@leafform)}
     all.leafforms <- unique(all.leafforms)
@@ -123,7 +128,6 @@ expandTargets <- function(targets, input.dt, PFT.data){
   if("phenologies" %in% tolower(targets) | "phenology" %in% tolower(targets)){
     
     # Find all phenologys present in PFTs 
-    all.PFTs <- getPFTs(input.dt, PFT.data)
     all.phenologies <- vector()
     for(PFT in all.PFTs) {all.phenologies <- append(all.phenologies, PFT@phenology)}
     all.phenologies <- unique(all.phenologies)
@@ -152,9 +156,13 @@ expandTargets <- function(targets, input.dt, PFT.data){
 ##### AND DOING BIOME CLASSIFICATIONS ETC
 
 
-combineShadeTolerance <- function(input.dt, PFT.data){
+combineShadeTolerance <- function(input){
+   
+  # We get a warning about a shallow copy here, suppress it
+  suppressWarnings(dt <- input@data)
+  PFT.data <- input@pft.set
   
-  for(colname in names(input.dt)){
+  for(colname in names(dt)){
     
     # if the PFT is in the PFT list
     if(!is.null(PFT.data[[colname]])) {
@@ -165,8 +173,8 @@ combineShadeTolerance <- function(input.dt, PFT.data){
         
         # if PFT to be added is present the combine them and set the shade intolerant PFT to zero, if not send a warning and do nothing
         if(!is.null(PFT.data[[PFT@combine]])){
-          input.dt[, PFT.data[[PFT@combine]]@name := rowSums(.SD), .SDcols=c(PFT.data[[PFT@combine]]@name, PFT@name)]
-          input.dt[, PFT@name := 0]
+          dt[, PFT.data[[PFT@combine]]@name := rowSums(.SD), .SDcols=c(PFT.data[[PFT@combine]]@name, PFT@name)]
+          dt[, PFT@name := 0]
         }
         else{
           warning(paste("PFT", PFT, "is supposed to be combined with PFT", PFT@combine, "but that PFT is not present so ignoring.", sep = " " ))
@@ -176,7 +184,9 @@ combineShadeTolerance <- function(input.dt, PFT.data){
     } # if the colname is a PFT
   } # for each column name
   
-  return(input.dt)
+  input@data <- dt
+  
+  return(input)
   
 }
 
@@ -187,8 +197,12 @@ combineShadeTolerance <- function(input.dt, PFT.data){
 
 
 
-addDominantPFT <- function(input.dt, PFT.data, do.all = TRUE, do.tree = FALSE, do.woody = FALSE){
+addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FALSE){
   
+  # We get a warning about a shallow copy here, suppress it
+  suppressWarnings(dt <- input@data)
+  PFT.data <- input@run@pft.set
+   
   # auxiliary function to be apply'd
   domPFT <- function(x){return(names(x)[which.max(x)])  }  
   
@@ -196,7 +210,7 @@ addDominantPFT <- function(input.dt, PFT.data, do.all = TRUE, do.tree = FALSE, d
   PFTs.present <- list()
   tree.PFTs.present <- list()
   woody.PFTs.present <- list()
-  for(colname in names(input.dt)){
+  for(colname in names(dt)){
     for(PFT in PFT.data){
       if(PFT@name == colname) {
         if(do.all) {PFTs.present <- append(PFTs.present, colname)}
@@ -210,29 +224,30 @@ addDominantPFT <- function(input.dt, PFT.data, do.all = TRUE, do.tree = FALSE, d
   if(do.all) {
     PFTs.present <- unlist(PFTs.present)
     PFTs.present <- PFTs.present[-which(PFTs.present == "Total")]
-    input.dt[, Dominant := apply(input.dt[,PFTs.present,with=FALSE],FUN=domPFT,MAR=1)]
-    input.dt[Total < 0.2, eval(quote(paste("Dominant"))) := "Barren"]
-    input.dt[, eval(quote(paste("Dominant"))) := as.factor(get("Dominant"))]
+    suppressWarnings(dt[, Dominant := apply(dt[,PFTs.present,with=FALSE],FUN=domPFT,MAR=1)])
+    dt[Total < 0.2, eval(quote(paste("Dominant"))) := "Barren"]
+    dt[, eval(quote(paste("Dominant"))) := as.factor(get("Dominant"))]
     
   }
   
   if(do.tree) {
     tree.PFTs.present <- unlist(tree.PFTs.present)
-    input.dt[, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := apply(input.dt[,tree.PFTs.present,with=FALSE],FUN=domPFT,MAR=1)]
-    input.dt[Total < 0.2, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := "Barren"]
-    input.dt[, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := as.factor(get(paste("Dominant", "Tree", sep = sep.char)))]
+    suppressWarnings(dt[, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := apply(dt[,tree.PFTs.present,with=FALSE],FUN=domPFT,MAR=1)])
+    dt[Total < 0.2, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := "Barren"]
+    dt[, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := as.factor(get(paste("Dominant", "Tree", sep = sep.char)))]
   }
   
   if(do.woody) {
     woody.PFTs.present <- unlist(woody.PFTs.present)
-    input.dt[, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := apply(input.dt[,woody.PFTs.present,with=FALSE],FUN=domPFT,MAR=1)]
-    input.dt[Total < 0.2, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := "Barren"]
-    input.dt[, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := as.factor(get(paste("Dominant", "Woody", sep = sep.char)))]
+    suppressWarnings(dt[, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := apply(dt[,woody.PFTs.present,with=FALSE],FUN=domPFT,MAR=1)])
+    dt[Total < 0.2, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := "Barren"]
+    dt[, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := as.factor(get(paste("Dominant", "Woody", sep = sep.char)))]
     
     
   }
   
-  return(input.dt)
+  input@data <- dt
+  return(input)
   
 }
 
@@ -242,204 +257,135 @@ addDominantPFT <- function(input.dt, PFT.data, do.all = TRUE, do.tree = FALSE, d
 ###################################################################################################
 
 
-addBiomes <-function(input.dt, PFT.data, scheme = Smith2014.scheme){
+addBiomes <-function(input, scheme = Smith2014.scheme){
   
   message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
-  
-  
-  if(scheme@id %in% names(input.dt)) { input.dt[, scheme@id := NULL, with=FALSE] }
     
+  
   # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
-  if(scheme@combineShadeTolerance) combineShadeTolerance(input.dt, PFT.data)
-  
+  if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
+
   # Get the dominant tree and dominant woody PFTs
-  addDominantPFT(input.dt, PFT.data, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
-  
+  input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
+
   # Get the totals required
-  addVegTotals(input.dt, PFT.data, c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
-  
+  input <-addVegTotals(input, targets = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
+
   # Get the fractions required
-  addVegFractions(input.dt, PFT.data, targets = scheme@fraction.of.total, of.total = TRUE,   of.tree = FALSE, of.woody = FALSE)
-  addVegFractions(input.dt, PFT.data, targets = scheme@fraction.of.tree,  of.total = FALSE,  of.tree = TRUE, of.woody = FALSE)
-  addVegFractions(input.dt, PFT.data, targets = scheme@fraction.of.woody, of.total = FALSE,  of.tree = FALSE, of.woody = TRUE)
+  input <- addVegFractions(input, targets = scheme@fraction.of.total, of.total = TRUE,   of.tree = FALSE, of.woody = FALSE)
+  input <- addVegFractions(input, targets = scheme@fraction.of.tree,  of.total = FALSE,  of.tree = TRUE, of.woody = FALSE)
+  input <- addVegFractions(input, targets = scheme@fraction.of.woody, of.total = FALSE,  of.tree = FALSE, of.woody = TRUE)
+  
+  # We get a warning about a shallow copy here, suppress it
+  suppressWarnings(dt <- input@data)
   
   # Apply biome rules and return
-  input.dt[, scheme@id := apply(input.dt[,,with=FALSE],FUN=scheme@rules,MAR=1), with = FALSE]
- 
-  return(input.dt)
+  if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
+  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MAR=1), with = FALSE])
+  input@data <- dt
+  return(input)
   
 }
-
-
 
 
 
 ###################################################################################
-##### MAKE LIFEFORM, PHENOLOGY ETC TOTALS
-##### Notes: The following functions perform adequately but could be combined into one function for better usability/maintenence
-##### TODO   Low Priority 
+##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, ETC...)
 
-
-
-addLifeformTotals <- function(input.dt, PFT.data, lifeforms = c("Tree", "Grass", "Shrub", "Woody")){
+addVegTotals <- function(input, targets = c("lifeforms")){
   
-  warning("addLifeformTotals is obselete,call addVegTotals() with targets = 'lifeforms")
-  
-}
-
-
-addPhenologyTotals <- function(input.dt, PFT.data, phenologies = c("Evergreen", "Raingreen", "Summergreen")){
-  
-  warning("addPhenologyTotals is obselete,call addVegTotals() with targets = c('phenology')")
- 
-}
-
-
-addZoneTotals <- function(input.dt, PFT.data, zones = c("Boreal", "Temperate", "Tropical")){
-  
-  warning("addZoneTotals is obselete,call addVegTotals() with targets = c('zones')")
-
-}
-
-addAllVegTotals <- function(input.dt, PFT.data){
-  
-  warning("addAllVegTotals is obselete,call addVegTotals() with targets = c('all')")
- 
-}
-
-
-# This function superceeds all "getTotal" functions above
-addVegTotals <- function(input.dt, PFT.data, targets = c("pfts", "lifeforms")){
+  # We get a warning about a shallow copy here, suppress it
+  suppressWarnings(dt <- input@data)
+  PFT.data <- input@run@pft.set
   
   # get PFTs present
-  all.PFTs <- getPFTs(input.dt, PFT.data)
+  all.PFTs <- getPFTs(dt, PFT.data)
   
   # expands targets
-  targets <- expandTargets(targets, input.dt, PFT.data)
+  targets <- expandTargets(targets, dt, PFT.data)
   
   # remove PFTs from targets since PFTs are already present as totals
   for(PFT in all.PFTs){ if(PFT@name %in% targets) targets <- targets[-which(targets == PFT@name)]}
   
   # make zero columns for each target (provided they are not PFTs)
-  for(target in targets){ input.dt[, target := 0, with= FALSE] }
+  for(target in targets){ suppressWarnings(dt[, target := 0, with= FALSE]) }
   
   # loop through PFTs and add the PFT to the appropriate target (ie add TeBS to the "Tree" column)
   for(PFT in all.PFTs){
 
     # lifeform
-    if(PFT@lifeform %in% targets) { input.dt[, PFT@lifeform := rowSums(.SD), .SDcols = c(PFT@name , PFT@lifeform)] }
+    if(PFT@lifeform %in% targets) { dt[, PFT@lifeform := rowSums(.SD), .SDcols = c(PFT@name , PFT@lifeform)] }
     # zone
-    if(PFT@zone %in% targets) input.dt[, PFT@zone := rowSums(.SD), .SDcols = c(PFT@name , PFT@zone)]
+    if(PFT@zone %in% targets) dt[, PFT@zone := rowSums(.SD), .SDcols = c(PFT@name , PFT@zone)]
     # leafform
-    if(PFT@leafform %in% targets) input.dt[, PFT@leafform := rowSums(.SD), .SDcols = c(PFT@name , PFT@leafform)]
+    if(PFT@leafform %in% targets) dt[, PFT@leafform := rowSums(.SD), .SDcols = c(PFT@name , PFT@leafform)]
     # phenologies
-    if(PFT@phenology %in% targets) input.dt[, PFT@phenology := rowSums(.SD), .SDcols = c(PFT@name , PFT@phenology)]
+    if(PFT@phenology %in% targets) dt[, PFT@phenology := rowSums(.SD), .SDcols = c(PFT@name , PFT@phenology)]
     # Woody special case 
-    if("Woody" %in% targets & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) input.dt[, Woody := rowSums(.SD), .SDcols = c(PFT@name , "Woody")]
+    if("Woody" %in% targets & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) dt[, Woody := rowSums(.SD), .SDcols = c(PFT@name , "Woody")]
     
   }
   
+  input@data <- dt
+  
+  return(input)
+  
+  
+  
+  
 }
+
+
+
 
 
 
 ###################################################################################
 ##### MAKE PFT, LIFEFORM, PHENOLOGY ETC FRACTIONS
-#####
-##### NOTE:  PFT and lifeform fraction are fraction of total
-#####          
+##### MF TODO:  Can make this much nicer by defining a list of denominators rather than a series of booleans
+##### MF TODO:  Also maybe take a look at the horrible "eval(quote(paste(" syntax below
+##### MF TODO:  Also maybe simple create each target using getVegTotals() if it doesn't exist
 
-
-
-addPFTFractions <- function(input.dt, PFT.data = PFT_MASTER_LIST){
-
-    warning("addPFTFractions() is obselete,call addVegFractions() with targets = c('pfts')")
+addVegFractions <- function(input, targets = c("pfts", "lifeforms"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE){
   
-}
-
-
-addLifeformFractions <- function(input.dt, PFT.data, lifeforms = c("Tree", "Grass", "Shrub", "Woody"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE){
-
-      warning("addLifeformFractions() is obselete,call addVegFractions() with targets = c('lifeforms')")
-
-}
-
-
-# This function superceeds all "getFraction" fucntions here
-addVegFractions <- function(input.dt, PFT.data, targets = c("pfts", "lifeforms"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE){
+  
+  # We get a warning about a shallow copy here, suppress it
+  suppressWarnings(dt <- input@data)
+  PFT.data <- input@run@pft.set
   
   # First, make Tree/Woody totals if needed and not available
-  if(of.woody && !(paste("Tree", sep = sep.char) %in% names(input.dt))){
-    input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Tree")
+  if(of.woody && !(paste("Tree", sep = sep.char) %in% names(dt))){
+    dt <- addLifeformTotals(dt, PFT.data, lifeform = "Tree")
   }
-  if(of.woody && !(paste("Woody", sep = sep.char) %in% names(input.dt))){
-    input.dt <- addLifeformTotals(input.dt, PFT.data, lifeform = "Woody")
+  if(of.woody && !(paste("Woody", sep = sep.char) %in% names(dt))){
+    dt <- addLifeformTotals(dt, PFT.data, lifeform = "Woody")
   }
   
   # Second, expand targets
-  targets <- expandTargets(targets, input.dt, PFT.data)
+  targets <- expandTargets(targets, dt, PFT.data)
   
-  
-  
-  #   # Make each PFT fraction
-  #   if("pft" %in% targets || "pfts" %in% targets) {
-  #     message("PFTs")
-  #     all.PFTs <- getPFTs(input.dt, PFT.data)
-  #     for(PFT in all.PFTs) {targets <- append(targets, PFT@name)}
-  #     if("pft" %in% targets) targets <- targets[-which(targets == "pft")]
-  #     if("pfts" %in% targets) targets <- targets[-which(targets == "pfts")]
-  #   }
-  #   
-  #   # Expand lifeforms if necessary and calculate total if necessary
-  #   if("lifeforms" %in% tolower(targets)){
-  #     lpj.lifeforms <- c("Tree", "Grass", "Shrub")
-  #     targets <- append(targets, lpj.lifeforms)
-  #     targets <- targets[-which(tolower(targets) == "lifeforms")]
-  #   }
-  
+    
   for(target in targets){
     
     # make fractions of total/tree/woody
     if(of.total) {
-      input.dt[, eval(quote(paste(target, "Fraction", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%Total]
+      suppressWarnings(dt[, eval(quote(paste(target, "Fraction", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%Total])
     }
     if(of.tree) {
-      input.dt[, eval(quote(paste(target, "FractionofTree", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%get(paste("Tree", sep = sep.char))]
+      suppressWarnings(dt[, eval(quote(paste(target, "FractionofTree", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%get(paste("Tree", sep = sep.char))])
     }
     if(of.woody) {
-      input.dt[, eval(quote(paste(target, "FractionofWoody", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%get(paste("Woody", sep = sep.char))]
+      suppressWarnings(dt[, eval(quote(paste(target, "FractionofWoody", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%get(paste("Woody", sep = sep.char))])
     }
     
   }
   
-  return(input.dt)
+  input@data <- dt
+  
+  return(input)
   
 }
 
-
-addPhenologyFractions <- function(input.dt, PFT.data,  phenologies = c("Evergreen", "Raingreen", "Summergreen"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE){
-
-  warning("addPhenologyFractions() is obselete,call addVegFractions() with targets = c('phenologies')")
- 
-  
-}
-
-addZoneFractions <- function(input.dt, PFT.data,  zones = c("Boreal", "Temperate", "Tropical"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE){
-
-   warning("addZoneFractions() is obselete,call addVegFractions() with targets = c('zones')")
-
-  
-}
-
-
-
-
-
-addAllVegFractions <- function(input.dt, PFT.data, PFTs = TRUE, lifeforms = TRUE, phenologies = TRUE, zones = TRUE){
-
-  warning("addAllVegFractions() is obselete,call addVegFractions() with targets = c('all')")
- 
-}
 
 
 

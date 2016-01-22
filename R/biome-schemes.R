@@ -408,7 +408,7 @@ Megabiomes.scheme <- new("BiomeClassification",
                                      "Arid Shrubland/Grassland",
                                      "Desert"),
                          data.reference = "Haxeltime and Prentice 1996",
-                         published.reference = "Forrest et al. 2015 CP")
+                         published.reference = "-")
 
 
 

@@ -181,6 +181,63 @@ getTADT <- function(run, period, var, this.full = NULL, write = TRUE, forceReAve
   
 }
 
+
+
+################################# GET TIME-AVERAGED DATA #########################################
+
+getVegObj <- function(run, period, var, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE){
+  
+  if(class(var) == "character") {
+    quant <- getVegQuantity(var)
+    var.string <- var
+  }
+  else {
+    quant <- var
+    var.string <- quant@id
+  }
+  
+  # make file name
+  TA.filename <- paste(run@run.dir, "/", var.string, ".TA.", period@start, "-", period@end, ".Rtable", sep ="")
+  
+  # if file is present and we are not forcing re-averaging, read in the pre-averaged file
+  if(file.exists(paste(TA.filename)) & !forceReAveraging){
+    if(verbose) {message(paste("File",  TA.filename, "found in",  run@run.dir, "so using that.",  sep = " "))}
+    this.TA.dt <- fread(TA.filename, header = TRUE, stringsAsFactors=FALSE)
+  } 
+  
+  # otherwise, open the full .out file read it as a data table, time average it and save to disk
+  else {
+    if (is.null(this.full)) {
+      if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
+      this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
+      this.full <<- this.full
+    }
+    else{
+      if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that.", sep = ""))
+    }
+    
+    # do temporal averaging
+    this.TA.dt <- doTimeAverage.cmpd(this.full, period, verbose)
+    if(write) {
+      if(verbose) {message("Saving as a table...")}
+      write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
+    }
+  }
+  
+  setkey(this.TA.dt, Lon, Lat)
+  
+  this.VegObj = new("VegObj",
+                    id = "dummy",
+                    data = this.TA.dt,
+                    time.span = period,
+                    quant = quant,
+                    run = run
+                    )
+  
+  return(this.VegObj)
+  
+}
+
 ################################# GET SPACE-AVERAGED DATA #########################################
 
 
@@ -232,7 +289,7 @@ getSADT <- function(run, var, spatial.extent = NULL, this.full = NULL, write = T
 
 
 makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
-  
+    
   # sort the layers
   if(is.null(layers) | layers[1] == "all") {layers = names(data)}
   
@@ -261,20 +318,27 @@ makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.to
 
 promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
    
-  if(is.null(layers) || layers == "all") {layers = names(data)}
-  
+  ###  Get class of the objetc we are dealing with
   this.class = class(data)[1]
   
-  # if we have received a SpatialPixelsDataFrame we can plot it straight away, we just need a list of PFTs
+  ###  Define the layers we are pulling out
+  # for VegObj - note could define a methods "names" do cover this exception
+  if(this.class == "VegObj" & (is.null(layers) || layers == "all")) {layers <- names(data@data)} 
+  # for data.table or rasters
+  else if(is.null(layers) || layers == "all") {layers = names(data)}
+  
+  
+  ###  If wSpatialPixelsDataFrame we can plot it
   if(this.class == "SpatialPixelsDataFrame"){ 
     print("If error check here: promoteToRaster in lpj-runtools.R")
     data.raster <- raster(data, layers)
   }
-  # if we have received a data.table 
+  ### If data.table or VegObj (which contains a data.table) 
   # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table"){
-    
-    data.spdf <- makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
+  else if(this.class == "data.table" | this.class == "VegObj"){
+     
+    if(this.class == "data.table") data.spdf <- makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
+    if(this.class == "VegObj") data.spdf <- makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
     
     if(length(layers) == 1){
       data.raster <- raster(data.spdf)
@@ -287,15 +351,16 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
     }
     
   } 
-  # if we have received a single raster layer then we are done
+  ###  If a single raster layer then we are done
   else if(this.class == "RasterLayer"){
     data.raster <- data    
   }
-  # else error 
+  ### If a stack or a brick, then subset 
   else if(this.class == "RasterBrick" | this.class == "RasterStack"){
     data.raster <- subset(data, layers)
     names(data.raster) <- layers
   }
+  ### else error 
   else{
     # catch -proper exceptions later?
     stop(paste("Trying to promote object of type", class(data), "to Raster, which I don't know how to do.", sep = ""))
