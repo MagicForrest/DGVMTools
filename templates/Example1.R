@@ -1,14 +1,16 @@
 # start the timer
 t1 <- Sys.time()
 
-# Load RVCTools v2.9
-source("~/Tools/RVCTools/v2.9/rvc-tools.R")
+# Load RVCTools package, unload the package first in case we are actively developing the package
+if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
+library(RVCTools)
 
 ##### STEP ONE: Define the settings, open the run and average over the period we want
 
 # Define a RUN to process
 run <- new("VegRun",
            run.dir = "/data/forrest/GuessRuns/N-version/Standard",
+           pft.set = global.PFTs,
            id = "ExampleRun1",
            description= "An example LPJ-GUESS run",
            driving.data = "CRU",
@@ -24,17 +26,13 @@ variable <- "lai"
 period = new("TimeSpan", name = "Reference", start = 1961, end = 1990)
 
 # Open the lai.out file, and average over the reference period
-lai.reference.period.dt <- getTADT(run, period, variable, forceReAveraging = FALSE)
-
+lai.reference.period <- getVegObj(run, period, variable, forceReAveraging = FALSE)
 
 
 ##### STEP TWO: Simple summary plots
 
 # Plot all PFTs on one figure and each one individually
-plotLPJMaps(lai.reference.period.dt, 
-            run = run,
-            quant = variable, 
-            period = period, 
+plotVegMaps(lai.reference.period, 
             doSummary = TRUE, 
             doIndividual = TRUE)
 
@@ -49,23 +47,17 @@ PFT.set <- global.PFTs
 ### TOTALS
 
 # Calculate the lifeform totals, the temperate total and the evergeen total
-addVegTotals(lai.reference.period.dt, PFT.set, target = c("Lifeforms", "Temperate", "Evergreen"))
+lai.reference.period <- addVegTotals(lai.reference.period, target = c("Lifeforms", "Temperate", "Evergreen"))
 
 # Plot the Evergreen and Temperate totals indivdually
-plotLPJMaps(lai.reference.period.dt, 
+plotVegMaps(lai.reference.period, 
             which = c("Evergreen", "Temperate"),
-            run = run,
-            quant = variable, 
-            period = period, 
             doSummary = FALSE, 
             doIndividual = TRUE)
 
 
-plotLPJMaps(lai.reference.period.dt, 
+plotVegMaps(lai.reference.period, 
             which = c("Tree", "Grass", "Total"),
-            run = run,
-            quant = variable, 
-            period = period, 
             special.string = "Lifeforms")
 
 
@@ -73,46 +65,35 @@ plotLPJMaps(lai.reference.period.dt,
 ### FRACTIONS
 
 # calculate the tree and grass fractions
-addVegFractions(lai.reference.period.dt, PFT.set, targets = "lifeforms")
+lai.reference.period <- addVegFractions(lai.reference.period, targets = "lifeforms")
 
 # Plot the tree and grass fraction
-plotLPJMaps(lai.reference.period.dt, 
+plotVegMaps(lai.reference.period, 
             which = c("TreeFraction", "GrassFraction"),
-            run = run,
-            quant = variable, 
-            period = period, 
             special.string = "Lifeform",
             special = "fraction")
 
 
 # calculate the TeBS fraction of trees
-addVegFractions(lai.reference.period.dt, PFT.set, targets = c("TeBS"), of.total = FALSE, of.tree = TRUE)
+lai.reference.period <- addVegFractions(lai.reference.period, targets = c("TeBS"), of.total = FALSE, of.tree = TRUE)
 
 # Plot the tree and grass fraction
-plotLPJMaps(lai.reference.period.dt, 
+plotVegMaps(lai.reference.period, 
             which = c("TeBSFractionofTree"),
-            run = run,
-            quant = variable, 
-            period = period, 
             special = "fraction")
-
 
 
 
 ### DOMINANT PFT
 
-# add shade intolerant PFTs to shade tolerant equivalents when considerign dominance
-combineShadeTolerance(lai.reference.period.dt, PFT.set)
+# add shade intolerant PFTs to shade tolerant equivalents when considering dominance
+lai.reference.period <- combineShadeTolerance(lai.reference.period)
 
 # calculate dominant PFT
-addDominantPFT(lai.reference.period.dt, PFT.set)
+lai.reference.period <- addDominantPFT(lai.reference.period)
 
 # plot dominant PFT
-plotDominantPFTMap(lai.reference.period.dt,
-                   which.dominant = "Dominant",
-                   run = run, 
-                   period = period)
-
+plotDominantPFTMap(lai.reference.period)
 
 
 
@@ -122,23 +103,17 @@ plotDominantPFTMap(lai.reference.period.dt,
 biome.scheme <- Smith2014.scheme
 
 #  calculate biomes from model output
-addBiomes(lai.reference.period.dt, PFT.set, biome.scheme)
+lai.reference.period <- addBiomes(lai.reference.period, biome.scheme)
 
 # read expert-derived PNV biomes
-PNV.biomes <- readPNVBiomes(resolution = "HD", classification = biome.scheme@id)
+#PNV.biomes <- readPNVBiomes(resolution = "HD", classification = biome.scheme@id)
 
-plotBiomeMap(lai.reference.period.dt, 
-             which.layers = biome.scheme@id,
-             biome.strings = biome.scheme@strings, 
-             biome.cols= biome.scheme@cols, 
-             run = run, 
-             period = period, 
-             addData = PNV.biomes, 
-             run.title = run@id, 
-             maxpixels = 100000,
+# plot biomes
+plotBiomeMap(lai.reference.period, 
+             scheme = biome.scheme,
+             addData = FALSE,#PNV.biomes, 
              Cairo.type = c("png","ps"), 
 )
-
 
 # print the time
 t2 <- Sys.time()

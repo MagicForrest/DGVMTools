@@ -1,7 +1,6 @@
-
-
-source("/home/forrest/Tools/RVCTools/v2.8/rvc-tools.R")
-
+# Matt Forrest 2016-01-26
+# An example of how to subset a gridlist.  This example stitches together at several fire-prone regions so one can just simulate areas where fire is important.
+# Could also be used to make transects, regional gridlists etc...
 
 list.of.subregions = list(
   "central.africa" = extent(-20,60,-20,20),
