@@ -667,7 +667,17 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
 
 
 
+quant.name <- "gdd5"
 
+lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
+                                             id = quant.name,
+                                             short.string = "GDD5",
+                                             full.string = "Growing Degree Days (5deg C base)",
+                                             type = "annual",
+                                             units = "degree days",
+                                             colours = tim.colors,
+                                             cuts = seq(0, 5000, 100)
+)
 
 
 
