@@ -264,6 +264,16 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
   
   # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
   if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
+  
+  # If GDD5 required for classification
+    if(scheme@needGDD5) {
+    # get gdd5
+    gdd5 <- getVegObj(input@run, input@time.span, "gdd5", forceReAveraging = FALSE)
+    dt <- input@data
+    dt.gdd5 <- gdd5@data
+    dt <- dt[dt.gdd5]
+    input@data <- dt
+  }
 
   # Get the dominant tree and dominant woody PFTs
   input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
