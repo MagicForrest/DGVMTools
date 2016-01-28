@@ -119,29 +119,30 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   return(x)
 }
 
-addArea <- function(input, unit="m^2") {
-  require(udunits2)
-
+addArea <- function(input, unit="m^2", ellipse=FALSE) {
   if (is.na(unit))
     unit="m^2"
 
+  if (!is.logical(ellipse)) {
+    warning(paste("'ellipse=", ellipse,"' is not boolean. Using FALSE instead.", sep=""))
+    ellipse=FALSE
+  }
+  
   lon <- extract.seq(input@data$Lon)
   lat <- extract.seq(input@data$Lat)
 
-  area <- as.data.table(gridarea2d(lon, lat))
+  area <- as.data.table(gridarea2d(lon, lat, ellipse=ellipse))
   setkeyv(area, c("Lon", "Lat"))
-
-  message(unit)
   
   if (unit!="m^2") {
     if (ud.is.parseable(unit)) {
       if (ud.are.convertible("m^2", unit)) {
         area$area = ud.convert(area$area, "m^2", unit)
       } else {
-        warning(paste("m^2 not convertible to '", unit, "'. Using m^2 as default.", sep=""))
+        warning(paste("m^2 not convertible to '", unit, "'. Using m^2 instead.", sep=""))
       }
     } else {
-      warning(paste("Unit '", unit, "' not parseable. Using m^2 as default.", sep=""))
+      warning(paste("Unit '", unit, "' not parseable. Using m^2 instead.", sep=""))
     }
   }
 
