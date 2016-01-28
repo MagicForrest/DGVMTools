@@ -49,7 +49,6 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
   return(area*scale)
 }
 
-
 #' gridarea1d: grid cell area along a vector of latitudes
 #'
 #' Returns the area in square meters along a vetor of latitudes by equal longitude distance.
@@ -84,7 +83,23 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
                        area=as.vector(area2d))
   return(area)
 }
-  
+
+#' extract.seq: Extract a regular sequence from unique values in a vector
+#'
+#' Returns, if possible, an regular spaced sorted vector vector. If more than half of the unique values have unequal distances, the sorted values are returned.    
+#' 
+#' @param x vetor of values (e.g. longitudes or latitudes)
+#' @param force.regular force a regular spaced vector with the smallest distance.
+#' @param descending sort in descending order if TRUE (default: ascendind)
+#' @keywords
+#' @export
+#' @return data.frame of gridcells with columns c("Lon", "Lat", "area")
+#' @author Joerg Steinkamp <joergsteinkamp@yahoo.de>
+#' @examples
+#' lon <- seq(- 179.75, 179.75, 0.5)
+#' lat <- seq(89.75,-89.75,-0.5) # equivalent to the above
+#' sum(gridarea2d(lat,lon)$area)*1.e-12
+
 extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   x <- sort(unique(x))
   d <- x[2:length(x)] - x[1:(length(x)-1)]
