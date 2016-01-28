@@ -118,3 +118,35 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   }
   return(x)
 }
+
+addArea <- function(input, unit="m^2") {
+  require(udunits2)
+
+  if (is.na(unit))
+    unit="m^2"
+
+  lon <- extract.seq(input@data$Lon)
+  lat <- extract.seq(input@data$Lat)
+
+  area <- as.data.table(gridarea2d(lon, lat))
+  setkeyv(area, c("Lon", "Lat"))
+
+  message(unit)
+  
+  if (unit!="m^2") {
+    if (ud.is.parseable(unit)) {
+      if (ud.are.convertible("m^2", unit)) {
+        area$area = ud.convert(area$area, "m^2", unit)
+      } else {
+        warning(paste("m^2 not convertible to '", unit, "'. Using m^2 as default.", sep=""))
+      }
+    } else {
+      warning(paste("Unit '", unit, "' not parseable. Using m^2 as default.", sep=""))
+    }
+  }
+
+  data <- input@data
+  data <- area[data]
+  input@data <- data
+  return(input)
+}
