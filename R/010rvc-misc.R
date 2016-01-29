@@ -269,7 +269,6 @@ fileRowsCount <- function(file){
 
 # function awkFread : first awk, then fread. Argument : colNums = selection of columns. 
 awkFread<-function(file, colNums, ...){
-  require(data.table)
   if(is.vector(colNums)){
     tmpPath<-tempfile(pattern='tmp',fileext='.txt')
     colGen<-paste0("$",colNums,"\",\"", collapse=",")

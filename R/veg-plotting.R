@@ -28,9 +28,7 @@
 ################################################## PLOT LPJ MAPS #########################################################################
 ##########################################################################################################################################
 ### This is a heavy lifting function for plotting LPJ variables flexibly but with some degree of automation
-### It also acts as wrapper for non-standard plots 
-
-
+### It also acts as wrapper for non-standard plots, or at least it should soon.
 
 
 plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegObj 
