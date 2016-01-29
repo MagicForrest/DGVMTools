@@ -119,7 +119,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   return(x)
 }
 
-addArea <- function(input, unit="m^2", ellipse=FALSE) {
+addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=FALSE) {
   if (is.na(unit))
     unit="m^2"
 
@@ -127,27 +127,31 @@ addArea <- function(input, unit="m^2", ellipse=FALSE) {
     warning(paste("'ellipse=", ellipse,"' is not boolean. Using FALSE instead.", sep=""))
     ellipse=FALSE
   }
-  
+
   lon <- extract.seq(input@data$Lon)
   lat <- extract.seq(input@data$Lat)
 
   area <- as.data.table(gridarea2d(lon, lat, ellipse=ellipse))
   setkeyv(area, c("Lon", "Lat"))
-  
+
   if (unit!="m^2") {
     if (ud.is.parseable(unit)) {
       if (ud.are.convertible("m^2", unit)) {
         area$area = ud.convert(area$area, "m^2", unit)
       } else {
         warning(paste("m^2 not convertible to '", unit, "'. Using m^2 instead.", sep=""))
+        unit="m^2"
       }
     } else {
       warning(paste("Unit '", unit, "' not parseable. Using m^2 instead.", sep=""))
+      unit="m^2"
     }
   }
 
   data <- input@data
   data <- area[data]
   input@data <- data
+  if (verbose)
+    message(paste("Added column 'area' in unit '", unit, "'.", sep=""))
   return(input)
 }
