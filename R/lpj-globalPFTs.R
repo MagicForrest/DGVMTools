@@ -462,5 +462,5 @@ Bare <- new("PFT",
 
 global.PFTs[[Bare@name]] <- Bare
 
-PFT_MASTER_LIST <- global.PFTs
+
 

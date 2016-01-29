@@ -141,6 +141,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else which.layers <- names(data)
   }
   which.layers <- expandTargets(which.layers, data, PFT.set)
+  if(!is.null(special)){
+    if(tolower(special) == "fraction" | tolower(special) == "frac") which.layers <- paste(which.layers, "Fraction", sep = sep.char)
+  }
   data.toplot <- promoteToRaster(data, which.layers, tolerance)
   
   # PLOT LABELS (if no titles are provided use the layer names)
@@ -582,6 +585,7 @@ plotFireRT <- function(data, # can be a data.table, SpatialPixelsDataFrame or a 
 
 plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
                                which.dominant = "Dominant",
+                               quant = NULL, 
                                run = NULL, 
                                PFT.set = global.PFTs,
                                period = NULL, 
@@ -600,6 +604,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
     run <- data@run
     period <- data@time.span
     PFT.set <- run@pft.set
+    if(is.null(quant)) quant <- data@quant  
   }
   
   
@@ -644,12 +649,12 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   # FILENAME
   if(!is.null(filename)){ current.filename <- filename}
   else {
-    if(!is.null(period)){ current.filename = paste(which.dominant, ".TA.", period@start, "-", period@start, ".png", sep = "") }
-    else { current.filename = paste(which.dominant, ".TA.", "png", sep = "") }
+    if(!is.null(period)){ current.filename = paste(which.dominant, "by", quant@id, ".TA.", period@start, "-", period@start, ".png", sep = "") }
+    else { current.filename = paste(which.dominant, "by", quant@id, ".TA.", "png", sep = "") }
   }
   
   # PLOT MAIN TITLE
-  if(is.null(summary.title)) this.main.title <- makePlotTitle("Dominant PFT", summary.title, run, period)
+  if(is.null(summary.title)) this.main.title <- makePlotTitle(paste("Dominant PFT by", quant@id, sep = " ") , summary.title, run, period)
   else this.main.title <- summary.title
   
   

@@ -36,12 +36,16 @@ sep.char = ""
 ###################################################################################
 ##### EXTRACT THE PFTS PRESENT IN A RUN USING THE DATA.TABLE HEADER
 
-getPFTs <- function(input, PFT.data = PFT_MASTER_LIST){
+getPFTs <- function(input, PFT.data){
   
-  if(class(input)[1] == "VegVar") suppressWarnings(input <- input@data)
+  input.class <- class(input)[1]
+  
+  if(input.class == "VegObj") suppressWarnings(input.names <- names(input@data))
+  else if(input.class == "data.table" | input.class == "RasterLayer" | input.class == "RasterBrick" | input.class == "RasterStack") input.names <- names(input)
+  
   
   PFTs.present <- list()
-  for(colname in names(input)){
+  for(colname in input.names){
     for(PFT in PFT.data){
       if(PFT@name == colname) {
         PFTs.present <- append(PFTs.present, PFT)
@@ -64,15 +68,19 @@ expandTargets <- function(targets, data, PFT.data){
   
   # get PFTs
   all.PFTs <- getPFTs(data, PFT.data)
-    
+
   # expand "all"
   if("all" %in% tolower(targets)) targets <- c("pfts", "lifeforms", "leafforms", "zones", "phenologies")
   
   # expands "pfts"
-  if("pft" %in% targets || "pfts" %in% targets) {
-    for(PFT in all.PFTs) {targets <- append(targets, PFT@name)}
-    if("pft" %in% targets) targets <- targets[-which(targets == "pft")]
-    if("pfts" %in% targets) targets <- targets[-which(targets == "pfts")]
+  
+  if("pft" %in% tolower(targets) || "pfts" %in% tolower(targets)) {
+    for(PFT in all.PFTs) {
+      targets <- append(targets, PFT@name)
+    }
+    
+    if("pft" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "pft")]
+    if("pfts" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "pfts")]
   }
   
   

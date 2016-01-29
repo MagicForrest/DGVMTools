@@ -32,7 +32,7 @@ lpj.quantities <- list()
 
 
 # Global scope function to get an LPJ-GUESS quantity based on a string
-getVegQuantity <- function(quant.str, verbose = FALSE){
+lookupVegQuantity <- function(quant.str, verbose = FALSE){
   
   # check if the quantity we are storing here is already in the list of pre-defined quantities (LAI, Cmass etc)
   # if not use the 'generic' quantity
@@ -252,7 +252,17 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
                                              cuts = seq(-26,26,2)
 )
 
+quant.name <- "agb"
 
+lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
+                                             id = "agb",
+                                             short.string = "ABG",
+                                             full.string = "Above Ground Biomass",
+                                             type = "PFT",
+                                             units = "tonnes/hectare",
+                                             colours = cmass.palette,
+                                             cuts = seq(0,800,10)
+)
 ###############################
 ##### CARBON POOLS(cpool) #####
 ###############################

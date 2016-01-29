@@ -64,14 +64,14 @@ openLPJOutputFile <- function(run,
   }
   # Read the file and put it straight into a data.table
   dt <- as.data.table(read_fwf(file.string, widths, skip = 1))
- 
+  
   ### OLD WAY!  Slower, also depends on awk, this is definitely deprecated by the 
   ### Read using fread function from data.table but with the white spaces handled correctly using an awk command
   ### at time of writing fread does not handles multiple whitespaces as separators
   ### get the number of columns which is and read the file
   #ncols <- length(names(read.table(file.string, header=TRUE, dec=".",  colClasses="numeric", comment.char="", nrows = 1)))
   #dt <- awkFread(file.string, colNums = c(1:ncols), header=T)
- 
+  
   
   # Gzip the file again if that was requested or if the 
   if(gzip | was.gzipped){
@@ -139,7 +139,7 @@ cropLPJ <- function(input, extent){
   else if(input.class == "data.table"){
     return(input[Lat < this.extent@ymax & Lat > this.extent@ymin & Lon < this.extent@xmax & Lon > this.extent@xmin,])
   }
-
+  
 }
 
 
@@ -185,10 +185,10 @@ getTADT <- function(run, period, var, this.full = NULL, write = TRUE, forceReAve
 
 ################################# GET TIME-AVERAGED DATA #########################################
 
-getVegObj <- function(run, period, var, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE){
+getVegObj <- function(run, period, var, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, adgvm.scheme = 1){
   
   if(class(var) == "character") {
-    quant <- getVegQuantity(var)
+    quant <- lookupVegQuantity(var)
     var.string <- var
   }
   else {
@@ -199,29 +199,44 @@ getVegObj <- function(run, period, var, this.full = NULL, write = TRUE, forceReA
   # make file name
   TA.filename <- paste(run@run.dir, "/", var.string, ".TA.", period@start, "-", period@end, ".Rtable", sep ="")
   
-  # if file is present and we are not forcing re-averaging, read in the pre-averaged file
-  if(file.exists(paste(TA.filename)) & !forceReAveraging){
-    if(verbose) {message(paste("File",  TA.filename, "found in",  run@run.dir, "so using that.",  sep = " "))}
-    this.TA.dt <- fread(TA.filename, header = TRUE, stringsAsFactors=FALSE)
-  } 
   
-  # otherwise, open the full .out file read it as a data table, time average it and save to disk
-  else {
-    if (is.null(this.full)) {
-      if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
-      this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
-      this.full <<- this.full
-    }
-    else{
-      if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that.", sep = ""))
+  if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") {
+    
+    # if file is present and we are not forcing re-averaging, read in the pre-averaged file
+    if(file.exists(paste(TA.filename)) & !forceReAveraging){
+      if(verbose) {message(paste("File",  TA.filename, "found in",  run@run.dir, "so using that.",  sep = " "))}
+      this.TA.dt <- fread(TA.filename, header = TRUE, stringsAsFactors=FALSE)
+    } 
+    
+    # otherwise, open the full .out file read it as a data table, time average it and save to disk
+    else {
+      if (is.null(this.full)) {
+        if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
+        this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
+        this.full <<- this.full
+      }
+      else{
+        if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that.", sep = ""))
+      }
+      
+      # do temporal averaging
+      this.TA.dt <- doTimeAverage.cmpd(this.full, period, verbose)
+      if(write) {
+        if(verbose) {message("Saving as a table...")}
+        write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
+      }
     }
     
-    # do temporal averaging
-    this.TA.dt <- doTimeAverage.cmpd(this.full, period, verbose)
-    if(write) {
-      if(verbose) {message("Saving as a table...")}
-      write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
-    }
+  }
+  else if(run@model == "aDGVM") {
+    
+    if(adgvm.scheme == 1) this.dt <- data.table(getVegQuantity_aDGVM_Scheme1(run, period, quant))
+    if(adgvm.scheme == 2) this.dt <- data.table(getVegQuantity_aDGVM_Scheme2(run, period, quant))
+   
+    print(this.dt)
+    
+    this.TA.dt <- doTimeAverage.cmpd(this.dt, period, verbose)
+ 
   }
   
   setkey(this.TA.dt, Lon, Lat)
@@ -232,7 +247,7 @@ getVegObj <- function(run, period, var, this.full = NULL, write = TRUE, forceReA
                     time.span = period,
                     quant = quant,
                     run = run
-                    )
+  )
   
   return(this.VegObj)
   
@@ -243,7 +258,7 @@ getVegObj <- function(run, period, var, this.full = NULL, write = TRUE, forceReA
 
 getSADT <- function(run, var, spatial.extent = NULL, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE){
   
-    
+  
   # look for the correct time averaged files and if there read it in
   if(is.null(spatial.extent)){
     SA.filename <- paste(run@run.dir, "/", var, ".SA.Rtable", sep ="")
@@ -289,7 +304,7 @@ getSADT <- function(run, var, spatial.extent = NULL, this.full = NULL, write = T
 
 
 makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
-    
+  
   # sort the layers
   if(is.null(layers) | layers[1] == "all") {layers = names(data)}
   
@@ -317,7 +332,7 @@ makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.to
 
 
 promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
-   
+  
   ###  Get class of the objetc we are dealing with
   this.class = class(data)[1]
   
@@ -336,7 +351,7 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   ### If data.table or VegObj (which contains a data.table) 
   # could make this a little bit more efficient maybe...
   else if(this.class == "data.table" | this.class == "VegObj"){
-     
+    
     if(this.class == "data.table") data.spdf <- makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
     if(this.class == "VegObj") data.spdf <- makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
     
@@ -546,7 +561,7 @@ writeNetCDF <- function(raster.in, var.name, var.units, time.resolution = "annua
   
   # convert raster to an array
   array.out <- drop(as.array(raster.in))
- 
+  
   # For time series
   if(length(dim(array.out)) == 3) {
     
@@ -577,7 +592,7 @@ writeNetCDF <- function(raster.in, var.name, var.units, time.resolution = "annua
     array.out <- aperm(array.out, c(2,1))  
     var.out <- ncvar_def(var.name, var.units, list(lon.dim, lat.dim), longname = long.name, missing.value)  # standard
     
-      
+    
   }
   
   
@@ -586,7 +601,7 @@ writeNetCDF <- function(raster.in, var.name, var.units, time.resolution = "annua
   outfile <- nc_create(filename, var.out, verbose=FALSE)
   ncvar_put(outfile, var.name,  array.out, start=NA, count=NA, verbose=FALSE)
   print(paste("Saving variable", var.name, "to file",  filename, sep =" " ), quote=FALSE)
-    
+  
   # ADD ATTRIBUTES
   ncatt_put(outfile, "Lon" , "units", "degrees_east")
   ncatt_put(outfile, "Lon" , "axis", "X")
