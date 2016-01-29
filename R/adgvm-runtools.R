@@ -259,10 +259,10 @@ convertMonthlyScheme1 <- function( runid, fire, directory )
 
 # ----------------------------------------------------
 
-convertYearlyScheme1(  44, 0, "convert_to_LPJ_format" )
-convertYearlyScheme2(  44, 0, "convert_to_LPJ_format" )
+#convertYearlyScheme1(  44, 0, "convert_to_LPJ_format" )
+#convertYearlyScheme2(  44, 0, "convert_to_LPJ_format" )
 
-convertMonthlyScheme1( 44, 0, "convert_to_LPJ_format" )
+#convertMonthlyScheme1( 44, 0, "convert_to_LPJ_format" )
 
 
 
