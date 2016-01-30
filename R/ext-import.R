@@ -1,6 +1,6 @@
 import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="bilinear", to=raster(nrows=360, ncols=720, xmn=-180, xmx=180, ymn=-90, ymx=90, crs=CRS("+proj=longlat +ellps=WGS84")), mem.only=FALSE) {
 ## !!! execution on large memory machine recommended !!!
-  require(raster)
+
 
   ## requires rgdal or ncdf4
   ##
