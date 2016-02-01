@@ -53,5 +53,10 @@ gridlist.dir <- file.path(auxiliary.data.dir, "Gridlists/")
 #gfed4.annual <-  file.path(benchmarking.data.dir, "GFED4/GFED4.0_HD_Annual_BA.nc")
 #saatchi2011.original.data.path <- ("/senckenberg.de/DATEN_PBE/PB-E/PBE-ALLG/Datasets/Biomass/2011_Saatchi/www-radar.jpl.nasa.gov/projects/carbon/datasets")
 
-
-
+is.VegObj <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "VegObj" && attr(class.def, "package")=="RVCTools")
+      return(TRUE)
+  return(FALSE)
+}
