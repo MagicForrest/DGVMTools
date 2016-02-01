@@ -18,9 +18,9 @@
                              strip.background  = element_rect(fill=NA)))
 
 plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
-  ## check if a VegObj or a list of VegObj is given as input
+  ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
-  if (is.VegObj(input)) {
+  if (is.VegSpatial(input)) {
     if (is.na(column) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
     if (all(colnames(input@data) != column))
@@ -31,8 +31,8 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
     setnames(d, column, "value")
   } else if (is.list(input)) {
     for (n in names(input)) {
-      if (!is.VegObj(input[[n]]))
-        stop("'input' must either be a RCVTools::VegObj or a list of them!")
+      if (!is.VegSpatial(input[[n]]))
+        stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
       if (n==names(input)[1]) {
         london.centre <- input[[n]]@london.centre
         map.overlay <- input[[n]]@map.overlay
@@ -48,7 +48,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
     setnames(d, column, "value")
     d <- d[, sens:=factor(sens, names(input))]
   } else {
-    stop("'input' must either be a RCVTools::VegObj or a list of them!")
+    stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
   }
 
   ## if colors is a valid named vector or a data.frame with columns 'color' and 'name'

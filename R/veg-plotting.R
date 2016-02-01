@@ -31,8 +31,9 @@
 ### It also acts as wrapper for non-standard plots, or at least it should soon.
 
 
-plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegObj 
+plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegSpatial 
                         which.layers = NULL,
+                        expand.targets = TRUE,
                         quant = NULL, 
                         period = NULL, 
                         doSummary = TRUE, 
@@ -68,7 +69,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   ################# 
   
   # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
-  if(class(data) == "VegObj"){
+  if(class(data) == "VegSpatial"){
     run <- data@run
     period <- data@time.span
     PFT.set <- run@pft.set
@@ -137,12 +138,14 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   # parse layer names and promote to raster for plotting
   if(is.null(which.layers)) {
-    if(class(data) == "VegObj") which.layers <- names(data@data)
+    if(class(data) == "VegSpatial") which.layers <- names(data@data)
     else which.layers <- names(data)
   }
-  which.layers <- expandTargets(which.layers, data, PFT.set)
-  if(!is.null(special)){
-    if(tolower(special) == "fraction" | tolower(special) == "frac") which.layers <- paste(which.layers, "Fraction", sep = sep.char)
+  if(expand.targets) {
+    which.layers <- expandTargets(which.layers, data, PFT.set)
+    if(!is.null(special)){
+      if(tolower(special) == "fraction" | tolower(special) == "frac") which.layers <- paste(which.layers, "Fraction", sep = sep.char)
+   }
   }
   data.toplot <- promoteToRaster(data, which.layers, tolerance)
   
@@ -339,7 +342,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   ##### Here take parameters from arguments or from supplied VegRun object
   
   # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
-  if(class(data) == "VegObj"){
+  if(class(data) == "VegSpatial"){
     run <- data@run
     period <- data@time.span
   }
@@ -600,7 +603,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   
   
   # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
-  if(class(data) == "VegObj"){
+  if(class(data) == "VegSpatial"){
     run <- data@run
     period <- data@time.span
     PFT.set <- run@pft.set
@@ -627,7 +630,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   DomPFTs <- vector()
   if(length(which.dominant) == 1 ) {
     class.input.data <- class(data)
-    if(class.input.data == "VegObj") {
+    if(class.input.data == "VegSpatial") {
       DomPFTs <- levels(data.toplot@data[,which.dominant])
     }
   }

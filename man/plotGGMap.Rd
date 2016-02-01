@@ -8,7 +8,7 @@
 plotGGMap(input, column=NA, colors=NA, sym.col=FALSE, wrap=1)
 }
 \arguments{
-  \item{input}{A VegObj or a list of Vegobj from different sensitivity analyses.}
+  \item{input}{A VegSpatial or a list of VegSpatial from different sensitivity analyses.}
   \item{column}{Name of the column of the data slot of input, which
     should be plotted. Default: 'value'.}
   \item{colors}{A (named) vector of colors or a data.frame with the
@@ -16,7 +16,7 @@ plotGGMap(input, column=NA, colors=NA, sym.col=FALSE, wrap=1)
   \item{sym.col}{boolean, if the colors should be distributed
     symetrically around 0.}
   \item{wrap}{Number of facet_wrap columns. Only valid when a list of
-    VegObj was given as input. Otherwise it is ignored.}
+    VegSpatial was given as input. Otherwise it is ignored.}
 }
 \value{
   A ggplot object, which can either be printed directly or further

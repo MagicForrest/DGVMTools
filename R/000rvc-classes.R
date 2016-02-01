@@ -81,26 +81,41 @@ setClass("PFT",
 )
 
 
-##### VegRun - class to hold the metadata for an LPJ-GUESS run 
+##### VegRunInfo - class to hold the metadata for an LPJ-GUESS run 
 
 
 
 checkVegRun <- function(object){
-  
-  support.veg.models <- c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")
-    
+        
   errors <- character()
+  
+  # Check model types is supported
+  support.veg.models <- c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")
+  
   if (!(object@model  %in% support.veg.models)) {
     msg <- paste("Unsupported model type", object@model, sep = " ")
     errors <- c(errors, msg)
   }
-    
+  
+  # Check run.dir exists
+  if (!file_test("-d", object@run.dir)) {
+    msg <- paste("Run directory not found:", object@run.dir, sep = " ")
+    errors <- c(errors, msg)
+  }
+  
+  # Check id is sensible 
+  if (!length(object@id) > 0 | object@id == "") {
+    msg <- paste("Not a sensible run id:", object@id, sep = " ")
+    errors <- c(errors, msg)
+  }
+  
+  # Other things are set to sensible/empty defaults in defineVegRun()
+  
   if (length(errors) == 0) TRUE else errors
   
 }
 
-
-setClass("VegRun", 
+setClass("VegRunInfo", 
          slots = c(id = "character",
                    model = "character",
                    pft.set = "list",
@@ -115,29 +130,25 @@ setClass("VegRun",
                    fill.col = "character", # not commonly needed, only for more complex run comparisons
                    line.col = "character", # # not commonly needed, only for more complex run comparisons
                    line.width = "numeric", # not commonly needed, only for more complex run comparisons
-                   line.style = "numeric", # not commonly needed, only for more complex run comparisons
                    line.type = "numeric", # not commonly needed, only for more complex run comparisons
-                   correct.for.landuse = "logical",
-                   vars = "list" # not currently used
-         ),
-         prototype = c(model = "LPJ-GUESS",
-                       pft.set = NULL,
-                       description = "?",
-                       run.dir = "r",                              
-                       driving.data = "?",
-                       map.overlay = "lowres",
-                       lonlat.offset = c(0.0, 0.0),
-                       year.offset = 0,
-                       tolerance = 0.0000001,
-                       london.centre = TRUE,
-                       fill.col = "transparent",
-                       line.col = "black",
-                       line.width = 1,
-                       line.style = 1,
-                       correct.for.landuse = TRUE,
-                       vars = list()
+                   correct.for.landuse = "logical"
          ),
          validity = checkVegRun
+         
+)
+
+
+
+setClass("VegRun", 
+         slots = c(spatial = "list",
+                   timeseries = "list",
+                   full = "list"
+         ),
+         prototype = c(spatial = list(),
+                      timeseries = list(),
+                      full = list()
+         ),
+         contains = "VegRunInfo"
          
 )
 
@@ -166,17 +177,25 @@ setClass("VegQuant",
 
 
 
-##### VegQuant - class to hold the data for an LPJ quantity
-setClass("VegObj", 
+setClass("VegSpatial", 
          slots = c(id = "character",
                    data = "data.table",
                    time.span = "TimeSpan",
                    quant = "VegQuant",
-                   run = "VegRun"
-          ),
-          contains = "VegRun"
-      
+                   run = "VegRunInfo"
+          )
 )
+
+setClass("VegTS", 
+         slots = c(id = "character",
+                   data = "data.table",
+                   extent = "SpatialExtent",
+                   quant = "VegQuant",
+                   run = "VegRunInfo"
+         )
+           
+)
+
 
 
 ############################################################################

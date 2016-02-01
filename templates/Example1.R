@@ -8,15 +8,15 @@ library(RVCTools)
 ##### STEP ONE: Define the settings, open the run and average over the period we want
 
 # Define a RUN to process
-run <- new("VegRun",
-           run.dir = "/data/forrest/GuessRuns/N-version/Standard",
-           pft.set = global.PFTs,
-           id = "ExampleRun1",
-           description= "An example LPJ-GUESS run",
-           driving.data = "CRU",
-           map.overlay = "lowres",
-           lonlat.offset = c(0.25,0.25),
-           year.offset = 1401
+run <- defineVegRun(run.dir = "/data/forrest/GuessRuns/N-version/Standard",
+             model = "LPJ-GUESS",
+             pft.set = global.PFTs,
+             id = "ExampleRun1",
+             description= "An example LPJ-GUESS run",
+             driving.data = "CRU",
+             map.overlay = "lowres",
+             lonlat.offset = c(0.25,0.25),
+             year.offset = 1401
 )
 
 # Define the VARIABLE to look at
@@ -26,7 +26,7 @@ variable <- "lai"
 period = new("TimeSpan", name = "Reference", start = 1961, end = 1990)
 
 # Open the lai.out file, and average over the reference period
-lai.reference.period <- getVegObj(run, period, variable, forceReAveraging = FALSE)
+lai.reference.period <- getVegSpatial(run, period, variable, forceReAveraging = FALSE)
 
 
 ##### STEP TWO: Simple summary plots
@@ -69,7 +69,7 @@ lai.reference.period <- addVegFractions(lai.reference.period, targets = "lifefor
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            which = c("TreeFraction", "GrassFraction"),
+            which = c("lifeforms"),
             special.string = "Lifeform",
             special = "fraction")
 
@@ -80,6 +80,7 @@ lai.reference.period <- addVegFractions(lai.reference.period, targets = c("TeBS"
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
             which = c("TeBSFractionofTree"),
+            expand.targets = FALSE,
             special = "fraction")
 
 

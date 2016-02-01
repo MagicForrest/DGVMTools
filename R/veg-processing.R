@@ -40,7 +40,7 @@ getPFTs <- function(input, PFT.data){
   
   input.class <- class(input)[1]
   
-  if(input.class == "VegObj") suppressWarnings(input.names <- names(input@data))
+  if(input.class == "VegSpatial") suppressWarnings(input.names <- names(input@data))
   else if(input.class == "data.table" | input.class == "RasterLayer" | input.class == "RasterBrick" | input.class == "RasterStack") input.names <- names(input)
   
   
@@ -168,7 +168,7 @@ combineShadeTolerance <- function(input){
    
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
-  PFT.data <- input@pft.set
+  PFT.data <- input@run@pft.set
   
   for(colname in names(dt)){
     
@@ -276,7 +276,7 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
   # If GDD5 required for classification
     if(scheme@needGDD5) {
     # get gdd5
-    gdd5 <- getVegObj(input@run, input@time.span, "gdd5", forceReAveraging = FALSE)
+    gdd5 <- getVegSpatial(input@run, input@time.span, "gdd5", forceReAveraging = FALSE)
     dt <- input@data
     dt.gdd5 <- gdd5@data
     dt <- dt[dt.gdd5]

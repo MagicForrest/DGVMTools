@@ -181,11 +181,37 @@ getTADT <- function(run, period, var, this.full = NULL, write = TRUE, forceReAve
   
 }
 
+defineVegRun <- function(...){
+  
+  info <- new("VegRunInfo", ...)
+  
+ if(length(info@pft.set) == 0) info@pft.set <- NULL
+ if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
+ if(length(info@description) == 0)  info@description <- "No description specified"
+ if(length(info@map.overlay) == 0)  info@map.overlay <- "lowres"
+ if(length(info@lonlat.offset) == 0)  info@tlonlat.offset <- c(0,0)
+ if(length(info@year.offset) == 0)  info@year.offset <- 0
+ if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
+ if(length(info@driving.data) == 0)  info@driving.data <- "No forcing data set"
+ if(length(info@london.centre) == 0)  info@london.centre <- TRUE
+ if(length(info@fill.col) == 0)  info@fill.col <- "transparent"
+ if(length(info@line.col) == 0)  info@line.col <- "green"
+ if(length(info@line.width) == 0)  info@line.width <- 1
+ if(length(info@line.type) == 0)  info@line.type <- 1
+ if(length(info@correct.for.landuse) == 0)  info@correct.for.landuse <- TRUE
+ 
+  
+  return(new("VegRun",
+             info))
+    
+  
+}
+
 
 
 ################################# GET TIME-AVERAGED DATA #########################################
 
-getVegObj <- function(run, period, var, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, adgvm.scheme = 1){
+getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, adgvm.scheme = 1){
   
   if(class(var) == "character") {
     quant <- lookupVegQuantity(var)
@@ -241,15 +267,13 @@ getVegObj <- function(run, period, var, this.full = NULL, write = TRUE, forceReA
   
   setkey(this.TA.dt, Lon, Lat)
   
-  this.VegObj = new("VegObj",
-                    id = "dummy",
-                    data = this.TA.dt,
-                    time.span = period,
-                    quant = quant,
-                    run = run
-  )
   
-  return(this.VegObj)
+  return(new("VegSpatial",
+             id = "dummy",
+             data = this.TA.dt,
+             time.span = period,
+             quant = quant,
+             run = as(run, "VegRunInfo")))
   
 }
 
@@ -337,8 +361,8 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   this.class = class(data)[1]
   
   ###  Define the layers we are pulling out
-  # for VegObj - note could define a methods "names" do cover this exception
-  if(this.class == "VegObj" & (is.null(layers) || layers == "all")) {layers <- names(data@data)} 
+  # for VegSpatial - note could define a methods "names" do cover this exception
+  if(this.class == "VegSpatial" & (is.null(layers) || layers == "all")) {layers <- names(data@data)} 
   # for data.table or rasters
   else if(is.null(layers) || layers == "all") {layers = names(data)}
   
@@ -348,12 +372,12 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
     print("If error check here: promoteToRaster in lpj-runtools.R")
     data.raster <- raster(data, layers)
   }
-  ### If data.table or VegObj (which contains a data.table) 
+  ### If data.table or VegSpatial (which contains a data.table) 
   # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table" | this.class == "VegObj"){
+  else if(this.class == "data.table" | this.class == "VegSpatial"){
     
     if(this.class == "data.table") data.spdf <- makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
-    if(this.class == "VegObj") data.spdf <- makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
+    if(this.class == "VegSpatial") data.spdf <- makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
     
     if(length(layers) == 1){
       data.raster <- raster(data.spdf)

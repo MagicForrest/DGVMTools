@@ -35,7 +35,7 @@ period = new("TimeSpan", name = "Reference", start = 81, end = 100)
 variable <- "lai"
 
 # Open the lai.out file, and average over the reference period
-lai.reference.period <- getVegObj(run, period, variable, adgvm.scheme = 1)
+lai.reference.period <- getVegSpatial(run, period, variable, adgvm.scheme = 1)
 
 
 ### Simple summary plots of each "PFT"
@@ -74,7 +74,7 @@ plotDominantPFTMap(lai.reference.period)
 variable <- "agb"
 
 # Open the lai.out file, and average over the reference period
-lai.reference.period <- getVegObj(run, period, variable, adgvm.scheme = 2)
+lai.reference.period <- getVegSpatial(run, period, variable, adgvm.scheme = 2)
 
 
 ### Simple summary plots
