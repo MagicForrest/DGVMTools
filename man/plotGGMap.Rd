@@ -5,7 +5,7 @@
   Plots a map (or a set maps) using the geom_raster from the ggplot2 library.
 }
 \usage{
-plotGGMmap(input, column=NA, colors=NA, sym.col=FALSE, wrap=1)
+plotGGMap(input, column=NA, colors=NA, sym.col=FALSE, wrap=1)
 }
 \arguments{
   \item{input}{A VegObj or a list of Vegobj from different sensitivity analyses.}

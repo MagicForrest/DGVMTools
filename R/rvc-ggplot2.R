@@ -1,4 +1,4 @@
-
+## ggplot2 themes for nicer plots
 .lpj.map_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                              panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                              panel.background  = element_rect(fill="#cae1ff"),
@@ -17,7 +17,7 @@
                              plot.title        = element_text(size=22),
                              strip.background  = element_rect(fill=NA)))
 
-plotGGMmap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
+plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
   ## check if a VegObj or a list of VegObj is given as input
   ## check data column names for given column name or column name 'value'
   if (is.VegObj(input)) {
