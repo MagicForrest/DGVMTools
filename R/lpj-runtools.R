@@ -182,13 +182,15 @@ getTADT <- function(run, period, var, this.full = NULL, write = TRUE, forceReAve
 }
 
 defineVegRun <- function(...){
+ 
+  # make a VegRunInfo object from the supplied meta data
+ info <- new("VegRunInfo", ...)
   
-  info <- new("VegRunInfo", ...)
-  
+ # if things aren't specified set them here because it seems like the 'prototype' field isn't working
  if(length(info@pft.set) == 0) info@pft.set <- NULL
  if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
  if(length(info@description) == 0)  info@description <- "No description specified"
- if(length(info@map.overlay) == 0)  info@map.overlay <- "lowres"
+ if(length(info@map.overlay) == 0)  info@map.overlay <- NULL
  if(length(info@lonlat.offset) == 0)  info@tlonlat.offset <- c(0,0)
  if(length(info@year.offset) == 0)  info@year.offset <- 0
  if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
@@ -200,8 +202,14 @@ defineVegRun <- function(...){
  if(length(info@line.type) == 0)  info@line.type <- 1
  if(length(info@correct.for.landuse) == 0)  info@correct.for.landuse <- TRUE
  
+ # lookup map over from maps and mapdata package
+ if(!is.null(info@map.overlay)) {
+   class(info@map.overlay)
+   info@map.overlay <- makeOverlay(info@map.overlay)
+ } 
   
-  return(new("VegRun",
+ # return a VegRun object with empty data fieldsbut meta data filled  
+ return(new("VegRun",
              info))
     
   

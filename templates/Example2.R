@@ -26,51 +26,43 @@
 #############  MF 2016-01-26 : THIS NEEDS A LOT OF WORK TO REGAIN FUNCTIONALITY  ###############################
 ################################################################################################################
 
+################################################################################################################
+####### PREAMBLE: Load the packages, start the timer and define the number of threads to use
+#######
 
 
-# use the RVCTools v2.9
-source("~/Tools/RVCTools/v2.9/rvc-tools.R")
+# Load RVCTools package (clear the environment and unload the package first in case we are actively developing the package)
+rm(list = ls())
+if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
+library(RVCTools)
 
-registerDoParallel(2)
+# start the timer
+t1 <- Sys.time()
+
+# number of threads - leave at one for single threaded
+registerDoParallel(1)
 
 
-###################################################################################
-############################# SETTINGS #######################################
-###################################################################################
+################################################################################################################
+####### SETTINGS: Here define the 'analysis' - meaning which variables and datsets to plot, 
+#######           the directory and filenames, etc... 
+#######
 
-### Label for analysis (set to NULL or "" [empty string] to use today's date)
-analysis.label <- "Example2"
 
-### Time spans to average
-periods = list(PNV = new("TimeSpan", name = "", start = 1961, end = 1990)) 
+### Analysis plot label and directory for analysis
+analysis.label <- "Example2"                    # set to NULL or "" [empty string] to use today's date
+plot.dir <- "/home/forrest/Temp/Example2"       # here the run comaprison will go
 
-### Spatial Extents - to average over for the time series 
-extents = list(Global = new("SpatialExtent", id = "Global", name = "Global", extent = extent(-180, 180, -90, 90)),
-               Africa = new("SpatialExtent", id = "Africa", name = "Africa", extent =  extent(-20, 55, -30, 36)),
-               Europe = new("SpatialExtent", id = "Europe", name = "Europe", extent =  extent(-30, 40, 36, 70)),
-               Asia = new("SpatialExtent", id = "Asia", name = "Asia", extent =  extent(40, 180, -10, 80)),
-               NorthAmerica = new("SpatialExtent", id = "NorthAmerica", name = "North America", extent =  extent(-170, -70, 25, 75)),
-               SouthAmerica = new("SpatialExtent", id = "SouthAmerica", name = "South America", extent = extent(-180, -50, -60, 25)),
-               Australia = new("SpatialExtent", id = "Australia", name = "Australia", extent = extent(110, 160, -45 ,10)),
-               Mediterranean = new("SpatialExtent", id = "Med", name = "Mediterranean", extent = extent(10, 40, 28 ,48)),
-               CentralAsia = new("SpatialExtent", id = "CentralAsia", name = "Central Asia", extent = extent(25, 140, 40, 55)),
-               SouthEastAsia = new("SpatialExtent", id = "SouthEastAsia", name = "South East Asia", extent = extent(90, 140, 10, 40)),
-               CentralNorthAmerica = new("SpatialExtent", id = "CentralNorthAmerica", name = "Central North America", extent = extent(-110, -85, 30, 50)),
-               Boreal = new("SpatialExtent", id = "Boreal", name = "Boreal", extent = extent(-180, 180, 60, 90)),
-               NHAfrica = new("SpatialExtent", id = "NHAfrica", name = "Northern Hemisphere Africa", extent = extent(-20, 50, 0, 25)),
-               SHAfrica = new("SpatialExtent", id = "SHAfrica", name = "Southern Hemisphere Africa", extent = extent(5, 50, -30, 0))
-               
-)
+### Time spans and spatials extents over which to average t
+periods <- list(PNV = new("TimeSpan", name = "Reference", start = 1961, end = 1990)) 
+extents <- standard.continental.extents
 
-### Directory to save combi plots
-plot.dir <- "/home/forrest/Temp/Example2"
 
 ### Universal resolution for all runs in this analysis (set to NULL in the unlikely event that not all runs use the same resolution) 
 universal.resolution <- "HD"
 
 ### Biome classification scheme
 biome.scheme <- Smith2014.scheme
-
 
 ### Force re-averaging - in case the raw data have been updated, or we required new a new time period
 forceReAveraging <- FALSE
@@ -79,19 +71,14 @@ forceReAveraging <- FALSE
 ### (can also be turned on for individual variables use the detailed.var.list below)
 doIndividual <- FALSE
 
-### Variables to analyse
-### set to all in the run directory using 
-var.list <- list("mwcont_upper")
-### or specify as an R list using the following 
-#var.list <- list("mwcont_upper")                                                                                                                         
+### Variables to analyse (use "all" to plot all in the run directory)
+var.list <- list("lai", "mwcont_upper")
 
 ### Which variable to plot in more detail (make individual plots, lifeform plots for PFTs, seasonal plots for monthly variable etc)
-### Syntax as above
-#detailed.var.list <- "all"
-detailed.var.list <- list("mwcont_upper")
+detailed.var.list <- list("lai", "mwcont_upper")
 
-### Which variable to plot fractions
-fraction.var.list <- list()
+### Which PFT variable to plot fractions
+pft.fraction.var.list <- list()
 
 ### Spatial analyses
 doGlobalBiomes <- TRUE
@@ -126,61 +113,50 @@ verbose <- TRUE
 
 
 
-###################################################################################
-############################# RUNS TO PROCESS #####################################
-###################################################################################
+################################################################################################################
+####### RUNS TO PROCESS: Here define the list of runs to process and analyse
+#######
+#######
+
 
 ### create a list of VegRun objects that we want to analyse
 vegrun.list <- list()
 
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- new("VegRun",
-                                                run.dir = "/data/forrest/GuessRuns/SPITFIRE/v0.7.0/CRUNCEP_OFM_PB-0.2_CB-0.05_HIP-1.0_NoShrubs_res.mult.5",
-                                                id = "LPJ-GUESS-SPITFIRE-Run1",
-                                                description= "LPJ-GUESS-SPITFIRE Example Run 1",
-                                                driving.data = "CRUNCEP",
-                                                map.overlay = "lowres",
-                                                london.centre = TRUE,
-                                                lonlat.offset = c(0.25,0.25),
-                                                correct.for.landuse = FALSE,
-                                                year.offset = 0,
-                                                line.col = "darkviolet",
-                                                line.width = 1,
-                                                line.type = 1
-                                                
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/data/forrest/GuessRuns/SPITFIRE/v0.7.0/CRUNCEP_OFM_PB-0.2_CB-0.05_HIP-1.0_NoShrubs_res.mult.5",
+                                                         id = "LPJ-GUESS-SPITFIRE-Run1",
+                                                         description= "LPJ-GUESS-SPITFIRE Example Run 1",
+                                                         pft.set = global.PFTs,
+                                                         model = "LPJ-GUESS-SPITFIRE",
+                                                         driving.data = "CRUNCEP",
+                                                         map.overlay = "lowres",
+                                                         london.centre = TRUE,
+                                                         lonlat.offset = c(0.25,0.25),
+                                                         correct.for.landuse = FALSE,
+                                                         year.offset = 0,
+                                                         line.col = "darkviolet",
+                                                         line.width = 1,
+                                                         line.type = 1
 )
 
-
-
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- new("VegRun",
-                                                run.dir = "/data/forrest/GuessRuns/SPITFIRE/v0.7.0/CRUNCEP_NFM_PB-1_CB-0_HIP-3.0_NoShrubs_res.mult.5",
-                                                id = "LPJ-GUESS-SPITFIRE-Run2",
-                                                description= "LPJ-GUESS-SPITFIRE Example Run 2",
-                                                driving.data = "CRUNCEP",
-                                                map.overlay = "lowres",
-                                                london.centre = TRUE,
-                                                lonlat.offset = c(0.25,0.25),
-                                                correct.for.landuse = FALSE,
-                                                year.offset = 0,
-                                                line.col = "darkgreen",
-                                                line.width = 1,
-                                                line.type = 1
-                                                
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/data/forrest/GuessRuns/SPITFIRE/v0.7.0/CRUNCEP_NFM_PB-1_CB-0_HIP-3.0_NoShrubs_res.mult.5",
+                                                         id = "LPJ-GUESS-SPITFIRE-Run2",
+                                                         description= "LPJ-GUESS-SPITFIRE Example Run 2",
+                                                         pft.set = global.PFTs,
+                                                         model = "LPJ-GUESS-SPITFIRE",
+                                                         driving.data = "CRUNCEP",
+                                                         map.overlay = "lowres",
+                                                         london.centre = TRUE,
+                                                         lonlat.offset = c(0.25,0.25),
+                                                         correct.for.landuse = FALSE,
+                                                         year.offset = 0,
+                                                         line.col = "darkgreen",
+                                                         line.width = 1,
+                                                         line.type = 1
 )
 
 
 ####################################################################################
-###################### AUTOMATIC PREAMBLE AND CHECKS ###############################
-####################################################################################
-
-
-# timing
-t1 <- Sys.time()
-
-# Before processing check all directories exist
-for(run in vegrun.list){
-  if(!file_test("-d", run@run.dir)) stop(paste("No directory:", run@run.dir, sep = " "))
-}
-message("All run directories present and correct.")
+###### PREPARATION: read datasets, set up temporary variables etc...
 
 # store the original working to return there at the end
 original.workdir <- getwd() 
@@ -189,6 +165,8 @@ original.workdir <- getwd()
 if(is.null(analysis.label) | analysis.label == ""){
   analysis.label <- Sys.Date()
 }
+
+stop("lalala")
 
 
 ##### MAKE SURE WE PROCESS THE VARIABLES NEEDED FOR SPECIFIC BENCHMARKS
@@ -227,7 +205,7 @@ if(doSaatchi2011 | doBaccini2012 | doAvitabile2015){
 if(doGFED4){
   
   GFED4.dataset <- getGFED4Annual(universal.resolution)
- 
+  
   GFED4.results <- list()
   if(!"mfirefrac" %in% var.list & var.list[1] != "all"){ var.list <- append(var.list, "mfirefrac") }
 }

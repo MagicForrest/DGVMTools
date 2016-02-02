@@ -92,7 +92,11 @@ checkVegRun <- function(object){
   # Check model types is supported
   support.veg.models <- c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")
   
-  if (!(object@model  %in% support.veg.models)) {
+  if (!length(object@model) > 0) {
+    msg <- "Error defining VegRun, you must define a model type!"
+    errors <- c(errors, msg)
+  }
+  else if (!(object@model  %in% support.veg.models)) {
     msg <- paste("Unsupported model type", object@model, sep = " ")
     errors <- c(errors, msg)
   }
@@ -122,7 +126,7 @@ setClass("VegRunInfo",
                    description = "character",
                    run.dir = "character",                              
                    driving.data = "character",
-                   map.overlay = "character",
+                   map.overlay = "ANY",
                    lonlat.offset = "numeric",
                    year.offset = "numeric",
                    tolerance = "numeric",

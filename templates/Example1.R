@@ -1,9 +1,13 @@
-# start the timer
-t1 <- Sys.time()
+##### PREAMBLE: Load the packages and start the timer
 
 # Load RVCTools package, unload the package first in case we are actively developing the package
+rm(list = ls())
 if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
 library(RVCTools)
+
+
+# start the timer
+t1 <- Sys.time()
 
 ##### STEP ONE: Define the settings, open the run and average over the period we want
 
@@ -14,7 +18,7 @@ run <- defineVegRun(run.dir = "/data/forrest/GuessRuns/N-version/Standard",
              id = "ExampleRun1",
              description= "An example LPJ-GUESS run",
              driving.data = "CRU",
-             map.overlay = "lowres",
+             map.overlay = "lowres", # adding even low resolution country outlines more than doubles run time and plot files sizes :-/
              lonlat.offset = c(0.25,0.25),
              year.offset = 1401
 )

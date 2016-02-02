@@ -56,7 +56,7 @@ tortonian.continents.splayout <- NULL
 turkey.splayout <- NULL
 
 
-makeOverlay <- function(coastlines, verbose = FALSE) {
+makeOverlayOld <- function(coastlines, verbose = FALSE) {
    
   if(is.null(coastlines) || coastlines == "") {
     if(verbose) message("Adding No Coastlines")
@@ -138,6 +138,36 @@ makeOverlay <- function(coastlines, verbose = FALSE) {
   
   
   return(NULL)
+  
+}
+
+
+
+# returns 
+makeOverlay <- function(which){
+  
+  if(which == "lowres") {
+    map.sp.lines <-  map2SpatialLines(map('world', plot = FALSE), proj4string = CRS(as.character(NA)))
+    return(list("sp.lines", map.sp.lines, lwd = 0.5))
+  }
+  if(which == "hires") {
+    map.sp.lines <-  map2SpatialLines(map('worldHires', plot = FALSE), proj4string = CRS(as.character(NA)))
+    return(list("sp.lines", map.sp.lines, lwd = 0.5))
+  }
+  if(which == "lowres-continents") {
+    map.sp.lines <-  map2SpatialLines(map('world', plot = FALSE, interior = FALSE), proj4string = CRS(as.character(NA)))
+    return(list("sp.lines", map.sp.lines, lwd = 0.5))
+  }
+  if(which == "hires-continents") {
+    map.sp.lines <-  map2SpatialLines(map('worldHires', plot = FALSE, interior = FALSE), proj4string = CRS(as.character(NA)))
+    return(list("sp.lines", map.sp.lines, lwd = 0.5))
+  }
+  else{
+    warning(paste("Overlay", which, "not recognised", sep = " "))
+    return(list())
+  }
+  
+  
   
 }
 

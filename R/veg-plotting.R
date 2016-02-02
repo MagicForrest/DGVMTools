@@ -165,6 +165,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
   }
   
+  # LAYOUT OBJECTS
+  if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
   
   # EXTENT
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
@@ -376,6 +378,9 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   
   # EXTENT
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
+    
+  # LAYOUT OBJECTS
+  if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
   
   # Add PNV data if requested read it in and compare rasters
   if(class(addData) == "logical") {
@@ -648,6 +653,8 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
     }
   }
   
+  # LAYOUT OBJECTS
+  if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}  
   
   # FILENAME
   if(!is.null(filename)){ current.filename <- filename}
