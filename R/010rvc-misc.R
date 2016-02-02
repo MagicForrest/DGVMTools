@@ -324,3 +324,25 @@ standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global"
                                      SHAfrica = new("SpatialExtent", id = "SHAfrica", name = "Southern Hemisphere Africa", extent = extent(5, 50, -30, 0))
                                      
 )
+
+OlsonNames <- function()
+{
+  if (.Platform$OS.type == "windows")
+    tzdir <- Sys.getenv("TZDIR", file.path(R.home("share"),
+                                           "zoneinfo"))
+  else {
+    tzdirs <- c(Sys.getenv("TZDIR"), file.path(R.home("share"),
+                                               "zoneinfo"), "/usr/share/zoneinfo", "/usr/share/lib/zoneinfo",
+                "/usr/lib/zoneinfo", "/usr/local/etc/zoneinfo", "/etc/zoneinfo",
+                "/usr/etc/zoneinfo")
+    tzdirs <- tzdirs[file.exists(tzdirs)]
+    if (!length(tzdirs)) {
+      warning("no Olson database found")
+      return(character())
+    }
+    else tzdir <- tzdirs[1]
+  }
+  x <- list.files(tzdir, recursive = TRUE)
+  grep("^[ABCDEFGHIJKLMNOPQRSTUVWXYZ]", x, value = TRUE)
+}
+

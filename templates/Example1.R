@@ -44,10 +44,6 @@ plotVegMaps(lai.reference.period,
 
 ##### STEP THREE: More advanced analysis and plots
 
-# Define the PFT set that was used with this run
-PFT.set <- global.PFTs
-
-
 ### TOTALS
 
 # Calculate the lifeform totals, the temperate total and the evergeen total

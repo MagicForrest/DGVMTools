@@ -165,7 +165,8 @@ setClass("VegQuant",
                    type = "character",
                    units = "character",
                    colours = "function",
-                   cuts = "numeric"
+                   cuts = "numeric",
+                   aggregate.method = "character"
          ),
          prototype = c(id = "UnknownID",
                        short.string = "UnknownID",
@@ -173,7 +174,8 @@ setClass("VegQuant",
                        type = "UnknownType",
                        units = "-",
                        colours = tim.colors,
-                       cuts = integer(0)
+                       cuts = integer(0),
+                       aggregate.method = "average"
          )
          
          

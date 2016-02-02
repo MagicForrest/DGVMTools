@@ -190,7 +190,7 @@ defineVegRun <- function(...){
  if(length(info@pft.set) == 0) info@pft.set <- NULL
  if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
  if(length(info@description) == 0)  info@description <- "No description specified"
- if(length(info@map.overlay) == 0)  info@map.overlay <- NULL
+ if(length(info@map.overlay) == 0 | info@map.overlay == "")  info@map.overlay <- NULL
  if(length(info@lonlat.offset) == 0)  info@tlonlat.offset <- c(0,0)
  if(length(info@year.offset) == 0)  info@year.offset <- 0
  if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001

@@ -23,8 +23,14 @@
 ###################################### 
 
 ################################################################################################################
-#############  MF 2016-01-26 : THIS NEEDS A LOT OF WORK TO REGAIN FUNCTIONALITY  ###############################
+#############  MF 2016-02-02 : MAJOR TODOS
+#############   1. Benchmarking.  Big question.  How self-contained to make the benchmarks?  Which (and how)
+#############      to include in the standard RVCTools distribution.
+#############   2. Time series.  Producing is simple enough, but need to take plotting code from Joerg.
+#############   3. Save VegSpatial objects, VegTS objects and full data.tables to the VegRun object?
 ################################################################################################################
+
+
 
 ################################################################################################################
 ####### PREAMBLE: Load the packages, start the timer and define the number of threads to use
@@ -43,20 +49,21 @@ t1 <- Sys.time()
 registerDoParallel(1)
 
 
+
+
 ################################################################################################################
 ####### SETTINGS: Here define the 'analysis' - meaning which variables and datsets to plot, 
 #######           the directory and filenames, etc... 
 #######
 
 
-### Analysis plot label and directory for analysis
+### Analysis plot label and directory for analysis plots
 analysis.label <- "Example2"                    # set to NULL or "" [empty string] to use today's date
 plot.dir <- "/home/forrest/Temp/Example2"       # here the run comaprison will go
 
 ### Time spans and spatials extents over which to average t
 periods <- list(PNV = new("TimeSpan", name = "Reference", start = 1961, end = 1990)) 
 extents <- standard.continental.extents
-
 
 ### Universal resolution for all runs in this analysis (set to NULL in the unlikely event that not all runs use the same resolution) 
 universal.resolution <- "HD"
@@ -72,22 +79,22 @@ forceReAveraging <- FALSE
 doIndividual <- FALSE
 
 ### Variables to analyse (use "all" to plot all in the run directory)
-var.list <- list("lai", "mwcont_upper")
+var.list <- c("mwcont_upper", "lai")
 
 ### Which variable to plot in more detail (make individual plots, lifeform plots for PFTs, seasonal plots for monthly variable etc)
-detailed.var.list <- list("lai", "mwcont_upper")
+detailed.var.list <- c("mwcont_upper", "lai")
 
 ### Which PFT variable to plot fractions
-pft.fraction.var.list <- list()
+pft.fraction.var.list <- c("lai")
 
 ### Spatial analyses
-doGlobalBiomes <- TRUE
+doGlobalBiomes <- FALSE
 doDominantPFT <- TRUE
 doSaatchi2011 <- FALSE
 doBaccini2012 <- FALSE
-doAvitabile2015 <- TRUE
-doMODISTreecover <-TRUE
-doGFED4 <- TRUE
+doAvitabile2015 <- FALSE
+doMODISTreecover <-FALSE
+doGFED4 <- FALSE
 doFineFuel <- FALSE
 
 ### Time series analyses
@@ -99,10 +106,10 @@ doGFED4SeasonalCycle <- FALSE
 doTemporalAveraging <- TRUE
 
 ### Do Spatial Averaging
-doSpatialAveraging <- TRUE
+doSpatialAveraging <- FALSE
 
 ### Do comparisons
-doComparisons <- TRUE
+doComparisons <- FALSE
 
 ### Plots to make for specific analysis
 doHistoPlots <- TRUE
@@ -113,13 +120,11 @@ verbose <- TRUE
 
 
 
+
 ################################################################################################################
 ####### RUNS TO PROCESS: Here define the list of runs to process and analyse
 #######
-#######
 
-
-### create a list of VegRun objects that we want to analyse
 vegrun.list <- list()
 
 vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/data/forrest/GuessRuns/SPITFIRE/v0.7.0/CRUNCEP_OFM_PB-0.2_CB-0.05_HIP-1.0_NoShrubs_res.mult.5",
@@ -128,7 +133,7 @@ vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/data/forres
                                                          pft.set = global.PFTs,
                                                          model = "LPJ-GUESS-SPITFIRE",
                                                          driving.data = "CRUNCEP",
-                                                         map.overlay = "lowres",
+                                                         map.overlay = "",
                                                          london.centre = TRUE,
                                                          lonlat.offset = c(0.25,0.25),
                                                          correct.for.landuse = FALSE,
@@ -144,7 +149,7 @@ vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/data/forres
                                                          pft.set = global.PFTs,
                                                          model = "LPJ-GUESS-SPITFIRE",
                                                          driving.data = "CRUNCEP",
-                                                         map.overlay = "lowres",
+                                                         map.overlay = "",
                                                          london.centre = TRUE,
                                                          lonlat.offset = c(0.25,0.25),
                                                          correct.for.landuse = FALSE,
@@ -155,8 +160,11 @@ vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/data/forres
 )
 
 
+
+
 ####################################################################################
 ###### PREPARATION: read datasets, set up temporary variables etc...
+######
 
 # store the original working to return there at the end
 original.workdir <- getwd() 
@@ -165,8 +173,6 @@ original.workdir <- getwd()
 if(is.null(analysis.label) | analysis.label == ""){
   analysis.label <- Sys.Date()
 }
-
-stop("lalala")
 
 
 ##### MAKE SURE WE PROCESS THE VARIABLES NEEDED FOR SPECIFIC BENCHMARKS
@@ -267,9 +273,6 @@ if(doGFED4SeasonalCycle){
 GFED.t2 <- Sys.time()
 print(GFED.t2-GFED.t1)
 
-# empty layout object
-layout.objs <- list(costlines = makeOverlay("lowres"))
-mp = 1E20
 
 
 
@@ -286,38 +289,40 @@ for(run in vegrun.list){
   setwd(run@run.dir)
   
   ### if required to process all files, get a list of all the .out files present
-  if(tolower(var.list) == "all"){var.list <- listAllOutputFiles(run@run.dir)}
+  if(length(var.list) > 0 && tolower(var.list) == "all"){var.list <- listAllOutputFiles(run@run.dir)}
   if(length(detailed.var.list) > 0 &&  tolower(detailed.var.list) == "all"){detail.var.list <- listAllOutputFiles(run@run.dir)}
   
   ###  FOR PARALLEL
-  #foreach(var.num = 1:length(var.list),
-  #        .verbose = TRUE) %dopar% {
+  foreach(var.num = 1:length(var.list),   .verbose = TRUE) %dopar% {
   
-  #         var = var.list[var.num]	 
-  
-  
-  
-  
+  var = var.list[var.num]	 
+    
   ### FOR SINGLE PROCESS
-  for(var in var.list){
+  #for(var in var.list){
     
     if(verbose) message(paste(" ------ Processing", var, "------", sep = " "))
     
+    # look-up quauntity, 
+    if(var == "mfirefrac" | run@model != "LPJ-GUESS-SPITFIRE") {var <- "firert"}
+    this.VegQuantity <- lookupVegQuantity(var)
     
     ### READ FULL DATA FILE IF REQUESTED ###
-    if(doTemporalAveraging | doSpatialAveraging){
-      
-      # this stores the full .out file but only if we need to read it we store it so we don't need to read it more than once
-      if(forceReAveraging) { 
-        if(forceReAveraging & verbose) message(paste("Reading raw data from ", var, ".out because forceReAveraging is set to TRUE", sep = ""))
-        if(!exists("this.full") & verbose) message(paste("Reading raw data from ", var, ".out", sep = ""))
-        this.full <- openLPJOutputFile(run, var, verbose = TRUE)
-      }
-      else {
-        this.full <- NULL
-      }
-      
-    }
+    
+    # MF: Disable for now, want this to happen more automagically
+    
+    #     if(doTemporalAveraging | doSpatialAveraging){
+    #       
+    #       # this stores the full .out file but only if we need to read it we store it so we don't need to read it more than once
+    #       if(forceReAveraging) { 
+    #         if(forceReAveraging & verbose) message(paste("Reading raw data from ", var, ".out because forceReAveraging is set to TRUE", sep = ""))
+    #         if(!exists("this.full") & verbose) message(paste("Reading raw data from ", var, ".out", sep = ""))
+    #         this.full <- openLPJOutputFile(run, var, verbose = TRUE)
+    #       }
+    #       else {
+    #         this.full <- NULL
+    #       }
+    #       
+    #     }
     
     ####################################################################################################
     ################### TEMPORAL AVERAGING AND SPATIAL ANALYSIS/PLOTTING ###############################
@@ -330,104 +335,48 @@ for(run in vegrun.list){
       
       for(period in periods){
         
-        
-        #### TIME AVERAGE AND SAVE #####
-        
-        # get the time averaged data.table, either by reading it from disk or by averaging the raw *.out file
-        if(var != "mfirefrac"){
-          this.TA.dt <- getTADT(run, period, var, this.full = this.full, write = TRUE, forceReAveraging = forceReAveraging, verbose = verbose)
-        }
-        else {
-          file.string = file.path(run@run.dir, paste(var, ".out", sep=""))
-          if(file.exists(file.string) | file.exists(paste(file.string, "gz", sep = "."))){ 
-            this.TA.dt <- getTADT(run, period, var, this.full = this.full, write = TRUE, forceReAveraging = forceReAveraging, verbose = verbose)
-          }
-          else {
-            this.TA.dt <- getTADT(run, period,  var = "firert", this.full = NULL, write = TRUE, forceReAveraging = forceReAveraging, verbose = verbose)
-            var = "firert"
-          }
-        }     
+        # open the output file and average it over the required period, resulting in a "VegSpatial" object
+        this.VegSpatial <- getVegSpatial(run, period, this.VegQuantity, forceReAveraging = forceReAveraging)
         
         
-        ##### PLOT TIME AVERAGED DATA #####
-        
-        # get the VegQuant corresponding to this variable to provide some metadata
-        this.Quant <- getVegQuantity(var)
-        
-        # plot the per PFT summary and individual PFT plots
-        plotLPJMaps(this.TA.dt, 
-                    run = run,
-                    quant = this.Quant, 
-                    period = period, 
-                    doSummary = TRUE, 
-                    doIndividual = doIndividual | var %in% detailed.var.list, 
-                    useLongnames = FALSE, 
-                    maxpixels = 100000)
-        
-        
+        # plot the per PFT summary and individual PFT plots if requested
+        plotVegMaps(this.VegSpatial, doIndividual = doIndividual | var %in% detailed.var.list)
         
         ### If detailed output requested  
         if(var %in% detailed.var.list){
           
-          if(this.Quant@type == "PFT"){
+          if(this.VegQuantity@type == "PFT"){
             
-            addLifeformTotals(this.TA.dt,global.PFTs)
+            # Calculate the lifeform totals, the temperate total and the evergeen total
+            this.VegSpatial <- addVegTotals(this.VegSpatial, target = c("Lifeforms", "Zones", "Phenologies", "Leafforms"))
             
             # plot the per lifeform summary and individual lifeform plots
-            plotLPJMaps(this.TA.dt,
-                        which.layers = c("Tree", "Grass", "Shrub", "Total"),
-                        run = run,
-                        quant = this.Quant, 
-                        period = period, 
-                        doSummary = TRUE, 
-                        doIndividual = TRUE,
-                        special.string = "Lifeform",
-                        useLongnames = FALSE, 
-                        maxpixels = 100000)
+            plotVegMaps(this.VegSpatial, which.layers = c("Lifeforms"), special.string = "Lifeforms")
+            plotVegMaps(this.VegSpatial, which.layers = c("Zones"),  special.string = "ClimateZones")
+            plotVegMaps(this.VegSpatial, which.layers = c("Phenologies"), special.string = "Phenologies")
+            plotVegMaps(this.VegSpatial, which.layers = c("Leafforms"),  special.string = "Leafforms")
             
-            if(var %in% fraction.var.list){
+            
+            if(var %in% pft.fraction.var.list){
               
-              # Add PFT and lifeform fraction
-              addVegFractions(this.TA.dt, global.PFTs, targets =  c("pfts", "lifeforms"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE)
-              
-              # Get list of fractions to plot
-              fraction.list <- names(this.TA.dt)[grep("Fraction",names(this.TA.dt) )]
-              
-              # Make a temporary "fraction" variable for plotting
-              fraction.var <- getVegQuantity("fraction")
-              fraction.var@id <- paste(var, fraction.var@id, sep = ".")
-              fraction.var@short.string <- paste(var, fraction.var@short.string, sep = ".")
-              fraction.var@full.string <- paste(var, fraction.var@full.string, sep = " ")
-              
-              plotLPJMaps(this.TA.dt,
-                          which.layers =fraction.list,
-                          run = run,
-                          quant = fraction.var, 
-                          period = period, 
-                          doSummary = TRUE, 
-                          doIndividual = TRUE,
-                          special.string = "Fraction",
-                          useLongnames = FALSE, 
-                          maxpixels = 100000)
+              # Add fractions and plot
+              this.VegSpatial <- addVegFractions(this.VegSpatial, targets =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE)
+              plotVegMaps(this.VegSpatial, which.layers = c("PFTs"), special = "fraction", special.string = "PFT")
+              plotVegMaps(this.VegSpatial, which.layers = c("Lifeforms"), special = "fraction", special.string = "Lifeforms")
+              plotVegMaps(this.VegSpatial, which.layers = c("Zones"), special = "fraction",  special.string = "ClimateZones")
+              plotVegMaps(this.VegSpatial, which.layers = c("Phenologies"), special = "fraction", special.string = "Phenologies")
+              plotVegMaps(this.VegSpatial, which.layers = c("Leafforms"), special = "fraction",  special.string = "Leafforms")
             }
             
-            
           } 
-          else if(this.Quant@type == "monthly"){
+          else if(this.VegQuantity@type == "monthly"){
             
-            addSeasonal(this.TA.dt, method = "total")
+            this.VegSpatial <- addSeasonal(this.VegSpatial)
             
             # plot the per lifeform summary and individual lifeform plots
-            plotLPJMaps(this.TA.dt,
-                        which.layers = c("DJF", "MAM", "JJA", "SON", "Annual"),
-                        run = run,
-                        quant = this.Quant, 
-                        period = period, 
-                        doSummary = TRUE, 
-                        doIndividual = TRUE,
-                        special.string = "Seasonal",
-                        useLongnames = FALSE, 
-                        maxpixels = 100000)
+            plotVegMaps(this.VegSpatial, which.layers = "Annual")
+            plotVegMaps(this.VegSpatial, which.layers = c("DJF", "MAM", "JJA", "SON"), special.string = "Seasonal")
+
           }
           
         }
@@ -481,26 +430,18 @@ for(run in vegrun.list){
         if(doDominantPFT & var == "lai"){
           if(verbose) message("Doing Dominant PFT Classification")
           
-          combineShadeTolerance(this.TA.dt,global.PFTs)
-          addDominantPFT(this.TA.dt, global.PFTs, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
+          # combine shade tolerance classes and get dominant PFTs
+          this.VegSpatial <- combineShadeTolerance(this.VegSpatial)
+          this.VegSpatial <- addDominantPFT(this.VegSpatial, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
           
-          plotDominantPFTMap(this.TA.dt,
-                             which.dominant = "Dominant",
-                             run = run, 
-                             period = period)
+          # plot dominant PFT
+          plotDominantPFTMap(this.VegSpatial, "Dominant")
+          plotDominantPFTMap(this.VegSpatial, "DominantTree")
+          plotDominantPFTMap(this.VegSpatial, "DominantWoody")
           
-          plotDominantPFTMap(this.TA.dt,
-                             which.dominant = "DominantTree",
-                             run = run, 
-                             period = period)
-          
-          plotDominantPFTMap(this.TA.dt,
-                             which.dominant = "DominantWoody",
-                             run = run,
-                             period = period)
           
           ### Here write the table, maybe can be used in another script or plotting program
-          write.table(this.TA.dt[, list(Lon, Lat, Dominant, DominantTree, DominantWoody)], file = paste0("Dominants.", period@start, "-", period@end, ".Rtable"), row.names= FALSE, quote= FALSE)
+          #write.table(this.TA.dt[, list(Lon, Lat, Dominant, DominantTree, DominantWoody)], file = paste0("Dominants.", period@start, "-", period@end, ".Rtable"), row.names= FALSE, quote= FALSE)
           
         }
         
@@ -538,7 +479,7 @@ for(run in vegrun.list){
         }
         
         # Do the generic analysis	 
-        cmass.local <- getVegQuantity("cmass")
+        cmass.local <- lookupVegQuantity("cmass")
         cmass.local@cuts <- seq(0,35,1)
         
         Saatchi.results[[run@id]] <- compareRunToSpatialDataset(Saatchi.dataset, 
@@ -573,7 +514,7 @@ for(run in vegrun.list){
         }
         
         # Do the generic analysis   
-        cmass.local <- getVegQuantity("cmass")
+        cmass.local <- lookupVegQuantity("cmass")
         cmass.local@cuts <- seq(0,35,1)
         
         Baccini.results[[run@id]] <- compareRunToSpatialDataset(Baccini.dataset, 
@@ -608,7 +549,7 @@ for(run in vegrun.list){
         }
         
         # Do the generic analysis   
-        cmass.local <- getVegQuantity("cmass")
+        cmass.local <- lookupVegQuantity("cmass")
         cmass.local@cuts <- seq(0,35,1)
         
         Avitabile.results[[run@id]] <- compareRunToSpatialDataset(Avitabile.dataset, 
@@ -650,7 +591,7 @@ for(run in vegrun.list){
                                                                   histo.plot.range = c(-1, 1.5), 
                                                                   doScatterPlots=doScatterPlots, 
                                                                   doHistoPlots=doHistoPlots, 
-                                                                  quant = getVegQuantity("vegcover"),
+                                                                  quant = lookupVegQuantity("vegcover"),
                                                                   map.layout.objs = layout.objs
         )  			
         
@@ -685,7 +626,7 @@ for(run in vegrun.list){
                                                               histo.plot.range = c(-1, 1), 
                                                               doScatterPlots=doScatterPlots, 
                                                               doHistoPlots=doHistoPlots, 
-                                                              quant = getVegQuantity("burntarea"),
+                                                              quant = lookupVegQuantity("burntarea"),
                                                               map.layout.objs = layout.objs
         )    	
         
@@ -808,7 +749,7 @@ for(run in vegrun.list){
     Fine.Fuel.raster <- Leaf.Litter.raster + Repr.Litter.raster + 0.045 * Wood.Litter.raster
     names(Fine.Fuel.raster) <- run@id
     Fine.Fuel.stack <- addLayer(Fine.Fuel.stack, Fine.Fuel.raster)
-    plotLPJMaps(Fine.Fuel.raster, 
+    plotVegMaps(Fine.Fuel.raster, 
                 run = run,
                 quant = "fine_fuel", 
                 period = period, 
@@ -824,6 +765,8 @@ for(run in vegrun.list){
   
   
 } # For each run
+
+
 
 ####################################################################################
 ################### CODE FOR COMPARISON OF RUNS ####################################
@@ -1065,7 +1008,7 @@ if(doComparisons){
     
     
     
-    stop()
+   
     
   }
   

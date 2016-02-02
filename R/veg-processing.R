@@ -112,8 +112,8 @@ expandTargets <- function(targets, data, PFT.data){
     
     targets <- append(targets, all.zones)
     
-    if("zones" %in% targets) targets <- targets[-which(tolower(targets) == "zones")]
-    if("zone" %in% targets) targets <- targets[-which(tolower(targets) == "zone")]    
+    if("zones" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "zones")]
+    if("zone" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "zone")]    
     
   }
   
@@ -127,8 +127,8 @@ expandTargets <- function(targets, data, PFT.data){
     
     targets <- append(targets, all.leafforms)
     
-    if("leafforms" %in% targets) targets <- targets[-which(tolower(targets) == "leafforms")]
-    if("leafform" %in% targets) targets <- targets[-which(tolower(targets) == "leafform")] 
+    if("leafforms" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "leafforms")]
+    if("leafform" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "leafform")] 
     
   }
   
@@ -143,8 +143,8 @@ expandTargets <- function(targets, data, PFT.data){
     
     targets <- append(targets, all.phenologies)
     
-    if("phenologies" %in% targets) targets <- targets[-which(tolower(targets) == "phenologies")]
-    if("phenology" %in% targets) targets <- targets[-which(tolower(targets) == "phenology")] 
+    if("phenologies" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenologies")]
+    if("phenology" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenology")] 
     
   }
   
@@ -261,7 +261,7 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
 
 
 ###################################################################################################
-######### BIOME CLASSIFICATION v2.9-STYLE WITH EXTRA FLEXIBILITY ##################################
+######### BIOME CLASSIFICATION  ###################################################################
 ###################################################################################################
 
 
@@ -412,63 +412,14 @@ addVegFractions <- function(input, targets = c("pfts", "lifeforms"), of.total = 
 ######################### SEASONAL AVERAGES/AGGREGATES
 
 
-addSeasonalTotals <- function(input.dt, seasons = c("DJF", "MAM", "JJA", "SON", doAnnual = TRUE)){
+addSeasonal <- function(input, seasons = c("DJF", "MAM", "JJA", "SON", "Annual"), method = NULL, verbose = FALSE){
   
-  seasons.full <- list("DJF" = c("Dec", "Jan", "Feb"), 
-                       "MAM" = c("Mar", "Apr", "May"), 
-                       "JJA" = c("Jun", "Jul", "Aug"),
-                       "SON" = c("Sep", "Oct", "Nov")) 
+  # We get a warning about a shallow copy here, suppress it
+  suppressWarnings(dt <- input@data)
   
-  # for each season
-  for(season in seasons){
-    total.str <- quote(paste(season, sep = ""))
-    input.dt[, eval(total.str) := 0]
-    # for each column
-    for(month in names(input.dt)){
-      # if it is a PFT add it to the lifeform total
-      if(month %in% seasons.full[[season]]){
-        input.dt[, eval(total.str) := get(month) + get(eval(total.str))]
-      } # if it is a PFT add it to the phenology total
-    } # for each column
-  } #for each phenology
-  
-  return(input.dt)  
-}
-
-
-addSeasonalAverage <- function(input.dt, seasons = c("DJF", "MAM", "JJA", "SON"), doAnnual = TRUE){
-  
-  seasons.full <- list("DJF" = c("Dec", "Jan", "Feb"), 
-                       "MAM" = c("Mar", "Apr", "May"), 
-                       "JJA" = c("Jun", "Jul", "Aug"),
-                       "SON" = c("Sep", "Oct", "Nov")) 
-  
-  if(doAnnual) {
-    annual.str <- quote(paste("Annual", sep = ""))
-    input.dt[, eval(annual.str) := 0]
-  }
-  
-  # for each season
-  for(season in seasons){
-    total.str <- quote(paste(season, sep = ""))
-    input.dt[, eval(total.str) := 0]
-    # for each column
-    for(month in names(input.dt)){
-      # if it is a PFT add it to the lifeform total
-      if(month %in% seasons.full[[season]]){
-        input.dt[, eval(total.str) := get(month)/3 + get(eval(total.str))]
-        input.dt[, eval(annual.str) := get(month)/12 + get(eval(annual.str))]
-      } # if it is a PFT add it to the phenology total
-    } # for each column
-  } #for each phenology
-  
-  return(input.dt)  
-}
-
-
-addSeasonal <- function(input.dt, seasons = c("DJF", "MAM", "JJA", "SON", "Annual"), method = "average", verbose = FALSE){
   
   # check the input method
+  if(is.null(method)) method <- input@quant@aggregate.method
   if(tolower(method) == "average" | tolower(method) == "avg" | tolower(method) == "mean"){
     if(verbose) message("Adding seasonal means")
   }
@@ -491,11 +442,13 @@ addSeasonal <- function(input.dt, seasons = c("DJF", "MAM", "JJA", "SON", "Annua
   # for each season
   for(season in seasons){
     total.str <- quote(paste(season, sep = ""))
-    input.dt[, eval(total.str) := rowSums(.SD), .SDcols = seasons.full[[season]]]
-    if(method == "average" || method == "mean" || method == "avg") input.dt[, eval(total.str) := get(eval(total.str)) / length(seasons.full[[season]])]
+    suppressWarnings(dt[, eval(total.str) := rowSums(.SD), .SDcols = seasons.full[[season]]])
+    if(method == "average" || method == "mean" || method == "avg") dt[, eval(total.str) := get(eval(total.str)) / length(seasons.full[[season]])]
   } 
   
-  return(input.dt)  
+  input@data <- dt
+ 
+  return(input)
 }
 
 
