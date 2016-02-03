@@ -146,11 +146,13 @@ setClass("VegRunInfo",
 setClass("VegRun", 
          slots = c(spatial = "list",
                    timeseries = "list",
-                   full = "list"
+                   full = "list",
+                   benchmarks = "list"
          ),
          prototype = c(spatial = list(),
                       timeseries = list(),
-                      full = list()
+                      full = list(),
+                      benchmarks= list()
          ),
          contains = "VegRunInfo"
          
@@ -277,6 +279,25 @@ setClass("TemporalDataset",
                    units = "character"
          )
 )
+
+
+setClass("RasterComparison",
+          slots = c(id = "character"
+                    diff.raster = "RasterLayer", 
+                    perc.diff.raster = "RasterLayer", 
+                    data.raster = "RasterLayer", 
+                    model.raster = "RasterLayer", 
+                    R.squ = "numeric", 
+                    P.cor = "numeric", 
+                    RMSE = "numeric", 
+                    mean.diff = "numeric", 
+                    sd.diff = "numeric"
+                    )
+)
+
+
+
+
 
 ##########################################################################################
 ########  BIOME CLASSIFICATION #########################################################

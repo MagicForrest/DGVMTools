@@ -29,7 +29,6 @@
 
 
 
-
 ###############################################################################
 ########### SMITH ET AL. 2014 BIOME CLASSIFICATION ############################
 ###############################################################################
@@ -415,4 +414,5 @@ Megabiomes.scheme <- new("BiomeClassification",
 
 
 
+supported.biome.schemes <- c("Smith2014" = Smith2014.scheme, "Hickler2012" = Hickler2012.scheme, "Megabiomes" = Megabiomes.scheme)
 

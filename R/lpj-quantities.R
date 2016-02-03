@@ -92,7 +92,18 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
                                              
 )
 
+quant.name <- "biomes"
 
+lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
+                                             id = quant.name,
+                                             short.string = "biomes",
+                                             full.string = "biomes",
+                                             type = "categorical",
+                                             units = "",
+                                             colours = tim.colors,
+                                             cuts = integer(0)
+                                             
+)
 
 
 

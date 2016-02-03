@@ -1,9 +1,9 @@
 
 
-############# EXAMPLE DATE SET ONE - POTENTIAL NATURAL VEGETATION BIOMES
+############# EXAMPLE DATA SET ONE - POTENTIAL NATURAL VEGETATION BIOMES
 
 
-readHandPBiomes <- function(resolution = "HD", classification = "Smith2014", plot.dir = "."){
+readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
 
   
   original.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.out", package = "RVCTools")
@@ -88,11 +88,6 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014", plo
   # BIOME 18 - Arctic/alpine tundra                               BIOME 11
   
   
-  
-  
-  
-  
-  
   # from above orderings
   if(classification == "Smith2014") {
     subs.rules <- data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13))
@@ -109,5 +104,32 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014", plo
   PNV.raster <- subs(PNV.raster, subs.rules)
   
   return(PNV.raster)
+  
+}
+
+
+
+
+getSaatchi2011 <- function(resolution = "HD"){
+  
+  
+  if(resolution == "T63"){
+    Saatchi.raster <- trim(rotate(raster(system.file("extdata", "Saatchi2011.T63.nc", package = "RVCTools"))/10))
+  }
+  else if(resolution == "HD"){
+    Saatchi.raster <- trim(raster(system.file("extdata", "Saatchi2011.HD.nc", package = "RVCTools"))/10)
+  }
+  
+  Saatchi.dataset <- new("SpatialDataset",
+                         id = "Saatchi2011",
+                         name = "Saatchi et al. 2011 Biomass",
+                         abbreviation = "Saatchi et al. 2011",   
+                         time.span = new("TimeSpan", name = "Saatchi Period", start = 1999, end = 2001),
+                         data = Saatchi.raster,
+                         veg.quant = lookupVegQuantity("cmass"),
+                         units = "kgC/m^2")
+  
+  
+  return(Saatchi.dataset)
   
 }

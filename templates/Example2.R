@@ -79,12 +79,13 @@ doIndividual <- FALSE
 
 ### Which variables to analyse and in what detail (use "all" to choose all *.out files in the run directory)
 var.list <- c("mwcont_upper", "lai") # simple summary analysis
-detailed.var.list <- c("mwcont_upper", "lai") # which variable to plot in more detail (make individual plots, lifeform plots for PFTs, seasonal plots for monthly variable etc)
-fraction.pft.var.list <- c("lai") # which PFT variables to plot fractions for 
-do.dominant.pft.var.list <- c("lai") # which variables to calculate dominant PFT for
+detailed.var.list <- c("mwcont_upper", "lai") # for which variable to plot in more detail (make individual plots, lifeform plots for PFTs, seasonal plots for monthly variable etc)
+fraction.pft.var.list <- c("lai") # for which PFT variables to plot fractions
+do.dominant.pft.var.list <- c("lai") # for which PFT variables to calculate dominant PFT for
 
 ### Which benchmarks to do
-benchmark.list <- list("Smith2014")
+benchmark.list <- list("Smith2014",
+                       "Saatchi2011")
 
 
 ### Spatial analyses
@@ -172,6 +173,9 @@ original.workdir <- getwd()
 if(is.null(analysis.label) | analysis.label == ""){
   analysis.label <- Sys.Date()
 }
+
+# prepare benchmarking datasets
+benchmarking.datasets.list <- prepareBenchmarkingDatasets(benchmark.list)
 
 
 ##### MAKE SURE WE PROCESS THE VARIABLES NEEDED FOR SPECIFIC BENCHMARKS
@@ -297,7 +301,7 @@ for(run in vegrun.list){
       
     if(verbose) message(paste(" ------ Processing", var, "------", sep = " "))
     
-    # look-up quauntity, 
+    # look-up quantity, 
     if(var == "mfirefrac" | run@model != "LPJ-GUESS-SPITFIRE") {var <- "firert"}
     this.VegQuantity <- lookupVegQuantity(var)
     
@@ -750,6 +754,66 @@ for(run in vegrun.list){
     
     
   } # for each variable 
+  
+  
+  # now do each benchmark
+  for(benchmarking.dataset in benchmarking.datasets.list){
+    
+    if(benchmarking.dataset@id %in% names(supported.biome.schemes)) {
+     
+      scheme <- supported.biome.schemes[[benchmarking.dataset@id]]
+      
+      if(verbose) message("Doing Global Biome Classification")
+      
+      
+      #         # Add GDD5 for classifying tundra
+      #         if(forceReAveraging & !exist(this.full.bioclim)) { 
+      #           message(paste("Reading raw data from ", "bioclim", ".out because forceReAveraging is set to TRUE", sep = ""))
+      #           this.full.bioclim <- openLPJOutputFile(run, "bioclim", verbose = TRUE)
+      #         }
+      #         
+      #         this.TA.bioclim.dt <- getTADT(run, period, "bioclim", this.full = this.full.bioclim, write = TRUE, forceReAveraging = forceReAveraging, verbose = verbose)
+      #         
+      #         this.TA.dt <- this.TA.dt[this.TA.bioclim.dt]
+      #         
+      
+      this.TA.dt[,GDD5 := 500]
+      
+      addBiomes(this.TA.dt, global.PFTs, biome.scheme)
+      plotBiomeMap(this.TA.dt, 
+                   which.layers = biome.scheme@id,
+                   biome.strings = biome.scheme@strings, 
+                   biome.cols= biome.scheme@cols, 
+                   run = run, 
+                   period = period, 
+                   addData = PNV.biomes, 
+                   run.title = run@id, 
+                   maxpixels = 100000,
+                   Cairo.type = c("png","ps"), 
+      )
+      
+      ### Here write the table, maybe can be used in another script or plotting program
+      write.table(this.TA.dt[, list(Lon, Lat, biome.scheme@id)], file = paste(biome.scheme@id, "Biome", paste(period@start, period@end, sep = "-"), "Rtable", sep = "."), row.names= FALSE, quote= FALSE)
+      
+      biome.raster <- promoteToRaster(this.TA.dt, biome.scheme@id, run@tolerance)
+      biome.raster <- extend(biome.raster, extent(-180,180,-90,90))
+      names(biome.raster) <- run@id
+      Biome.stack <- addLayer(Biome.stack, biome.raster)
+      rm(biome.raster)
+      
+      
+      
+      
+      
+    }
+    
+   
+    
+    
+    
+  }
+    
+  
   
   
   # Calculated fine fuel after retrived all litter types...
