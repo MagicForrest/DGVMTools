@@ -74,22 +74,21 @@ biome.scheme <- Smith2014.scheme
 ### Force re-averaging - in case the raw data have been updated, or we required new a new time period
 forceReAveraging <- FALSE
 
-### Make individual plots for each PFT/month/Carbon pool etc.
-### (can also be turned on for individual variables use the detailed.var.list below)
+### Make individual plots for each PFT/month/Carbon pool etc. (can also be turned on for individual variables use the detailed.var.list below)
 doIndividual <- FALSE
 
-### Variables to analyse (use "all" to plot all in the run directory)
-var.list <- c("mwcont_upper", "lai")
+### Which variables to analyse and in what detail (use "all" to choose all *.out files in the run directory)
+var.list <- c("mwcont_upper", "lai") # simple summary analysis
+detailed.var.list <- c("mwcont_upper", "lai") # which variable to plot in more detail (make individual plots, lifeform plots for PFTs, seasonal plots for monthly variable etc)
+fraction.pft.var.list <- c("lai") # which PFT variables to plot fractions for 
+do.dominant.pft.var.list <- c("lai") # which variables to calculate dominant PFT for
 
-### Which variable to plot in more detail (make individual plots, lifeform plots for PFTs, seasonal plots for monthly variable etc)
-detailed.var.list <- c("mwcont_upper", "lai")
+### Which benchmarks to do
+benchmark.list <- list("Smith2014")
 
-### Which PFT variable to plot fractions
-pft.fraction.var.list <- c("lai")
 
 ### Spatial analyses
 doGlobalBiomes <- FALSE
-doDominantPFT <- TRUE
 doSaatchi2011 <- FALSE
 doBaccini2012 <- FALSE
 doAvitabile2015 <- FALSE
@@ -294,12 +293,8 @@ for(run in vegrun.list){
   
   ###  FOR PARALLEL
   foreach(var.num = 1:length(var.list),   .verbose = TRUE) %dopar% {
-  
-  var = var.list[var.num]	 
-    
-  ### FOR SINGLE PROCESS
-  #for(var in var.list){
-    
+    var = var.list[var.num]	 
+      
     if(verbose) message(paste(" ------ Processing", var, "------", sep = " "))
     
     # look-up quauntity, 
@@ -339,10 +334,10 @@ for(run in vegrun.list){
         this.VegSpatial <- getVegSpatial(run, period, this.VegQuantity, forceReAveraging = forceReAveraging)
         
         
-        # plot the per PFT summary and individual PFT plots if requested
+        ### STANDARD SUMMARY PLOTS 
         plotVegMaps(this.VegSpatial, doIndividual = doIndividual | var %in% detailed.var.list)
         
-        ### If detailed output requested  
+        ### DETAILED OUTPUT IF REQUESTED
         if(var %in% detailed.var.list){
           
           if(this.VegQuantity@type == "PFT"){
@@ -357,16 +352,6 @@ for(run in vegrun.list){
             plotVegMaps(this.VegSpatial, which.layers = c("Leafforms"),  special.string = "Leafforms")
             
             
-            if(var %in% pft.fraction.var.list){
-              
-              # Add fractions and plot
-              this.VegSpatial <- addVegFractions(this.VegSpatial, targets =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE)
-              plotVegMaps(this.VegSpatial, which.layers = c("PFTs"), special = "fraction", special.string = "PFT")
-              plotVegMaps(this.VegSpatial, which.layers = c("Lifeforms"), special = "fraction", special.string = "Lifeforms")
-              plotVegMaps(this.VegSpatial, which.layers = c("Zones"), special = "fraction",  special.string = "ClimateZones")
-              plotVegMaps(this.VegSpatial, which.layers = c("Phenologies"), special = "fraction", special.string = "Phenologies")
-              plotVegMaps(this.VegSpatial, which.layers = c("Leafforms"), special = "fraction",  special.string = "Leafforms")
-            }
             
           } 
           else if(this.VegQuantity@type == "monthly"){
@@ -376,10 +361,48 @@ for(run in vegrun.list){
             # plot the per lifeform summary and individual lifeform plots
             plotVegMaps(this.VegSpatial, which.layers = "Annual")
             plotVegMaps(this.VegSpatial, which.layers = c("DJF", "MAM", "JJA", "SON"), special.string = "Seasonal")
-
+            
           }
           
         }
+        
+        ### FRACTIONAL PLOTS IF REQUESTED
+        if(var %in% pft.fraction.var.list){
+          
+          if(this.VegQuantity@type == "PFT"){
+            
+            # Add fractions and plot
+            this.VegSpatial <- addVegFractions(this.VegSpatial, targets =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE)
+            plotVegMaps(this.VegSpatial, which.layers = c("PFTs"), special = "fraction", special.string = "PFT")
+            plotVegMaps(this.VegSpatial, which.layers = c("Lifeforms"), special = "fraction", special.string = "Lifeforms")
+            plotVegMaps(this.VegSpatial, which.layers = c("Zones"), special = "fraction",  special.string = "ClimateZones")
+            plotVegMaps(this.VegSpatial, which.layers = c("Phenologies"), special = "fraction", special.string = "Phenologies")
+            plotVegMaps(this.VegSpatial, which.layers = c("Leafforms"), special = "fraction",  special.string = "Leafforms")
+            
+          }
+        }
+        
+        
+        ### DOMINANT PFT IF REQUESTED
+        if(var %in% do.dominant.pft.var.list){ 
+          
+          if(verbose) message("Doing Dominant PFT Classification")
+          
+          # combine shade tolerance classes and get dominant PFTs
+          this.VegSpatial <- combineShadeTolerance(this.VegSpatial)
+          this.VegSpatial <- addDominantPFT(this.VegSpatial, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
+          
+          # plot dominant PFT
+          plotDominantPFTMap(this.VegSpatial, "Dominant")
+          plotDominantPFTMap(this.VegSpatial, "DominantTree")
+          plotDominantPFTMap(this.VegSpatial, "DominantWoody")
+          
+          ### Here write the table, maybe can be used in another script or plotting program
+          #write.table(this.TA.dt[, list(Lon, Lat, Dominant, DominantTree, DominantWoody)], file = paste0("Dominants.", period@start, "-", period@end, ".Rtable"), row.names= FALSE, quote= FALSE)
+                    
+        }
+        
+        
         
         ### SPECIFIC ANALYSES FOR EVERY TIME PERIOD (FOR EXAMPLE GLOBAL BIOMES OR DOMINANT PFT)
         
@@ -426,33 +449,14 @@ for(run in vegrun.list){
           
         }
         
-        # Dominant PFT
-        if(doDominantPFT & var == "lai"){
-          if(verbose) message("Doing Dominant PFT Classification")
-          
-          # combine shade tolerance classes and get dominant PFTs
-          this.VegSpatial <- combineShadeTolerance(this.VegSpatial)
-          this.VegSpatial <- addDominantPFT(this.VegSpatial, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
-          
-          # plot dominant PFT
-          plotDominantPFTMap(this.VegSpatial, "Dominant")
-          plotDominantPFTMap(this.VegSpatial, "DominantTree")
-          plotDominantPFTMap(this.VegSpatial, "DominantWoody")
-          
-          
-          ### Here write the table, maybe can be used in another script or plotting program
-          #write.table(this.TA.dt[, list(Lon, Lat, Dominant, DominantTree, DominantWoody)], file = paste0("Dominants.", period@start, "-", period@end, ".Rtable"), row.names= FALSE, quote= FALSE)
-          
-        }
-        
-        
+               
         # Here save the litters raster for calculating total fine litter (fuel)
         if(doFineFuel & var == "litter_leaf") Leaf.Litter.raster <- promoteToRaster(this.TA.dt, "Total")     
         if(doFineFuel & var == "litter_repr") Repr.Litter.raster <- promoteToRaster(this.TA.dt, "Total")  
         if(doFineFuel & var == "litter_wood") Wood.Litter.raster <- promoteToRaster(this.TA.dt, "Total")     
         
         # clean up temporal averages to save memory
-        rm(this.TA.dt)
+        rm(this.VegSpatial)
         gc()
         
       } # for each period
@@ -644,11 +648,15 @@ for(run in vegrun.list){
                    plot.labels = c(run@description, "GFED4 (1996-2012)"),
                    layout.objs = layout.objs)
         
-        rm(this.TA.dt, model.raster, model.firert, data.firert, combined.firert)	
+        rm(this.VegSpatial, model.raster, model.firert, data.firert, combined.firert)	
         
-      }
+      } # if doFGED4 
       
-    }
+      
+      rm(this.VegSpatial)
+      
+    } # ifDoTemporalAveraging
+    
     
     
     
@@ -1008,7 +1016,7 @@ if(doComparisons){
     
     
     
-   
+    
     
   }
   
