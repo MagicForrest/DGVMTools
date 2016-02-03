@@ -112,8 +112,8 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
       map.overlay <- fortify(SpatialLinesDataFrame(input@run@map.overlay[[2]],
                                                    data.frame(ID=getSLLinesIDSlots(input@run@map.overlay[[2]]))))
     }
-    d <- input@data[, c("Lon", "Lat", column), with = FALSE]
-    setnames(d, column, "value")
+    dt <- input@data[, c("Lon", "Lat", column), with = FALSE]
+    setnames(dt, column, "value")
   } else if (is.list(input)) {
     for (n in 1:length(input)) {
       if (!is.VegSpatial(input[[n]]))
@@ -126,29 +126,29 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
           map.overlay <- fortify(SpatialLinesDataFrame(input[[n]]@run@map.overlay[[2]],
                                                        data.frame(ID=getSLLinesIDSlots(input[[n]]@run@map.overlay[[2]]))))
         }
-        d <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
+        dt <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          d[, sens:=input[[n]]@run@description, ]
+          dt[, sens:=input[[n]]@run@description, ]
           titles <- input[[n]]@run@description
         } else {
-          d[, sens:=input[[n]]@run@id, ]
+          dt[, sens:=input[[n]]@run@id, ]
           titles <- input[[n]]@run@id
         }
        } else {
-        d.tmp <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
+        dt.tmp <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          d.tmp[, sens:=input[[n]]@run@description, ]
+          dt.tmp[, sens:=input[[n]]@run@description, ]
           titles <- append(titles, input[[n]]@run@description)
         } else {
-          d.tmp[, sens:=input[[n]]@run@id, ]
+          dt.tmp[, sens:=input[[n]]@run@id, ]
           titles <- append(titles, input[[n]]@run@id)
         }
-        d <- rbindlist(list(d, d.tmp))
-        rm(d.tmp)
+        dt <- rbindlist(list(dt, dt.tmp))
+        rm(dt.tmp)
      }
     }
-    setnames(d, column, "value")
-    d <- d[, sens:=factor(sens, titles)]
+    setnames(dt, column, "value")
+    dt <- dt[, sens:=factor(sens, titles)]
   } else {
     stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
   }
@@ -158,17 +158,17 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
   discrete <- FALSE
   if (!any(is.na(colors))) {
     if (is.vector(colors) && !is.null(names(colors))) {
-      d[, name:=names(colors)[value], ]
+      dt[, name:=names(colors)[value], ]
       discrete <- TRUE
     } else if  (is.data.frame(colors) && any(names(colors)=="color") && any(names(colors)=="name")) {
-      d[, name:=colors$name[value], ]
+      dt[, name:=colors$name[value], ]
       discrete <- TRUE
     }
   }
 
   ## calculate the map resolution
-  lon <- sort(unique(d$Lon))
-  lat <- sort(unique(d$Lat))
+  lon <- sort(unique(dt$Lon))
+  lat <- sort(unique(dt$Lat))
   res <- min(lon[2:length(lon)] - lon[1:(length(lon)-1)],
              lat[2:length(lat)] - lat[1:(length(lat)-1)])
 
@@ -206,7 +206,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
   lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=4, n.max=7)
 
   ## create plot
-  p <- ggplot(d, aes(y=Lat, x=Lon))
+  p <- ggplot(dt, aes(y=Lat, x=Lon))
   p <- p + .lpj.map_theme
 
   if (discrete) {
@@ -220,7 +220,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
   } else {
     p <- p + geom_raster(aes(fill=value))
     if (sym.col) {
-      p <- p + expand_limits(fill = c(-max(abs(d$value), na.rm=TRUE), max(abs(d$value), na.rm=TRUE)))
+      p <- p + expand_limits(fill = c(-max(abs(dt$value), na.rm=TRUE), max(abs(dt$value), na.rm=TRUE)))
     }
 
     if (any(colnames(colors)=="color") && any(colnames(colors)=="value")) {
@@ -238,13 +238,13 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
   p <- p + xlab("Longitude")
   p <- p + ylab("Latitude")
 
-  if (any(colnames(d)=="sens")) {
+  if (any(colnames(dt)=="sens")) {
     p <- eval(parse(text=paste("p + facet_wrap(~sens, ncol=",wrap,")", sep="")))
   } else if (long.title) {
     p <- p + labs(title=input@run@description)
   }
 
-  ## return the plot for further manupulation or direct printing
+  ## return the plot for further manipulation or direct printing
   return(p)
 }
 
@@ -266,37 +266,37 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
     if (all(colnames(input@data) != column))
       stop(paste("No column named '",column,"' present!", sep=""))
     units <- input@quant@units
-    d <- input@data[, c("Lon", "Lat", column), with = FALSE]
-    setnames(d, column, "value")
+    dt <- input@data[, c("Lon", "Lat", column), with = FALSE]
+    setnames(dt, column, "value")
   } else if (is.list(input)) {
     for (n in 1:length(input)) {
       if (!is.VegSpatial(input[[n]]))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
       if (n==1) {
         units <- input[[n]]@quant@units
-        d <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
+        dt <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          d[, sens:=input[[n]]@run@description, ]
+          dt[, sens:=input[[n]]@run@description, ]
           titles <- input[[n]]@run@description
         } else {
-          d[, sens:=input[[n]]@run@id, ]
+          dt[, sens:=input[[n]]@run@id, ]
           titles <- input[[n]]@run@id
         }
        } else {
-        d.tmp <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
+        dt.tmp <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          d.tmp[, sens:=input[[n]]@run@description, ]
+          dt.tmp[, sens:=input[[n]]@run@description, ]
           titles <- append(titles, input[[n]]@run@description)
         } else {
-          d.tmp[, sens:=input[[n]]@run@id, ]
+          dt.tmp[, sens:=input[[n]]@run@id, ]
           titles <- append(titles, input[[n]]@run@id)
         }
-        d <- rbindlist(list(d, d.tmp))
-        rm(d.tmp)
+        dt <- rbindlist(list(dt, dt.tmp))
+        rm(dt.tmp)
      }
     }
-    setnames(d, column, "value")
-    d <- d[, sens:=factor(sens, titles)]
+    setnames(dt, column, "value")
+    dt <- dt[, sens:=factor(sens, titles)]
   } else {
     stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
   }
@@ -312,42 +312,42 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
     qt <- c(0, 1)
   }
 
-  if (any(colnames(d)=="sens")) {
+  if (any(colnames(dt)=="sens")) {
     if (what[["center"]] == "md" || what[["center"]] == "median") {
-      md <- d[, list(value.center=median(value),
-                     value.sd=sd(value),
-                     value.se=sd(value)/sqrt(length(value)),
-                     value.min=quantile(value, qt[1]),
-                     value.max=quantile(value, qt[2])), by = c("Lat", "sens")]
+      md <- dt[, list(value.center=median(value),
+                      value.sd=sd(value),
+                      value.se=sd(value)/sqrt(length(value)),
+                      value.min=quantile(value, qt[1]),
+                      value.max=quantile(value, qt[2])), by = c("Lat", "sens")]
     } else {
-      md <- d[, list(value.center=mean(value),
-                     value.sd=sd(value),
-                     value.se=sd(value)/sqrt(length(value)),
-                     value.min=quantile(value, qt[1]),
-                     value.max=quantile(value, qt[2])), by = c("Lat", "sens")]
+      md <- dt[, list(value.center=mean(value),
+                      value.sd=sd(value),
+                      value.se=sd(value)/sqrt(length(value)),
+                      value.min=quantile(value, qt[1]),
+                      value.max=quantile(value, qt[2])), by = c("Lat", "sens")]
     }
     p <- ggplot(md, aes(x=Lat, y=value.center, col=sens))
   } else {
     if (what[["center"]] == "md" || what[["center"]] == "median") {
-      md <- d[, list(value.center=median(value),
-                     value.sd=sd(value),
-                     value.se=sd(value)/sqrt(length(value)),
-                     value.min=quantile(value, qt[1]),
-                     value.max=quantile(value, qt[2])), by = c("Lat")]
+      md <- dt[, list(value.center=median(value),
+                      value.sd=sd(value),
+                      value.se=sd(value)/sqrt(length(value)),
+                      value.min=quantile(value, qt[1]),
+                      value.max=quantile(value, qt[2])), by = c("Lat")]
     } else {
-      md <- d[, list(value.center=mean(value),
-                     value.sd=sd(value),
-                     value.se=sd(value)/sqrt(length(value)),
-                     value.min=quantile(value, qt[1]),
-                     value.max=quantile(value, qt[2])), by = c("Lat")]
-    }    
+      md <- dt[, list(value.center=mean(value),
+                      value.sd=sd(value),
+                      value.se=sd(value)/sqrt(length(value)),
+                      value.min=quantile(value, qt[1]),
+                      value.max=quantile(value, qt[2])), by = c("Lat")]
+    }
     p <- ggplot(md, aes(x=Lat, y=value.center))
   }
 
   p <- p + .lpj.scatter_theme
 
   if (!is.na(what[["var"]])) {
-    if (any(colnames(d)=="sens")) {
+    if (any(colnames(dt)=="sens")) {
       if (tolower(what[["var"]])=="sd") {
         p <- p + geom_ribbon(aes(ymax = value.center + value.sd, ymin = value.center - value.sd, fill=sens), alpha = alpha[2])
       } else if (tolower(what[["var"]])=="se") {
@@ -366,21 +366,191 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
     }
   }
   p <- p + geom_line(size=1, alpha=alpha[1])
-  lat <- .ll.breaks(c(min(d$Lat), max(d$Lat)), label="lat", n.min=7, n.max=11)
+  lat <- .ll.breaks(c(min(dt$Lat), max(dt$Lat)), label="lat", n.min=4, n.max=9)
   p <- p + scale_x_continuous(breaks=lat, labels=names(lat), expand=c(0,0))
-  if (!is.na(colors) && any(colnames(d)=="sens")) {
+  if (!is.na(colors) && any(colnames(dt)=="sens")) {
     p <- p + scale_fill_manual(values=colors, guide=guide_legend(ncol=3))
     p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=3))
   } else {
-    p <- p + scale_fill_manual(values=brewer.pal(length(unique(d$sens)), "Set1"), guide=guide_legend(ncol=3))
-    p <- p + scale_color_manual(values=brewer.pal(length(unique(d$sens)), "Set1"), guide=guide_legend(ncol=3))
+    p <- p + scale_fill_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"), guide=guide_legend(ncol=3))
+    p <- p + scale_color_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"), guide=guide_legend(ncol=3))
   }
   p <- p + xlab("Latitude")
-
+  
   p <- p + ylab(units)
   p <- p + coord_flip()
   return(p)
 }
+
+#######################################################################
+## categorial aggregated scatter ######################################
+#######################################################################
+plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, ...) {
+  if (is.null(targets)) {
+    stop("Don't know what to do, if you are not telling me!")
+  } else if (is.list(targets)) {
+    targets <- as.data.frame(targets, stringsAsFactors=FALSE)
+  } else if (is.data.frame(targets)) {
+    for (i in 1:2)
+      targets[, 1] = as.character(targets[, 1])
+  }
+  if (nrow(targets)==2 && ncol(targets)==2) {
+    colnames(targets) <- c("slot", "column")
+    rownames(targets) <- c("x", "y")
+  } else {
+    stop("Don't know what to do, if you are not telling me!")
+  }
+  
+  if (is.VegRun(input)) {
+    if (all(names(input@spatial) != targets$slot[1]))
+      stop(paste("No VegSpatial object'", targets$slot[1], "' present in input!"))
+    if (all(names(input@spatial) != targets$slot[2]))
+      stop(paste("No VegSpatial object'", targets$slot[2], "' present in input!"))
+    
+    vsx <- eval(parse(text=paste("input@spatial[['",targets$slot[1],"']]", sep="")))
+    if (all(colnames(vsx@data) != targets$column[1]))
+      stop(paste("No column named '",targets$column[1],"' present in VegSpatial ",targets$slot[1]," of input run!", sep=""))
+    units <- vsx@quant@units
+    
+    vsy <- eval(parse(text=paste("input@spatial[['",targets$slot[2],"']]", sep="")))
+    if (all(colnames(vsy@data) != targets$column[2]))
+      stop(paste("No column named '",targets$column[2],"' present in VegSpatial ",targets$slot[2]," of input run!", sep=""))
+
+    if (area.weighted && any(colnames(vsx@data) == "area")) {
+      dx <- vsx@data[, c("Lon", "Lat", targets$column[1], "area"), with = FALSE]
+      dy <- vsy@data[, c("Lon", "Lat", targets$column[2]), with = FALSE]
+    } else if (area.weighted && any(colnames(vsy@data) == "area")) {
+      dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
+      dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
+    } else if (area.weighted) {
+      vsy <- addArea(vsy)
+      dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
+      dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
+    }
+    dt <- dy[dx]
+    setnames(dt, targets$column[1], "value")
+    if (area.weighted) {
+      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area)), by=list(", targets$column[2],")]", sep="")))
+    } else {
+      dt <- eval(parse(text=paste("dt[, list(value=mean(value)), by=list(", targets$column[2],")]", sep="")))
+    }
+  } else if (is.list(input)) {
+
+
+    for (n in 1:length(input)) {
+      if (is.VegRun(input[[n]])) {
+        if (all(names(input[[n]]@spatial) != targets$slot[1]))
+          stop(paste("No VegSpatial object'", targets$slot[1], "' present in input ", n, "!", sep=""))
+        if (all(names(input[[n]]@spatial) != targets$slot[2]))
+          stop(paste("No VegSpatial object'", targets$slot[2], "' present in input ", n, "!", sep=""))
+    
+        vsx <- eval(parse(text=paste("input[[n]]@spatial[['",targets$slot[1],"']]", sep="")))
+        if (all(colnames(vsx@data) != targets$column[1]))
+          stop(paste("No column named '",targets$column[1],"' present in VegSpatial ",targets$slot[1]," of input run ", n,"!", sep=""))
+        units <- vsx@quant@units
+    
+        vsy <- eval(parse(text=paste("input[[n]]@spatial[['",targets$slot[2],"']]", sep="")))
+        if (all(colnames(vsy@data) != targets$column[2]))
+          stop(paste("No column named '",targets$column[2],"' present in VegSpatial ",targets$slot[2]," of input run ", n, "!", sep=""))
+
+        if (n==1) {
+          if (area.weighted && any(colnames(vsx@data) == "area")) {
+            dx <- vsx@data[, c("Lon", "Lat", targets$column[1], "area"), with = FALSE]
+            dy <- vsy@data[, c("Lon", "Lat", targets$column[2]), with = FALSE]
+          } else if (area.weighted && any(colnames(vsy@data) == "area")) {
+            dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
+            dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
+          } else if (area.weighted) {
+            vsy <- addArea(vsy)
+            dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
+            dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
+          }
+          dt <- dy[dx]
+          if (long.title) {
+            dt[, sens:=vsx@run@description, ]
+            titles <- vsx@run@description
+          } else {
+            dt[, sens:=vsx@run@id, ]
+            titles <- vsx@run@id
+          }
+        } else {
+          if (area.weighted && any(colnames(vsx@data) == "area")) {
+            dx <- vsx@data[, c("Lon", "Lat", targets$column[1], "area"), with = FALSE]
+            
+            dy <- vsy@data[, c("Lon", "Lat", targets$column[2]), with = FALSE]
+          } else if (area.weighted && any(colnames(vsy@data) == "area")) {
+            dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
+            dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
+          } else if (area.weighted) {
+            vsy <- addArea(vsy)
+            dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
+            dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
+          }
+          dt.tmp <- dy[dx]
+          if (long.title) {
+            dt.tmp[, sens:=vsx@run@description, ]
+            titles <- append(titles, vsx@run@description)
+          } else {
+            dt.tmp[, sens:=vsx@run@id, ]
+            titles <- append(titles, vsx@run@id)
+          }
+          dt <- rbindlist(list(dt, dt.tmp))
+          rm(dt.tmp)
+        }
+      }     
+    }
+    dt <- dt[, sens:=factor(sens, titles)]
+    setnames(dt, targets$column[1], "value")
+    if (area.weighted) {
+      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area)), by=list(", targets$column[2],", sens)]", sep="")))
+    } else {
+      dt <- eval(parse(text=paste("dt[, list(value=mean(value)), by=list(", targets$column[2],", sens)]", sep="")))
+    }
+  } else {
+    stop("'input' must either be a RCVTools::VegRun or a list of them!")
+  }
+  rm(dx, dy)
+  
+  ## if name.map is a valid named vector the names are used for x-labels
+  if (!any(is.na(name.map))) {
+    if (is.vector(name.map) && !is.null(names(name.map))) {
+      eval(parse(text=paste("dt[, name:=names(name.map)[",targets$column[2],"], ]", sep="")))
+    }
+  }
+
+  if (any(colnames(dt) == "sens")) {
+    if (any(colnames(dt) == "name")) {
+      p <- ggplot(dt, aes(x=value, y=name, col=sens))
+    } else {
+      eval(parse(text=paste("p <- ggplot(dt, aes(x=value, y=",targets$column[2],", col=sens))", sep="")))
+    }
+    p <- p + .lpj.scatter_theme
+    p <- p + scale_color_manual(values=brewer.pal(length(unique(dt$sens)),"Set1"),
+                                na.value="grey", guide=guide_legend(ncol=2))
+    p <- p + geom_point(size=2.5, position = position_jitter(w = 0, h = 0.15))
+    p <- p + xlab(units) + ylab("")
+    p <- p + guides(colour = guide_legend(override.aes = list(size=4), ncol=2))
+  } else {
+    if (any(colnames(dt) == "name")) {
+      p <- ggplot(dt, aes(x=value, y=name))
+    } else {
+      eval(parse(text=paste("p <- ggplot(dt, aes(x=value, y=",targets$column[2],"))", sep="")))
+    }
+    p <- p + .lpj.scatter_theme
+    p <- p + geom_point(size=2.5)
+    p <- p + xlab(units) + ylab("")
+    p <- p + guides(colour = guide_legend(override.aes = list(size=4), ncol=2))
+  }
+
+  return(p)  
+}
+
+
+
+
+
+
+
 
 #######################################################################
 ## scatter ############################################################
