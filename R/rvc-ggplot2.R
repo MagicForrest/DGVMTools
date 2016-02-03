@@ -176,7 +176,8 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
   lon.limit <- c(min(lon) - res/2, max(lon) + res/2)
   lat.limit <- c(min(lat) - res/2, max(lat) + res/2)
 
-  ## Either highres/lowres, otherwise assume a country name was given
+  ## If map.overlay is not yet defined properly, use
+  ## either highres/lowres, otherwise assume a country name was given
   if (is.character(map.overlay)) {
     if (london.centre) {
       if (tolower(map.overlay)=="lowres" || tolower(map.overlay)=="low.res") {
@@ -242,7 +243,8 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
   } else if (long.title) {
     p <- p + labs(title=input@run@description)
   }
-  
+
+  ## return the plot for further manupulation or direct printing
   return(p)
 }
 
@@ -250,7 +252,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
 ## meridional #########################################################
 #######################################################################
 
-plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, ...) {
+plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, ...) {
   if (!any(names(what)=="center"))
     stop("No definition for meridional average given. Must be either 'mn', 'mean' or 'md', 'median'.")
   if (!any(names(what)=="var"))
@@ -258,41 +260,45 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
   
   ## check if a VegObj or a list of VegObj is given as input
   ## check data column names for given column name or column name 'value'
-  if (is.VegObj(input)) {
+  if (is.VegSpatial(input)) {
     if (is.na(column) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
     if (all(colnames(input@data) != column))
       stop(paste("No column named '",column,"' present!", sep=""))
-    london.centre <- input@run@london.centre
     units <- input@quant@units
     d <- input@data[, c("Lon", "Lat", column), with = FALSE]
     setnames(d, column, "value")
   } else if (is.list(input)) {
-    for (n in names(input)) {
-      if (!is.VegObj(input[[n]]))
-        stop("'input' must either be a RCVTools::VegObj or a list of them!")
-      if (n==names(input)[1]) {
-        london.centre <- input[[n]]@run@london.centre
-        if (is.logical(input@run@map.overlay)) {
-          map.overlay <- input@map.overlay
-        } else {
-          map.overlay <- fortify(SpatialLinesDataFrame(input@run@map.overlay[[2]],
-                                                       data.frame(ID=getSLLinesIDSlots(input@run@map.overlay[[2]]))))
-        }
+    for (n in 1:length(input)) {
+      if (!is.VegSpatial(input[[n]]))
+        stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
+      if (n==1) {
         units <- input[[n]]@quant@units
         d <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
-        d[, sens:=n, ]
+        if (long.title) {
+          d[, sens:=input[[n]]@run@description, ]
+          titles <- input[[n]]@run@description
+        } else {
+          d[, sens:=input[[n]]@run@id, ]
+          titles <- input[[n]]@run@id
+        }
        } else {
         d.tmp <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
-        d.tmp[, sens:=n, ]
+        if (long.title) {
+          d.tmp[, sens:=input[[n]]@run@description, ]
+          titles <- append(titles, input[[n]]@run@description)
+        } else {
+          d.tmp[, sens:=input[[n]]@run@id, ]
+          titles <- append(titles, input[[n]]@run@id)
+        }
         d <- rbindlist(list(d, d.tmp))
         rm(d.tmp)
      }
     }
     setnames(d, column, "value")
-    d <- d[, sens:=factor(sens, names(input))]
+    d <- d[, sens:=factor(sens, titles)]
   } else {
-    stop("'input' must either be a RCVTools::VegObj or a list of them!")
+    stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
   }
   
   if (length(what[["var"]])>=2 || is.numeric(what[["var"]])) {
@@ -360,7 +366,8 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
     }
   }
   p <- p + geom_line(size=1, alpha=alpha[1])
-  p <- p + scale_x_continuous(breaks=.ll.breaks(c(min(d$Lat), max(d$Lat))), expand=c(0,0))
+  lat <- .ll.breaks(c(min(d$Lat), max(d$Lat)), label="lat", n.min=7, n.max=11)
+  p <- p + scale_x_continuous(breaks=lat, labels=names(lat), expand=c(0,0))
   if (!is.na(colors) && any(colnames(d)=="sens")) {
     p <- p + scale_fill_manual(values=colors, guide=guide_legend(ncol=3))
     p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=3))
