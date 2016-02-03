@@ -60,3 +60,11 @@ is.VegSpatial <- function(input) {
       return(TRUE)
   return(FALSE)
 }
+
+is.VegRun <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "VegRun" && attr(class.def, "package")=="RVCTools")
+      return(TRUE)
+  return(FALSE)
+}
