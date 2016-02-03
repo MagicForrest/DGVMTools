@@ -42,11 +42,8 @@
 ## helper functions ###################################################
 #######################################################################
 
-
-## add deg N/S/E/W returned as labels
-## make that optional
-
-.ll.breaks <- function(limits, n.min=5, n.max=9, descending=FALSE) {
+## This needs an update for non lon/lat grids
+.ll.breaks <- function(limits, n.min=5, n.max=9, label=NA, descending=FALSE) {
   if (length(limits)<2) {
     stop("'limits' must have at least length 2")
   } else if (length(limits==2)) {
@@ -60,14 +57,37 @@
   lab <- seq(limits[1], limits[2], 1/12 * 3)
   
   for (i in c(1/6, 1/3, 2/3, 1:5, 10, 15)) {
-    if (length(lab) <= n.max && length(lab)>=n.min)
+    lab.old <- lab
+    if (length(lab) <= n.max && length(lab) >= n.min)
       break
     ext <- limits
     ext[1] = ceiling(limits[1] / i / 3)*i*3
     ext[2] = floor(limits[2] / i / 3)*i*3
     lab <- seq(ext[1], ext[2], i * 3)
+    if (length(lab) < n.min) {
+      lab <- lab.old
+      break
+    }
   }
 
+  if (length(lab)<n.min || length(lab)>n.max)
+    warning(paste("Did not find suitable levels between ", n.min, " and ", n.max, ", used ", length(lab), " instead.", sep=""))
+
+  if (!is.na(label)) {
+    if (tolower(label)=="lon" || label=="long" || label=="longitude") {
+      ## sprintf("%X", as.integer(charToRaw("°"))) => [1] "C2" "B0"
+      ## paste0("\u00B0") => "°"
+      names.lab <- lab
+      names.lab[lab < 0]  = paste(abs(lab[lab < 0]), "\u00B0W", sep="")
+      names.lab[lab >= 0] = paste(abs(lab[lab >= 0]), "\u00B0E", sep="")
+      names(lab) <- names.lab
+    } else if (tolower(label)=="lat" || label=="latitude") {
+      names.lab <- lab
+      names.lab[lab < 0]  = paste(abs(lab[lab < 0]), "\u00B0S", sep="")
+      names.lab[lab >= 0] = paste(abs(lab[lab >= 0]), "\u00B0N", sep="")
+      names(lab) <- names.lab
+    }
+  }
   if (descending)
     return(rev(lab))
   return(lab)
@@ -77,7 +97,7 @@
 ## map ################################################################
 #######################################################################
 
-plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
+plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.title=TRUE, ...) {
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
   if (is.VegSpatial(input)) {
@@ -85,28 +105,50 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
       stop("No column name given and no column named 'value' present!")
     if (all(colnames(input@data) != column))
       stop(paste("No column named '",column,"' present!", sep=""))
-    london.centre <- input@london.centre
-    map.overlay <- input@map.overlay
+    london.centre <- input@run@london.centre
+    if (is.character(input@run@map.overlay)) {
+      map.overlay <- input@map.overlay
+    } else {
+      map.overlay <- fortify(SpatialLinesDataFrame(input@run@map.overlay[[2]],
+                                                   data.frame(ID=getSLLinesIDSlots(input@run@map.overlay[[2]]))))
+    }
     d <- input@data[, c("Lon", "Lat", column), with = FALSE]
     setnames(d, column, "value")
   } else if (is.list(input)) {
-    for (n in names(input)) {
+    for (n in 1:length(input)) {
       if (!is.VegSpatial(input[[n]]))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
-      if (n==names(input)[1]) {
-        london.centre <- input[[n]]@london.centre
-        map.overlay <- input[[n]]@map.overlay
+      if (n==1) {
+        london.centre <- input[[n]]@run@london.centre
+        if (is.character(input[[n]]@run@map.overlay)) {
+          map.overlay <- input[[n]]@map.overlay
+        } else {
+          map.overlay <- fortify(SpatialLinesDataFrame(input[[n]]@run@map.overlay[[2]],
+                                                       data.frame(ID=getSLLinesIDSlots(input[[n]]@run@map.overlay[[2]]))))
+        }
         d <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
-        d[, sens:=n, ]
+        if (long.title) {
+          d[, sens:=input[[n]]@run@description, ]
+          titles <- input[[n]]@run@description
+        } else {
+          d[, sens:=input[[n]]@run@id, ]
+          titles <- input[[n]]@run@id
+        }
        } else {
         d.tmp <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
-        d.tmp[, sens:=n, ]
+        if (long.title) {
+          d.tmp[, sens:=input[[n]]@run@description, ]
+          titles <- append(titles, input[[n]]@run@description)
+        } else {
+          d.tmp[, sens:=input[[n]]@run@id, ]
+          titles <- append(titles, input[[n]]@run@id)
+        }
         d <- rbindlist(list(d, d.tmp))
         rm(d.tmp)
      }
     }
     setnames(d, column, "value")
-    d <- d[, sens:=factor(sens, names(input))]
+    d <- d[, sens:=factor(sens, titles)]
   } else {
     stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
   }
@@ -135,21 +177,23 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
   lat.limit <- c(min(lat) - res/2, max(lat) + res/2)
 
   ## Either highres/lowres, otherwise assume a country name was given
-  if (london.centre) {
-    if (tolower(map.overlay)=="lowres" || tolower(map.overlay)=="low.res") {
-      worldmap <- fortify(map("world", xlim=lon.limit, ylim=lat.limit, fill=TRUE, plot=FALSE))
-    } else if  (tolower(map.overlay)=="highres" || tolower(map.overlay)=="high.res") {
-      worldmap <- fortify(map("worldHires", xlim=lon.limit, ylim=lat.limit, fill=TRUE, plot=FALSE))
+  if (is.character(map.overlay)) {
+    if (london.centre) {
+      if (tolower(map.overlay)=="lowres" || tolower(map.overlay)=="low.res") {
+        map.overlay <- fortify(map("world", xlim=lon.limit, ylim=lat.limit, fill=TRUE, plot=FALSE))
+      } else if  (tolower(map.overlay)=="highres" || tolower(map.overlay)=="high.res") {
+        map.overlay <- fortify(map("worldHires", xlim=lon.limit, ylim=lat.limit, fill=TRUE, plot=FALSE))
+      } else {
+        map.overlay <- fortify(map("worldHires", map.overlay, fill=TRUE, plot=FALSE))
+      }
     } else {
-        worldmap <- fortify(map("worldHires", map.overlay, fill=TRUE, plot=FALSE))
-    }
-  } else {
-    if (tolower(map.overlay)=="lowres" || tolower(map.overlay)=="low.res") {
-      worldmap <- fortify(map("world2", xlim=lon.limit, ylim=lat.limit, fill=TRUE, plot=FALSE))
-    } else if  (tolower(map.overlay)=="highres" || tolower(map.overlay)=="high.res") {
-      worldmap <- fortify(map("world2Hires", xlim=lon.limit, ylim=lat.limit, fill=TRUE, plot=FALSE))
-    } else {
-      worldmap <- fortify(map("world2Hires", map.overlay, fill=TRUE, plot=FALSE))
+      if (tolower(map.overlay)=="lowres" || tolower(map.overlay)=="low.res") {
+        map.overlay <- fortify(map("world2", xlim=lon.limit, ylim=lat.limit, fill=TRUE, plot=FALSE))
+      } else if  (tolower(map.overlay)=="highres" || tolower(map.overlay)=="high.res") {
+        map.overlay <- fortify(map("world2Hires", xlim=lon.limit, ylim=lat.limit, fill=TRUE, plot=FALSE))
+      } else {
+        map.overlay <- fortify(map("world2Hires", map.overlay, fill=TRUE, plot=FALSE))
+      }
     }
   }
 
@@ -157,33 +201,8 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
   ## This needs an update for non lon/lat grids
   lon <- seq(lon.limit[1], lon.limit[2], res)
   lat <- seq(lat.limit[1], lat.limit[2], res)
-
-  ## exclude outer most longitude labels
-  lon <- lon[2:(length(lon)-1)]
- 
-  if (lon.limit[2] - lon.limit[1] >= 360) {
-    lon <- sort(unique(floor(abs(lon/60)) * sign(lon) * 60))
-  } else if (lon.limit[2] - lon.limit[1] >= 180) {
-    lon <- sort(unique(floor(abs(lon/45)) * sign(lon) * 45))
-  } else {
-    lon <- sort(unique(floor(abs(lon/30)) * sign(lon) * 30))
-  }
-  if (lat.limit[2] - lat.limit[1] >= 180) {
-    lat <- sort(unique(floor(abs(lat/45)) * sign(lat) * 45))
-  } else if (lat.limit[2] - lat.limit[1] >= 90) {
-    lat <- sort(unique(floor(abs(lat/30)) * sign(lat) * 30))
-  } else {
-    lat <- sort(unique(floor(abs(lat/15)) * sign(lat) * 15))
-  }
-
- # sprintf("%X", as.integer(charToRaw("°"))) => [1] "C2" "B0"
-  # paste0("\u00B0") => "°"
-  lon.lab <- lon
-  lon.lab[lon < 0]  = paste(abs(lon[lon < 0]), "\u00B0W", sep="")
-  lon.lab[lon >= 0] = paste(abs(lon[lon >= 0]), "\u00B0E", sep="")
-  lat.lab <- lat
-  lat.lab[lat < 0]  = paste(abs(lat[lat < 0]), "\u00B0S", sep="")
-  lat.lab[lat >= 0] = paste(abs(lat[lat >= 0]), "\u00B0N", sep="")
+  lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon")
+  lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=4, n.max=7)
 
   ## create plot
   p <- ggplot(d, aes(y=Lat, x=Lon))
@@ -209,22 +228,20 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1) {
     } else if (!any(is.na(colors))) {
       p <- p + scale_fill_gradientn(colors=colors, expand=c(0, 0))
       p <- p + guides(fill=guide_colorbar(nbin = 101, expand=c(0, 0)))
-      ##warning(paste("colors has wrong column names:", paste(colnames(colors))))
     }
   }
-  p <- p + geom_path(data=worldmap, size=0.1, color = "black", aes(x=long, y=lat, group=group))
-  p <- p + scale_x_continuous(breaks=lon, labels=lon.lab, expand=c(0, 0))
-  p <- p + scale_y_continuous(breaks=lat, labels=lat.lab, expand=c(0, 0)) 
+  p <- p + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group=group))
+  p <- p + scale_x_continuous(breaks=lon, labels=names(lon), expand=c(0, 0))
+  p <- p + scale_y_continuous(breaks=lat, labels=names(lat), expand=c(0, 0)) 
   p <- p + coord_fixed(xlim=lon.limit, ylim=lat.limit)
   p <- p + xlab("Longitude")
   p <- p + ylab("Latitude")
 
-# if (!is.na(title))
-#    p <- p + labs(title=title)
-  if (any(colnames(d)=="sens"))
+  if (any(colnames(d)=="sens")) {
     p <- eval(parse(text=paste("p + facet_wrap(~sens, ncol=",wrap,")", sep="")))
-  ##  if (is.na(variable))
-  ##p <- p + facet_wrap(~variable, ncol=wrap)
+  } else if (long.title) {
+    p <- p + labs(title=input@run@description)
+  }
   
   return(p)
 }
@@ -246,8 +263,7 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
       stop("No column name given and no column named 'value' present!")
     if (all(colnames(input@data) != column))
       stop(paste("No column named '",column,"' present!", sep=""))
-    london.centre <- input@london.centre
-    map.overlay <- input@map.overlay
+    london.centre <- input@run@london.centre
     units <- input@quant@units
     d <- input@data[, c("Lon", "Lat", column), with = FALSE]
     setnames(d, column, "value")
@@ -256,8 +272,13 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
       if (!is.VegObj(input[[n]]))
         stop("'input' must either be a RCVTools::VegObj or a list of them!")
       if (n==names(input)[1]) {
-        london.centre <- input[[n]]@london.centre
-        map.overlay <- input[[n]]@map.overlay
+        london.centre <- input[[n]]@run@london.centre
+        if (is.logical(input@run@map.overlay)) {
+          map.overlay <- input@map.overlay
+        } else {
+          map.overlay <- fortify(SpatialLinesDataFrame(input@run@map.overlay[[2]],
+                                                       data.frame(ID=getSLLinesIDSlots(input@run@map.overlay[[2]]))))
+        }
         units <- input[[n]]@quant@units
         d <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
         d[, sens:=n, ]
