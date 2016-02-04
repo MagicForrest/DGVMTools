@@ -141,25 +141,35 @@ makeOverlayOld <- function(coastlines, verbose = FALSE) {
   
 }
 
-
+.correct.map.offset <- function(spl) {
+  we <- crop(spl, extent(-180, 180, -90, 90))
+  ww <- crop(spl, extent(179.999, 200, -90, 90))
+  ww <- raster::shift(ww, -360)
+  spl <- bind(we, ww)  
+  return(spl)
+}
 
 # returns 
 makeOverlay <- function(which){
-  
+  proj4str <- "+proj=longlat +datum=WGS84"
   if(which == "lowres") {
-    map.sp.lines <-  map2SpatialLines(map('world', plot = FALSE), proj4string = CRS(as.character(NA)))
+    map.sp.lines <- map2SpatialLines(map('world', plot = FALSE), proj4string = CRS(proj4str))
+    map.sp.lines <- .correct.map.offset(map.sp.lines)
     return(list("sp.lines", map.sp.lines, lwd = 0.5))
   }
   if(which == "hires") {
-    map.sp.lines <-  map2SpatialLines(map('worldHires', plot = FALSE), proj4string = CRS(as.character(NA)))
+    map.sp.lines <-  map2SpatialLines(map('worldHires', plot = FALSE), proj4string = CRS(proj4str))
+    map.sp.lines <- .correct.map.offset(map.sp.lines)
     return(list("sp.lines", map.sp.lines, lwd = 0.5))
   }
   if(which == "lowres-continents") {
-    map.sp.lines <-  map2SpatialLines(map('world', plot = FALSE, interior = FALSE), proj4string = CRS(as.character(NA)))
+    map.sp.lines <-  map2SpatialLines(map('world', plot = FALSE, interior = FALSE), proj4string = CRS(proj4str))
+    map.sp.lines <- .correct.map.offset(map.sp.lines)
     return(list("sp.lines", map.sp.lines, lwd = 0.5))
   }
   if(which == "hires-continents") {
-    map.sp.lines <-  map2SpatialLines(map('worldHires', plot = FALSE, interior = FALSE), proj4string = CRS(as.character(NA)))
+    map.sp.lines <-  map2SpatialLines(map('worldHires', plot = FALSE, interior = FALSE), proj4string = CRS(proj4str))
+    map.sp.lines <- .correct.map.offset(map.sp.lines)
     return(list("sp.lines", map.sp.lines, lwd = 0.5))
   }
   else{
