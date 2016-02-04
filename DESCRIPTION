@@ -8,10 +8,10 @@ Authors@R: c(person("Matthew", "Forrst", role = c("aut", "cre"), email
         "joerg.steinkamp@senckenberg.de"))
 Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
 Maintainer: Matthew Forrest <mforrest@senckenberg.de>
-Depends: R (>= 2.15.0), methods, udunits2, mapdata, ncdf4, rgdal,
+Depends: R (>= 2.15.0), methods, udunits2, mapdata, maptools, ncdf4, rgdal,
         raster, lattice, fields, data.table, xts, foreach, doParallel,
         rgeos, compiler, ggplot2, Cairo, readr
-Suggests: zoo, mgcv
+Suggests: zoo, mgcv, RColorBrewer
 Description: Process output data produced by dynamic global vegetation
         model (DGVM) LPJ-GUESS for use in R. Create standard figures
         and benchmarking.

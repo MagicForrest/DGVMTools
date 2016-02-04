@@ -282,7 +282,7 @@ setClass("TemporalDataset",
 
 
 setClass("RasterComparison",
-          slots = c(id = "character"
+          slots = c(id = "character",
                     diff.raster = "RasterLayer", 
                     perc.diff.raster = "RasterLayer", 
                     data.raster = "RasterLayer", 
