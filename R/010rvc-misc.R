@@ -325,24 +325,27 @@ standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global"
                                      
 )
 
-OlsonNames <- function()
-{
-  if (.Platform$OS.type == "windows")
-    tzdir <- Sys.getenv("TZDIR", file.path(R.home("share"),
-                                           "zoneinfo"))
-  else {
-    tzdirs <- c(Sys.getenv("TZDIR"), file.path(R.home("share"),
-                                               "zoneinfo"), "/usr/share/zoneinfo", "/usr/share/lib/zoneinfo",
-                "/usr/lib/zoneinfo", "/usr/local/etc/zoneinfo", "/etc/zoneinfo",
-                "/usr/etc/zoneinfo")
-    tzdirs <- tzdirs[file.exists(tzdirs)]
-    if (!length(tzdirs)) {
-      warning("no Olson database found")
-      return(character())
+## define for older R versions, where this function does not exist.
+## Just copied from a recent R version
+if (!exists("OlsonNames")) {
+  OlsonNames <- function()
+  {
+    if (.Platform$OS.type == "windows")
+      tzdir <- Sys.getenv("TZDIR", file.path(R.home("share"),
+                                             "zoneinfo"))
+    else {
+      tzdirs <- c(Sys.getenv("TZDIR"), file.path(R.home("share"),
+                                                 "zoneinfo"), "/usr/share/zoneinfo", "/usr/share/lib/zoneinfo",
+                  "/usr/lib/zoneinfo", "/usr/local/etc/zoneinfo", "/etc/zoneinfo",
+                  "/usr/etc/zoneinfo")
+      tzdirs <- tzdirs[file.exists(tzdirs)]
+      if (!length(tzdirs)) {
+        warning("no Olson database found")
+        return(character())
+      }
+      else tzdir <- tzdirs[1]
     }
-    else tzdir <- tzdirs[1]
+    x <- list.files(tzdir, recursive = TRUE)
+    grep("^[ABCDEFGHIJKLMNOPQRSTUVWXYZ]", x, value = TRUE)
   }
-  x <- list.files(tzdir, recursive = TRUE)
-  grep("^[ABCDEFGHIJKLMNOPQRSTUVWXYZ]", x, value = TRUE)
 }
-
