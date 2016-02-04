@@ -93,11 +93,24 @@
   return(lab)
 }
 
+.transpose.df <- function(df) {
+  oldSAF <- options()$stringsAsFactors
+  options(stringsAsFactors=FALSE)
+  rn.df <- rownames(df)
+
+  df <- as.data.frame(t(df))
+
+  if (rn.df[1] != "1")
+    colnames(df) <- rn.df
+  options(stringsAsFactors=oldSAF)
+  return(df)
+}
+
 #######################################################################
 ## map ################################################################
 #######################################################################
 
-plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.title=TRUE, ...) {
+plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.title=TRUE, plot=TRUE, ...) {
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
   if (is.VegSpatial(input)) {
@@ -166,6 +179,9 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
     }
   }
 
+  if (!plot)
+    return(dt)
+
   ## calculate the map resolution
   lon <- sort(unique(dt$Lon))
   lat <- sort(unique(dt$Lat))
@@ -197,7 +213,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
       }
     }
   }
-
+  
   ## define axis labels
   ## This needs an update for non lon/lat grids
   lon <- seq(lon.limit[1], lon.limit[2], res)
@@ -252,7 +268,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
 ## meridional #########################################################
 #######################################################################
 
-plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, ...) {
+plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, plot=TRUE, ...) {
   if (!any(names(what)=="center"))
     stop("No definition for meridional average given. Must be either 'mn', 'mean' or 'md', 'median'.")
   if (!any(names(what)=="var"))
@@ -344,6 +360,9 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
     p <- ggplot(md, aes(x=Lat, y=value.center))
   }
 
+  if (!plot)
+    return(md)
+  
   p <- p + .lpj.scatter_theme
 
   if (!is.na(what[["var"]])) {
@@ -385,7 +404,7 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
 #######################################################################
 ## categorial aggregated scatter ######################################
 #######################################################################
-plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, ...) {
+plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, plot=TRUE, ...) {
   if (is.null(targets)) {
     stop("Don't know what to do, if you are not telling me!")
   } else if (is.list(targets)) {
@@ -394,13 +413,17 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     for (i in 1:2)
       targets[, 1] = as.character(targets[, 1])
   }
-  if (nrow(targets)==2 && ncol(targets)==2) {
+
+  if (colnames(targets)[1] == "x" && colnames(targets)[2] == "y")
+    targets <- .transpose.df(targets)
+
+  if (ncol(targets)==2 && ncol(targets)==2) {
     colnames(targets) <- c("slot", "column")
     rownames(targets) <- c("x", "y")
   } else {
     stop("Don't know what to do, if you are not telling me!")
   }
-  
+
   if (is.VegRun(input)) {
     if (all(names(input@spatial) != targets$slot[1]))
       stop(paste("No VegSpatial object'", targets$slot[1], "' present in input!"))
@@ -517,6 +540,9 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       eval(parse(text=paste("dt[, name:=names(name.map)[",targets$column[2],"], ]", sep="")))
     }
   }
+
+  if (!plot)
+    return(dt)
 
   if (any(colnames(dt) == "sens")) {
     if (any(colnames(dt) == "name")) {
