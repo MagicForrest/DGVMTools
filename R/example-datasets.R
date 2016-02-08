@@ -4,7 +4,7 @@
 
 
 readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
-
+  
   
   original.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.out", package = "RVCTools")
   HD.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.HD.nc", package = "RVCTools")

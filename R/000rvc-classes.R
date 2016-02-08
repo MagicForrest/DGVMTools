@@ -135,7 +135,7 @@ setClass("VegRunInfo",
                    line.col = "character", # # not commonly needed, only for more complex run comparisons
                    line.width = "numeric", # not commonly needed, only for more complex run comparisons
                    line.type = "numeric", # not commonly needed, only for more complex run comparisons
-                   correct.for.landuse = "logical"
+                   landuseSimulated = "logical"
          ),
          validity = checkVegRun
          
@@ -152,7 +152,7 @@ setClass("VegRun",
          prototype = c(spatial = list(),
                       timeseries = list(),
                       full = list(),
-                      benchmarks= list()
+                      benchmarks = list()
          ),
          contains = "VegRunInfo"
          
@@ -263,7 +263,8 @@ setClass("SpatialDataset",
                    time.span = "TimeSpan",
                    data = "ANY",
                    veg.quant = "VegQuant",
-                   units = "character"
+                   units = "character",
+                   correction.raster = "RasterLayer"
          )
 )
 
@@ -299,8 +300,9 @@ setClass("RasterComparison",
 
 
 
+
 ##########################################################################################
-########  BIOME CLASSIFICATION #########################################################
+########  BIOME CLASSIFICATION AND COMPARISON CLASSES ####################################
 ##########################################################################################
 
 
@@ -321,6 +323,16 @@ setClass("BiomeClassification",
                    cols = "character",
                    data.reference = "character",
                    published.reference = "character"
+         )
+)
+
+setClass("BiomeComparison",
+         slots = c(id = "character",
+                   data.raster = "RasterLayer", 
+                   model.raster = "RasterLayer", 
+                   scheme = "BiomeClassification",
+                   Kappa = "numeric", 
+                   individual.Kappas = "numeric"  
          )
 )
 

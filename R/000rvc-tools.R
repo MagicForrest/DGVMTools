@@ -68,3 +68,70 @@ is.VegRun <- function(input) {
       return(TRUE)
   return(FALSE)
 }
+
+
+
+
+
+cropRVC <- function(input, extent){
+  
+  input.class <- class(input)[1]
+  extent.class <- class(extent)[1]
+  
+  if(extent.class == "Extent") {
+    this.extent <- extent
+  }
+  else if(extent.class == "SpatialExtent"){
+    this.extent <- extent@extent
+  }
+  
+  if(input.class == "RasterBrick" | input.class == "RasterStack" | input.class == "RasterLayer"){
+    return(crop(input, this.extent))    
+  }
+  else if(input.class == "data.table"){
+    return(input[Lat < this.extent@ymax & Lat > this.extent@ymin & Lon < this.extent@xmax & Lon > this.extent@xmin,])
+  }
+  
+}
+
+cropLPJ <- cropRVC
+
+
+
+
+intersectionRVC <- function(object1, object2){
+  
+  object1.class <- class(object1)[1]
+  object2.class <- class(object2)[1]
+  
+  # CASE 1 - object 1 is raster/layer/stack
+  if(object1.class == "RasterLayer" | object1.class == "RasterStack"  | object1.class == "RasterStack"){
+    
+    # CASE 1a - object 2 is also a raster/layer/stack
+    if(object2.class == "RasterLayer" | object2.class == "RasterStack"  | object2.class == "RasterStack"){
+      
+      intersection.extent <- intersect(object1, object2)
+      return(list(crop(object1, intersection.extent), crop(object2, intersection.extent)))
+        
+    }
+    
+    
+  }
+  
+  else {
+    
+    
+    stop(paste("IntersectionRVC not defined for combination of classes ", object1.class, " and ", object2.class))
+    
+    
+  }
+  
+  
+  
+  
+}
+
+
+
+
+

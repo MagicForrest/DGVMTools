@@ -328,7 +328,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
                          main.title =  NULL,
                          plot.labels = NULL,
                          addData = NULL,
-                         calcKappa = TRUE,
+                         kappa.list = NULL,
                          showKappa = TRUE,
                          kappa.position = NULL,
                          Cairo.units = "px",
@@ -351,8 +351,8 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   
   # IF NO LAYERS, COLS OR STRINGS SUPPLIED, USE THE  DEFAULTSOF THE SCHEME
   if(is.null(which.layers)) which.layers = scheme@id
-  if(is.null(biome.strings)) biome.strings = biome.scheme@strings
-  if(is.null(biome.cols)) biome.cols = biome.scheme@cols
+  if(is.null(biome.strings)) biome.strings = scheme@strings
+  if(is.null(biome.cols)) biome.cols = scheme@cols
   
   # TOLERANCE - for when making grid
   if(is.null(run)) { tolerance <- 0.02 }
@@ -414,26 +414,17 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   }
   
   # KAPPA
-  if(calcKappa & !is.null(addData)){
-    # calculate Kappas and show in terminal
-    kappa.list <- list()
-    for(layer in 1:(nlayers(data.toplot)-1)){
-      message(paste("Kappas for run ", names(data.toplot)[layer]))
-      kappa.list[[layer]] <- doKappa(subset(data.toplot, c(layer, nlayers(data.toplot))),  do.individual = TRUE, labels = biome.strings, verbose = TRUE)
-    }
-    # put kappas on plot
-    if(showKappa){
+  if(!is.null(kappa.list)){
+   
       # if only one model run put individual Kappas into biome legend
-      if(nlayers(data.toplot)-1 == 1) biome.strings <- paste0(biome.strings, " (", round(kappa.list[[1]][[2]],2), ")", sep = "")
+      if(nlayers(data.toplot)-1 == 1) biome.strings <- paste0(biome.strings, " (", round(kappa.list[[1]]@individual.Kappas,2), ")", sep = "")
       # place overall Kappa on each modelled biome map 
       if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
       for(layer in 1:(nlayers(data.toplot)-1)){
-        
-        layout.objs[[paste(layer)]] <- list("sp.text", kappa.position, paste0("Kappa = ", round(kappa.list[[layer]][[1]],3)), which = layer, cex = 1.5)
-        #stop()
+       
+        layout.objs[[paste(layer)]] <- list("sp.text", kappa.position, paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
       }
-      
-    }   
+  
   }
   
   # PLOT MAIN TITLE
@@ -726,34 +717,47 @@ plotBAMaps <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegV
 #######################################################################################################################################
 
 
-plotHistoComparison <- function(model, data, run, period, data.name, quant, diff.breaks, plot.range, stat.results = NULL){
+plotHistoComparison <- function(model, data, run, period, data.name, quant, breaks, plot.range, stat.results = NULL){
   
   if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
   
+ 
   
   CairoPNG(paste(quant@id, run@id, "DiffHisto.Vs", data.name, "png", sep="."), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
   
   cex.axis.multi = 2
   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
-  hist(stat.results$diff.raster,  breaks = diff.breaks, xlim = plot.range, xlab = paste(quant@id, ": ", "LPJ-GUESS - ", data.name, sep = ""), prob = TRUE, main = paste(quant@full.string, ": ", "LPJ-GUESS - ", data.name, sep = ""), cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
-  curve(dnorm(x, mean=stat.results$mean.diff, sd=stat.results$sd.diff), add=TRUE)
+  hist(stat.results@diff.raster,  breaks = breaks, xlim = plot.range, xlab = paste(quant@id, ": ", "LPJ-GUESS - ", data.name, sep = ""), prob = TRUE, main = paste(quant@full.string, ": ", "LPJ-GUESS - ", data.name, sep = ""), cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
+  curve(dnorm(x, mean=stat.results@mean.diff, sd=stat.results@sd.diff), add=TRUE)
   abline(v=0,col="green", lwd = 4)
-  legend('topright', c( paste("Mean = ", round(stat.results$mean.diff,3)), paste("SD = ", round(stat.results$sd.diff,3))), col = c("red","blue"), text.col = c("red","blue"), cex = 3, bty = "n") 
+  legend('topright', c( paste("Mean = ", round(stat.results@mean.diff,3)), paste("SD = ", round(stat.results@sd.diff,3))), col = c("red","blue"), text.col = c("red","blue"), cex = 3, bty = "n") 
   
   dev.off()
+  
+  
+  # set min and max in a robust way for the overlay hist
+  setMinMax(stat.results@diff.raster)
+  setMinMax(data)
+  setMinMax(model)
+  
+  breaks.max <- ceiling(max(maxValue(stat.results@diff.raster), maxValue(data),maxValue(model)))
+  breaks.min <- floor(min(minValue(stat.results@diff.raster), minValue(data),minValue(model)))
+  if(breaks.max - breaks.min > 100) breaks <- seq(breaks.min, breaks.max, by = 10) 
+  else if(breaks.max - breaks.min < 10) breaks <- seq(breaks.min, breaks.max, by = 0.1)
+  else breaks <- seq(breaks.min, breaks.max, by = 1)
   
   
   CairoPNG(paste(quant@id, run@id, "OverlayHisto.Vs", data.name, "png", sep="."), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
   
   cex.axis.multi = 2
   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
-  y.height <- 2*max(hist(stat.results$diff.raster, breaks = diff.breaks, plot = FALSE)$counts, hist(data, breaks = diff.breaks, plot = FALSE)$counts,  hist(model, breaks = diff.breaks, plot = FALSE)$counts)
-  diff.histo <- hist(stat.results$diff.raster,  breaks = diff.breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@full.string, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis = cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
-  hist(data,  breaks = diff.breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@full.string, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "red", maxpixels =100000000, right = FALSE)
-  hist(model,  breaks = diff.breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@full.string, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "blue", maxpixels =100000000, right = FALSE)
-  curve(dnorm(x, mean=stat.results$mean.diff, sd=stat.results$sd.diff)*diff(diff.histo$mids[1:2])*cellStats(is.finite(stat.results$diff.raster), stat= sum, na.rm=TRUE, asSample=FALSE), add=TRUE)
+  y.height <- 2*max(hist(stat.results@diff.raster, breaks = breaks, plot = FALSE)$counts, hist(data, breaks = breaks, plot = FALSE)$counts,  hist(model, breaks = breaks, plot = FALSE)$counts)
+  diff.histo <- hist(stat.results@diff.raster,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@full.string, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis = cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
+  hist(data,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@full.string, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "red", maxpixels =100000000, right = FALSE)
+  hist(model,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@full.string, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "blue", maxpixels =100000000, right = FALSE)
+  curve(dnorm(x, mean=stat.results@mean.diff, sd=stat.results@sd.diff)*diff(diff.histo$mids[1:2])*cellStats(is.finite(stat.results@diff.raster), stat= sum, na.rm=TRUE, asSample=FALSE), add=TRUE)
   abline(v=0,col="green", lwd = 4)
-  legend('topright', c(data.name, "LPJ-GUESS", paste("LPJ-GUESS -", data.name, sep = " "), paste("Mean = ", round(stat.results$mean.diff,6)), paste("SD =", round(stat.results$sd.diff,6))), col = c("red","blue", "black", "black", "black"), text.col = c("red","blue", "black", "black", "black"), cex = 3, bty = "n") 
+  legend('topright', c(data.name, "LPJ-GUESS", paste("LPJ-GUESS -", data.name, sep = " "), paste("Mean = ", round(stat.results@mean.diff,6)), paste("SD =", round(stat.results@sd.diff,6))), col = c("red","blue", "black", "black", "black"), text.col = c("red","blue", "black", "black", "black"), cex = 3, bty = "n") 
   
   dev.off()
   
@@ -775,7 +779,7 @@ plotScatterComparison <- function(model, data, model.run, period, data.name, qua
   
   plot(model, data, col = rgb(0.1,0.1,0.1,0.1), pch = 20, xlab = paste(run@description, " ", quant@full.string, " (", quant@units, ")", sep = ""), ylab = paste(data.name, " ", quant@full.string, " (", quant@units, ")", sep =""), ylim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), xlim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), main = paste("Scatter vs. ", data.name, sep = ""), maxpixels = 100000000, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 4)
   abline(0, 1, col = "red")
-  legend('topleft', c(paste("RMSE:", round(stat.results$RMSE, 2), sep = " "), paste("R^2:", round(stat.results$R.squ, 2), sep = " "), paste("Pearsons:", round(stat.results$P.cor, 2), sep = " ")), text.col = c("red", "blue", "green"), cex = 3, bty = "n")
+  legend('topleft', c(paste("RMSE:", round(stat.results@RMSE, 2), sep = " "), paste("R^2:", round(stat.results@R.squ, 2), sep = " "), paste("Pearsons:", round(stat.results@P.cor, 2), sep = " ")), text.col = c("red", "blue", "green"), cex = 3, bty = "n")
   dev.off()
   
 }

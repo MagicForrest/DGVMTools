@@ -22,21 +22,21 @@ prepareBenchmarkingDatasets <- function(benchmark.list, resolution = "HD"){
                                                             veg.quant = lookupVegQuantity("lai"),
                                                             units = ""
       )
- 
+      
     } # if it is a biome classification
-
+    
     # If it is the Saatchi data
     if(benchmark.string == "Saatchi2011") { benchmarking.datasets.list[[benchmark.string]] <- getSaatchi2011(resolution = resolution) }
-      
-      
+    
+    
     # If it is the GFED data
-
+    
   } # for each benchmark
-
+  
   
   
   return(benchmarking.datasets.list)
-
+  
 }
 
 
@@ -70,119 +70,59 @@ compareTwoRastersStats <- function(data.raster, model.raster){
   P.cor <- P.cor.full$`pearson correlation coefficient`[1,2]
   
   perc.diff.raster <- (diff / data.raster) * 100
-  comparison.results <- list(diff.raster = diff, perc.diff.raster = perc.diff.raster, data.raster = data.raster, model.raster = model.raster, R.squ = R.squ, P.cor = P.cor, RMSE = RMSE, mean.diff = mean.diff, sd.diff = sd.diff)
+  comparison.results <- new("RasterComparison",
+                            diff.raster = diff, 
+                            perc.diff.raster = perc.diff.raster, 
+                            data.raster = data.raster, model.raster = model.raster, 
+                            R.squ = R.squ, 
+                            P.cor = P.cor, 
+                            RMSE = RMSE, 
+                            mean.diff = mean.diff, 
+                            sd.diff = sd.diff)
+  
   
   return(comparison.results)
   
 }
 
-compareTwoRasters <- function(combined.stack, dataset.name = "", model.name = "LPJ.GUESS", run = NULL, diff.breaks = NULL, plot.breaks = NULL, histo.plot.range = NULL, doScatterPlots=TRUE, doHistoPlots=TRUE, period = NULL, quant = NULL, ignore.raster = NULL, map.layout.objs = NULL, ...){
-  
-  warning("+++ Maybe use compareRunToSpatialDataset() ?!?!")
-  
-  
-  # make difference map and a stack to plot
-  if(!is.null(ignore.raster)){ combined.stack <- mask(combined.stack, ignore.raster)}
-  # also mask the data to exlude areas on NA or NaNs in model, doesn't makes sense to show data where we have no model to compare
-  combined.stack <- mask(subset(combined.stack, 1), combined.stack)
-  
-  
-  model.raster <- subset(combined.stack, 1)
-  data.raster <- subset(combined.stack, 2)
-  
-  
-  comparison.results <- compareTwoRastersStats(data.raster, model.raster)
-  
-  ##### DIFFERENCE MAP
-  plotLPJMaps(comparison.results$diff.raster,
-              quant = quant, 
-              period = period, 
-              doSummary = TRUE, 
-              doIndividual = TRUE, 
-              run = run,
-              special = "diff",
-              special.string = names(data.raster),
-              maxpixels = 1000000,
-              layout.objs = map.layout.objs,
-              ...)
-  
-  
-  
-  
-  ##### ABSOLUTE MAPS
-  plotLPJMaps(combined.stack,
-              which.layers = "all",
-              quant = quant, 
-              period = period, 
-              doSummary = TRUE, 
-              doIndividual = TRUE, 
-              run = run,
-              summary.file.name = paste(quant@id, "comp", names(data.raster), "2-up", sep = "."),
-              special.string = "Corrected",
-              maxpixels = 1000000,
-              layout.objs = map.layout.objs,
-              ...)
-  
-  
-  
-  
-  
-  ##### HISTOS
-  if(doHistoPlots){
-    
-    plotHistoComparison(model = model.raster, 
-                        data = data.raster, 
-                        stat.results = comparison.results,
-                        run = run, 
-                        period = period,
-                        data.name = names(data.raster), 
-                        quant = quant, 
-                        diff.breaks = diff.breaks,
-                        plot.range = histo.plot.range)
-    
-  }
-  
-  ##### SCATTER PLOT
-  if(doScatterPlots){
-    
-    
-    
-    plotScatterComparison(model = model.raster, 
-                          data = data.raster,  
-                          stat.results = comparison.results,
-                          model.run = run, 
-                          period = period,
-                          data.name = names(data.raster), 
-                          quant = quant)
-    
-    
-  }
-  
-  return(comparison.results)
-  
-}
+
 
 
 
 compareRunToSpatialDataset <- function(dataset, 
-                                       model.raster, 
-                                       run, 
-                                       diff.breaks = NULL, 
-                                       plot.breaks = NULL, 
+                                       vegvar, 
+                                       layer,
+                                       diff.cuts = NULL, 
                                        histo.plot.range = NULL, 
                                        doScatterPlots=TRUE, 
                                        doHistoPlots=TRUE, 
                                        quant = NULL, 
-                                       ignore.raster = NULL, 
-                                       map.layout.objs = NULL, 
+                                       ignore.raster = NULL,
+                                       correction.raster = NULL,
                                        ...){
   
+  # PROMOTE MODEL TO RASTER FOR PROCESSING
+  model.raster <- promoteToRaster(vegvar, layer, run@tolerance)
   
+  # PREPARE CUTS AND HISTO PLOT RANGE (if not specificed)
+  if(is.null(diff.cuts)) {
+    interval <- (range(dataset@veg.quant@cuts)[2] - range(dataset@veg.quant@cuts)[1] )/ (length(dataset@veg.quant@cuts)-1)
+    diff.cuts <-  seq(-(max(dataset@veg.quant@cuts)), max(dataset@veg.quant@cuts), interval)
+  }
+ 
+  if(is.null(histo.plot.range)) histo.plot.range <- c(diff.cuts[[1]], diff.cuts[[length(diff.cuts)]])
+
+  # PREPARE QUANT
+  if(is.null(quant)) quant <- dataset@veg.quant 
+    
   # crop all rasters to the same size
-  common.extent <- intersect(model.raster, dataset@data)
-  model.raster <- crop(model.raster, common.extent)
-  names(model.raster) <- run@id
-  data.raster <- crop(dataset@data, common.extent)
+  temp <- intersectionRVC(model.raster, dataset@data)
+  model.raster <- temp[[1]]
+  data.raster <- temp[[2]]
+  rm(temp)
+
+  # set names of raster layers
+  names(model.raster) <- layer
   names(data.raster) <- dataset@id
   
   # make difference map and a stack to plot
@@ -195,50 +135,38 @@ compareRunToSpatialDataset <- function(dataset,
   model.raster <- mask(model.raster, data.raster)
   data.raster <- mask(data.raster, model.raster)
   
+  # calculate comparison
   comparison.results <- compareTwoRastersStats(data.raster, model.raster)
   
-  ##### DIFFERENCE MAP
-  #plotDifferenceMap(comparison.results$diff.raster, 
-  #                  quant.id = paste(quant@id, "diff", dataset@id, sep ="."), 
-  #                  quant.str = paste(run@id, "-" , dataset@id, quant@id, sep = " "), 
-  #                  run = run, 
-  #                  period = dataset@time.span, 
-  #                  layout.objs = map.layout.objs,
-  #                  at = plot.breaks,
-  #                  maxpixels = 1000000) 
   
-  
-  plotLPJMaps(comparison.results$diff.raster,
+  ##### DIFFERENCE MAPS
+  plotVegMaps(comparison.results@diff.raster,
               quant = quant, 
               period = dataset@time.span, 
               doSummary = TRUE, 
               doIndividual = FALSE, 
-              run = run,
-              summary.file.name = paste(quant@id, "comp", dataset@id, sep = "."),
+              run = vegvar@run,
+              summary.file.name = paste(quant@id, "Vs", dataset@id, sep = "."),
               special.string = "Corrected",
               maxpixels = 1000000,
-              layout.objs = map.layout.objs,
+              special = "diff",
               ...)
-  
-  
+    
   
   ##### ABSOLUTE MAPS
-  plotLPJMaps(stack(model.raster, data.raster),
-              which.layers = "all",
+  plotVegMaps(stack(model.raster, data.raster),
+              which.layers = c(names(model.raster), names(data.raster)),
               quant = quant, 
               period = dataset@time.span, 
               doSummary = TRUE, 
               doIndividual = TRUE, 
-              run = run,
+              run = vegvar@run,
               summary.file.name = paste(quant@id, "comp", dataset@id, "2-up", sep = "."),
               special.string = "Corrected",
               maxpixels = 1000000,
-              layout.objs = map.layout.objs,
               plot.labels = c(run@description, dataset@name),
               ...)
-  
-  
-  
+   
   
   
   ##### HISTOS
@@ -251,7 +179,7 @@ compareRunToSpatialDataset <- function(dataset,
                         period = dataset@time.span,
                         data.name = names(data.raster), 
                         quant = quant, 
-                        diff.breaks = diff.breaks,
+                        breaks = diff.cuts,
                         plot.range = histo.plot.range)
     
   }
@@ -269,7 +197,8 @@ compareRunToSpatialDataset <- function(dataset,
     
     
   }
-  
+  comparison.results@id <- dataset@id
+    
   return(comparison.results)
   
 }
@@ -402,12 +331,13 @@ compareManyRunsToData <- function(list.of.results,
 }
 
 
+###################################################################################################
+####################  BIOME COMPARISIONS AND STATS ################################################
+###################################################################################################
 
 
 
-doKappa <- function(stack, do.individual = FALSE, labels = NULL, verbose = TRUE){
-  
-  
+doKappa <- function(stack, labels = NULL, verbose = TRUE){
   
   # get the unique classes and put them in a vector with no missing values
   unique.classes <- union(unique(subset(stack,1)),unique(subset(stack,2)))
@@ -453,32 +383,70 @@ doKappa <- function(stack, do.individual = FALSE, labels = NULL, verbose = TRUE)
   #finally kappa
   kappa <- (total.agreement - chance.agreement) / (ngridcells - chance.agreement)
   
-  if(do.individual){
-    if(is.null(labels)) labels <- paste("Class", 1:length(unique.class.ids), " ")
-    
-    # also calculate the per class agreement (This is ripped from TH Kappa script, I don't understand it but it gives identical results)
-    per.class.kappa <- c()
-    for(counter in 1:length(unique.class.ids)){
-      a  <- kappa.matrix[counter, counter] / ngridcells
-      p1 <- row.totals[counter] / ngridcells
-      p2 <- col.totals[counter] / ngridcells
-      q1 <- 1.0-p1
-      q2 <- 1.0-p2
-      b  <- p1-a
-      c  <- p2-a
-      d  <- q1-c
-      per.class.kappa <- append(per.class.kappa, (a - p1*p2)/( (p1+p2)/2.0 -p1*p2))
-      if(verbose) print(paste(labels[counter], round(per.class.kappa[counter], 3), sep = " "))
-    }
-    
-    if(verbose) print(paste("Overall Kappa", round(kappa, 3), sep = " "))
-    
-    return(list(kappa, per.class.kappa))
+  if(is.null(labels)) labels <- paste("Class", 1:length(unique.class.ids), " ")
+  
+  # also calculate the per class agreement (This is ripped from TH Kappa script, I don't understand it but it gives identical results)
+  per.class.kappa <- c()
+  for(counter in 1:length(unique.class.ids)){
+    a  <- kappa.matrix[counter, counter] / ngridcells
+    p1 <- row.totals[counter] / ngridcells
+    p2 <- col.totals[counter] / ngridcells
+    q1 <- 1.0-p1
+    q2 <- 1.0-p2
+    b  <- p1-a
+    c  <- p2-a
+    d  <- q1-c
+    per.class.kappa <- append(per.class.kappa, (a - p1*p2)/( (p1+p2)/2.0 -p1*p2))
+    if(verbose) print(paste(labels[counter], round(per.class.kappa[counter], 3), sep = " "))
   }
   
-  else{
-    if(verbose) print(paste("Overall Kappa", round(kappa, 3), sep = " "))
-    return(kappa)
+  if(verbose) print(paste("Overall Kappa", round(kappa, 3), sep = " "))
+  
+  
+  return(new("BiomeComparison",
+             id = scheme@id,
+             data.raster = subset(stack,1), 
+             model.raster = subset(stack,2), 
+             scheme = scheme,
+             Kappa = kappa, 
+             individual.Kappas = per.class.kappa)
+  )
+  
+  
+}
+
+
+
+
+compareBiomes <- function(run, variable, period, scheme, plot = TRUE){
+  
+  # Prepare the veg. spatial object
+  this.VegSpatial <- getVegSpatial(run, period, variable, forceReAveraging = FALSE)
+  
+  #  calculate biomes from model output
+  this.VegSpatial <- addBiomes(this.VegSpatial, scheme)
+  
+  # read expert-derived PNV biomes
+  PNV.biomes <- readHandPBiomes(resolution = "HD", classification = scheme@id)
+  
+  # make the stack for the comparisons
+  comparison.stack <- stack(intersectionRVC(promoteToRaster(this.VegSpatial, scheme@id, run@tolerance), PNV.biomes))
+  
+  # calculate Kappa statistics (and possibily other similarity/dissimilarity metrics)
+  Kappa.comparison <- doKappa(comparison.stack, labels = scheme@strings, verbose = TRUE)
+  
+  
+  # plot biomes if requested
+  if(plot){
+    plotBiomeMap(this.VegSpatial, 
+                 scheme = scheme,
+                 addData = PNV.biomes, 
+                 kappa.list = list(Kappa.comparison),
+                 Cairo.type = c("png","ps"), 
+    )
   }
+  
+  return(Kappa.comparison)
+  
 }
 

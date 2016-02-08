@@ -22,8 +22,6 @@
 ###
 ###################################### 
 
-require(compiler)
-
 ############################################################################################################################
 ######################### FUNCTIONS TO HANDLE FILES AND DATATABLES #########################################################
 ############################################################################################################################
@@ -121,27 +119,6 @@ openLPJOutputFile <- function(run,
   
 }
 
-cropLPJ <- function(input, extent){
-  
-  input.class <- class(input)[1]
-  extent.class <- class(extent)[1]
-  
-  if(extent.class == "Extent") {
-    this.extent <- extent
-  }
-  else if(extent.class == "SpatialExtent"){
-    this.extent <- extent@extent
-  }
-  
-  if(input.class == "RasterBrick" | input.class == "RasterStack" | input.class == "RasterLayer"){
-    return(crop(input, this.extent))    
-  }
-  else if(input.class == "data.table"){
-    return(input[Lat < this.extent@ymax & Lat > this.extent@ymin & Lon < this.extent@xmax & Lon > this.extent@xmin,])
-  }
-  
-}
-
 
 ################################# GET TIME-AVERAGED DATA #########################################
 
@@ -200,7 +177,7 @@ defineVegRun <- function(...){
  if(length(info@line.col) == 0)  info@line.col <- "green"
  if(length(info@line.width) == 0)  info@line.width <- 1
  if(length(info@line.type) == 0)  info@line.type <- 1
- if(length(info@correct.for.landuse) == 0)  info@correct.for.landuse <- TRUE
+ if(length(info@landuseSimulated) == 0)  info@correct.for.landuse <- FALSE
  
  # lookup map over from maps and mapdata package
  if(!is.null(info@map.overlay)) {
@@ -215,6 +192,33 @@ defineVegRun <- function(...){
   
 }
 
+
+addToVegRun <- function(object, run, id = NULL){
+ 
+  object.class <- class(object)[1]
+  
+  if(object.class == "data.table") {
+    
+    if(is.null(id)) stop("When adding a full data.table to a VegRun you *must* specific an id")
+    run@full[[id]] <- object
+    
+  }
+  
+  else if(object.class == "BiomeComparison" | object.class == "RasterComparison") {
+    
+    if(is.null(id)) id <- object@id
+    benchmark.list <- run@benchmarks
+    benchmark.list[[id]] <- object
+    run@benchmarks <- benchmark.list
+    rm(benchmark.list)
+    
+  }
+  
+  
+  
+  return(run)
+    
+}
 
 
 ################################# GET TIME-AVERAGED DATA #########################################
@@ -247,7 +251,6 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
       if (is.null(this.full)) {
         if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
         this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
-        this.full <<- this.full
       }
       else{
         if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that.", sep = ""))
@@ -370,9 +373,9 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   
   ###  Define the layers we are pulling out
   # for VegSpatial - note could define a methods "names" do cover this exception
-  if(this.class == "VegSpatial" & (is.null(layers) || layers == "all")) {layers <- names(data@data)} 
+  if(this.class == "VegSpatial" & (is.null(layers) | layers == "all")) {layers <- names(data@data)} 
   # for data.table or rasters
-  else if(is.null(layers) || layers == "all") {layers = names(data)}
+  else if(is.null(layers) | layers == "all") {layers = names(data)}
   
   
   ###  If wSpatialPixelsDataFrame we can plot it
