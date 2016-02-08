@@ -9,7 +9,7 @@ Authors@R: c(person("Matthew", "Forrst", role = c("aut", "cre"), email
 Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
 Maintainer: Matthew Forrest <mforrest@senckenberg.de>
 Depends: R (>= 2.15.0), methods, udunits2, mapdata, maptools, ncdf4, rgdal,
-        raster, lattice, fields, data.table, xts, foreach, doParallel,
+        raster, lattice, fields, data.table, xts, 
         rgeos, compiler, ggplot2, Cairo, readr
 Suggests: zoo, mgcv, RColorBrewer
 Description: Process output data produced by dynamic global vegetation

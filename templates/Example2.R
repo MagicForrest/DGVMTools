@@ -41,6 +41,8 @@
 rm(list = ls())
 if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
 library(RVCTools)
+library(foreach)
+library(doParallel)
 
 # start the timer
 t1 <- Sys.time()
