@@ -2,7 +2,7 @@
 ## ggplot2 themes for nicer plots #####################################
 #######################################################################
 
-.lpj.map_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.rvc.map_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                              panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                              panel.background  = element_rect(fill="#cae1ff"),
                              panel.border      = element_rect(fill=NA, linetype = "solid", colour = "black"),
@@ -20,7 +20,7 @@
                              plot.title        = element_text(size=22),
                              strip.background  = element_rect(fill=NA)))
 
-.lpj.scatter_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.rvc.scatter_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.background  = element_blank(),
                                  panel.border      = element_blank(),
@@ -38,8 +38,42 @@
                                  plot.title        = element_text(size=22),
                                  strip.background  = element_rect(fill=NA)))
 
+.rvt.ts_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+                            panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+                            panel.background  = element_blank(),
+                            panel.border      = element_blank(),
+                            axis.line         = element_line(size=0.1, linetype="solid", colour="black"),
+#                             axis.line         = element_blank(),
+                            axis.text         = element_text(size=12, colour = "black"),
+                            axis.ticks        = element_line(size=0.1, colour = "black", linetype = "dotted"),
+                            axis.ticks.length = unit(1.5, "points"),
+                            axis.title        = element_text(size=12, face="bold"),
+                            legend.text       = element_text(size=12),
+                            legend.title      = element_text(size=12, face="bold"),
+                            legend.position   = "bottom",
+                            legend.key        = element_rect(colour = "black"),
+#                             legend.key.width  = unit(0.08, "npc"),
+                            plot.background   = element_blank(),
+                            plot.title        = element_text(size=22)))
+
 #######################################################################
-## helper functions ###################################################
+## exported helper functions ##########################################
+#######################################################################
+
+rvc.ggplot.theme <- function(x) {
+  if(x=="scatter") {
+    return(.rvc.scatter_theme)
+  } else if (x=="ts" || x=="timeseries") {
+    return(.rvt.ts_theme)
+  } else if (x=="map") {
+    return(.rvc.map_theme)
+  } else {
+    return(FALSE)
+  }
+}
+
+#######################################################################
+## internal helper functions ##########################################
 #######################################################################
 
 ## This needs an update for non lon/lat grids
@@ -223,7 +257,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
 
   ## create plot
   p <- ggplot(dt, aes(y=Lat, x=Lon))
-  p <- p + .lpj.map_theme
+  p <- p + .rvc.map_theme
 
   if (discrete) {
     p <- p + geom_raster(aes(fill=name))
@@ -363,7 +397,7 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
   if (!plot)
     return(md)
   
-  p <- p + .lpj.scatter_theme
+  p <- p + .rvc.scatter_theme
 
   if (!is.na(what[["var"]])) {
     if (any(colnames(dt)=="sens")) {
@@ -550,7 +584,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     } else {
       eval(parse(text=paste("p <- ggplot(dt, aes(x=value, y=",targets$column[2],", col=sens))", sep="")))
     }
-    p <- p + .lpj.scatter_theme
+    p <- p + .rvc.scatter_theme
     p <- p + scale_color_manual(values=brewer.pal(length(unique(dt$sens)),"Set1"),
                                 na.value="grey", guide=guide_legend(ncol=2))
     p <- p + geom_point(size=2.5, position = position_jitter(w = 0, h = 0.15))
@@ -562,7 +596,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     } else {
       eval(parse(text=paste("p <- ggplot(dt, aes(x=value, y=",targets$column[2],"))", sep="")))
     }
-    p <- p + .lpj.scatter_theme
+    p <- p + .rvc.scatter_theme
     p <- p + geom_point(size=2.5)
     p <- p + xlab(units) + ylab("")
     p <- p + guides(colour = guide_legend(override.aes = list(size=4), ncol=2))
@@ -570,12 +604,6 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 
   return(p)  
 }
-
-
-
-
-
-
 
 
 #######################################################################
@@ -602,3 +630,10 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 ##   }
   
 ## }
+
+#######################################################################
+## timeseries #########################################################
+#######################################################################
+plotGGTS <- function(input, targets=NULL, name.map=NA, long.title=TRUE, plot=TRUE, ...) {
+  
+}

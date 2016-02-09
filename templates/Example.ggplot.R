@@ -1,7 +1,6 @@
 detach('package:RVCTools', unload=TRUE)
 suppressMessages(library(RVCTools))
 library(RColorBrewer)
-library(maptools)
 
 ## Define a TIME PERIOD over which to average
 period = new("TimeSpan", name = "Reference", start = 1981, end = 2010)
@@ -73,18 +72,20 @@ sens_CLM <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/globa
                          year.offset = 0
                          )
 
-## Fill the runs with data
-for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@spatial[['lai']] <- getVegSpatial(",run,", period, 'lai', forceReAveraging = FALSE)", sep="")))
-  eval(parse(text=paste(run, "@spatial[['gpp']] <- getVegSpatial(",run,", period, 'agpp', forceReAveraging = FALSE)", sep="")))
-  eval(parse(text=paste(run, "@spatial[['lai']] <- addBiomes(",run, "@spatial[['lai']], Smith2014.scheme)", sep="")))
-}
-
 ########################################################################
 ### The functions return a ggplot object, which can be further modified
 ### or printed to the currently open graphics device, which is the
 ### default behaviour.
 ########################################################################
+
+### Spatial analyses first
+
+## Fill the runs with time averaged spatial data
+for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
+  eval(parse(text=paste(run, "@spatial[['lai']] <- getVegSpatial(",run,", period, 'lai', forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@spatial[['gpp']] <- getVegSpatial(",run,", period, 'agpp', forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@spatial[['lai']] <- addBiomes(",run, "@spatial[['lai']], Smith2014.scheme)", sep="")))
+}
 
 ## single panel without title
 plotGGMap(base@spatial[['lai']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
@@ -111,4 +112,15 @@ plotGGCategorialAggregated(base, targets=list(slot=c("gpp", "lai"), col=c("Total
 
 p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")), name.map=Smith2014.scheme@cols)
 p + guides(col = guide_legend(ncol = 1))
+
+
+
+for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
+  eval(parse(text=paste(run, "@timeseries[['npp']] <- getSADT(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@timeseries[['gpp']] <- getSADT(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
+}
+
+
+
+
 

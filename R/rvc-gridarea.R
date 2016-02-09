@@ -128,9 +128,14 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=FALSE) {
     ellipse=FALSE
   }
 
-  lon <- extract.seq(input@data$Lon)
-  lat <- extract.seq(input@data$Lat)
-
+  if (is.data.table(input)) {
+    lon <- extract.seq(input$Lon)
+    lat <- extract.seq(input$Lat)
+  } else {
+    lon <- extract.seq(input@data$Lon)
+    lat <- extract.seq(input@data$Lat)
+  }
+  
   area <- as.data.table(gridarea2d(lon, lat, ellipse=ellipse))
   setkeyv(area, c("Lon", "Lat"))
 
@@ -148,10 +153,18 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=FALSE) {
     }
   }
 
-  data <- input@data
-  data <- area[data]
-  input@data <- data
-  if (verbose)
-    message(paste("Added column 'area' in unit '", unit, "'.", sep=""))
-  return(input)
+  if (is.data.table(input)) {
+    input <- area[input]
+    if (verbose)
+      message(paste("Added column 'area' in unit '", unit, "'.", sep=""))
+    return(input)
+  } else {
+    data <- input@data
+    data <- area[data]
+    input@data <- data
+    if (verbose)
+      message(paste("Added column 'area' in unit '", unit, "'.", sep=""))
+    return(input)
+  }
 }
+

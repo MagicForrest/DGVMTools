@@ -177,7 +177,7 @@ defineVegRun <- function(...){
  if(length(info@line.col) == 0)  info@line.col <- "green"
  if(length(info@line.width) == 0)  info@line.width <- 1
  if(length(info@line.type) == 0)  info@line.type <- 1
- if(length(info@landuseSimulated) == 0)  info@correct.for.landuse <- FALSE
+ if(length(info@landuseSimulated) == 0)  info@landuseSimulated <- FALSE
  
  # lookup map over from maps and mapdata package
  if(!is.null(info@map.overlay)) {
@@ -291,7 +291,7 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
 ################################# GET SPACE-AVERAGED DATA #########################################
 
 
-getSADT <- function(run, var, spatial.extent = NULL, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE){
+getSADT <- function(run, var, spatial.extent = NULL, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, area.weighted=TRUE){
   
   
   # look for the correct time averaged files and if there read it in
@@ -319,10 +319,10 @@ getSADT <- function(run, var, spatial.extent = NULL, this.full = NULL, write = T
       if(verbose) message(paste("File ",  SA.filename, " not found in directory ",  run@run.dir, " but ", var, ".out is already read, so using that.", sep = ""))
     }
     # If required, crop spatial extent before spatially averaging
-    if(is.null(spatial.extent)) {
+    if(!is.null(spatial.extent)) {
       this.full <- cropLPJ(this.full, spatial.extent)
     }
-    this.SA.dt <- doSpaceAverage.cmpd(this.full, verbose)
+    this.SA.dt <- doSpaceAverage.cmpd(this.full, verbose, area.weighted)
     if(write) {
       if(verbose) {message("Saving as a table...")}
       write.table(this.SA.dt, file = SA.filename, quote = FALSE, row.names = FALSE)
@@ -482,15 +482,26 @@ selectYears <- function(input.dt, time.span){
 ######################### SPACE AVERAGE AN LPJ-GUESS FULL OUTPUT FILE COMING IN AS A data.table  ##############################
 
 doSpaceAverage <- function(input.dt,
-                           verbose = FALSE){
+                           verbose = FALSE,
+                           area.weighted=TRUE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
   Year = Lat = Lon = NULL
   
   # Do the averaging
-  if(verbose) message(paste("Spatially averaging whole domain...", sep = ""))
-  output.dt <- input.dt[,lapply(.SD, mean), by=list(Year)]
+  if (area.weighted) {
+    if (!any(colnames(input.dt)=="area"))
+      if (verbose)
+        message("Add column area.")
+      input.dt <- addArea(input.dt, verbose=verbose)
+    if(verbose) message(paste("Spatially averaging (area weighted) whole domain...", sep = ""))
+    output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area), by=list(Year)]
+    output.dt[,area:=NULL]
+  } else {
+    if(verbose) message(paste("Spatially averaging (not area weighted) whole domain...", sep = ""))
+    output.dt <- input.dt[,lapply(.SD, mean), by=list(Year)]
+  }
   
   # remove the Lon and Lat columns 'cos they dun' make so much sense
   output.dt[,Lon:=NULL]
