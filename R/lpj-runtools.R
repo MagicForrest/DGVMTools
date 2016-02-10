@@ -176,7 +176,7 @@ addToVegRun <- function(object, run, id = NULL){
     rm(benchmark.list)
     
   }
-    
+  
   else if(object.class == "VegTemporal") {
     
     if(is.null(id)) id <- object@id
@@ -244,7 +244,7 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
       }
       
       # do temporal averaging
-      this.TA.dt <- doTimeAverage.cmpd(this.full, period, verbose)
+      this.TA.dt <- .doTimeAverage.cmpd(this.full, period, verbose)
       if(write) {
         if(verbose) {message("Saving as a table...")}
         write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
@@ -289,29 +289,33 @@ getVegTemporal <- function(run, var, spatial.extent = NULL, this.full = NULL, wr
     var.string <- quant@id
   }
   
-  
   # look for the correct time averaged files and if there read it in
   if(is.null(spatial.extent)){
-    SA.filename <- paste(run@run.dir, "/", var, ".SA.Rtable", sep ="")
+    SA.filename <- paste(run@run.dir, "/", var.string, ".SA.Rtable", sep ="")
   } 
   else {
-    SA.filename <- paste(run@run.dir, "/", var, ".", extent@id, ".SA.Rtable", sep ="")
+    SA.filename <- paste(run@run.dir, "/", var.string, ".", spatial.extent@id, ".SA.Rtable", sep ="")
   }
   
   # if file is present and we are not forcing re-averaging, read in the pre-averaged file
   if(file.exists(paste(SA.filename)) & !forceReAveraging){
     if(verbose) {message(paste("File",  SA.filename, "found in",  run@run.dir, "so using that.",  sep = " "))}
     this.SA.dt <- fread(SA.filename, header = TRUE, stringsAsFactors=FALSE)
+    # In this case the 
+    if(is.null(spatial.extent)) {
+      # In this case we cannot determine original extent, so put in dummy values
+      spatial.extent <- new("SpatialExtent", id = "original", name = "Full original domain", extent = extent(NaN, NaN, NaN, NaN))
+    }
   } 
   
   # otherwise, open the full .out file read it as a data table, time average it and save to disk
   else {
     if (is.null(this.full)) {
-      if(verbose) message(paste("File ",  SA.filename, " not found in directory ",  run@run.dir, " and ", var, ".out is not already read, reading .out file.", sep = ""))
-      this.full <- openLPJOutputFile(run, var, verbose = TRUE)
+      if(verbose) message(paste("File ",  SA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
+      this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
     }
     else{
-      if(verbose) message(paste("File ",  SA.filename, " not found in directory ",  run@run.dir, " but ", var, ".out is already read, so using that.", sep = ""))
+      if(verbose) message(paste("File ",  SA.filename, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that.", sep = ""))
     }
     # If required, crop spatial extent before spatially averaging
     if(!is.null(spatial.extent)) {
@@ -323,11 +327,24 @@ getVegTemporal <- function(run, var, spatial.extent = NULL, this.full = NULL, wr
       write.table(this.SA.dt, file = SA.filename, quote = FALSE, row.names = FALSE)
     }
   }
-  
   setkey(this.SA.dt, Year)
   
+  # In the special case that a special extent was not specified and we read the whole file, determine the spatial extent
+  if(is.null(spatial.extent) & !is.null(this.full)) {
+    Lons <- sort(unique(this.full[,Lon]))
+    Lats <- sort(unique(this.full[,Lat]))
+    lon.min <- Lons[1] - (Lons[2] - Lons[1])/2
+    lon.max <- Lons[length(Lons)] + (Lons[length(Lons)] -Lons[length(Lons)-1])/2
+    lat.min <- Lats[1] - (Lats[2] - Lats[1])/2
+    lat.max <- Lats[length(Lats)] + (Lats[length(Lats)] -Lats[length(Lats)-1])/2
+    spatial.extent <- new("SpatialExtent", id = "Full", name = "Full Domain", extent = extent(lon.min,lon.max,lat.min,lat.max))
+  }
+  
+  rm(this.full)
+  gc()
+  
   return(new("VegTemporal",
-             id = paste(var.string, period@id),
+             id = paste(var.string, spatial.extent@id),
              data = this.SA.dt,
              spatial.extent = spatial.extent,
              quant = quant,

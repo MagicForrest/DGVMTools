@@ -157,8 +157,8 @@ for(run in vegrun.list){
     # look-up quantity, 
     if(var == "mfirefrac" & run@model != "LPJ-GUESS-SPITFIRE") {var <- "firert"}
     this.VegQuantity <- lookupVegQuantity(var)
-    
    
+    
     ### FOR EACH TIME PERIOD
     for(period in periods){
       
