@@ -140,11 +140,19 @@ rvc.ggplot.theme <- function(x) {
   return(df)
 }
 
+## from http://stackoverflow.com/questions/13289009/check-if-character-string-is-a-valid-color-representation
+.is.color <- function(x) {
+  sapply(x, function(X) {
+    tryCatch(is.matrix(col2rgb(X)), 
+             error = function(e) FALSE)
+  })
+}
+
 #######################################################################
 ## map ################################################################
 #######################################################################
 
-plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.title=TRUE, plot=TRUE, ...) {
+plotGGMap <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, long.title=TRUE, plot=TRUE, ...) {
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
   if (is.VegSpatial(input)) {
@@ -181,7 +189,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
           dt[, sens:=input[[n]]@run@id, ]
           titles <- input[[n]]@run@id
         }
-       } else {
+      } else {
         dt.tmp <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
           dt.tmp[, sens:=input[[n]]@run@description, ]
@@ -192,7 +200,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
         }
         dt <- rbindlist(list(dt, dt.tmp))
         rm(dt.tmp)
-     }
+      }
     }
     setnames(dt, column, "value")
     dt <- dt[, sens:=factor(sens, titles)]
@@ -302,7 +310,7 @@ plotGGMap <- function(input, column=NA, colors=NA, sym.col=FALSE, wrap=1, long.t
 ## meridional #########################################################
 #######################################################################
 
-plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, plot=TRUE, ...) {
+plotGGMeridional <- function(input, column='value', what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, plot=TRUE, ...) {
   if (!any(names(what)=="center"))
     stop("No definition for meridional average given. Must be either 'mn', 'mean' or 'md', 'median'.")
   if (!any(names(what)=="var"))
@@ -353,6 +361,10 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
   
   if (length(what[["var"]])>=2 || is.numeric(what[["var"]])) {
     qt <- c(min(what[["var"]]), max(what[["var"]]))
+    if (qt[1]<0)
+      qt[1]=0
+    if (qt[2]>1)
+      qt[2]=1
     if (qt[1]==qt[2]) {
       qt[1] = (1 - qt[1]) / 2
       qt[2] = 1 - qt[1]
@@ -391,6 +403,9 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
                       value.min=quantile(value, qt[1]),
                       value.max=quantile(value, qt[2])), by = c("Lat")]
     }
+    if (!is.character(colors) || !.is.color(colors)) {
+      colors="black"
+    } 
     p <- ggplot(md, aes(x=Lat, y=value.center))
   }
 
@@ -402,23 +417,38 @@ plotGGMeridional <- function(input, column=NA, what=list(center="mn", var="sd"),
   if (!is.na(what[["var"]])) {
     if (any(colnames(dt)=="sens")) {
       if (tolower(what[["var"]])=="sd") {
-        p <- p + geom_ribbon(aes(ymax = value.center + value.sd, ymin = value.center - value.sd, fill=sens), alpha = alpha[2])
+        p <- p + geom_ribbon(aes(ymax = value.center + value.sd,
+                                 ymin = value.center - value.sd, fill=sens),
+                             alpha = alpha[2])
       } else if (tolower(what[["var"]])=="se") {
-        p <- p + geom_ribbon(aes(ymax = value.center + value.se, ymin = value.center - value.se, fill=sens), alpha = alpha[2])
+        p <- p + geom_ribbon(aes(ymax = value.center + value.se,
+                                 ymin = value.center - value.se, fill=sens),
+                             alpha = alpha[2])
       } else if (tolower(what[["var"]])=="mm" || tolower(what[["var"]])=="minmax") {
-        p <- p + geom_ribbon(aes(ymax = value.max, ymin = value.min, fill=sens), alpha = alpha[2])
+        p <- p + geom_ribbon(aes(ymax = value.max,
+                                 ymin = value.min, fill=sens),
+                             alpha = alpha[2])
       }
     } else {
       if (tolower(what[["var"]])=="sd") {
-        p <- p + geom_ribbon(aes(ymax = value.center + value.sd, ymin = value.center - value.sd), alpha = alpha[2])
+        p <- p + geom_ribbon(aes(ymax = value.center + value.sd,
+                                 ymin = value.center - value.sd),
+                             color=colors, fill=colors, alpha = alpha[2])
       } else if (tolower(what[["var"]])=="se") {
-        p <- p + geom_ribbon(aes(ymax = value.center + value.se, ymin = value.center - value.se), alpha = alpha[2])
+        p <- p + geom_ribbon(aes(ymax = value.center + value.se,
+                                 ymin = value.center - value.se),
+                             color=colors, fill=colors, alpha = alpha[2])
       } else if (tolower(what[["var"]])=="mm" || tolower(what[["var"]])=="minmax") {
-        p <- p + geom_ribbon(aes(ymax = value.max, ymin = value.min), alpha = alpha[2])
+        p <- p + geom_ribbon(aes(ymax = value.max, ymin = value.min),
+                             color=colors, fill=colors, alpha = alpha[2])
       }
     }
   }
-  p <- p + geom_line(size=1, alpha=alpha[1])
+  if (!any(colnames(dt)=="sens")) {
+    p <- p + geom_line(size=1, alpha=alpha[1], color=colors)
+  } else {
+    p <- p + geom_line(size=1, alpha=alpha[1])
+  }
   lat <- .ll.breaks(c(min(dt$Lat), max(dt$Lat)), label="lat", n.min=4, n.max=9)
   p <- p + scale_x_continuous(breaks=lat, labels=names(lat), expand=c(0,0))
   if (!is.na(colors) && any(colnames(dt)=="sens")) {
@@ -634,6 +664,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #######################################################################
 ## timeseries #########################################################
 #######################################################################
+
 plotGGTS <- function(input, targets=NULL, name.map=NA, long.title=TRUE, plot=TRUE, ...) {
   
 }

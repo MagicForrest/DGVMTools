@@ -39,7 +39,7 @@ sens_daily <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/glo
                            year.offset = 0
                            )
 
-sens_CC <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons_daily",
+sens_CC <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons_CC",
                         model = "LPJ-GUESS",
                         pft.set = global.PFTs,
                         id = "sens_CC",
@@ -88,14 +88,17 @@ for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "s
 }
 
 ## single panel without title
-plotGGMap(base@spatial[['lai']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
+p <- plotGGMap(base@spatial[['lai']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
+print(p)
 
 ## 2 panel
 plotGGMap(list(base@spatial[['gpp']], sens_constCO2@spatial[['gpp']]), "Total", colors=brewer.pal(9, "YlGn"))
 
 ## 2 panel with overriding the default number of legend columns
-p <- plotGGMap(list(a=base@spatial[['lai']], b=sens_constCO2@spatial[['lai']]), "Smith2014", colors=Smith2014.scheme@cols)
-p + guides(fill = guide_legend(ncol = 2))
+p <- plotGGMap(list(a=base@spatial[['lai']], b=sens_constCO2@spatial[['lai']]), 
+               "Smith2014", colors=Smith2014.scheme@cols)
+p <- p + guides(fill = guide_legend(ncol = 2))
+print(p)
 
 ## meridional plot with short names
 p <- plotGGMeridional(list(base@spatial[['gpp']],
@@ -105,21 +108,39 @@ p <- plotGGMeridional(list(base@spatial[['gpp']],
                            sens_centr@spatial[['gpp']],
                            sens_CLM@spatial[['gpp']]),
                       "Total", long.title=FALSE)
-p + guides(fill = guide_legend(ncol = 1)) + theme(legend.position = "right")
+p <- p + guides(fill = guide_legend(ncol = 1)) + theme(legend.position = "right")
+print(p)
+
+p <- plotGGMeridional(base@spatial[['gpp']], "Total", what=list(center="md", var=c(0.25,0.75)), colors="red")
+print(p)
 
 ## categorically aggregated summary plot
-plotGGCategorialAggregated(base, targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")))
+p <- plotGGCategorialAggregated(base, targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")))
+print(p)
 
-p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")), name.map=Smith2014.scheme@cols)
-p + guides(col = guide_legend(ncol = 1))
+p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
+                                targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")), 
+                                name.map=Smith2014.scheme@cols)
+p <- p + guides(col = guide_legend(ncol = 1))
+print(p)
 
+p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily),
+                                targets=list(x=c("gpp", "Total"), y=c("lai", "Smith2014")), 
+                                name.map=Smith2014.scheme@cols)
+p <- p + guides(col = guide_legend(ncol = 1))
+print(p)
 
+### Time series
 
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
   eval(parse(text=paste(run, "@timeseries[['npp']] <- getSADT(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
   eval(parse(text=paste(run, "@timeseries[['gpp']] <- getSADT(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@timeseries[['cpool']] <- getSADT(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
 }
 
+plot(base@timeseries$npp$Total*130 ~ base@timeseries$cpool$Year, type="l")
+
+### Arithmetics
 
 
 
