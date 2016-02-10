@@ -3,4 +3,4 @@ exportPattern("^[^\\.]")
 import(methods)
 import(udunits2, mapdata, maptools, ggplot2, ncdf4, rgdal, raster, lattice, fields, data.table, xts, rgeos, compiler, readr, Cairo)
 
-exportClasses(TimeSpan, Period, SpatialExtent, PFT, VegRun, VegQuant, ClimDS,ClimVar,  SpatialDataset, TemporalDataset, BiomeClassification)
+exportClasses(TemporalExtent, SpatialExtent, Period, PFT, VegRun, VegSpatial, VegTemporal, VegQuant, ClimDS, ClimVar,  SpatialDataset, TemporalDataset, BiomeClassification)

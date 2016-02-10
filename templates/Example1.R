@@ -27,7 +27,7 @@ run <- defineVegRun(run.dir = "/data/forrest/GuessRuns/N-version/Standard",
 variable <- "lai"
 
 # Define a TIME PERIOD over which to average
-period = new("TimeSpan", name = "Reference", start = 1961, end = 1990)
+period = new("TemporalExtent", name = "Reference", start = 1961, end = 1990)
 
 # Open the lai.out file, and average over the reference period
 lai.reference.period <- getVegSpatial(run, period, variable, forceReAveraging = FALSE)

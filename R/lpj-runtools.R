@@ -104,7 +104,7 @@ openLPJOutputFile <- function(run,
   if(verbose)message("Corrected.")
   
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
-  if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = .LondonCentre)] }
   
   # set some attributes about the file - works!
   attr(dt, "shadeToleranceCombined") <- FALSE
@@ -120,81 +120,44 @@ openLPJOutputFile <- function(run,
 }
 
 
-################################# GET TIME-AVERAGED DATA #########################################
-
-getTADT <- function(run, period, var, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE){
-  
-  # make file name
-  TA.filename <- paste(run@run.dir, "/", var, ".TA.", period@start, "-", period@end, ".Rtable", sep ="")
-  
-  # if file is present and we are not forcing re-averaging, read in the pre-averaged file
-  if(file.exists(paste(TA.filename)) & !forceReAveraging){
-    if(verbose) {message(paste("File",  TA.filename, "found in",  run@run.dir, "so using that.",  sep = " "))}
-    this.TA.dt <- fread(TA.filename, header = TRUE, stringsAsFactors=FALSE)
-  } 
-  
-  # otherwise, open the full .out file read it as a data table, time average it and save to disk
-  else {
-    if (is.null(this.full)) {
-      if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var, ".out is not already read, reading .out file.", sep = ""))
-      this.full <- openLPJOutputFile(run, var, verbose = TRUE)
-      this.full <<- this.full
-    }
-    else{
-      if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " but ", var, ".out is already read, so using that.", sep = ""))
-    }
-    
-    # do temporal averaging
-    this.TA.dt <- doTimeAverage.cmpd(this.full, period, verbose)
-    if(write) {
-      if(verbose) {message("Saving as a table...")}
-      write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
-    }
-  }
-  
-  setkey(this.TA.dt, Lon, Lat)
-  
-  return(this.TA.dt)
-  
-}
 
 defineVegRun <- function(...){
- 
+  
   # make a VegRunInfo object from the supplied meta data
- info <- new("VegRunInfo", ...)
+  info <- new("VegRunInfo", ...)
   
- # if things aren't specified set them here because it seems like the 'prototype' field isn't working
- if(length(info@pft.set) == 0) info@pft.set <- NULL
- if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
- if(length(info@description) == 0)  info@description <- "No description specified"
- if(length(info@map.overlay) == 0 | info@map.overlay == "")  info@map.overlay <- NULL
- if(length(info@lonlat.offset) == 0)  info@tlonlat.offset <- c(0,0)
- if(length(info@year.offset) == 0)  info@year.offset <- 0
- if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
- if(length(info@driving.data) == 0)  info@driving.data <- "No forcing data set"
- if(length(info@london.centre) == 0)  info@london.centre <- TRUE
- if(length(info@fill.col) == 0)  info@fill.col <- "transparent"
- if(length(info@line.col) == 0)  info@line.col <- "green"
- if(length(info@line.width) == 0)  info@line.width <- 1
- if(length(info@line.type) == 0)  info@line.type <- 1
- if(length(info@landuseSimulated) == 0)  info@landuseSimulated <- FALSE
- 
- # lookup map over from maps and mapdata package
- if(!is.null(info@map.overlay)) {
-   class(info@map.overlay)
-   info@map.overlay <- makeOverlay(info@map.overlay)
- } 
+  # if things aren't specified set them here because it seems like the 'prototype' field isn't working
+  if(length(info@pft.set) == 0) info@pft.set <- NULL
+  if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
+  if(length(info@description) == 0)  info@description <- "No description specified"
+  if(length(info@map.overlay) == 0 | info@map.overlay == "")  info@map.overlay <- NULL
+  if(length(info@lonlat.offset) == 0)  info@tlonlat.offset <- c(0,0)
+  if(length(info@year.offset) == 0)  info@year.offset <- 0
+  if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
+  if(length(info@driving.data) == 0)  info@driving.data <- "No forcing data set"
+  if(length(info@london.centre) == 0)  info@london.centre <- TRUE
+  if(length(info@fill.col) == 0)  info@fill.col <- "transparent"
+  if(length(info@line.col) == 0)  info@line.col <- "green"
+  if(length(info@line.width) == 0)  info@line.width <- 1
+  if(length(info@line.type) == 0)  info@line.type <- 1
+  if(length(info@landuseSimulated) == 0)  info@landuseSimulated <- FALSE
   
- # return a VegRun object with empty data fieldsbut meta data filled  
- return(new("VegRun",
+  # lookup map over from maps and mapdata package
+  if(!is.null(info@map.overlay)) {
+    class(info@map.overlay)
+    info@map.overlay <- makeOverlay(info@map.overlay)
+  } 
+  
+  # return a VegRun object with empty data fieldsbut meta data filled  
+  return(new("VegRun",
              info))
-    
+  
   
 }
 
 
 addToVegRun <- function(object, run, id = NULL){
- 
+  
   object.class <- class(object)[1]
   
   if(object.class == "data.table") {
@@ -213,11 +176,36 @@ addToVegRun <- function(object, run, id = NULL){
     rm(benchmark.list)
     
   }
+    
+  else if(object.class == "VegTemporal") {
+    
+    if(is.null(id)) id <- object@id
+    temporal.list <- run@temporal
+    temporal.list[[id]] <- object
+    run@temporal <- temporal.list
+    rm(temporal.list)
+    
+  }
   
+  else if(object.class == "VegSpatial") {
+    
+    if(is.null(id)) id <- object@id
+    spatial.list <- run@spatial
+    spatial.list[[id]] <- object
+    run@spatial <- spatial.list
+    rm(spatial.list)
+    
+  }
+  
+  else{
+    
+    warning(paste("Cannot add object of class", object.class, "to a VegRun object", sep = " "))
+    
+  }
   
   
   return(run)
-    
+  
 }
 
 
@@ -234,11 +222,10 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
     var.string <- quant@id
   }
   
-  # make file name
-  TA.filename <- paste(run@run.dir, "/", var.string, ".TA.", period@start, "-", period@end, ".Rtable", sep ="")
-  
-  
   if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") {
+    
+    # make file name
+    TA.filename <- paste(run@run.dir, "/", var.string, ".TA.", period@start, "-", period@end, ".Rtable", sep ="")
     
     # if file is present and we are not forcing re-averaging, read in the pre-averaged file
     if(file.exists(paste(TA.filename)) & !forceReAveraging){
@@ -263,35 +250,44 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
         write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
       }
     }
-    
   }
   else if(run@model == "aDGVM") {
     
     if(adgvm.scheme == 1) this.dt <- data.table(getVegQuantity_aDGVM_Scheme1(run, period, quant))
     if(adgvm.scheme == 2) this.dt <- data.table(getVegQuantity_aDGVM_Scheme2(run, period, quant))
-   
+    
     print(this.dt)
     
-    this.TA.dt <- doTimeAverage.cmpd(this.dt, period, verbose)
- 
+    this.TA.dt <- .doTimeAverage.cmpd(this.dt, period, verbose)
+    
   }
   
   setkey(this.TA.dt, Lon, Lat)
   
-  
   return(new("VegSpatial",
-             id = "dummy",
+             id = paste(var.string, period@id),
              data = this.TA.dt,
-             time.span = period,
+             temporal.extent = period,
              quant = quant,
              run = as(run, "VegRunInfo")))
   
+  
 }
+
 
 ################################# GET SPACE-AVERAGED DATA #########################################
 
 
-getSADT <- function(run, var, spatial.extent = NULL, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, area.weighted=TRUE){
+getVegTemporal <- function(run, var, spatial.extent = NULL, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, area.weighted=TRUE, adgvm.scheme = 1){
+  
+  if(class(var) == "character") {
+    quant <- lookupVegQuantity(var)
+    var.string <- var
+  }
+  else {
+    quant <- var
+    var.string <- quant@id
+  }
   
   
   # look for the correct time averaged files and if there read it in
@@ -313,32 +309,42 @@ getSADT <- function(run, var, spatial.extent = NULL, this.full = NULL, write = T
     if (is.null(this.full)) {
       if(verbose) message(paste("File ",  SA.filename, " not found in directory ",  run@run.dir, " and ", var, ".out is not already read, reading .out file.", sep = ""))
       this.full <- openLPJOutputFile(run, var, verbose = TRUE)
-      this.full <<- this.full
     }
     else{
       if(verbose) message(paste("File ",  SA.filename, " not found in directory ",  run@run.dir, " but ", var, ".out is already read, so using that.", sep = ""))
     }
     # If required, crop spatial extent before spatially averaging
     if(!is.null(spatial.extent)) {
-      this.full <- cropLPJ(this.full, spatial.extent)
+      this.full <- cropRVC(this.full, spatial.extent)
     }
-    this.SA.dt <- doSpaceAverage.cmpd(this.full, verbose, area.weighted)
+    this.SA.dt <- .doSpaceAverage.cmpd(this.full, verbose, area.weighted)
     if(write) {
       if(verbose) {message("Saving as a table...")}
       write.table(this.SA.dt, file = SA.filename, quote = FALSE, row.names = FALSE)
     }
   }
   
-  return(this.SA.dt)
+  setkey(this.SA.dt, Year)
   
+  return(new("VegTemporal",
+             id = paste(var.string, period@id),
+             data = this.SA.dt,
+             spatial.extent = spatial.extent,
+             quant = quant,
+             run = as(run, "VegRunInfo")))
 }
-
 
 
 ######################### CONVERT AN TEMPORALLY AVERAGED DATA.TABLE TO A SPATIALPIXELSDATAFRAME OBJECT #####################################
 
 
-makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
+# Helper function to make a SpatialPixelsDateFrame from a data.table object
+# It is assumed that data.table has columns Lon and Lat to provide the spatial information
+.makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
+  
+  # to stop complaints at build time
+  Lon <- NULL
+  Lat <- NULL
   
   # sort the layers
   if(is.null(layers) | layers[1] == "all") {layers = names(data)}
@@ -467,12 +473,12 @@ doTimeAverage <- function(input.dt,
   
 }
 
-doTimeAverage.cmpd <- cmpfun(doTimeAverage)
+.doTimeAverage.cmpd <- cmpfun(doTimeAverage)
 
 
-selectYears <- function(input.dt, time.span){
+selectYears <- function(input.dt, temporal.extent){
   
-  output.dt <- subset(input.dt, Year >= time.span@start & Year <= time.span@end)
+  output.dt <- subset(input.dt, Year >= temporal.extent@start & Year <= temporal.extent@end)
   
   return(output.dt)    
   
@@ -494,7 +500,7 @@ doSpaceAverage <- function(input.dt,
     if (!any(colnames(input.dt)=="area"))
       if (verbose)
         message("Add column area.")
-      input.dt <- addArea(input.dt, verbose=verbose)
+    input.dt <- addArea(input.dt, verbose=verbose)
     if(verbose) message(paste("Spatially averaging (area weighted) whole domain...", sep = ""))
     output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area), by=list(Year)]
     output.dt[,area:=NULL]
@@ -518,7 +524,7 @@ doSpaceAverage <- function(input.dt,
   
 }
 
-doSpaceAverage.cmpd <- cmpfun(doSpaceAverage)
+.doSpaceAverage.cmpd <- cmpfun(doSpaceAverage)
 
 
 
@@ -536,7 +542,7 @@ listAllOutputFiles <- function(run.directory){
   files.present <- list.files(run.directory, "*.out")
   
   # Now strip the .out file extension out the get the variable name
-  this.var.list <- unlist(lapply(files.present, FUN = trim.var.filename))
+  this.var.list <- unlist(lapply(files.present, FUN = .trim.var.filename))
   
   # Sometimes there is a file called "*.out", remove it so code doesn't fall over
   if("*" %in% this.var.list) {
@@ -561,13 +567,13 @@ listAllOutputFiles <- function(run.directory){
 
 
 # handy function for trimming file names to get a variable name
-trim.var.filename <- function(var.filename){
+.trim.var.filename <- function(var.filename){
   return(substr( var.filename, 1, (nchar(var.filename) - nchar(".out"))))
 }
 
 
 
-LondonCentre <- function(lon) {
+.LondonCentre <- function(lon) {
   
   if(lon <= 180) return(lon)
   else return(lon - 360)

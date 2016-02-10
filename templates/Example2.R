@@ -66,7 +66,7 @@ analysis.label <- "Example2"
 plot.dir <- "/home/forrest/Temp/Example2"   
 
 ### Time spans and spatials extents over which to average t
-periods <- list(PNV = new("TimeSpan", name = "Reference", start = 1961, end = 1990)) 
+periods <- list(PNV = new("TemporalExtent", id = "Reference", name = "Reference", start = 1961, end = 1990)) 
 extents <- standard.continental.extents
 
 ### Universal resolution for all runs in this analysis (set to NULL in the unlikely event that not all runs use the same resolution) 
@@ -158,14 +158,12 @@ for(run in vegrun.list){
     if(var == "mfirefrac" & run@model != "LPJ-GUESS-SPITFIRE") {var <- "firert"}
     this.VegQuantity <- lookupVegQuantity(var)
     
-    
    
     ### FOR EACH TIME PERIOD
     for(period in periods){
       
       # open the output file and average it over the required period, resulting in a "VegSpatial" object
       this.VegSpatial <- getVegSpatial(run, period, this.VegQuantity, forceReAveraging = forceReAveraging)
-      
       
       ### STANDARD SUMMARY PLOTS 
       plotVegMaps(this.VegSpatial, doIndividual = var %in% detailed.var.list)
@@ -260,14 +258,13 @@ for(run in vegrun.list){
       run <- addToVegRun(biome.comparison, run)
       rm(scheme, biome.comparison)
       
-      
     }
     
     ### do Saatchi2011 if requested
     if(benchmarking.dataset@id == "Saatchi2011"){
       
       # average across the Saatchi years, the calculate the Tree total
-      Saatchi.VegSpatial <- getVegSpatial(run, period = benchmarking.dataset@time.span, benchmarking.dataset@veg.quant, forceReAveraging = FALSE)
+      Saatchi.VegSpatial <- getVegSpatial(run, period = benchmarking.dataset@temporal.extent, benchmarking.dataset@veg.quant, forceReAveraging = FALSE)
       Saatchi.VegSpatial <- addVegTotals(Saatchi.VegSpatial, "Tree")
       
       # compare to data

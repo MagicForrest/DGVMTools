@@ -124,7 +124,7 @@ getSaatchi2011 <- function(resolution = "HD"){
                          id = "Saatchi2011",
                          name = "Saatchi et al. 2011 Biomass",
                          abbreviation = "Saatchi et al. 2011",   
-                         time.span = new("TimeSpan", name = "Saatchi Period", start = 1999, end = 2001),
+                         temporal.extent = new("TemporalExtent", name = "Saatchi Period", start = 1999, end = 2001),
                          data = Saatchi.raster,
                          veg.quant = lookupVegQuantity("cmass"),
                          units = "kgC/m^2")

@@ -27,25 +27,17 @@
 ##############################################################################
 
 
-##### TimeSpan - class to hold the start and end years of a time span (often an period of years over which to average)
+##### TemporalExtent - class to hold the start and end years of a time span (often an period of years over which to average)
 #####            averaging period and a name to identify it
-setClass("TimeSpan",
-         slots = c(name = "character",
+setClass("TemporalExtent",
+         slots = c(id="character",
+                   name = "character",
                    start = "numeric",
                    end = "numeric"
          )
 )
 
-##### Period - class to hold the metadata about a month, seasonal or annual time period
-setClass("Period",
-         slots = c(name = "character",
-                   abbreviation = "character",
-                   index = "numeric",
-                   padded.index = "character",
-                   days = "numeric",
-                   days.leap = "numeric"
-         )
-)
+
  
 ##### Spatial Extent - class to hold a spatial extent the start (often an area over which to average and study a time series,
 #####                  for example Europe)
@@ -61,6 +53,16 @@ setClass("SpatialExtent",
          )
 )
 
+##### Period - class to hold the metadata about a month, seasonal or annual time period
+setClass("Period",
+         slots = c(name = "character",
+                   abbreviation = "character",
+                   index = "numeric",
+                   padded.index = "character",
+                   days = "numeric",
+                   days.leap = "numeric"
+         )
+)
 
 
 ###############################################################################
@@ -145,7 +147,7 @@ setClass("VegRunInfo",
 
 setClass("VegRun", 
          slots = c(spatial = "list",
-                   timeseries = "list",
+                   temporal = "list",
                    full = "list",
                    benchmarks = "list"
          ),
@@ -188,16 +190,16 @@ setClass("VegQuant",
 setClass("VegSpatial", 
          slots = c(id = "character",
                    data = "data.table",
-                   time.span = "TimeSpan",
+                   temporal.extent = "TemporalExtent",
                    quant = "VegQuant",
                    run = "VegRunInfo"
           )
 )
 
-setClass("VegTS", 
+setClass("VegTemporal", 
          slots = c(id = "character",
                    data = "data.table",
-                   extent = "SpatialExtent",
+                   spatial.extent = "SpatialExtent",
                    quant = "VegQuant",
                    run = "VegRunInfo"
          )
@@ -260,7 +262,7 @@ setClass("SpatialDataset",
          slots = c(id = "character",
                    name = "character",
                    abbreviation = "character",
-                   time.span = "TimeSpan",
+                   temporal.extent = "TemporalExtent",
                    data = "ANY",
                    veg.quant = "VegQuant",
                    units = "character",
@@ -273,7 +275,7 @@ setClass("TemporalDataset",
          slots = c(id = "character",
                    name = "character",
                    abbreviation = "character",
-                   time.span = "TimeSpan",
+                   temporal.extent = "TemporalExtent",
                    data = "ANY",
                    extent = "SpatialExtent",
                    veg.quant = "VegQuant",

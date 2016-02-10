@@ -71,7 +71,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
   if(class(data) == "VegSpatial"){
     run <- data@run
-    period <- data@time.span
+    period <- data@temporal.extent
     PFT.set <- run@pft.set
     if(is.null(quant)) quant <- data@quant  
   }
@@ -346,7 +346,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
   if(class(data) == "VegSpatial"){
     run <- data@run
-    period <- data@time.span
+    period <- data@temporal.extent
   }
   
   # IF NO LAYERS, COLS OR STRINGS SUPPLIED, USE THE  DEFAULTSOF THE SCHEME
@@ -601,7 +601,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
   if(class(data) == "VegSpatial"){
     run <- data@run
-    period <- data@time.span
+    period <- data@temporal.extent
     PFT.set <- run@pft.set
     if(is.null(quant)) quant <- data@quant  
   }
