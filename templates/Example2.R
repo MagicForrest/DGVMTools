@@ -75,8 +75,6 @@ universal.resolution <- "HD"
 ### Force re-averaging - in case the raw data have been updated, or we required new a new time period
 forceReAveraging <- FALSE
 
-### Make individual plots for each PFT/month/Carbon pool etc. (can also be turned on for individual variables use the detailed.var.list below)
-doIndividual <- FALSE
 
 ### Which variables to analyse and in what detail (use "all" to choose all *.out files in the run directory)
 var.list <- c("lai") # simple summary analysis
@@ -86,7 +84,7 @@ do.dominant.pft.var.list <- NULL # c("lai") # for which PFT variables to calcula
 
 
 ### prepare a list of benchmarking datasets
-benchmarking.datasets.list <- prepareBenchmarkingDatasets(list(#"Smith2014",
+benchmarking.datasets.list <- prepareBenchmarkingDatasets(list("Smith2014",
                                                                "Saatchi2011"))
 
 ### Verbose for extra output
@@ -136,7 +134,7 @@ vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/data/forres
 
 
 ###################################################################################
-###### THE MAIN LOOP FOR ALL RUNS FO
+###### THE MAIN LOOP FOR ALL RUNS
 ###### 
 
 ### for each run
@@ -170,7 +168,7 @@ for(run in vegrun.list){
       
       
       ### STANDARD SUMMARY PLOTS 
-      plotVegMaps(this.VegSpatial, doIndividual = doIndividual | var %in% detailed.var.list)
+      plotVegMaps(this.VegSpatial, doIndividual = var %in% detailed.var.list)
       
       ### DETAILED OUTPUT IF REQUESTED
       if(var %in% detailed.var.list){
