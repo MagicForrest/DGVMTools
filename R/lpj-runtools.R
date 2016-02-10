@@ -393,8 +393,8 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   # could make this a little bit more efficient maybe...
   else if(this.class == "data.table" | this.class == "VegSpatial"){
     
-    if(this.class == "data.table") data.spdf <- makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
-    if(this.class == "VegSpatial") data.spdf <- makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
+    if(this.class == "data.table") data.spdf <- .makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
+    if(this.class == "VegSpatial") data.spdf <- .makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
     
     if(length(layers) == 1){
       data.raster <- raster(data.spdf)

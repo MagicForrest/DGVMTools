@@ -723,7 +723,7 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
   
  
   
-  CairoPNG(paste(quant@id, run@id, "DiffHisto.Vs", data.name, "png", sep="."), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
+  CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "DiffHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
   
   cex.axis.multi = 2
   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
@@ -747,7 +747,7 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
   else breaks <- seq(breaks.min, breaks.max, by = 1)
   
   
-  CairoPNG(paste(quant@id, run@id, "OverlayHisto.Vs", data.name, "png", sep="."), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
+  CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "OverlayHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
   
   cex.axis.multi = 2
   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
@@ -768,12 +768,12 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
 ################### PLOT SCATTER PLOT FOR COMPARING MODEL AND DATA  ###################################################################
 #######################################################################################################################################
 
-plotScatterComparison <- function(model, data, model.run, period, data.name, quant, stat.results = NULL){
+plotScatterComparison <- function(model, data, run, period, data.name, quant, stat.results = NULL){
   
   if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
   
   
-  CairoPNG(paste(quant@id, run@id, "Scatter.Vs", data.name, "png", sep="."), width = 1000, height = 1000, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
+  CairoPNG(file.path(run@run.dir,paste(quant@id, run@id, "Scatter.Vs", data.name, "png", sep=".")), width = 1000, height = 1000, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
   cex.axis.multi = 2
   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
   
