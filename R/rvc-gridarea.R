@@ -176,9 +176,10 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=FALSE) {
 ### arithmetics with VegRun data slots ###############################
 ######################################################################
 
-calcNewVegObj <- function(input=NULL, targets=NULL, operator=NULL, name=NULL) {
-  if (!is.VegRun(input))
-    stop("'input' is not a valid VegRun.")
+calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL) {
+  ## check if valid arguments are given
+  if (!is.VegRun(run))
+    stop("'run' is not a valid VegRun.")
   
   if (is.null(targets))
     stop("Don't know what to do, if you are not telling me!")
@@ -202,38 +203,91 @@ calcNewVegObj <- function(input=NULL, targets=NULL, operator=NULL, name=NULL) {
   if ((targets[[1]][1] != "spatial" || targets[[2]][1] != "spatial") &&
       (targets[[1]][1] != "temporal" || targets[[2]][1] != "temporal"))
     stop("targets must be from the same slot(either 'spatial' or 'temporal').")
-  
+
+  ## get the data
   if (targets[[1]][1] == "spatial") {
-    if (!any(names(input@spatial)==targets[[1]][2]))
+    if (!any(names(run@spatial)==targets[[1]][2]))
       stop(paste("No ", targets[[1]][1], " data called '", targets[[1]][2], "'available.", sep=""))
-    if (!any(names(input@spatial)==targets[[2]][2]))
+    if (!any(names(run@spatial)==targets[[2]][2]))
       stop(paste("No ", targets[[1]][1], " data called '", targets[[2]][2], "'available.", sep=""))
-    x <- input@spatial[[targets[[1]][2]]]
-    y <- input@spatial[[targets[[2]][2]]]
+    x.quant  <- run@spatial[[targets[[1]][2]]]@quant
+    x.extent <- run@spatial[[targets[[1]][2]]]@temporal.extent
+    x.run    <- run@spatial[[targets[[1]][2]]]@run
+    x.dt   <- copy(run@spatial[[targets[[1]][2]]]@data)
+    y.quant  <- run@spatial[[targets[[2]][2]]]@quant
+    y.extent <- run@spatial[[targets[[2]][2]]]@temporal.extent
+    y.dt   <- copy(run@spatial[[targets[[2]][2]]]@data)
+    
+    if (!is.equal(x.extent, y.extent))
+      warning("Spatial extents differ.")
+    if (!is.equal(x.quant, y.quant) && (operator=="+" || operator=="-"))
+      warning("Quantity definitions differ.")
+
   } else {
-    if (!any(names(input@temporal)==targets[[1]][2]))
+    if (!any(names(run@temporal)==targets[[1]][2]))
       stop(paste("No ", targets[[1]][1], " data called '", targets[[1]][2], "'available.", sep=""))
-    if (!any(names(input@temporal)==targets[[2]][2]))
+    if (!any(names(run@temporal)==targets[[2]][2]))
       stop(paste("No ", targets[[1]][1], " data called '", targets[[2]][2], "'available.", sep=""))
-    x <- input@temporal[[targets[[1]][2]]]
-    y <- input@temporal[[targets[[2]][2]]]
-  }
-  
-  if (length(targets[[1]])==2 && length(targets[[2]])==2) {
-    if (length(colnames(x@data)) != length(colnames(y@data)))
-      stop(paste("Number of columns in input (", length(colnames(x@data)), "/", length(colnames(y@data)), ") differ.", sep=""))
-    for (n in colnames(x@data)) {
-      if (!any(colnames(y@data)==n))
-        stop(paste("Input Objects have different column names:\n", colnames(x@data), "\n", colnames(y@data)))
-    }
-    key.names <- key(x@data)
-    val.names <- names(x@data)
-    val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
-    setnames(x@data, val.names, paste("x.", val.names, sep=""))
-    setnames(y@data, val.names, paste("y.", val.names, sep=""))
+    x.quant  <- run@spatial[[targets[[1]][2]]]@quant
+    x.extent <- run@spatial[[targets[[1]][2]]]@spatial.extent
+    x.run    <- run@spatial[[targets[[1]][2]]]@run
+    x.dt   <- copy(run@temporal[[targets[[1]][2]]]@data)
+    y.quant  <- run@spatial[[targets[[2]][2]]]@quant
+    y.extent <- run@spatial[[targets[[2]][2]]]@spatial.extent
+    y.dt   <- copy(run@temporal[[targets[[2]][2]]]@data)
+    
+    if (!is.equal(x.extent, y.extent))
+      warning("Temporal extents differ.")
+    if (!is.equal(x.quant, y.quant) && (operator=="+" || operator=="-"))
+      warning("Quantity definitions differ.")
     
   }
+
+  if (!is.VegQuant(quant) ) {
+    quant <- x.quant
+    quant@id = paste(targets[[1]][2], operator, targets[[2]][2], sep="")
+    quant@short.string = quant@id
+    quant@full.string = quant@id
+    if (operator=="*" || operator=="/")
+      quant@units = paste("(", x.quant@units, ") ", operator, " (", y.quant@units, ")", sep="")
+  }
   
-  
-  
+  ## perform the calculation
+  if (length(targets[[1]])==2 && length(targets[[2]])==2) {
+    if (length(colnames(x.dt)) != length(colnames(y.dt)))
+      stop(paste("Number of columns in run (", length(colnames(x.dt)), "/", length(colnames(y.dt)), ") differ.", sep=""))
+    for (n in colnames(x.dt)) {
+      if (!any(colnames(y.dt)==n))
+        stop(paste("run Objects have different column names:\n", colnames(x.dt), "\n", colnames(y.dt)))
+    }
+    key.names <- key(x.dt)
+    val.names <- names(x.dt)
+    val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
+    setnames(x.dt, val.names, paste("x.", val.names, sep=""))
+    setnames(y.dt, val.names, paste("y.", val.names, sep=""))
+
+    list.str <- paste(val.names, "=x.",val.names,operator,"y.",val.names, sep="", collapse=", ")
+    if (targets[[1]][1]=="spatial") {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
+      
+      return(new("VegSpatial",
+                 id = paste(targets[[1]][2], operator, targets[[2]][2], "", period@id),
+                 data = new.dt,
+                 temporal.extent = x.extent,
+                 quant = quant,
+                 run = as(run, "VegRunInfo")))      
+      
+    } else {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
+      
+      return(new("VegTemporal",
+                 id = paste(targets[[1]][2], operator, targets[[2]][2], "", period@id),
+                 data = new.dt,
+                 spatial.extent = x.extent,
+                 quant = quant,
+                 run = as(run, "VegRunInfo")))  
+    }
+  }
 }
+
+

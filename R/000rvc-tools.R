@@ -61,10 +61,10 @@ is.VegSpatial <- function(input) {
   return(FALSE)
 }
 
-is.VegTS <- function(input) {
+is.VegTemporal <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "VegTS" && attr(class.def, "package")=="RVCTools")
+    if (class.def[1] == "VegTemporal" && attr(class.def, "package")=="RVCTools")
       return(TRUE)
   return(FALSE)
 }
@@ -76,6 +76,38 @@ is.VegRun <- function(input) {
       return(TRUE)
   return(FALSE)
 }
+
+is.VegQuant <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "VegQuant" && attr(class.def, "package")=="RVCTools")
+      return(TRUE)
+  return(FALSE)
+}
+
+
+## check if to classes are comparable
+setGeneric("is.equal", function(a, b) standardGeneric("is.equal")) 
+setMethod("is.equal", signature("VegQuant", "VegQuant"), function(a, b) {
+  if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)
+    return(TRUE)
+  return(FALSE)
+})
+setMethod("is.equal", signature("TemporalExtent", "TemporalExtent"), function(a, b) {
+  if (a@start==b@start && a@end==b@end)
+    return(TRUE)
+  return(FALSE)
+})
+setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b) {
+  if (all(!is.finite(c(a@extent@xmin, b@extent@xmin, a@extent@xmax, b@extent@xmax, 
+                       a@extent@ymin, b@extent@ymin, a@extent@ymax, b@extent@ymax))))
+    return(TRUE)
+  if (a@extent@xmin==b@extent@xmin && a@extent@xmax==b@extent@xmax && 
+      a@extent@ymin==b@extent@ymin && a@extent@ymax==b@extent@ymax)
+    return(TRUE)
+  return(FALSE)
+})
+
 
 cropRVC <- function(input, extent){
   

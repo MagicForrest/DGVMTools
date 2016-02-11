@@ -88,8 +88,7 @@ for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "s
 }
 
 ## single panel without title
-p <- plotGGMap(base@spatial[['lai']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
-print(p)
+plotGGMap(base@spatial[['lai']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
 
 ## 2 panel
 plotGGMap(list(base@spatial[['gpp']], sens_constCO2@spatial[['gpp']]), "Total", colors=brewer.pal(9, "YlGn"))
@@ -99,6 +98,9 @@ p <- plotGGMap(list(a=base@spatial[['lai']], b=sens_constCO2@spatial[['lai']]),
                "Smith2014", colors=Smith2014.scheme@cols)
 p <- p + guides(fill = guide_legend(ncol = 2))
 print(p)
+
+## meridional plot
+plotGGMeridional(base@spatial[['gpp']], "Total", what=list(center="md", var=c(0.25,0.75)), colors="red")
 
 ## meridional plot with short names
 p <- plotGGMeridional(list(base@spatial[['gpp']],
@@ -111,12 +113,8 @@ p <- plotGGMeridional(list(base@spatial[['gpp']],
 p <- p + guides(fill = guide_legend(ncol = 1)) + theme(legend.position = "right")
 print(p)
 
-p <- plotGGMeridional(base@spatial[['gpp']], "Total", what=list(center="md", var=c(0.25,0.75)), colors="red")
-print(p)
-
 ## categorically aggregated summary plot
-p <- plotGGCategorialAggregated(base, targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")))
-print(p)
+plotGGCategorialAggregated(base, targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")))
 
 p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
                                 targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")), 
@@ -130,8 +128,6 @@ p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily),
 p <- p + guides(col = guide_legend(ncol = 1))
 print(p)
 
-
-
 ### Arithmetics
 
 ## Add some more time averaged spatial data
@@ -143,17 +139,17 @@ for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "s
 
 
 t <- list(x=c("spatial", "gpp"), y=c("spatial", "npp"))
-calcNewVegObj(base, t, "/")
+xxx = calcNewVegObj(base, t, "/")
 
 
 
 
 ### Time series
-## for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-##   eval(parse(text=paste(run, "@temporal[['npp']] <- getVegTemporal(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
-##   eval(parse(text=paste(run, "@temporal[['gpp']] <- getVegTemporal(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
-##   eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
-## }
+for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
+   eval(parse(text=paste(run, "@temporal[['npp']] <- getVegTemporal(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
+   eval(parse(text=paste(run, "@temporal[['gpp']] <- getVegTemporal(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
+   eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
+}
 
 ## plot(base@timeseries$npp$Total*130 ~ base@timeseries$cpool$Year, type="l")
 
