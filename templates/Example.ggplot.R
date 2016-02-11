@@ -88,14 +88,14 @@ for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "s
 }
 
 ## single panel without title
-plotGGMap(base@spatial[['lai']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
+plotGGSpatial(base@spatial[['lai']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
 
 ## 2 panel
-plotGGMap(list(base@spatial[['gpp']], sens_constCO2@spatial[['gpp']]), "Total", colors=brewer.pal(9, "YlGn"))
+plotGGSpatial(list(base@spatial[['gpp']], sens_constCO2@spatial[['gpp']]), "Total", colors=brewer.pal(9, "YlGn"))
 
 ## 2 panel with overriding the default number of legend columns
-p <- plotGGMap(list(a=base@spatial[['lai']], b=sens_constCO2@spatial[['lai']]), 
-               "Smith2014", colors=Smith2014.scheme@cols)
+p <- plotGGSpatial(list(a=base@spatial[['lai']], b=sens_constCO2@spatial[['lai']]), 
+                   "Smith2014", colors=Smith2014.scheme@cols)
 p <- p + guides(fill = guide_legend(ncol = 2))
 print(p)
 
@@ -161,7 +161,7 @@ for (j in val.names)
   set(residence.time@data, which(residence.time@data[[j]]<0), j, 0)
 
 residence.time@data[, logTotal:=log10(Total), ]
-plotGGMap(residence.time, "logTotal", colors=brewer.pal(9, "YlOrBr"))
+plotGGSpatial(residence.time, "logTotal", colors=brewer.pal(9, "YlOrBr"))
 
 
 

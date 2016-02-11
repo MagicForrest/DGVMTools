@@ -2,23 +2,23 @@
 ## ggplot2 themes for nicer plots #####################################
 #######################################################################
 
-.rvc.map_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
-                             panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
-                             panel.background  = element_rect(fill="#cae1ff"),
-                             panel.border      = element_rect(fill=NA, linetype = "solid", colour = "black"),
-                             axis.line         = element_blank(),
-                             axis.text         = element_text(size=10, colour = "black"),
-                             axis.ticks        = element_line(size=0.1, colour = "black", linetype = "dotted"),
-                             axis.ticks.length = unit(1.5, "points"),
-                             axis.title        = element_blank(),
-                             legend.text       = element_text(size=10),
-                             legend.title      = element_blank(),
-                             legend.position   = "bottom",
-                             legend.key        = element_rect(colour = "black"),
-                             legend.key.width  = unit(0.08, "npc"),
-                             plot.background   = element_blank(),
-                             plot.title        = element_text(size=22),
-                             strip.background  = element_rect(fill=NA)))
+.rvc.spatial_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+                                 panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+                                 panel.background  = element_rect(fill="#cae1ff"),
+                                 panel.border      = element_rect(fill=NA, linetype = "solid", colour = "black"),
+                                 axis.line         = element_blank(),
+                                 axis.text         = element_text(size=10, colour = "black"),
+                                 axis.ticks        = element_line(size=0.1, colour = "black", linetype = "dotted"),
+                                 axis.ticks.length = unit(1.5, "points"),
+                                 axis.title        = element_blank(),
+                                 legend.text       = element_text(size=10),
+                                 legend.title      = element_blank(),
+                                 legend.position   = "bottom",
+                                 legend.key        = element_rect(colour = "black"),
+                                 legend.key.width  = unit(0.08, "npc"),
+                                 plot.background   = element_blank(),
+                                 plot.title        = element_text(size=22),
+                                 strip.background  = element_rect(fill=NA)))
 
 .rvc.scatter_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
@@ -38,23 +38,23 @@
                                  plot.title        = element_text(size=22),
                                  strip.background  = element_rect(fill=NA)))
 
-.rvt.ts_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
-                            panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
-                            panel.background  = element_blank(),
-                            panel.border      = element_blank(),
-                            axis.line         = element_line(size=0.1, linetype="solid", colour="black"),
+.rvc.temporal_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+                                  panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+                                  panel.background  = element_blank(),
+                                  panel.border      = element_blank(),
+                                  axis.line         = element_line(size=0.1, linetype="solid", colour="black"),
 #                             axis.line         = element_blank(),
-                            axis.text         = element_text(size=12, colour = "black"),
-                            axis.ticks        = element_line(size=0.1, colour = "black", linetype = "dotted"),
-                            axis.ticks.length = unit(1.5, "points"),
-                            axis.title        = element_text(size=12, face="bold"),
-                            legend.text       = element_text(size=12),
-                            legend.title      = element_text(size=12, face="bold"),
-                            legend.position   = "bottom",
-                            legend.key        = element_rect(colour = "black"),
+                                  axis.text         = element_text(size=12, colour = "black"),
+                                  axis.ticks        = element_line(size=0.1, colour = "black", linetype = "dotted"),
+                                  axis.ticks.length = unit(1.5, "points"),
+                                  axis.title        = element_text(size=12, face="bold"),
+                                  legend.text       = element_text(size=12),
+                                  legend.title      = element_text(size=12, face="bold"),
+                                  legend.position   = "bottom",
+                                  legend.key        = element_rect(colour = "black"),
 #                             legend.key.width  = unit(0.08, "npc"),
-                            plot.background   = element_blank(),
-                            plot.title        = element_text(size=22)))
+                                  plot.background   = element_blank(),
+                                  plot.title        = element_text(size=22)))
 
 #######################################################################
 ## exported helper functions ##########################################
@@ -63,10 +63,10 @@
 rvc.ggplot.theme <- function(x) {
   if(x=="scatter") {
     return(.rvc.scatter_theme)
-  } else if (x=="ts" || x=="timeseries") {
-    return(.rvt.ts_theme)
-  } else if (x=="map") {
-    return(.rvc.map_theme)
+  } else if (x=="temporal" || x=="ts" || x=="timeseries") {
+    return(.rvc.temporal_theme)
+  } else if (x=="spatial" || x=="map") {
+    return(.rvc.spatial_theme)
   } else {
     return(FALSE)
   }
@@ -149,10 +149,10 @@ rvc.ggplot.theme <- function(x) {
 }
 
 #######################################################################
-## map ################################################################
+## Spatial plot (map) #################################################
 #######################################################################
 
-plotGGMap <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, long.title=TRUE, plot=TRUE, ...) {
+plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, long.title=TRUE, plot=TRUE, ...) {
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
   if (is.VegSpatial(input)) {
@@ -265,7 +265,7 @@ plotGGMap <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, l
 
   ## create plot
   p <- ggplot(dt, aes(y=Lat, x=Lon))
-  p <- p + .rvc.map_theme
+  p <- p + .rvc.spatial_theme
 
   if (discrete) {
     p <- p + geom_raster(aes(fill=name))
@@ -665,6 +665,84 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 ## timeseries #########################################################
 #######################################################################
 
-plotGGTS <- function(input, targets=NULL, name.map=NA, long.title=TRUE, plot=TRUE, ...) {
+plotGGTemporal <- function(input, column='value', scale=1., colors=NA, wrap=NA, long.title=TRUE, plot=TRUE, ...) {
+  ## check if a VegTemporal or a list of VegTemporal is given as input
+  ## check data column names for given column name or column name 'value'
+  if (is.VegTemporal(input)) {
+    if (is.na(column) && all(colnames(input@data) != "value"))
+      stop("No column name given and no column named 'value' present!")
+    if (all(colnames(input@data) != column))
+      stop(paste("No column named '",column,"' present!", sep=""))
+    dt <- input@data[, c("Year", column), with = FALSE]
+    setnames(dt, column, "value")
+    quant = input@quant
+  } else if (is.list(input)) {
+    for (n in 1:length(input)) {
+      if (!is.VegTemporal(input[[n]]))
+        stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
+      if (n==1) {
+        dt <- input[[n]]@data[, c("Year", column), with = FALSE]
+        quant = input[[n]]@quant
+        if (long.title) {
+          dt[, sens:=input[[n]]@run@description, ]
+          titles <- input[[n]]@run@description
+        } else {
+          dt[, sens:=input[[n]]@run@id, ]
+          titles <- input[[n]]@run@id
+        }
+      } else {
+        dt.tmp <- input[[n]]@data[, c("Year", column), with = FALSE]
+        if (long.title) {
+          dt.tmp[, sens:=input[[n]]@run@description, ]
+          titles <- append(titles, input[[n]]@run@description)
+        } else {
+          dt.tmp[, sens:=input[[n]]@run@id, ]
+          titles <- append(titles, input[[n]]@run@id)
+        }
+        dt <- rbindlist(list(dt, dt.tmp))
+        rm(dt.tmp)
+      }
+    }
+    setnames(dt, column, "value")
+    dt <- dt[, sens:=factor(sens, titles)]
+  } else {
+    stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
+  }
+
+  dt[,value:=value*scale]
   
+  if (!plot)
+    return(dt)
+
+  if (any(colnames(dt)=="sens")) {
+    if (is.na(colors) && is.na(wrap)) { 
+      p <- ggplot(dt, aes(x=Year, y=value, col=sens))
+      p <- p + .rvc.temporal_theme
+      p <- p + geom_line(size=1)
+      colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+      p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=2))
+    } else if (is.na(colors) && is.numeric(wrap)) {
+      p <- ggplot(dt, aes(x=Year, y=value))
+      p <- p + .rvc.temporal_theme
+      p <- p + geom_line(size=1)
+    } else {
+      p <- ggplot(dt, aes(x=Year, y=value, col=sens))
+      p <- p + .rvc.temporal_theme
+      p <- p + geom_line(size=1)
+      p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=2))
+    }
+  } else {
+    if (is.na(colors))
+      colors="black"
+    p <- ggplot(dt, aes(x=Year, y=value))
+    p <- p + .rvc.temporal_theme
+    p <- p + geom_line(size=1, col=colors)
+  }
+  p <- p + ylab(paste(quant@full.string, " [", quant@units,"]", sep=""))
+
+  if (any(colnames(dt)=="sens") && is.numeric(wrap))
+    p <- p + facet_wrap(~sens, ncol=wrap)
+   
+  return(p)
+
 }
