@@ -171,3 +171,69 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=FALSE) {
     return(input)
   }
 }
+
+######################################################################
+### arithmetics with VegRun data slots ###############################
+######################################################################
+
+calcNewVegObj <- function(input=NULL, targets=NULL, operator=NULL, name=NULL) {
+  if (!is.VegRun(input))
+    stop("'input' is not a valid VegRun.")
+  
+  if (is.null(targets))
+    stop("Don't know what to do, if you are not telling me!")
+  if (!is.list(targets))
+    stop("'targets' needs to be a list.")
+  
+  if (is.null(operator))
+    stop("No operator specified.")
+  if (grepl("^a", operator, ignore.case=TRUE) || operator=="+") {
+    operator="+"
+  } else if (grepl("^s", operator, ignore.case=TRUE) || operator=="-") {
+    operator="-"
+  } else if (grepl("^m", operator, ignore.case=TRUE) || operator=="*") {
+    operator="*"
+  } else if (grepl("^d", operator, ignore.case=TRUE) || operator=="/") {
+    operator="/"
+  } else {
+    stop(paste("Operator '", operator, "' not implemented yet.", sep=""))
+  }
+  
+  if ((targets[[1]][1] != "spatial" || targets[[2]][1] != "spatial") &&
+      (targets[[1]][1] != "temporal" || targets[[2]][1] != "temporal"))
+    stop("targets must be from the same slot(either 'spatial' or 'temporal').")
+  
+  if (targets[[1]][1] == "spatial") {
+    if (!any(names(input@spatial)==targets[[1]][2]))
+      stop(paste("No ", targets[[1]][1], " data called '", targets[[1]][2], "'available.", sep=""))
+    if (!any(names(input@spatial)==targets[[2]][2]))
+      stop(paste("No ", targets[[1]][1], " data called '", targets[[2]][2], "'available.", sep=""))
+    x <- input@spatial[[targets[[1]][2]]]
+    y <- input@spatial[[targets[[2]][2]]]
+  } else {
+    if (!any(names(input@temporal)==targets[[1]][2]))
+      stop(paste("No ", targets[[1]][1], " data called '", targets[[1]][2], "'available.", sep=""))
+    if (!any(names(input@temporal)==targets[[2]][2]))
+      stop(paste("No ", targets[[1]][1], " data called '", targets[[2]][2], "'available.", sep=""))
+    x <- input@temporal[[targets[[1]][2]]]
+    y <- input@temporal[[targets[[2]][2]]]
+  }
+  
+  if (length(targets[[1]])==2 && length(targets[[2]])==2) {
+    if (length(colnames(x@data)) != length(colnames(y@data)))
+      stop(paste("Number of columns in input (", length(colnames(x@data)), "/", length(colnames(y@data)), ") differ.", sep=""))
+    for (n in colnames(x@data)) {
+      if (!any(colnames(y@data)==n))
+        stop(paste("Input Objects have different column names:\n", colnames(x@data), "\n", colnames(y@data)))
+    }
+    key.names <- key(x@data)
+    val.names <- names(x@data)
+    val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
+    setnames(x@data, val.names, paste("x.", val.names, sep=""))
+    setnames(y@data, val.names, paste("y.", val.names, sep=""))
+    
+  }
+  
+  
+  
+}

@@ -3,7 +3,7 @@ suppressMessages(library(RVCTools))
 library(RColorBrewer)
 
 ## Define a TIME PERIOD over which to average
-period = new("TimeSpan", name = "Reference", start = 1981, end = 2010)
+period = new("TemporalExtent", id = "Reference", name = "Reference", start = 1981, end = 2010)
 
 ## Define the simulation runs
 base <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons",
@@ -130,18 +130,31 @@ p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily),
 p <- p + guides(col = guide_legend(ncol = 1))
 print(p)
 
-### Time series
 
-for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@timeseries[['npp']] <- getSADT(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
-  eval(parse(text=paste(run, "@timeseries[['gpp']] <- getSADT(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
-  eval(parse(text=paste(run, "@timeseries[['cpool']] <- getSADT(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
-}
-
-plot(base@timeseries$npp$Total*130 ~ base@timeseries$cpool$Year, type="l")
 
 ### Arithmetics
 
+## Add some more time averaged spatial data
+for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
+  eval(parse(text=paste(run, "@spatial[['cpool']] <- getVegSpatial(",run,", period, 'cpool', forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@spatial[['npp']] <- getVegSpatial(",run,", period, 'anpp', forceReAveraging = FALSE)", sep="")))
+}
 
+
+
+t <- list(x=c("spatial", "gpp"), y=c("spatial", "npp"))
+calcNewVegObj(base, t, "/")
+
+
+
+
+### Time series
+## for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
+##   eval(parse(text=paste(run, "@temporal[['npp']] <- getVegTemporal(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
+##   eval(parse(text=paste(run, "@temporal[['gpp']] <- getVegTemporal(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
+##   eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
+## }
+
+## plot(base@timeseries$npp$Total*130 ~ base@timeseries$cpool$Year, type="l")
 
 

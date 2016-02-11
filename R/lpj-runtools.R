@@ -244,7 +244,7 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
       }
       
       # do temporal averaging
-      this.TA.dt <- doTimeAverage.cmpd(this.full, period, verbose)
+      this.TA.dt <- .doTimeAverage.cmpd(this.full, period, verbose)
       if(write) {
         if(verbose) {message("Saving as a table...")}
         write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
