@@ -517,9 +517,9 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     dt <- dy[dx]
     setnames(dt, targets$column[1], "value")
     if (area.weighted) {
-      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area)), by=list(", targets$column[2],")]", sep="")))
+      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area, na.rm=TRUE)), by=list(", targets$column[2],")]", sep="")))
     } else {
-      dt <- eval(parse(text=paste("dt[, list(value=mean(value)), by=list(", targets$column[2],")]", sep="")))
+      dt <- eval(parse(text=paste("dt[, list(value=mean(value, na.rm=TRUE)), by=list(", targets$column[2],")]", sep="")))
     }
   } else if (is.list(input)) {
 

@@ -128,8 +128,6 @@ p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily),
 p <- p + guides(col = guide_legend(ncol = 1))
 print(p)
 
-
-
 ### Time series
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
    eval(parse(text=paste(run, "@temporal[['npp']] <- getVegTemporal(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
@@ -137,9 +135,14 @@ for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "s
    eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
 }
 
-plot(base@temporal[['npp']]@data$Total*130 ~ base@temporal[['npp']]@data$Year, type="l")
-
-
+p <- plotGGTemporal(list(base@temporal[['gpp']],
+                         sens_constCO2@temporal[['gpp']],
+                         sens_daily@temporal[['gpp']],
+                         sens_CC@temporal[['gpp']],
+                         sens_centr@temporal[['gpp']],
+                         sens_CLM@temporal[['gpp']]), "Total", scale=130)
+p <- p + guides(col = guide_legend(title="", ncol = 1))
+print(p)
 
 
 ### Arithmetics
@@ -151,17 +154,42 @@ for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "s
 }
 
 
+RT.quant <- new("VegQuant",
+                id="ResidenceTime",
+                short.string="CResidenceTime",
+                full.string="Carbon residence time",
+                type="pools",
+                units="years")
 
 t <- list(x=c("spatial", "cpool"), y=c("spatial", "gpp", "Total"))
-residence.time <- RVCTools::calcNewVegObj(base, t, "/")
+residence.time <- calcNewVegObj(base, t, "/", quant=RT.quant)
 key.names <- key(residence.time@data)
 val.names <- names(residence.time@data)
 val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
 for (j in val.names)
-  set(residence.time@data, which(residence.time@data[[j]]<0), j, 0)
+  set(residence.time@data, which(residence.time@data[[j]]<0), j, NA)
 
 residence.time@data[, logTotal:=log10(Total), ]
+
 plotGGSpatial(residence.time, "logTotal", colors=brewer.pal(9, "YlOrBr"))
+
+base@spatial[['residence.time']] = residence.time
+plotGGCategorialAggregated(base, targets=list(slot=c("residence.time", "lai"), col=c("Total", "Smith2014")), name.map=Smith2014.scheme@cols)
+
+
+t <- list(x=c("temporal", "cpool"), y=c("temporal", "gpp", "Total"))
+for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
+  message(run)
+  eval(parse(text=paste(run, "@temporal[['residence.time']] <- calcNewVegObj(", run, ", t, '/', quant=RT.quant)", sep="")))
+}
+p <- plotGGTemporal(list(base@temporal[['residence.time']],
+                         sens_constCO2@temporal[['residence.time']],
+                         sens_daily@temporal[['residence.time']],
+                         sens_CC@temporal[['residence.time']],
+                         sens_centr@temporal[['residence.time']],
+                         sens_CLM@temporal[['residence.time']]), "Total")
+p <- p + guides(col = guide_legend(title="", ncol = 1))
+print(p)
 
 
 
