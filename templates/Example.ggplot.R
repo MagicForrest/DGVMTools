@@ -128,6 +128,20 @@ p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily),
 p <- p + guides(col = guide_legend(ncol = 1))
 print(p)
 
+
+
+### Time series
+for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
+   eval(parse(text=paste(run, "@temporal[['npp']] <- getVegTemporal(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
+   eval(parse(text=paste(run, "@temporal[['gpp']] <- getVegTemporal(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
+   eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
+}
+
+plot(base@temporal[['npp']]@data$Total*130 ~ base@temporal[['npp']]@data$Year, type="l")
+
+
+
+
 ### Arithmetics
 
 ## Add some more time averaged spatial data
@@ -138,19 +152,16 @@ for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "s
 
 
 
-t <- list(x=c("spatial", "gpp"), y=c("spatial", "npp"))
-xxx = calcNewVegObj(base, t, "/")
+t <- list(x=c("spatial", "cpool"), y=c("spatial", "gpp", "Total"))
+residence.time <- RVCTools::calcNewVegObj(base, t, "/")
+key.names <- key(residence.time@data)
+val.names <- names(residence.time@data)
+val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
+for (j in val.names)
+  set(residence.time@data, which(residence.time@data[[j]]<0), j, 0)
 
+residence.time@data[, logTotal:=log10(Total), ]
+plotGGMap(residence.time, "logTotal", colors=brewer.pal(9, "YlOrBr"))
 
-
-
-### Time series
-for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-   eval(parse(text=paste(run, "@temporal[['npp']] <- getVegTemporal(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
-   eval(parse(text=paste(run, "@temporal[['gpp']] <- getVegTemporal(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
-   eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
-}
-
-## plot(base@timeseries$npp$Total*130 ~ base@timeseries$cpool$Year, type="l")
 
 

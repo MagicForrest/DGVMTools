@@ -86,7 +86,7 @@ is.VegQuant <- function(input) {
 }
 
 
-## check if to classes are comparable
+## check if two classes are comparable
 setGeneric("is.equal", function(a, b) standardGeneric("is.equal")) 
 setMethod("is.equal", signature("VegQuant", "VegQuant"), function(a, b) {
   if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)

@@ -287,6 +287,78 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL) {
                  quant = quant,
                  run = as(run, "VegRunInfo")))  
     }
+  } else if (length(targets[[1]])==2 && length(targets[[2]])==3) {
+
+    
+    
+    
+    
+    key.names <- key(x.dt)
+    val.names <- names(x.dt)
+    val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
+    setnames(x.dt, val.names, paste("x.", val.names, sep=""))
+    
+    list.str <- paste(val.names, "=x.", val.names, operator, targets[[2]][3], sep="", collapse=", ")
+    if (targets[[1]][1]=="spatial") {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
+      
+      return(new("VegSpatial",
+                 id = paste(targets[[1]][2], operator, targets[[2]][2], "$" , targets[[2]][3], " ", period@id, sep=""),
+                 data = new.dt,
+                 temporal.extent = x.extent,
+                 quant = quant,
+                 run = as(run, "VegRunInfo")))      
+      
+    } else {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
+      
+      return(new("VegTemporal",
+                 id = paste(targets[[1]][2], operator, targets[[2]][2], "$" , targets[[2]][3], " ", period@id, sep=""),
+                 data = new.dt,
+                 spatial.extent = x.extent,
+                 quant = quant,
+                 run = as(run, "VegRunInfo")))  
+    }
+    
+    
+    
+        
+  } else if (length(targets[[1]])==3 && length(targets[[2]])==2) {
+
+    
+    key.names <- key(y.dt)
+    val.names <- names(y.dt)
+    val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
+    setnames(y.dt, val.names, paste("y.", val.names, sep=""))
+    
+    list.str <- paste(val.names, "=",targets[[1]][3], operator, "y.", val.names, sep="", collapse=", ")
+    if (targets[[1]][1]=="spatial") {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
+      
+      return(new("VegSpatial",
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], " ", period@id, sep=""),
+                 data = new.dt,
+                 temporal.extent = x.extent,
+                 quant = quant,
+                 run = as(run, "VegRunInfo")))      
+      
+    } else {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
+      
+      return(new("VegTemporal",
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], " ", period@id, sep=""),
+                 data = new.dt,
+                 spatial.extent = x.extent,
+                 quant = quant,
+                 run = as(run, "VegRunInfo")))  
+    }
+    
+    
+    
+  } else {
+
+    
+    
   }
 }
 
