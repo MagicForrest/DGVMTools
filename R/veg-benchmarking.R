@@ -4,8 +4,7 @@ prepareBenchmarkingDatasets <- function(benchmark.list, resolution = "HD"){
   
   benchmarking.datasets.list <- list()
   
-  
-  
+    
   # For each benchmark string 
   for(benchmark.string in benchmark.list){
     
@@ -205,15 +204,14 @@ compareRunToSpatialDataset <- function(dataset,
 
 
 
-compareManyRunsToData <- function(list.of.results, 
-                                  list.of.runs,
+compareManyRunsToData <- function(runs,
                                   dataset, 
                                   label,
                                   diff.cuts = NULL,
                                   perc.diff.cuts = seq(-100,200,5),
                                   spatial.extent = NULL,
                                   showR2 = TRUE,
-                                  layout.objs = layout.objs,
+                                  layout.objs = NULL,
                                   ...) {
   
   message(paste("Comparing runs to ", dataset@name))
@@ -221,7 +219,7 @@ compareManyRunsToData <- function(list.of.results,
   
   # BUILD STACKS, NAMES AND PLOT TITLE LISTS FOR PLOTTING
   # raster stacks 
-  Absolute.stack <- stack(list.of.results[[1]][["data.raster"]])
+  Absolute.stack <- stack(runs[[1]]@benchmarks[[dataset@id]]@data.raster)
   Difference.stack <- stack()
   Percentage.Difference.stack <- stack()
   
@@ -230,14 +228,18 @@ compareManyRunsToData <- function(list.of.results,
   plot.titles <- list(dataset@name)
   
   # add each model run to stacks and text lists
-  for(run in list.of.runs){
+  for(run in runs){
+
+    comparison.obj <- run@benchmarks[[dataset@id]]
     
     run.ids <- append(run.ids, run@id)
     plot.titles <- append(plot.titles, run@description)
     
-    Absolute.stack <- addLayer(Absolute.stack,  list.of.results[[run@id]][["model.raster"]])
-    Difference.stack <- addLayer(Difference.stack,  list.of.results[[run@id]][["diff.raster"]])
-    Percentage.Difference.stack <- addLayer(Percentage.Difference.stack,  list.of.results[[run@id]][["perc.diff.raster"]])
+    Absolute.stack <- addLayer(Absolute.stack,  comparison.obj@model.raster)
+    Difference.stack <- addLayer(Difference.stack,  comparison.obj@diff.raster)
+    Percentage.Difference.stack <- addLayer(Percentage.Difference.stack,  comparison.obj@perc.diff.raster)
+    
+    rm(comparison.obj)
     
   }
   
@@ -251,18 +253,16 @@ compareManyRunsToData <- function(list.of.results,
   
   
   # ASSIGN NAMES
+ 
   names(Absolute.stack) <- append(dataset@id, run.ids)
   names(Difference.stack) <- run.ids
   names(Percentage.Difference.stack) <- run.ids
-  
+ 
   
   # PLOT ABSOLUTE VALUES
-  plotLPJMaps(Absolute.stack,
-              which.layers = "all",
+  plotVegMaps(Absolute.stack,
               quant = dataset@veg.quant, 
               period = dataset@temporal.extent, 
-              doSummary = TRUE, 
-              doIndividual = FALSE, 
               summary.file.name = paste(paste("AbsoluteVs", dataset@id, sep = ""), label, sep = "."),
               special.string = "Corrected",               
               plot.labels = plot.titles,
@@ -273,9 +273,13 @@ compareManyRunsToData <- function(list.of.results,
   
   # MAKE R^2 LABELS (if required)
   if(showR2){
-    for(result.index in 1:length(list.of.results)){
-      R2.val <- round(list.of.results[[result.index]]$R.squ, 3)
-      layout.objs[[list.of.runs[[result.index]]@id]] <- list("sp.text", c(extent(Difference.stack)@xmin * 0.8, extent(Difference.stack)@ymin * 0.7), bquote(R^2 ~ "=" ~ .(R2.val)), which = result.index, cex = 1.5)
+    counter <- 0
+    for(run in runs){
+      counter <- counter + 1
+      comparison.obj <- run@benchmarks[[dataset@id]]
+      R2.val <- round(comparison.obj@R.squ, 3)
+      layout.objs[[run@id]] <- list("sp.text", c(extent(Difference.stack)@xmin * 0.8, extent(Difference.stack)@ymin * 0.7), bquote(R^2 ~ "=" ~ .(R2.val)), which = counter, cex = 1.5)
+      rm(comparison.obj)
     }
   }
   
@@ -290,12 +294,9 @@ compareManyRunsToData <- function(list.of.results,
   # PLOT ABSOLUTE DIFFERENCE
   plot.titles <- plot.titles[-1]
   
-  plotLPJMaps(Difference.stack,
-              which.layers = "all",
+  plotVegMaps(Difference.stack,
               quant = dataset@veg.quant, 
               period = dataset@temporal.extent, 
-              doSummary = TRUE, 
-              doIndividual = FALSE, 
               summary.file.name = paste(paste("DiffVs", dataset@id, sep = ""), label, sep = "."),
               summary.title = paste("Simulated - ", dataset@id, " (", dataset@units, ")", sep = ""),
               special = "difference",               
@@ -307,12 +308,9 @@ compareManyRunsToData <- function(list.of.results,
   
   
   # PLOT PERCENTAGE DIFFERENCE
-  plotLPJMaps(Percentage.Difference.stack,
-              which.layers = "all",
+  plotVegMaps(Percentage.Difference.stack,
               quant = dataset@veg.quant, 
               period = dataset@temporal.extent, 
-              doSummary = TRUE, 
-              doIndividual = FALSE, 
               summary.file.name = paste(paste("PercentageDiffVs", dataset@id, sep = ""), label, sep = "."),
               summary.title = paste("Simulated - ", dataset@id, "(percentage difference)"),
               special = "percentage.difference",               
@@ -405,8 +403,8 @@ doKappa <- function(stack, labels = NULL, verbose = TRUE){
   
   return(new("BiomeComparison",
              id = scheme@id,
-             data.raster = subset(stack,1), 
-             model.raster = subset(stack,2), 
+             data.raster = subset(stack,2), 
+             model.raster = subset(stack,1), 
              scheme = scheme,
              Kappa = kappa, 
              individual.Kappas = per.class.kappa)

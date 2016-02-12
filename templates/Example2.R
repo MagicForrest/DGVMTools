@@ -24,11 +24,9 @@
 
 ################################################################################################################
 #############  MF 2016-02-08 : MAJOR TODOS
-#############   1. Benchmarking.   Compare many runs to a benchmark simultaneously and add GFED4 including times series
-#############      to include in the standard RVCTools distribution.
-#############   2. Time series.  Producing is simple enough, but need to take plotting code from Joerg.
-#############   3. Compare one run to a 'baseline' run.
-#############   4. Sort out the warnings.
+#############   1. Time series.  Producing is simple enough, but need to take plotting code from Joerg.
+#############   2. Compare one run to a 'baseline' run.
+#############   3. Sort out the warnings.
 ################################################################################################################
 
 
@@ -62,8 +60,9 @@ t1 <- Sys.time()
 ### Analysis label (for today's date use "analysis.label <- Sys.Date()")
 analysis.label <- "Example2"                    
 
-### Plot directory for run comparison plots
-plot.dir <- "/home/forrest/Temp/Example2"   
+### Plot directory for run comparison plots (create it if it doesn't exist)
+plot.dir <- "/home/forrest/RVCExample2Plots"
+dir.create(plot.dir) 
 
 ### Time spans and spatials extents over which to average t
 periods <- list(PNV = new("TemporalExtent", id = "Reference", name = "Reference", start = 1961, end = 1990)) 
@@ -74,7 +73,6 @@ universal.resolution <- "HD"
 
 ### Force re-averaging - in case the raw data have been updated, or we required new a new time period
 forceReAveraging <- FALSE
-
 
 ### Which variables to analyse and in what detail (use "all" to choose all *.out files in the run directory)
 var.list <- c("lai") # simple summary analysis
@@ -152,12 +150,12 @@ for(run in vegrun.list){
     
     var = var.list[var.num]	 
     
-    if(verbose) message(paste(" ------ Processing", var, "------", sep = " "))
+    if(verbose) message(paste(" ------- Processing", var, "-------", sep = " "))
     
     # look-up quantity, 
     if(var == "mfirefrac" & run@model != "LPJ-GUESS-SPITFIRE") {var <- "firert"}
     this.VegQuantity <- lookupVegQuantity(var)
-   
+    
     
     ### FOR EACH TIME PERIOD
     for(period in periods){
@@ -227,7 +225,7 @@ for(run in vegrun.list){
         plotDominantPFTMap(this.VegSpatial, "Dominant")
         plotDominantPFTMap(this.VegSpatial, "DominantTree")
         plotDominantPFTMap(this.VegSpatial, "DominantWoody")
-          
+        
       }
       
       # clean up temporal averages to save memory
@@ -255,7 +253,7 @@ for(run in vegrun.list){
       
       # do the comparison, save it for later comparison plots and tidy up
       biome.comparison <- compareBiomes(run, lookupVegQuantity("lai"), periods[["PNV"]], scheme, plot = TRUE)
-      run <- addToVegRun(biome.comparison, run)
+      vegrun.list[[run@id]] <- addToVegRun(biome.comparison, vegrun.list[[run@id]])
       rm(scheme, biome.comparison)
       
     }
@@ -277,14 +275,14 @@ for(run in vegrun.list){
                                                        quant = cmass.local)
       
       # save the comparison for plotting later
-      run <- addToVegRun(saatchi.comparison, run)
+      vegrun.list[[run@id]] <- addToVegRun(saatchi.comparison, vegrun.list[[run@id]])
       rm(Saatchi.VegSpatial, cmass.local, saatchi.comparison)
       
     } # if doing Saatchi2011 benchmark
     
     
   } # for each benchmark requested
- 
+  
   
 } # For each run
 
@@ -294,58 +292,56 @@ for(run in vegrun.list){
 ################### CODE FOR COMPARISON OF RUNS ####################################
 ####################################################################################
 
-if(FALSE){
+if(verbose) message(paste("Comparing all runs to benchmarks simultaneously, saving plots to ", plot.dir, sep = ""))
+
+# now do each benchmark for the run
+for(benchmarking.dataset in benchmarking.datasets.list){
   
-  if(verbose) print("Doing comparisons")
-  
-  ###  Plot comparison of all runs against Saatchi
-  if(doSaatchi2011){
+  ### do Saatchi2011 if requested
+  if(benchmarking.dataset@id == "Saatchi2011"){
     
-    compareManyRunsToData(list.of.results = Saatchi.results, 
-                          list.of.runs = vegrun.list,
-                          dataset = Saatchi.dataset, 
+    compareManyRunsToData(runs = vegrun.list,
+                          dataset = benchmarking.dataset, 
                           label = analysis.label,
                           diff.cuts = seq(-35,35,1),
                           maxpixels = 40000000,
                           plot.dir = plot.dir,
                           showR2 = TRUE,
-                          layout.objs = layout.objs,
-                          spatial.extent = extent(-180,180,-90,90))
+                          layout.objs = NULL)
+    
     
   }
   
-  
-  
-  ###  Plot all global biomes and comapre to PNV from Hickler et al. 2006
-  if(doGlobalBiomes){
+  ### Do the biome classifications and comparisons
+  if(benchmarking.dataset@id %in% names(supported.biome.schemes)) {
     
+    # get biome scheme 
+    scheme <- supported.biome.schemes[[benchmarking.dataset@id]]
     
+    # make a raster stack with all the runs
+    biome.stack <- stack()
     labels <- list()
     for(run in vegrun.list){
+      biome.stack <- addLayer(biome.stack, run@benchmarks[[benchmarking.dataset@id]]@model.raster)
       labels <- append(labels, run@description)
     }
     
-    
-    plotBiomeMap(Biome.stack,
-                 "all",
-                 addData = PNV.biomes, 
-                 biome.strings = biome.scheme@strings, 
-                 biome.cols= biome.scheme@cols, 
-                 file.name = paste("GlobalBiomes", analysis.label, sep = "."),
-                 run.title = "Global Biomes",
+    plotBiomeMap(biome.stack,
+                 addData = benchmarking.dataset, 
+                 which.layers = names(biome.stack),
+                 file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
+                 run.title = scheme@id,
                  plot.dir = plot.dir,
                  plot.labels = labels,
                  maxpixels = 4000000,
                  plot.height =1000,
                  plot.width = 1800,
-                 layout.objs = layout.objs,
+                 layout.objs = NULL,
                  Cairo.type = c("png","ps"))
     
+    rm(biome.stack)
+    
   }
-  
-  
-  
-  
   
 }
 

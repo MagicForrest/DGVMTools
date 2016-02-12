@@ -64,10 +64,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         maxpixels = 1E6,
                         ...){
   
-  
-  ##########################################################################################################
-  ################# 
-  
+ 
   # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
   if(class(data) == "VegSpatial"){
     run <- data@run
@@ -165,8 +162,10 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
   }
   
-  # LAYOUT OBJECTS
-  if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
+  # LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field
+  if(!is.null(run)){
+    if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
+  }
   
   # EXTENT
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
@@ -217,11 +216,11 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       this.id <- makeVariableIDString(quant@id, "Summary", special.string)
       if(is.null(summary.file.name)) this.file.name <- makeFileName(this.id, file.name = summary.file.name, run = run, period = period)
       else this.file.name <- paste(summary.file.name, format, sep = ".")
-      
+
       # PLOT MAIN TITLE
       if(is.null(summary.title)) this.main.title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), summary.title, run, period)
       else this.main.title <- summary.title
-      
+
       Cairo(file = file.path(plot.dir, this.file.name), 
             dpi = Cairo.dpi, 
             type = format, 
@@ -349,7 +348,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
     period <- data@temporal.extent
   }
   
-  # IF NO LAYERS, COLS OR STRINGS SUPPLIED, USE THE  DEFAULTSOF THE SCHEME
+  # IF NO LAYERS, COLS OR STRINGS SUPPLIED, USE THE  DEFAULTS OF THE SCHEME
   if(is.null(which.layers)) which.layers = scheme@id
   if(is.null(biome.strings)) biome.strings = scheme@strings
   if(is.null(biome.cols)) biome.cols = scheme@cols
@@ -379,16 +378,15 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   # EXTENT
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
     
-  # LAYOUT OBJECTS
-  if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
-  
-  # Add PNV data if requested read it in and compare rasters
-  if(class(addData) == "logical") {
-    if(addData) addData <- readPNVBiomes()
-    else addData <- NULL
+  # LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field
+  if(!is.null(run)){
+    if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
   }
-  
+ 
+  # Add PNV data if requested read it in and compare rasters
   if(!is.null(addData)) {
+    
+    if(class(addData)[[1]] == "SpatialDataset") addData <- addData@data
     
     # first check if they are on identical grids, then one can simply add the layers
     if(compareRaster(addData, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
@@ -412,6 +410,9 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
     plot.labels <- c(plot.labels, "PNV (Hickler et al. 2006)")
     
   }
+  
+  print(data.toplot)
+  
   
   # KAPPA
   if(!is.null(kappa.list)){
@@ -826,86 +827,3 @@ makeVariableIDString  <- function(quantity.id, layer, special = NULL){
   }
   
 }
-
-# TODO MF: remove this function, I believe it is redundant
-
-parsePFTHeaderList <- function(targets, data, PFT.data, force = FALSE){
-  
-  if("all" %in% targets) {
-    
-    if(!force) {
-      
-      return(names(data))}
-    else {
-      
-      # implement a list of all PFTs, lieforms etc...
-      stop("Implement option force all in parseNames")
-    }
-    
-    
-  } 
-  
-  
-  # Make each PFT fraction
-  if("pft" %in% targets) {
-    all.PFTs <- getPFTs(data, PFT.data)
-    for(PFT in all.PFTs) {targets <- append(targets, PFT@name)}
-    targets <- targets[-which(targets == "pft")]
-  }
-  
-  # Expand lifeforms if necessary and calculate total if necessary
-  if("lifeforms" %in% tolower(targets)){
-    lpj.lifeforms <- c("Tree", "Grass", "Shrub", "Woody")
-    targets <- append(targets, lpj.lifeforms)
-    targets <- targets[-which(tolower(targets) == "lifeforms")]
-  }
-  
-  return(targets)
-  
-}
-
-
-#TODO MF: replace this function with expandTargets() from lpj-processing
-
-parseLayerList <- function(targets, data, PFT.data, force = FALSE){
-  #     
-  if("all" %in% targets) {
-    
-    if(!force) {
-      layer.list <- names(data)
-      remove.list <- c("Lon", "Lat")
-      for(remove in remove.list){
-        if(remove %in% layer.list) {layer.list <- layer.list[-which(layer.list == remove)]}     
-      }
-      return(layer.list)
-    }
-    
-    else {
-      
-      # implement a list of all PFTs, lieforms etc...
-      stop("Implement option force all in parseNames")
-    }
-    
-    
-  } 
-  
-  
-  # Make each PFT fraction
-  if("pft" %in% targets) {
-    all.PFTs <- getPFTs(data, PFT.data)
-    for(PFT in all.PFTs) {targets <- append(targets, PFT@name)}
-    targets <- targets[-which(targets == "pft")]
-  }
-  
-  # Expand lifeforms if necessary and calculate total if necessary
-  if("lifeforms" %in% tolower(targets)){
-    lpj.lifeforms <- c("Tree", "Grass", "Shrub", "Woody")
-    targets <- append(targets, lpj.lifeforms)
-    targets <- targets[-which(tolower(targets) == "lifeforms")]
-  }
-  
-  return(targets)
-  
-}
-
-
