@@ -1,4 +1,4 @@
-detach('package:RVCTools', unload=TRUE)
+#detach('package:RVCTools', unload=TRUE)
 suppressMessages(library(RVCTools))
 library(RColorBrewer)
 
@@ -78,7 +78,7 @@ sens_CLM <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/globa
 ### default behaviour.
 ########################################################################
 
-### Spatial analyses first
+### Spatial analyses
 
 ## Fill the runs with time averaged spatial data
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
@@ -90,12 +90,20 @@ for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "s
 ## single panel without title
 plotGGSpatial(base@spatial[['lai']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
 
-## 2 panel
+## split into panels by different data.table columns
+plotGGSpatial(base@spatial[['gpp']], c("BNE", "BNS", "TeBS", "TrBE", "C3G", "Total"), colors=brewer.pal(9, "YlGn"), wrap=3)
+
+## split into different panels by another spatial data
+plotGGSpatial(base@spatial[['lai']], "Total", wrap=c("base", "lai", "Smith2014", 4), colors=brewer.pal(9, "YlGn"), long.title=FALSE)
+wrap <- list(run="base", name="lai", column="Smith2014", ncol=4, map=Smith2014.scheme@cols)
+plotGGSpatial(base@spatial[['lai']], "Total", wrap=wrap, colors=brewer.pal(9, "YlGn"), long.title=FALSE, terr.bg="white")
+
+## 2 panels of different runs (dataset also possible, but use the same colorbar)
 plotGGSpatial(list(base@spatial[['gpp']], sens_constCO2@spatial[['gpp']]), "Total", colors=brewer.pal(9, "YlGn"))
 
-## 2 panel with overriding the default number of legend columns
+## 2 panels with overriding the default number of legend columns
 p <- plotGGSpatial(list(a=base@spatial[['lai']], b=sens_constCO2@spatial[['lai']]), 
-                   "Smith2014", colors=Smith2014.scheme@cols)
+                   "Smith2014", colors=Smith2014.scheme@cols, terr.bg="white")
 p <- p + guides(fill = guide_legend(ncol = 2))
 print(p)
 
@@ -130,7 +138,6 @@ print(p)
 
 ### Time series
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-   eval(parse(text=paste(run, "@temporal[['npp']] <- getVegTemporal(",run,", 'anpp', forceReAveraging = FALSE)", sep="")))
    eval(parse(text=paste(run, "@temporal[['gpp']] <- getVegTemporal(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
    eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
 }
@@ -150,33 +157,34 @@ print(p)
 ## Add some more time averaged spatial data
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
   eval(parse(text=paste(run, "@spatial[['cpool']] <- getVegSpatial(",run,", period, 'cpool', forceReAveraging = FALSE)", sep="")))
-  eval(parse(text=paste(run, "@spatial[['npp']] <- getVegSpatial(",run,", period, 'anpp', forceReAveraging = FALSE)", sep="")))
 }
 
-
+## create a new quantity description for Carbon residence time,
+## which will be calculated
 RT.quant <- new("VegQuant",
-                id="ResidenceTime",
+                id="CResidenceTime",
                 short.string="CResidenceTime",
                 full.string="Carbon residence time",
                 type="pools",
                 units="years")
-
+## spatial
 t <- list(x=c("spatial", "cpool"), y=c("spatial", "gpp", "Total"))
 residence.time <- calcNewVegObj(base, t, "/", quant=RT.quant)
 key.names <- key(residence.time@data)
 val.names <- names(residence.time@data)
 val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
+## set negative RT to NA
 for (j in val.names)
   set(residence.time@data, which(residence.time@data[[j]]<0), j, NA)
 
+## otherwise everything will be just yellow
 residence.time@data[, logTotal:=log10(Total), ]
-
 plotGGSpatial(residence.time, "logTotal", colors=brewer.pal(9, "YlOrBr"))
 
 base@spatial[['residence.time']] = residence.time
 plotGGCategorialAggregated(base, targets=list(slot=c("residence.time", "lai"), col=c("Total", "Smith2014")), name.map=Smith2014.scheme@cols)
 
-
+## temporal
 t <- list(x=c("temporal", "cpool"), y=c("temporal", "gpp", "Total"))
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
   message(run)

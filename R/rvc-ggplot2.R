@@ -152,14 +152,20 @@ rvc.ggplot.theme <- function(x) {
 ## Spatial plot (map) #################################################
 #######################################################################
 
-plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, long.title=TRUE, plot=TRUE, ...) {
+plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, long.title=TRUE, plot=TRUE, ...) {
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
   if (is.VegSpatial(input)) {
     if (is.na(column) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
-    if (all(colnames(input@data) != column))
+    if (!is.na(column) && length(column)>1) {
+      for (cn in column) {
+        if (all(colnames(input@data)!=cn))
+          stop(paste("No column named '", cn, "' present!", sep=""))
+      }
+    } else if (all(colnames(input@data) != column)) {
       stop(paste("No column named '",column,"' present!", sep=""))
+    }
     london.centre <- input@run@london.centre
     if (is.character(input@run@map.overlay)) {
       map.overlay <- input@map.overlay
@@ -168,8 +174,43 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
                                                    data.frame(ID=getSLLinesIDSlots(input@run@map.overlay[[2]]))))
     }
     dt <- input@data[, c("Lon", "Lat", column), with = FALSE]
-    setnames(dt, column, "value")
+    if (length(column)==1) {
+      setnames(dt, column, "value")
+    } else {
+      dt <- melt(dt, key(dt), column)
+      setnames(dt, "variable", "sens")
+      dt <- dt[, sens:=factor(sens, column)]
+      if (length(wrap)>1 || !is.numeric(wrap))
+        wrap <- ceiling(sqrt(length(column)))
+    }
+    if (length(wrap)>1) {
+      if (!is.list(wrap))
+        wrap <- list(run=wrap[1], name=wrap[2], column=wrap[3],
+                    ncol={if (length(wrap)>=4) wrap[4] else 1},
+                     map=NA, stringsAsFactors=FALSE)
+      dt.wrap <- eval(parse(text=paste(wrap$run, "@spatial[['", wrap$name, "']]@data[, c('Lon', 'Lat', '", wrap$column,"'), with=FALSE]", sep="")))
+      setnames(dt.wrap, wrap$column, "wrap.tmp")
+      dt <- dt[dt.wrap]
+    
+      ## if wrap$map is a valid named vector the names are used for x-labels
+      if (!any(is.na(wrap$map))) {
+        if (is.vector(wrap$map) && !is.null(names(wrap$map))) {
+          eval(parse(text=paste('dt[, name:=names(wrap$map)[wrap.tmp], ]', sep="")))
+        } else if (is.vector(wrap$map)) {
+          eval(parse(text=paste('dt[, name:=wrap$map[wrap.tmp], ]', sep="")))
+        }
+        setnames(dt, "name", "sens")
+      } else {
+        setnames(dt, "wrap.tmp", "sens")
+      }
+
+      wrap <- wrap$ncol
+    }
   } else if (is.list(input)) {
+    if (!is.numeric(wrap)) {
+      warning("'wrap' must be numeric if input is a list. Setting it to 1 column.")
+      wrap <- 1
+    }
     for (n in 1:length(input)) {
       if (!is.VegSpatial(input[[n]]))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
@@ -225,8 +266,8 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
     return(dt)
 
   ## calculate the map resolution
-  lon <- sort(unique(dt$Lon))
-  lat <- sort(unique(dt$Lat))
+  lon <- extract.seq(dt$Lon)
+  lat <- extract.seq(dt$Lat)
   res <- min(lon[2:length(lon)] - lon[1:(length(lon)-1)],
              lat[2:length(lat)] - lat[1:(length(lat)-1)])
 
@@ -234,6 +275,30 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   lon.limit <- c(min(lon) - res/2, max(lon) + res/2)
   lat.limit <- c(min(lat) - res/2, max(lat) + res/2)
 
+  ## if a valid color for the land is requested
+  if (!is.na(terr.bg) && .is.color(terr.bg)) {
+    to <- raster(nrows=length(lat), ncols=length(lon),
+                 xmn=min(lon) - res/2, xmx=max(lon) + res/2,
+                 ymn=min(lat) - res/2, ymx=max(lat) + res/2,
+                 crs=CRS("+proj=longlat +ellps=WGS84"))
+    data(slm)
+    slm <- projectRaster(slm, to, "nbg")
+    slm <- as.data.frame(slm, xy=TRUE)
+    colnames(slm) <- c("Lon", "Lat", "value")
+    slm <- subset(slm, value>0)
+    if (any(colnames(dt)=="sens")) {
+      for (sens in levels(dt$sens)) {
+        if (!any(colnames(slm)=="sens")) {
+          slm$sens = sens
+        } else {
+          slm <- rbind(slm, data.frame(slm[c("Lon","Lat","value")], sens=sens))
+        }
+      }
+    }
+  } else {
+    terr.bg <- NA
+  }
+  
   ## If map.overlay is not yet defined properly, use
   ## either highres/lowres, otherwise assume a country name was given
   if (is.character(map.overlay)) {
@@ -266,6 +331,9 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   ## create plot
   p <- ggplot(dt, aes(y=Lat, x=Lon))
   p <- p + .rvc.spatial_theme
+
+  if (!is.na(terr.bg))
+    p <- p + geom_raster(data=slm, fill=terr.bg)
 
   if (discrete) {
     p <- p + geom_raster(aes(fill=name))
@@ -602,6 +670,8 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
   if (!any(is.na(name.map))) {
     if (is.vector(name.map) && !is.null(names(name.map))) {
       eval(parse(text=paste("dt[, name:=names(name.map)[",targets$column[2],"], ]", sep="")))
+    } else if (is.vector(name.map)) {
+      eval(parse(text=paste("dt[, name:=name.map[", targets$column[2], "], ]", sep="")))
     }
   }
 
