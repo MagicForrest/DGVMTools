@@ -175,10 +175,10 @@ for(run in vegrun.list){
           this.VegSpatial <- addVegTotals(this.VegSpatial, target = c("Lifeforms", "Zones", "Phenologies", "Leafforms"))
           
           # plot the per lifeform summary and individual lifeform plots
-          plotVegMaps(this.VegSpatial, which.layers = c("Lifeforms"), special.string = "Lifeforms")
-          plotVegMaps(this.VegSpatial, which.layers = c("Zones"),  special.string = "ClimateZones")
-          plotVegMaps(this.VegSpatial, which.layers = c("Phenologies"), special.string = "Phenologies")
-          plotVegMaps(this.VegSpatial, which.layers = c("Leafforms"),  special.string = "Leafforms")
+          plotVegMaps(this.VegSpatial, targets = c("Lifeforms"), special.string = "Lifeforms")
+          plotVegMaps(this.VegSpatial, targets = c("Zones"),  special.string = "ClimateZones")
+          plotVegMaps(this.VegSpatial, targets = c("Phenologies"), special.string = "Phenologies")
+          plotVegMaps(this.VegSpatial, targets = c("Leafforms"),  special.string = "Leafforms")
           
           
           
@@ -188,8 +188,8 @@ for(run in vegrun.list){
           this.VegSpatial <- addSeasonal(this.VegSpatial)
           
           # plot the per lifeform summary and individual lifeform plots
-          plotVegMaps(this.VegSpatial, which.layers = "Annual")
-          plotVegMaps(this.VegSpatial, which.layers = c("DJF", "MAM", "JJA", "SON"), special.string = "Seasonal")
+          plotVegMaps(this.VegSpatial, targets = "Annual")
+          plotVegMaps(this.VegSpatial, targets = c("DJF", "MAM", "JJA", "SON"), special.string = "Seasonal")
           
         }
         
@@ -202,11 +202,11 @@ for(run in vegrun.list){
           
           # Add fractions and plot
           this.VegSpatial <- addVegFractions(this.VegSpatial, targets =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE)
-          plotVegMaps(this.VegSpatial, which.layers = c("PFTs"), special = "fraction", special.string = "PFT")
-          plotVegMaps(this.VegSpatial, which.layers = c("Lifeforms"), special = "fraction", special.string = "Lifeforms")
-          plotVegMaps(this.VegSpatial, which.layers = c("Zones"), special = "fraction",  special.string = "ClimateZones")
-          plotVegMaps(this.VegSpatial, which.layers = c("Phenologies"), special = "fraction", special.string = "Phenologies")
-          plotVegMaps(this.VegSpatial, which.layers = c("Leafforms"), special = "fraction",  special.string = "Leafforms")
+          plotVegMaps(this.VegSpatial, targets = c("PFTs"), special = "fraction", special.string = "PFT")
+          plotVegMaps(this.VegSpatial, targets = c("Lifeforms"), special = "fraction", special.string = "Lifeforms")
+          plotVegMaps(this.VegSpatial, targets = c("Zones"), special = "fraction",  special.string = "ClimateZones")
+          plotVegMaps(this.VegSpatial, targets = c("Phenologies"), special = "fraction", special.string = "Phenologies")
+          plotVegMaps(this.VegSpatial, targets = c("Leafforms"), special = "fraction",  special.string = "Leafforms")
           
         }
       }

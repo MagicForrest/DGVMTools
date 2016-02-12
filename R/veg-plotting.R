@@ -32,7 +32,7 @@
 
 
 plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegSpatial 
-                        which.layers = NULL,
+                        targets = NULL,
                         expand.targets = TRUE,
                         quant = NULL, 
                         period = NULL, 
@@ -72,12 +72,11 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     PFT.set <- run@pft.set
     if(is.null(quant)) quant <- data@quant  
   }
-  
-  
+    
   # TOLERANCE - for when making grid
   if(is.null(run)) { tolerance <- 0.02 }
   else {tolerance <- run@tolerance}  
-  
+
   # DIRECTORY TO SAVE PLOTS
   if(is.null(plot.dir)){
     if(!is.null(run)){ plot.dir <- run@run.dir} 
@@ -134,17 +133,18 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   # parse layer names and promote to raster for plotting
-  if(is.null(which.layers)) {
-    if(class(data) == "VegSpatial") which.layers <- names(data@data)
-    else which.layers <- names(data)
+  if(is.null(targets)) {
+    if(class(data) == "VegSpatial") targets <- names(data@data)
+    else targets <- names(data)
   }
   if(expand.targets) {
-    which.layers <- expandTargets(which.layers, data, PFT.set)
+    targets <- expandTargets(targets, data, PFT.set)
     if(!is.null(special)){
-      if(tolower(special) == "fraction" | tolower(special) == "frac") which.layers <- paste(which.layers, "Fraction", sep = sep.char)
+      if(tolower(special) == "fraction" | tolower(special) == "frac") targets <- paste(targets, "Fraction", sep = sep.char)
    }
   }
-  data.toplot <- promoteToRaster(data, which.layers, tolerance)
+ 
+  data.toplot <- promoteToRaster(data, targets, tolerance)
   
   # PLOT LABELS (if no titles are provided use the layer names)
   if(is.null(plot.labels)){
@@ -230,7 +230,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
             bg = Cairo.bg)  
         
       print(spplot(data.toplot,
-                   which.layers,
+                   targets,
                    par.settings = list(panel.background=list(col=plot.bg.col)),
                    xlab = list(label = "Longitude", cex = 3 * text.multiplier),
                    ylab = list(label = "Latitude", cex = 3 * text.multiplier),
@@ -258,14 +258,14 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # print all PFTs on one plot if summary is TRUE
     if(doIndividual){
       
-      for(layer in which.layers){
+      for(layer in targets){
         
         # FILENAME
         this.id <- makeVariableIDString(quant@id, layer, special.string)
         this.file.name <- makeFileName(this.id, file.name = NULL, run = run, period = period)
         
         # PLOT TITLE
-        if(!is.null(plot.labels[which(layer == which.layers)])) {plot.title <- plot.labels[which(layer == which.layers)]}
+        if(!is.null(plot.labels[which(layer == targets)])) {plot.title <- plot.labels[which(layer == targets)]}
         else { plot.title <- makePlotTitle(paste(quant@full.string, special.string, layer, sep = " "), plot.title, run, period) }
         
         Cairo(file = file.path(plot.dir, this.file.name), 
@@ -315,7 +315,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 
 
 plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                         which.layers = NULL,
+                         targets = NULL,
                          scheme = Smith2014.scheme,
                          biome.strings = NULL,
                          biome.cols = NULL,  
@@ -349,7 +349,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   }
   
   # IF NO LAYERS, COLS OR STRINGS SUPPLIED, USE THE  DEFAULTS OF THE SCHEME
-  if(is.null(which.layers)) which.layers = scheme@id
+  if(is.null(targets)) targets = scheme@id
   if(is.null(biome.strings)) biome.strings = scheme@strings
   if(is.null(biome.cols)) biome.cols = scheme@cols
   
@@ -364,7 +364,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   }
   
   ##### Here check data is right class for plotting, process it if not
-  data.toplot <- promoteToRaster(data, which.layers, run@tolerance) 
+  data.toplot <- promoteToRaster(data, targets, run@tolerance) 
   if(is.null(plot.labels)) {
     if(is.null(run)){
       plot.labels <- list()
@@ -476,7 +476,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
 
 
 plotFireRT <- function(data, # can be a data.table, SpatialPixelsDataFrame or a raster
-                       which.layers = "all",
+                       targets = "all",
                        cuts = c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000),
                        cols = colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3")),  
                        run = NULL, 
@@ -507,7 +507,7 @@ plotFireRT <- function(data, # can be a data.table, SpatialPixelsDataFrame or a 
   }
   
   ##### Here check data is right class for plotting, process it if not
-  data.toplot <- promoteToRaster(data, which.layers, run@tolerance) 
+  data.toplot <- promoteToRaster(data, targets, run@tolerance) 
   if(is.null(plot.labels)) {
     if(is.null(run)){
       plot.labels <- list()
@@ -617,7 +617,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   
   
   # CONVERT TO SPDF FOR PLOTTING (PLOTTING FACTORS VIA RASTER IS ANNOYING)
-  data.toplot <- makeSPDFfromDT(data@data, layers = which.dominant, tolerance = run@tolerance)
+  data.toplot <- .makeSPDFfromDT(data@data, layers = which.dominant, tolerance = run@tolerance)
   
   # COLORLIST
   dom.PFT.colourlist <- vector()
@@ -684,7 +684,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
 ##########################################################################################################################################
 
 plotBAMaps <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented),
-                       which.layers = "all",
+                       targets = "all",
                        period = NULL, 
                        run = NULL, 
                        plot.dir = NULL, 

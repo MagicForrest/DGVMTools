@@ -154,7 +154,7 @@ compareRunToSpatialDataset <- function(dataset,
   
   ##### ABSOLUTE MAPS
   plotVegMaps(stack(model.raster, data.raster),
-              which.layers = c(names(model.raster), names(data.raster)),
+              targets = c(names(model.raster), names(data.raster)),
               quant = quant, 
               period = dataset@temporal.extent, 
               doSummary = TRUE, 
@@ -463,7 +463,7 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", ..
   
   plotBiomeMap(biome.stack,
                addData = biome.dataset, 
-               which.layers = names(biome.stack),
+               targets = names(biome.stack),
                file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
                run.title = scheme@id,
                plot.labels = labels,

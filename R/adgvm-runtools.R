@@ -381,8 +381,7 @@ getVegQuantity_aDGVM_Scheme2 <- function(run, period, variable)
     }
   }
   
-  print(out.abm)
-  
+
   if(variable@id == "lai"){
     fail("LAI not yet defined for aDGVM scheme 2")
   }

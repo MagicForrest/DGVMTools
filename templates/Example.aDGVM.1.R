@@ -10,21 +10,19 @@ library(RVCTools)
 ##### PREAMBLE: Define the run settings and an averaging period
 
 # Define a RUN to process
-run <- new("VegRun",
-           run.dir = "/data/forrest/aDGVM",
-           model = "aDGVM",
-           pft.set = aDGVM.PFTs,
-           id = "44_0", # this is, by former aDGVM way, <runid>_<fire>
-           description= "An example aDGVM run",
-           driving.data = "CRU",
-           map.overlay = "lowres",
-           lonlat.offset = c(0.25,0.25),
-           year.offset = 1401
+run <- defineVegRun(run.dir = "/data/forrest/aDGVM",
+                    model = "aDGVM",
+                    pft.set = aDGVM.PFTs,
+                    id = "44_0", # this is, by former aDGVM way, <runid>_<fire>
+                    description= "An example aDGVM run",
+                    driving.data = "CRU",
+                    map.overlay = "lowres",
+                    lonlat.offset = c(0.25,0.25),
+                    year.offset = 1401
 )
 
 # Define a TIME PERIOD over which to average - this is ignored, the last 20 years is hard-coded
-period = new("TimeSpan", name = "Reference", start = 81, end = 100)
-
+period = new("TemporalExtent", name = "Reference", start = 81, end = 100)
 
 
 
@@ -37,14 +35,10 @@ variable <- "lai"
 # Open the lai.out file, and average over the reference period
 lai.reference.period <- getVegSpatial(run, period, variable, adgvm.scheme = 1)
 
-
-### Simple summary plots of each "PFT"
-
-# Plot all PFTs on one figure and each one individually
-# plotVegMaps(lai.reference.period, 
-#             doSummary = TRUE, 
-#             doIndividual = TRUE)
-
+### Simple summary plots of each "PFT" - one plot for each PFT and a summary plot of them all
+plotVegMaps(lai.reference.period, 
+            doSummary = TRUE, 
+            doIndividual = TRUE)
 
 ### Fractions of each PFT
 
@@ -53,7 +47,7 @@ lai.reference.period <- addVegFractions(lai.reference.period, targets = "pfts")
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            which.layers = c("pfts"),
+            targets = c("pfts"),
             special.string = "PFT.Fractions",
             special = "fraction")
 
@@ -88,10 +82,10 @@ plotVegMaps(lai.reference.period,
 ### TOTALS
 
 # Calculate the lifeform totals, the temperate total and the evergeen total
-lai.reference.period <- addVegTotals(lai.reference.period, target = c("Lifeforms"))
+lai.reference.period <- addVegTotals(lai.reference.period, targets = c("Lifeforms"))
 
 plotVegMaps(lai.reference.period, 
-            which = c("Tree", "Grass", "Total"),
+            targets = c("Tree", "Grass", "Total"),
             special.string = "Lifeforms")
 
 
@@ -103,7 +97,7 @@ lai.reference.period <- addVegFractions(lai.reference.period, targets = "lifefor
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            which = c("lifeforms"),
+            targets = c("lifeforms"),
             special.string = "Lifeform",
             special = "fraction")
 
