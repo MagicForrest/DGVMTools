@@ -411,9 +411,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
     
   }
   
-  print(data.toplot)
-  
-  
+   
   # KAPPA
   if(!is.null(kappa.list)){
    
@@ -422,7 +420,6 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
       # place overall Kappa on each modelled biome map 
       if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
       for(layer in 1:(nlayers(data.toplot)-1)){
-       
         layout.objs[[paste(layer)]] <- list("sp.text", kappa.position, paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
       }
   

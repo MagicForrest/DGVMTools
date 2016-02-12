@@ -33,7 +33,7 @@
 
 ################################################################################################################
 ####### PREAMBLE: Load the packages, define the number of threads to use and start the timer
-#######
+#######           You shouldn't need to change anything here  
 
 
 # Load RVCTools package (clear the environment and unload the package first in case we are actively developing the package)
@@ -62,7 +62,7 @@ analysis.label <- "Example2"
 
 ### Plot directory for run comparison plots (create it if it doesn't exist)
 plot.dir <- "/home/forrest/RVCExample2Plots"
-dir.create(plot.dir) 
+dir.create(plot.dir, showWarnings = FALSE) 
 
 ### Time spans and spatials extents over which to average t
 periods <- list(PNV = new("TemporalExtent", id = "Reference", name = "Reference", start = 1961, end = 1990)) 
@@ -274,7 +274,7 @@ for(run in vegrun.list){
                                                        layer = "Tree",
                                                        quant = cmass.local)
       
-      # save the comparison for plotting later
+      # save the comparison for plotting later - note that you cannot use just 'run' here, otherwise it won't be saved outside the loop
       vegrun.list[[run@id]] <- addToVegRun(saatchi.comparison, vegrun.list[[run@id]])
       rm(Saatchi.VegSpatial, cmass.local, saatchi.comparison)
       
@@ -297,49 +297,28 @@ if(verbose) message(paste("Comparing all runs to benchmarks simultaneously, savi
 # now do each benchmark for the run
 for(benchmarking.dataset in benchmarking.datasets.list){
   
-  ### do Saatchi2011 if requested
+  ### if benchmark is Saatchi2011 
   if(benchmarking.dataset@id == "Saatchi2011"){
     
     compareManyRunsToData(runs = vegrun.list,
                           dataset = benchmarking.dataset, 
                           label = analysis.label,
                           diff.cuts = seq(-35,35,1),
-                          maxpixels = 40000000,
-                          plot.dir = plot.dir,
-                          showR2 = TRUE,
-                          layout.objs = NULL)
+                          plot.dir = plot.dir)
     
     
   }
   
-  ### Do the biome classifications and comparisons
+  ### If benchmark is a biome scheme
   if(benchmarking.dataset@id %in% names(supported.biome.schemes)) {
-    
-    # get biome scheme 
-    scheme <- supported.biome.schemes[[benchmarking.dataset@id]]
-    
-    # make a raster stack with all the runs
-    biome.stack <- stack()
-    labels <- list()
-    for(run in vegrun.list){
-      biome.stack <- addLayer(biome.stack, run@benchmarks[[benchmarking.dataset@id]]@model.raster)
-      labels <- append(labels, run@description)
-    }
-    
-    plotBiomeMap(biome.stack,
-                 addData = benchmarking.dataset, 
-                 which.layers = names(biome.stack),
-                 file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
-                 run.title = scheme@id,
-                 plot.dir = plot.dir,
-                 plot.labels = labels,
-                 maxpixels = 4000000,
-                 plot.height =1000,
-                 plot.width = 1800,
-                 layout.objs = NULL,
-                 Cairo.type = c("png","ps"))
-    
-    rm(biome.stack)
+        
+    compareManyRunsToBiomes(runs = vegrun.list, 
+                            biome.dataset = benchmarking.dataset, 
+                            analysis.label = analysis.label,
+                            plot.dir = plot.dir,
+                            plot.height =1000,
+                            plot.width = 1800,
+                            Cairo.type = c("png","ps"))
     
   }
   

@@ -4,7 +4,7 @@ prepareBenchmarkingDatasets <- function(benchmark.list, resolution = "HD"){
   
   benchmarking.datasets.list <- list()
   
-    
+  
   # For each benchmark string 
   for(benchmark.string in benchmark.list){
     
@@ -108,18 +108,18 @@ compareRunToSpatialDataset <- function(dataset,
     interval <- (range(dataset@veg.quant@cuts)[2] - range(dataset@veg.quant@cuts)[1] )/ (length(dataset@veg.quant@cuts)-1)
     diff.cuts <-  seq(-(max(dataset@veg.quant@cuts)), max(dataset@veg.quant@cuts), interval)
   }
- 
+  
   if(is.null(histo.plot.range)) histo.plot.range <- c(diff.cuts[[1]], diff.cuts[[length(diff.cuts)]])
-
+  
   # PREPARE QUANT
   if(is.null(quant)) quant <- dataset@veg.quant 
-    
+  
   # crop all rasters to the same size
   temp <- intersectionRVC(model.raster, dataset@data)
   model.raster <- temp[[1]]
   data.raster <- temp[[2]]
   rm(temp)
-
+  
   # set names of raster layers
   names(model.raster) <- layer
   names(data.raster) <- dataset@id
@@ -150,7 +150,7 @@ compareRunToSpatialDataset <- function(dataset,
               maxpixels = 1000000,
               special = "diff",
               ...)
-    
+  
   
   ##### ABSOLUTE MAPS
   plotVegMaps(stack(model.raster, data.raster),
@@ -165,7 +165,7 @@ compareRunToSpatialDataset <- function(dataset,
               maxpixels = 1000000,
               plot.labels = c(run@description, dataset@name),
               ...)
-   
+  
   
   
   ##### HISTOS
@@ -197,7 +197,7 @@ compareRunToSpatialDataset <- function(dataset,
     
   }
   comparison.results@id <- dataset@id
-    
+  
   return(comparison.results)
   
 }
@@ -229,7 +229,7 @@ compareManyRunsToData <- function(runs,
   
   # add each model run to stacks and text lists
   for(run in runs){
-
+    
     comparison.obj <- run@benchmarks[[dataset@id]]
     
     run.ids <- append(run.ids, run@id)
@@ -253,11 +253,11 @@ compareManyRunsToData <- function(runs,
   
   
   # ASSIGN NAMES
- 
+  
   names(Absolute.stack) <- append(dataset@id, run.ids)
   names(Difference.stack) <- run.ids
   names(Percentage.Difference.stack) <- run.ids
- 
+  
   
   # PLOT ABSOLUTE VALUES
   plotVegMaps(Absolute.stack,
@@ -445,6 +445,29 @@ compareBiomes <- function(run, variable, period, scheme, plot = TRUE){
   }
   
   return(Kappa.comparison)
+  
+}
+
+compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", ...){
+  
+  # get biome scheme 
+  scheme <- supported.biome.schemes[[biome.dataset@id]]
+  
+  # make a raster stack with all the runs
+  biome.stack <- stack()
+  labels <- list()
+  for(run in runs){
+    biome.stack <- addLayer(biome.stack, run@benchmarks[[biome.dataset@id]]@model.raster)
+    labels <- append(labels, run@description)
+  }
+  
+  plotBiomeMap(biome.stack,
+               addData = biome.dataset, 
+               which.layers = names(biome.stack),
+               file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
+               run.title = scheme@id,
+               plot.labels = labels,
+               ...)
   
 }
 
