@@ -59,7 +59,14 @@
 #######################################################################
 ## exported helper functions ##########################################
 #######################################################################
-
+#' ggplot2 themes
+#' 
+#' Get the internal ggplot2 theme definitions
+#' 
+#' @param x string: "temporal", "spatial", or "scatter"
+#' @return theme list
+#' @export
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 rvc.ggplot.theme <- function(x) {
   if(x=="scatter") {
     return(.rvc.scatter_theme)
@@ -151,7 +158,22 @@ rvc.ggplot.theme <- function(x) {
 #######################################################################
 ## Spatial plot (map) #################################################
 #######################################################################
-
+#' Spatial plot (map) with ggplot2
+#' 
+#' Plots a map (or a set of maps) using the geom_raster from the ggplot2 library
+#' 
+#' @param input A VegSpatial or a list of VegSpatial objects.
+#' @param column Name of the column(s) in the data slot of input, which should be plotted. Several columns can only be supplied with a single VegSpatial. Default: 'value'.
+#' @param colors A (named) vector of colors or a data.frame with the columns 'color' and ('name' or 'value'), to be used for plotting.
+#' @param sym.col boolean, if the colors should be distributed symetrically around 0.
+#' @param wrap a single number of facet_wrap columns or a vector/list with the run, VegSpatial name, column and optionally ncol (number of columns), which is used to split the data in different panels. Only valid when a vector of column names or a list of VegSpatial was given as input. Otherwise it is ignored.
+#' @param long.title If the description (default) should be used as titles or the shorter id.
+#' @param plot If FALSE only the data is returned, without drawing the map.
+#' @param ... Additional parameters, which are ignored so far.
+#' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @import raster sp maps ggplot2 data.table
+#' @export
 plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, long.title=TRUE, plot=TRUE, ...) {
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
@@ -188,6 +210,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
         wrap <- list(run=wrap[1], name=wrap[2], column=wrap[3],
                     ncol={if (length(wrap)>=4) wrap[4] else 1},
                      map=NA, stringsAsFactors=FALSE)
+      ## needs a tryCatch, if the data is not available
       dt.wrap <- eval(parse(text=paste(wrap$run, "@spatial[['", wrap$name, "']]@data[, c('Lon', 'Lat', '", wrap$column,"'), with=FALSE]", sep="")))
       setnames(dt.wrap, wrap$column, "wrap.tmp")
       dt <- dt[dt.wrap]
@@ -211,33 +234,44 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
       warning("'wrap' must be numeric if input is a list. Setting it to 1 column.")
       wrap <- 1
     }
-    for (n in 1:length(input)) {
-      if (!is.VegSpatial(input[[n]]))
+    for (i in 1:length(input)) {
+      if (!is.VegSpatial(input[[i]]))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
-      if (n==1) {
-        london.centre <- input[[n]]@run@london.centre
-        if (is.character(input[[n]]@run@map.overlay)) {
-          map.overlay <- input[[n]]@map.overlay
+      
+      if (is.na(column) && all(colnames(input[[i]]@data) != "value"))
+        stop("No column name given and no column named 'value' present!")
+      if (!is.na(column) && length(column)>1) {
+        warning("Several column names are supplied. Will only use the first one!")
+        column <- column[1]
+      }
+      if (all(colnames(input[[i]]@data) != column)) {
+        stop(paste("No column named '",column,"' present!", sep=""))
+      }
+      
+      if (i==1) {
+        london.centre <- input[[i]]@run@london.centre
+        if (is.character(input[[i]]@run@map.overlay)) {
+          map.overlay <- input[[i]]@map.overlay
         } else {
-          map.overlay <- fortify(SpatialLinesDataFrame(input[[n]]@run@map.overlay[[2]],
-                                                       data.frame(ID=getSLLinesIDSlots(input[[n]]@run@map.overlay[[2]]))))
+          map.overlay <- fortify(SpatialLinesDataFrame(input[[i]]@run@map.overlay[[2]],
+                                                       data.frame(ID=getSLLinesIDSlots(input[[i]]@run@map.overlay[[2]]))))
         }
-        dt <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
+        dt <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt[, sens:=input[[n]]@run@description, ]
-          titles <- input[[n]]@run@description
+          dt[, sens:=input[[i]]@run@description, ]
+          titles <- input[[i]]@run@description
         } else {
-          dt[, sens:=input[[n]]@run@id, ]
-          titles <- input[[n]]@run@id
+          dt[, sens:=input[[i]]@run@id, ]
+          titles <- input[[i]]@run@id
         }
       } else {
-        dt.tmp <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
+        dt.tmp <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt.tmp[, sens:=input[[n]]@run@description, ]
-          titles <- append(titles, input[[n]]@run@description)
+          dt.tmp[, sens:=input[[i]]@run@description, ]
+          titles <- append(titles, input[[i]]@run@description)
         } else {
-          dt.tmp[, sens:=input[[n]]@run@id, ]
-          titles <- append(titles, input[[n]]@run@id)
+          dt.tmp[, sens:=input[[i]]@run@id, ]
+          titles <- append(titles, input[[i]]@run@id)
         }
         dt <- rbindlist(list(dt, dt.tmp))
         rm(dt.tmp)
@@ -377,7 +411,22 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 #######################################################################
 ## meridional #########################################################
 #######################################################################
-
+#' Plot a meridional mean with ggplot2
+#' 
+#' Plots vertical lines as average over latitudinal bands.
+#' 
+#' @param input A VegSpatial or a list of VegSpatial objects.
+#' @param column Name of the column(s) in the data slot of input, which should be plotted. Several columns can only be supplied with a single VegSpatial. Default: 'value'.
+#' @param what A list with the elements 'center' and 'var'. 'center' can be one of 'mn', 'mean', 'md', 'median' for the line. 'var' is for the variability polygon drawn in the background. 'var' can be 'sd' (sandard deviation), 'se' (standard error), 'mm'/'minmax', a numeric value (0-1) of quantile to be shown arround the central line or a vector specifying the upper and lower quantile.
+#' @param alpha Vector of two elements: Transparency values for the line (first) and background polygon (second).
+#' @param colors Colors for the diffent VegSpatial objects.
+#' @param long.title If the description (default) should be used as titles or the shorter id.
+#' @param plot If FALSE only the data is returned, without drawing the map.
+#' @param ... Ignored further parameters
+#' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
+#' @import ggplot2 data.table
 plotGGMeridional <- function(input, column='value', what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, plot=TRUE, ...) {
   if (!any(names(what)=="center"))
     stop("No definition for meridional average given. Must be either 'mn', 'mean' or 'md', 'median'.")
@@ -389,33 +438,72 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
   if (is.VegSpatial(input)) {
     if (is.na(column) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
-    if (all(colnames(input@data) != column))
+    
+    if (!is.na(column) && length(column)>1) {
+      for (cn in column) {
+        if (all(colnames(input@data)!=cn))
+          stop(paste("No column named '", cn, "' present!", sep=""))
+      }
+    } else if (all(colnames(input@data) != column)) {
       stop(paste("No column named '",column,"' present!", sep=""))
+    }
+    
     units <- input@quant@units
     dt <- input@data[, c("Lon", "Lat", column), with = FALSE]
-    setnames(dt, column, "value")
+    if (length(column)==1) {
+      setnames(dt, column, "value")
+    } else {
+      dt <- melt(dt, key(dt), column)
+      setnames(dt, "variable", "sens")
+      dt <- dt[, sens:=factor(sens, column)]
+      # if (length(wrap)>1 || !is.numeric(wrap))
+      #   wrap <- ceiling(sqrt(length(column)))
+    }
+    # if (length(wrap)>1) {
+    #   if (!is.list(wrap))
+    #     wrap <- list(run=wrap[1], name=wrap[2], column=wrap[3],
+    #                  ncol={if (length(wrap)>=4) wrap[4] else 1},
+    #                  map=NA, stringsAsFactors=FALSE)
+    #   dt.wrap <- eval(parse(text=paste(wrap$run, "@spatial[['", wrap$name, "']]@data[, c('Lon', 'Lat', '", wrap$column,"'), with=FALSE]", sep="")))
+    #   setnames(dt.wrap, wrap$column, "wrap.tmp")
+    #   dt <- dt[dt.wrap]
+    #   
+    #   ## if wrap$map is a valid named vector the names are used for x-labels
+    #   if (!any(is.na(wrap$map))) {
+    #     if (is.vector(wrap$map) && !is.null(names(wrap$map))) {
+    #       eval(parse(text=paste('dt[, name:=names(wrap$map)[wrap.tmp], ]', sep="")))
+    #     } else if (is.vector(wrap$map)) {
+    #       eval(parse(text=paste('dt[, name:=wrap$map[wrap.tmp], ]', sep="")))
+    #     }
+    #     setnames(dt, "name", "sens")
+    #   } else {
+    #     setnames(dt, "wrap.tmp", "sens")
+    #   }
+    #   
+    #   wrap <- wrap$ncol
+    # }
   } else if (is.list(input)) {
-    for (n in 1:length(input)) {
-      if (!is.VegSpatial(input[[n]]))
+    for (i in 1:length(input)) {
+      if (!is.VegSpatial(input[[i]]))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
-      if (n==1) {
-        units <- input[[n]]@quant@units
-        dt <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
+      if (i==1) {
+        units <- input[[i]]@quant@units
+        dt <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt[, sens:=input[[n]]@run@description, ]
-          titles <- input[[n]]@run@description
+          dt[, sens:=input[[i]]@run@description, ]
+          titles <- input[[i]]@run@description
         } else {
-          dt[, sens:=input[[n]]@run@id, ]
-          titles <- input[[n]]@run@id
+          dt[, sens:=input[[i]]@run@id, ]
+          titles <- input[[i]]@run@id
         }
        } else {
-        dt.tmp <- input[[n]]@data[, c("Lon", "Lat", column), with = FALSE]
+        dt.tmp <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt.tmp[, sens:=input[[n]]@run@description, ]
-          titles <- append(titles, input[[n]]@run@description)
+          dt.tmp[, sens:=input[[i]]@run@description, ]
+          titles <- append(titles, input[[i]]@run@description)
         } else {
-          dt.tmp[, sens:=input[[n]]@run@id, ]
-          titles <- append(titles, input[[n]]@run@id)
+          dt.tmp[, sens:=input[[i]]@run@id, ]
+          titles <- append(titles, input[[i]]@run@id)
         }
         dt <- rbindlist(list(dt, dt.tmp))
         rm(dt.tmp)
@@ -536,14 +624,26 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #######################################################################
 ## categorial aggregated scatter ######################################
 #######################################################################
+#' Plot a categorically aggregated summary.
+#' 
+#' Plots vertical lines as average over latitudinal bands.
+#' 
+#' @param input A VegSpatial or a list of VegSpatial objects.
+#' @param targets data.frame/list, either specifying x/y columns as c('VegSpatial name', 'column name') or slot/column columns as c('x', 'y').
+#' @param name.map a named vector, to translate numerical y-data into human understandable names
+#' @param area.weighted weight the mean by the gridcell area (default: TRUE) or not.
+#' @param long.title If the description (default) should be used as titles or the shorter id.
+#' @param plot If FALSE only the data is returned, without drawing the map.
+#' @param ... Ignored further parameters
+#' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
+#' @import RColorBrewer ggplot2 data.table
 plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, plot=TRUE, ...) {
   if (is.null(targets)) {
     stop("Don't know what to do, if you are not telling me!")
   } else if (is.list(targets)) {
     targets <- as.data.frame(targets, stringsAsFactors=FALSE)
-  } else if (is.data.frame(targets)) {
-    for (i in 1:2)
-      targets[, 1] = as.character(targets[, 1])
   }
 
   if (colnames(targets)[1] == "x" && colnames(targets)[2] == "y")
@@ -556,17 +656,20 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     stop("Don't know what to do, if you are not telling me!")
   }
 
+  ## make sure to have chars instead of factors
+  for (i in 1:2)
+    targets[, i] = as.character(targets[, i])  
+  
   if (is.VegRun(input)) {
     if (all(names(input@spatial) != targets$slot[1]))
       stop(paste("No VegSpatial object'", targets$slot[1], "' present in input!"))
     if (all(names(input@spatial) != targets$slot[2]))
       stop(paste("No VegSpatial object'", targets$slot[2], "' present in input!"))
-    
+
     vsx <- eval(parse(text=paste("input@spatial[['",targets$slot[1],"']]", sep="")))
     if (all(colnames(vsx@data) != targets$column[1]))
       stop(paste("No column named '",targets$column[1],"' present in VegSpatial ",targets$slot[1]," of input run!", sep=""))
     units <- vsx@quant@units
-    
     vsy <- eval(parse(text=paste("input@spatial[['",targets$slot[2],"']]", sep="")))
     if (all(colnames(vsy@data) != targets$column[2]))
       stop(paste("No column named '",targets$column[2],"' present in VegSpatial ",targets$slot[2]," of input run!", sep=""))
@@ -590,8 +693,6 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       dt <- eval(parse(text=paste("dt[, list(value=mean(value, na.rm=TRUE)), by=list(", targets$column[2],")]", sep="")))
     }
   } else if (is.list(input)) {
-
-
     for (n in 1:length(input)) {
       if (is.VegRun(input[[n]])) {
         if (all(names(input[[n]]@spatial) != targets$slot[1]))
@@ -741,39 +842,64 @@ plotGGTemporal <- function(input, column='value', scale=1., colors=NA, wrap=NA, 
   if (is.VegTemporal(input)) {
     if (is.na(column) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
-    if (all(colnames(input@data) != column))
+
+    if (!is.na(column) && length(column)>1) {
+      for (cn in column) {
+        if (all(colnames(input@data)!=cn))
+          stop(paste("No column named '", cn, "' present!", sep=""))
+      }
+    } else if (all(colnames(input@data) != column)) {
       stop(paste("No column named '",column,"' present!", sep=""))
+    }
     dt <- input@data[, c("Year", column), with = FALSE]
-    setnames(dt, column, "value")
+    if (length(column)==1) {
+      setnames(dt, column, "value")
+    } else {
+      dt <- melt(dt, key(dt), column)
+      setnames(dt, "variable", "sens")
+      dt <- dt[, sens:=factor(sens, column)]
+      # if (length(wrap)>1 || !is.numeric(wrap))
+      #   wrap <- ceiling(sqrt(length(column)))
+    }
     quant = input@quant
   } else if (is.list(input)) {
-    for (n in 1:length(input)) {
-      if (!is.VegTemporal(input[[n]]))
+    for (i in 1:length(input)) {
+      if (!is.VegTemporal(input[[i]]))
         stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
-      if (n==1) {
-        dt <- input[[n]]@data[, c("Year", column), with = FALSE]
-        quant = input[[n]]@quant
+      if (i==1) {
+        if (is.na(column) && all(colnames(input[[i]]@data) != "value")) {
+          stop("No column name given and no column named 'value' present!")
+          column <- "value"
+        } else if (all(colnames(input[[i]]@data) != column[1])) {
+          stop(paste("No column named '", column[1], "' pesent!", sep=""))
+        }
+        dt <- input[[i]]@data[, c("Year", column[1]), with = FALSE]
+        quant = input[[i]]@quant
         if (long.title) {
-          dt[, sens:=input[[n]]@run@description, ]
-          titles <- input[[n]]@run@description
+          dt[, sens:=input[[i]]@run@description, ]
+          titles <- input[[i]]@run@description
         } else {
-          dt[, sens:=input[[n]]@run@id, ]
-          titles <- input[[n]]@run@id
+          dt[, sens:=input[[i]]@run@id, ]
+          titles <- input[[i]]@run@id
         }
       } else {
-        dt.tmp <- input[[n]]@data[, c("Year", column), with = FALSE]
+        if (all(colnames(input[[i]]@data) != column[1])) {
+          stop(paste("No column named '", column[1], "' pesent!", sep=""))
+        }
+        dt.tmp <- input[[i]]@data[, c("Year", column[1]), with = FALSE]
         if (long.title) {
-          dt.tmp[, sens:=input[[n]]@run@description, ]
-          titles <- append(titles, input[[n]]@run@description)
+          dt.tmp[, sens:=input[[i]]@run@description, ]
+          titles <- append(titles, input[[i]]@run@description)
         } else {
-          dt.tmp[, sens:=input[[n]]@run@id, ]
-          titles <- append(titles, input[[n]]@run@id)
+          dt.tmp[, sens:=input[[i]]@run@id, ]
+          titles <- append(titles, input[[i]]@run@id)
         }
         dt <- rbindlist(list(dt, dt.tmp))
         rm(dt.tmp)
       }
     }
-    setnames(dt, column, "value")
+    if (column!="value")
+      setnames(dt, column, "value")
     dt <- dt[, sens:=factor(sens, titles)]
   } else {
     stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
@@ -814,5 +940,12 @@ plotGGTemporal <- function(input, column='value', scale=1., colors=NA, wrap=NA, 
     p <- p + facet_wrap(~sens, ncol=wrap)
    
   return(p)
+}
 
+#######################################################################
+## timeseries of succession ###########################################
+#######################################################################
+
+plotGGSuccessional <- function(input, columns='value', colors=NA, wrap=NA, long.title=TRUE, plot=TRUE, ...) {
+  
 }

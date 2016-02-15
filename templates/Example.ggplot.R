@@ -1,4 +1,5 @@
 #detach('package:RVCTools', unload=TRUE)
+if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
 suppressMessages(library(RVCTools))
 library(RColorBrewer)
 
@@ -107,10 +108,14 @@ p <- plotGGSpatial(list(a=base@spatial[['lai']], b=sens_constCO2@spatial[['lai']
 p <- p + guides(fill = guide_legend(ncol = 2))
 print(p)
 
-## meridional plot
+## single meridional plot
 plotGGMeridional(base@spatial[['gpp']], "Total", what=list(center="md", var=c(0.25,0.75)), colors="red")
 
-## meridional plot with short names
+## multiple columns
+plotGGMeridional(base@spatial[['gpp']], c("BNE", "TeBS", "TrBE", "Total"), what=list(center="mn", var="sd"))
+
+
+## several sensitivity runs with short names
 p <- plotGGMeridional(list(base@spatial[['gpp']],
                            sens_constCO2@spatial[['gpp']],
                            sens_daily@spatial[['gpp']],
@@ -121,17 +126,14 @@ p <- plotGGMeridional(list(base@spatial[['gpp']],
 p <- p + guides(fill = guide_legend(ncol = 1)) + theme(legend.position = "right")
 print(p)
 
-## categorically aggregated summary plot
+## categorically aggregated summary plot of one run
+## specifying either slot/column or x/y as either list or data.frame
 plotGGCategorialAggregated(base, targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")))
+plotGGCategorialAggregated(base, targets=data.frame(x=c("gpp", "Total"), y=c("lai", "Smith2014")))
 
+## several sensitivity runs
 p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
-                                targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")), 
-                                name.map=Smith2014.scheme@cols)
-p <- p + guides(col = guide_legend(ncol = 1))
-print(p)
-
-p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily),
-                                targets=list(x=c("gpp", "Total"), y=c("lai", "Smith2014")), 
+                                targets=data.frame(slot=c("gpp", "lai"), column=c("Total", "Smith2014")), 
                                 name.map=Smith2014.scheme@cols)
 p <- p + guides(col = guide_legend(ncol = 1))
 print(p)
@@ -142,15 +144,22 @@ for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "s
    eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
 }
 
+## plot several columns together
+plotGGTemporal(base@temporal[['gpp']], c("BNE", "TeBS", "TrIBE", "TrBR"))
+
+lon <- extract.seq(base@spatial[['lai']]@data$Lon)
+lat <- extract.seq(base@spatial[['lai']]@data$Lat)
+area2d <- gridarea2d(lon, lat, scale=1.e-12)
+land.area <- sum(area2d[base@spatial[['lai']]@data]$area)
+## plot several
 p <- plotGGTemporal(list(base@temporal[['gpp']],
                          sens_constCO2@temporal[['gpp']],
                          sens_daily@temporal[['gpp']],
                          sens_CC@temporal[['gpp']],
                          sens_centr@temporal[['gpp']],
-                         sens_CLM@temporal[['gpp']]), "Total", scale=130)
+                         sens_CLM@temporal[['gpp']]), "Total", scale=land.area)
 p <- p + guides(col = guide_legend(title="", ncol = 1))
 print(p)
-
 
 ### Arithmetics
 
@@ -177,7 +186,7 @@ val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
 for (j in val.names)
   set(residence.time@data, which(residence.time@data[[j]]<0), j, NA)
 
-## otherwise everything will be just yellow
+## use the logarithm, otherwise everything will be just yellow
 residence.time@data[, logTotal:=log10(Total), ]
 plotGGSpatial(residence.time, "logTotal", colors=brewer.pal(9, "YlOrBr"))
 
@@ -185,6 +194,10 @@ base@spatial[['residence.time']] = residence.time
 plotGGCategorialAggregated(base, targets=list(slot=c("residence.time", "lai"), col=c("Total", "Smith2014")), name.map=Smith2014.scheme@cols)
 
 ## temporal
+p <- plotGGTemporal(base@temporal[['cpool']], c("VegC", "LitterC"))
+print(p)
+
+
 t <- list(x=c("temporal", "cpool"), y=c("temporal", "gpp", "Total"))
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
   message(run)
