@@ -97,7 +97,7 @@ rvc.ggplot.theme <- function(x) {
 
   lab <- seq(limits[1], limits[2], 1/12 * 3)
   
-  for (i in c(1/6, 1/3, 2/3, 1:5, 10, 15)) {
+  for (i in c(1/6, 1/3, 2/3, 1:5, 10, 15, 30, 45, 60)) {
     lab.old <- lab
     if (length(lab) <= n.max && length(lab) >= n.min)
       break
@@ -359,9 +359,15 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   ## This needs an update for non lon/lat grids
   lon <- seq(lon.limit[1], lon.limit[2], res)
   lat <- seq(lat.limit[1], lat.limit[2], res)
-  lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon")
-  lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=4, n.max=7)
 
+  if (wrap==1) {
+    lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon")
+    lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=4, n.max=7)
+  } else {
+    lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon", n.min=2, n.max=5)
+    lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=2, n.max=3)
+  }
+    
   ## create plot
   p <- ggplot(dt, aes(y=Lat, x=Lon))
   p <- p + .rvc.spatial_theme
@@ -456,32 +462,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
       dt <- melt(dt, key(dt), column)
       setnames(dt, "variable", "sens")
       dt <- dt[, sens:=factor(sens, column)]
-      # if (length(wrap)>1 || !is.numeric(wrap))
-      #   wrap <- ceiling(sqrt(length(column)))
     }
-    # if (length(wrap)>1) {
-    #   if (!is.list(wrap))
-    #     wrap <- list(run=wrap[1], name=wrap[2], column=wrap[3],
-    #                  ncol={if (length(wrap)>=4) wrap[4] else 1},
-    #                  map=NA, stringsAsFactors=FALSE)
-    #   dt.wrap <- eval(parse(text=paste(wrap$run, "@spatial[['", wrap$name, "']]@data[, c('Lon', 'Lat', '", wrap$column,"'), with=FALSE]", sep="")))
-    #   setnames(dt.wrap, wrap$column, "wrap.tmp")
-    #   dt <- dt[dt.wrap]
-    #   
-    #   ## if wrap$map is a valid named vector the names are used for x-labels
-    #   if (!any(is.na(wrap$map))) {
-    #     if (is.vector(wrap$map) && !is.null(names(wrap$map))) {
-    #       eval(parse(text=paste('dt[, name:=names(wrap$map)[wrap.tmp], ]', sep="")))
-    #     } else if (is.vector(wrap$map)) {
-    #       eval(parse(text=paste('dt[, name:=wrap$map[wrap.tmp], ]', sep="")))
-    #     }
-    #     setnames(dt, "name", "sens")
-    #   } else {
-    #     setnames(dt, "wrap.tmp", "sens")
-    #   }
-    #   
-    #   wrap <- wrap$ncol
-    # }
   } else if (is.list(input)) {
     for (i in 1:length(input)) {
       if (!is.VegSpatial(input[[i]]))
@@ -639,7 +620,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import RColorBrewer ggplot2 data.table
-plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, plot=TRUE, ...) {
+plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, vertical=FALSE, bar=FALSE, plot=TRUE, ...) {
   if (is.null(targets)) {
     stop("Don't know what to do, if you are not telling me!")
   } else if (is.list(targets)) {
@@ -687,10 +668,11 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     }
     dt <- dy[dx]
     setnames(dt, targets$column[1], "value")
+    setnames(dt, targets$column[2], "category")
     if (area.weighted) {
-      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area, na.rm=TRUE)), by=list(", targets$column[2],")]", sep="")))
+      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area, na.rm=TRUE)), by=list(category)]", sep="")))
     } else {
-      dt <- eval(parse(text=paste("dt[, list(value=mean(value, na.rm=TRUE)), by=list(", targets$column[2],")]", sep="")))
+      dt <- eval(parse(text=paste("dt[, list(value=mean(value, na.rm=TRUE)), by=list(category)]", sep="")))
     }
   } else if (is.list(input)) {
     for (n in 1:length(input)) {
@@ -757,10 +739,11 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     }
     dt <- dt[, sens:=factor(sens, titles)]
     setnames(dt, targets$column[1], "value")
+    setnames(dt, targets$column[2], "category")
     if (area.weighted) {
-      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area)), by=list(", targets$column[2],", sens)]", sep="")))
+      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area)), by=list(category, sens)]", sep="")))
     } else {
-      dt <- eval(parse(text=paste("dt[, list(value=mean(value)), by=list(", targets$column[2],", sens)]", sep="")))
+      dt <- eval(parse(text=paste("dt[, list(value=mean(value)), by=list(category, sens)]", sep="")))
     }
   } else {
     stop("'input' must either be a RCVTools::VegRun or a list of them!")
@@ -770,39 +753,64 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
   ## if name.map is a valid named vector the names are used for x-labels
   if (!any(is.na(name.map))) {
     if (is.vector(name.map) && !is.null(names(name.map))) {
-      eval(parse(text=paste("dt[, name:=names(name.map)[",targets$column[2],"], ]", sep="")))
+      eval(parse(text=paste("dt[, name:=names(name.map)[category], ]", sep="")))
     } else if (is.vector(name.map)) {
-      eval(parse(text=paste("dt[, name:=name.map[", targets$column[2], "], ]", sep="")))
+      eval(parse(text=paste("dt[, name:=name.map[category], ]", sep="")))
     }
   }
 
   if (!plot)
     return(dt)
 
-  if (any(colnames(dt) == "sens")) {
-    if (any(colnames(dt) == "name")) {
-      p <- ggplot(dt, aes(x=value, y=name, col=sens))
+  if (!bar) {
+    if (any(colnames(dt) == "sens")) {
+      if (any(colnames(dt) == "name")) {
+        p <- ggplot(dt, aes(x=value, y=name, col=sens))
+      } else {
+        p <- ggplot(dt, aes(x=value, y=category, col=sens))
+      }
+      p <- p + .rvc.scatter_theme
+      p <- p + geom_point(size=2.5, position = position_jitter(w = 0, h = 0.2))
+      p <- p + scale_color_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"),
+                                  na.value="grey", guide=guide_legend(ncol=2))
     } else {
-      eval(parse(text=paste("p <- ggplot(dt, aes(x=value, y=",targets$column[2],", col=sens))", sep="")))
+      if (any(colnames(dt) == "name")) {
+        p <- ggplot(dt, aes(x=value, y=name))
+      } else {
+        p <- ggplot(dt, aes(x=value, y=category))
+      }
+      p <- p + .rvc.scatter_theme
+      p <- p + geom_point(size=2.5)
     }
-    p <- p + .rvc.scatter_theme
-    p <- p + scale_color_manual(values=brewer.pal(length(unique(dt$sens)),"Set1"),
-                                na.value="grey", guide=guide_legend(ncol=2))
-    p <- p + geom_point(size=2.5, position = position_jitter(w = 0, h = 0.15))
     p <- p + xlab(units) + ylab("")
     p <- p + guides(colour = guide_legend(override.aes = list(size=4), ncol=2))
   } else {
-    if (any(colnames(dt) == "name")) {
-      p <- ggplot(dt, aes(x=value, y=name))
+    if (any(colnames(dt) == "sens")) {
+      if (any(colnames(dt) == "name")) {
+        p <- ggplot(dt, aes(x=name, y=value, fill=sens))
+      } else {
+        p <- ggplot(dt, aes(x=category, y=value, fill=sens))
+      }
+      p <- p + .rvc.scatter_theme
+      p <- p + scale_fill_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"),
+                                 na.value="grey", guide=guide_legend(ncol=2))
+      p <- p + geom_bar(position="dodge", stat="identity")
     } else {
-      eval(parse(text=paste("p <- ggplot(dt, aes(x=value, y=",targets$column[2],"))", sep="")))
+      if (any(colnames(dt) == "name")) {
+        p <- ggplot(dt, aes(x=name, y=value))
+      } else {
+        p <- ggplot(dt, aes(x=category, y=value))
+      }
+      p <- p + .rvc.scatter_theme
+      p <- p + geom_bar(position="dodge", stat="identity")
+      
     }
-    p <- p + .rvc.scatter_theme
-    p <- p + geom_point(size=2.5)
-    p <- p + xlab(units) + ylab("")
-    p <- p + guides(colour = guide_legend(override.aes = list(size=4), ncol=2))
+    p <- p + xlab("") + ylab(units)
   }
-
+  
+  if ((vertical && !bar) || (!vertical && bar))
+    p <- p + coord_flip()
+  
   return(p)  
 }
 

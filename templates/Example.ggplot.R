@@ -96,7 +96,10 @@ plotGGSpatial(base@spatial[['gpp']], c("BNE", "BNS", "TeBS", "TrBE", "C3G", "Tot
 
 ## split into different panels by another spatial data
 plotGGSpatial(base@spatial[['lai']], "Total", wrap=c("base", "lai", "Smith2014", 4), colors=brewer.pal(9, "YlGn"), long.title=FALSE)
+## the same maps as above but nicer labels and missing terrestial cells are filled with white (terr.bg),
+##using either a named vector (then the names are used) or an unnamed vetor (then the values are used)
 wrap <- list(run="base", name="lai", column="Smith2014", ncol=4, map=Smith2014.scheme@cols)
+wrap <- list(run="base", name="lai", column="Smith2014", ncol=4, map=names(Smith2014.scheme@cols))
 plotGGSpatial(base@spatial[['lai']], "Total", wrap=wrap, colors=brewer.pal(9, "YlGn"), long.title=FALSE, terr.bg="white")
 
 ## 2 panels of different runs (dataset also possible, but use the same colorbar)
@@ -137,6 +140,14 @@ p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily),
                                 name.map=Smith2014.scheme@cols)
 p <- p + guides(col = guide_legend(ncol = 1))
 print(p)
+
+## the same data, but displayed as vertical bars instead of horizontal points
+p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
+                                targets=data.frame(slot=c("gpp", "lai"), column=c("Total", "Smith2014")), 
+                                name.map=Smith2014.scheme@cols, bar=TRUE, vertical=TRUE)
+p <- p + guides(col = guide_legend(ncol = 1))
+print(p)
+
 
 ### Time series
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
@@ -196,7 +207,6 @@ plotGGCategorialAggregated(base, targets=list(slot=c("residence.time", "lai"), c
 ## temporal
 p <- plotGGTemporal(base@temporal[['cpool']], c("VegC", "LitterC"))
 print(p)
-
 
 t <- list(x=c("temporal", "cpool"), y=c("temporal", "gpp", "Total"))
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
