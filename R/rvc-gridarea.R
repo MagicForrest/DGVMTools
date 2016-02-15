@@ -49,11 +49,9 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
   return(area*scale)
 }
 
-#' gridarea1d: grid cell area along a vector of latitudes
+#' Returns the area in square meters (if scale=1, default) over a lon/lat grid.
 #'
-#' Returns the area in square meters along a vetor of latitudes by equal longitude distance.
-#'
-#' The function returns a data.frame of area in square meters of a lon-lat grid.
+#' The function returns a data.table of area in square meters of a lon-lat grid.
 #' Coordinates must be gridcell midpoint and the northern and southern edges are
 #' calculated by as half of the distance to the next element in the latitude vector.
 #' 
@@ -62,14 +60,16 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
 #' @param scale multiplicator. If 1 (default) unit m^2
 #' @param ellipse TRUE (polar and equatorial radius differ) or
 #' FALSE (default, polar and equatorial radius are the same)
-#' @keywords
 #' @export
-#' @return data.frame of gridcells with columns c("Lon", "Lat", "area")
-#' @author Joerg Steinkamp <joergsteinkamp@yahoo.de>
+#' @import data.table
+#' @return data.table of gridcells with columns c("Lon", "Lat", "area")
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @examples
 #' lon <- seq(- 179.75, 179.75, 0.5)
-#' lat <- seq(89.75,-89.75,-0.5) # equivalent to the above
-#' sum(gridarea2d(lat,lon)$area)*1.e-12
+#' lat <- seq(89.75,-89.75,-0.5) 
+#' sum(gridarea2d(lon,lat, scale=1.e-12)$area)
+#' # equivalent to the above
+#' sum(gridarea2d(lon,lat)$area)*1.e-12
 
 gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
   nlon   <- length(lon)
@@ -81,6 +81,7 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
   area   <- data.frame(Lon=as.vector(lon2d),
                        Lat=as.vector(lat2d),
                        area=as.vector(area2d))
+  area <- data.table(area, key=c("Lon", "Lat"))
   return(area)
 }
 
