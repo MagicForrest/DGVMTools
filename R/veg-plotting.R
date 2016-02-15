@@ -362,7 +362,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
     if(!is.null(run)){ plot.dir <- run@run.dir} 
     else { plot.dir = "." }
   }
-  
+
   ##### Here check data is right class for plotting, process it if not
   data.toplot <- promoteToRaster(data, targets, run@tolerance) 
   if(is.null(plot.labels)) {
@@ -377,15 +377,14 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   
   # EXTENT
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
-    
+
   # LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field
   if(!is.null(run)){
     if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
   }
- 
+
   # Add PNV data if requested read it in and compare rasters
   if(!is.null(addData)) {
-    
     if(class(addData)[[1]] == "SpatialDataset") addData <- addData@data
     
     # first check if they are on identical grids, then one can simply add the layers
@@ -400,18 +399,14 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
       addData <- resample(addData, data.toplot, method = "ngb")
       
     }
-    
-    
     addData <- crop(addData, data.toplot)
     data.toplot <- mask(data.toplot, addData)  
     
     # add the PNV raster layer and its title
     data.toplot <- stack(data.toplot, addData) 
     plot.labels <- c(plot.labels, "PNV (Hickler et al. 2006)")
-    
   }
   
-   
   # KAPPA
   if(!is.null(kappa.list)){
    
@@ -428,7 +423,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   # PLOT MAIN TITLE
   if(is.null(main.title)) this.main.title <- makePlotTitle(paste("Biomes"), main.title, run, period)
   else this.main.title <- main.title
-  
+
   for(format in Cairo.type){
     
     # FILENAME
