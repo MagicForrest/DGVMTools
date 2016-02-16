@@ -142,12 +142,13 @@ p <- p + guides(col = guide_legend(ncol = 1))
 print(p)
 
 ## the same data, but displayed as vertical bars instead of horizontal points
+## please note that bars use "fill" instead of "col" in guide
 p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
                                 targets=data.frame(slot=c("gpp", "lai"), column=c("Total", "Smith2014")), 
                                 name.map=Smith2014.scheme@cols, bar=TRUE, vertical=TRUE)
-p <- p + guides(col = guide_legend(ncol = 1))
+p <- p + guides(fill = guide_legend(ncol = 1))
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 print(p)
-
 
 ### Time series
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
@@ -205,8 +206,10 @@ base@spatial[['residence.time']] = residence.time
 plotGGCategorialAggregated(base, targets=list(slot=c("residence.time", "lai"), col=c("Total", "Smith2014")), name.map=Smith2014.scheme@cols)
 
 ## temporal
-p <- plotGGTemporal(base@temporal[['cpool']], c("VegC", "LitterC"))
-print(p)
+plotGGTemporal(base@temporal[['cpool']], "Total", colors="green")
+
+## This one has the wrong axis unit!
+plotGGTemporal(base@temporal[['cpool']], c("VegC", "LitterC", "SoilC"), scale=land.area)
 
 t <- list(x=c("temporal", "cpool"), y=c("temporal", "gpp", "Total"))
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
@@ -222,5 +225,62 @@ p <- plotGGTemporal(list(base@temporal[['residence.time']],
 p <- p + guides(col = guide_legend(title="", ncol = 1))
 print(p)
 
+#################################################
+### get some temporal stand data (site level) ###
+#################################################
+MoMo1 <- defineVegRun(run.dir = "/data/WIP/MoMo/output/Hyytiala/miroc-esm-chem/rcp8p5/longevity/",
+                      model = "LPJ-GUESS",
+                      pft.set = global.PFTs,
+                      id = "MoMo1",
+                      description= "Future projection in Hyytiala Finnland with RCP8.5",
+                      driving.data = "ISI-MIP fasttrack",
+                      map.overlay = "",
+                      lonlat.offset = c(0,0),
+                      year.offset = 0)
 
+MoMo2 <- defineVegRun(run.dir = "/data/WIP/MoMo/output/Hyytiala/miroc-esm-chem/rcp2p6/longevity/",
+                      model = "LPJ-GUESS",
+                      pft.set = global.PFTs,
+                      id = "MoMo1",
+                      description= "Future projection in Hyytiala Finnland with RCP2.6",
+                      driving.data = "ISI-MIP fasttrack",
+                      map.overlay = "",
+                      lonlat.offset = c(0,0),
+                      year.offset = 0)
 
+Hyy <- new("SpatialExtent", id="Hyy", name="Hyytiala", extent=extent(rep(24.25, 2),rep(61.75, 2)))
+MoMo1 <- defineVegRun(run.dir = "/data/WIP/MoMo/output/Hyytiala/miroc-esm-chem/rcp8p5/longevity/",
+                      model = "LPJ-GUESS",
+                      pft.set = global.PFTs,
+                      id = "MoMo1",
+                      description= "Future projection in Hyytiala Finnland with RCP8.5",
+                      driving.data = "ISI-MIP fasttrack",
+                      map.overlay = "",
+                      lonlat.offset = c(0,0),
+                      year.offset = 0)
+MoMo1@temporal[['height']] <- getVegTemporal(",run,", 'height', spatial.extent=Hyy, area.weighted=FALSE)
+
+hgt.quant <- new("VegQuant",
+                id="height",
+                short.string="height",
+                full.string="Average tree height",
+                type="",
+                units="m")
+ba.quant <- new("VegQuant",
+                id="ba",
+                short.string="ba",
+                full.string="basal area",
+                type="",
+                units="m^2 ha^-1")
+MoMo1@temporal[['height']] <- getVegTemporal(",run,", 'height', spatial.extent=Hyy, area.weighted=FALSE)
+
+for (run in c("MoMo1", "MoMo2")) {
+  message(run)
+  eval(parse(text=paste(run, "@temporal[['height']] <- getVegTemporal(",run,", 'height', spatial.extent=Hyy, area.weighted=FALSE, forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@temporal[['height']]@quant <- hgt.quant", sep="")))
+  eval(parse(text=paste(run, "@temporal[['ba']] <- getVegTemporal(",run,", 'ba', spatial.extent=Hyy, area.weighted=FALSE, forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@temporal[['ba']]@quant <- ba.quant", sep="")))
+}
+dt=plotGGTemporal(list(MoMo1@temporal[['ba']], MoMo2@temporal[['ba']]),
+                    columns=c("Bet_pub", "Pic_abi", "Pop_tre", "C3_gr"),
+                    type="s", plot=FALSE)

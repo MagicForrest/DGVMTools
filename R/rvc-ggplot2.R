@@ -54,7 +54,8 @@
                                   legend.key        = element_rect(colour = "black"),
 #                             legend.key.width  = unit(0.08, "npc"),
                                   plot.background   = element_blank(),
-                                  plot.title        = element_text(size=22)))
+                                  plot.title        = element_text(size=22),
+                                  strip.background  = element_rect(fill=NA)))
 
 #######################################################################
 ## exported helper functions ##########################################
@@ -615,6 +616,8 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #' @param area.weighted weight the mean by the gridcell area (default: TRUE) or not.
 #' @param long.title If the description (default) should be used as titles or the shorter id.
 #' @param plot If FALSE only the data is returned, without drawing the map.
+#' @param bar boolean, if TRUE display bars instead of points
+#' @param vertical boolean, arrange the data at the y-axis and the categories on the x-axis
 #' @param ... Ignored further parameters
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
@@ -769,7 +772,6 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       } else {
         p <- ggplot(dt, aes(x=value, y=category, col=sens))
       }
-      p <- p + .rvc.scatter_theme
       p <- p + geom_point(size=2.5, position = position_jitter(w = 0, h = 0.2))
       p <- p + scale_color_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"),
                                   na.value="grey", guide=guide_legend(ncol=2))
@@ -779,7 +781,6 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       } else {
         p <- ggplot(dt, aes(x=value, y=category))
       }
-      p <- p + .rvc.scatter_theme
       p <- p + geom_point(size=2.5)
     }
     p <- p + xlab(units) + ylab("")
@@ -791,7 +792,6 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       } else {
         p <- ggplot(dt, aes(x=category, y=value, fill=sens))
       }
-      p <- p + .rvc.scatter_theme
       p <- p + scale_fill_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"),
                                  na.value="grey", guide=guide_legend(ncol=2))
       p <- p + geom_bar(position="dodge", stat="identity")
@@ -801,13 +801,13 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       } else {
         p <- ggplot(dt, aes(x=category, y=value))
       }
-      p <- p + .rvc.scatter_theme
+      
       p <- p + geom_bar(position="dodge", stat="identity")
       
     }
     p <- p + xlab("") + ylab(units)
   }
-  
+  p <- p + .rvc.scatter_theme
   if ((vertical && !bar) || (!vertical && bar))
     p <- p + coord_flip()
   
@@ -843,31 +843,146 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #######################################################################
 ## timeseries #########################################################
 #######################################################################
+##' Plot a timeseries
+##' 
+##' Plot a timeseries with ggplot. Years are on the x-axis
+##' 
+##' @param input a VegTemporal object or a list of several
+##' @param column the column(s) to display. Several columns can only be supplied with a single VegSpatial. Default: 'value'.
+##'
+##' @param scale
+##' @param colors Colors for the diffent VegSpatial objects or columns.
+##' @param long.title If the description (default) should be used as titles or the shorter id.
+##' @param plot If FALSE only the data is returned, without drawing the map.
+##' @param ... Ignored further parameters
+# plotGGTemporal <- function(input, column='value', scale=1., colors=NA, long.title=TRUE, plot=TRUE, ...) {
+#   ## check if a VegTemporal or a list of VegTemporal is given as input
+#   ## check data column names for given column name or column name 'value'
+#   if (is.VegTemporal(input)) {
+#     if (is.na(column) && all(colnames(input@data) != "value"))
+#       stop("No column name given and no column named 'value' present!")
+# 
+#     if (!is.na(column) && length(column)>1) {
+#       for (cn in column) {
+#         if (all(colnames(input@data)!=cn))
+#           stop(paste("No column named '", cn, "' present!", sep=""))
+#       }
+#     } else if (all(colnames(input@data) != column)) {
+#       stop(paste("No column named '",column,"' present!", sep=""))
+#     }
+#     dt <- input@data[, c("Year", column), with = FALSE]
+#     if (length(column)==1) {
+#       setnames(dt, column, "value")
+#     } else {
+#       dt <- melt(dt, key(dt), column)
+#       setnames(dt, "variable", "sens")
+#       dt <- dt[, sens:=factor(sens, column)]
+#     }
+#     quant = input@quant
+#   } else if (is.list(input)) {
+#     for (i in 1:length(input)) {
+#       if (!is.VegTemporal(input[[i]]))
+#         stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
+#       if (i==1) {
+#         if (is.na(column) && all(colnames(input[[i]]@data) != "value")) {
+#           stop("No column name given and no column named 'value' present!")
+#           column <- "value"
+#         } else if (all(colnames(input[[i]]@data) != column[1])) {
+#           stop(paste("No column named '", column[1], "' pesent!", sep=""))
+#         }
+#         dt <- input[[i]]@data[, c("Year", column[1]), with = FALSE]
+#         quant = input[[i]]@quant
+#         if (long.title) {
+#           dt[, sens:=input[[i]]@run@description, ]
+#           titles <- input[[i]]@run@description
+#         } else {
+#           dt[, sens:=input[[i]]@run@id, ]
+#           titles <- input[[i]]@run@id
+#         }
+#       } else {
+#         if (all(colnames(input[[i]]@data) != column[1])) {
+#           stop(paste("No column named '", column[1], "' pesent!", sep=""))
+#         }
+#         dt.tmp <- input[[i]]@data[, c("Year", column[1]), with = FALSE]
+#         if (long.title) {
+#           dt.tmp[, sens:=input[[i]]@run@description, ]
+#           titles <- append(titles, input[[i]]@run@description)
+#         } else {
+#           dt.tmp[, sens:=input[[i]]@run@id, ]
+#           titles <- append(titles, input[[i]]@run@id)
+#         }
+#         dt <- rbindlist(list(dt, dt.tmp))
+#         rm(dt.tmp)
+#       }
+#     }
+#     if (column!="value")
+#       setnames(dt, column, "value")
+#     dt <- dt[, sens:=factor(sens, titles)]
+#   } else {
+#     stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
+#   }
+# 
+#   dt[,value:=value*scale]
+#   
+#   if (!plot)
+#     return(dt)
+# 
+#   if (any(colnames(dt)=="sens")) {
+#     p <- ggplot(dt, aes(x=Year, y=value, col=sens))
+#     p <- p + geom_line(size=1)
+#     if (is.na(colors))
+#       colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+#     p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=2))
+#   } else {
+#     if (is.na(colors))
+#       colors="black"
+#     p <- ggplot(dt, aes(x=Year, y=value))
+#     p <- p + geom_line(size=1, col=colors)
+#   }
+#   p <- p + .rvc.temporal_theme
+#   p <- p + ylab(paste(quant@full.string, " [", quant@units,"]", sep=""))
+# 
+#   return(p)
+# }
 
-plotGGTemporal <- function(input, column='value', scale=1., colors=NA, wrap=NA, long.title=TRUE, plot=TRUE, ...) {
-  ## check if a VegTemporal or a list of VegTemporal is given as input
-  ## check data column names for given column name or column name 'value'
+#######################################################################
+## timeseries of succession ###########################################
+#######################################################################
+#' Plot a timeseries of forest succession
+#' 
+#' Plot the given columns as sums
+#' 
+#' @param input a VegTemporal object or a list of several.
+#' @param column The column(s) to display. Default: 'value'.
+#' @param colors Colors for the diffent VegSpatial objects or columns. Must have the same length otherwise colors are choosing automatically.
+#' @param type "line", overlayed "area" or "stack"ed area
+#' @param wrap if input is a list and columns has more than one element use "sens" or "column" fro wrapping intp several panels.
+#' @param long.title If the description (default) should be used as titles or the shorter id.
+#' @param lty Only used if type="line" and if input is a list and columns has more than one element and no wrapping is desired, use either "sens" or "column" for different line types.
+#' @param alpha alpha value for plots
+#' @param plot If FALSE only the data is returned, without drawing the map.
+#' @param ... Ignored further parameters
+#' @import RColorBrewer
+#' @export
+#' 
+plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="line", wrap=NA, long.title=TRUE, lty="sens", alpha=NA, plot=TRUE, ...) {
   if (is.VegTemporal(input)) {
-    if (is.na(column) && all(colnames(input@data) != "value"))
-      stop("No column name given and no column named 'value' present!")
+    if (is.na(columns) && all(colnames(input@data) != "value"))
+      stop("No columns name given and no column named 'value' present!")
 
-    if (!is.na(column) && length(column)>1) {
-      for (cn in column) {
+    if (!is.na(columns) && length(columns)>1) {
+      for (cn in columns) {
         if (all(colnames(input@data)!=cn))
           stop(paste("No column named '", cn, "' present!", sep=""))
       }
-    } else if (all(colnames(input@data) != column)) {
-      stop(paste("No column named '",column,"' present!", sep=""))
+    } else if (all(colnames(input@data) != columns)) {
+      stop(paste("No column named '",columns,"' present!", sep=""))
     }
-    dt <- input@data[, c("Year", column), with = FALSE]
-    if (length(column)==1) {
-      setnames(dt, column, "value")
-    } else {
-      dt <- melt(dt, key(dt), column)
-      setnames(dt, "variable", "sens")
-      dt <- dt[, sens:=factor(sens, column)]
-      # if (length(wrap)>1 || !is.numeric(wrap))
-      #   wrap <- ceiling(sqrt(length(column)))
+    dt <- input@data[, c("Year", columns), with = FALSE]
+    dt <- melt(dt, "Year", columns)
+    if (length(columns)>1) {
+      dt$variable <- as.character(dt$variable)
+      dt$variable <- factor(dt$variable, levels=columns)
     }
     quant = input@quant
   } else if (is.list(input)) {
@@ -875,13 +990,16 @@ plotGGTemporal <- function(input, column='value', scale=1., colors=NA, wrap=NA, 
       if (!is.VegTemporal(input[[i]]))
         stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
       if (i==1) {
-        if (is.na(column) && all(colnames(input[[i]]@data) != "value")) {
+        if (is.na(columns) && all(colnames(input[[i]]@data) != "value")) {
           stop("No column name given and no column named 'value' present!")
-          column <- "value"
-        } else if (all(colnames(input[[i]]@data) != column[1])) {
-          stop(paste("No column named '", column[1], "' pesent!", sep=""))
+          columns <- "value"
+        } else {
+          for (cn in columns) {
+            if (all(colnames(input[[i]]@data)!=cn))
+              stop(paste("No column named '", cn, "' present!", sep=""))
+          }
         }
-        dt <- input[[i]]@data[, c("Year", column[1]), with = FALSE]
+        dt <- input[[i]]@data[, c("Year", columns), with = FALSE]
         quant = input[[i]]@quant
         if (long.title) {
           dt[, sens:=input[[i]]@run@description, ]
@@ -891,10 +1009,11 @@ plotGGTemporal <- function(input, column='value', scale=1., colors=NA, wrap=NA, 
           titles <- input[[i]]@run@id
         }
       } else {
-        if (all(colnames(input[[i]]@data) != column[1])) {
-          stop(paste("No column named '", column[1], "' pesent!", sep=""))
+        for (cn in columns) {
+          if (all(colnames(input[[i]]@data)!=cn))
+            stop(paste("No column named '", cn, "' present!", sep=""))
         }
-        dt.tmp <- input[[i]]@data[, c("Year", column[1]), with = FALSE]
+        dt.tmp <- input[[i]]@data[, c("Year", columns), with = FALSE]
         if (long.title) {
           dt.tmp[, sens:=input[[i]]@run@description, ]
           titles <- append(titles, input[[i]]@run@description)
@@ -906,54 +1025,136 @@ plotGGTemporal <- function(input, column='value', scale=1., colors=NA, wrap=NA, 
         rm(dt.tmp)
       }
     }
-    if (column!="value")
-      setnames(dt, column, "value")
     dt <- dt[, sens:=factor(sens, titles)]
+    dt <- melt(dt, c("Year", "sens"), columns)
+    if (length(columns)>1) {
+      dt$variable <- as.character(dt$variable)
+      dt$variable <- factor(dt$variable, levels=columns)
+    }
   } else {
     stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
   }
-
+  
   dt[,value:=value*scale]
   
   if (!plot)
     return(dt)
+  
+  if (any(!is.finite(dt$value)))
+    warning("Data contains infinite values. This might mess up the plot!")
+  
+  if (any(!.is.color(colors)) || any(is.na(colors)))
+    colors="black"
 
-  if (any(colnames(dt)=="sens")) {
-    if (is.na(colors) && is.na(wrap)) { 
-      p <- ggplot(dt, aes(x=Year, y=value, col=sens))
-      p <- p + .rvc.temporal_theme
-      p <- p + geom_line(size=1)
-      colors <- brewer.pal(length(unique(dt$sens)), "Set1")
-      p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=2))
-    } else if (is.na(colors) && is.numeric(wrap)) {
-      p <- ggplot(dt, aes(x=Year, y=value))
-      p <- p + .rvc.temporal_theme
-      p <- p + geom_line(size=1)
+  p <- ggplot(dt, aes(x=Year, y=value))
+  p <- p + .rvc.temporal_theme
+  if (grepl("^l", type)) {
+    if (!is.numeric(alpha))
+      alpha=1
+    if (length(columns)==1 && length(input)==1) {
+      p <- p + geom_line(color=colors, size=1)
     } else {
-      p <- ggplot(dt, aes(x=Year, y=value, col=sens))
-      p <- p + .rvc.temporal_theme
-      p <- p + geom_line(size=1)
-      p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=2))
+      if (length(columns)>1 && length(input)==1) {
+        p <- p + geom_line(aes(col=variable), alpha=alpha, size=1)
+        if (length(colors)!=length(unique(dt$variable)))
+          colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+      } else if (length(columns)==1 && length(input)>1) {
+        p <- p + geom_line(aes(col=sens), alpha=alpha, size=1)
+        if (length(colors)!=length(unique(dt$sens)))
+          colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+      } else {
+        if (grepl("^c", wrap) || grepl("^v", wrap)) {
+          p <- p + geom_line(aes(col=sens), alpha=alpha, size=1)
+          p <- p + facet_wrap(~variable, ncol=1) 
+          if (length(colors)!=length(unique(dt$sens)))
+            colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+        } else if (grepl("^r", wrap) || grepl("^s", wrap)) {
+          p <- p + geom_line(aes(col=variable), alpha=alpha)
+          p <- p + facet_wrap(~sens, ncol=1)
+          if (length(colors)!=length(unique(dt$variable)))
+            colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+        } else {
+          if (grepl("^v", lty) || grepl("^c", lty)) {
+            p <- p + geom_line(aes(col=sens, lty=variable), alpha=alpha)
+            if (length(colors)!=length(unique(dt$sens)))
+              colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+          } else {
+            p <- p + geom_line(aes(col=variable, lty=sens), alpha=alpha)
+            if (length(colors)!=length(unique(dt$variable)))
+              colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+          }
+        }
+      }
+      p <- p + scale_color_manual(values=colors, guide=guide_legend(title="", ncol=length(columns), override.aes=list(size=2)))
     }
   } else {
-    if (is.na(colors))
-      colors="black"
-    p <- ggplot(dt, aes(x=Year, y=value))
-    p <- p + .rvc.temporal_theme
-    p <- p + geom_line(size=1, col=colors)
+    if (grepl("^a", type)) {
+      if (!is.numeric(alpha))
+        alpha=1/length(columns)
+    } else {
+      if (!is.numeric(alpha))
+        alpha=1
+    }
+    if (length(input)==1 && length(columns)==1) {
+      p <- p + geom_area(alpha=alpha, fill=colors, position="stack")
+    } else {
+      if (length(input)==1 && length(columns)>1) {
+        if (grepl("^a", type)) {
+          p <- p + geom_area(aes(fill=variable), alpha=alpha, position = position_dodge(width=0))
+        } else {
+          p <- p + geom_area(aes(fill=variable), alpha=alpha, position = "stack")
+        }
+        if (length(colors)!=length(unique(dt$variable)))
+          colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+      } else if (length(input)>1 && length(columns)==1) {
+        if (grepl("^a", type)) {
+          p <- p + geom_area(aes(fill=sens), alpha=alpha, position = position_dodge(width=0))
+        } else {
+          warning("Stacking runs above each other. Is this really what you want?")
+          p <- p + geom_area(aes(fill=sens), alpha=alpha, position = "stack")
+        }
+        if (length(colors)!=length(unique(dt$sens)))
+          colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+      } else {
+        if (grepl("^c", wrap) || grepl("^v", wrap)) {
+          if (grepl("^a", type)) {
+            p <- p + geom_area(aes(fill=sens), alpha=alpha, position = position_dodge(width=0))
+          } else {
+            if (length(input)>1)
+              warning("Stacking runs above each other. Is this really what you want?")
+            p <- p + geom_area(aes(fill=sens), alpha=alpha, position = "stack")
+          }
+          if (length(colors)!=length(unique(dt$sens)))
+            colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+        } else {
+          if (grepl("^a", type)) {
+            p <- p + geom_area(aes(fill=variable), alpha=alpha, position = position_dodge(width=0))
+          } else {
+            p <- p + geom_area(aes(fill=variable), alpha=alpha, position = "stack")
+          }
+          if (length(colors)!=length(unique(dt$variable)))
+            colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+        }
+        if (grepl("^c", wrap) || grepl("^v", wrap)) {
+          p <- p + facet_wrap(~variable, ncol=1) 
+        } else if (grepl("^r", wrap) || grepl("^s", wrap)) {
+          p <- p + facet_wrap(~sens, ncol=1)
+        }
+      }
+      p <- p + scale_fill_manual(values=colors, guide=guide_legend(title=""))
+    }
   }
+
+  p <- p + scale_x_continuous(expand=c(0, 0))
+  if (grepl("^s", type) || grepl("^a", type)) 
+    p <- p + scale_y_continuous(limits=c(0, NA), expand=c(0, 0))
   p <- p + ylab(paste(quant@full.string, " [", quant@units,"]", sep=""))
 
-  if (any(colnames(dt)=="sens") && is.numeric(wrap))
-    p <- p + facet_wrap(~sens, ncol=wrap)
-   
   return(p)
-}
-
-#######################################################################
-## timeseries of succession ###########################################
-#######################################################################
-
-plotGGSuccessional <- function(input, columns='value', colors=NA, wrap=NA, long.title=TRUE, plot=TRUE, ...) {
   
+  p <- ggplot(dt, aes(x=Year, y=value, fill=variable))
+  p <- p + .rvc.scatter_theme
+  p <- p + geom_area(position="dodge", alpha=0.66)
+  p <- p + facet_wrap(~sens)
+  p <- p + geom_area(position="stack")
 }
