@@ -51,13 +51,13 @@ lai.reference.period <- addVegTotals(lai.reference.period, target = c("Lifeforms
 
 # Plot the Evergreen and Temperate totals indivdually
 plotVegMaps(lai.reference.period, 
-            which = c("Evergreen", "Temperate"),
+            targets = c("Evergreen", "Temperate"),
             doSummary = FALSE, 
             doIndividual = TRUE)
 
 
 plotVegMaps(lai.reference.period, 
-            which = c("Tree", "Grass", "Total"),
+            targets = c("Tree", "Grass", "Total"),
             special.string = "Lifeforms")
 
 
@@ -69,7 +69,7 @@ lai.reference.period <- addVegFractions(lai.reference.period, targets = "lifefor
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            which = c("lifeforms"),
+            targets = c("lifeforms"),
             special.string = "Lifeform",
             special = "fraction")
 
@@ -79,7 +79,7 @@ lai.reference.period <- addVegFractions(lai.reference.period, targets = c("TeBS"
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            which = c("TeBSFractionofTree"),
+            targets = c("TeBSFractionofTree"),
             expand.targets = FALSE,
             special = "fraction")
 
@@ -107,12 +107,12 @@ biome.scheme <- Smith2014.scheme
 lai.reference.period <- addBiomes(lai.reference.period, biome.scheme)
 
 # read expert-derived PNV biomes
-#PNV.biomes <- readPNVBiomes(resolution = "HD", classification = biome.scheme@id)
+PNV.biomes <-  readHandPBiomes(classification = Smith2014.scheme@id)
 
 # plot biomes
 plotBiomeMap(lai.reference.period, 
              scheme = biome.scheme,
-             addData = FALSE,#PNV.biomes, 
+             addData = PNV.biomes, 
              Cairo.type = c("png","ps"), 
 )
 
