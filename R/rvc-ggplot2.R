@@ -361,12 +361,17 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   lon <- seq(lon.limit[1], lon.limit[2], res)
   lat <- seq(lat.limit[1], lat.limit[2], res)
 
+  ## calculate aspect ratio (required for lat, lon labels in non-global plots)
+  fr_lat <- length(lat) / max(c(length(lat) + length(lon))) 
+  fr_lon <- length(lon) / max(c(length(lat) + length(lon))) 
+
+
   if (wrap==1) {
-    lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon")
-    lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=4, n.max=7)
+    lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon", n.min=4, n.max=3+ceiling(fr_lon*4))
+    lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=4, n.max=3+ceiling(fr_lat*4))
   } else {
-    lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon", n.min=2, n.max=5)
-    lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=2, n.max=3)
+    lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon", n.min=2, n.max=1+ceiling(fr_lon*2))
+    lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=2, n.max=1+ceiling(fr_lat*2))
   }
     
   ## create plot
@@ -409,6 +414,11 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
     p <- eval(parse(text=paste("p + facet_wrap(~sens, ncol=",wrap,")", sep="")))
   } else if (long.title) {
     p <- p + labs(title=input@run@description)
+  }
+    
+  ## make axis labels smaller for facet plots
+  if(wrap>1){
+    p <- p + theme(axis.text         = element_text(size=7))
   }
 
   ## return the plot for further manipulation or direct printing
