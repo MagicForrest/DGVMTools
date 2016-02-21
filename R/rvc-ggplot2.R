@@ -1161,10 +1161,129 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
   p <- p + ylab(paste(quant@full.string, " [", quant@units,"]", sep=""))
 
   return(p)
+}
+
+#' Plot a histogram
+#' 
+#' Plot the given columns as histogram
+#' 
+#' @param input a VegSpatial object or a list of several.
+#' @param column The column(s) to display. Default: 'value'.
+#' @param colors Colors for the diffent VegSpatial objects or columns. Must have the same length otherwise colors are choosing automatically.
+#' @param bins number of bins for histogram (default: 25)
+#' @param bars draw bars of counted occurence (default TRUE).
+#' @param lines also draw density lines (default FALSE).
+#' @param long.title If the description (default) should be used as titles or the shorter id.
+#' @param plot If FALSE only the data is returned, without drawing the map.
+#' @param ... Ignored further parameters
+#' @import RColorBrewer
+#' @export
+plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE, bins=10, long.title=TRUE, plot=TRUE, ...) {
+  ## check if a VegSpatial or a list of VegSpatial is given as input
+  ## check data column names for given column name or column name 'value'
+  if (is.VegSpatial(input)) {
+    if (is.na(column) && all(colnames(input@data) != "value"))
+      stop("No column name given and no column named 'value' present!")
+    if (!is.na(column) && length(column)>1) {
+      for (cn in column) {
+        if (all(colnames(input@data)!=cn))
+          stop(paste("No column named '", cn, "' present!", sep=""))
+      }
+    } else if (all(colnames(input@data) != column)) {
+      stop(paste("No column named '",column,"' present!", sep=""))
+    }
+    dt <- input@data[, c("Lon", "Lat", column), with = FALSE]
+    if (length(column)==1) {
+      setnames(dt, column, "value")
+    } else {
+      dt <- melt(dt, key(dt), column)
+      setnames(dt, "variable", "sens")
+      dt <- dt[, sens:=factor(sens, column)]
+    }
+  } else if (is.list(input)) {
+    for (i in 1:length(input)) {
+      if (!is.VegSpatial(input[[i]]))
+        stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
+      
+      if (is.na(column) && all(colnames(input[[i]]@data) != "value"))
+        stop("No column name given and no column named 'value' present!")
+      if (!is.na(column) && length(column)>1) {
+        warning("Several column names are supplied. Will only use the first one!")
+        column <- column[1]
+      }
+      if (all(colnames(input[[i]]@data) != column)) {
+        stop(paste("No column named '",column,"' present!", sep=""))
+      }
+      
+      if (i==1) {
+        dt <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
+        if (long.title) {
+          dt[, sens:=input[[i]]@run@description, ]
+          titles <- input[[i]]@run@description
+        } else {
+          dt[, sens:=input[[i]]@run@id, ]
+          titles <- input[[i]]@run@id
+        }
+      } else {
+        dt.tmp <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
+        if (long.title) {
+          dt.tmp[, sens:=input[[i]]@run@description, ]
+          titles <- append(titles, input[[i]]@run@description)
+        } else {
+          dt.tmp[, sens:=input[[i]]@run@id, ]
+          titles <- append(titles, input[[i]]@run@id)
+        }
+        dt <- rbindlist(list(dt, dt.tmp))
+        rm(dt.tmp)
+      }
+    }
+    setnames(dt, column, "value")
+    dt <- dt[, sens:=factor(sens, titles)]
+  } else {
+    stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
+  }
+
+  if (is.na(bins))
+    bins=10
+
+  if (any(colnames(dt)=="sens") && is.na(colors))  {
+    colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+  } else if (any(colnames(dt)=="sens") && length(colors)!=length(unique(dt$sens))) {
+    colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+  } else if (is.na(colors)) {
+    colors="#333333"
+  }
+
+  warning("Finding breaks is currently not properly implemented!")
+  brks <- seq(floor(min(dt$value)), ceiling(max(dt$value)), length=bins+1)
   
-  p <- ggplot(dt, aes(x=Year, y=value, fill=variable))
-  p <- p + .rvc.scatter_theme
-  p <- p + geom_area(position="dodge", alpha=0.66)
-  p <- p + facet_wrap(~sens)
-  p <- p + geom_area(position="stack")
+  lbls <- paste(brks[1:(length(brks)-1)]+(brks[2:length(brks)] - brks[1:(length(brks)-1)])/2)
+  dt[,bin:=findInterval(value, brks, rightmost.closed = TRUE)]
+  
+  if (any(colnames(dt)=="sens")) {
+    binned.dt <- dt[, list(.N), by=.(bin, sens)]
+    p <- ggplot(binned.dt, aes(x=bin, y=N, fill=sens))
+    p <- p + scale_fill_manual(values=colors)
+  } else {
+    binned.dt <- dt[, list(.N), by=bin]
+    p <- ggplot(binned.dt, aes(x=bin, y=N))
+  }
+  
+  if (!plot)
+    return(binned.dt)
+
+  p <- p + rvc.ggplot.theme("scatter")
+  if (bars)
+    p <- p + geom_bar(stat="identity", position="dodge")
+  if (any(colnames(dt)=="sens") && lines) {
+    p <- p + geom_line(aes(color=sens), size=1)
+    p <- p + scale_color_manual(values=colors)
+  } else if (lines) {
+    p <- p + geom_line(color=colors, size=1)
+  }
+  p <- p + xlab("")
+  p <- p + scale_x_continuous(breaks=seq(0.5, bins+0.5, 1), labels=brks, expand=c(0.01,0))
+  p <- p + scale_y_continuous(expand=c(0,0))
+  p <- p + theme(panel.grid.minor.x = element_line(NA))
+  return(p)
 }

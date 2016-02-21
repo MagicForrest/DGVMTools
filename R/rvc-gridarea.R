@@ -337,7 +337,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
       
       return(new("VegSpatial",
-                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], " ", period@id, sep=""),
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "_", period@id, sep=""),
                  data = new.dt,
                  temporal.extent = x.extent,
                  quant = quant,
@@ -347,14 +347,49 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
       
       return(new("VegTemporal",
-                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], " ", period@id, sep=""),
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "_", period@id, sep=""),
                  data = new.dt,
                  spatial.extent = x.extent,
                  quant = quant,
                  run = as(run, "VegRunInfo")))  
     }
   } else {
+    key.names <- key(x.dt)
+    val.names <- names(x.dt)
+    val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
+    setnames(x.dt, val.names, paste("x.", val.names, sep=""))
+    key.names <- key(y.dt)
+    val.names <- names(y.dt)
+    val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
+    setnames(y.dt, val.names, paste("y.", val.names, sep=""))
 
+    if (targets[[1]][3]==targets[[2]][3]) {
+      list.str <- paste(targets[[1]][3],"=x.",targets[[1]][3], operator, "y.", targets[[2]][3], sep="")
+    } else {
+      list.str <- paste("value=x.",targets[[1]][3], operator, "y.", targets[[2]][3], sep="")
+    }
+    if (targets[[1]][1]=="spatial") {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
+      
+      return(new("VegSpatial",
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "$",  targets[[2]][3],"_", period@id, sep=""),
+                 data = new.dt,
+                 temporal.extent = x.extent,
+                 quant = quant,
+                 run = as(run, "VegRunInfo")))
+      
+    } else {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
+      
+      return(new("VegTemporal",
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "$", targets[[2]][3], "_", period@id, sep=""),
+                 data = new.dt,
+                 spatial.extent = x.extent,
+                 quant = quant,
+                 run = as(run, "VegRunInfo")))  
+    }
+    
+    
     stop("MISSING: Not implemented yet.")
     
   }
