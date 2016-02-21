@@ -27,17 +27,20 @@ makeGridlistMask <- function(gridlist.file = lpj.HD.gridlist, offset = c(0.25, 0
 }
 
 
-subsetGridlist <- function(subset.extent, file.name = NULL, gridlist.file = lpj.HD.gridlist, offset = c(0.25, 0.25)){
+subsetGridlist <- function(subset.extent, file.name = NULL, header = TRUE, gridlist.file = lpj.HD.gridlist, offset = c(0.25, 0.25)){
   
-  gridlist <-read.table(gridlist.file, header = FALSE)
-  setnames(gridlist, "V1", "Lon")
-  setnames(gridlist, "V2", "Lat")
+  if(header) {gridlist <-read.table(gridlist.file, header)}
+  else{
+    gridlist <- read.table(gridlist.file, header)
+    setnames(gridlist, "V1", "Lon")
+    setnames(gridlist, "V2", "Lat")
+  }
   
   gridlist$Lon <- gridlist$Lon + offset[1]
   gridlist$Lat <- gridlist$Lat + offset[2]
   
   gridlist$Present <- 1
-  
+  print(gridlist)
   gridlist.points <- SpatialPoints(gridlist[,c("Lon", "Lat")], proj4string = CRS("+proj=longlat +datum=WGS84"))
   gridlist.pixels <- SpatialPixels(gridlist.points)
   gridlist.spdf <- SpatialPixelsDataFrame(gridlist.pixels, data.frame(gridlist[,c("Present")])) 
