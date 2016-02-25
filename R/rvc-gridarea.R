@@ -226,8 +226,13 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
     y.extent <- run@spatial[[targets[[2]][2]]]@temporal.extent
     y.dt     <- copy(run@spatial[[targets[[2]][2]]]@data)
     
-    if (!is.equal(x.extent, y.extent))
-      warning("Spatial extents differ.")
+    if (!is.equal(x.extent, y.extent)) {
+      if (targets[[1]][1] == "spatial") {
+        warning("Temporal extents differ.")
+      } else {
+        warning("Spatial extents differ.")
+      }
+    }
     if (!is.equal(x.quant, y.quant) && (operator=="+" || operator=="-"))
       warning("Quantity definitions differ.")
   } else {
@@ -285,7 +290,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
       
       return(new("VegSpatial",
-                 id = paste(targets[[1]][2], operator, targets[[2]][2], "", period@id),
+                 id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
                  data = new.dt,
                  temporal.extent = x.extent,
                  quant = quant,
@@ -294,7 +299,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
       
       return(new("VegTemporal",
-                 id = paste(targets[[1]][2], operator, targets[[2]][2], "", period@id),
+                 id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
                  data = new.dt,
                  spatial.extent = x.extent,
                  quant = quant,
@@ -311,7 +316,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
       
       return(new("VegSpatial",
-                 id = paste(targets[[1]][2], operator, targets[[2]][2], "$" , targets[[2]][3], " ", period@id, sep=""),
+                 id = paste(targets[[1]][2], operator, targets[[2]][2], "$" , targets[[2]][3], sep=""),
                  data = new.dt,
                  temporal.extent = x.extent,
                  quant = quant,
@@ -320,7 +325,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
       
       return(new("VegTemporal",
-                 id = paste(targets[[1]][2], operator, targets[[2]][2], "$" , targets[[2]][3], " ", period@id, sep=""),
+                 id = paste(targets[[1]][2], operator, targets[[2]][2], "$" , targets[[2]][3], sep=""),
                  data = new.dt,
                  spatial.extent = x.extent,
                  quant = quant,
@@ -337,7 +342,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
       
       return(new("VegSpatial",
-                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "_", period@id, sep=""),
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], sep=""),
                  data = new.dt,
                  temporal.extent = x.extent,
                  quant = quant,
@@ -347,7 +352,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
       
       return(new("VegTemporal",
-                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "_", period@id, sep=""),
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], sep=""),
                  data = new.dt,
                  spatial.extent = x.extent,
                  quant = quant,
@@ -372,7 +377,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
       
       return(new("VegSpatial",
-                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "$",  targets[[2]][3],"_", period@id, sep=""),
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "$",  targets[[2]][3], sep=""),
                  data = new.dt,
                  temporal.extent = x.extent,
                  quant = quant,
@@ -382,7 +387,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
       
       return(new("VegTemporal",
-                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "$", targets[[2]][3], "_", period@id, sep=""),
+                 id = paste(targets[[1]][2], "$" , targets[[1]][3], operator, targets[[2]][2], "$", targets[[2]][3], sep=""),
                  data = new.dt,
                  spatial.extent = x.extent,
                  quant = quant,
