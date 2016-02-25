@@ -83,12 +83,15 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @param lat.name Name of the latitude vector in the netcdf file
 #' @param time.name Name of the time vector in the netcdf file
 #' @param period Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)
+#' @param forceReCalculation Recalculate the desired values (default: FALSE)
+#' @param write write the calculated values for fture speedup (default: TRUE)
+#' @param verbose print some messages
 #' @return data.table if no VegRun was given, otherwise a VegSpatial
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import RNetCDF
 #' @export
-getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, period=NA) {
-  if (!suppressWarnings(is.na(period))) {
+getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, period=NA, forceReCalculation=FALSE, write=TRUE, verbose=TRUE, ...) {
+  if (suppressWarnings(!is.na(period))) {
     if (class(period)[1]=="TemporalExtent" && attr(class(mid), "package")=="RVCTools") {
       period <- c(period@start, period@end)
     } else {
@@ -119,7 +122,9 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
     }
     i <- i+1
   }
-
+  if (verbose)
+    message(paste(c("Dimensions:", dim.names), collapse=" "))
+  
 ## get the variable properties
   var.names <- c()
   var.dims <- list()
@@ -139,6 +144,8 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
     }
     i <- i+1
   }
+  if (verbose)
+    message(paste(c("Variables:", var.names), collapse=" "))
 
   ## get the name of the variable containing the data
   is.data.var <- lapply(var.dims, length)==length(dim.names)
@@ -152,15 +159,23 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
   } else {
     data.name <- var.names[is.data.var]
   }
-
+  if (verbose)
+    message(paste("Variable to get the data for:", data.name))
+  
   ## get the spatial dimension names
   if (is.na(lon.name) || is.na(lat.name)) {
     if (length(dim.names)==2) {
+      if (verbose)
+        message("Reduced grid")
+      
       coords <- att.get.nc(ncin, data.name, "coordinates")
       coords <- unlist(strsplit(coords, " "))
       lon.name <- coords[grepl("lon", coords, ignore.case=TRUE)]
       lat.name <- coords[grepl("lat", coords, ignore.case=TRUE)]
     } else if (length(dim.names)==3) {
+      if (verbose)
+        message("Regular grid")
+      
       lon.name <- dim.names[grepl("lon", dim.names, ignore.case=TRUE)]
       lat.name <- dim.names[grepl("lat", dim.names, ignore.case=TRUE)]
     } else {
@@ -168,6 +183,8 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
       stop("Do not know how to handle files with dimensions other than 2 or 3!")
     }
   }
+  if (verbose)
+    message(paste("Spatial variables:", lon.name, lat.name))
 
 ## get the name of the temporal dimension variable
   if (is.na(time.name)) {
@@ -179,7 +196,9 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
       stop("Did not find time dimension!")
     }
   }
-
+  if (verbose)
+    message(paste("Temporal dimension: ", time.name))
+  
   lon   <- var.get.nc(ncin, lon.name)
   lat   <- var.get.nc(ncin, lat.name)
   time  <- var.get.nc(ncin, time.name)
@@ -204,100 +223,118 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
   start <- start + time[1]
   end   <- start + dim.len$time
 
+  if (verbose)
+    message(paste("NetCDF period:", start, end))
+
   if (any(is.na(period)))
     period <- c(year(start), year(end)-1)
-  
-  days <- 1
-  for (y in year(start):(year(end)-1)) {
-    if (y<period[1]) {
-      days = days+dpy
-      next
-    } else if (y>period[2]) {
-      break
-    }
-    
-    print(y)
-    dpy <- as.numeric(as.Date(paste(y+1, "-01-01", sep="")) - as.Date(paste(y, "-01-01", sep="")))
-    sdcols <- paste("V", 1:dpy, sep="")
-    
-    ## get data
-    if (length(dim.names)==2) {
-      ## from reduced grid
-      if (dim.names[1]==time.name) {
-        data <- var.get.nc(ncin, data.name, start=c(days, NA), count=c(dpy, NA))
-        dt.tmp <- data.table(t(data))
-      } else {
-        data <- var.get.nc(ncin, data.name, start=c(NA, days), count=c(NA, dpy))
-        dt.tmp <- data.table(data)
-      }
-      dt.tmp[, Lon:=lon, ]
-      dt.tmp[, Lat:=lat, ]
-      setkey(dt.tmp, Lon, Lat)
 
-    } else {
-      ## from 3 dimensional grid
-
-      if (dim.names[1]=="lon" && dim.names[2]=="lat") {
-        data <- var.get.nc(ncin, data.name, start=c(NA, NA, days), count=c(NA, NA, dpy))
-        data <- data.frame(Lon=rep(lon, length(lat)), Lat=rep(lat, each=length(lon)), V=matrix(data[,,], ncol=dpy))
-      } else if (dim.names[1]=="lat" && dim.names[2]=="lon") {
-        data <- var.get.nc(ncin, data.name, start=c(NA, NA, days), count=c(NA, NA, dpy))
-        data <- data.frame(Lon=rep(lon, each=length(lat)), Lat=rep(lat, length(lon)), V=matrix(data[,,], ncol=dpy))                            
-      } else if (dim.names[1]=="time" && dim.names[2]=="lon") {
-        data <- var.get.nc(ncin, data.name, start=c(days, NA, NA), count=c(dpy, NA, NA))
-        data <- aperm(data, 2,3,1)
-        data <- data.frame(Lon=rep(lon, length(lat)), Lat=rep(lat, each=length(lon)), V=matrix(data[,,], ncol=dpy))
-      } else if (dim.names[1]=="time" && dim.names[2]=="lat") {
-        data <- var.get.nc(ncin, data.name, start=c(days, NA, NA), count=c(dpy, NA, NA))
-        data <- aperm(data, 3,2,1)
-        data <- data.frame(Lon=rep(lon, length(lat)), Lat=rep(lat, each=length(lon)), V=matrix(data[,,], ncol=dpy))
-      }
-      
-      colnames(data) <- c("Lon", "Lat", sdcols)
-      dt.tmp <- data.table(data)
-      setkey(dt.tmp, Lon, Lat)
-
-    } 
-
-    if (att.get.nc(ncin, data.name, "units")=="K" && operation=="gdd5") 
-      dt.tmp[ ,(sdcols) := lapply(.SD, function(x){x -273.15 }), .SDcols=sdcols]
-    if (operation=="gdd5") {
-      dt.tmp[ ,(sdcols) := lapply(.SD, function(x){ifelse(x<5, 0, x) }), .SDcols=sdcols]
-      eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowSums(.SD), .SDcols=sdcols]", sep="")))
-    } else if (operation=="mean") {
-      eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowMeans(.SD), .SDcols=sdcols]", sep="")))
-    } else if (operation=="sum") {
-
-      eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowSums(.SD), .SDcols=sdcols]", sep=""))) 
-    }
-
-    dt.tmp <- dt.tmp[, !sdcols, with=FALSE]
-
-    if (exists("DT")) {
-      DT <- DT[dt.tmp]
-    } else {
-      DT <- copy(dt.tmp)
-    }
-    days = days+dpy
-  }
-  
-
-  DT <- melt(DT, id.var=c("Lon", "Lat"))
-  DT[, Year:=as.numeric(sub("Y", "", variable)), ]
-  DT[, variable:=NULL]
-  setkey(DT, Year, Lon, Lat)
-
-  if (period[1] != period[2]) {
-    DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat")]
+  fout <- paste(tools::file_path_sans_ext(file),
+                "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                "_", operation, ".RTable", sep="")
+  if (file.exists(fout) && !forceReCalculation) {
+    if (verbose)
+      message(paste("Found '", fout, "'", sep=""))
+    DT <- data.table(read.table(fout, header=TRUE, stringsAsFactors=FALSE))
+    setkey(DT, Lon, Lat)
   } else {
-    DT[, Year:=NULL, ]
+    days <- 1
+    if (verbose)
+      message("Get data for ", appendLF=FALSE)
+    for (y in year(start):(year(end)-1)) {
+      dpy <- as.numeric(as.Date(paste(y+1, "-01-01", sep="")) - as.Date(paste(y, "-01-01", sep="")))
+      if (y<period[1]) {
+        days = days+dpy
+        next
+      } else if (y>period[2]) {
+        break
+      }
+
+      if (verbose)  
+        message(paste(".", y, ".", sep=""), appendLF=FALSE)
+
+      sdcols <- paste("V", 1:dpy, sep="")
+
+      ## get data
+      if (length(dim.names)==2) {
+        ## from reduced grid
+        if (dim.names[1]==time.name) {
+          data <- var.get.nc(ncin, data.name, start=c(days, NA), count=c(dpy, NA))
+          dt.tmp <- data.table(t(data))
+        } else {
+          data <- var.get.nc(ncin, data.name, start=c(NA, days), count=c(NA, dpy))
+          dt.tmp <- data.table(data)
+        }
+        dt.tmp[, Lon:=lon, ]
+        dt.tmp[, Lat:=lat, ]
+        setkey(dt.tmp, Lon, Lat)
+      } else {
+        ## from 3 dimensional grid
+        if (dim.names[1]=="lon" && dim.names[2]=="lat") {
+          data <- var.get.nc(ncin, data.name, start=c(NA, NA, days), count=c(NA, NA, dpy))
+          data <- data.frame(Lon=rep(lon, length(lat)), Lat=rep(lat, each=length(lon)), V=matrix(data[,,], ncol=dpy))
+        } else if (dim.names[1]=="lat" && dim.names[2]=="lon") {
+          data <- var.get.nc(ncin, data.name, start=c(NA, NA, days), count=c(NA, NA, dpy))
+          data <- data.frame(Lon=rep(lon, each=length(lat)), Lat=rep(lat, length(lon)), V=matrix(data[,,], ncol=dpy))                            
+        } else if (dim.names[1]=="time" && dim.names[2]=="lon") {
+          data <- var.get.nc(ncin, data.name, start=c(days, NA, NA), count=c(dpy, NA, NA))
+          data <- aperm(data, 2,3,1)
+          data <- data.frame(Lon=rep(lon, length(lat)), Lat=rep(lat, each=length(lon)), V=matrix(data[,,], ncol=dpy))
+        } else if (dim.names[1]=="time" && dim.names[2]=="lat") {
+          data <- var.get.nc(ncin, data.name, start=c(days, NA, NA), count=c(dpy, NA, NA))
+          data <- aperm(data, 3,2,1)
+          data <- data.frame(Lon=rep(lon, length(lat)), Lat=rep(lat, each=length(lon)), V=matrix(data[,,], ncol=dpy))
+        }
+        colnames(data) <- c("Lon", "Lat", sdcols)
+        dt.tmp <- data.table(data)
+        setkey(dt.tmp, Lon, Lat)
+      }
+
+      if (att.get.nc(ncin, data.name, "units")=="K" && operation=="gdd5") 
+        dt.tmp[ ,(sdcols) := lapply(.SD, function(x){x -273.15 }), .SDcols=sdcols]
+      if (operation=="gdd5") {
+        dt.tmp[ ,(sdcols) := lapply(.SD, function(x){ifelse(x<5, 0, x) }), .SDcols=sdcols]
+        eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowSums(.SD), .SDcols=sdcols]", sep="")))
+      } else if (operation=="mean") {
+        eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowMeans(.SD), .SDcols=sdcols]", sep="")))
+      } else if (operation=="sum") {
+        eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowSums(.SD), .SDcols=sdcols]", sep=""))) 
+      }
+
+      dt.tmp <- dt.tmp[, !sdcols, with=FALSE]
+
+      if (exists("DT")) {
+        DT <- DT[dt.tmp]
+      } else {
+        DT <- copy(dt.tmp)
+      }
+      days = days+dpy
+    }
+    if (verbose)
+      message("")
+  
+    DT <- melt(DT, id.var=c("Lon", "Lat"))
+    DT[, Year:=as.numeric(sub("Y", "", variable)), ]
+    DT[, variable:=NULL]
+    setkey(DT, Year, Lon, Lat)
+
+    if (period[1] != period[2]) {
+      DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat")]
+    } else {
+      DT[, Year:=NULL, ]
+    }
+    if (write) {
+      if (verbose)
+        message(paste("Write data to:", fout))
+      write.table(DT, file=fout, row.names=FALSE, col.names=TRUE)
+    }
   }
-
-
   if (is.VegRun(run)) {
+    start <- year(start)
+    end <- year(end)
     period <- new("TemporalExtent",
                   id = paste(max(start, period[1]), "_", min(end, period[2]), sep=""),
-                  name =  paste(max(start, period[1]), "-", min(end, period[2]), sep=""),,
+                  name =  paste(max(start, period[1]), "-", min(end, period[2]), sep=""),
                   start = max(start, period[1]), end = min(end, period[2]))
     if (operation=="gdd5") {
       id <- operation
