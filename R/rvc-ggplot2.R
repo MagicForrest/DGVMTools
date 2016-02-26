@@ -956,11 +956,12 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 # }
 
 #######################################################################
-## timeseries of succession ###########################################
+## timeseries #########################################################
 #######################################################################
-#' Plot a timeseries of forest succession
+#' Plot a timeseries 
 #' 
-#' Plot the given columns as sums
+#' Plot a timeseries with ggplot. Either as line default, overlaying area,
+#' applicable p.e. for height or stacked polygons (e.g. for succession).
 #' 
 #' @param input a VegTemporal object or a list of several.
 #' @param column The column(s) to display. Default: 'value'.
