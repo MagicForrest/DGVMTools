@@ -35,16 +35,16 @@ openLPJOutputFile <- function(run,
                               verbose = FALSE,
                               gzip = FALSE){
   
+  was.gzipped <- FALSE
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
   file.string = file.path(run@run.dir, paste(variable, ".out", sep=""))
   if(file.exists(file.string)){ 
     if(verbose) message(paste("Found and opening file", file.string, sep = " "))
-    was.gzipped <- FALSE
   }
   else if(file.exists(paste(file.string, "gz", sep = "."))){
     if(verbose) message(paste("File ", file.string, ", but gzipped file present so using that", sep = ""))
-    system(paste("gunzip",  paste(file.string, "gz", sep = "."), sep = " "))
+    file.string <- paste(file.string, "gz", sep = ".") 
     was.gzipped <- TRUE
   }
   else {

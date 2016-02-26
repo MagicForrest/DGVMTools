@@ -145,6 +145,10 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
       if (is.null(this.full)) {
         if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
         this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
+        if(verbose) {
+          message("Head of full .out file (after offsets):")
+          print(head(this.full))
+        }
       }
       else{
         if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that.", sep = ""))
@@ -152,6 +156,12 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
       
       # do temporal averaging
       this.TA.dt <- .doTimeAverage.cmpd(this.full, period, verbose)
+      if(verbose) {
+        message("Head of time averaged data.table:")
+        print(head(this.TA.dt))
+      }
+      
+      
       if(write) {
         if(verbose) {message("Saving as a table...")}
         write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
