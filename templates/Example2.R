@@ -136,9 +136,8 @@ vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/data/forres
 ###### 
 
 ### for each run - here use parallelisation to processes both/many runs at once
-vegrun.list <- foreach(run = iter(vegrun.list), .verbose = FALSE) %dopar% {
-  
-  #for(run in vegrun.list){ 
+#vegrun.list <- foreach(run = iter(vegrun.list), .verbose = FALSE) %dopar% {
+for(run in vegrun.list){ 
   
   if(verbose) message(paste(" +++++++ Processing run", run@id, "+++++++", sep = " "))  
   
@@ -150,7 +149,7 @@ vegrun.list <- foreach(run = iter(vegrun.list), .verbose = FALSE) %dopar% {
   
   ###  FOR EACH VARIABLE - here might be an appropriate place to use parallelisation after for standard post-processing
   # This will be fine for writing out simple one-variable plots and pre-averaged files, but care must be taken when saving VegObjs
-  # inside the loop for outside the loop because "side-effects" don't generally work with for each
+  # inside the loop for outside the loop because "side-effects" don't generally work with foreach
   #
   #foreach(var.num = 1:length(var.list),   .verbose = FALSE) %dopar% {
   #var = var.list[var.num]	 
@@ -250,25 +249,25 @@ vegrun.list <- foreach(run = iter(vegrun.list), .verbose = FALSE) %dopar% {
   
   # now do each benchmark for the run
   for(benchmarking.dataset in benchmarking.datasets.list){
-    
+    print(benchmarking.dataset@id)
     ### Do the biome classifications and comparisons
     if(benchmarking.dataset@id %in% names(supported.biome.schemes)) {
-      
+      print("doing biomes")
       # get biome scheme and give message
       scheme <- supported.biome.schemes[[benchmarking.dataset@id]]
       if(verbose) message(paste("Doing ", scheme@name,  " Biome Classification"))
       
       # do the comparison, save it for later comparison plots and tidy up
       biome.comparison <- compareBiomes(run, lookupVegQuantity("lai"), periods[["PNV"]], scheme, plot = TRUE)
-      #vegrun.list[[run@id]] <- addToVegRun(biome.comparison, vegrun.list[[run@id]])
-      run <- addToVegRun(biome.comparison, run)
+      vegrun.list[[run@id]] <- addToVegRun(biome.comparison, vegrun.list[[run@id]])
+      #run <- addToVegRun(biome.comparison, run)
       rm(scheme, biome.comparison)
       
     }
     
     ### do Saatchi2011 if requested
     if(benchmarking.dataset@id == "Saatchi2011"){
-      
+      print("doing Saatchi")
       # average across the Saatchi years, the calculate the Tree total
       Saatchi.VegSpatial <- getVegSpatial(run, period = benchmarking.dataset@temporal.extent, benchmarking.dataset@veg.quant, forceReAveraging = FALSE)
       Saatchi.VegSpatial <- addVegTotals(Saatchi.VegSpatial, "Tree")
@@ -283,19 +282,17 @@ vegrun.list <- foreach(run = iter(vegrun.list), .verbose = FALSE) %dopar% {
                                                        quant = cmass.local)
       
       # save the comparison for plotting later - note that you cannot use just 'run' here, otherwise it won't be saved outside the loop
-      #vegrun.list[[run@id]] <- addToVegRun(saatchi.comparison, vegrun.list[[run@id]])
-      run <- addToVegRun(saatchi.comparison, run)
+      vegrun.list[[run@id]] <- addToVegRun(saatchi.comparison, vegrun.list[[run@id]])
       rm(Saatchi.VegSpatial, cmass.local, saatchi.comparison)
       
     } # if doing Saatchi2011 benchmark
     
     
   } # for each benchmark requested
-  
-  return(run)
+
+  #return(run) # from arrempt at foreach
   
 } # For each run
-
 
 
 ####################################################################################
@@ -321,7 +318,7 @@ for(benchmarking.dataset in benchmarking.datasets.list){
   
   ### If benchmark is a biome scheme
   if(benchmarking.dataset@id %in% names(supported.biome.schemes)) {
-    
+    print(benchmarking.dataset)
     compareManyRunsToBiomes(runs = vegrun.list, 
                             biome.dataset = benchmarking.dataset, 
                             analysis.label = analysis.label,
