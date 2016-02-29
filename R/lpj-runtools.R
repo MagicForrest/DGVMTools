@@ -35,18 +35,26 @@ openLPJOutputFile <- function(run,
                               verbose = FALSE,
                               gzip = FALSE){
   
-  was.gzipped <- FALSE
-  
   # Make the filename and check for the file, gunzip if necessary, fail if not present
   file.string = file.path(run@run.dir, paste(variable, ".out", sep=""))
   if(file.exists(file.string)){ 
     if(verbose) message(paste("Found and opening file", file.string, sep = " "))
   }
   else if(file.exists(paste(file.string, "gz", sep = "."))){
-    if(verbose) message(paste("File ", file.string, ", but gzipped file present so using that", sep = ""))
-    file.string <- paste(file.string, "gz", sep = ".") 
-    was.gzipped <- TRUE
+    if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
+    
+    
+    # BLARP: ugly fix because of ugly bug with readr and large gzipped files.  Maybe this can be removed some day
+    # if gzipped file is greater than 100 MB
+    if(file.info("/home/forrest/GuessRuns/SPITFIRE/v0.7.0/FireMIP/SF1/anpp.out.gz")$size/(1024*1024)){
+      system(paste("gunzip",  paste(file.string, "gz", sep = "."), sep = " "))
+      gzip = TRUE
+    }
+    else {
+      file.string <- paste(file.string, "gz", sep = ".") 
+    }
   }
+  
   else {
     stop(paste("File (or gzipped file) not found:", file.string))
   }
@@ -72,8 +80,8 @@ openLPJOutputFile <- function(run,
   
   
   # Gzip the file again if that was requested or if the 
-  if(gzip | was.gzipped){
-    if(verbose) message(paste("Gzipped file ", file.string, " again", sep = ""))
+  if(gzip){
+    if(verbose) message(paste("Gzipping file ", file.string, " again", sep = ""))
     system(paste("gzip",  file.string, sep = " "))
   }
   

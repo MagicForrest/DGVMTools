@@ -42,7 +42,7 @@ getPFTs <- function(input, PFT.data){
   input.class <- class(input)[1]
   if(input.class == "VegSpatial") suppressWarnings(input.names <- names(input@data))
   else if(input.class == "data.table" | input.class == "RasterLayer" | input.class == "RasterBrick" | input.class == "RasterStack") input.names <- names(input)
-  
+  else stop(paste("Can't get PFTs from object of class", input.class, sep = " "))
   
   PFTs.present <- list()
   for(colname in input.names){

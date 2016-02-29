@@ -182,7 +182,7 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
   setkey(this.TA.dt, Lon, Lat)
   
   return(new("VegSpatial",
-             id = paste(var.string, period@id, sep = "."),
+             id = paste(var.string, period@id, sep = "_"),
              data = this.TA.dt,
              temporal.extent = period,
              quant = quant,
@@ -285,16 +285,14 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   
   ###  If wSpatialPixelsDataFrame we can plot it
   if(this.class == "SpatialPixelsDataFrame"){ 
-    print("If error check here: promoteToRaster in lpj-runtools.R")
+    print("If error check here: promoteToRaster in veg-runtools.R")
     data.raster <- raster(data, layers)
   }
   ### If data.table or VegSpatial (which contains a data.table) 
   # could make this a little bit more efficient maybe...
   else if(this.class == "data.table" | this.class == "VegSpatial"){
-    
     if(this.class == "data.table") data.spdf <- .makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
     if(this.class == "VegSpatial") data.spdf <- .makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
-    
     if(length(layers) == 1){
       data.raster <- raster(data.spdf)
       rm(data.spdf)
@@ -304,7 +302,6 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
       data.raster <- subset(data.all.raster, layers) 
       rm(data.spdf, data.all.raster)   
     }
-    
   } 
   ###  If a single raster layer then we are done
   else if(this.class == "RasterLayer"){
@@ -323,6 +320,52 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   
   gc()
   return(data.raster)
+  
+}
+
+
+sanitiseNamesForRaster <- function(input){
+  
+  ###  Get class of the object we are dealing with
+  this.class = class(input)[1]
+  
+  
+  ###  If SpatialPixelsDataFrame 
+  if(this.class == "SpatialPixelsDataFrame"){ 
+    names(input) <- sub("-", ".", names(input))
+    return(input)
+  }
+  ### If data.table
+  else if(this.class == "data.table"){ 
+    input.copy <- copy(input)
+    setnames(input.copy, sub("-", ".", names(input.copy)))
+    return(input.copy)
+  }
+  ### If VegSpatial (which contains a data.table) 
+  else if(this.class == "VegSpatial"){
+    dt <- copy(input@data)
+    setnames(dt, sub("-", ".", names(dt)))
+    input@data <- dt
+    rm(dt)
+    gc()
+    return(input)
+  }
+  ### If "character"
+  else if(this.class == "character"){
+    input <- sub("-", ".", input)
+    return(input)
+  }
+  ###  If raster object already we are done
+  else if(this.class == "RasterLayer" | this.class == "RasterBrick" | this.class == "RasterStack"){
+    # Already a raster thing, donothing to do here
+  }
+  ### else error 
+  else{
+    # catch -proper exceptions later?
+    stop(paste("Trying to sanitise names object of type", class(input), ", which I don't know how to do.", sep = ""))
+  }
+  
+ 
   
 }
 
