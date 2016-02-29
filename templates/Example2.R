@@ -201,7 +201,7 @@ for(run in vegrun.list){
         if(this.VegQuantity@type == "PFT"){
           
           # Add fractions and plot
-          this.VegSpatial <- addVegFractions(this.VegSpatial, targets =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE)
+          this.VegSpatial <- addVegFractions(this.VegSpatial, targets =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), denominators = list("Total"))
           plotVegMaps(this.VegSpatial, targets = c("PFTs"), special = "fraction", special.string = "PFT")
           plotVegMaps(this.VegSpatial, targets = c("Lifeforms"), special = "fraction", special.string = "Lifeforms")
           plotVegMaps(this.VegSpatial, targets = c("Zones"), special = "fraction",  special.string = "ClimateZones")

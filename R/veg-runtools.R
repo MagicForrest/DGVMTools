@@ -182,7 +182,7 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
   setkey(this.TA.dt, Lon, Lat)
   
   return(new("VegSpatial",
-             id = paste(var.string, period@id),
+             id = paste(var.string, period@id, sep = "."),
              data = this.TA.dt,
              temporal.extent = period,
              quant = quant,
@@ -261,7 +261,7 @@ getVegTemporal <- function(run, var, spatial.extent = NULL, this.full = NULL, wr
   gc()
   
   return(new("VegTemporal",
-             id = paste(var.string, spatial.extent@id),
+             id = paste(var.string, spatial.extent@id, sep = "."),
              data = this.SA.dt,
              spatial.extent = spatial.extent,
              quant = quant,

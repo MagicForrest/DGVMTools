@@ -38,8 +38,8 @@ sep.char = ""
 
 getPFTs <- function(input, PFT.data){
   
+  # Allow for rasters, Veg Objects and data.tables
   input.class <- class(input)[1]
-  
   if(input.class == "VegSpatial") suppressWarnings(input.names <- names(input@data))
   else if(input.class == "data.table" | input.class == "RasterLayer" | input.class == "RasterBrick" | input.class == "RasterStack") input.names <- names(input)
   
@@ -63,12 +63,12 @@ expandTargets <- function(targets, data, PFT.data){
   
   # remove "Lon", "Lat" and "Year" if present
   for(remove.header.from.header in c("Lat", "Lon", "Year")){
-   if(remove.header.from.header %in% targets) targets <- targets[-which(targets == remove.header.from.header)]
+    if(remove.header.from.header %in% targets) targets <- targets[-which(targets == remove.header.from.header)]
   }
   
   # get PFTs
   all.PFTs <- getPFTs(data, PFT.data)
-
+  
   # expand "all"
   if("all" %in% tolower(targets)) targets <- c("pfts", "lifeforms", "leafforms", "zones", "phenologies")
   
@@ -165,7 +165,7 @@ expandTargets <- function(targets, data, PFT.data){
 
 
 combineShadeTolerance <- function(input){
-   
+  
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
   PFT.data <- input@run@pft.set
@@ -210,7 +210,7 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
   PFT.data <- input@run@pft.set
-   
+  
   # auxiliary function to be apply'd
   domPFT <- function(x){return(names(x)[which.max(x)])  }  
   
@@ -268,13 +268,13 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
 addBiomes <-function(input, scheme = Smith2014.scheme){
   
   message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
-    
+  
   
   # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
   if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
   
   # If GDD5 required for classification
-    if(scheme@needGDD5) {
+  if(scheme@needGDD5) {
     # get gdd5
     gdd5 <- getVegSpatial(input@run, input@temporal.extent, "gdd5", forceReAveraging = FALSE)
     dt <- input@data
@@ -282,17 +282,17 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
     dt <- dt[dt.gdd5]
     input@data <- dt
   }
-
+  
   # Get the dominant tree and dominant woody PFTs
   input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
-
+  
   # Get the totals required
   input <-addVegTotals(input, targets = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
-
+  
   # Get the fractions required
-  input <- addVegFractions(input, targets = scheme@fraction.of.total, of.total = TRUE,   of.tree = FALSE, of.woody = FALSE)
-  input <- addVegFractions(input, targets = scheme@fraction.of.tree,  of.total = FALSE,  of.tree = TRUE, of.woody = FALSE)
-  input <- addVegFractions(input, targets = scheme@fraction.of.woody, of.total = FALSE,  of.tree = FALSE, of.woody = TRUE)
+  input <- addVegFractions(input, targets = scheme@fraction.of.total, denominators = list("Total"))
+  input <- addVegFractions(input, targets = scheme@fraction.of.tree,  denominators = list("Tree"))
+  input <- addVegFractions(input, targets = scheme@fraction.of.woody, denominators = list("Woody"))
   
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
@@ -310,11 +310,28 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
 ###################################################################################
 ##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, ETC...)
 
-addVegTotals <- function(input, targets = c("lifeforms")){
+addVegTotals <- function(input, targets = c("lifeforms"), PFT.data = NULL){
   
-  # We get a warning about a shallow copy here, suppress it
-  suppressWarnings(dt <- input@data)
-  PFT.data <- input@run@pft.set
+  ### Here allow the possibility to handle both VegObjects and data.tables directly (for internal calculations)
+  # MF: Maybe also handle rasters one day?
+  class.input <- class(input)[1]
+
+  # if it is a Veg 
+  if(class.input == "VegSpatial" | class.input == "VegTemporal" |  class.input == "VegObject") {
+   # We get a warning about a shallow copy here, suppress it
+    suppressWarnings(dt <- input@data)
+    PFT.data <- input@run@pft.set
+  }
+  # Else assume it is a data.table
+  else{
+    suppressWarnings(dt <- input)
+  }
+  
+  # fail if no PFT.data provided with a data.table
+  if(is.null(PFT.data )) 
+      stop("No PFT data specified for an internal call to addVegTotals on a data.table.  Please modify the call to include PFT.data ")
+  
+  
   
   # get PFTs present
   all.PFTs <- getPFTs(dt, PFT.data)
@@ -330,7 +347,7 @@ addVegTotals <- function(input, targets = c("lifeforms")){
   
   # loop through PFTs and add the PFT to the appropriate target (ie add TeBS to the "Tree" column)
   for(PFT in all.PFTs){
-
+    
     # lifeform
     if(PFT@lifeform %in% targets) { dt[, PFT@lifeform := rowSums(.SD), .SDcols = c(PFT@name , PFT@lifeform)] }
     # zone
@@ -344,9 +361,13 @@ addVegTotals <- function(input, targets = c("lifeforms")){
     
   }
   
-  input@data <- dt
-  
-  return(input)
+  if(class.input == "VegSpatial" | class.input == "VegTemporal" |  class.input == "VegObject") {
+   input@data <- dt
+   return(input)
+  }
+  else {
+    return(dt)
+  }
   
   
   
@@ -364,40 +385,43 @@ addVegTotals <- function(input, targets = c("lifeforms")){
 ##### MF TODO:  Also maybe take a look at the horrible "eval(quote(paste(" syntax below
 ##### MF TODO:  Also maybe simple create each target using getVegTotals() if it doesn't exist
 
-addVegFractions <- function(input, targets = c("pfts", "lifeforms"), of.total = TRUE,  of.tree = FALSE, of.woody = FALSE){
+addVegFractions <- function(input, targets = list("pfts", "lifeforms"), denominators = list("Total")){
   
   
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
   PFT.data <- input@run@pft.set
   
-  # First, make Tree/Woody totals if needed and not available
-  if(of.woody && !(paste("Tree", sep = sep.char) %in% names(dt))){
-    dt <- addLifeformTotals(dt, PFT.data, lifeform = "Tree")
-  }
-  if(of.woody && !(paste("Woody", sep = sep.char) %in% names(dt))){
-    dt <- addLifeformTotals(dt, PFT.data, lifeform = "Woody")
+  # First, expand denominator targets and make what aren't available
+  denominators <- expandTargets(denominators, dt, PFT.data)
+  for(denom in denominators) {
+    if(!(denom %in% names(dt))) {
+      dt <- addVegTotals(dt, denom, PFT.data)
+    }
   }
   
-  # Second, expand targets
+ 
+  # Second, expand numerator targets and make what aren't available
   targets <- expandTargets(targets, dt, PFT.data)
-  
-    
-  for(target in targets){
-    
-    # make fractions of total/tree/woody
-    if(of.total) {
-      suppressWarnings(dt[, eval(quote(paste(target, "Fraction", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%Total])
+  for(target in targets) {
+    if(!(target %in% names(dt))) {
+      dt <- addVegTotals(dt, target, PFT.data)
     }
-    if(of.tree) {
-      suppressWarnings(dt[, eval(quote(paste(target, "FractionofTree", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%get(paste("Tree", sep = sep.char))])
-    }
-    if(of.woody) {
-      suppressWarnings(dt[, eval(quote(paste(target, "FractionofWoody", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%get(paste("Woody", sep = sep.char))])
-    }
-    
   }
   
+  
+  # Finally loop through all denominators and numerators and calculate the fractions
+  for(denominator in denominators) {
+    for(target in targets){
+      
+      if(denominator == "Total") 
+        suppressWarnings(dt[, eval(quote(paste(target, "Fraction", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%Total])
+      else
+        suppressWarnings(dt[, eval(quote(paste(target, "Fraction", "Of", denominator, sep = sep.char))) := get(paste(target, sep = sep.char))%/0%get(paste(denominator, sep = sep.char))])
+        
+    }
+  }
+    
   input@data <- dt
   
   return(input)
@@ -447,7 +471,7 @@ addSeasonal <- function(input, seasons = c("DJF", "MAM", "JJA", "SON", "Annual")
   } 
   
   input@data <- dt
- 
+  
   return(input)
 }
 
