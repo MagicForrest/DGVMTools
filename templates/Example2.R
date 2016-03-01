@@ -143,8 +143,8 @@ for(run in vegrun.list){
   
   
   ### if required to process all files, get a list of all the .out files present
-  if(length(var.list) == 1 && tolower(var.list) == "all"){var.list <- listAllOutputFiles(run@run.dir)}
-  if(length(detailed.var.list) == 1 &&  tolower(detailed.var.list) == "all"){detail.var.list <- listAllOutputFiles(run@run.dir)}
+  if(length(var.list) == 1 && tolower(var.list) == "all"){var.list <- listAllLPJOutput(run@run.dir)}
+  if(length(detailed.var.list) == 1 &&  tolower(detailed.var.list) == "all"){detail.var.list <- listAllLPJOutput(run@run.dir)}
   
   
   ###  FOR EACH VARIABLE - here might be an appropriate place to use parallelisation after for standard post-processing

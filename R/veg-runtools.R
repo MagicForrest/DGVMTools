@@ -143,7 +143,11 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
     # otherwise, open the full .out file read it as a data table, time average it and save to disk
     else {
       if (is.null(this.full)) {
-        if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
+        if(verbose){
+          if(forceReAveraging & file.exists(paste(TA.filename))) message(paste("File",  TA.filename, "exists but forecReAveraging selected so reading ther full output again", sep = " "))
+          else message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
+        }
+          
         this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
         if(verbose) {
           message("Head of full .out file (after offsets):")
@@ -430,7 +434,8 @@ doTimeAverage <- function(input.dt,
   
   # do the temporal averaging between first.year and last.year 
   output.dt <- subset(input.dt, Year >= period@start & Year <= period@end)[,lapply(.SD, mean), by=list(Lat, Lon)]
-  # remove the Year 'cos it dun' make so much sense
+  
+  # remove the Year 'cos it dun' make so much sense no mo'
   output.dt[,Year:=NULL]
   
   
@@ -491,7 +496,7 @@ doSpaceAverage <- function(input.dt,
     output.dt <- input.dt[,lapply(.SD, mean), by=list(Year)]
   }
   
-  # remove the Lon and Lat columns 'cos they dun' make so much sense
+  # remove the Lon and Lat columns 'cos they dun' make so much sense no mo'
   output.dt[,Lon:=NULL]
   output.dt[,Lat:=NULL]
   
