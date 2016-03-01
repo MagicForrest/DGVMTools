@@ -143,8 +143,16 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
     # otherwise, open the full .out file read it as a data table, time average it and save to disk
     else {
       if (is.null(this.full)) {
-        if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
+        if(verbose){
+          if(forceReAveraging & file.exists(paste(TA.filename))) message(paste("File",  TA.filename, "exists but forecReAveraging selected so reading ther full output again", sep = " "))
+          else message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
+        }
+          
         this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
+        if(verbose) {
+          message("Head of full .out file (after offsets):")
+          print(head(this.full))
+        }
       }
       else{
         if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that.", sep = ""))
@@ -152,6 +160,12 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
       
       # do temporal averaging
       this.TA.dt <- .doTimeAverage.cmpd(this.full, period, verbose)
+      if(verbose) {
+        message("Head of time averaged data.table:")
+        print(head(this.TA.dt))
+      }
+      
+      
       if(write) {
         if(verbose) {message("Saving as a table...")}
         write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
@@ -172,7 +186,7 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
   setkey(this.TA.dt, Lon, Lat)
   
   return(new("VegSpatial",
-             id = paste(var.string, period@id),
+             id = paste(var.string, period@id, sep = "_"),
              data = this.TA.dt,
              temporal.extent = period,
              quant = quant,
@@ -251,7 +265,7 @@ getVegTemporal <- function(run, var, spatial.extent = NULL, this.full = NULL, wr
   gc()
   
   return(new("VegTemporal",
-             id = paste(var.string, spatial.extent@id),
+             id = paste(var.string, spatial.extent@id, sep = "."),
              data = this.SA.dt,
              spatial.extent = spatial.extent,
              quant = quant,
@@ -275,16 +289,14 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   
   ###  If wSpatialPixelsDataFrame we can plot it
   if(this.class == "SpatialPixelsDataFrame"){ 
-    print("If error check here: promoteToRaster in lpj-runtools.R")
+    print("If error check here: promoteToRaster in veg-runtools.R")
     data.raster <- raster(data, layers)
   }
   ### If data.table or VegSpatial (which contains a data.table) 
   # could make this a little bit more efficient maybe...
   else if(this.class == "data.table" | this.class == "VegSpatial"){
-    
     if(this.class == "data.table") data.spdf <- .makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
     if(this.class == "VegSpatial") data.spdf <- .makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
-    
     if(length(layers) == 1){
       data.raster <- raster(data.spdf)
       rm(data.spdf)
@@ -294,7 +306,6 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
       data.raster <- subset(data.all.raster, layers) 
       rm(data.spdf, data.all.raster)   
     }
-    
   } 
   ###  If a single raster layer then we are done
   else if(this.class == "RasterLayer"){
@@ -313,6 +324,52 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   
   gc()
   return(data.raster)
+  
+}
+
+
+sanitiseNamesForRaster <- function(input){
+  
+  ###  Get class of the object we are dealing with
+  this.class = class(input)[1]
+  
+  
+  ###  If SpatialPixelsDataFrame 
+  if(this.class == "SpatialPixelsDataFrame"){ 
+    names(input) <- sub("-", ".", names(input))
+    return(input)
+  }
+  ### If data.table
+  else if(this.class == "data.table"){ 
+    input.copy <- copy(input)
+    setnames(input.copy, sub("-", ".", names(input.copy)))
+    return(input.copy)
+  }
+  ### If VegSpatial (which contains a data.table) 
+  else if(this.class == "VegSpatial"){
+    dt <- copy(input@data)
+    setnames(dt, sub("-", ".", names(dt)))
+    input@data <- dt
+    rm(dt)
+    gc()
+    return(input)
+  }
+  ### If "character"
+  else if(this.class == "character"){
+    input <- sub("-", ".", input)
+    return(input)
+  }
+  ###  If raster object already we are done
+  else if(this.class == "RasterLayer" | this.class == "RasterBrick" | this.class == "RasterStack"){
+    # Already a raster thing, donothing to do here
+  }
+  ### else error 
+  else{
+    # catch -proper exceptions later?
+    stop(paste("Trying to sanitise names object of type", class(input), ", which I don't know how to do.", sep = ""))
+  }
+  
+ 
   
 }
 
@@ -377,7 +434,8 @@ doTimeAverage <- function(input.dt,
   
   # do the temporal averaging between first.year and last.year 
   output.dt <- subset(input.dt, Year >= period@start & Year <= period@end)[,lapply(.SD, mean), by=list(Lat, Lon)]
-  # remove the Year 'cos it dun' make so much sense
+  
+  # remove the Year 'cos it dun' make so much sense no mo'
   output.dt[,Year:=NULL]
   
   
@@ -438,7 +496,7 @@ doSpaceAverage <- function(input.dt,
     output.dt <- input.dt[,lapply(.SD, mean), by=list(Year)]
   }
   
-  # remove the Lon and Lat columns 'cos they dun' make so much sense
+  # remove the Lon and Lat columns 'cos they dun' make so much sense no mo'
   output.dt[,Lon:=NULL]
   output.dt[,Lat:=NULL]
   

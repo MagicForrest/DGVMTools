@@ -65,25 +65,25 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         ...){
   
  
-  # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
-  if(class(data) == "VegSpatial"){
+  ### IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
+  if(class(data)[1] == "VegSpatial"){
     run <- data@run
     period <- data@temporal.extent
     PFT.set <- run@pft.set
     if(is.null(quant)) quant <- data@quant  
   }
     
-  # TOLERANCE - for when making grid
+  ### TOLERANCE - for when making grid
   if(is.null(run)) { tolerance <- 0.02 }
   else {tolerance <- run@tolerance}  
 
-  # DIRECTORY TO SAVE PLOTS
+  ### DIRECTORY TO SAVE PLOTS
   if(is.null(plot.dir)){
     if(!is.null(run)){ plot.dir <- run@run.dir} 
     else { plot.dir = "." }
   }
   
-  # QUANTITY AND COLS
+  ### QUANTITY AND COLS
   if(is.null(quant)){ quant = lpj.quantities[["generic"]]}
   else if(class(quant) == "character"){ quant = lpj.quantities[[quant]] }
   else if((class(quant) != "VegQuant")){
@@ -91,7 +91,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     quant = lpj.quantities[["generic"]]
   }
   
-  # SPECIAL
+  ### SPECIAL
   if(!is.null(special)){
     if(tolower(special) == "difference" | tolower(special) == "diff"){
       minmax <- max(quant@cuts) - min(quant@cuts)
@@ -127,14 +127,13 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
   }
   
-  # OVERRIDE (CUTS AND COLOUR SCHEME) 
+  ### OVERRIDE (CUTS AND COLOUR SCHEME) 
   if(!is.null(override.cols)) {quant@colours <- override.cols}
   if(!is.null(override.cuts)) {quant@cuts <- override.cuts}
   
-  
-  # parse layer names and promote to raster for plotting
+  ### EXPAND TARGETS
   if(is.null(targets)) {
-    if(class(data) == "VegSpatial") targets <- names(data@data)
+    if(class(data)[1] == "VegSpatial") targets <- names(data@data)
     else targets <- names(data)
   }
   if(expand.targets) {
@@ -143,13 +142,19 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       if(tolower(special) == "fraction" | tolower(special) == "frac") targets <- paste(targets, "Fraction", sep = sep.char)
    }
   }
- 
-  data.toplot <- promoteToRaster(data, targets, tolerance)
-  
-  # PLOT LABELS (if no titles are provided use the layer names)
+   
+  ### PLOT LABELS (if no titles are provided use the layer names)
   if(is.null(plot.labels)){
-    plot.labels <- names(data.toplot) 
-    if(useLongnames) {
+    plot.labels <- targets 
+  }
+    
+  # PROMOTE TO RASTER AND SANITISE NAMES
+  targets <- sanitiseNamesForRaster(targets) 
+  data.toplot <- sanitiseNamesForRaster(data) 
+  data.toplot <- promoteToRaster(data.toplot, targets, tolerance)
+  
+  # LONGNAMES - for PFTs
+   if(useLongnames) {
       plot.labels <- list()
       for(layer.name in names(data.toplot)){
         # look up PFT
@@ -160,7 +165,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       }
       plot.labels <- unlist(plot.labels)
     }
-  }
+  
   
   # LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field
   if(!is.null(run)){
@@ -199,7 +204,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   
   # SUMMARY/INDIVIDUAL
-  # If only one layer has been selected, don't plot as summary, plot it as individual, regardless of setting
+  # If only one layer has been selected, don't plot as summary, plot it as individual, regardless of settings
   if(nlayers(data.toplot) == 1){
     doSummary <- FALSE
     doIndividual <- TRUE
@@ -265,8 +270,14 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         this.file.name <- makeFileName(this.id, file.name = NULL, run = run, period = period)
         
         # PLOT TITLE
-        if(!is.null(plot.labels[which(layer == targets)])) {plot.title <- plot.labels[which(layer == targets)]}
-        else { plot.title <- makePlotTitle(paste(quant@full.string, special.string, layer, sep = " "), plot.title, run, period) }
+        if(length(targets) == 1){
+          if(is.null(summary.title)) plot.title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), summary.title, run, period)
+          else plot.title <- summary.title
+        }
+        else {
+          if(!is.null(plot.labels[which(layer == targets)])) {plot.title <- plot.labels[which(layer == targets)]}
+          else { plot.title <- makePlotTitle(paste(quant@full.string, special.string, layer, sep = " "), plot.title, run, period) }
+        }
         
         Cairo(file = file.path(plot.dir, this.file.name), 
               dpi = Cairo.dpi, 
@@ -560,6 +571,9 @@ plotFireRT <- function(data, # can be a data.table, SpatialPixelsDataFrame or a 
     dev.off()
     
   }
+  
+  rm(data.toplot)
+  gc()
   
 }
 

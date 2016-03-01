@@ -64,7 +64,7 @@ plotVegMaps(lai.reference.period,
 
 ### FRACTIONS
 
-# calculate the tree and grass fractions
+# calculate the tree and grass fractions (if no denominator specified, Total is assumed)
 lai.reference.period <- addVegFractions(lai.reference.period, targets = "lifeforms")
 
 # Plot the tree and grass fraction
@@ -75,11 +75,11 @@ plotVegMaps(lai.reference.period,
 
 
 # calculate the TeBS fraction of trees
-lai.reference.period <- addVegFractions(lai.reference.period, targets = c("TeBS"), of.total = FALSE, of.tree = TRUE)
+lai.reference.period <- addVegFractions(lai.reference.period, targets = c("TeBS"), denominators = list("Tree"))
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            targets = c("TeBSFractionofTree"),
+            targets = c("TeBSFractionOfTree"),
             expand.targets = FALSE,
             special = "fraction")
 

@@ -36,25 +36,25 @@
 Smith2014BiomeRules <- function(lai){
   
   # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionofTree']]) > 0.6 &  lai[['DominantTree']] == "TrBE") {return(1)}
+  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['DominantTree']] == "TrBE") {return(1)}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionofTree']]) > 0.6 | as.numeric(lai[['TrBRFractionofTree']])) & (lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(2)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(2)}
   
   # BIOME 3 - Tropical Seasonal Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionofTree']] )> 0.5 &  (lai[['DominantTree']] == "TrBE" | lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(3)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['DominantTree']] == "TrBE" | lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(3)}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionofTree']] )> 0.5 & (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']] )> 0.5 & (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
   
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  as.numeric(lai[['BorealFractionofTree']] )> 0.5 & lai[['DominantTree']] == "BNS") {return(5)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 &  as.numeric(lai[['BorealFractionOfTree']] )> 0.5 & lai[['DominantTree']] == "BNS") {return(5)}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionofTree']]) > 0.5 | as.numeric(lai[['TeBSFractionofTree']]) > 0.5) & lai[['DominantTree']] == "TeBE") {return(6)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['DominantTree']] == "TeBE") {return(6)}
   
   # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionofTree']]) > 0.5 | as.numeric(lai[['TeBSFractionofTree']]) > 0.5) & lai[['DominantTree']] == "TeBS") {return(7)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['DominantTree']] == "TeBS") {return(7)}
   
   # BIOME 8 - Temperate/Boreal Mixed Forest
   else if(as.numeric(lai[['Tree']]) > 2.5) {return(8) }
@@ -174,7 +174,7 @@ Hickler2012Rules <- function(lai){
   
   
   ###### TEMPERATE BIOMES (temperate woody fraction > 80%)
-  if(as.numeric(lai[['TemperateFractionofWoody']]) > 0.8){
+  if(as.numeric(lai[['TemperateFractionOfWoody']]) > 0.8){
     
     ###### FORESTS (if tree LAI > 2.0)
     if(as.numeric(lai[['Tree']]) > 2.0){
@@ -189,7 +189,7 @@ Hickler2012Rules <- function(lai){
   
   
   ###### BOREAL BIOMES (boreal woody fraction > 80%)
-  if(as.numeric(lai[['BorealFractionofWoody']]) > 0.8){
+  if(as.numeric(lai[['BorealFractionOfWoody']]) > 0.8){
     
     # BIOME 4 - Boreal/alpine conifer forest
     if(as.numeric(lai[['Tree']]) > 2.0) {return(4)}
@@ -200,7 +200,7 @@ Hickler2012Rules <- function(lai){
   
   
   ###### MEDITERRANEAN BIOMES (mediterranean woody fraction > 80%)
-  if(as.numeric(lai[['MediterraneanFractionofWoody']]) > 0.8){
+  if(as.numeric(lai[['MediterraneanFractionOfWoody']]) > 0.8){
     
     # BIOME 9 - Mediterranean sclerophyllous forest/woodland
     if(as.numeric(lai[['Tree']]) > 1.5) {return(9)}

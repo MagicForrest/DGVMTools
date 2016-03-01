@@ -43,7 +43,7 @@ C4G <- new("PFT",
            longname = "Tropical Grass",
            lifeform = "Grass",
            leafform = "Broadleaved",
-           phenology = "Deciduous",
+           phenology = "GrassPhenology",
            zone = "NA",
            colour = "sienna2",
            combine = "no"

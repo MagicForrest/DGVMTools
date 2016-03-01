@@ -92,7 +92,7 @@ plotVegMaps(lai.reference.period,
 
 ### FRACTIONS
 
-# calculate the tree and grass fractions
+# calculate the tree and grass fractions (if no denominators specified, "Total" is assumed)
 lai.reference.period <- addVegFractions(lai.reference.period, targets = "lifeforms")
 
 # Plot the tree and grass fraction
