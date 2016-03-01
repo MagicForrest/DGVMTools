@@ -274,7 +274,7 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
   if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
   
   # If GDD5 required for classification
-    if(scheme@needGDD5) {
+    if(scheme@needGDD5 && !any(names(dt)=="gdd5")) {
     # get gdd5
     gdd5 <- getVegSpatial(input@run, input@temporal.extent, "gdd5", forceReAveraging = FALSE)
     dt <- input@data
