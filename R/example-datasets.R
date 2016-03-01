@@ -5,6 +5,7 @@
 
 readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
+  Lon = Lat = Year = NULL
   
   original.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.out", package = "RVCTools")
   HD.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.HD.nc", package = "RVCTools")
@@ -13,19 +14,19 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   # If original is required, open the origina text file
   if(resolution == "original"){
     # get the number of columns which is 
-    ncols <- length(names(read.table(file.string, header=TRUE, dec=".",  colClasses="numeric", comment.char="", nrows = 1)))
+    ncols <- length(names(read.table(original.data, header=TRUE, dec=".",  colClasses="numeric", comment.char="", nrows = 1)))
     
     # read using fread function from data.table but with the white spaces handled correctly using an awk command
     # because at time of writing fread does not handles multiple whitespaces as separators
-    PNV.dt <- awkFread(file.string, colNums = c(1:ncols), header=T)
+    PNV.dt <- awkFread(original.data, colNums = c(1:ncols), header=T)
     
     # divide Lon and Lat by 10, offset and London centre
     PNV.dt[,Lon := (Lon/10) + 0.25]
     PNV.dt[,Lat := (Lat/10) + 0.25]
-    PNV.dt[, Lon := vapply(PNV.dt[,Lon], 1, FUN = LondonCentre)]    
+    PNV.dt[, Lon := vapply(PNV.dt[,Lon], 1, FUN = .LondonCentre)]    
     
     # Make into a raster
-    PNV.spdf <- makeSPDFfromDT(PNV.dt, tolerance = 0.00001)
+    PNV.spdf <- .makeSPDFfromDT(PNV.dt, tolerance = 0.00001)
     PNV.raster <- raster(PNV.spdf, "Biome")
   }
   # Return half degree data from netCDF file (probably slightly faster)

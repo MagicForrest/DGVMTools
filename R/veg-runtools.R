@@ -120,6 +120,9 @@ addToVegRun <- function(object, run, id = NULL){
 
 getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, adgvm.scheme = 1){
   
+  # To avoid annoying NOTES when R CMD check-ing
+  Lon = Lat = Year = NULL  
+  
   if(class(var) == "character") {
     quant <- lookupVegQuantity(var)
     var.string <- var
@@ -200,6 +203,9 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
 
 
 getVegTemporal <- function(run, var, spatial.extent = NULL, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, area.weighted=TRUE, adgvm.scheme = 1){
+  
+  # To avoid annoying NOTES when R CMD check-ing
+  Lon = Lat = Year = NULL
   
   if(class(var) == "character") {
     quant <- lookupVegQuantity(var)
@@ -319,7 +325,7 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   ### else error 
   else{
     # catch -proper exceptions later?
-    stop(paste("Trying to promote object of type", class(data), "to Raster, which I don't know how to do.", sep = ""))
+    stop(paste("Trying to promote object of type", class(data), "to Raster, which I don't know how to do.", sep = " "))
   }
   
   gc()
@@ -362,6 +368,7 @@ sanitiseNamesForRaster <- function(input){
   ###  If raster object already we are done
   else if(this.class == "RasterLayer" | this.class == "RasterBrick" | this.class == "RasterStack"){
     # Already a raster thing, donothing to do here
+    return(input)
   }
   ### else error 
   else{
@@ -463,7 +470,11 @@ doTimeAverage <- function(input.dt,
 .doTimeAverage.cmpd <- cmpfun(doTimeAverage)
 
 
-selectYears <- function(input.dt, temporal.extent){
+
+# MF: Function currently not used
+.selectYears <- function(input.dt, temporal.extent){
+  
+  Year = NULL
   
   output.dt <- subset(input.dt, Year >= temporal.extent@start & Year <= temporal.extent@end)
   

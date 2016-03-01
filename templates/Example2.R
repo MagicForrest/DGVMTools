@@ -61,7 +61,7 @@ t1 <- Sys.time()
 analysis.label <- "Example2"                    
 
 ### Plot directory for run comparison plots (create it if it doesn't exist)
-plot.dir <- "/home/forrest/RVCExample2Plots"
+plot.dir <- "/home/forrest/RVCToolsExamples/Example2/Plots"
 dir.create(plot.dir, showWarnings = FALSE) 
 
 ### Time spans and spatials extents over which to average t
@@ -97,9 +97,9 @@ verbose <- TRUE
 
 vegrun.list <- list()
 
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/data/forrest/GuessRuns/SPITFIRE/v0.7.0/CRUNCEP_OFM_PB-0.2_CB-0.05_HIP-1.0_NoShrubs_res.mult.5",
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example2/Run1",
                                                          id = "LPJ-GUESS-SPITFIRE-Run1",
-                                                         description= "LPJ-GUESS-SPITFIRE Example Run 1",
+                                                         description= "SPITFIRE Run 1",
                                                          pft.set = global.PFTs,
                                                          model = "LPJ-GUESS-SPITFIRE",
                                                          driving.data = "CRUNCEP",
@@ -113,9 +113,9 @@ vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/data/forres
                                                          line.type = 1
 )
 
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/data/forrest/GuessRuns/SPITFIRE/v0.7.0/CRUNCEP_NFM_PB-1_CB-0_HIP-3.0_NoShrubs_res.mult.5",
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example2/Run2",
                                                          id = "LPJ-GUESS-SPITFIRE-Run2",
-                                                         description= "LPJ-GUESS-SPITFIRE Example Run 2",
+                                                         description= "SPITFIRE Run 2",
                                                          pft.set = global.PFTs,
                                                          model = "LPJ-GUESS-SPITFIRE",
                                                          driving.data = "CRUNCEP",
@@ -249,10 +249,10 @@ for(run in vegrun.list){
   
   # now do each benchmark for the run
   for(benchmarking.dataset in benchmarking.datasets.list){
-    print(benchmarking.dataset@id)
+    
     ### Do the biome classifications and comparisons
     if(benchmarking.dataset@id %in% names(supported.biome.schemes)) {
-      print("doing biomes")
+      
       # get biome scheme and give message
       scheme <- supported.biome.schemes[[benchmarking.dataset@id]]
       if(verbose) message(paste("Doing ", scheme@name,  " Biome Classification"))
@@ -267,7 +267,7 @@ for(run in vegrun.list){
     
     ### do Saatchi2011 if requested
     if(benchmarking.dataset@id == "Saatchi2011"){
-      print("doing Saatchi")
+
       # average across the Saatchi years, the calculate the Tree total
       Saatchi.VegSpatial <- getVegSpatial(run, period = benchmarking.dataset@temporal.extent, benchmarking.dataset@veg.quant, forceReAveraging = FALSE)
       Saatchi.VegSpatial <- addVegTotals(Saatchi.VegSpatial, "Tree")
@@ -318,7 +318,7 @@ for(benchmarking.dataset in benchmarking.datasets.list){
   
   ### If benchmark is a biome scheme
   if(benchmarking.dataset@id %in% names(supported.biome.schemes)) {
-    print(benchmarking.dataset)
+
     compareManyRunsToBiomes(runs = vegrun.list, 
                             biome.dataset = benchmarking.dataset, 
                             analysis.label = analysis.label,

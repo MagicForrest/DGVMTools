@@ -111,6 +111,8 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
 
 cropRVC <- function(input, extent){
   
+  Lat = Lon = NULL
+  
   input.class <- class(input)[1]
   extent.class <- class(extent)[1]
   

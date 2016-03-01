@@ -24,8 +24,7 @@ Depends:
     rgeos,
     compiler,
     ggplot2,
-    Cairo,
-    readr
+    Cairo
 Suggests:
     zoo,
     mgcv,
