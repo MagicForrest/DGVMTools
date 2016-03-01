@@ -55,6 +55,7 @@ compareTwoRastersStats <- function(data.raster, model.raster){
   
   # difference raster
   diff <- model.raster - data.raster
+  names(diff) <- "Model.minus.Data"
   
   # calculated mean, SD, MSE, RMSE, R^2, Pearson correlation etc
   mean.diff <- cellStats(diff, stat= mean , na.rm=TRUE, asSample=FALSE)
@@ -98,10 +99,11 @@ compareRunToSpatialDataset <- function(dataset,
                                        quant = NULL, 
                                        ignore.raster = NULL,
                                        correction.raster = NULL,
+                                       tolerance = NULL,
                                        ...){
   
   # PROMOTE MODEL TO RASTER FOR PROCESSING
-  model.raster <- promoteToRaster(vegvar, layer, run@tolerance)
+  model.raster <- promoteToRaster(vegvar, layer, vegvar@run@tolerance)
   
   # PREPARE CUTS AND HISTO PLOT RANGE (if not specificed)
   if(is.null(diff.cuts)) {
@@ -137,7 +139,6 @@ compareRunToSpatialDataset <- function(dataset,
   # calculate comparison
   comparison.results <- compareTwoRastersStats(data.raster, model.raster)
   
-  
   ##### DIFFERENCE MAPS
   plotVegMaps(comparison.results@diff.raster,
               quant = quant, 
@@ -151,7 +152,6 @@ compareRunToSpatialDataset <- function(dataset,
               special = "diff",
               ...)
   
-  
   ##### ABSOLUTE MAPS
   plotVegMaps(stack(model.raster, data.raster),
               targets = c(names(model.raster), names(data.raster)),
@@ -163,9 +163,8 @@ compareRunToSpatialDataset <- function(dataset,
               summary.file.name = paste(quant@id, "comp", dataset@id, "2-up", sep = "."),
               special.string = "Corrected",
               maxpixels = 1000000,
-              plot.labels = c(run@description, dataset@name),
+              plot.labels = c(vegvar@run@description, dataset@name),
               ...)
-  
   
   
   ##### HISTOS
@@ -335,7 +334,7 @@ compareManyRunsToData <- function(runs,
 
 
 
-doKappa <- function(stack, labels = NULL, verbose = TRUE){
+doKappa <- function(stack, scheme, labels = NULL, verbose = TRUE){
   
   # get the unique classes and put them in a vector with no missing values
   unique.classes <- union(unique(subset(stack,1)),unique(subset(stack,2)))
@@ -431,7 +430,7 @@ compareBiomes <- function(run, variable, period, scheme, plot = TRUE){
   comparison.stack <- stack(intersectionRVC(promoteToRaster(this.VegSpatial, scheme@id, run@tolerance), PNV.biomes))
   
   # calculate Kappa statistics (and possibily other similarity/dissimilarity metrics)
-  Kappa.comparison <- doKappa(comparison.stack, labels = scheme@strings, verbose = TRUE)
+  Kappa.comparison <- doKappa(comparison.stack, scheme = scheme, labels = scheme@strings, verbose = TRUE)
   
   
   # plot biomes if requested

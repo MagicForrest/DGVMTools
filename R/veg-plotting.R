@@ -150,7 +150,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
   # PROMOTE TO RASTER AND SANITISE NAMES
   targets <- sanitiseNamesForRaster(targets) 
-  data.toplot <- sanitiseNamesForRaster(data) 
+  data.toplot <- sanitiseNamesForRaster(data)
   data.toplot <- promoteToRaster(data.toplot, targets, tolerance)
   
   # LONGNAMES - for PFTs
@@ -676,7 +676,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
                main=list(label=this.main.title, cex = 3),
                par.strip.text = list(lines = 1.0, cex = 1.5),
                sp.layout = layout.objs,
-               names.attr = plot.labels,
+               #names.attr = plot.labels,
                colorkey = list(col = dom.PFT.colourlist, 
                                space = "right",
                                labels = list(labels = names(dom.PFT.colourlist),

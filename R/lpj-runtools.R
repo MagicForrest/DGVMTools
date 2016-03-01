@@ -47,6 +47,9 @@ openLPJOutputFile <- function(run,
                               variable,
                               verbose = FALSE){
   
+  # To avoid annoying NOTES when R CMD check-ing
+  Lon = Lat = Year = NULL
+  
   # Make the filename and check for the file, gunzip if necessary, fail if not present
   file.string = file.path(run@run.dir, paste(variable, ".out", sep=""))
   if(file.exists(file.string)){ 

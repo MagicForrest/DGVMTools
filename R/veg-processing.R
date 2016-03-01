@@ -207,6 +207,9 @@ combineShadeTolerance <- function(input){
 
 addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FALSE){
   
+  # To avoid NOTES when checking
+  Dominant = NULL
+  
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
   PFT.data <- input@run@pft.set
@@ -232,7 +235,7 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
   if(do.all) {
     PFTs.present <- unlist(PFTs.present)
     PFTs.present <- PFTs.present[-which(PFTs.present == "Total")]
-    suppressWarnings(dt[, Dominant := apply(dt[,PFTs.present,with=FALSE],FUN=domPFT,MAR=1)])
+    suppressWarnings(dt[, Dominant := apply(dt[,PFTs.present,with=FALSE],FUN=domPFT,MARGIN=1)])
     dt[Total < 0.2, eval(quote(paste("Dominant"))) := "Barren"]
     dt[, eval(quote(paste("Dominant"))) := as.factor(get("Dominant"))]
     
@@ -240,14 +243,14 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
   
   if(do.tree) {
     tree.PFTs.present <- unlist(tree.PFTs.present)
-    suppressWarnings(dt[, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := apply(dt[,tree.PFTs.present,with=FALSE],FUN=domPFT,MAR=1)])
+    suppressWarnings(dt[, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := apply(dt[,tree.PFTs.present,with=FALSE],FUN=domPFT,MARGIN=1)])
     dt[Total < 0.2, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := "Barren"]
     dt[, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := as.factor(get(paste("Dominant", "Tree", sep = sep.char)))]
   }
   
   if(do.woody) {
     woody.PFTs.present <- unlist(woody.PFTs.present)
-    suppressWarnings(dt[, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := apply(dt[,woody.PFTs.present,with=FALSE],FUN=domPFT,MAR=1)])
+    suppressWarnings(dt[, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := apply(dt[,woody.PFTs.present,with=FALSE],FUN=domPFT,MARGIN=1)])
     dt[Total < 0.2, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := "Barren"]
     dt[, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := as.factor(get(paste("Dominant", "Woody", sep = sep.char)))]
     
@@ -299,7 +302,7 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
   
   # Apply biome rules and return
   if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
-  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MAR=1), with = FALSE])
+  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1), with = FALSE])
   input@data <- dt
   return(input)
   
@@ -311,6 +314,8 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
 ##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, ETC...)
 
 addVegTotals <- function(input, targets = c("lifeforms"), PFT.data = NULL){
+  
+  Woody <- NULL
   
   ### Here allow the possibility to handle both VegObjects and data.tables directly (for internal calculations)
   # MF: Maybe also handle rasters one day?
@@ -381,9 +386,7 @@ addVegTotals <- function(input, targets = c("lifeforms"), PFT.data = NULL){
 
 ###################################################################################
 ##### MAKE PFT, LIFEFORM, PHENOLOGY ETC FRACTIONS
-##### MF TODO:  Can make this much nicer by defining a list of denominators rather than a series of booleans
-##### MF TODO:  Also maybe take a look at the horrible "eval(quote(paste(" syntax below
-##### MF TODO:  Also maybe simple create each target using getVegTotals() if it doesn't exist
+# TODO:  Maybe take a look at the horrible "eval(quote(paste(" syntax below
 
 addVegFractions <- function(input, targets = list("pfts", "lifeforms"), denominators = list("Total")){
   

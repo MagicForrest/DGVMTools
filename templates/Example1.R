@@ -5,14 +5,13 @@ rm(list = ls())
 if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
 library(RVCTools)
 
-
 # start the timer
 t1 <- Sys.time()
 
 ##### STEP ONE: Define the settings, open the run and average over the period we want
 
 # Define a RUN to process
-run <- defineVegRun(run.dir = "/data/forrest/GuessRuns/N-version/Standard",
+run <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example1",
              model = "LPJ-GUESS",
              pft.set = global.PFTs,
              id = "ExampleRun1",
