@@ -10,7 +10,7 @@ library(RVCTools)
 ##### PREAMBLE: Define the run settings and an averaging period
 
 # Define a RUN to process
-run <- defineVegRun(run.dir = "/data/forrest/aDGVM",
+run <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example.aDGVM.1",
                     model = "aDGVM",
                     pft.set = aDGVM.PFTs,
                     id = "44_0", # this is, by former aDGVM way, <runid>_<fire>
