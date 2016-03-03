@@ -92,7 +92,7 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @export
 getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, period=NA, forceReCalculation=FALSE, write=TRUE, verbose=TRUE, ...) {
   if (suppressWarnings(!is.na(period))) {
-    if (class(period)[1]=="TemporalExtent" && attr(class(mid), "package")=="RVCTools") {
+    if (class(period)[1]=="TemporalExtent" && attr(class(period), "package")=="RVCTools") {
       period <- c(period@start, period@end)
     } else {
       period <- c(min(period, na.rm=TRUE), max(period, na.rm=TRUE))
@@ -159,15 +159,17 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
   } else {
     data.name <- var.names[is.data.var]
   }
+  data.dims <- var.inq.nc(ncin, data.name)[['dimids']]
+
   if (verbose)
     message(paste("Variable to get the data for:", data.name))
-  
+
   ## get the spatial dimension names
   if (is.na(lon.name) || is.na(lat.name)) {
     if (length(dim.names)==2) {
       if (verbose)
         message("Reduced grid")
-      
+
       coords <- att.get.nc(ncin, data.name, "coordinates")
       coords <- unlist(strsplit(coords, " "))
       lon.name <- coords[grepl("lon", coords, ignore.case=TRUE)]
@@ -198,7 +200,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
   }
   if (verbose)
     message(paste("Temporal dimension: ", time.name))
-  
+
   lon   <- var.get.nc(ncin, lon.name)
   lat   <- var.get.nc(ncin, lat.name)
   time  <- var.get.nc(ncin, time.name)
@@ -250,7 +252,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
         break
       }
 
-      if (verbose)  
+      if (verbose)
         message(paste(".", y, ".", sep=""), appendLF=FALSE)
 
       sdcols <- paste("V", 1:dpy, sep="")
@@ -258,7 +260,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
       ## get data
       if (length(dim.names)==2) {
         ## from reduced grid
-        if (dim.names[1]==time.name) {
+        if (dim.names[data.dims[1]+1]==time.name) {
           data <- var.get.nc(ncin, data.name, start=c(days, NA), count=c(dpy, NA))
           dt.tmp <- data.table(t(data))
         } else {
