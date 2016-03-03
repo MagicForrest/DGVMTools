@@ -26,7 +26,6 @@
 #############  MF 2016-02-08 : MAJOR TODOS
 #############   1. Time series.  Producing is simple enough, but need to take plotting code from Joerg.
 #############   2. Compare one run to a 'baseline' run.
-#############   3. Sort out the warnings.
 ################################################################################################################
 
 
@@ -75,8 +74,8 @@ universal.resolution <- "HD"
 forceReAveraging <- FALSE
 
 ### Which variables to analyse and in what detail (use "all" to choose all *.out files in the run directory)
-var.list <- c("lai") # simple summary analysis
-detailed.var.list <- NULL #c("mwcont_upper", "lai") # for which variable to plot in more detail (make individual plots, lifeform plots for PFTs, seasonal plots for monthly variable etc)
+var.list <- c("mwcont_upper") # simple summary analysis
+detailed.var.list <- c("mwcont_upper") # for which variable to plot in more detail (make individual plots, lifeform plots for PFTs, seasonal plots for monthly variable etc)
 fraction.pft.var.list <- NULL #c("lai") # for which PFT variables to plot fractions
 do.dominant.pft.var.list <- NULL # c("lai") # for which PFT variables to calculate dominant PFT for
 

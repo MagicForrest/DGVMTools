@@ -150,7 +150,7 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
           if(forceReAveraging & file.exists(paste(TA.filename))) message(paste("File",  TA.filename, "exists but forecReAveraging selected so reading ther full output again", sep = " "))
           else message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
         }
-          
+        
         this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
         if(verbose) {
           message("Head of full .out file (after offsets):")
@@ -280,6 +280,155 @@ getVegTemporal <- function(run, var, spatial.extent = NULL, this.full = NULL, wr
 
 
 
+################################# GET VEGOBJECT - Does a lot! #########################################
+
+getVegObject <- function(run, 
+                         var, 
+                         temporal.extent = NULL, 
+                         temporally.average = FALSE, 
+                         spatial.extent = NULL, 
+                         spatially.average = FALSE,
+                         area.weighted=TRUE,
+                         write = FALSE, 
+                         reread.file = TRUE, 
+                         verbose = TRUE, 
+                         store.internally = FALSE,
+                         adgvm.scheme = 1){
+  
+  # To avoid annoying NOTES when R CMD check-ing
+  Lon = Lat = Year = NULL  
+  
+  
+  ### CONVERT STRING TO VEGQUANT
+  if(class(var) == "character") {
+    quant <- lookupVegQuantity(var)
+    var.string <- var
+  }
+  else {
+    quant <- var
+    var.string <- quant@id
+  }
+  
+  ### file.name  - this described completely whether we want the files spatially or temporally averaged and reduced in extent
+  TA.str = SA.str = "."
+  if(spatially.average) SA.str <- ".SA."
+  if(temporally.average) TA.str <- ".TA."
+  if(is.null(spatial.extent) & !is.null(temporal.extent)) file.name <- file.path(run@run.dir, paste(var.string, TA.str, paste(temporal.extent@start, temporal.extent@end, sep = "-"), ".Rtable", sep =""))
+  else if(!is.null(spatial.extent) & is.null(temporal.extent)) file.name <- file.path(run@run.dir, paste(var.string, SA.str, spatial.extent@id, ".Rtable", sep =""))
+  else if(!is.null(spatial.extent) & !is.null(temporal.extent)) file.name <- file.path(run@run.dir, paste(var.string, SA.str, spatial.extent@id, TA.str,  paste(temporal.extent@start, temporal.extent@end, sep = "-"), ".Rtable", sep =""))
+  else  file.name <- file.path(run@run.dir, paste(var.string, "Rtable", sep ="."))
+  
+  
+  ### USE THE PREAVERAGED/CROPPED FILE IF AVAILABLE (and we are not forcing a re-read and we have not already read the full file)
+  if(file.exists(paste(file.name)) & !reread.file & !var.string %in% names(run@full)){
+    if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "so using that.",  sep = " "))}
+    this.dt <- fread(file.name)
+    .setkeyRVC(this.dt)
+    
+  } 
+  
+  ### IF PRE-AVERAGED/CROPPED FILE NOT AVAILABLE THEN CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT
+  ### AND DO THE CROPPING/AVERAGING 
+  else {
+    
+    ### !!! CALL MODEL SPECIFIC FUNTIONS HERE !!!
+    if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") {
+      
+      this.dt <- getVegQuantity_LPJ(file.name, run, var.string, store.internally, reread.file, verbose)
+      
+    } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
+    
+    else if(run@model == "aDGVM") {
+      
+      if(adgvm.scheme == 1) this.dt <- data.table(getVegQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
+      if(adgvm.scheme == 2) this.dt <- data.table(getVegQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
+      
+      setkey(this.dt, Lon, Lat, Year)
+      
+    } # END IF aDGVM
+    
+    
+    
+    ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
+    if(!is.null(spatial.extent))  this.dt <- cropRVC(this.dt, spatial.extent)      
+    if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)      
+    
+    
+    ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
+    if(spatially.average){
+      this.dt <- .doSpatialAverage.cmpd(this.dt, verbose, area.weighted)
+      if(verbose) {
+        message("Head of spatially averaged data.table:")
+        print(head(this.dt))
+      }
+    }
+    
+    
+    ###  DO TIME AVERAGE
+    if(temporally.average){
+      this.dt <- .doTimeAverage.cmpd(this.dt, temporal.extent, verbose)
+      if(verbose) {
+        message("Head of time averaged data.table:")
+        print(head(this.dt))
+      }
+    }
+    
+    ### WRITE THE TABLE IF REQUESTED
+    if(write) {
+      if(verbose) {message("Saving as a table...")}
+      write.table(this.dt, file = file.name, quote = FALSE, row.names = FALSE)
+    }
+    
+    
+  } # IF READING RAW DATA
+  
+  
+  
+  
+  ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE RETURN OBJECT
+  
+  if(is.null(temporal.extent)) {
+    sorted.unique.years <- sort(unique(this.dt[,Year]))
+    temporal.extent<- new("TemporalExtent",
+                          id = "FullTS",
+                          name = "Full simulation duration",
+                          start = sorted.unique.years[1],
+                          end = sorted.unique.years[length(sorted.unique.years)]
+    )
+    if(verbose) message(paste("No temporal extent specified, setting temporal extent to whole file (",  temporal.extent@start, "-", temporal.extent@end, ")", sep = ""))
+  }
+  
+  if(is.null(spatial.extent)) {
+    sorted.unique.lats <- sort(unique(this.dt[,Lat]))
+    sorted.unique.lons <- sort(unique(this.dt[,Lon]))
+    spatial.extent <- new("SpatialExtent",
+                          id = "FullDomain",
+                          name = "Full simulation extent",
+                          extent = extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
+                                          sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
+                                          sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
+                                          sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2)
+                          )
+    )
+    if(verbose) message(paste("No spatial extent specified, setting spatial extent to simulate: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+  }
+  
+  
+  return(new("VegObject",
+             id = paste(var.string, temporal.extent@id, spatial.extent@id, sep = "_"),
+             data = this.dt,
+             quant = quant,
+             spatial.extent = spatial.extent,
+             temporal.extent = temporal.extent,
+             is.site = FALSE,
+             is.spatially.averaged = spatially.average,
+             is.temporally.averaged = temporally.average,
+             as(run, "VegRunInfo")))
+  
+}
+
+
+
 
 promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
   
@@ -376,7 +525,7 @@ sanitiseNamesForRaster <- function(input){
     stop(paste("Trying to sanitise names object of type", class(input), ", which I don't know how to do.", sep = ""))
   }
   
- 
+  
   
 }
 
@@ -429,7 +578,7 @@ sanitiseNamesForRaster <- function(input){
 ######################### TIME AVERAGE AN LPJ-GUESS FULL OUTPUT FILE COMING IN AS A data.table  ##############################
 
 doTimeAverage <- function(input.dt,
-                          period = new("Period", name = "Default", start = 1961, end = 1990),
+                          averaging.period,
                           verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
@@ -437,10 +586,12 @@ doTimeAverage <- function(input.dt,
   Year = Lat = Lon = NULL
   
   # Do the averaging
-  if(verbose) message(paste("Averaging from ", period@start, " to ", period@end, "...", sep = ""))
+  if(verbose) message(paste("Averaging between ",  averaging.period@start, " and ", averaging.period@end, "...", sep = ""))
+  
   
   # do the temporal averaging between first.year and last.year 
-  output.dt <- subset(input.dt, Year >= period@start & Year <= period@end)[,lapply(.SD, mean), by=list(Lat, Lon)]
+  if("Lon" %in% names(input.dt))  output.dt <- subset(input.dt, Year >= averaging.period@start & Year <= averaging.period@end)[,lapply(.SD, mean), by=list(Lat, Lon)]
+  else output.dt <- subset(input.dt, Year >= averaging.period@start & Year <= averaging.period@end)[,lapply(.SD, mean)]
   
   # remove the Year 'cos it dun' make so much sense no mo'
   output.dt[,Year:=NULL]
@@ -462,12 +613,16 @@ doTimeAverage <- function(input.dt,
   rm(input.dt)
   gc()
   
-  # Return the averaged table
+  # Set keys and return the averaged table
+  .setKeyRVC(output.dt)
   return(output.dt)
   
 }
 
 .doTimeAverage.cmpd <- cmpfun(doTimeAverage)
+
+.doTemporalAverage.cmpd <- cmpfun(doTimeAverage)
+
 
 
 
@@ -500,11 +655,16 @@ doSpaceAverage <- function(input.dt,
         message("Add column area.")
     input.dt <- addArea(input.dt, verbose=verbose)
     if(verbose) message(paste("Spatially averaging (area weighted) whole domain...", sep = ""))
-    output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area), by=list(Year)]
+    # check to see if Year is still a clomun name (it might have been averaged away)
+    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area), by=list(Year)]
+    else output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area)]
+    
     output.dt[,area:=NULL]
   } else {
     if(verbose) message(paste("Spatially averaging (not area weighted) whole domain...", sep = ""))
-    output.dt <- input.dt[,lapply(.SD, mean), by=list(Year)]
+    # check to see if Year is still a clomun name (it might have been averaged away)
+    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, mean), by=list(Year)]
+    else output.dt <- input.dt[,lapply(.SD, mean)]
   }
   
   # remove the Lon and Lat columns 'cos they dun' make so much sense no mo'
@@ -517,12 +677,15 @@ doSpaceAverage <- function(input.dt,
   rm(input.dt)
   gc()
   
-  # Return the averaged table
+  # Set keys and return the averaged table
+  .setKeyRVC(output.dt)
   return(output.dt)
   
 }
 
 .doSpaceAverage.cmpd <- cmpfun(doSpaceAverage)
+
+.doSpatialAverage.cmpd <- cmpfun(doSpaceAverage)
 
 
 
@@ -531,6 +694,19 @@ doSpaceAverage <- function(input.dt,
   
   if(lon <= 180) return(lon)
   else return(lon - 360)
+  
+}
+
+
+.setKeyRVC <- function(dt){
+  
+  keys.present <- c()
+  
+  if("Lat" %in% names(dt)) keys.present <- append(keys.present, "Lat")
+  if("Lon" %in% names(dt)) keys.present <- append(keys.present, "Lon")
+  if("Year" %in% names(dt)) keys.present <- append(keys.present, "Year")
+  
+  if(length(keys.present) > 0) setkeyv(dt, keys.present)
   
 }
 

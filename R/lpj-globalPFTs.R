@@ -24,7 +24,7 @@
 
 ###########################################################################
 ###
-### Master list of PFT names, properties, preferred plot colours etc
+### Master list of PFT ids, properties, preferred plot colours etc
 ###
 ### Author: Matthew Forrest 
 ### Date: 08/04/2013
@@ -40,8 +40,8 @@ global.PFTs <- list()
 # BOREAL TREES
 
 BNE <- new("PFT",
-           name = "BNE",
-           longname = "Boreal Needleleaved Evergreen Tree",
+           id = "BNE",
+           name = "Boreal Needleleaved Evergreen Tree",
            lifeform = "Tree",
            leafform = "Needleleaved",
            phenology = "Evergreen",
@@ -50,11 +50,11 @@ BNE <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[BNE@name]] <- BNE
+global.PFTs[[BNE@id]] <- BNE
 
 BINE <- new("PFT",
-           name = "BINE",
-           longname = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
+           id = "BINE",
+           name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
            lifeform = "Tree",
            leafform = "Needleleaved",
            phenology = "Evergreen",
@@ -64,11 +64,11 @@ BINE <- new("PFT",
            )
 
 
-global.PFTs[[BINE@name]] <- BINE
+global.PFTs[[BINE@id]] <- BINE
 
 BNS <- new("PFT",
-           name = "BNS",
-           longname = "Boreal Needleleaved Summergreen Tree",
+           id = "BNS",
+           name = "Boreal Needleleaved Summergreen Tree",
            lifeform = "Tree",
            leafform = "Needleleaved",
            phenology = "Summergreen",
@@ -77,12 +77,12 @@ BNS <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[BNS@name]] <- BNS
+global.PFTs[[BNS@id]] <- BNS
 
 
 BIBS <- new("PFT",
-           name = "BIBS",
-           longname = "Boreal Shade-intolerant B/leaved Summergreen Tree",
+           id = "BIBS",
+           name = "Boreal Shade-intolerant B/leaved Summergreen Tree",
            lifeform = "Tree",
            leafform = "Broadleaved",
            phenology = "Summergreen",
@@ -91,11 +91,11 @@ BIBS <- new("PFT",
            combine = "no"
 )
 
-global.PFTs[[BIBS@name]] <- BIBS
+global.PFTs[[BIBS@id]] <- BIBS
 
 IBS <- new("PFT",
-           name = "IBS",
-           longname = "Shade-intolerant B/leaved Summergreen Tree",
+           id = "IBS",
+           name = "Shade-intolerant B/leaved Summergreen Tree",
            lifeform = "Tree",
            leafform = "Broadleaved",
            phenology = "Summergreen",
@@ -104,14 +104,14 @@ IBS <- new("PFT",
            combine = "no"
 )
 
-global.PFTs[[IBS@name]] <- IBS
+global.PFTs[[IBS@id]] <- IBS
 
 
 # TEMPERATE TREES
 
 TeBE <- new("PFT",
-           name = "TeBE",
-           longname = "Temperate B/leaved Evergreen Tree",
+           id = "TeBE",
+           name = "Temperate B/leaved Evergreen Tree",
            lifeform = "Tree",
            leafform = "Broadleaved",
            phenology = "Evergreen",
@@ -120,11 +120,11 @@ TeBE <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[TeBE@name]] <- TeBE
+global.PFTs[[TeBE@id]] <- TeBE
 
 TeNE <- new("PFT",
-           name = "TeNE",
-           longname = "Temperate Needleleaved Evergreen Tree",
+           id = "TeNE",
+           name = "Temperate Needleleaved Evergreen Tree",
            lifeform = "Tree",
            leafform = "Needleleaved",
            phenology = "Evergreen",
@@ -133,12 +133,12 @@ TeNE <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[TeNE@name]] <- TeNE
+global.PFTs[[TeNE@id]] <- TeNE
 
 
 TeBS <- new("PFT",
-           name = "TeBS",
-           longname = "Temperate Broadleaved Summergreen Tree",
+           id = "TeBS",
+           name = "Temperate Broadleaved Summergreen Tree",
            lifeform = "Tree",
            leafform = "Broadleaved",
            phenology = "Summergreen",
@@ -147,11 +147,11 @@ TeBS <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[TeBS@name]] <- TeBS
+global.PFTs[[TeBS@id]] <- TeBS
 
 TeIBS <- new("PFT",
-            name = "TeIBS",
-            longname = "Temperate Shade-Intolerant B/leaved S/green Tree",
+            id = "TeIBS",
+            name = "Temperate Shade-Intolerant B/leaved S/green Tree",
             lifeform = "Tree",
             leafform = "Broadleaved",
             phenology = "Summergreen",
@@ -160,14 +160,14 @@ TeIBS <- new("PFT",
             combine = "TeBS"
 )
 
-global.PFTs[[TeIBS@name]] <- TeIBS
+global.PFTs[[TeIBS@id]] <- TeIBS
 
 
 # TROPICAL TREES
 
 TrBE <- new("PFT",
-           name = "TrBE",
-           longname = "Tropical Broadleaved Evergreen Tree",
+           id = "TrBE",
+           name = "Tropical Broadleaved Evergreen Tree",
            lifeform = "Tree",
            leafform = "Broadleaved",
            phenology = "Evergreen",
@@ -176,13 +176,13 @@ TrBE <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[TrBE@name]] <- TrBE
+global.PFTs[[TrBE@id]] <- TrBE
 
 
 
 TrIBE <- new("PFT",
-           name = "TrIBE",
-           longname = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
+           id = "TrIBE",
+           name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
            lifeform = "Tree",
            leafform = "Broadleaved",
            phenology = "Evergreen",
@@ -190,12 +190,12 @@ TrIBE <- new("PFT",
            colour = "orchid4",
            combine = "TrBE"
            )
-global.PFTs[[TrIBE@name]] <- TrIBE
+global.PFTs[[TrIBE@id]] <- TrIBE
 
 
 TrBR <- new("PFT",
-           name = "TrBR",
-           longname = "Tropical Broadleaved Raingreen Tree",
+           id = "TrBR",
+           name = "Tropical Broadleaved Raingreen Tree",
            lifeform = "Tree",
            leafform = "Broadleaved",
            phenology = "Raingreen",
@@ -204,12 +204,12 @@ TrBR <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[TrBR@name]] <- TrBR
+global.PFTs[[TrBR@id]] <- TrBR
 
 
 TrTBR <- new("PFT",
-             name = "TrTBR",
-             longname = "Tropical Broadleaved Raingreen Tree",
+             id = "TrTBR",
+             name = "Tropical Broadleaved Raingreen Tree",
              lifeform = "Tree",
              leafform = "Broadleaved",
              phenology = "Raingreen",
@@ -218,15 +218,15 @@ TrTBR <- new("PFT",
              combine = "no"
 )
 
-global.PFTs[[TrTBR@name]] <- TrTBR
+global.PFTs[[TrTBR@id]] <- TrTBR
 
 
 
 # GRASSES
 
 C3G <- new("PFT",
-           name = "C3G",
-           longname = "Boreal/Temperate Grass",
+           id = "C3G",
+           name = "Boreal/Temperate Grass",
            lifeform = "Grass",
            leafform = "Broadleaved",
            phenology = "GrassPhenology",
@@ -235,11 +235,11 @@ C3G <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[C3G@name]] <- C3G
+global.PFTs[[C3G@id]] <- C3G
 
 C4G <- new("PFT",
-           name = "C4G",
-           longname = "Tropical Grass",
+           id = "C4G",
+           name = "Tropical Grass",
            lifeform = "Grass",
            leafform = "Broadleaved",
            phenology = "GrassPhenology",
@@ -248,13 +248,13 @@ C4G <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[C4G@name]] <- C4G
+global.PFTs[[C4G@id]] <- C4G
 
 # SHRUBS
 
 BES <- new("PFT",
-           name = "BES",
-           longname = "Boreal Evergreen Shrub",
+           id = "BES",
+           name = "Boreal Evergreen Shrub",
            lifeform = "Shrub",
            leafform = "Any",
            phenology = "Evergreen",
@@ -263,11 +263,11 @@ BES <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[BES@name]] <- BES
+global.PFTs[[BES@id]] <- BES
 
 MRS <- new("PFT",
-           name = "MRS",
-           longname = "Mediterranean Raingreen Shrub",
+           id = "MRS",
+           name = "Mediterranean Raingreen Shrub",
            lifeform = "Shrub",
            leafform = "Any",
            phenology = "Raingreen",
@@ -276,12 +276,12 @@ MRS <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[MRS@name]] <- MRS
+global.PFTs[[MRS@id]] <- MRS
 
 
 MESb <- new("PFT",
-           name = "MESb",
-           longname = "Mediterranean Evergreen Shrub",
+           id = "MESb",
+           name = "Mediterranean Evergreen Shrub",
            lifeform = "Shrub",
            leafform = "Any",
            phenology = "Evergreen",
@@ -290,11 +290,11 @@ MESb <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[MESb@name]] <- MESb
+global.PFTs[[MESb@id]] <- MESb
 
 MeES <- new("PFT",
-           name = "MeES",
-           longname = "Mediterranean Evergreen Shrub",
+           id = "MeES",
+           name = "Mediterranean Evergreen Shrub",
            lifeform = "Shrub",
            leafform = "Any",
            phenology = "Evergreen",
@@ -303,13 +303,13 @@ MeES <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[MeES@name]] <- MeES
+global.PFTs[[MeES@id]] <- MeES
 
 
 
 MRSb <- new("PFT",
-           name = "MRSb",
-           longname = "Mediterranean Evergreen Shrub",
+           id = "MRSb",
+           name = "Mediterranean Evergreen Shrub",
            lifeform = "Shrub",
            leafform = "Any",
            phenology = "Raingreen",
@@ -318,11 +318,11 @@ MRSb <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[MRSb@name]] <- MRSb
+global.PFTs[[MRSb@id]] <- MRSb
 
 MeRS <- new("PFT",
-           name = "MeRS",
-           longname = "Mediterranean Evergreen Shrub",
+           id = "MeRS",
+           name = "Mediterranean Evergreen Shrub",
            lifeform = "Shrub",
            leafform = "Any",
            phenology = "Raingreen",
@@ -331,12 +331,12 @@ MeRS <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[MeRS@name]] <- MeRS
+global.PFTs[[MeRS@id]] <- MeRS
 
 
 Total <- new("PFT",
+           id = "Total",
            name = "Total",
-           longname = "Total",
            lifeform = "NA",
            leafform = "NA",
            phenology = "NA",
@@ -345,14 +345,14 @@ Total <- new("PFT",
            combine = "no"
            )
 
-global.PFTs[[Total@name]] <- Total
+global.PFTs[[Total@id]] <- Total
 
 
 
 
 TeESh <- new("PFT",
-            name = "TeESh",
-            longname = "Temperate Evergreen Shrub",
+            id = "TeESh",
+            name = "Temperate Evergreen Shrub",
             lifeform = "Shrub",
             leafform = "Any",
             phenology = "Evergreen",
@@ -361,11 +361,11 @@ TeESh <- new("PFT",
             combine = "no"
 )
 
-global.PFTs[[TeESh@name]] <- TeESh
+global.PFTs[[TeESh@id]] <- TeESh
 
 TeRSh <- new("PFT",
-             name = "TeRSh",
-             longname = "Temperate Raingreen Shrub",
+             id = "TeRSh",
+             name = "Temperate Raingreen Shrub",
              lifeform = "Shrub",
              leafform = "Any",
              phenology = "Raingreen",
@@ -374,11 +374,11 @@ TeRSh <- new("PFT",
              combine = "no"
 )
 
-global.PFTs[[TeRSh@name]] <- TeRSh
+global.PFTs[[TeRSh@id]] <- TeRSh
 
 TeSSh <- new("PFT",
-             name = "TeSSh",
-             longname = "Temperate Summergreen Shrub",
+             id = "TeSSh",
+             name = "Temperate Summergreen Shrub",
              lifeform = "Shrub",
              leafform = "Any",
              phenology = "Summergreen",
@@ -387,13 +387,13 @@ TeSSh <- new("PFT",
              combine = "no"
 )
 
-global.PFTs[[TeSSh@name]] <- TeSSh
+global.PFTs[[TeSSh@id]] <- TeSSh
 
 
 
 BESh <- new("PFT",
-             name = "BESh",
-             longname = "Boreal Evergreen Shrub",
+             id = "BESh",
+             name = "Boreal Evergreen Shrub",
              lifeform = "Shrub",
              leafform = "Any",
              phenology = "Evergreen",
@@ -402,11 +402,11 @@ BESh <- new("PFT",
              combine = "no"
 )
 
-global.PFTs[[BESh@name]] <- BESh
+global.PFTs[[BESh@id]] <- BESh
 
 BSSh <- new("PFT",
-             name = "BSSh",
-             longname = "Boreal Summergreen Shrub",
+             id = "BSSh",
+             name = "Boreal Summergreen Shrub",
              lifeform = "Shrub",
              leafform = "Any",
              phenology = "Summergreen",
@@ -416,13 +416,13 @@ BSSh <- new("PFT",
 )
 
 
-global.PFTs[[BSSh@name]] <- BSSh
+global.PFTs[[BSSh@id]] <- BSSh
 
 
 
 TrESh <- new("PFT",
-             name = "TrESh",
-             longname = "Tropical Evergreen Shrub",
+             id = "TrESh",
+             name = "Tropical Evergreen Shrub",
              lifeform = "Shrub",
              leafform = "Any",
              phenology = "Evergreen",
@@ -431,11 +431,11 @@ TrESh <- new("PFT",
              combine = "no"
 )
 
-global.PFTs[[TrESh@name]] <- TrESh
+global.PFTs[[TrESh@id]] <- TrESh
 
 TrRSh <- new("PFT",
-             name = "TrRSh",
-             longname = "Tropical Raingreen Shrub",
+             id = "TrRSh",
+             name = "Tropical Raingreen Shrub",
              lifeform = "Shrub",
              leafform = "Any",
              phenology = "Raingreen",
@@ -445,12 +445,12 @@ TrRSh <- new("PFT",
 )
 
 
-global.PFTs[[TrRSh@name]] <- TrRSh
+global.PFTs[[TrRSh@id]] <- TrRSh
 
 
 Bare <- new("PFT",
-             name = "Bare",
-             longname = "Bare ground",
+             id = "Bare",
+             name = "Bare ground",
              lifeform = "NA",
              leafform = "NA",
              phenology = "NA",
@@ -460,7 +460,7 @@ Bare <- new("PFT",
 )
 
 
-global.PFTs[[Bare@name]] <- Bare
+global.PFTs[[Bare@id]] <- Bare
 
 
 

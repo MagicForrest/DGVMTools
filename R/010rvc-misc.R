@@ -69,152 +69,192 @@ subsetGridlist <- function(subset.extent, file.name = NULL, header = TRUE, gridl
 ##### Conversion factors 
 kmsq_to_ha <- 100
 
-months.2digits <- c(paste("0", 1:9, sep = ""), paste(10:12))
-months.padded <- months.2digits 
+# months.2digits <- c(paste("0", 1:9, sep = ""), paste(10:12))
+# months.padded <- months.2digits 
+# 
+# months.plus.annual = list("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December","Annual")
+# seasons = list("Winter", "Spring", "Summer", "Autumn")
+# seasons.string = list("DJF", "MAM", "JJA", "SON")
+# all.times <-c(unlist(months),unlist(seasons.string), "Annual")
+# season.numbers = list(c(12,1,2), c(3,4,5), c(6,7,8), c(9,10,11))
+# season.abbreviations = list("DJF", "MAM", "JJA", "SON")
+# 
+# #make lists of the number of days in the month
+# #and the cumulative days up to a new month
+# days.in.month =list(31,28,31,30,31,30,31,31,30,31,30,31)
+# days.in.month.leap.year=list(31,28,31,30,31,30,31,31,30,31,30,31)
+# cum.days.in.month= list(31,59,90,120,151,181,212,243,273,304,334,365)
+# cum.days.in.month.leap.year= list(31,60,91,121,152,182,213,244,274,305,335,366)
 
-months.plus.annual = list("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December","Annual")
-seasons = list("Winter", "Spring", "Summer", "Autumn")
-seasons.string = list("DJF", "MAM", "JJA", "SON")
-all.times <-c(unlist(months),unlist(seasons.string), "Annual")
-season.numbers = list(c(12,1,2), c(3,4,5), c(6,7,8), c(9,10,11))
-season.abbreviations = list("DJF", "MAM", "JJA", "SON")
-
-#make lists of the number of days in the month
-#and the cumulative days up to a new month
-days.in.month =list(31,28,31,30,31,30,31,31,30,31,30,31)
-days.in.month.leap.year=list(31,28,31,30,31,30,31,31,30,31,30,31)
-cum.days.in.month= list(31,59,90,120,151,181,212,243,273,304,334,365)
-cum.days.in.month.leap.year= list(31,60,91,121,152,182,213,244,274,305,335,366)
 
 
 ##### Period - class to hold the metadata about a month, seasonal or annual period
-months <- list(January = new("Period",
-                             name = "January",
-                             abbreviation = "Jan",
-                             index = 1,
-                             padded.index = "01",
-                             days = 31,
-                             days.leap = 31),
-               February = new("Period",
+all.periods <- list(Jan = new("Period",
+                              id = "Jan",
+                              name = "January",
+                              abbreviation = "Jan",
+                              index = 1,
+                              padded.index = "01",
+                              contains = "Jan",
+                              days = 31,
+                              days.leap = 31),
+                    Feb = new("Period",
+                              id = "Feb",
                               name = "February",
                               abbreviation = "Feb",
                               index = 2,
                               padded.index = "02",
+                              contains = "Feb",
                               days = 28,
                               days.leap = 29),
-               March = new("Period",
-                           name = "March",
-                           abbreviation = "Mar",
-                           index = 3,
-                           padded.index = "03",
-                           days = 31,
-                           days.leap = 31),
-               April = new("Period",
-                           name = "April",
-                           abbreviation = "Apr",
-                           index = 4,
-                           padded.index = "04",
-                           days = 30,
-                           days.leap = 30),
-               May = new("Period",
-                         name = "May",
-                         abbreviation = "May",
-                         index = 5,
-                         padded.index = "05",
-                         days = 31,
-                         days.leap = 31),
-               Jun = new("Period",
-                         name = "June",
-                         abbreviation = "Jun",
-                         index = 6,
-                         padded.index = "06",
-                         days = 30,
-                         days.leap = 30),
-               July = new("Period",
-                          name = "July",
-                          abbreviation = "Jul",
-                          index = 7,
-                          padded.index = "07",
-                          days = 31,
-                          days.leap = 31),
-               August = new("Period",
-                            name = "August",
-                            abbreviation = "Aug",
-                            index = 8,
-                            padded.index = "08",
-                            days = 31,
-                            days.leap = 31),
-               September = new("Period",
-                               name = "September",
-                               abbreviation = "Sep",
-                               index = 9,
-                               padded.index = "09",
-                               days = 30,
-                               days.leap = 30),
-               October = new("Period",
-                             name = "October",
-                             abbreviation = "Oct",
-                             index = 10,
-                             padded.index = "10",
-                             days = 31,
-                             days.leap = 31),
-               November = new("Period",
+                    Mar = new("Period",
+                              id = "Mar",
+                              name = "March",
+                              abbreviation = "Mar",
+                              index = 3,
+                              padded.index = "03",
+                              contains = "Mar",
+                              days = 31,
+                              days.leap = 31),
+                    Apr = new("Period",
+                              id = "Apr",
+                              name = "April",
+                              abbreviation = "Apr",
+                              index = 4,
+                              padded.index = "04",
+                              contains = "Apr",
+                              days = 30,
+                              days.leap = 30),
+                    May = new("Period",
+                              id = "May",
+                              name = "May",
+                              abbreviation = "May",
+                              index = 5,
+                              padded.index = "05",
+                              contains = "May",
+                              days = 31,
+                              days.leap = 31),
+                    Jun = new("Period",
+                              id = "Jun",
+                              name = "June",
+                              abbreviation = "Jun",
+                              index = 6,
+                              padded.index = "06",
+                              contains = "Jun",
+                              days = 30,
+                              days.leap = 30),
+                    Jul = new("Period",
+                              id ="Jul",
+                              name = "July",
+                              abbreviation = "Jul",
+                              index = 7,
+                              padded.index = "07",
+                              contains = "Jul",
+                              days = 31,
+                              days.leap = 31),
+                    Aug = new("Period",
+                              id = "Aug",
+                              name = "August",
+                              abbreviation = "Aug",
+                              index = 8,
+                              padded.index = "08",
+                              contains = "Aug",
+                              days = 31,
+                              days.leap = 31),
+                    Sep = new("Period",
+                              id = "Sep",
+                              name = "September",
+                              abbreviation = "Sep",
+                              index = 9,
+                              padded.index = "09",
+                              contains = "Sep",
+                              days = 30,
+                              days.leap = 30),
+                    Oct = new("Period",
+                              id = "Oct",
+                              name = "October",
+                              abbreviation = "Oct",
+                              index = 10,
+                              padded.index = "10",
+                              contains = "Oct",
+                              days = 31,
+                              days.leap = 31),
+                    Nov = new("Period",
+                              id = "Nov",
                               name = "November",
                               abbreviation = "Nov",
                               index = 11,
                               padded.index = "11",
+                              contains = "Nov",
                               days = 30,
                               days.leap = 30),
-               December = new("Period",
+                    Dec = new("Period",
+                              id = "Dec",
                               name = "December",
                               abbreviation = "Dec",
                               index = 12,
                               padded.index = "12",
+                              contains = "Dec",
                               days = 31,
-                              days.leap = 31)
+                              days.leap = 31),
+                    DJF = new("Period",
+                              id = "Winter",
+                              name = "Winter",
+                              abbreviation = "DJF",
+                              index = c(12,1,2),
+                              padded.index = c("12", "01", "02"),
+                              contains = c("Dec", "Jan", "Feb"),
+                              days = 60,
+                              days.leap = 61),
+                    MAM = new("Period",
+                              id = "Spring",
+                              name = "Spring",
+                              abbreviation = "MAM",
+                              index = c(3,4,5),
+                              padded.index = c("03", "04", "05"),
+                              contains = c("Mar", "Apr", "May"),
+                              days = 62,
+                              days.leap = 62),
+                    JJA = new("Period",
+                              id = "Summer",
+                              name = "Summer",
+                              abbreviation = "JJA",
+                              index = c(6,7,8),
+                              padded.index = c("07", "08", "09"),
+                              contains = c("Jun", "Jul", "Aug"),
+                              days = 62,
+                              days.leap = 62),          
+                    SON = new("Period",
+                              id = "Autumn",
+                              name = "Autumn",
+                              abbreviation = "SON",
+                              index = c(9,10,11),
+                              padded.index = c("09", "10", "11"),
+                              contains = c("Sep", "Oct", "Nov"),
+                              days = 61,
+                              days.leap = 61),
+                    Annual = new("Period",
+                                 id = "Annual",
+                                 name = "Annual",
+                                 abbreviation = "Ann",
+                                 index = seq(1,12,1),
+                                 padded.index = "Annual",
+                                 contains = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug","Sep", "Oct", "Nov", "Dec"), 
+                                 days = 365,
+                                 days.leap = 366
+                    )
+                    
 )
 
-seasons <- list(Winter = new("Period",
-                             name = "Winter",
-                             abbreviation = "DJF",
-                             index = c(12,1,2),
-                             padded.index = c("12", "01", "02"),
-                             days = 60,
-                             days.leap = 61),
-                Spring = new("Period",
-                             name = "Spring",
-                             abbreviation = "MAM",
-                             index = c(3,4,5),
-                             padded.index = c("03", "04", "05"),
-                             days = 62,
-                             days.leap = 62),
-                Summer = new("Period",
-                             name = "Summer",
-                             abbreviation = "JJA",
-                             index = c(6,7,8),
-                             padded.index = c("07", "08", "09"),
-                             days = 62,
-                             days.leap = 62),          
-                Autumn = new("Period",
-                             name = "Autumn",
-                             abbreviation = "SON",
-                             index = c(9,10,11),
-                             padded.index = c("09", "10", "11"),
-                             days = 61,
-                             days.leap = 61)
-)
+# subsets of periods
+periods <- all.periods
+months <- all.periods[1:12]
+seasons <- all.periods[13:16]
+annual <- all.periods[17]
 
 
-annual <- new("Period",
-              name = "Annual",
-              abbreviation = "Ann",
-              index = seq(1,12,1),
-              padded.index = "Annual",
-              days = 365,
-              days.leap = 366
-)
 
-all.periods <- append(months, append(seasons, annual))
+#all.periods <- list(unlist(months), list(seasons, annual))
 
 
 ########### MEMORY MANAGEMENT ########### 

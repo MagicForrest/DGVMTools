@@ -24,7 +24,7 @@
 
 ###########################################################################
 ###
-### Master list of PFT names, properties, preferred plot colours etc
+### Master list of PFT ids, properties, preferred plot colours etc
 ###
 ### Author: Matthew Forrest 
 ### Date: 08/04/2013
@@ -40,8 +40,8 @@ euro.PFTs <- list()
 # BOREAL TREES
 
 euro.PFTs[["Abi_alb"]] <- new("PFT",
-                              name = "Abi_alb",
-                              longname = "Abies alba",
+                              id = "Abi_alb",
+                              name = "Abies alba",
                               lifeform = "Tree",
                               leafform = "Needleleaved",
                               phenology = "Evergreen",
@@ -51,8 +51,8 @@ euro.PFTs[["Abi_alb"]] <- new("PFT",
 )
 
 euro.PFTs[["BES"]] <- new("PFT",
-                          name = "BES",
-                          longname = "Boreal Evergreen Shrub",
+                          id = "BES",
+                          name = "Boreal Evergreen Shrub",
                           lifeform = "Shrub",
                           leafform = "Unspecified_Leafform",
                           phenology = "Evergreen",
@@ -62,8 +62,8 @@ euro.PFTs[["BES"]] <- new("PFT",
 )
 
 euro.PFTs[["Bet_pen"]] <- new("PFT",
-                              name = "Bet_pen",
-                              longname = "Betula pendula",
+                              id = "Bet_pen",
+                              name = "Betula pendula",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -73,8 +73,8 @@ euro.PFTs[["Bet_pen"]] <- new("PFT",
 )
 
 euro.PFTs[["Bet_pub"]] <- new("PFT",
-                              name = "Bet_pub",
-                              longname = "Betula pubescens",
+                              id = "Bet_pub",
+                              name = "Betula pubescens",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -84,8 +84,8 @@ euro.PFTs[["Bet_pub"]] <- new("PFT",
 )
 
 euro.PFTs[["Car_bet"]] <- new("PFT",
-                              name = "Car_bet",
-                              longname = "Carpinus Betula",
+                              id = "Car_bet",
+                              name = "Carpinus Betula",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -95,8 +95,8 @@ euro.PFTs[["Car_bet"]] <- new("PFT",
 )
 
 euro.PFTs[["Cor_ave"]] <- new("PFT",
-                              name = "Cor_ave",
-                              longname = "Corylus avellana",
+                              id = "Cor_ave",
+                              name = "Corylus avellana",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -106,8 +106,8 @@ euro.PFTs[["Cor_ave"]] <- new("PFT",
 )
 
 euro.PFTs[["Fag_syl"]] <- new("PFT",
-                              name = "Fag_syl",
-                              longname = "Fagus Sylvatica",
+                              id = "Fag_syl",
+                              name = "Fagus Sylvatica",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -117,8 +117,8 @@ euro.PFTs[["Fag_syl"]] <- new("PFT",
 )
 
 euro.PFTs[["Fra_exc"]] <- new("PFT",
-                              name = "Fra_exc",
-                              longname = "Fraxinus excelsior",
+                              id = "Fra_exc",
+                              name = "Fraxinus excelsior",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -128,8 +128,8 @@ euro.PFTs[["Fra_exc"]] <- new("PFT",
 )
 
 euro.PFTs[["Jun_oxy"]] <- new("PFT",
-                              name = "Jun_oxy",
-                              longname = "Juniperus oxycedrus",
+                              id = "Jun_oxy",
+                              name = "Juniperus oxycedrus",
                               lifeform = "Shrub",
                               leafform = "Needleleaved",
                               phenology = "Evergreen",
@@ -139,8 +139,8 @@ euro.PFTs[["Jun_oxy"]] <- new("PFT",
 )
 
 euro.PFTs[["MRS"]] <- new("PFT",
-                          name = "MRS",
-                          longname = "Mediterranean Raingreen Shrub",
+                          id = "MRS",
+                          name = "Mediterranean Raingreen Shrub",
                           lifeform = "Shrub",
                           leafform = "Unspecified_Leafform",
                           phenology = "Raingreen",
@@ -150,8 +150,8 @@ euro.PFTs[["MRS"]] <- new("PFT",
 )
 
 euro.PFTs[["Pic_abi"]] <- new("PFT",
-                              name = "Pic_abi",
-                              longname = "Picea abies",
+                              id = "Pic_abi",
+                              name = "Picea abies",
                               lifeform = "Tree",
                               leafform = "Needleleaved",
                               phenology = "Evergreen",
@@ -161,8 +161,8 @@ euro.PFTs[["Pic_abi"]] <- new("PFT",
 )
 
 euro.PFTs[["Pic_sit"]] <- new("PFT",
-                              name = "Pic_sit",
-                              longname = "Picea sitchensis",
+                              id = "Pic_sit",
+                              name = "Picea sitchensis",
                               lifeform = "Tree",
                               leafform = "Needleleaved",
                               phenology = "Evergreen",
@@ -172,8 +172,8 @@ euro.PFTs[["Pic_sit"]] <- new("PFT",
 )
 
 euro.PFTs[["Pin_syl"]] <- new("PFT",
-                              name = "Pin_syl",
-                              longname = "Pinus sylvestris",
+                              id = "Pin_syl",
+                              name = "Pinus sylvestris",
                               lifeform = "Tree",
                               leafform = "Needleleaved",
                               phenology = "Evergreen",
@@ -183,8 +183,8 @@ euro.PFTs[["Pin_syl"]] <- new("PFT",
 )
 
 euro.PFTs[["Pin_hal"]] <- new("PFT",
-                              name = "Pin_hal",
-                              longname = "Pinus halepensis",
+                              id = "Pin_hal",
+                              name = "Pinus halepensis",
                               lifeform = "Tree",
                               leafform = "Needleleaved",
                               phenology = "Evergreen",
@@ -194,8 +194,8 @@ euro.PFTs[["Pin_hal"]] <- new("PFT",
 )
 
 euro.PFTs[["Pop_tre"]] <- new("PFT",
-                              name = "Pop_tre",
-                              longname = "Populus tremula",
+                              id = "Pop_tre",
+                              name = "Populus tremula",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -205,8 +205,8 @@ euro.PFTs[["Pop_tre"]] <- new("PFT",
 )
 
 euro.PFTs[["Que_coc"]] <- new("PFT",
-                              name = "Que_coc",
-                              longname = "Quercus coccifera",
+                              id = "Que_coc",
+                              name = "Quercus coccifera",
                               lifeform = "Shrub",
                               leafform = "Unspecified_Leafform",
                               phenology = "Evergreen",
@@ -216,8 +216,8 @@ euro.PFTs[["Que_coc"]] <- new("PFT",
 )
 
 euro.PFTs[["Que_ile"]] <- new("PFT",
-                              name = "Que_ile",
-                              longname = "Quercus ilex",
+                              id = "Que_ile",
+                              name = "Quercus ilex",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Evergreen",
@@ -227,8 +227,8 @@ euro.PFTs[["Que_ile"]] <- new("PFT",
 )
 
 euro.PFTs[["Que_pub"]] <- new("PFT",
-                              name = "Que_pub",
-                              longname = "Quercus pubescens",
+                              id = "Que_pub",
+                              name = "Quercus pubescens",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -238,8 +238,8 @@ euro.PFTs[["Que_pub"]] <- new("PFT",
 )
 
 euro.PFTs[["Que_rob"]] <- new("PFT",
-                              name = "Que_rob",
-                              longname = "Quercus robur",
+                              id = "Que_rob",
+                              name = "Quercus robur",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -249,8 +249,8 @@ euro.PFTs[["Que_rob"]] <- new("PFT",
 )
 
 euro.PFTs[["Til_cor"]] <- new("PFT",
-                              name = "Til_cor",
-                              longname = "Tilia cordata",
+                              id = "Til_cor",
+                              name = "Tilia cordata",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -260,8 +260,8 @@ euro.PFTs[["Til_cor"]] <- new("PFT",
 )
 
 euro.PFTs[["Ulm_gla"]] <- new("PFT",
-                              name = "Ulm_gla",
-                              longname = "Ulmus glabra",
+                              id = "Ulm_gla",
+                              name = "Ulmus glabra",
                               lifeform = "Tree",
                               leafform = "Broadleaved",
                               phenology = "Summergreen",
@@ -274,8 +274,8 @@ euro.PFTs[["Ulm_gla"]] <- new("PFT",
 
 
 euro.PFTs[["C3_gr"]] <- new("PFT",
-                          name = "C3_gr",
-                          longname = "C3 herbacious",
+                          id = "C3_gr",
+                          name = "C3 herbacious",
                           lifeform = "Grass",
                           leafform = "Unspecified_Leafform",
                           phenology = "GrassPhenology",
@@ -287,8 +287,8 @@ euro.PFTs[["C3_gr"]] <- new("PFT",
 
 
 euro.PFTs[["C4_gr"]] <- new("PFT",
-                          name = "C4_gr",
-                          longname = "C4 herbacious",
+                          id = "C4_gr",
+                          name = "C4 herbacious",
                           lifeform = "Grass",
                           leafform = "Unspecified_Leafform",
                           phenology = "GrassPhenology",
@@ -298,8 +298,8 @@ euro.PFTs[["C4_gr"]] <- new("PFT",
 )
 
 euro.PFTs[["Bare"]] <- new("PFT",
-            name = "Bare",
-            longname = "Bare ground",
+            id = "Bare",
+            name = "Bare ground",
             lifeform = "NA",
             leafform = "NA",
             phenology = "NA",
@@ -310,8 +310,8 @@ euro.PFTs[["Bare"]] <- new("PFT",
 
 
 euro.PFTs[["Total"]] <- new("PFT",
+    id = "Total",
     name = "Total",
-    longname = "Total",
     lifeform = "NA",
     leafform = "NA",
     phenology = "NA",

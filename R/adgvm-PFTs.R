@@ -24,7 +24,7 @@
 
 ###########################################################################
 ###
-### Master list of PFT names, properties, preferred plot colours etc
+### Master list of PFT ids, properties, preferred plot colours etc
 ###
 ### Author: Matthew Forrest 
 ### Date: 08/04/2013
@@ -39,8 +39,8 @@ aDGVM.PFTs <- list()
 
 
 C4G <- new("PFT",
-           name = "C4G",
-           longname = "Tropical Grass",
+           id = "C4G",
+           name = "Tropical Grass",
            lifeform = "Grass",
            leafform = "Broadleaved",
            phenology = "GrassPhenology",
@@ -49,12 +49,12 @@ C4G <- new("PFT",
            combine = "no"
 )
 
-aDGVM.PFTs[[C4G@name]] <- C4G
+aDGVM.PFTs[[C4G@id]] <- C4G
 
 
 Tr <- new("PFT",
-            name = "Tr",
-            longname = "Tropical Tree",
+            id = "Tr",
+            name = "Tropical Tree",
             lifeform = "Tree",
             leafform = "Broadleaved",
             phenology = "Evergreen",
@@ -63,11 +63,11 @@ Tr <- new("PFT",
             combine = "no"
 )
 
-aDGVM.PFTs[[Tr@name]] <- Tr
+aDGVM.PFTs[[Tr@id]] <- Tr
 
 TrBE <- new("PFT",
-            name = "TrBE",
-            longname = "Tropical Broadleaved Evergreen Tree",
+            id = "TrBE",
+            name = "Tropical Broadleaved Evergreen Tree",
             lifeform = "Tree",
             leafform = "Broadleaved",
             phenology = "Evergreen",
@@ -76,12 +76,12 @@ TrBE <- new("PFT",
             combine = "no"
 )
 
-aDGVM.PFTs[[TrBE@name]] <- TrBE
+aDGVM.PFTs[[TrBE@id]] <- TrBE
 
 
 TrBR <- new("PFT",
-            name = "TrBR",
-            longname = "Tropical Broadleaved Raingreen Tree",
+            id = "TrBR",
+            name = "Tropical Broadleaved Raingreen Tree",
             lifeform = "Tree",
             leafform = "Broadleaved",
             phenology = "Raingreen",
@@ -90,14 +90,14 @@ TrBR <- new("PFT",
             combine = "no"
 )
 
-aDGVM.PFTs[[TrBR@name]] <- TrBR
+aDGVM.PFTs[[TrBR@id]] <- TrBR
 
 
 
 
 Total <- new("PFT",
+             id = "Total",
              name = "Total",
-             longname = "Total",
              lifeform = "NA",
              leafform = "NA",
              phenology = "NA",
@@ -106,12 +106,12 @@ Total <- new("PFT",
              combine = "no"
 )
 
-aDGVM.PFTs[[Total@name]] <- Total
+aDGVM.PFTs[[Total@id]] <- Total
 
 
 Bare <- new("PFT",
-            name = "Bare",
-            longname = "Bare ground",
+            id = "Bare",
+            name = "Bare ground",
             lifeform = "NA",
             leafform = "NA",
             phenology = "NA",
@@ -120,7 +120,7 @@ Bare <- new("PFT",
             combine = "no"
 )
 
-aDGVM.PFTs[[Bare@name]] <- Bare
+aDGVM.PFTs[[Bare@id]] <- Bare
 
 
 

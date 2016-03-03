@@ -159,7 +159,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       for(layer.name in names(data.toplot)){
         # look up PFT
         for(PFT in PFT.set){
-          if(layer.name == PFT@name) plot.labels[[length(plot.labels )+1]] <- unlist(PFT@longname)
+          if(layer.name == PFT@id) plot.labels[[length(plot.labels )+1]] <- unlist(PFT@name)
         }
         #if(layer.name == "Total") plot.labels[[length(plot.labels )+1]] <- "Total"
       }
@@ -271,7 +271,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         
         # PLOT TITLE
         if(length(targets) == 1){
-          if(is.null(summary.title)) plot.title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), summary.title, run, period)
+          if(is.null(summary.title)) plot.title <- makePlotTitle(paste(quant@full.string, layer, sep = " "), summary.title, run, period)
           else plot.title <- summary.title
         }
         else {
@@ -643,11 +643,11 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
     #  DomPFTs <- append(DomPFTs, levels(data.toplot[,var,with=FALSE]))    
     #}
   }
-  for(PFT.name in DomPFTs){
-    if(PFT.name == "Barren"){ dom.PFT.colourlist[["Barren"]] <- "gray75"}
+  for(PFT.id in DomPFTs){
+    if(PFT.id == "Barren"){ dom.PFT.colourlist[["Barren"]] <- "gray75"}
     else{ 
-      if(useLongnames) {dom.PFT.colourlist[[PFT.set[[PFT.name]]@longname]] <- PFT.set[[PFT.name]]@colour}
-      else {dom.PFT.colourlist[[PFT.name]] <- PFT.set[[PFT.name]]@colour}
+      if(useLongnames) {dom.PFT.colourlist[[PFT.set[[PFT.id]]@id]] <- PFT.set[[PFT.id]]@colour}
+      else {dom.PFT.colourlist[[PFT.id]] <- PFT.set[[PFT.id]]@colour}
     }
   }
   

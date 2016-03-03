@@ -47,7 +47,7 @@ getPFTs <- function(input, PFT.data){
   PFTs.present <- list()
   for(colname in input.names){
     for(PFT in PFT.data){
-      if(PFT@name == colname) {
+      if(PFT@id == colname) {
         PFTs.present <- append(PFTs.present, PFT)
       }
     }
@@ -76,7 +76,7 @@ expandTargets <- function(targets, data, PFT.data){
   
   if("pft" %in% tolower(targets) || "pfts" %in% tolower(targets)) {
     for(PFT in all.PFTs) {
-      targets <- append(targets, PFT@name)
+      targets <- append(targets, PFT@id)
     }
     
     if("pft" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "pft")]
@@ -181,8 +181,8 @@ combineShadeTolerance <- function(input){
         
         # if PFT to be added is present the combine them and set the shade intolerant PFT to zero, if not send a warning and do nothing
         if(!is.null(PFT.data[[PFT@combine]])){
-          dt[, PFT.data[[PFT@combine]]@name := rowSums(.SD), .SDcols=c(PFT.data[[PFT@combine]]@name, PFT@name)]
-          dt[, PFT@name := 0]
+          dt[, PFT.data[[PFT@combine]]@id := rowSums(.SD), .SDcols=c(PFT.data[[PFT@combine]]@id, PFT@id)]
+          dt[, PFT@id := 0]
         }
         else{
           warning(paste("PFT", PFT, "is supposed to be combined with PFT", PFT@combine, "but that PFT is not present so ignoring.", sep = " " ))
@@ -223,7 +223,7 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
   woody.PFTs.present <- list()
   for(colname in names(dt)){
     for(PFT in PFT.data){
-      if(PFT@name == colname) {
+      if(PFT@id == colname) {
         if(do.all) {PFTs.present <- append(PFTs.present, colname)}
         if(do.tree && tolower(PFT@lifeform) == "tree") {tree.PFTs.present <- append(tree.PFTs.present, colname)}
         if(do.woody && (tolower(PFT@lifeform) == "tree" || tolower(PFT@lifeform) == "shrub")) {woody.PFTs.present <- append(woody.PFTs.present, colname)}
@@ -345,7 +345,7 @@ addVegTotals <- function(input, targets = c("lifeforms"), PFT.data = NULL){
   targets <- expandTargets(targets, dt, PFT.data)
   
   # remove PFTs from targets since PFTs are already present as totals
-  for(PFT in all.PFTs){ if(PFT@name %in% targets) targets <- targets[-which(targets == PFT@name)]}
+  for(PFT in all.PFTs){ if(PFT@id %in% targets) targets <- targets[-which(targets == PFT@id)]}
   
   # make zero columns for each target (provided they are not PFTs)
   for(target in targets){ suppressWarnings(dt[, target := 0, with= FALSE]) }
@@ -354,15 +354,15 @@ addVegTotals <- function(input, targets = c("lifeforms"), PFT.data = NULL){
   for(PFT in all.PFTs){
     
     # lifeform
-    if(PFT@lifeform %in% targets) { dt[, PFT@lifeform := rowSums(.SD), .SDcols = c(PFT@name , PFT@lifeform)] }
+    if(PFT@lifeform %in% targets) { dt[, PFT@lifeform := rowSums(.SD), .SDcols = c(PFT@id , PFT@lifeform)] }
     # zone
-    if(PFT@zone %in% targets) dt[, PFT@zone := rowSums(.SD), .SDcols = c(PFT@name , PFT@zone)]
+    if(PFT@zone %in% targets) dt[, PFT@zone := rowSums(.SD), .SDcols = c(PFT@id , PFT@zone)]
     # leafform
-    if(PFT@leafform %in% targets) dt[, PFT@leafform := rowSums(.SD), .SDcols = c(PFT@name , PFT@leafform)]
+    if(PFT@leafform %in% targets) dt[, PFT@leafform := rowSums(.SD), .SDcols = c(PFT@id , PFT@leafform)]
     # phenologies
-    if(PFT@phenology %in% targets) dt[, PFT@phenology := rowSums(.SD), .SDcols = c(PFT@name , PFT@phenology)]
+    if(PFT@phenology %in% targets) dt[, PFT@phenology := rowSums(.SD), .SDcols = c(PFT@id , PFT@phenology)]
     # Woody special case 
-    if("Woody" %in% targets & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) dt[, Woody := rowSums(.SD), .SDcols = c(PFT@name , "Woody")]
+    if("Woody" %in% targets & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) dt[, Woody := rowSums(.SD), .SDcols = c(PFT@id , "Woody")]
     
   }
   
@@ -458,19 +458,14 @@ addSeasonal <- function(input, seasons = c("DJF", "MAM", "JJA", "SON", "Annual")
     method = "mean"
   }  
   
-  # TODO: move this so to global definitions of Period
-  seasons.full <- list("DJF" = c("Dec", "Jan", "Feb"), 
-                       "MAM" = c("Mar", "Apr", "May"), 
-                       "JJA" = c("Jun", "Jul", "Aug"),
-                       "SON" = c("Sep", "Oct", "Nov"),
-                       "Annual" = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug","Sep", "Oct", "Nov", "Dec")) 
   
   
   # for each season
-  for(season in seasons){
-    total.str <- quote(paste(season, sep = ""))
-    suppressWarnings(dt[, eval(total.str) := rowSums(.SD), .SDcols = seasons.full[[season]]])
-    if(method == "average" || method == "mean" || method == "avg") dt[, eval(total.str) := get(eval(total.str)) / length(seasons.full[[season]])]
+  for(season.str in seasons){
+    season.obj <- all.periods[[season.str]]
+    total.str <- quote(paste(season.str, sep = ""))
+    suppressWarnings(dt[, eval(total.str) := rowSums(.SD), .SDcols = season.obj@contains])
+    if(method == "average" || method == "mean" || method == "avg") dt[, eval(total.str) := get(eval(total.str)) / length(season.obj@contains)]
   } 
   
   input@data <- dt

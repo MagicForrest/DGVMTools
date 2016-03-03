@@ -33,7 +33,7 @@
 ##### TemporalExtent - class to hold the start and end years of a time span (often an period of years over which to average)
 #####            averaging period and a name to identify it
 setClass("TemporalExtent",
-         slots = c(id="character",
+         slots = c(id= "character",
                    name = "character",
                    start = "numeric",
                    end = "numeric"
@@ -58,10 +58,12 @@ setClass("SpatialExtent",
 
 ##### Period - class to hold the metadata about a month, seasonal or annual time period
 setClass("Period",
-         slots = c(name = "character",
+         slots = c(id = "character",
+                   name = "character",
                    abbreviation = "character",
                    index = "numeric",
                    padded.index = "character",
+                   contains = "character",
                    days = "numeric",
                    days.leap = "numeric"
          )
@@ -74,8 +76,8 @@ setClass("Period",
 
 ##### PFT  - class to hold the data for an LPJ-GUESS PFT
 setClass("PFT", 
-         slots = c(name = "character",
-                   longname = "character",
+         slots = c(id = "character",
+                   name = "character",
                    lifeform = "character",
                    leafform = "character",
                    phenology = "character",
@@ -207,6 +209,21 @@ setClass("VegTemporal",
                    run = "VegRunInfo"
          )
            
+)
+
+setClass("VegObject", 
+         slots = c(id = "character",
+                   data = "data.table",
+                   quant = "VegQuant",
+                   spatial.extent = "SpatialExtent",
+                   temporal.extent = "TemporalExtent",
+                   is.site = "logical",
+                   is.spatially.averaged = "logical",
+                   is.temporally.averaged = "logical"
+                   
+         ),
+         contains = "VegRunInfo"
+         
 )
 
 
