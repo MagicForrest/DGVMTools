@@ -84,17 +84,9 @@ addToVegRun <- function(object, run, id = NULL){
     
   }
   
-  else if(object.class == "VegTemporal") {
-    
-    if(is.null(id)) id <- object@id
-    temporal.list <- run@temporal
-    temporal.list[[id]] <- object
-    run@temporal <- temporal.list
-    rm(temporal.list)
-    
-  }
   
-  else if(object.class == "VegSpatial") {
+  
+  else if(is.VegObject(object)) {
     
     if(is.null(id)) id <- object@id
     spatial.list <- run@spatial
@@ -118,82 +110,23 @@ addToVegRun <- function(object, run, id = NULL){
 
 ################################# GET TIME-AVERAGED DATA #########################################
 
-getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, adgvm.scheme = 1){
+getVegSpatial <- function(run, 
+                          period, 
+                          var, 
+                          forceReAveraging = TRUE, 
+                          ...){
   
-  # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Year = NULL  
   
-  if(class(var) == "character") {
-    quant <- lookupVegQuantity(var)
-    var.string <- var
-  }
-  else {
-    quant <- var
-    var.string <- quant@id
-  }
-  
-  if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") {
-    
-    # make file name
-    TA.filename <- paste(run@run.dir, "/", var.string, ".TA.", period@start, "-", period@end, ".Rtable", sep ="")
-    
-    # if file is present and we are not forcing re-averaging, read in the pre-averaged file
-    if(file.exists(paste(TA.filename)) & !forceReAveraging){
-      if(verbose) {message(paste("File",  TA.filename, "found in",  run@run.dir, "so using that.",  sep = " "))}
-      this.TA.dt <- fread(TA.filename, header = TRUE, stringsAsFactors=FALSE)
-    } 
-    
-    # otherwise, open the full .out file read it as a data table, time average it and save to disk
-    else {
-      if (is.null(this.full)) {
-        if(verbose){
-          if(forceReAveraging & file.exists(paste(TA.filename))) message(paste("File",  TA.filename, "exists but forecReAveraging selected so reading ther full output again", sep = " "))
-          else message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
-        }
-        
-        this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
-        if(verbose) {
-          message("Head of full .out file (after offsets):")
-          print(head(this.full))
-        }
-      }
-      else{
-        if(verbose) message(paste("File ",  TA.filename, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that.", sep = ""))
-      }
-      
-      # do temporal averaging
-      this.TA.dt <- .doTimeAverage.cmpd(this.full, period, verbose)
-      if(verbose) {
-        message("Head of time averaged data.table:")
-        print(head(this.TA.dt))
-      }
-      
-      
-      if(write) {
-        if(verbose) {message("Saving as a table...")}
-        write.table(this.TA.dt, file = TA.filename, quote = FALSE, row.names = FALSE)
-      }
-    }
-  }
-  else if(run@model == "aDGVM") {
-    
-    if(adgvm.scheme == 1) this.dt <- data.table(getVegQuantity_aDGVM_Scheme1(run, period, quant))
-    if(adgvm.scheme == 2) this.dt <- data.table(getVegQuantity_aDGVM_Scheme2(run, period, quant))
-    
-    print(this.dt)
-    
-    this.TA.dt <- .doTimeAverage.cmpd(this.dt, period, verbose)
-    
-  }
-  
-  setkey(this.TA.dt, Lon, Lat)
-  
-  return(new("VegSpatial",
-             id = paste(var.string, period@id, sep = "_"),
-             data = this.TA.dt,
-             temporal.extent = period,
-             quant = quant,
-             run = as(run, "VegRunInfo")))
+  return(
+    getVegObject(run, 
+                 var, 
+                 spatial.extent = NULL, 
+                 spatially.average = FALSE,
+                 temporal.extent = period, 
+                 temporally.average = TRUE, 
+                 reread.file = forceReAveraging, 
+                 ...)
+  )
   
   
 }
@@ -202,80 +135,24 @@ getVegSpatial <- function(run, period, var, this.full = NULL, write = TRUE, forc
 ################################# GET SPACE-AVERAGED DATA #########################################
 
 
-getVegTemporal <- function(run, var, spatial.extent = NULL, this.full = NULL, write = TRUE, forceReAveraging = TRUE, verbose = TRUE, area.weighted=TRUE, adgvm.scheme = 1){
+getVegTemporal <- function(run, 
+                           var, 
+                           spatial.extent = NULL, 
+                           forceReAveraging = TRUE, 
+                           ...){
   
-  # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Year = NULL
+  return(
+    getVegObject(run, 
+                 var, 
+                 spatial.extent = spatial.extent, 
+                 spatially.average = TRUE,
+                 temporal.extent = NULL, 
+                 temporally.average = FALSE, 
+                 reread.file = forceReAveraging, 
+                 ...)
+  )
   
-  if(class(var) == "character") {
-    quant <- lookupVegQuantity(var)
-    var.string <- var
-  }
-  else {
-    quant <- var
-    var.string <- quant@id
-  }
   
-  # look for the correct time averaged files and if there read it in
-  if(is.null(spatial.extent)){
-    SA.filename <- paste(run@run.dir, "/", var.string, ".SA.Rtable", sep ="")
-  } 
-  else {
-    SA.filename <- paste(run@run.dir, "/", var.string, ".", spatial.extent@id, ".SA.Rtable", sep ="")
-  }
-  
-  # if file is present and we are not forcing re-averaging, read in the pre-averaged file
-  if(file.exists(paste(SA.filename)) & !forceReAveraging){
-    if(verbose) {message(paste("File",  SA.filename, "found in",  run@run.dir, "so using that.",  sep = " "))}
-    this.SA.dt <- fread(SA.filename, header = TRUE, stringsAsFactors=FALSE)
-    # In this case the 
-    if(is.null(spatial.extent)) {
-      # In this case we cannot determine original extent, so put in dummy values
-      spatial.extent <- new("SpatialExtent", id = "original", name = "Full original domain", extent = extent(NaN, NaN, NaN, NaN))
-    }
-  } 
-  
-  # otherwise, open the full .out file read it as a data table, time average it and save to disk
-  else {
-    if (is.null(this.full)) {
-      if(verbose) message(paste("File ",  SA.filename, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
-      this.full <- openLPJOutputFile(run, var.string, verbose = TRUE)
-    }
-    else{
-      if(verbose) message(paste("File ",  SA.filename, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that.", sep = ""))
-    }
-    # If required, crop spatial extent before spatially averaging
-    if(!is.null(spatial.extent)) {
-      this.full <- cropRVC(this.full, spatial.extent)
-    }
-    this.SA.dt <- .doSpaceAverage.cmpd(this.full, verbose, area.weighted)
-    if(write) {
-      if(verbose) {message("Saving as a table...")}
-      write.table(this.SA.dt, file = SA.filename, quote = FALSE, row.names = FALSE)
-    }
-  }
-  setkey(this.SA.dt, Year)
-  
-  # In the special case that a special extent was not specified and we read the whole file, determine the spatial extent
-  if(is.null(spatial.extent) & !is.null(this.full)) {
-    Lons <- sort(unique(this.full[,Lon]))
-    Lats <- sort(unique(this.full[,Lat]))
-    lon.min <- Lons[1] - (Lons[2] - Lons[1])/2
-    lon.max <- Lons[length(Lons)] + (Lons[length(Lons)] -Lons[length(Lons)-1])/2
-    lat.min <- Lats[1] - (Lats[2] - Lats[1])/2
-    lat.max <- Lats[length(Lats)] + (Lats[length(Lats)] -Lats[length(Lats)-1])/2
-    spatial.extent <- new("SpatialExtent", id = "Full", name = "Full Domain", extent = extent(lon.min,lon.max,lat.min,lat.max))
-  }
-  
-  rm(this.full)
-  gc()
-  
-  return(new("VegTemporal",
-             id = paste(var.string, spatial.extent@id, sep = "."),
-             data = this.SA.dt,
-             spatial.extent = spatial.extent,
-             quant = quant,
-             run = as(run, "VegRunInfo")))
 }
 
 
@@ -356,7 +233,7 @@ getVegObject <- function(run,
     
     ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
     if(spatially.average){
-      this.dt <- .doSpatialAverage.cmpd(this.dt, verbose, area.weighted)
+      this.dt <- .doSpatialAverage(this.dt, verbose, area.weighted)
       if(verbose) {
         message("Head of spatially averaged data.table:")
         print(head(this.dt))
@@ -366,7 +243,7 @@ getVegObject <- function(run,
     
     ###  DO TIME AVERAGE
     if(temporally.average){
-      this.dt <- .doTimeAverage.cmpd(this.dt, temporal.extent, verbose)
+      this.dt <- .doTemporalAverage(this.dt, verbose)
       if(verbose) {
         message("Head of time averaged data.table:")
         print(head(this.dt))
@@ -385,6 +262,9 @@ getVegObject <- function(run,
   
   ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE RETURN OBJECT
   
+  # But first build the VegObject id and ignore 
+  
+  # TEMPORAL
   if(is.null(temporal.extent)) {
     sorted.unique.years <- sort(unique(this.dt[,Year]))
     temporal.extent<- new("TemporalExtent",
@@ -396,6 +276,7 @@ getVegObject <- function(run,
     if(verbose) message(paste("No temporal extent specified, setting temporal extent to whole file (",  temporal.extent@start, "-", temporal.extent@end, ")", sep = ""))
   }
   
+  # SPATIAL
   if(is.null(spatial.extent)) {
     sorted.unique.lats <- sort(unique(this.dt[,Lat]))
     sorted.unique.lons <- sort(unique(this.dt[,Lon]))
@@ -408,7 +289,7 @@ getVegObject <- function(run,
                                           sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2)
                           )
     )
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to simulate: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
   }
   
   
@@ -421,7 +302,7 @@ getVegObject <- function(run,
              is.site = FALSE,
              is.spatially.averaged = spatially.average,
              is.temporally.averaged = temporally.average,
-             as(run, "VegRunInfo")))
+             run = as(run, "VegRunInfo")))
   
 }
 
@@ -434,8 +315,8 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   this.class = class(data)[1]
   
   ###  Define the layers we are pulling out
-  # for VegSpatial - note could define a methods "names" do cover this exception
-  if(this.class == "VegSpatial" & (is.null(layers) | layers[1] == "all")) {layers <- names(data@data)} 
+  # for VegObject - note could define a methods "names" do cover this exception
+  if(is.VegObject(data) & (is.null(layers) | layers[1] == "all")) {layers <- names(data@data)} 
   # for data.table or rasters
   else if(is.null(layers) | layers[1] == "all") {layers = names(data)}
   
@@ -445,11 +326,11 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
     print("If error check here: promoteToRaster in veg-runtools.R")
     data.raster <- raster(data, layers)
   }
-  ### If data.table or VegSpatial (which contains a data.table) 
+  ### If data.table or VegObject (which contains a data.table) 
   # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table" | this.class == "VegSpatial"){
+  else if(this.class == "data.table" | is.VegObject(data)){
     if(this.class == "data.table") data.spdf <- .makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
-    if(this.class == "VegSpatial") data.spdf <- .makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
+    if(is.VegObject(data)) data.spdf <- .makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
     if(length(layers) == 1){
       data.raster <- raster(data.spdf)
       rm(data.spdf)
@@ -498,8 +379,8 @@ sanitiseNamesForRaster <- function(input){
     setnames(input.copy, sub("-", ".", names(input.copy)))
     return(input.copy)
   }
-  ### If VegSpatial (which contains a data.table) 
-  else if(this.class == "VegSpatial"){
+  ### If VegObject (which contains a data.table) 
+  else if(is.VegObject(input)){
     dt <- copy(input@data)
     setnames(dt, sub("-", ".", names(dt)))
     input@data <- dt
@@ -575,37 +456,22 @@ sanitiseNamesForRaster <- function(input){
 
 ######################### TIME AVERAGE AN LPJ-GUESS FULL OUTPUT FILE COMING IN AS A data.table  ##############################
 
-doTimeAverage <- function(input.dt,
-                          averaging.period,
-                          verbose = FALSE){
+.doTemporalAverage.uncompiled <- function(input.dt,
+                                          verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
   Year = Lat = Lon = NULL
   
   # Do the averaging
-  if(verbose) message(paste("Averaging between ",  averaging.period@start, " and ", averaging.period@end, "...", sep = ""))
-  
-  
-  # do the temporal averaging between first.year and last.year 
-  if("Lon" %in% names(input.dt))  output.dt <- subset(input.dt, Year >= averaging.period@start & Year <= averaging.period@end)[,lapply(.SD, mean), by=list(Lat, Lon)]
-  else output.dt <- subset(input.dt, Year >= averaging.period@start & Year <= averaging.period@end)[,lapply(.SD, mean)]
+  if(verbose) message("Temporally averaging ...")
+  if("Lon" %in% names(input.dt))  output.dt <- input.dt[,lapply(.SD, mean), by=list(Lat, Lon)]
+  else output.dt <- input.dt[,lapply(.SD, mean)]
+  if(verbose) message("...done.")
   
   # remove the Year 'cos it dun' make so much sense no mo'
   output.dt[,Year:=NULL]
-  
-  
-  # MF: alternative way with nice syntax but doesn't produce binary identical results
-  # don't know why, it is frustrating
-  #     t1 <- Sys.time()
-  #     output.dt.2 <- input.dt[Year >= period@start & Year <= period@end, lapply(.SD,mean), by=list(Lat, Lon)]
-  #     output.dt.2[,Year:=NULL]
-  #     t2 <- Sys.time()
-  #     print(t2-t1)
-  #     print("check")
-  #     print(identical(output.dt, output.dt.2))
-  #   
-  if(verbose) message("Averaged")
+ 
   
   # Delete the full dataset to free up memory - necessary??
   rm(input.dt)
@@ -617,30 +483,27 @@ doTimeAverage <- function(input.dt,
   
 }
 
-.doTimeAverage.cmpd <- cmpfun(doTimeAverage)
-
-.doTemporalAverage.cmpd <- cmpfun(doTimeAverage)
+.doTemporalAverage <- cmpfun(.doTemporalAverage.uncompiled)
 
 
 
 
-# MF: Function currently not used
 .selectYears <- function(input.dt, temporal.extent){
   
+  # To stop compiler NOTES
   Year = NULL
   
-  output.dt <- subset(input.dt, Year >= temporal.extent@start & Year <= temporal.extent@end)
-  
-  return(output.dt)    
+  # return the subsetted data.table
+  return(subset(input.dt, Year >= temporal.extent@start & Year <= temporal.extent@end))    
   
 }
 
 
 ######################### SPACE AVERAGE AN LPJ-GUESS FULL OUTPUT FILE COMING IN AS A data.table  ##############################
 
-doSpaceAverage <- function(input.dt,
-                           verbose = FALSE,
-                           area.weighted=TRUE){
+.doSpatialAverage.uncompiled <- function(input.dt,
+                                         verbose = FALSE,
+                                         area.weighted=TRUE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
@@ -681,10 +544,7 @@ doSpaceAverage <- function(input.dt,
   
 }
 
-.doSpaceAverage.cmpd <- cmpfun(doSpaceAverage)
-
-.doSpatialAverage.cmpd <- cmpfun(doSpaceAverage)
-
+.doSpatialAverage <- cmpfun(.doSpatialAverage.uncompiled)
 
 
 

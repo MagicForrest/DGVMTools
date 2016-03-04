@@ -27,48 +27,39 @@
 ### Need a new way to handle this stuff with file paths etc
 
 
-
-
-###############################################################################
-### SPECIFY SYSTEM DEPENDENT PATHS - CHANGE THESE FOR YOUR SYSTEM
-################################################################################
-
-
 ####### SPECIFY LOCATION OF AUXILIARY DATA HERE 
+# TODO - add LPJ-GUESS standard gridlist to the package so we can remove this ugliness
+
 auxiliary.data.dir <- "/home/forrest/AuxiliaryData" # NOTE: must be the full path or OGR gets confused :-(
 
 
-###############################################################################
-### BUILD COMPOUND PATHS TO SHAPEFILES, GRIDLISTS, BENCHMARKING DATA ETC.
-###############################################################################
+#' Check is an object is a \code{VegObject}.   
+#'
+#' Returns TRUE if an object is a \code{VegObject}, and FALSE otherwise 
+#' 
+#' @param input Any R object to bec checked
+#' @return logical
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
-
-####### DIRECTORIES FOR ALL BENCHMARKING DATA, SHAPEFILES, GRIDLISTS
-benchmarking.data.dir <- file.path(auxiliary.data.dir, "BenchmarkingData")
-shapefile.dir <- file.path(auxiliary.data.dir, "Shapefiles") # NOTE: must be the full path or OGR gets confused :-(
-gridlist.dir <- file.path(auxiliary.data.dir, "Gridlists/")
-
-
-######
-#gfed4.annual <-  file.path(benchmarking.data.dir, "GFED4/GFED4.0_HD_Annual_BA.nc")
-#saatchi2011.original.data.path <- ("/senckenberg.de/DATEN_PBE/PB-E/PBE-ALLG/Datasets/Biomass/2011_Saatchi/www-radar.jpl.nasa.gov/projects/carbon/datasets")
-
-is.VegSpatial <- function(input) {
+is.VegObject <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "VegSpatial" && attr(class.def, "package")=="RVCTools")
+    if (class.def[1] == "VegObject" && attr(class.def, "package")=="RVCTools")
       return(TRUE)
   return(FALSE)
 }
 
-is.VegTemporal <- function(input) {
-  class.def <- class(input)
-  if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "VegTemporal" && attr(class.def, "package")=="RVCTools")
-      return(TRUE)
-  return(FALSE)
-}
 
+
+#' Check is an object is a \code{VegRun}.   
+#'
+#' Returns TRUE if an object is a \code{VegRun}, and FALSE otherwise 
+#' 
+#' @param input Any R object to be checked
+#' @return logical
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
 is.VegRun <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
@@ -77,6 +68,15 @@ is.VegRun <- function(input) {
   return(FALSE)
 }
 
+
+#' Check is an object is a \code{VegQuant}.   
+#'
+#' Returns TRUE if an object is a \code{VegQuant}, and FALSE otherwise 
+#' 
+#' @param input Any R object to be checked
+#' @return logical
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
 is.VegQuant <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))

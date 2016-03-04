@@ -38,7 +38,7 @@
 #' 
 #' @param run A \code{VegRun} containing the meta-data about the LPJ-GUESS run
 #' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
-#' @param A logical, set to true to give progress/debug information
+#' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
@@ -153,10 +153,10 @@ openLPJOutputFile <- function(run,
 #' output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
 #' \code{VegRun} object, it will return that to save time.
 #' 
-#' @param A \code{VegRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
+#' @param run A \code{VegRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param store.internally A logical defining whether to attach the resulting to the \code{data.table} to the \code{VegRun} object for later use
-#' @param A logical, set to true to give progress/debug information
+#' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
@@ -174,7 +174,7 @@ getVegQuantity_LPJ <- function(run, var.string, store.internally = FALSE,verbose
   
   # READ THE FULL FILE
   else {
-    if(verbose) message(paste(var.string, ".out not already read, so using reading it now.", sep = ""))
+    if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
     
     this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
     

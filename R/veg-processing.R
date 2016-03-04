@@ -40,7 +40,7 @@ getPFTs <- function(input, PFT.data){
   
   # Allow for rasters, Veg Objects and data.tables
   input.class <- class(input)[1]
-  if(input.class == "VegSpatial") suppressWarnings(input.names <- names(input@data))
+  if(is.VegObject(input)) suppressWarnings(input.names <- names(input@data))
   else if(input.class == "data.table" | input.class == "RasterLayer" | input.class == "RasterBrick" | input.class == "RasterStack") input.names <- names(input)
   else stop(paste("Can't get PFTs from object of class", input.class, sep = " "))
   
@@ -319,10 +319,9 @@ addVegTotals <- function(input, targets = c("lifeforms"), PFT.data = NULL){
   
   ### Here allow the possibility to handle both VegObjects and data.tables directly (for internal calculations)
   # MF: Maybe also handle rasters one day?
-  class.input <- class(input)[1]
 
-  # if it is a Veg 
-  if(class.input == "VegSpatial" | class.input == "VegTemporal" |  class.input == "VegObject") {
+  # if it is a VegObject 
+  if(is.VegObject(input)) {
    # We get a warning about a shallow copy here, suppress it
     suppressWarnings(dt <- input@data)
     PFT.data <- input@run@pft.set
@@ -366,7 +365,7 @@ addVegTotals <- function(input, targets = c("lifeforms"), PFT.data = NULL){
     
   }
   
-  if(class.input == "VegSpatial" | class.input == "VegTemporal" |  class.input == "VegObject") {
+  if(is.VegObject(input)) {
    input@data <- dt
    return(input)
   }

@@ -31,7 +31,7 @@
 ### It also acts as wrapper for non-standard plots, or at least it should soon.
 
 
-plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegSpatial 
+plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegObject
                         targets = NULL,
                         expand.targets = TRUE,
                         quant = NULL, 
@@ -64,19 +64,25 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         maxpixels = 1E6,
                         ...){
   
- 
-  ### IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
-  if(class(data)[1] == "VegSpatial"){
-    run <- data@run
-    period <- data@temporal.extent
-    PFT.set <- run@pft.set
-    if(is.null(quant)) quant <- data@quant  
+  
+  
+  ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
+  if(is.VegObject(data)){
+    if(data@is.temporally.averaged){
+      run <- data@run
+      period <- data@temporal.extent
+      PFT.set <- run@pft.set
+      if(is.null(quant)) quant <- data@quant  
+    } 
+    else {
+      stop("plotVegMaps:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
+    }
   }
-    
+  
   ### TOLERANCE - for when making grid
   if(is.null(run)) { tolerance <- 0.02 }
   else {tolerance <- run@tolerance}  
-
+  
   ### DIRECTORY TO SAVE PLOTS
   if(is.null(plot.dir)){
     if(!is.null(run)){ plot.dir <- run@run.dir} 
@@ -133,38 +139,38 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### EXPAND TARGETS
   if(is.null(targets)) {
-    if(class(data)[1] == "VegSpatial") targets <- names(data@data)
+    if(is.VegObject(data)) targets <- names(data@data)
     else targets <- names(data)
   }
   if(expand.targets) {
     targets <- expandTargets(targets, data, PFT.set)
     if(!is.null(special)){
       if(tolower(special) == "fraction" | tolower(special) == "frac") targets <- paste(targets, "Fraction", sep = sep.char)
-   }
+    }
   }
-   
+  
   ### PLOT LABELS (if no titles are provided use the layer names)
   if(is.null(plot.labels)){
     plot.labels <- targets 
   }
-    
+  
   # PROMOTE TO RASTER AND SANITISE NAMES
   targets <- sanitiseNamesForRaster(targets) 
   data.toplot <- sanitiseNamesForRaster(data)
   data.toplot <- promoteToRaster(data.toplot, targets, tolerance)
   
   # LONGNAMES - for PFTs
-   if(useLongnames) {
-      plot.labels <- list()
-      for(layer.name in names(data.toplot)){
-        # look up PFT
-        for(PFT in PFT.set){
-          if(layer.name == PFT@id) plot.labels[[length(plot.labels )+1]] <- unlist(PFT@name)
-        }
-        #if(layer.name == "Total") plot.labels[[length(plot.labels )+1]] <- "Total"
+  if(useLongnames) {
+    plot.labels <- list()
+    for(layer.name in names(data.toplot)){
+      # look up PFT
+      for(PFT in PFT.set){
+        if(layer.name == PFT@id) plot.labels[[length(plot.labels )+1]] <- unlist(PFT@name)
       }
-      plot.labels <- unlist(plot.labels)
+      #if(layer.name == "Total") plot.labels[[length(plot.labels )+1]] <- "Total"
     }
+    plot.labels <- unlist(plot.labels)
+  }
   
   
   # LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field
@@ -210,7 +216,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     doIndividual <- TRUE
   }
   
- 
+  
   
   for(format in Cairo.type){
     
@@ -221,11 +227,11 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       this.id <- makeVariableIDString(quant@id, "Summary", special.string)
       if(is.null(summary.file.name)) this.file.name <- makeFileName(this.id, file.name = summary.file.name, run = run, period = period)
       else this.file.name <- paste(summary.file.name, format, sep = ".")
-
+      
       # PLOT MAIN TITLE
       if(is.null(summary.title)) this.main.title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), summary.title, run, period)
       else this.main.title <- summary.title
-
+      
       Cairo(file = file.path(plot.dir, this.file.name), 
             dpi = Cairo.dpi, 
             type = format, 
@@ -233,7 +239,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
             height = Cairo.height, 
             title = this.main.title, 
             bg = Cairo.bg)  
-        
+      
       print(spplot(data.toplot,
                    targets,
                    par.settings = list(panel.background=list(col=plot.bg.col)),
@@ -353,10 +359,16 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   
   ##### Here take parameters from arguments or from supplied VegRun object
   
-  # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
-  if(class(data) == "VegSpatial"){
-    run <- data@run
-    period <- data@temporal.extent
+  ### IF VEGOBJECT HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
+  if(is.VegObject(data)){
+    if(data@is.temporally.averaged){
+      run <- data@run
+      period <- data@temporal.extent
+      PFT.set <- run@pft.set
+    } 
+    else {
+      stop("plotBiomeMaps:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all these years of data?!")
+    }
   }
   
   # IF NO LAYERS, COLS OR STRINGS SUPPLIED, USE THE  DEFAULTS OF THE SCHEME
@@ -373,7 +385,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
     if(!is.null(run)){ plot.dir <- run@run.dir} 
     else { plot.dir = "." }
   }
-
+  
   ##### Here check data is right class for plotting, process it if not
   data.toplot <- promoteToRaster(data, targets, run@tolerance) 
   if(is.null(plot.labels)) {
@@ -388,12 +400,12 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   
   # EXTENT
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
-
+  
   # LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field
   if(!is.null(run)){
     if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
   }
-
+  
   # Add PNV data if requested read it in and compare rasters
   if(!is.null(addData)) {
     if(class(addData)[[1]] == "SpatialDataset") addData <- addData@data
@@ -420,21 +432,21 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   
   # KAPPA
   if(!is.null(kappa.list)){
-   
-      # if only one model run put individual Kappas into biome legend
-      if(nlayers(data.toplot)-1 == 1) biome.strings <- paste0(biome.strings, " (", round(kappa.list[[1]]@individual.Kappas,2), ")", sep = "")
-      # place overall Kappa on each modelled biome map 
-      if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
-      for(layer in 1:(nlayers(data.toplot)-1)){
-        layout.objs[[paste(layer)]] <- list("sp.text", kappa.position, paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
-      }
-  
+    
+    # if only one model run put individual Kappas into biome legend
+    if(nlayers(data.toplot)-1 == 1) biome.strings <- paste0(biome.strings, " (", round(kappa.list[[1]]@individual.Kappas,2), ")", sep = "")
+    # place overall Kappa on each modelled biome map 
+    if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
+    for(layer in 1:(nlayers(data.toplot)-1)){
+      layout.objs[[paste(layer)]] <- list("sp.text", kappa.position, paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
+    }
+    
   }
   
   # PLOT MAIN TITLE
   if(is.null(main.title)) this.main.title <- makePlotTitle(paste("Biomes"), main.title, run, period)
   else this.main.title <- main.title
-
+  
   for(format in Cairo.type){
     
     # FILENAME
@@ -605,12 +617,19 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
                                background.colour = "transparent"){
   
   
-  # IF VEGVAR HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
-  if(class(data) == "VegSpatial"){
-    run <- data@run
-    period <- data@temporal.extent
-    PFT.set <- run@pft.set
-    if(is.null(quant)) quant <- data@quant  
+ 
+  
+  ### IF IS VEGOBJECT THE SIMILAR
+  if(is.VegObject(data)){
+    if(data@is.temporally.averaged){
+      run <- data@run
+      period <- data@temporal.extent
+      PFT.set <- run@pft.set
+      if(is.null(quant)) quant <- data@quant  
+    } 
+    else {
+      stop("plotDominantPFTMap:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
+    }
   }
   
   
@@ -632,8 +651,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   dom.PFT.colourlist <- vector()
   DomPFTs <- vector()
   if(length(which.dominant) == 1 ) {
-    class.input.data <- class(data)
-    if(class.input.data == "VegSpatial") {
+    if(is.VegObject(data)) {
       DomPFTs <- levels(data.toplot@data[,which.dominant])
     }
   }
@@ -728,7 +746,7 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
   
   if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
   
- 
+  
   
   CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "DiffHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
   

@@ -190,27 +190,6 @@ setClass("VegQuant",
          
 )
 
-
-
-setClass("VegSpatial", 
-         slots = c(id = "character",
-                   data = "data.table",
-                   temporal.extent = "TemporalExtent",
-                   quant = "VegQuant",
-                   run = "VegRunInfo"
-          )
-)
-
-setClass("VegTemporal", 
-         slots = c(id = "character",
-                   data = "data.table",
-                   spatial.extent = "SpatialExtent",
-                   quant = "VegQuant",
-                   run = "VegRunInfo"
-         )
-           
-)
-
 setClass("VegObject", 
          slots = c(id = "character",
                    data = "data.table",
@@ -219,10 +198,10 @@ setClass("VegObject",
                    temporal.extent = "TemporalExtent",
                    is.site = "logical",
                    is.spatially.averaged = "logical",
-                   is.temporally.averaged = "logical"
+                   is.temporally.averaged = "logical",
+                   run = "VegRunInfo"
                    
          ),
-         contains = "VegRunInfo"
          
 )
 

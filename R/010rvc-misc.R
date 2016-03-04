@@ -1,7 +1,7 @@
 
 
 ########## STANDARD LPJ-GUESS HALF DEGREE GRIDLIST
-lpj.HD.gridlist <- file.path(gridlist.dir, "gridlist_global_0.5deg.txt")
+lpj.HD.gridlist <- file.path(auxiliary.data.dir, "Gridlists", "gridlist_global_0.5deg.txt")
 
 
 # read gridlist and make 
