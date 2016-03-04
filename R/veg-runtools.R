@@ -309,7 +309,7 @@ getVegObject <- function(run,
     var.string <- quant@id
   }
   
-  ### file.name  - this described completely whether we want the files spatially or temporally averaged and reduced in extent
+  ### MAKE file.name VARIABLE - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
   TA.str = SA.str = "."
   if(spatially.average) SA.str <- ".SA."
   if(temporally.average) TA.str <- ".TA."
@@ -321,9 +321,9 @@ getVegObject <- function(run,
   
   ### USE THE PREAVERAGED/CROPPED FILE IF AVAILABLE (and we are not forcing a re-read and we have not already read the full file)
   if(file.exists(paste(file.name)) & !reread.file & !var.string %in% names(run@full)){
-    if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "so using that.",  sep = " "))}
+    if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     this.dt <- fread(file.name)
-    .setkeyRVC(this.dt)
+    .setKeyRVC(this.dt)
     
   } 
   
@@ -334,7 +334,7 @@ getVegObject <- function(run,
     ### !!! CALL MODEL SPECIFIC FUNTIONS HERE !!!
     if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") {
       
-      this.dt <- getVegQuantity_LPJ(file.name, run, var.string, store.internally, reread.file, verbose)
+      this.dt <- getVegQuantity_LPJ(run, var.string, store.internally, verbose)
       
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
@@ -381,8 +381,6 @@ getVegObject <- function(run,
     
     
   } # IF READING RAW DATA
-  
-  
   
   
   ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE RETURN OBJECT

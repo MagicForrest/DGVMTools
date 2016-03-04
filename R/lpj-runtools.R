@@ -145,22 +145,36 @@ openLPJOutputFile <- function(run,
 }
 
 
-getVegQuantity_LPJ <- function(file.name, run, var.string, store.internally = FALSE, reread.file = FALSE, verbose = FALSE) {
+######################### RETURN A DATA.TABLE CONTAINING THE FULL DATA FROM ONE LPJ-GUESS OUTPUT VARIABLE #####################################################################
+#
+#' Returns the data from one LPJ-GUESS output variable as a \code{data.table}.   
+#'
+#' \code{getVegQuantity_LPJ} returns a \code{data.table} containing the full data (not averaged spatially or temporally) data from an LPJ-GUESS
+#' output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
+#' \code{VegRun} object, it will return that to save time.
+#' 
+#' @param A \code{VegRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
+#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param store.internally A logical defining whether to attach the resulting to the \code{data.table} to the \code{VegRun} object for later use
+#' @param A logical, set to true to give progress/debug information
+#' @return a data.table (with the correct tear offset and lon-lat offsets applied)
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import data.table
+#' @export
+
+getVegQuantity_LPJ <- function(run, var.string, store.internally = FALSE,verbose = FALSE) {
   
    
   # USE THE FULL FILE IF ALREADY STORED IN MEMORY
   if(var.string %in% names(run@full)){
-    if(verbose) message(paste("File ",  file.name, " not found in directory ",  run@run.dir, " but ", var.string, ".out is already read, so using that internal copy.", sep = ""))
+    if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
     this.dt <- run@full[[var.string]]
     setkey(this.dt, Lon, Lat, Year)
   }
   
-  # READ THE FULL 
+  # READ THE FULL FILE
   else {
-    if(verbose){
-      if(reread.file & file.exists(paste(file.name))) message(paste("File",  file.name, "exists but reread.file = TRUE selected so reading ther full output again", sep = " "))
-      else message(paste("File ",  file.name, " not found in directory ",  run@run.dir, " and ", var.string, ".out is not already read, reading .out file.", sep = ""))
-    }
+    if(verbose) message(paste(var.string, ".out not already read, so using reading it now.", sep = ""))
     
     this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
     

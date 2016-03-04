@@ -34,18 +34,12 @@ domain = new("SpatialExtent", id = "Reference", name = "Reference", extent = ext
 
 # Open the lai.out file, and average over the reference period
 temp1 <- getVegObject(run, variable, temporal.extent = period, reread.file = TRUE, write = FALSE, store.internally = FALSE)
-
-stop()
 temp2 <- getVegObject(run, variable, temporal.extent = period, reread.file = FALSE, write = TRUE)
-stop()
-temp3 <- getVegObject(run, variable, temporal.extent = period, temporally.average = TRUE, reread.file = TRUE, write = TRUE)
-stop()
-temp4 <- getVegObject(run, variable, spatial.extent = domain, spatially.average = TRUE, reread.file = TRUE, write = TRUE)
-stop()
+temp3 <- getVegObject(run, variable, temporal.extent = period, temporally.average = TRUE, reread.file = FALSE, write = TRUE)
+temp4 <- getVegObject(run, variable, spatial.extent = domain, spatially.average = TRUE, reread.file = FALSE, write = TRUE)
 temp5 <- getVegObject(run, variable, spatial.extent = domain, spatially.average = TRUE, temporal.extent = period, temporally.average = TRUE, reread.file = FALSE, write = TRUE)
 
 
-temp3 <- getVegObject(run, variable, forceReAveraging = FALSE, write = TRUE)
 
 
 
