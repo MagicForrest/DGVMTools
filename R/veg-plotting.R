@@ -65,6 +65,10 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         ...){
   
   
+  #####################################################################################
+  ############# PRE-AMBLE - WHEN THINGS ARE NOT SPECIFIED, PULL SOME DEFAULTS #########
+  #####################################################################################
+  
   
   ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
   if(is.VegObject(data)){
@@ -78,11 +82,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       stop("plotVegMaps:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
     }
   }
-  
-  ### TOLERANCE - for when making grid
-  if(is.null(run)) { tolerance <- 0.02 }
-  else {tolerance <- run@tolerance}  
-  
+    
   ### DIRECTORY TO SAVE PLOTS
   if(is.null(plot.dir)){
     if(!is.null(run)){ plot.dir <- run@run.dir} 
@@ -97,22 +97,78 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     quant = lpj.quantities[["generic"]]
   }
   
-  ### SPECIAL
+  
+  ### COLORKEY - standard, updated by specials below
+  colorkey.list <- list(space = "right", 
+                        col = quant@colours, 
+                        labels = list(cex = 3 * text.multiplier)
+  )
+  
+  ### LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field the add it
+  if(!is.null(run)){
+    if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
+  }
+  
+  
+  
+  #####################################################################################
+  ############# PREPARE DATA AND TARGET LIST FOR PLOTTING #############################
+  #####################################################################################
+  
+  ### TOLERANCE - for when making grid to rasterise
+  if(is.null(run)) { tolerance <- 0.02 }
+  else {tolerance <- run@tolerance}  
+    
+  ### EXPAND TARGETS
+  if(is.null(targets)) {
+    if(is.VegObject(data)) targets <- names(data@data)
+    else targets <- names(data)
+  }
+  if(expand.targets) {
+    targets <- expandTargets(targets, data, PFT.set)
+    if(!is.null(special)){
+      if(tolower(special) == "fraction" | tolower(special) == "frac") targets <- paste(targets, "Fraction", sep = sep.char)
+    }
+  }
+  
+  ### PROMOTE TO RASTER AND SANITISE NAMES - also make plot labels (if necessary) before the sanitatisation 
+  if(is.null(plot.labels)){  plot.labels <- targets }
+  targets <- sanitiseNamesForRaster(targets)
+  data.toplot <- sanitiseNamesForRaster(data)
+  data.toplot <- promoteToRaster(data.toplot, targets, tolerance)
+  
+  ### CROP THE DATA IF PLOT EXTENT HAS BEEN SPECIFIED
+  if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
+  
+  
+  
+  #####################################################################################
+  ############# DEAL WITH SPECIAL CASES ###############################################
+  #####################################################################################
+  
+  ### IF SPECIALS 
   if(!is.null(special)){
     if(tolower(special) == "difference" | tolower(special) == "diff"){
+      
       minmax <- max(quant@cuts) - min(quant@cuts)
       step <- (max(quant@cuts) - min(quant@cuts)) / (length(quant@cuts) - 1)
       quant@cuts <- seq(from = -minmax, to = minmax, by = step)
       quant@colours <- colorRampPalette(c("green","blue","white","red", "yellow"))
+      # also update colorkey
+      colorkey.list[["col"]] <- quant@colours
       quant@id <-  paste(quant@id, "diff", sep =".")
       quant@short.string = paste(quant@short.string, "Diff", sep = ".")
       quant@full.string = paste("Difference: ", quant@full.string, sep = "")
       plot.bg.col <- "grey"
+    
+      
     }
     else if(tolower(special) == "percentage.difference" | tolower(special) == "perc.diff"){
       
       quant@cuts <- seq(from = -100, to = 200, by = 10)
       quant@colours <- colorRampPalette(c("blue","white","red", "yellow"))
+      # also update colorkey
+      colorkey.list[["col"]] <- quant@colours
       quant@id <-  paste(quant@id, "percdiff", sep =".")
       quant@short.string = paste(quant@short.string, "PercDiff", sep = ".")
       quant@full.string = paste("Percentage Difference: ", quant@full.string, sep = "")
@@ -126,6 +182,37 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       quant@short.string <- paste(quant@short.string, "fraction", sep = ".")
       quant@full.string <- paste(quant@full.string, "Fraction", sep = " ")
       quant@colours <- colorRampPalette(c("grey85", "black"))
+      # also update colorkey
+      colorkey.list[["col"]] <- quant@colours
+      
+    }
+    else if(tolower(special) == "burnt.fraction" | tolower(special) == "ba"){
+      
+  
+      stop("plotVegMaps: special burnt.fraction or ba not impletemted yet")
+      
+    }
+    else if(tolower(special) == "firert" | tolower(special) == "fire.return.time"){
+      
+      # SET THE INTERVALS (using either these sensible options or the over-rides)
+      quant@cuts <- c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000)
+      quant@colours <-  colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+      # if override cuts and cols specified use them, but note we have to then kill them otherwise they will over-ride the new cuts below
+      if(!is.null(override.cols)) {quant@colours <- override.cols}
+      if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
+      override.cols = override.cuts = NULL
+            
+      # RECLASSIFY THE DATA ACCORDING TO THE CUTS 
+      temp.names <- names(data.toplot)
+      data.toplot <- cut(data.toplot, quant@cuts) 
+      names(data.toplot) <- temp.names
+      
+      # UPDATE LABELS AND CUTS FOR SEINSIBLE PLOTTING
+      colorkey.labels <- paste(quant@cuts)
+      colorkey.labels[length(colorkey.labels)] <- paste0(colorkey.labels[length(colorkey.labels)], "+")
+      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, "labels" = colorkey.labels, "at" = 0:(length(quant@cuts)-1))
+      colorkey.list[["at"]] <- 0:(length(quant@cuts)-1)
+      quant@cuts = 0:(length(quant@cuts)-1)
       
     }
     else {
@@ -137,51 +224,26 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   if(!is.null(override.cols)) {quant@colours <- override.cols}
   if(!is.null(override.cuts)) {quant@cuts <- override.cuts}
   
-  ### EXPAND TARGETS
-  if(is.null(targets)) {
-    if(is.VegObject(data)) targets <- names(data@data)
-    else targets <- names(data)
-  }
-  if(expand.targets) {
-    targets <- expandTargets(targets, data, PFT.set)
-    if(!is.null(special)){
-      if(tolower(special) == "fraction" | tolower(special) == "frac") targets <- paste(targets, "Fraction", sep = sep.char)
-    }
-  }
   
-  ### PLOT LABELS (if no titles are provided use the layer names)
-  if(is.null(plot.labels)){
-    plot.labels <- targets 
-  }
-  
-  # PROMOTE TO RASTER AND SANITISE NAMES
-  targets <- sanitiseNamesForRaster(targets) 
-  data.toplot <- sanitiseNamesForRaster(data)
-  data.toplot <- promoteToRaster(data.toplot, targets, tolerance)
-  
-  # LONGNAMES - for PFTs
+  ### USE LONGNAMES - for PFTs
   if(useLongnames) {
-    plot.labels <- list()
-    for(layer.name in names(data.toplot)){
+    for(plot.label in plot.labels){
       # look up PFT
       for(PFT in PFT.set){
-        if(layer.name == PFT@id) plot.labels[[length(plot.labels )+1]] <- unlist(PFT@name)
+        if(plot.label == PFT@id) plot.labels[[length(plot.labels )+1]] <- unlist(PFT@name)
       }
-      #if(layer.name == "Total") plot.labels[[length(plot.labels )+1]] <- "Total"
     }
     plot.labels <- unlist(plot.labels)
   }
   
   
-  # LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field
-  if(!is.null(run)){
-    if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
-  }
   
-  # EXTENT
-  if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
   
-  # LIMIT
+  #####################################################################################
+  ############# LIMIT THE PLOTTED VARIABLE IF REQUESTED################################
+  ## Not really recommended as it hides scientific content, but can make plots nicer ##
+  #####################################################################################
+  
   if(limit){
     
     if(is.null(limits)){
@@ -209,18 +271,26 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
   }
   
-  # SUMMARY/INDIVIDUAL
+  
+  
+  
+  
+  
+  #####################################################################################
+  ############# MAKE THE PLOTS ########################################################
+  #####################################################################################
+  
+  ### CHECK SUMMARY/INDIVIDUAL
   # If only one layer has been selected, don't plot as summary, plot it as individual, regardless of settings
   if(nlayers(data.toplot) == 1){
     doSummary <- FALSE
     doIndividual <- TRUE
   }
-  
-  
+    
   
   for(format in Cairo.type){
     
-    # print all layers on one plot if summary is TRUE
+    ### PRINT SUMMARY PLOT WITH ALL DATA IN ONE PLOT
     if(doSummary){
       
       # FILENAME
@@ -246,9 +316,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                    xlab = list(label = "Longitude", cex = 3 * text.multiplier),
                    ylab = list(label = "Latitude", cex = 3 * text.multiplier),
                    col.regions= quant@colours,
-                   colorkey = list(space = "right", 
-                                   col = quant@colours, 
-                                   labels = list(cex = 3 * text.multiplier)),                                                                                            
+                   colorkey = colorkey.list,                                                                                            
                    at = quant@cuts,
                    scales = list(draw = TRUE, cex = 3 * text.multiplier),
                    as.table = TRUE,
@@ -261,12 +329,13 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                    names.attr = plot.labels,
                    ...)
       )
-      
+                 
+          
       dev.off()
       
     }
     
-    # print all PFTs on one plot if summary is TRUE
+    ### PRINT INDIVIUAL PLOTS
     if(doIndividual){
       
       for(layer in targets){
@@ -299,7 +368,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                      xlab = list(label = "Longitude", cex = 3 * text.multiplier),
                      ylab = list(label = "Latitude", cex = 3 * text.multiplier),
                      col.regions= quant@colours,
-                     colorkey = list(space = "right", col = quant@colours, labels = list(cex = 3)),
+                     colorkey = colorkey.list,
                      at = quant@cuts,
                      scales = list(draw = TRUE, cex = 3 * text.multiplier),
                      as.table = TRUE,
@@ -312,6 +381,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                      ...)
         )
         dev.off()
+                
         
       }
       
@@ -617,7 +687,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
                                background.colour = "transparent"){
   
   
- 
+  
   
   ### IF IS VEGOBJECT THE SIMILAR
   if(is.VegObject(data)){
