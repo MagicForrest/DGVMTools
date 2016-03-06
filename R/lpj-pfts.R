@@ -22,8 +22,6 @@
 ###
 ###################################### 
 
-# blahblah
-
 
 # now make a big list of the global PFTs 
 global.PFTs <- list(
