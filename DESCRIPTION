@@ -20,7 +20,6 @@ Depends:
     lattice,
     fields,
     data.table,
-    xts,
     rgeos,
     compiler,
     ggplot2,
