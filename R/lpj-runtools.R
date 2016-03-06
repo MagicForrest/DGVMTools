@@ -154,7 +154,7 @@ openLPJOutputFile <- function(run,
 #' \code{VegRun} object, it will return that to save time.
 #' 
 #' @param run A \code{VegRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
-#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param var.string A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param store.internally A logical defining whether to attach the resulting to the \code{data.table} to the \code{VegRun} object for later use
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
@@ -237,7 +237,6 @@ listAllLPJOutput <- function(run.directory){
 #' @param var.filename The string of the filename to be trimmed
 #' @return A string less the last four characters.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @internal
 
 
 # handy helper function for trimming file names to get a variable name

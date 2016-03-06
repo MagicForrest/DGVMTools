@@ -11,7 +11,7 @@ openLPJOutputFile(run, variable, verbose = FALSE)
 
 \item{variable}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
 
-\item{A}{logical, set to true to give progress/debug information}
+\item{verbose}{A logical, set to true to give progress/debug information}
 }
 \value{
 a data.table (with the correct tear offset and lon-lat offsets applied)
@@ -22,5 +22,8 @@ from the run (eg. "lai", to read the file "lai.out") and  \code{VegRun} object w
 }
 \details{
 Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
+}
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 
