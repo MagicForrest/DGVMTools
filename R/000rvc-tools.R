@@ -42,11 +42,26 @@ auxiliary.data.dir <- "/home/forrest/AuxiliaryData" # NOTE: must be the full pat
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 
-is.VegObject <- function(input) {
+is.VegObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
   class.def <- class(input)
-  if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "VegObject" && attr(class.def, "package")=="RVCTools")
-      return(TRUE)
+  if (!is.null(attr(class.def, "package"))) {
+    if (class.def[1] == "VegObject" && attr(class.def, "package")=="RVCTools") {
+      if (spatial && !temporal && !site) {
+        if (!input@is.site && !input@is.spatially.averaged)
+          return(TRUE)
+      } else if (!spatial && temporal) {
+        if (!input@is.temporally.averaged)
+          return(TRUE)
+      } else if (site) {
+        if (input@is.site)
+          return(TRUE)
+      } else if (!spatial && !temporal && !site) {
+        return(TRUE)
+      } else {
+        return(FALSE)
+      }
+    }
+  }
   return(FALSE)
 }
 
