@@ -178,7 +178,7 @@ rvc.ggplot.theme <- function(x) {
 plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, long.title=TRUE, plot=TRUE, ...) {
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
-  if (is.VegSpatial(input)) {
+  if (is.VegObject(input, spatial=TRUE)) {
     if (is.na(column) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
     if (!is.na(column) && length(column)>1) {
@@ -236,7 +236,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
       wrap <- 1
     }
     for (i in 1:length(input)) {
-      if (!is.VegSpatial(input[[i]]))
+      if (!is.VegObject(input[[i]], spatial=TRUE))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
       
       if (is.na(column) && all(colnames(input[[i]]@data) != "value"))
@@ -452,7 +452,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
   
   ## check if a VegObj or a list of VegObj is given as input
   ## check data column names for given column name or column name 'value'
-  if (is.VegSpatial(input)) {
+  if (is.VegObject(input, spatial=TRUE)) {
     if (is.na(column) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
     
@@ -476,7 +476,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
     }
   } else if (is.list(input)) {
     for (i in 1:length(input)) {
-      if (!is.VegSpatial(input[[i]]))
+      if (!is.VegObject(input[[i]], spatial=TRUE))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
       if (i==1) {
         units <- input[[i]]@quant@units
@@ -679,6 +679,8 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
       dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
     }
+    print(str(dx))
+    print(str(dy))
     dt <- dy[dx]
     setnames(dt, targets$column[1], "value")
     setnames(dt, targets$column[2], "category")
@@ -977,7 +979,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @export
 #' 
 plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="line", wrap=NA, long.title=TRUE, lty="sens", alpha=NA, plot=TRUE, ...) {
-  if (is.VegTemporal(input)) {
+  if (is.VegObject(input, temporal=TRUE)) {
     if (is.na(columns) && all(colnames(input@data) != "value"))
       stop("No columns name given and no column named 'value' present!")
 
@@ -998,8 +1000,8 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
     quant = input@quant
   } else if (is.list(input)) {
     for (i in 1:length(input)) {
-      if (!is.VegTemporal(input[[i]]))
-        stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
+      if (!is.VegObject(input[[i]], temporal=TRUE))
+        stop("'input' must either be a temporal RCVTools::VegObject or a list of them!")
       if (i==1) {
         if (is.na(columns) && all(colnames(input[[i]]@data) != "value")) {
           stop("No column name given and no column named 'value' present!")
@@ -1182,7 +1184,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
 plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE, bins=10, long.title=TRUE, plot=TRUE, ...) {
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
-  if (is.VegSpatial(input)) {
+  if (is.VegObject(input, spatial=TRUE)) {
     if (is.na(column) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
     if (!is.na(column) && length(column)>1) {
@@ -1203,7 +1205,7 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
     }
   } else if (is.list(input)) {
     for (i in 1:length(input)) {
-      if (!is.VegSpatial(input[[i]]))
+      if (!is.VegObject(input[[i]], spatial=TRUE))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
       
       if (is.na(column) && all(colnames(input[[i]]@data) != "value"))

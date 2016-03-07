@@ -81,7 +81,7 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
   area   <- data.frame(Lon=as.vector(lon2d),
                        Lat=as.vector(lat2d),
                        area=as.vector(area2d))
-  area <- data.table(area, key=c("Lon", "Lat"))
+  area <- data.table(area, key=c("Lat", "Lon"))
   return(area)
 }
 
@@ -119,8 +119,8 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   }
   return(x)
 }
-
-addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=FALSE) {
+#' Adds the gridcell area to a spatial VegObject or data.table/data.frame
+addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
   if (is.na(unit))
     unit="m^2"
 
@@ -129,33 +129,47 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=FALSE) {
     ellipse=FALSE
   }
 
-  if (is.data.table(input)) {
+  if (is.data.table(input) || is.data.frame(input)) {
     if (verbose)
-      message("Input is a data.table.")
+      message("Input is a data.table or data.frame.")
     lon <- extract.seq(input$Lon)
     lat <- extract.seq(input$Lat)
-  } else {
+  } else if (is.VegObject(input, spatial=TRUE)) {
     if (verbose)
-      message("Input is not a data.table. Assuming it is a VegSpatial.")
+      message("Input is a spatial VegObject.")
     lon <- extract.seq(input@data$Lon)
     lat <- extract.seq(input@data$Lat)
+  } else {
+    stop(paste("addArea: Don't know what to to with class", class(input)))
   }
 
-  area <- as.data.table(gridarea2d(lon, lat, ellipse=ellipse))
-  setkeyv(area, c("Lon", "Lat"))
+  area <- gridarea2d(lon, lat, ellipse=ellipse)
+  if (is.data.table(input) || is.VegObject(input)) {
+    area <- as.data.table(area)
+    if (is.data.table(input)) {
+      setkeyv(area, key(input)[key(input)=="Lon" | key(input)=="Lat"])
+    } else {
+      setkeyv(area, key(input@data)[key(input@data)=="Lon" | key(input@data)=="Lat"])
+    }
+  }
 
   if (unit!="m^2") {
-    if (ud.is.parseable(unit)) {
-      if (ud.are.convertible("m^2", unit)) {
-        area$area = ud.convert(area$area, "m^2", unit)
+    if (requireNamespace("udunits2", quietly=TRUE)) {
+      if (udunits2::ud.is.parseable(unit)) {
+        if (udunits2::ud.are.convertible("m^2", unit)) {
+          area$area = udnunits2::ud.convert(area$area, "m^2", unit)
+        } else {
+          warning(paste("m^2 not convertible to '", unit, "'. Using m^2 instead.", sep=""))
+          unit="m^2"
+        }
       } else {
-        warning(paste("m^2 not convertible to '", unit, "'. Using m^2 instead.", sep=""))
+        warning(paste("Unit '", unit, "' not parseable! Using m^2 instead.", sep=""))
         unit="m^2"
       }
     } else {
-      warning(paste("Unit '", unit, "' not parseable. Using m^2 instead.", sep=""))
-      unit="m^2"
-    }
+      message("Package 'udnunits2' not installed! Using m^2 instead.")
+      warning("Package 'udnunits2' not installed! Using m^2 instead.")
+    }  
   }
 
   if (is.data.table(input)) {
@@ -163,10 +177,15 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=FALSE) {
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "' to data.table.", sep=""))
     return(input)
+  } else if (is.data.frame(input)) {
+    input <- merge.data.frame(area, input, by=c("Lon", "Lat"))
+    if (verbose)
+      message(paste("Added column 'area' in unit '", unit, "' to data.frame.", sep=""))
+    return(input)
   } else {
-    data <- input@data
-    data <- area[data]
-    input@data <- data
+    dt <- input@data
+    dt <- area[dt]
+    input@data <- dt
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "'' to data.table in slot 'data'.", sep=""))
     return(input)
@@ -256,7 +275,6 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       warning("Temporal extents differ.")
     if (!is.equal(x.quant, y.quant) && (operator=="+" || operator=="-"))
       warning("Quantity definitions differ.")
-    
   }
 
   if (!is.VegQuant(quant) ) {
@@ -289,7 +307,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
     if (targets[[1]][1]=="spatial") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
       
-      return(new("VegSpatial",
+      return(new("VegObject",
                  id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
                  data = new.dt,
                  temporal.extent = x.extent,
@@ -298,7 +316,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
       
-      return(new("VegTemporal",
+      return(new("VegObject",
                  id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
                  data = new.dt,
                  spatial.extent = x.extent,
