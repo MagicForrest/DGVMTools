@@ -201,8 +201,11 @@ getVegObject <- function(run,
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     this.dt <- fread(file.name)
     .setKeyRVC(this.dt)
-    
-  } 
+    if(spatially.average) {
+      message(paste("getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area", sep = " "))
+      warning(paste("getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area", sep = " "))
+    }
+  }
   
   ### IF PRE-AVERAGED/CROPPED FILE NOT AVAILABLE THEN CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT
   ### AND DO THE CROPPING/AVERAGING 
@@ -228,7 +231,13 @@ getVegObject <- function(run,
     
     ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
     if(!is.null(spatial.extent))  this.dt <- cropRVC(this.dt, spatial.extent)      
-    if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)      
+    if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
+    
+    
+    ### GET THE LONS, LATS AND YEAR BEFORE THEY ARE AVERAGED AWAY
+    sorted.unique.years <- sort(unique(this.dt[,Year]))
+    sorted.unique.lats <- sort(unique(this.dt[,Lat]))
+    sorted.unique.lons <- sort(unique(this.dt[,Lon]))
     
     
     ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
@@ -266,7 +275,6 @@ getVegObject <- function(run,
   
   # TEMPORAL
   if(is.null(temporal.extent)) {
-    sorted.unique.years <- sort(unique(this.dt[,Year]))
     temporal.extent<- new("TemporalExtent",
                           id = "FullTS",
                           name = "Full simulation duration",
@@ -278,8 +286,6 @@ getVegObject <- function(run,
   
   # SPATIAL
   if(is.null(spatial.extent)) {
-    sorted.unique.lats <- sort(unique(this.dt[,Lat]))
-    sorted.unique.lons <- sort(unique(this.dt[,Lon]))
     spatial.extent <- new("SpatialExtent",
                           id = "FullDomain",
                           name = "Full simulation extent",
@@ -471,7 +477,7 @@ sanitiseNamesForRaster <- function(input){
   
   # remove the Year 'cos it dun' make so much sense no mo'
   output.dt[,Year:=NULL]
- 
+  
   
   # Delete the full dataset to free up memory - necessary??
   rm(input.dt)
