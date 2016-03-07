@@ -110,10 +110,10 @@ addToVegRun <- function(object, run, id = NULL){
 
 ################################# GET TIME-AVERAGED DATA #########################################
 
-getVegSpatial <- function(run, 
-                          period, 
-                          var, 
-                          reread.file = TRUE, 
+getVegSpatial <- function(run,
+                          var,
+                          period,
+                          reread.file = TRUE,
                           ...){
   
   
@@ -135,10 +135,10 @@ getVegSpatial <- function(run,
 ################################# GET SPACE-AVERAGED DATA #########################################
 
 
-getVegTemporal <- function(run, 
-                           var, 
-                           spatial.extent = NULL, 
-                           reread.file = TRUE, 
+getVegTemporal <- function(run,
+                           var,
+                           spatial.extent = NULL,
+                           reread.file = TRUE,
                            ...){
   
   return(

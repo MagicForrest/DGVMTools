@@ -175,14 +175,9 @@ print(p)
 
 ### Arithmetics
 
-q()
-
-# These functions currently do not work
-
-
 ## Add some more time averaged spatial data
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@spatial[['cpool']] <- getVegObject(",run,", 'cpool', period)", sep="")))
+  eval(parse(text=paste(run, "@spatial[['cpool']] <- getVegSpatial(",run,", 'cpool', period)", sep="")))
 }
 
 ## create a new quantity description for Carbon residence time,
