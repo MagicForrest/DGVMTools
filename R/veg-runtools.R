@@ -113,7 +113,7 @@ addToVegRun <- function(object, run, id = NULL){
 getVegSpatial <- function(run, 
                           period, 
                           var, 
-                          forceReAveraging = TRUE, 
+                          reread.file = TRUE, 
                           ...){
   
   
@@ -124,7 +124,7 @@ getVegSpatial <- function(run,
                  spatially.average = FALSE,
                  temporal.extent = period, 
                  temporally.average = TRUE, 
-                 reread.file = forceReAveraging, 
+                 reread.file = reread.file, 
                  ...)
   )
   
@@ -138,7 +138,7 @@ getVegSpatial <- function(run,
 getVegTemporal <- function(run, 
                            var, 
                            spatial.extent = NULL, 
-                           forceReAveraging = TRUE, 
+                           reread.file = TRUE, 
                            ...){
   
   return(
@@ -148,7 +148,7 @@ getVegTemporal <- function(run,
                  spatially.average = TRUE,
                  temporal.extent = NULL, 
                  temporally.average = FALSE, 
-                 reread.file = forceReAveraging, 
+                 reread.file = reread.file, 
                  ...)
   )
   

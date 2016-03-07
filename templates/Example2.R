@@ -71,7 +71,7 @@ extents <- standard.continental.extents
 universal.resolution <- "HD"
 
 ### Force re-averaging - in case the raw data have been updated, or we required new a new time period
-forceReAveraging <- FALSE
+reread.file <- FALSE
 
 ### Which variables to analyse and in what detail (use "all" to choose all *.out files in the run directory)
 var.list <- c("mwcont_upper") # simple summary analysis
@@ -166,7 +166,7 @@ for(run in vegrun.list){
     for(period in periods){
       
       # open the output file and average it over the required period, resulting in a "VegSpatial" object
-      this.VegSpatial <- getVegSpatial(run, period, this.VegQuantity, forceReAveraging = forceReAveraging)
+      this.VegSpatial <- getVegSpatial(run, period, this.VegQuantity, reread.file = reread.file)
       
       ### STANDARD SUMMARY PLOTS 
       plotVegMaps(this.VegSpatial, doIndividual = var %in% detailed.var.list)
@@ -268,7 +268,7 @@ for(run in vegrun.list){
     if(benchmarking.dataset@id == "Saatchi2011"){
 
       # average across the Saatchi years, the calculate the Tree total
-      Saatchi.VegSpatial <- getVegSpatial(run, period = benchmarking.dataset@temporal.extent, benchmarking.dataset@veg.quant, forceReAveraging = FALSE)
+      Saatchi.VegSpatial <- getVegSpatial(run, period = benchmarking.dataset@temporal.extent, benchmarking.dataset@veg.quant, reread.file = FALSE)
       Saatchi.VegSpatial <- addVegTotals(Saatchi.VegSpatial, "Tree")
       
       # compare to data
