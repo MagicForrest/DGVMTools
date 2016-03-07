@@ -113,7 +113,7 @@ addToVegRun <- function(object, run, id = NULL){
 getVegSpatial <- function(run, 
                           period, 
                           var, 
-                          forceReAveraging = TRUE, 
+                          reread.file = TRUE, 
                           ...){
   
   
@@ -124,7 +124,7 @@ getVegSpatial <- function(run,
                  spatially.average = FALSE,
                  temporal.extent = period, 
                  temporally.average = TRUE, 
-                 reread.file = forceReAveraging, 
+                 reread.file = reread.file, 
                  ...)
   )
   
@@ -138,7 +138,7 @@ getVegSpatial <- function(run,
 getVegTemporal <- function(run, 
                            var, 
                            spatial.extent = NULL, 
-                           forceReAveraging = TRUE, 
+                           reread.file = TRUE, 
                            ...){
   
   return(
@@ -148,7 +148,7 @@ getVegTemporal <- function(run,
                  spatially.average = TRUE,
                  temporal.extent = NULL, 
                  temporally.average = FALSE, 
-                 reread.file = forceReAveraging, 
+                 reread.file = reread.file, 
                  ...)
   )
   
@@ -201,7 +201,9 @@ getVegObject <- function(run,
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     this.dt <- fread(file.name)
     .setKeyRVC(this.dt)
-    
+    if(spatially.average) {
+     message(paste"getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area")
+     warning(paste"getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area")
   } 
   
   ### IF PRE-AVERAGED/CROPPED FILE NOT AVAILABLE THEN CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT
@@ -228,7 +230,13 @@ getVegObject <- function(run,
     
     ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
     if(!is.null(spatial.extent))  this.dt <- cropRVC(this.dt, spatial.extent)      
-    if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)      
+    if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
+    
+    
+    ### GET THE LONS, LATS AND YEAR BEFORE THEY ARE AVERAGED AWAY
+    sorted.unique.years <- sort(unique(this.dt[,Year]))
+    sorted.unique.lats <- sort(unique(this.dt[,Lat]))
+    sorted.unique.lons <- sort(unique(this.dt[,Lon]))
     
     
     ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
@@ -266,7 +274,6 @@ getVegObject <- function(run,
   
   # TEMPORAL
   if(is.null(temporal.extent)) {
-    sorted.unique.years <- sort(unique(this.dt[,Year]))
     temporal.extent<- new("TemporalExtent",
                           id = "FullTS",
                           name = "Full simulation duration",
@@ -278,9 +285,7 @@ getVegObject <- function(run,
   
   # SPATIAL
   if(is.null(spatial.extent)) {
-    sorted.unique.lats <- sort(unique(this.dt[,Lat]))
-    sorted.unique.lons <- sort(unique(this.dt[,Lon]))
-    spatial.extent <- new("SpatialExtent",
+       spatial.extent <- new("SpatialExtent",
                           id = "FullDomain",
                           name = "Full simulation extent",
                           extent = extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
