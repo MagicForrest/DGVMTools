@@ -168,10 +168,12 @@ rvc.ggplot.theme <- function(x) {
 #' @param colors A (named) vector of colors or a data.frame with the columns 'color' and ('name' or 'value'), to be used for plotting.
 #' @param sym.col boolean, if the colors should be distributed symetrically around 0.
 #' @param wrap a single number of facet_wrap columns or a vector/list with the run, VegSpatial name, column and optionally ncol (number of columns), which is used to split the data in different panels. Only valid when a vector of column names or a list of VegSpatial was given as input. Otherwise it is ignored.
+#' @param terr.bg which colour should be used for missing terrestial pixels (e.g. Greenland)
 #' @param long.title If the description (default) should be used as titles or the shorter id.
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Additional parameters, which are ignored so far.
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
+#' @examples See templates/Example.ggplot.R
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import raster sp maps ggplot2 data.table
 #' @export
@@ -441,6 +443,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Ignored further parameters
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
+#' @examples See templates/Example.ggplot.R
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import ggplot2 data.table
@@ -625,11 +628,12 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #' @param name.map a named vector, to translate numerical y-data into human understandable names
 #' @param area.weighted weight the mean by the gridcell area (default: TRUE) or not.
 #' @param long.title If the description (default) should be used as titles or the shorter id.
+#' @param vertical boolean: values on the y-axis, categories on the x-axis
+#' @param bar boolean: use bars instead of points
 #' @param plot If FALSE only the data is returned, without drawing the map.
-#' @param bar boolean, if TRUE display bars instead of points
-#' @param vertical boolean, arrange the data at the y-axis and the categories on the x-axis
 #' @param ... Ignored further parameters
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
+#' @examples See templates/Example.ggplot.R
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import RColorBrewer ggplot2 data.table
@@ -975,8 +979,9 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @param alpha alpha value for plots
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Ignored further parameters
-#' @import RColorBrewer
+#' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
 #' @export
+#' @import RColorBrewer ggplot2 
 #' 
 plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="line", wrap=NA, long.title=TRUE, lty="sens", alpha=NA, plot=TRUE, ...) {
   if (is.VegObject(input, temporal=TRUE)) {
