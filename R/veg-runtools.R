@@ -114,6 +114,10 @@ getVegSpatial <- function(run,
                           period, 
                           var, 
                           reread.file = TRUE, 
+getVegSpatial <- function(run,
+                          var,
+                          period,
+                          reread.file = TRUE,
                           ...){
   
   
@@ -139,6 +143,10 @@ getVegTemporal <- function(run,
                            var, 
                            spatial.extent = NULL, 
                            reread.file = TRUE, 
+getVegTemporal <- function(run,
+                           var,
+                           spatial.extent = NULL,
+                           reread.file = TRUE,
                            ...){
   
   return(
@@ -206,6 +214,7 @@ getVegObject <- function(run,
       warning(paste("getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area", sep = " "))
     }
   }
+
   
   ### IF PRE-AVERAGED/CROPPED FILE NOT AVAILABLE THEN CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT
   ### AND DO THE CROPPING/AVERAGING 

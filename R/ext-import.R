@@ -78,26 +78,30 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @param run a VegRun object, if a VegSpatial object should be returned, otherwise NA
 #' @param file path to the netCDF file
 #' @param operation Any of sum, mean, gdd5
-#' @param data.name Name of the data field in the netcdf file
-#' @param lon.name Name of the longitude vector in the netcdf file
-#' @param lat.name Name of the latitude vector in the netcdf file
-#' @param time.name Name of the time vector in the netcdf file
-#' @param period Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)
+#' @param temporal.extent Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)
+#' @param spatial.extent Either a SpatialExtent object of a raster extent
+#' @param full should the full annual dataset be returned or an multiannual average (default).
+#' @param data.name Name of the data field in the netcdf file, if NA it will be guessed
+#' @param lon.name Name of the longitude vector in the netcdf file, if NA it will be guessed
+#' @param lat.name Name of the latitude vector in the netcdf file, if NA it will be guessed
+#' @param time.name Name of the time vector in the netcdf file, if NA it will be guessed
 #' @param forceReCalculation Recalculate the desired values (default: FALSE)
 #' @param write write the calculated values for fture speedup (default: TRUE)
 #' @param verbose print some messages
-#' @return data.table if no VegRun was given, otherwise a VegSpatial
+#' @return data.table if no VegRun was given, otherwise a VegObject
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import RNetCDF
 #' @export
-getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, period=NA, forceReCalculation=FALSE, write=TRUE, verbose=TRUE, ...) {
-  if (suppressWarnings(!is.na(period))) {
-    if (class(period)[1]=="TemporalExtent" && attr(class(period), "package")=="RVCTools") {
+getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, forceReCalculation=FALSE, write=TRUE, verbose=TRUE, ...) {
+  suppressWarnings(if (!is.na(temporal.extent)) {
+    if (class(temporal.extent)[1]=="TemporalExtent" && attr(class(temporal.extent), "package")=="RVCTools") {
       period <- c(period@start, period@end)
     } else {
-      period <- c(min(period, na.rm=TRUE), max(period, na.rm=TRUE))
+      period <- c(min(temporal.extent, na.rm=TRUE), max(temporal.extent, na.rm=TRUE))
     }
-  }
+  } else {
+    period <- NA
+  })
 
   operation <- tolower(operation)
 
@@ -124,7 +128,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
   }
   if (verbose)
     message(paste(c("Dimensions:", dim.names), collapse=" "))
-  
+
 ## get the variable properties
   var.names <- c()
   var.dims <- list()
@@ -177,7 +181,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
     } else if (length(dim.names)==3) {
       if (verbose)
         message("Regular grid")
-      
+
       lon.name <- dim.names[grepl("lon", dim.names, ignore.case=TRUE)]
       lat.name <- dim.names[grepl("lat", dim.names, ignore.case=TRUE)]
     } else {
@@ -203,6 +207,33 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
 
   lon   <- var.get.nc(ncin, lon.name)
   lat   <- var.get.nc(ncin, lat.name)
+  if (verbose)
+    message(paste("NetCDF spatial extent: Lon: ", min(lon), "-", max(lon), "; Lat:", min(lat), "-", max(lat)))
+
+  if (!is.na(spatial.extent) && class(spatial.extent)=="Spatial.Extent" && names(class(spatial.extent))=="RVCTools") {
+    extent <- spatial.extent@extent
+  } else if (!is.na(spatial.extent) && class(spatial.extent)=="Extent") {
+    extent <- spatial.extent
+    spatial.extent <- new("SpatialExtent",
+                          id="Undefined",
+                          name="Undefined",
+                          extent=extent)
+    warning("Using 'Undefined' as id/name for spatial.extent")
+  } else {
+    ## calculate the resolution of the outer most gridcells (west/south negative; east/north positive)
+    xres <- c(sort(unique(lon))[1] - sort(unique(lon))[2],
+              sort(unique(lon))[length(unique(lon))] - sort(unique(lon))[length(unique(lon))-1])
+    yres <- c(sort(unique(lat))[1] - sort(unique(lat))[2],
+              sort(unique(lat))[length(unique(lat))] - sort(unique(lat))[length(unique(lat))-1])
+    xlim <- c(min(lon), max(lon)) + xres/2
+    ylim <- c(min(lat), max(lat)) + yres/2
+    extent <- extent(xlim, ylim)
+    spatial.extent <- new("SpatialExtent",
+                          id="FullDomain",
+                          name="Full simulation extent",
+                          extent=extent)
+  }
+
   time  <- var.get.nc(ncin, time.name)
   time.unit <- att.get.nc(ncin, time.name, "units")
   daytime <- gsub("^.* ", " ", time.unit)
@@ -231,6 +262,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
   if (any(is.na(period)))
     period <- c(year(start), year(end)-1)
 
+  ## need also to include soatial extent in file name
   fout <- paste(tools::file_path_sans_ext(file),
                 "_", max(year(start), period[1]), "-", min(year(end), period[2]),
                 "_", operation, ".RTable", sep="")
@@ -238,7 +270,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
     if (verbose)
       message(paste("Found '", fout, "'", sep=""))
     DT <- data.table(read.table(fout, header=TRUE, stringsAsFactors=FALSE))
-    setkey(DT, Lon, Lat)
+    setkey(DT, Year, Lat, Lon)
   } else {
     days <- 1
     if (verbose)
@@ -314,34 +346,40 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
     }
     if (verbose)
       message("")
-  
+
     DT <- melt(DT, id.var=c("Lon", "Lat"))
     DT[, Year:=as.numeric(sub("Y", "", variable)), ]
     DT[, variable:=NULL]
-    setkey(DT, Year, Lon, Lat)
-
-    if (period[1] != period[2]) {
-      DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat")]
-    } else {
-      DT[, Year:=NULL, ]
-    }
+    setkey(DT, Year, Lat, Lon)
+    
     if (write) {
       if (verbose)
         message(paste("Write data to:", fout))
       write.table(DT, file=fout, row.names=FALSE, col.names=TRUE)
     }
   }
+  
+  DT <- DT[Lon>extent@xmin & Lon<extent@xmax & Lat>extent@ymin & Lat<extent@ymax,,]
+
+  if (!full) {
+    if (period[1] != period[2]) {
+      DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat")]
+    } else {
+      DT[, Year:=NULL, ]
+    }
+  }
+  
   if (is.VegRun(run)) {
     start <- year(start)
     end <- year(end)
-    period <- new("TemporalExtent",
-                  id = paste(max(start, period[1]), "_", min(end, period[2]), sep=""),
-                  name =  paste(max(start, period[1]), "-", min(end, period[2]), sep=""),
-                  start = max(start, period[1]), end = min(end, period[2]))
+    temporal.extent <- new("TemporalExtent",
+                           id = paste(max(start, period[1]), "_", min(end, period[2]), sep=""),
+                           name =  paste(max(start, period[1]), "-", min(end, period[2]), sep=""),
+                           start = max(start, period[1]), end = min(end, period[2]))
     if (operation=="gdd5") {
       id <- operation
       quant <- new("VegQuant",
-                   id="gdd5",
+                   id=id,
                    short.string="GDD5",
                    full.string="Growing degree days",
                    type="",
@@ -355,12 +393,29 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", data.name=NA, lo
                    type=operation,
                    units=att.get.nc(ncin, data.name, "units"))
     }
-    return(new('VegSpatial',
+    if (full) {
+    return(new('VegObject',
                id=id,
                data=DT,
-               temporal.extent=period,
-               quant=quant,
-               run=as(run, 'VegRunInfo')))
+               quant = quant,
+               spatial.extent = spatial.extent,
+               temporal.extent = temporal.extent,
+               is.site = FALSE,
+               is.temporally.averaged = FALSE,
+               is.spatially.averaged = FALSE,
+               run = as(run, "VegRunInfo")))
+    } else {
+      return(new('VegObject',
+                 id=id,
+                 data=DT,
+                 quant = quant,
+                 spatial.extent = spatial.extent,
+                 temporal.extent = temporal.extent,
+                 is.site = FALSE,
+                 is.temporally.averaged = TRUE,
+                 is.spatially.averaged = FALSE,
+                 run = as(run, "VegRunInfo")))
+    }
   } else {
     return(DT)
   }

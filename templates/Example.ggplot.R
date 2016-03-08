@@ -83,8 +83,8 @@ sens_CLM <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/globa
 
 ## Fill the runs with time averaged spatial data
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@spatial[['lai']] <- getVegSpatial(",run,", period, 'lai', forceReAveraging = FALSE)", sep="")))
-  eval(parse(text=paste(run, "@spatial[['gpp']] <- getVegSpatial(",run,", period, 'agpp', forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@spatial[['lai']] <- getVegObject(",run,", 'lai', period, temporally.average=TRUE, write=TRUE)", sep="")))
+  eval(parse(text=paste(run, "@spatial[['gpp']] <- getVegObject(",run,", 'agpp', period, temporally.average=TRUE, write=TRUE)", sep="")))
   eval(parse(text=paste(run, "@spatial[['lai']] <- addBiomes(",run, "@spatial[['lai']], Smith2014.scheme)", sep="")))
 }
 
@@ -152,8 +152,8 @@ print(p)
 
 ### Time series
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-   eval(parse(text=paste(run, "@temporal[['gpp']] <- getVegTemporal(",run,", 'agpp', forceReAveraging = FALSE)", sep="")))
-   eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@temporal[['gpp']] <- getVegTemporal(",run,", 'agpp', reread.file = FALSE, write=TRUE)", sep="")))
+  eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', reread.file = FALSE, write=TRUE)", sep="")))
 }
 
 ## plot several columns together
@@ -177,7 +177,7 @@ print(p)
 
 ## Add some more time averaged spatial data
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@spatial[['cpool']] <- getVegSpatial(",run,", period, 'cpool', forceReAveraging = FALSE)", sep="")))
+  eval(parse(text=paste(run, "@spatial[['cpool']] <- getVegSpatial(",run,", 'cpool', period)", sep="")))
 }
 
 ## create a new quantity description for Carbon residence time,
