@@ -46,6 +46,7 @@ is.VegObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package"))) {
     if (class.def[1] == "VegObject" && attr(class.def, "package")=="RVCTools") {
+      ## JS: check more carefully if this if structure makes sense
       if (spatial && !temporal && !site) {
         if (!input@is.site && !input@is.spatially.averaged)
           return(TRUE)
