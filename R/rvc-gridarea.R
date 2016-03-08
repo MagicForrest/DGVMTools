@@ -202,7 +202,19 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
 ######################################################################
 ### arithmetics with VegRun data slots ###############################
 ######################################################################
-
+#' calcNewVegObj: Simple calculation of new VegObjects
+#' 
+#' Simple calculation of new VegObjects by operation '+', '-', '*' or '/'
+#' 
+#' @param run the run the data should be taken from
+#' @param targets a list with elements 'x' and 'y' with components VegObject slot ('temporal' or 'spatial'), VegObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.
+#' @param operator which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/')
+#' @param quant new VegQuant definition to use, if NULL it will be guessed
+#' @param verbose print some messages
+#' @return hopefully a new VegObject
+#' @export
+#' @import data.table
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, keep=FALSE, verbose=TRUE) {
   ## check if valid arguments are given
   if (!is.VegRun(run))

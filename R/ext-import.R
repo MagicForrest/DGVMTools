@@ -81,14 +81,14 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @param temporal.extent Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)
 #' @param spatial.extent Either a SpatialExtent object of a raster extent
 #' @param full should the full annual dataset be returned or an multiannual average (default).
-#' @param data.name Name of the data field in the netcdf file
-#' @param lon.name Name of the longitude vector in the netcdf file
-#' @param lat.name Name of the latitude vector in the netcdf file
-#' @param time.name Name of the time vector in the netcdf file
+#' @param data.name Name of the data field in the netcdf file, if NA it will be guessed
+#' @param lon.name Name of the longitude vector in the netcdf file, if NA it will be guessed
+#' @param lat.name Name of the latitude vector in the netcdf file, if NA it will be guessed
+#' @param time.name Name of the time vector in the netcdf file, if NA it will be guessed
 #' @param forceReCalculation Recalculate the desired values (default: FALSE)
 #' @param write write the calculated values for fture speedup (default: TRUE)
 #' @param verbose print some messages
-#' @return data.table if no VegRun was given, otherwise a VegSpatial
+#' @return data.table if no VegRun was given, otherwise a VegObject
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import RNetCDF
 #' @export
@@ -379,7 +379,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
     if (operation=="gdd5") {
       id <- operation
       quant <- new("VegQuant",
-                   id="gdd5",
+                   id=id,
                    short.string="GDD5",
                    full.string="Growing degree days",
                    type="",
