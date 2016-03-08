@@ -1,8 +1,7 @@
 exportPattern("^[^\\.]")
 
 import(methods)
-import(udunits2, 
-       mapdata,
+import(mapdata,
        maptools, 
        ggplot2, 
        ncdf4, 
