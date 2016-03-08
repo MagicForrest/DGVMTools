@@ -5,9 +5,9 @@
 \title{Get Annual values of climate drivers}
 \usage{
 getAnnualClimate(run = NA, file = NA, operation = "mean",
+  temporal.extent = NA, spatial.extent = NA, full = FALSE,
   data.name = NA, lon.name = NA, lat.name = NA, time.name = NA,
-  period = NA, forceReCalculation = FALSE, write = TRUE, verbose = TRUE,
-  ...)
+  forceReCalculation = FALSE, write = TRUE, verbose = TRUE, ...)
 }
 \arguments{
 \item{run}{a VegRun object, if a VegSpatial object should be returned, otherwise NA}
@@ -16,15 +16,19 @@ getAnnualClimate(run = NA, file = NA, operation = "mean",
 
 \item{operation}{Any of sum, mean, gdd5}
 
-\item{data.name}{Name of the data field in the netcdf file}
+\item{temporal.extent}{Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)}
 
-\item{lon.name}{Name of the longitude vector in the netcdf file}
+\item{spatial.extent}{Either a SpatialExtent object of a raster extent}
 
-\item{lat.name}{Name of the latitude vector in the netcdf file}
+\item{full}{should the full annual dataset be returned or an multiannual average (default).}
 
-\item{time.name}{Name of the time vector in the netcdf file}
+\item{data.name}{Name of the data field in the netcdf file, if NA it will be guessed}
 
-\item{period}{Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)}
+\item{lon.name}{Name of the longitude vector in the netcdf file, if NA it will be guessed}
+
+\item{lat.name}{Name of the latitude vector in the netcdf file, if NA it will be guessed}
+
+\item{time.name}{Name of the time vector in the netcdf file, if NA it will be guessed}
 
 \item{forceReCalculation}{Recalculate the desired values (default: FALSE)}
 
@@ -33,7 +37,7 @@ getAnnualClimate(run = NA, file = NA, operation = "mean",
 \item{verbose}{print some messages}
 }
 \value{
-data.table if no VegRun was given, otherwise a VegSpatial
+data.table if no VegRun was given, otherwise a VegObject
 }
 \description{
 Get Annual values of climate drivers from netCDF files, files must be CF-compliant

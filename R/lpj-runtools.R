@@ -164,6 +164,8 @@ openLPJOutputFile <- function(run,
 
 getVegQuantity_LPJ <- function(run, var.string, store.internally = FALSE,verbose = FALSE) {
   
+  # To avoid annoying NOTES when R CMD check-ing
+  Lon = Lat = Year = NULL
    
   # USE THE FULL FILE IF ALREADY STORED IN MEMORY
   if(var.string %in% names(run@full)){

@@ -4,7 +4,7 @@
 \alias{is.VegObject}
 \title{Check is an object is a \code{VegObject}.}
 \usage{
-is.VegObject(input)
+is.VegObject(input, spatial = FALSE, temporal = FALSE, site = FALSE)
 }
 \arguments{
 \item{input}{Any R object to bec checked}
