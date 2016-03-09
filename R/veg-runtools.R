@@ -202,9 +202,20 @@ getVegObject <- function(run,
     this.dt <- fread(file.name)
     .setKeyRVC(this.dt)
     if(spatially.average) {
-      message(paste("getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area", sep = " "))
-      warning(paste("getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area", sep = " "))
+      message(paste("getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent named", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area", sep = " "))
+      warning(paste("getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent named", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area", sep = " "))
     }
+    
+    # Unique Lats if available
+    if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
+    else{ sorted.unique.lats <- NULL  }
+    # Unique Lons if available
+    if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
+    else{ sorted.unique.lons <- NULL }
+    # Unique Years if available  
+    if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
+    else{ sorted.unique.years <- NULL  }
+    
   }
   
   
@@ -287,16 +298,27 @@ getVegObject <- function(run,
   
   # SPATIAL
   if(is.null(spatial.extent)) {
+    
+    # Handle the case when a file has been spatially averaged over the domain, and so the initial domain is lost
+    # Note that is the domain was the whole simulation domain then this information is lost and the used is warned.
+    extent.temp <- NULL
+    if(!is.null(sorted.unique.lons) & !is.null(sorted.unique.lats)){
+      extent.temp <-  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
+                             sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
+                             sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
+                             sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
+    }
+    else {
+       warning(paste("Orginal extent unknown when reading spatially averaged file ", file.name, ".  If you want need to have this metadata, call getVegObject with reread.file = TRUE to read to whole file.", sep =""))
+    }
+    
     spatial.extent <- new("SpatialExtent",
                           id = "FullDomain",
                           name = "Full simulation extent",
-                          extent = extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
-                                          sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
-                                          sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
-                                          sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2)
-                          )
-    )
+                          extent =  extent.temp)
+    
     if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+  
   }
   
   

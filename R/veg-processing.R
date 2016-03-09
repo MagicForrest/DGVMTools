@@ -323,7 +323,7 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
 
 
 ###################################################################################
-##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, ETC...)
+##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, SEASONAL ETC...)
 
 addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
   
@@ -351,7 +351,6 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
     message("addVegTotals has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
  
   }
-  
 
   
   ### SET UP THE AGGREGATE METHOD 
