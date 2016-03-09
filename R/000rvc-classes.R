@@ -184,7 +184,7 @@ setClass("VegQuant",
                        units = "-",
                        colours = tim.colors,
                        cuts = integer(0),
-                       aggregate.method = "average"
+                       aggregate.method = "sum"
          )
          
          

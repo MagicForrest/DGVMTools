@@ -25,6 +25,6 @@ lat <- seq(89.75,-89.75,-0.5) # equivalent to the above
 sum(gridarea2d(lat,lon)$area)*1.e-12
 }
 \author{
-Joerg Steinkamp <joergsteinkamp@yahoo.de>
+Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
 

@@ -59,7 +59,7 @@ getPFTs <- function(input, PFT.data){
 
 
 
-expandTargets <- function(targets, data, PFT.data){
+expandTargets <- function(targets, data, PFT.data, include.woody = TRUE){
   
   # remove "Lon", "Lat" and "Year" if present
   for(remove.header.from.header in c("Lat", "Lon", "Year")){
@@ -92,7 +92,7 @@ expandTargets <- function(targets, data, PFT.data){
     for(PFT in all.PFTs) {all.lifeforms <- append(all.lifeforms, PFT@lifeform)}
     all.lifeforms <- unique(all.lifeforms)
     # MF: Special case to combine Trees and Shrubs inoo Woody category
-    all.lifeforms <- append(all.lifeforms, "Woody")
+    if(include.woody) all.lifeforms <- append(all.lifeforms, "Woody")
     
     targets <- append(targets, all.lifeforms)
     
@@ -145,6 +145,18 @@ expandTargets <- function(targets, data, PFT.data){
     
     if("phenologies" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenologies")]
     if("phenology" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenology")] 
+    
+  }
+  
+  
+  # Expand seasons
+  if("seasons" %in% tolower(targets) | "season" %in% tolower(targets) | "seasonal" %in% tolower(targets)){
+    
+    targets <- append(targets, c("DJF", "MAM", "JJA", "SON"))
+    
+    if("seasons" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "seasons")]
+    if("season" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "season")] 
+    if("seasonal" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "seasonal")] 
     
   }
   
@@ -313,30 +325,56 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
 ###################################################################################
 ##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, ETC...)
 
-addVegTotals <- function(input, targets = c("lifeforms"), PFT.data = NULL){
+addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
   
   Woody <- NULL
   
-  ### Here allow the possibility to handle both VegObjects and data.tables directly (for internal calculations)
+  ### HANDLE CLASS OF INPUT OBJECT
+  # Here allow the possibility to handle both VegObjects and data.tables directly (for internal calculations)
   # MF: Maybe also handle rasters one day?
-
+  
   # if it is a VegObject 
   if(is.VegObject(input)) {
-   # We get a warning about a shallow copy here, suppress it
+    # We get a warning about a shallow copy here, suppress it
     suppressWarnings(dt <- input@data)
     PFT.data <- input@run@pft.set
+    # also if no specfic method specified, pull it from the the VegObject
+    method <- input@quant@aggregate.method
+    print(method)
   }
   # Else assume it is a data.table
   else{
     suppressWarnings(dt <- input)
+    # if a data.table has been supplied but not method, use sums, but issue a warning
+    method <- rowSums
+    warning("addVegTotals has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
+    message("addVegTotals has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
+ 
   }
   
-  # fail if no PFT.data provided with a data.table
-  if(is.null(PFT.data )) 
-      stop("No PFT data specified for an internal call to addVegTotals on a data.table.  Please modify the call to include PFT.data ")
+
+  
+  ### SET UP THE AGGREGATE METHOD 
+  if(is.null(method)) {
+    method <- input@quant@aggregate.method
+  }
+  if(tolower(method) == "average" | tolower(method) == "avg" | tolower(method) == "mean"){
+    method <- rowMeans
+    message("Adding seasonal means")
+  }
+  else if(tolower(method) == "sum"| tolower(method) == "total"){
+    method <- rowSums
+    message("Adding seasonal averages")
+  }
+  else {
+    warning(paste("In addVegTotals() not sure how to deal with ", method, ", calculating sums instead!", sep = ""))
+    message(paste("In addVegTotals() not sure how to deal with ", method, ", calculating sums instead!", sep = ""))
+    method <- rowSums
+  }  
   
   
   
+  ### GENERAL PREPARATION
   # get PFTs present
   all.PFTs <- getPFTs(dt, PFT.data)
   
@@ -346,28 +384,45 @@ addVegTotals <- function(input, targets = c("lifeforms"), PFT.data = NULL){
   # remove PFTs from targets since PFTs are already present as totals
   for(PFT in all.PFTs){ if(PFT@id %in% targets) targets <- targets[-which(targets == PFT@id)]}
   
-  # make zero columns for each target (provided they are not PFTs)
-  for(target in targets){ suppressWarnings(dt[, target := 0, with= FALSE]) }
   
-  # loop through PFTs and add the PFT to the appropriate target (ie add TeBS to the "Tree" column)
-  for(PFT in all.PFTs){
+  
+  ### FOR PER-PFT FILES
+  for(target in targets){
     
-    # lifeform
-    if(PFT@lifeform %in% targets) { dt[, PFT@lifeform := rowSums(.SD), .SDcols = c(PFT@id , PFT@lifeform)] }
-    # zone
-    if(PFT@zone %in% targets) dt[, PFT@zone := rowSums(.SD), .SDcols = c(PFT@id , PFT@zone)]
-    # leafform
-    if(PFT@leafform %in% targets) dt[, PFT@leafform := rowSums(.SD), .SDcols = c(PFT@id , PFT@leafform)]
-    # phenologies
-    if(PFT@phenology %in% targets) dt[, PFT@phenology := rowSums(.SD), .SDcols = c(PFT@id , PFT@phenology)]
-    # Woody special case 
-    if("Woody" %in% targets & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) dt[, Woody := rowSums(.SD), .SDcols = c(PFT@id , "Woody")]
+    # build list of columns to combine for target
+    target.cols <- c()
+    for(PFT in all.PFTs){
+    if(PFT@lifeform == target) {target.cols <- append(target.cols, PFT@id)}
+      if(PFT@zone == target) {target.cols <- append(target.cols, PFT@id)}
+      if(PFT@leafform == target) {target.cols <- append(target.cols, PFT@id)}
+      if(PFT@phenology == target) {target.cols <- append(target.cols, PFT@id)}
+      # Special case for Woody
+      if(target == "Woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {target.cols <- append(target.cols, PFT@id)}
+    }
+
+    # now combine the relevant columns
+    if(!is.null(target.cols)) suppressWarnings(dt[, eval(target) := method(.SD), .SDcols = target.cols])
     
   }
   
+  
+  
+  ### FOR MONTHLY FILES
+  # Loop through all targets to pick out the seasons/annual and make them 
+  for(target in targets){
+    for(period in all.periods){
+      if(target == period@id){
+        total.str <- quote(paste(target, sep = ""))
+        suppressWarnings(dt[, eval(total.str) := method(.SD), .SDcols = period@contains])
+      }
+    }
+  } 
+  
+  
+  
   if(is.VegObject(input)) {
-   input@data <- dt
-   return(input)
+    input@data <- dt
+    return(input)
   }
   else {
     return(dt)
@@ -402,7 +457,7 @@ addVegFractions <- function(input, targets = list("pfts", "lifeforms"), denomina
     }
   }
   
- 
+  
   # Second, expand numerator targets and make what aren't available
   targets <- expandTargets(targets, dt, PFT.data)
   for(target in targets) {
@@ -420,10 +475,10 @@ addVegFractions <- function(input, targets = list("pfts", "lifeforms"), denomina
         suppressWarnings(dt[, eval(quote(paste(target, "Fraction", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%Total])
       else
         suppressWarnings(dt[, eval(quote(paste(target, "Fraction", "Of", denominator, sep = sep.char))) := get(paste(target, sep = sep.char))%/0%get(paste(denominator, sep = sep.char))])
-        
+      
     }
   }
-    
+  
   input@data <- dt
   
   return(input)

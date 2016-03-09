@@ -113,17 +113,10 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
 #############################
 
 # Here define the the colours and limits
-lai.nlevel = 50
-lai.palette = colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "khaki1", "yellowgreen", "forestgreen", "saddlebrown","black" )) #this is a function which returns a list of colours
-lai.colours = lai.palette(lai.nlevel)
-lai.zlim = c(log(0.06),log(8))
-lai.ticks<- c(0.06, 0.125, 0.25, 0.5, 1, 2,4,8)
 
-lai.diff.nlevel = 40
+lai.palette = colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "khaki1", "yellowgreen", "forestgreen", "saddlebrown","black" )) #this is a function which returns a list of colours
 lai.diff.palette = colorRampPalette(c("green", "blue", "white", "red", "yellow")) #this is a function which returns a list of colours
-lai.diff.colours = lai.diff.palette(lai.diff.nlevel)
-lai.diff.zlim = c(-1,1)
-lai.diff.ticks<- c(-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1.0)
+
 
 quant.name <- "lai"
 
