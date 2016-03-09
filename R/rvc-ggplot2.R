@@ -859,118 +859,14 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #######################################################################
 ## timeseries #########################################################
 #######################################################################
-##' Plot a timeseries
-##' 
-##' Plot a timeseries with ggplot. Years are on the x-axis
-##' 
-##' @param input a VegTemporal object or a list of several
-##' @param column the column(s) to display. Several columns can only be supplied with a single VegSpatial. Default: 'value'.
-##'
-##' @param scale
-##' @param colors Colors for the diffent VegSpatial objects or columns.
-##' @param long.title If the description (default) should be used as titles or the shorter id.
-##' @param plot If FALSE only the data is returned, without drawing the map.
-##' @param ... Ignored further parameters
-# plotGGTemporal <- function(input, column='value', scale=1., colors=NA, long.title=TRUE, plot=TRUE, ...) {
-#   ## check if a VegTemporal or a list of VegTemporal is given as input
-#   ## check data column names for given column name or column name 'value'
-#   if (is.VegTemporal(input)) {
-#     if (is.na(column) && all(colnames(input@data) != "value"))
-#       stop("No column name given and no column named 'value' present!")
-# 
-#     if (!is.na(column) && length(column)>1) {
-#       for (cn in column) {
-#         if (all(colnames(input@data)!=cn))
-#           stop(paste("No column named '", cn, "' present!", sep=""))
-#       }
-#     } else if (all(colnames(input@data) != column)) {
-#       stop(paste("No column named '",column,"' present!", sep=""))
-#     }
-#     dt <- input@data[, c("Year", column), with = FALSE]
-#     if (length(column)==1) {
-#       setnames(dt, column, "value")
-#     } else {
-#       dt <- melt(dt, key(dt), column)
-#       setnames(dt, "variable", "sens")
-#       dt <- dt[, sens:=factor(sens, column)]
-#     }
-#     quant = input@quant
-#   } else if (is.list(input)) {
-#     for (i in 1:length(input)) {
-#       if (!is.VegTemporal(input[[i]]))
-#         stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
-#       if (i==1) {
-#         if (is.na(column) && all(colnames(input[[i]]@data) != "value")) {
-#           stop("No column name given and no column named 'value' present!")
-#           column <- "value"
-#         } else if (all(colnames(input[[i]]@data) != column[1])) {
-#           stop(paste("No column named '", column[1], "' pesent!", sep=""))
-#         }
-#         dt <- input[[i]]@data[, c("Year", column[1]), with = FALSE]
-#         quant = input[[i]]@quant
-#         if (long.title) {
-#           dt[, sens:=input[[i]]@run@description, ]
-#           titles <- input[[i]]@run@description
-#         } else {
-#           dt[, sens:=input[[i]]@run@id, ]
-#           titles <- input[[i]]@run@id
-#         }
-#       } else {
-#         if (all(colnames(input[[i]]@data) != column[1])) {
-#           stop(paste("No column named '", column[1], "' pesent!", sep=""))
-#         }
-#         dt.tmp <- input[[i]]@data[, c("Year", column[1]), with = FALSE]
-#         if (long.title) {
-#           dt.tmp[, sens:=input[[i]]@run@description, ]
-#           titles <- append(titles, input[[i]]@run@description)
-#         } else {
-#           dt.tmp[, sens:=input[[i]]@run@id, ]
-#           titles <- append(titles, input[[i]]@run@id)
-#         }
-#         dt <- rbindlist(list(dt, dt.tmp))
-#         rm(dt.tmp)
-#       }
-#     }
-#     if (column!="value")
-#       setnames(dt, column, "value")
-#     dt <- dt[, sens:=factor(sens, titles)]
-#   } else {
-#     stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
-#   }
-# 
-#   dt[,value:=value*scale]
-#   
-#   if (!plot)
-#     return(dt)
-# 
-#   if (any(colnames(dt)=="sens")) {
-#     p <- ggplot(dt, aes(x=Year, y=value, col=sens))
-#     p <- p + geom_line(size=1)
-#     if (is.na(colors))
-#       colors <- brewer.pal(length(unique(dt$sens)), "Set1")
-#     p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=2))
-#   } else {
-#     if (is.na(colors))
-#       colors="black"
-#     p <- ggplot(dt, aes(x=Year, y=value))
-#     p <- p + geom_line(size=1, col=colors)
-#   }
-#   p <- p + .rvc.temporal_theme
-#   p <- p + ylab(paste(quant@full.string, " [", quant@units,"]", sep=""))
-# 
-#   return(p)
-# }
-
-#######################################################################
-## timeseries #########################################################
-#######################################################################
 #' Plot a timeseries 
 #' 
 #' Plot a timeseries with ggplot. Either as line default, overlaying area,
 #' applicable p.e. for height or stacked polygons (e.g. for succession).
 #' 
 #' @param input a VegTemporal object or a list of several.
-#' @param column The column(s) to display. Default: 'value'.
+#' @param columns The column(s) to display. Default: 'value'.
+#' @param scale a scaling factor for multiplication
 #' @param colors Colors for the diffent VegSpatial objects or columns. Must have the same length otherwise colors are choosing automatically.
 #' @param type "line", overlayed "area" or "stack"ed area
 #' @param wrap if input is a list and columns has more than one element use "sens" or "column" fro wrapping intp several panels.

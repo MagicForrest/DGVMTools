@@ -88,6 +88,7 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @param forceReCalculation Recalculate the desired values (default: FALSE)
 #' @param write write the calculated values for fture speedup (default: TRUE)
 #' @param verbose print some messages
+#' @param ... further so far ignored parameters
 #' @return data.table if no VegRun was given, otherwise a VegObject
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import RNetCDF
@@ -383,7 +384,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
                    short.string="GDD5",
                    full.string="Growing degree days",
                    type="",
-                   units="°C days")
+                   units="\u00B0C days")
     } else {
       id <- paste(operation, ".", data.name)
       quant <- new("VegQuant",
@@ -420,4 +421,3 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
     return(DT)
   }
 }
-

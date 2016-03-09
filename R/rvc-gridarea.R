@@ -215,7 +215,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
 #' @export
 #' @import data.table
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, keep=FALSE, verbose=TRUE) {
+calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, verbose=TRUE) {
   ## check if valid arguments are given
   if (!is.VegRun(run))
     stop("'run' is not a valid VegRun.")
