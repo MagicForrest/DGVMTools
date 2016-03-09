@@ -18,6 +18,8 @@ plotGGSpatial(input, column = "value", colors = NA, sym.col = FALSE,
 
 \item{wrap}{a single number of facet_wrap columns or a vector/list with the run, VegSpatial name, column and optionally ncol (number of columns), which is used to split the data in different panels. Only valid when a vector of column names or a list of VegSpatial was given as input. Otherwise it is ignored.}
 
+\item{terr.bg}{which colour should be used for missing terrestial pixels (e.g. Greenland)}
+
 \item{long.title}{If the description (default) should be used as titles or the shorter id.}
 
 \item{plot}{If FALSE only the data is returned, without drawing the map.}
@@ -29,6 +31,9 @@ A ggplot object, which can either be printed directly or further modified, or a 
 }
 \description{
 Plots a map (or a set of maps) using the geom_raster from the ggplot2 library
+}
+\examples{
+paste("See templates/Example.ggplot.R")
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

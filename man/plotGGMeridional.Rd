@@ -31,6 +31,9 @@ A ggplot object, which can either be printed directly or further modified, or a 
 \description{
 Plots vertical lines as average over latitudinal bands.
 }
+\examples{
+paste("See templates/Example.ggplot.R")
+}
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }

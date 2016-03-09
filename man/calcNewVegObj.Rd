@@ -5,7 +5,7 @@
 \title{calcNewVegObj: Simple calculation of new VegObjects}
 \usage{
 calcNewVegObj(run = NULL, targets = NULL, operator = NULL, quant = NULL,
-  keep = FALSE, verbose = TRUE)
+  verbose = TRUE)
 }
 \arguments{
 \item{run}{the run the data should be taken from}

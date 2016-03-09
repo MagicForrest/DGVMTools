@@ -19,9 +19,9 @@ plotGGCategorialAggregated(input, targets = NULL, name.map = NA,
 
 \item{long.title}{If the description (default) should be used as titles or the shorter id.}
 
-\item{vertical}{boolean, arrange the data at the y-axis and the categories on the x-axis}
+\item{vertical}{boolean: values on the y-axis, categories on the x-axis}
 
-\item{bar}{boolean, if TRUE display bars instead of points}
+\item{bar}{boolean: use bars instead of points}
 
 \item{plot}{If FALSE only the data is returned, without drawing the map.}
 
@@ -32,6 +32,9 @@ A ggplot object, which can either be printed directly or further modified, or a 
 }
 \description{
 Plots vertical lines as average over latitudinal bands.
+}
+\examples{
+paste("See templates/Example.ggplot.R")
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

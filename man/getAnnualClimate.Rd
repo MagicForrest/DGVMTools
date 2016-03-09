@@ -35,6 +35,8 @@ getAnnualClimate(run = NA, file = NA, operation = "mean",
 \item{write}{write the calculated values for fture speedup (default: TRUE)}
 
 \item{verbose}{print some messages}
+
+\item{...}{further so far ignored parameters}
 }
 \value{
 data.table if no VegRun was given, otherwise a VegObject

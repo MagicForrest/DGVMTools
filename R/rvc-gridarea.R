@@ -17,7 +17,6 @@
 #' @param scale multiplicator. If 1 (default) unit m^2
 #' @param ellipse TRUE (polar and equatorial radius differ) or
 #' FALSE (default, polar and equatorial radius are the same)
-#' @keywords
 #' @export
 #' @return vector of gridcell area is m^2
 #' @author Joerg Steinkamp <joergsteinkamp@yahoo.de>
@@ -90,7 +89,6 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
 #' @param x vetor of values (e.g. longitudes or latitudes)
 #' @param force.regular force a regular spaced vector with the smallest distance.
 #' @param descending sort in descending order if TRUE (default: ascendind)
-#' @keywords
 #' @export
 #' @return data.frame of gridcells with columns c("Lon", "Lat", "area")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
@@ -164,7 +162,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
     if (requireNamespace("udunits2", quietly=TRUE)) {
       if (udunits2::ud.is.parseable(unit)) {
         if (udunits2::ud.are.convertible("m^2", unit)) {
-          area$area = udnunits2::ud.convert(area$area, "m^2", unit)
+          area$area = udunits2::ud.convert(area$area, "m^2", unit)
         } else {
           warning(paste("m^2 not convertible to '", unit, "'. Using m^2 instead.", sep=""))
           unit="m^2"
@@ -174,8 +172,8 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
         unit="m^2"
       }
     } else {
-      message("Package 'udnunits2' not installed! Using m^2 instead.")
-      warning("Package 'udnunits2' not installed! Using m^2 instead.")
+      message("Package 'udunits2' not installed! Using m^2 instead.")
+      warning("Package 'udunits2' not installed! Using m^2 instead.")
     }  
   }
 

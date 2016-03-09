@@ -474,7 +474,7 @@ FPCMegaBiomeRules <- function(fpc){
 
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
+    print(paste("Oops, not classified: Location (", as.numeric(fpc[['Lon']]), ",", as.numeric(fpc[['Lat']]), ")" ))
     return(NA)
   }
 }

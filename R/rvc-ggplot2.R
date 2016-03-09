@@ -173,7 +173,7 @@ rvc.ggplot.theme <- function(x) {
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Additional parameters, which are ignored so far.
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
-#' @examples See templates/Example.ggplot.R
+#' @examples paste("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import raster sp maps ggplot2 data.table
 #' @export
@@ -443,7 +443,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Ignored further parameters
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
-#' @examples See templates/Example.ggplot.R
+#' @examples paste("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import ggplot2 data.table
@@ -633,7 +633,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Ignored further parameters
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
-#' @examples See templates/Example.ggplot.R
+#' @examples paste("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import RColorBrewer ggplot2 data.table

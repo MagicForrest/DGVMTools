@@ -9,9 +9,13 @@ plotGGTemporal(input, columns = "value", scale = 1, colors = NA,
   alpha = NA, plot = TRUE, ...)
 }
 \arguments{
-\item{input}{a VegTemporal object or a list of several}
+\item{input}{a VegTemporal object or a list of several.}
 
-\item{colors}{Colors for the diffent VegSpatial objects or columns.}
+\item{columns}{The column(s) to display. Default: 'value'.}
+
+\item{scale}{a scaling factor for multiplication}
+
+\item{colors}{Colors for the diffent VegSpatial objects or columns. Must have the same length otherwise colors are choosing automatically.}
 
 \item{type}{"line", overlayed "area" or "stack"ed area}
 
@@ -25,27 +29,13 @@ plotGGTemporal(input, columns = "value", scale = 1, colors = NA,
 
 \item{plot}{If FALSE only the data is returned, without drawing the map.}
 
-\item{...}{Ignored further parameters
-Plot a timeseries 
-
-Plot a timeseries with ggplot. Either as line default, overlaying area,
-applicable p.e. for height or stacked polygons (e.g. for succession).}
-
-\item{column}{the column(s) to display. Several columns can only be supplied with a single VegSpatial. Default: 'value'.}
-
-\item{input}{a VegTemporal object or a list of several.}
-
-\item{column}{The column(s) to display. Default: 'value'.}
-
-\item{colors}{Colors for the diffent VegSpatial objects or columns. Must have the same length otherwise colors are choosing automatically.}
-
-\item{long.title}{If the description (default) should be used as titles or the shorter id.}
-
-\item{plot}{If FALSE only the data is returned, without drawing the map.}
-
 \item{...}{Ignored further parameters}
 }
+\value{
+A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
+}
 \description{
-Plot a timeseries with ggplot. Years are on the x-axis
+Plot a timeseries with ggplot. Either as line default, overlaying area,
+applicable p.e. for height or stacked polygons (e.g. for succession).
 }
 
