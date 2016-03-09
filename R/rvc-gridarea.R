@@ -121,9 +121,9 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' Adds the gridcell area to a spatial VegObject or data.table/data.frame
 #' 
 #' @param input a spatial VegObject or a data.frame/data.table with at least the columns Lon and Lat.
-#' @param unit area unit. Default m^2, if smething else is spefified udunits must be installed. If udunits2 is not installed this option is ignored.
+#' @param unit area unit. Default m^2, if something else is spefified udunits2 must be installed. If udunits2 is not installed this option is ignored.
 #' @param ellipse If the eath should be assumed to be a ellipsoid instead of a sphere.
-#' @param verbose print some information
+#' @param verbose print some information.
 #' @export
 #' @return same class as input
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
@@ -154,9 +154,9 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
   if (is.data.table(input) || is.VegObject(input)) {
     area <- as.data.table(area)
     if (is.data.table(input)) {
-      setkeyv(area, key(input)[key(input)=="Lon" | key(input)=="Lat"])
+      setkey(area, Lon, Lat)
     } else {
-      setkeyv(area, key(input@data)[key(input@data)=="Lon" | key(input@data)=="Lat"])
+      setkey(area, Lon, Lat)
     }
   }
 
@@ -250,7 +250,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, kee
     stop(paste("target '", targets[['x']][1], "@", targets[['x']][2], "is not a VegObject!", sep=""))
   if (!is.VegObject(y))
     stop(paste("target '", targets[['y']][1], "@", targets[['y']][2], "is not a VegObject!", sep=""))
-
+ 
   if (x@is.temporally.averaged != y@is.temporally.averaged ||
       x@is.spatially.averaged != y@is.spatially.averaged ||
       x@is.site != y@is.site)
@@ -292,7 +292,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, kee
   
   if (verbose)
     message("Performing calculations.")
-  
+
   ## perform the calculation
   if (length(targets[[1]])==2 && length(targets[[2]])==2) {
     if (length(colnames(x.dt)) != length(colnames(y.dt)))
@@ -321,8 +321,8 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, kee
                spatial.extent = x.sp.extent,
                temporal.extent = x.t.extent,
                is.site = x@is.site,
-               is.temporally.ageraged = x@is.temporally.ageraged,
-               is.spatially.ageraged = x@is.spatially.ageraged,
+               is.temporally.averaged = x@is.temporally.averaged,
+               is.spatially.averaged = x@is.spatially.averaged,
                run = as(run, "VegRunInfo")))      
 
   } else if (length(targets[[1]])==2 && length(targets[[2]])==3) {
@@ -334,8 +334,10 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, kee
     list.str <- paste(val.names, "=x.", val.names, operator, targets[[2]][3], sep="", collapse=", ")
     if (x@is.temporally.averaged) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
-    if (x@is.spatially.averaged) {
+    } else if (x@is.spatially.averaged) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
+    } else {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
     return(new("VegObject",
                id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
@@ -347,18 +349,20 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, kee
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
                run = as(run, "VegRunInfo")))      
-      
+
   } else if (length(targets[[1]])==3 && length(targets[[2]])==2) {
     key.names <- key(y.dt)
     val.names <- names(y.dt)
     val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
     setnames(y.dt, val.names, paste("y.", val.names, sep=""))
-    
+
     list.str <- paste(val.names, "=",targets[[1]][3], operator, "y.", val.names, sep="", collapse=", ")
     if (x@is.temporally.averaged) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
     } else if (x@is.spatially.averaged) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
+    } else {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
     return(new("VegObject",
                id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
@@ -379,7 +383,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, kee
     val.names <- names(y.dt)
     val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
     setnames(y.dt, val.names, paste("y.", val.names, sep=""))
-
+    
     if (targets[[1]][3]==targets[[2]][3]) {
       list.str <- paste(targets[[1]][3],"=x.",targets[[1]][3], operator, "y.", targets[[2]][3], sep="")
     } else {
@@ -389,6 +393,8 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, kee
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
     } else if (x@is.spatially.averaged) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
+    } else {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
     return(new("VegObject",
                id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
@@ -400,11 +406,6 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, kee
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
                run = as(run, "VegRunInfo")))      
-      
   }
   stop("MISSING: Not implemented yet.")
-    
-  }
 }
-
-
