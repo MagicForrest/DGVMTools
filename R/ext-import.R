@@ -266,12 +266,12 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
   ## need also to include soatial extent in file name
   fout <- paste(tools::file_path_sans_ext(file),
                 "_", max(year(start), period[1]), "-", min(year(end), period[2]),
-                "_", operation, ".RTable", sep="")
+                "_", operation, ".Rtable", sep="")
   if (file.exists(fout) && !forceReCalculation) {
     if (verbose)
       message(paste("Found '", fout, "'", sep=""))
     DT <- data.table(read.table(fout, header=TRUE, stringsAsFactors=FALSE))
-    setkey(DT, Year, Lat, Lon)
+    setkey(DT, Lon, Lat, Year)
   } else {
     days <- 1
     if (verbose)
@@ -351,7 +351,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
     DT <- melt(DT, id.var=c("Lon", "Lat"))
     DT[, Year:=as.numeric(sub("Y", "", variable)), ]
     DT[, variable:=NULL]
-    setkey(DT, Year, Lat, Lon)
+    setkey(DT, Lon, Lat, Year)
     
     if (write) {
       if (verbose)

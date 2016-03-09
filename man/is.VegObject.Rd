@@ -8,6 +8,12 @@ is.VegObject(input, spatial = FALSE, temporal = FALSE, site = FALSE)
 }
 \arguments{
 \item{input}{Any R object to bec checked}
+
+\item{spatial}{check if input is a spatial object}
+
+\item{temporal}{check if input is a temporal object}
+
+\item{site}{ckeck if input is a site object}
 }
 \value{
 logical

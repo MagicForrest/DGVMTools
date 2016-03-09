@@ -38,6 +38,9 @@ auxiliary.data.dir <- "/home/forrest/AuxiliaryData" # NOTE: must be the full pat
 #' Returns TRUE if an object is a \code{VegObject}, and FALSE otherwise 
 #' 
 #' @param input Any R object to bec checked
+#' @param spatial check if input is a spatial object
+#' @param temporal check if input is a temporal object
+#' @param site ckeck if input is a site object
 #' @return logical
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
@@ -103,17 +106,34 @@ is.VegQuant <- function(input) {
 
 
 ## check if two classes are comparable
-setGeneric("is.equal", function(a, b) standardGeneric("is.equal")) 
+#' Checks two RVCTools metadata objects for equality
+#' 
+#' @description checks if two objects have the same quantity, spatial or temporal extent
+#' 
+#' @param a a RVCTools metadata object
+#' @param b another RVCTools metadata object of the same type
+#' @return logical
+#' @name is.equal
+#' @rdname is.equal
+#' @exportMethod 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+setGeneric("is.equal", function(a, b) standardGeneric("is.equal"))
+
+#' @describeIn is.equal Checks two VegQuant objects for equality
 setMethod("is.equal", signature("VegQuant", "VegQuant"), function(a, b) {
   if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)
     return(TRUE)
   return(FALSE)
 })
+
+#' @describeIn is.equal Checks two TemoralExtent objects for equality
 setMethod("is.equal", signature("TemporalExtent", "TemporalExtent"), function(a, b) {
   if (a@start==b@start && a@end==b@end)
     return(TRUE)
   return(FALSE)
 })
+
+#' @describeIn is.equal Checks two SpatialExtent objects for equality
 setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b) {
   if (all(!is.finite(c(a@extent@xmin, b@extent@xmin, a@extent@xmax, b@extent@xmax, 
                        a@extent@ymin, b@extent@ymin, a@extent@ymax, b@extent@ymax))))
