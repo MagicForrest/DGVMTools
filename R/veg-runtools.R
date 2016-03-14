@@ -590,7 +590,7 @@ sanitiseNamesForRaster <- function(input){
   keys.present <- c()
   
   if("Lon" %in% names(dt)) keys.present <- append(keys.present, "Lon")
-    if("Lat" %in% names(dt)) keys.present <- append(keys.present, "Lat")
+  if("Lat" %in% names(dt)) keys.present <- append(keys.present, "Lat")
   if("Year" %in% names(dt)) keys.present <- append(keys.present, "Year")
   
   if(length(keys.present) > 0) setkeyv(dt, keys.present)

@@ -340,7 +340,6 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
     PFT.data <- input@run@pft.set
     # also if no specfic method specified, pull it from the the VegObject
     method <- input@quant@aggregate.method
-    print(method)
   }
   # Else assume it is a data.table
   else{
