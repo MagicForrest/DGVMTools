@@ -418,7 +418,7 @@ doKappa <- function(stack, scheme, labels = NULL, verbose = TRUE){
 compareBiomes <- function(run, variable, period, scheme, plot = TRUE){
   
   # Prepare the veg. spatial object
-  this.VegSpatial <- getVegSpatial(run, period, variable, forceReAveraging = FALSE)
+  this.VegSpatial <- getVegSpatial(run, variable, period, reread.file = FALSE)
   
   #  calculate biomes from model output
   this.VegSpatial <- addBiomes(this.VegSpatial, scheme)
@@ -467,6 +467,71 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", ..
                run.title = scheme@id,
                plot.labels = labels,
                ...)
+  
+}
+
+# Compare runs to each other
+compareVegSpatialObject <- function(runs, veg.spatial, target,  expand.target = TRUE, plot.comparison = TRUE, base.run.id = NULL, ...) {
+  
+  # initialise an empty data.table to hold the comparison
+  comparison.dt <- data.table("Lon" = numeric(0), "Lat" = numeric(0))
+  setkey(comparison.dt, Lon, Lat)
+  
+  # for each run
+  for(run in runs){
+    
+    # grab the VegObject that we want from the vegRun
+    temp.spatial <- run@spatial[[veg.spatial]]
+    
+    # expand the target if necessary
+    if(expand.target){ target <- expandTargets(targets = target, data = temp.spatial, run@pft.set)  }
+    
+    # Extract the columns that we need and add them to the data.table and set the names appropriately
+    comparison.dt <- comparison.dt[temp.spatial@data[,c("Lon","Lat",target),with=FALSE]]
+    setnames(comparison.dt, c(names(comparison.dt)[1:(length(names(comparison.dt))-length(target))], paste(run@id, target, sep = "_")))
+    
+    rm(temp.spatial)
+    
+  }
+  
+  
+  # now plot the comparisons
+  plotVegMaps(comparison.dt,
+              quant = run@spatial[[veg.spatial]]@quant,
+              ...)
+  
+  
+  # if a base.run is supplied, plot the the difference between each run and it
+  if(!is.null(base.run.id)){
+    
+    # for each run that is not the base.run
+    for(run in runs){
+      if(run@id != base.run.id){
+        
+        # for each target
+        for(sub.target in target){
+          
+          # make a new column of the data.table by selecting the relevant target
+          col.name <- paste(paste(run@id, sub.target, sep = "_"), "minus", paste(base.run.id, sub.target, sep = "_"), sep = ".")
+          comparison.dt[, eval(col.name) := get(paste(run@id, sub.target, sep = "_")) - get(paste(base.run.id, sub.target, sep = "_"))]
+          
+          # plot the difference
+          title <- paste(sub.target, paste(run@spatial[[veg.spatial]]@quant@full.string, ":", sep = ""), run@description, "-", runs[[base.run.id]]@description, sep = " ")
+          
+          plotVegMaps(comparison.dt,
+                      targets = col.name,
+                      quant = run@spatial[[veg.spatial]]@quant,
+                      special = "diff",
+                      summary.title = title,
+                      ...)
+          
+          
+        }
+        
+      }
+    }
+    
+  } # if base run is specified  
   
 }
 
