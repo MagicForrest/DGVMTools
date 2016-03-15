@@ -358,11 +358,9 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
   }
   if(tolower(method) == "average" | tolower(method) == "avg" | tolower(method) == "mean"){
     method <- rowMeans
-    message("Adding seasonal means")
   }
   else if(tolower(method) == "sum"| tolower(method) == "total"){
     method <- rowSums
-    message("Adding seasonal averages")
   }
   else {
     warning(paste("In addVegTotals() not sure how to deal with ", method, ", calculating sums instead!", sep = ""))

@@ -816,9 +816,6 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
   
   if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
   
-  
-  print(0)
-  
   # set min and max in a robust way for the overlay hist
   setMinMax(stat.results@diff.raster)
   setMinMax(data)
@@ -829,9 +826,7 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
   if(breaks.max - breaks.min > 100) breaks <- seq(breaks.min, breaks.max, by = 10) 
   else if(breaks.max - breaks.min < 10) breaks <- seq(breaks.min, breaks.max, by = 0.1)
   else breaks <- seq(breaks.min, breaks.max, by = 1)
-  
-  print(1)
-  
+    
   CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "DiffHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
   
   cex.axis.multi = 2
@@ -842,10 +837,6 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
   legend('topright', c( paste("Mean = ", round(stat.results@mean.diff,3)), paste("SD = ", round(stat.results@sd.diff,3))), col = c("red","blue"), text.col = c("red","blue"), cex = 3, bty = "n") 
   
   dev.off()
-  
-  
-  
-  print(2)
   
   CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "OverlayHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
   

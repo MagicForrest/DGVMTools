@@ -471,7 +471,7 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", ..
 }
 
 # Compare runs to each other
-compareVegObject <- function(runs, veg.object, target,  expand.target = TRUE, plot.comparison = TRUE, base.run.id = NULL, ...) {
+compareVegSpatialObject <- function(runs, veg.spatial, target,  expand.target = TRUE, plot.comparison = TRUE, base.run.id = NULL, ...) {
   
   # initialise an empty data.table to hold the comparison
   comparison.dt <- data.table("Lon" = numeric(0), "Lat" = numeric(0))
@@ -481,7 +481,7 @@ compareVegObject <- function(runs, veg.object, target,  expand.target = TRUE, pl
   for(run in runs){
     
     # grab the VegObject that we want from the vegRun
-    temp.spatial <- run@object[[veg.object]]
+    temp.spatial <- run@spatial[[veg.spatial]]
     
     # expand the target if necessary
     if(expand.target){ target <- expandTargets(targets = target, data = temp.spatial, run@pft.set)  }
@@ -497,7 +497,7 @@ compareVegObject <- function(runs, veg.object, target,  expand.target = TRUE, pl
   
   # now plot the comparisons
   plotVegMaps(comparison.dt,
-              quant = run@object[[veg.object]]@quant,
+              quant = run@spatial[[veg.spatial]]@quant,
               ...)
   
   
