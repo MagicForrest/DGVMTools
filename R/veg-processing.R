@@ -220,7 +220,7 @@ combineShadeTolerance <- function(input){
 addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FALSE){
   
   # To avoid NOTES when checking
-  Dominant = NULL
+  Total = Dominant = NULL
   
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
@@ -440,6 +440,8 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
 
 addVegFractions <- function(input, targets = list("pfts", "lifeforms"), denominators = list("Total")){
   
+  # To avoid NOTES
+  Total = 
   
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)

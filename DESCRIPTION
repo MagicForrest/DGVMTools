@@ -15,6 +15,7 @@ Depends:
     maptools,
     ncdf4,
     rgdal,
+    sp,
     raster,
     lattice,
     fields,
