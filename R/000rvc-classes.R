@@ -154,7 +154,7 @@ setClass("VegRunInfo",
 #'  and the actual model data run as \code{VegObjects} in a list in slot \code{objects} and comparisions to datasets 
 #'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
 #' Such objects can be built by calls to \code{getVegObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToSpatialDataset()}
-#'  and \code{compareBiomes()} and saved to the \code{VegRun} using \code{addToVegRun()}. 
+#'  and \code{compareBiomes()}, and saved to the \code{VegRun} using \code{addToVegRun()}. 
 #'  
 #' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
 #' 

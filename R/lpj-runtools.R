@@ -168,9 +168,9 @@ getVegQuantity_LPJ <- function(run, var.string, store.internally = FALSE,verbose
   Lon = Lat = Year = NULL
    
   # USE THE FULL FILE IF ALREADY STORED IN MEMORY
-  if(var.string %in% names(run@full)){
+  if(var.string %in% names(run@objects)){
     if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
-    this.dt <- run@full[[var.string]]
+    this.dt <- run@objects[[var.string]]
     setkey(this.dt, Lon, Lat, Year)
   }
   
@@ -186,7 +186,7 @@ getVegQuantity_LPJ <- function(run, var.string, store.internally = FALSE,verbose
     }
     
     # if requested save the full data.table containing the entire ,out file to the run object
-    if(store.internally) {run <<- addToVegRun(this.dt, run, id = var.string)}
+    if(store.internally) {run <<- addToVegRun(this.dt, run)}
     
   }
   

@@ -8,8 +8,8 @@
 A \code{VegRun} object contains the metadata concerning the an inherited \code{VegRunInfo} object
  and the actual model data run as \code{VegObjects} in a list in slot \code{objects} and comparisions to datasets 
  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-Such objects can be built by calls to \code{getVegObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{compareRunToSpatialDataset()}
- and \code{compareBiomes()} and saved to the \code{VegRun} using \code{addToVegRun()}. 
+Such objects can be built by calls to \code{getVegObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToSpatialDataset()}
+ and \code{compareBiomes()}, and saved to the \code{VegRun} using \code{addToVegRun()}. 
  
 Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
 }

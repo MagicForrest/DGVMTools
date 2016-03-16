@@ -34,7 +34,9 @@ lai.reference.period <- getVegObject(run,
                                      temporal.extent = period, 
                                      temporally.average = TRUE, 
                                      write = TRUE,
-                                     reread.file = FALSE)
+                                     reread.file = TRUE,
+                                     store.internally = TRUE)
+
 
 
 ##### STEP TWO: Simple summary plots

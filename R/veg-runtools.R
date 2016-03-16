@@ -109,7 +109,7 @@ defineVegRun <- function(...){
 #' @export
 #' @seealso VegRun, VegRunInfo 
 addToVegRun <- function(object, run){
-   
+  
   # Add a BiomeComaprison or RasterComparison to the list in the benchmarks slot 
   if(is.BiomeComparison(object) | is.RasterComparison(object)) {
     
@@ -122,7 +122,7 @@ addToVegRun <- function(object, run){
   
   # Add a VegObject to the list in the objects slot 
   else if(is.VegObject(object)) {
-  
+    
     # Check that run ids match, if not, stop becuase something is really wrong
     if(run@id != object@run@id){
       stop(paste("Adding VegObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". I can think of no reason to do this, and doing so will break the internal logic of RVCTools so aborting. Contact the package creator if this seems wrng to you" , sep = ""))
@@ -164,7 +164,7 @@ addToVegRun <- function(object, run){
 getVegSpatial <- function(run,
                           var,
                           period,
-                        ...){
+                          ...){
   
   
   return(
@@ -271,18 +271,25 @@ getVegObject <- function(run,
     var.string <- quant@id
   }
   
-  ### MAKE file.name VARIABLE - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
+  ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
   TA.str = SA.str = "."
   if(spatially.average) SA.str <- ".SA."
   if(temporally.average) TA.str <- ".TA."
-  if(is.null(spatial.extent) & !is.null(temporal.extent)) file.name <- file.path(run@run.dir, paste(var.string, TA.str, paste(temporal.extent@start, temporal.extent@end, sep = "-"), ".Rtable", sep =""))
-  else if(!is.null(spatial.extent) & is.null(temporal.extent)) file.name <- file.path(run@run.dir, paste(var.string, SA.str, spatial.extent@id, ".Rtable", sep =""))
-  else if(!is.null(spatial.extent) & !is.null(temporal.extent)) file.name <- file.path(run@run.dir, paste(var.string, SA.str, spatial.extent@id, TA.str,  paste(temporal.extent@start, temporal.extent@end, sep = "-"), ".Rtable", sep =""))
-  else  file.name <- file.path(run@run.dir, paste(var.string, "Rtable", sep ="."))
+  if(is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, TA.str, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
+  else if(!is.null(spatial.extent) & is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, sep ="")
+  else if(!is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, TA.str,  paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
+  else  vegobject.id <- var.string
+  file.name <- file.path(run@run.dir, paste(vegobject.id, "Rtable", sep = "."))
   
+  ### FASTEST OPTION - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE VEGRUN
+  if(vegobject.id %in% names(run@objects)){
+    # if it is present it can be returned directly
+    print("WOOT")
+    return(run@objects[[vegobject.id]])
+  }
   
   ### USE THE PREAVERAGED/CROPPED FILE IF AVAILABLE (and we are not forcing a re-read and we have not already read the full file)
-  if(file.exists(paste(file.name)) & !reread.file & !var.string %in% names(run@full)){
+  else if(file.exists(paste(file.name)) & !reread.file & !var.string %in% names(run@objects)){
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     this.dt <- fread(file.name)
     setKeyRVC(this.dt)
@@ -390,7 +397,7 @@ getVegObject <- function(run,
                              sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
     }
     else {
-       warning(paste("Orginal extent unknown when reading spatially averaged file ", file.name, ".  If you want need to have this metadata, call getVegObject with reread.file = TRUE to read to whole file.", sep =""))
+      warning(paste("Orginal extent unknown when reading spatially averaged file ", file.name, ".  If you want need to have this metadata, call getVegObject with reread.file = TRUE to read to whole file.", sep =""))
     }
     
     spatial.extent <- new("SpatialExtent",
@@ -399,20 +406,24 @@ getVegObject <- function(run,
                           extent =  extent.temp)
     
     if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
-  
+    
   }
   
   
-  return(new("VegObject",
-             id = paste(var.string, temporal.extent@id, spatial.extent@id, sep = "_"),
-             data = this.dt,
-             quant = quant,
-             spatial.extent = spatial.extent,
-             temporal.extent = temporal.extent,
-             is.site = FALSE,
-             is.spatially.averaged = spatially.average,
-             is.temporally.averaged = temporally.average,
-             run = as(run, "VegRunInfo")))
+  vegobject <- new("VegObject",
+                   id = vegobject.id,
+                   data = this.dt,
+                   quant = quant,
+                   spatial.extent = spatial.extent,
+                   temporal.extent = temporal.extent,
+                   is.site = FALSE,
+                   is.spatially.averaged = spatially.average,
+                   is.temporally.averaged = temporally.average,
+                   run = as(run, "VegRunInfo"))
+  
+  if(store.internally) {run <<- addToVegRun(vegobject, run)}
+  
+  return(vegobject)
   
 }
 
