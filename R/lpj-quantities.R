@@ -40,6 +40,10 @@ lpj.quantities <- list()
 
 #' Function to get an LPJ-GUESS quantity based on a string
 #' 
+#' NEED to generalise this to deal with other lists of \code{VegQuants}, not just assuming all are LPJ-GUESS
+#' 
+#' @param quant.str String holding the id of the \code{VegQuant} you want
+#' @param verbose Logical, whether or not to announce which \code{VegQuant} has been found
 lookupVegQuantity <- function(quant.str, verbose = FALSE){
   
   # check if the quantity we are storing here is already in the list of pre-defined quantities (LAI, Cmass etc)

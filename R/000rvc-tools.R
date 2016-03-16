@@ -40,7 +40,7 @@ auxiliary.data.dir <- "/home/forrest/AuxiliaryData" # NOTE: must be the full pat
 #' @param input Any R object to bec checked
 #' @param spatial check if input is a spatial object
 #' @param temporal check if input is a temporal object
-#' @param site ckeck if input is a site object
+#' @param site check if input is a site object
 #' @return logical
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
@@ -100,6 +100,38 @@ is.VegQuant <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
     if (class.def[1] == "VegQuant" && attr(class.def, "package")=="RVCTools")
+      return(TRUE)
+  return(FALSE)
+}
+
+#' Check if an object is a \code{BiomeComparison}.   
+#'
+#' Returns TRUE if an object is a \code{BiomeComparison}, and FALSE otherwise 
+#' 
+#' @param input Any R object to be checked
+#' @return logical
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
+is.BiomeComparison <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "BiomeComparison" && attr(class.def, "package")=="RVCTools")
+      return(TRUE)
+  return(FALSE)
+}
+
+#' Check if an object is a \code{RasterComparison}.   
+#'
+#' Returns TRUE if an object is a \code{RasterComparison}, and FALSE otherwise 
+#' 
+#' @param input Any R object to be checked
+#' @return logical
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
+is.RasterComparison <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "RasterComparison" && attr(class.def, "package")=="RVCTools")
       return(TRUE)
   return(FALSE)
 }

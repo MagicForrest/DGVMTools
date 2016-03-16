@@ -13,7 +13,7 @@ is.VegObject(input, spatial = FALSE, temporal = FALSE, site = FALSE)
 
 \item{temporal}{check if input is a temporal object}
 
-\item{site}{ckeck if input is a site object}
+\item{site}{check if input is a site object}
 }
 \value{
 logical

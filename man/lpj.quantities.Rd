@@ -5,7 +5,7 @@
 \alias{lpj.quantities}
 \title{Global scope list of all LPJ-GUESS (and SPITFIRE) quantities defined as \code{VegQuant} object 
 from the default LPJ-GUESS model config and a few extra.}
-\format{An object of class \code{list} of length 81.}
+\format{A list of \code{VegQuant} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)}
 \usage{
 lpj.quantities
 }
@@ -13,9 +13,6 @@ lpj.quantities
 These quantities have sensible colour schemes, long names and cut ranges for standard global runs,
 but they will likely need to be modified and new ones aded for a specific analysis.
 Once the package is loaded this is just a standard R list so can be modified and extended as you wish.
-}
-\details{
-#' @format A list of \code{VegQuant} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)
 }
 \keyword{datasets}
 
