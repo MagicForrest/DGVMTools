@@ -143,7 +143,18 @@
 #   
 # }
 
-.correct.map.offset <- function(spl) {
+
+
+######################### CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED #####################################################################
+#' 
+#' Fixes a spatial lines object where some of eastern Russia transposed to the other side of the world
+#' 
+#' 
+#' @param spl SpatialLines object to fix
+#' @return a the SpatialLines object 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @import raster
+correct.map.offset <- function(spl) {
   we <- crop(spl, extent(-180, 180, -90, 90))
   ww <- crop(spl, extent(179.999, 200, -90, 90))
   ww <- raster::shift(ww, -360)
@@ -151,27 +162,38 @@
   return(spl)
 }
 
-# returns 
+######################### MAKES A MAP OVERLAY - A SPATAIL LINES OF CONTINENTS OR COUNTY OUTLINES FOR PLOTTING   #####################################################################
+#' Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with for example plotVegMaps
+#' 
+#' @param which A string specifiying "hires" or "lowres" for a full overlay of countries,
+#' of "hires-continents" or "lowres-contents" for just the continent outlines. 
+#' @return a SpatialLines object
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}, Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @importFrom maps maps
+#' @importFrom maptools map2SpatialLines
+#' @import mapdata
+#' @importFrom sp CRS
+#' @export
 makeOverlay <- function(which){
   proj4str <- "+proj=longlat +datum=WGS84"
   if(which == "lowres") {
     map.sp.lines <- map2SpatialLines(map('world', plot = FALSE), proj4string = CRS(proj4str))
-    map.sp.lines <- .correct.map.offset(map.sp.lines)
+    map.sp.lines <- correct.map.offset(map.sp.lines)
     return(list("sp.lines", map.sp.lines, lwd = 0.5))
   }
   if(which == "hires") {
     map.sp.lines <-  map2SpatialLines(map('worldHires', plot = FALSE), proj4string = CRS(proj4str))
-    map.sp.lines <- .correct.map.offset(map.sp.lines)
+    map.sp.lines <- correct.map.offset(map.sp.lines)
     return(list("sp.lines", map.sp.lines, lwd = 0.5))
   }
   if(which == "lowres-continents") {
     map.sp.lines <-  map2SpatialLines(map('world', plot = FALSE, interior = FALSE), proj4string = CRS(proj4str))
-    map.sp.lines <- .correct.map.offset(map.sp.lines)
+    map.sp.lines <- correct.map.offset(map.sp.lines)
     return(list("sp.lines", map.sp.lines, lwd = 0.5))
   }
   if(which == "hires-continents") {
     map.sp.lines <-  map2SpatialLines(map('worldHires', plot = FALSE, interior = FALSE), proj4string = CRS(proj4str))
-    map.sp.lines <- .correct.map.offset(map.sp.lines)
+    map.sp.lines <- correct.map.offset(map.sp.lines)
     return(list("sp.lines", map.sp.lines, lwd = 0.5))
   }
   else{

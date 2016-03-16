@@ -473,6 +473,9 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", ..
 # Compare runs to each other
 compareVegSpatialObject <- function(runs, veg.spatial, target,  expand.target = TRUE, plot.comparison = TRUE, base.run.id = NULL, ...) {
   
+  # To avoid NOTES
+  Lon = Lat = NULL
+  
   # initialise an empty data.table to hold the comparison
   comparison.dt <- data.table("Lon" = numeric(0), "Lat" = numeric(0))
   setkey(comparison.dt, Lon, Lat)

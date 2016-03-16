@@ -22,6 +22,20 @@
 ###
 ###################################### 
 
+#### PUT THIS HANDY HELPER FUNCTION FIRST TO AVOID NOTES
+
+.setKeyRVC <- function(dt){
+  
+  keys.present <- c()
+  
+  if("Lon" %in% names(dt)) keys.present <- append(keys.present, "Lon")
+  if("Lat" %in% names(dt)) keys.present <- append(keys.present, "Lat")
+  if("Year" %in% names(dt)) keys.present <- append(keys.present, "Year")
+  
+  if(length(keys.present) > 0) setkeyv(dt, keys.present)
+  
+}
+
 ############################################################################################################################
 ############################ FUNCTIONS TO BUILD VEG* OBJECTS ###############################################################
 ############################################################################################################################
@@ -585,15 +599,4 @@ sanitiseNamesForRaster <- function(input){
 }
 
 
-.setKeyRVC <- function(dt){
-  
-  keys.present <- c()
-  
-  if("Lon" %in% names(dt)) keys.present <- append(keys.present, "Lon")
-  if("Lat" %in% names(dt)) keys.present <- append(keys.present, "Lat")
-  if("Year" %in% names(dt)) keys.present <- append(keys.present, "Year")
-  
-  if(length(keys.present) > 0) setkeyv(dt, keys.present)
-  
-}
 
