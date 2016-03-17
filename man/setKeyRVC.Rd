@@ -10,7 +10,7 @@ setKeyRVC(dt)
 \item{dt}{The data.table for which to set the key}
 }
 \value{
-Nothing - changes the original data.table be reference (this is the data.table way)
+Nothing - changes the original data.table by reference (this is the data.table way)
 }
 \description{
 Keys should be set on all data.table object for sorts, joins, RVCTool-defined operators etc.  

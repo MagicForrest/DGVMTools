@@ -32,7 +32,7 @@
 #'  including if it was created by avergaing another data.table because it seems as keys are not conserved.
 #'
 #' @param dt The data.table for which to set the key
-#' @return Nothing - changes the original data.table be reference (this is the data.table way)
+#' @return Nothing - changes the original data.table by reference (this is the data.table way)
 #' @import data.table
 setKeyRVC <- function(dt){
   
@@ -602,7 +602,7 @@ sanitiseNamesForRaster <- function(input){
   
   # Do the averaging
   if(verbose) message("Temporally averaging ...")
-  if("Lon" %in% names(input.dt))  output.dt <- input.dt[,lapply(.SD, mean), by=list(Lat, Lon)]
+  if("Lon" %in% names(input.dt))  output.dt <- input.dt[,lapply(.SD, mean), by=list(Lon, Lat)]
   else output.dt <- input.dt[,lapply(.SD, mean)]
   if(verbose) message("...done.")
   
