@@ -9,11 +9,13 @@ import(mapdata,
        sp,
        raster, 
        lattice, 
-       fields, 
-       data.table, 
-       rgeos, 
-       compiler, 
-       Cairo)
+       data.table)
+
+importFrom(fields, tim.colors)
+importFrom(compiler, cmpfun)
+importFrom(maps, map)
+importFrom(Cairo, Cairo)
+importFrom(Cairo, CairoPNG)
 
 exportClasses(TemporalExtent, 
               SpatialExtent, 

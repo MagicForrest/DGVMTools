@@ -60,7 +60,7 @@ t1 <- Sys.time()
 analysis.label <- "Example2"                    
 
 ### Plot directory for run comparison plots (create it if it doesn't exist)
-plot.dir <- "/home/forrest/RVCToolsExamples/Example2/Plots"
+plot.dir <- "/home/matthew/RVCToolsExamples/Example2/Plots"
 dir.create(plot.dir, showWarnings = FALSE) 
 
 ### Time spans and spatials extents over which to average t
@@ -96,7 +96,7 @@ verbose <- TRUE
 
 vegrun.list <- list()
 
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example2/Run1",
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/matthew/RVCToolsExamples/Example2/Run1",
                                                          id = "LPJ-GUESS-SPITFIRE-Run1",
                                                          description= "SPITFIRE Run 1",
                                                          pft.set = global.PFTs,
@@ -112,7 +112,7 @@ vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/forres
                                                          line.type = 1
 )
 
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example2/Run2",
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/home/matthew/RVCToolsExamples/Example2/Run2",
                                                          id = "LPJ-GUESS-SPITFIRE-Run2",
                                                          description= "SPITFIRE Run 2",
                                                          pft.set = global.PFTs,
@@ -166,7 +166,7 @@ for(run in vegrun.list){
     for(period in periods){
       
       # open the output file and average it over the required period, resulting in a "VegSpatial" object
-      this.VegSpatial <- getVegSpatial(run, period, this.VegQuantity, reread.file = reread.file)
+      this.VegSpatial <- getVegSpatial(run,this.VegQuantity, period,  reread.file = reread.file)
       
       ### STANDARD SUMMARY PLOTS 
       plotVegMaps(this.VegSpatial, doIndividual = var %in% detailed.var.list)

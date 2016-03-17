@@ -148,17 +148,25 @@ setClass("VegRunInfo",
          
 )
 
-
-
+#' An S4 class to contain metadata and, optionally, data and benchmarks for a single vegetation run
+#' 
+#' A \code{VegRun} object contains the metadata concerning the an inherited \code{VegRunInfo} object
+#'  and the actual model data run as \code{VegObjects} in a list in slot \code{objects} and comparisions to datasets 
+#'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
+#' Such objects can be built by calls to \code{getVegObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToSpatialDataset()}
+#'  and \code{compareBiomes()}, and saved to the \code{VegRun} using \code{addToVegRun()}. 
+#'  
+#' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
+#' 
+#' @slot objects List of \code{VegObjects} saved in this run
+#' @slot benchmarks List of benchmarks (\code{BiomeComparisons} and \code{RasterComparisons}) performed and saved for this run.
+#' @exportClass VegRun
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegRun", 
-         slots = c(spatial = "list",
-                   temporal = "list",
-                   full = "list",
+         slots = c(objects = "list",
                    benchmarks = "list"
          ),
-         prototype = c(spatial = list(),
-                      timeseries = list(),
-                      full = list(),
+         prototype = c(objects = list(),
                       benchmarks = list()
          ),
          contains = "VegRunInfo"

@@ -471,7 +471,7 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", ..
 }
 
 # Compare runs to each other
-compareVegSpatialObject <- function(runs, veg.spatial, target,  expand.target = TRUE, plot.comparison = TRUE, base.run.id = NULL, ...) {
+compareVegSpatialObject <- function(runs, veg.spatial.id, target,  expand.target = TRUE, plot.comparison = TRUE, base.run.id = NULL, ...) {
   
   # To avoid NOTES
   Lon = Lat = NULL
@@ -484,7 +484,7 @@ compareVegSpatialObject <- function(runs, veg.spatial, target,  expand.target = 
   for(run in runs){
     
     # grab the VegObject that we want from the vegRun
-    temp.spatial <- run@spatial[[veg.spatial]]
+    temp.spatial <- run@objects[[veg.spatial.id]]
     
     # expand the target if necessary
     if(expand.target){ target <- expandTargets(targets = target, data = temp.spatial, run@pft.set)  }
@@ -500,7 +500,7 @@ compareVegSpatialObject <- function(runs, veg.spatial, target,  expand.target = 
   
   # now plot the comparisons
   plotVegMaps(comparison.dt,
-              quant = run@spatial[[veg.spatial]]@quant,
+              quant = run@objects[[veg.spatial.id]]@quant,
               ...)
   
   
@@ -519,11 +519,11 @@ compareVegSpatialObject <- function(runs, veg.spatial, target,  expand.target = 
           comparison.dt[, eval(col.name) := get(paste(run@id, sub.target, sep = "_")) - get(paste(base.run.id, sub.target, sep = "_"))]
           
           # plot the difference
-          title <- paste(sub.target, paste(run@spatial[[veg.spatial]]@quant@full.string, ":", sep = ""), run@description, "-", runs[[base.run.id]]@description, sep = " ")
+          title <- paste(sub.target, paste(run@onjects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", runs[[base.run.id]]@description, sep = " ")
           
           plotVegMaps(comparison.dt,
                       targets = col.name,
-                      quant = run@spatial[[veg.spatial]]@quant,
+                      quant = run@objects[[veg.spatial.id]]@quant,
                       special = "diff",
                       summary.title = title,
                       ...)
