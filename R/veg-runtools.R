@@ -288,7 +288,23 @@ getVegObject <- function(run,
     return(run@objects[[vegobject.id]])
   }
   
-  ### USE THE PREAVERAGED/CROPPED FILE IF AVAILABLE (and we are not forcing a re-read and we have not already read the full file)
+  ### NEXT FASTEST OPTION - IF THE WHOLE FILE HAS BEEN READ AND STORED IN MEMORY AS A VEGOBJECT,
+  ### THEN TAKE THAT AND EXTRACT THE DATA.TABLE FOR AVERAGING
+  else if(var.string %in% names(run@objects)){
+    if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
+    this.dt <- run@objects[[var.string]]@data
+    setkey(this.dt, Lon, Lat, Year)
+    
+    # Unique Lons, Lats and Years if available
+    sorted.unique.lats = sorted.unique.lons = sorted.unique.years = NULL
+    if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
+    if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
+    if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
+    
+    
+  }
+  
+  ### NEXT NEXT FASTEST OPTION, USE THE PREAVERAGED/CROPPED FILE IF AVAILABLE (and we are not forcing a re-read and we have not already read the full file)
   else if(file.exists(paste(file.name)) & !reread.file & !var.string %in% names(run@objects)){
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     this.dt <- fread(file.name)
