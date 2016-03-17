@@ -113,7 +113,7 @@ openLPJOutputFile <- function(run,
   
   
   # Correct year, lons and lats
-  if(verbose)message("Correcting years, lons and lats...")
+  if(verbose)message("Correcting years, lons and lats with offsets...")
   if(run@year.offset != 0) dt[,Year := Year + run@year.offset]
   if(length(run@lonlat.offset) == 2 ){
     if(run@lonlat.offset[1] != 0) dt[, Lon := Lon + run@lonlat.offset[1]]
@@ -124,9 +124,11 @@ openLPJOutputFile <- function(run,
     if(run@lonlat.offset[1] != 0) dt[, Lon := Lon + run@lonlat.offset[1]]
     if(run@lonlat.offset[1] != 0) dt[, Lat := Lat + run@lonlat.offset[1]]
   }
-  
-  
-  if(verbose)message("Corrected.")
+    
+  if(verbose) {
+    message("Offsets applied. Head of full .out file (after offsets):")
+    print(head(dt))
+  }
   
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
   if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = .LondonCentre)] }
@@ -168,27 +170,23 @@ getVegQuantity_LPJ <- function(run, var.string, store.internally = FALSE,verbose
   Lon = Lat = Year = NULL
    
   # USE THE FULL FILE IF ALREADY STORED IN MEMORY
-  if(var.string %in% names(run@objects)){
-    if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
-    this.dt <- run@objects[[var.string]]
-    setkey(this.dt, Lon, Lat, Year)
-  }
+  #if(var.string %in% names(run@objects)){
+  #  if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
+  #  this.dt <- run@objects[[var.string]]
+  #  setKeyRVC(this.dt, Lon, Lat, Year)
+  #}
   
   # READ THE FULL FILE
-  else {
+  #else {
     if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
     
     this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
-    
-    if(verbose) {
-      message("Head of full .out file (after offsets):")
-      print(head(this.dt))
-    }
+   
     
     # if requested save the full data.table containing the entire ,out file to the run object
     if(store.internally) {run <<- addToVegRun(this.dt, run)}
     
-  }
+  #}
   
   return(this.dt)
   
