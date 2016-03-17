@@ -28,8 +28,9 @@ variable <- "lai"
 # Define a time period or TemporalExtent over which to average
 period = new("TemporalExtent", name = "Reference", start = 1961, end = 1990)
 
-#lai.full <- getVegObject(run, variable, store.internally = TRUE)
-lai.full <- getVegObject(run, variable, store.internally = FALSE)
+lai.full.1 <- getVegObject(run, variable)
+print(lai.full.1@data)
+lai.full.2 <- getVegObject(run, variable, store.full = TRUE)
 
 # Open the lai.out file, and average over the reference period
 lai.reference.period <- getVegObject(run, 
@@ -37,7 +38,7 @@ lai.reference.period <- getVegObject(run,
                                      temporal.extent = period, 
                                      temporally.average = TRUE, 
                                      write = TRUE,
-                                     reread.file = TRUE,
+                                     reread.file = FALSE,
                                      store.internally = TRUE)
 
 stop()

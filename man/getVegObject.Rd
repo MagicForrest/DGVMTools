@@ -7,7 +7,7 @@
 getVegObject(run, var, temporal.extent = NULL, temporally.average = FALSE,
   spatial.extent = NULL, spatially.average = FALSE, area.weighted = TRUE,
   write = FALSE, reread.file = TRUE, verbose = TRUE,
-  store.internally = FALSE, adgvm.scheme = 1)
+  store.internally = FALSE, store.full = FALSE, adgvm.scheme = 1)
 }
 \arguments{
 \item{run}{The \code{VegRun} object for which the spatially-averaged \code{VegObject} should be built (eg. "lai")}
@@ -31,6 +31,8 @@ getVegObject(run, var, temporal.extent = NULL, temporally.average = FALSE,
 \item{verbose}{If TRUE give a lot of information for debugging/checking.}
 
 \item{store.internally}{If TRUE store the resulting \code{VegObject} in the \code{VegRun} for using later}
+
+\item{store.full}{If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{VegObjects} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!}
 
 \item{adgvm.scheme}{In the case of analysing an aDGVM run, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.}
 }
