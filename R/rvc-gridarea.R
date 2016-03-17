@@ -78,7 +78,7 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
   area   <- data.frame(Lon=as.vector(lon2d),
                        Lat=as.vector(lat2d),
                        area=as.vector(area2d))
-  area <- data.table(area, key=c("Lat", "Lon"))
+  area <- data.table(area, key=c("Lon", "Lat"))
   return(area)
 }
 
@@ -205,7 +205,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
 #' Simple calculation of new VegObjects by operation '+', '-', '*' or '/'
 #' 
 #' @param run the run the data should be taken from
-#' @param targets a list with elements 'x' and 'y' with components VegObject slot ('temporal' or 'spatial'), VegObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.
+#' @param targets a list with elements 'x' and 'y' with components VegObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.
 #' @param operator which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/')
 #' @param quant new VegQuant definition to use, if NULL it will be guessed
 #' @param verbose print some messages
@@ -241,13 +241,13 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
 
   ## this needs to be further adjusted
   ## targets could become ids
-  x <- eval(parse(text=paste("run@", targets[['x']][1], "[['", targets[['x']][2], "']]", sep="")))
-  y <- eval(parse(text=paste("run@", targets[['y']][1], "[['", targets[['y']][2], "']]", sep="")))
+  x <- eval(parse(text=paste("run@objects", "[['", targets[['x']][1], "']]", sep="")))
+  y <- eval(parse(text=paste("run@objects", "[['", targets[['y']][1], "']]", sep="")))
 
   if (!is.VegObject(x))
-    stop(paste("target '", targets[['x']][1], "@", targets[['x']][2], "is not a VegObject!", sep=""))
+    stop(paste("target '", targets[['x']][1], "is not a VegObject!", sep=""))
   if (!is.VegObject(y))
-    stop(paste("target '", targets[['y']][1], "@", targets[['y']][2], "is not a VegObject!", sep=""))
+    stop(paste("target '", targets[['y']][1], "is not a VegObject!", sep=""))
  
   if (x@is.temporally.averaged != y@is.temporally.averaged ||
       x@is.spatially.averaged != y@is.spatially.averaged ||
@@ -281,18 +281,18 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
 
   if (!is.VegQuant(quant) ) {
     quant <- x.quant
-    quant@id = paste(targets[[1]][2], operator, targets[[2]][2], sep="")
+    quant@id = paste(targets[[1]][1], operator, targets[[2]][1], sep="")
     quant@short.string = quant@id
     quant@full.string = quant@id
     if (operator=="*" || operator=="/")
       quant@units = paste("(", x.quant@units, ") ", operator, " (", y.quant@units, ")", sep="")
   }
-  
+
   if (verbose)
     message("Performing calculations.")
 
   ## perform the calculation
-  if (length(targets[[1]])==2 && length(targets[[2]])==2) {
+  if (length(targets[[1]])==1 && length(targets[[2]])==1) {
     if (length(colnames(x.dt)) != length(colnames(y.dt)))
       stop(paste("Number of columns in run (", length(colnames(x.dt)), "/", length(colnames(y.dt)), ") differ.", sep=""))
     for (n in colnames(x.dt)) {
@@ -313,7 +313,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
     }
 
     return(new("VegObject",
-               id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
+               id = paste(targets[[1]][1], operator, targets[[2]][1], sep=""),
                data = new.dt,
                quant = quant,
                spatial.extent = x.sp.extent,
@@ -323,13 +323,13 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
                is.spatially.averaged = x@is.spatially.averaged,
                run = as(run, "VegRunInfo")))      
 
-  } else if (length(targets[[1]])==2 && length(targets[[2]])==3) {
+  } else if (length(targets[[1]])==1 && length(targets[[2]])==2) {
     key.names <- key(x.dt)
     val.names <- names(x.dt)
     val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
     setnames(x.dt, val.names, paste("x.", val.names, sep=""))
 
-    list.str <- paste(val.names, "=x.", val.names, operator, targets[[2]][3], sep="", collapse=", ")
+    list.str <- paste(val.names, "=x.", val.names, operator, targets[[2]][2], sep="", collapse=", ")
     if (x@is.temporally.averaged) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
     } else if (x@is.spatially.averaged) {
@@ -338,7 +338,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
     return(new("VegObject",
-               id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
+               id = paste(targets[[1]][1], operator, targets[[2]][1], sep=""),
                data = new.dt,
                quant = quant,
                spatial.extent = x.sp.extent,
@@ -348,13 +348,13 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
                is.spatially.averaged = x@is.spatially.averaged,
                run = as(run, "VegRunInfo")))      
 
-  } else if (length(targets[[1]])==3 && length(targets[[2]])==2) {
+  } else if (length(targets[[1]])==2 && length(targets[[2]])==1) {
     key.names <- key(y.dt)
     val.names <- names(y.dt)
     val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
     setnames(y.dt, val.names, paste("y.", val.names, sep=""))
 
-    list.str <- paste(val.names, "=",targets[[1]][3], operator, "y.", val.names, sep="", collapse=", ")
+    list.str <- paste(val.names, "=",targets[[1]][2], operator, "y.", val.names, sep="", collapse=", ")
     if (x@is.temporally.averaged) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
     } else if (x@is.spatially.averaged) {
@@ -363,7 +363,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
     return(new("VegObject",
-               id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
+               id = paste(targets[[1]][1], operator, targets[[2]][1], sep=""),
                data = new.dt,
                quant = quant,
                spatial.extent = x.sp.extent,
@@ -382,10 +382,10 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
     val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
     setnames(y.dt, val.names, paste("y.", val.names, sep=""))
     
-    if (targets[[1]][3]==targets[[2]][3]) {
-      list.str <- paste(targets[[1]][3],"=x.",targets[[1]][3], operator, "y.", targets[[2]][3], sep="")
+    if (targets[[1]][2]==targets[[2]][2]) {
+      list.str <- paste(targets[[1]][2],"=x.",targets[[1]][2], operator, "y.", targets[[2]][2], sep="")
     } else {
-      list.str <- paste("value=x.",targets[[1]][3], operator, "y.", targets[[2]][3], sep="")
+      list.str <- paste("value=x.",targets[[1]][2], operator, "y.", targets[[2]][2], sep="")
     }
     if (x@is.temporally.averaged) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
@@ -395,7 +395,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
     return(new("VegObject",
-               id = paste(targets[[1]][2], operator, targets[[2]][2], sep=""),
+               id = paste(targets[[1]][1], operator, targets[[2]][1], sep=""),
                data = new.dt,
                quant = quant,
                spatial.extent = x.sp.extent,
