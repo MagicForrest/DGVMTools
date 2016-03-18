@@ -11,7 +11,7 @@ t1 <- Sys.time()
 #### STEP ONE: Define the settings, open the run and average over the period we want
 
 # Define a RUN to process
-run <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example1",
+run <- defineVegRun(run.dir = "/home/matthew/RVCToolsExamples/Example1",
                     model = "LPJ-GUESS",
                     pft.set = global.PFTs,
                     id = "ExampleRun1",
@@ -28,13 +28,21 @@ variable <- "lai"
 # Define a time period or TemporalExtent over which to average
 period = new("TemporalExtent", name = "Reference", start = 1961, end = 1990)
 
+lai.full.1 <- getVegObject(run, variable)
+print(lai.full.1@data)
+lai.full.2 <- getVegObject(run, variable, store.full = TRUE)
+
 # Open the lai.out file, and average over the reference period
 lai.reference.period <- getVegObject(run, 
                                      variable, 
                                      temporal.extent = period, 
                                      temporally.average = TRUE, 
                                      write = TRUE,
-                                     reread.file = FALSE)
+                                     reread.file = FALSE,
+                                     store.internally = TRUE)
+
+stop()
+
 
 
 ##### STEP TWO: Simple summary plots

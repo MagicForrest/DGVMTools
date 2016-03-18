@@ -8,6 +8,11 @@ Authors@R: c(person("Matthew", "Forrst", role = c("aut", "cre"), email
         "joerg.steinkamp@senckenberg.de"))
 Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
 Maintainer: Matthew Forrest <mforrest@senckenberg.de>
+Imports:
+    fields,
+    compiler,
+    maps,
+    Cairo
 Depends:
     R (>= 2.15.0),
     methods,
@@ -15,14 +20,11 @@ Depends:
     maptools,
     ncdf4,
     rgdal,
+    sp,
     raster,
     lattice,
-    fields,
     data.table,
-    rgeos,
-    compiler,
-    ggplot2,
-    Cairo
+    ggplot2
 Suggests:
     zoo,
     mgcv,

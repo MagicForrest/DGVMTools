@@ -10,7 +10,7 @@ calcNewVegObj(run = NULL, targets = NULL, operator = NULL, quant = NULL,
 \arguments{
 \item{run}{the run the data should be taken from}
 
-\item{targets}{a list with elements 'x' and 'y' with components VegObject slot ('temporal' or 'spatial'), VegObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.}
+\item{targets}{a list with elements 'x' and 'y' with components VegObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.}
 
 \item{operator}{which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/')}
 

@@ -83,60 +83,60 @@ sens_CLM <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/globa
 
 ## Fill the runs with time averaged spatial data
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@spatial[['lai']] <- getVegObject(",run,", 'lai', period, temporally.average=TRUE, write=TRUE)", sep="")))
-  eval(parse(text=paste(run, "@spatial[['gpp']] <- getVegObject(",run,", 'agpp', period, temporally.average=TRUE, write=TRUE)", sep="")))
-  eval(parse(text=paste(run, "@spatial[['lai']] <- addBiomes(",run, "@spatial[['lai']], Smith2014.scheme)", sep="")))
+  eval(parse(text=paste(run, "@objects[['lai.sp']] <- getVegObject(",run,", 'lai', period, temporally.average=TRUE, write=TRUE)", sep="")))
+  eval(parse(text=paste(run, "@objects[['gpp.sp']] <- getVegObject(",run,", 'agpp', period, temporally.average=TRUE, write=TRUE)", sep="")))
+  eval(parse(text=paste(run, "@objects[['lai.sp']] <- addBiomes(",run, "@objects[['lai.sp']], Smith2014.scheme)", sep="")))
 }
 
 ## single panel without title
-plotGGSpatial(base@spatial[['lai']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
+plotGGSpatial(base@objects[['lai.sp']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
 
 ## split into panels by different data.table columns
-plotGGSpatial(base@spatial[['gpp']], c("BNE", "BNS", "TeBS", "TrBE", "C3G", "Total"), colors=brewer.pal(9, "YlGn"), wrap=3)
+plotGGSpatial(base@objects[['gpp.sp']], c("BNE", "BNS", "TeBS", "TrBE", "C3G", "Total"), colors=brewer.pal(9, "YlGn"), wrap=3)
 
 ## split into different panels by another spatial data
-plotGGSpatial(base@spatial[['lai']], "Total", wrap=c("base", "lai", "Smith2014", 4), colors=brewer.pal(9, "YlGn"), long.title=FALSE)
+plotGGSpatial(base@objects[['lai.sp']], "Total", wrap=c("base", "lai.sp", "Smith2014", 4), colors=brewer.pal(9, "YlGn"), long.title=FALSE)
 ## the same maps as above but nicer labels and missing terrestial cells are filled with white (terr.bg),
 ##using either a named vector (then the names are used) or an unnamed vetor (then the values are used)
-wrap <- list(run="base", name="lai", column="Smith2014", ncol=4, map=Smith2014.scheme@cols)
-wrap <- list(run="base", name="lai", column="Smith2014", ncol=4, map=names(Smith2014.scheme@cols))
-plotGGSpatial(base@spatial[['lai']], "Total", wrap=wrap, colors=brewer.pal(9, "YlGn"), long.title=FALSE, terr.bg="white")
+wrap <- list(run="base", name="lai.sp", column="Smith2014", ncol=4, map=Smith2014.scheme@cols)
+wrap <- list(run="base", name="lai.sp", column="Smith2014", ncol=4, map=names(Smith2014.scheme@cols))
+plotGGSpatial(base@objects[['lai.sp']], "Total", wrap=wrap, colors=brewer.pal(9, "YlGn"), long.title=FALSE, terr.bg="white")
 
 ## 2 panels of different runs (dataset also possible, but use the same colorbar)
-plotGGSpatial(list(base@spatial[['gpp']], sens_constCO2@spatial[['gpp']]), "Total", colors=brewer.pal(9, "YlGn"))
+plotGGSpatial(list(base@objects[['gpp.sp']], sens_constCO2@objects[['gpp.sp']]), "Total", colors=brewer.pal(9, "YlGn"))
 
 ## 2 panels with overriding the default number of legend columns
-p <- plotGGSpatial(list(a=base@spatial[['lai']], b=sens_constCO2@spatial[['lai']]), 
+p <- plotGGSpatial(list(a=base@objects[['lai.sp']], b=sens_constCO2@objects[['lai.sp']]), 
                    "Smith2014", colors=Smith2014.scheme@cols, terr.bg="white")
 p <- p + guides(fill = guide_legend(ncol = 2))
 print(p)
 
 ## single meridional plot
-plotGGMeridional(base@spatial[['gpp']], "Total", what=list(center="md", var=c(0.25,0.75)), colors="red")
+plotGGMeridional(base@objects[['gpp.sp']], "Total", what=list(center="md", var=c(0.25,0.75)), colors="red")
 
 ## multiple columns
-plotGGMeridional(base@spatial[['gpp']], c("BNE", "TeBS", "TrBE", "Total"), what=list(center="mn", var="sd"))
+plotGGMeridional(base@objects[['gpp.sp']], c("BNE", "TeBS", "TrBE", "Total"), what=list(center="mn", var="sd"))
 
 
 ## several sensitivity runs with short names
-p <- plotGGMeridional(list(base@spatial[['gpp']],
-                           sens_constCO2@spatial[['gpp']],
-                           sens_daily@spatial[['gpp']],
-                           sens_CC@spatial[['gpp']],
-                           sens_centr@spatial[['gpp']],
-                           sens_CLM@spatial[['gpp']]),
+p <- plotGGMeridional(list(base@objects[['gpp.sp']],
+                           sens_constCO2@objects[['gpp.sp']],
+                           sens_daily@objects[['gpp.sp']],
+                           sens_CC@objects[['gpp.sp']],
+                           sens_centr@objects[['gpp.sp']],
+                           sens_CLM@objects[['gpp.sp']]),
                       "Total", long.title=FALSE)
 p <- p + guides(fill = guide_legend(ncol = 1)) + theme(legend.position = "right")
 print(p)
 
 ## categorically aggregated summary plot of one run
 ## specifying either slot/column or x/y as either list or data.frame
-plotGGCategorialAggregated(base, targets=list(slot=c("gpp", "lai"), col=c("Total", "Smith2014")))
-plotGGCategorialAggregated(base, targets=data.frame(x=c("gpp", "Total"), y=c("lai", "Smith2014")))
+plotGGCategorialAggregated(base, targets=list(slot=c("gpp.sp", "lai.sp"), col=c("Total", "Smith2014")))
+plotGGCategorialAggregated(base, targets=data.frame(x=c("gpp.sp", "Total"), y=c("lai.sp", "Smith2014")))
 
 ## several sensitivity runs
 p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
-                                targets=data.frame(slot=c("gpp", "lai"), column=c("Total", "Smith2014")), 
+                                targets=data.frame(slot=c("gpp.sp", "lai.sp"), column=c("Total", "Smith2014")), 
                                 name.map=Smith2014.scheme@cols)
 p <- p + guides(col = guide_legend(ncol = 1))
 print(p)
@@ -144,7 +144,7 @@ print(p)
 ## the same data, but displayed as vertical bars instead of horizontal points
 ## please note that bars use "fill" instead of "col" in guide
 p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
-                                targets=data.frame(slot=c("gpp", "lai"), column=c("Total", "Smith2014")), 
+                                targets=data.frame(slot=c("gpp.sp", "lai.sp"), column=c("Total", "Smith2014")), 
                                 name.map=Smith2014.scheme@cols, bar=TRUE, vertical=TRUE)
 p <- p + guides(fill = guide_legend(ncol = 1))
 p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -152,24 +152,24 @@ print(p)
 
 ### Time series
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@temporal[['gpp']] <- getVegTemporal(",run,", 'agpp', reread.file = FALSE, write=TRUE)", sep="")))
-  eval(parse(text=paste(run, "@temporal[['cpool']] <- getVegTemporal(",run,", 'cpool', reread.file = FALSE, write=TRUE)", sep="")))
+  eval(parse(text=paste(run, "@objects[['gpp.ts']] <- getVegTemporal(",run,", 'agpp', reread.file = FALSE, write=TRUE)", sep="")))
+  eval(parse(text=paste(run, "@objects[['cpool.ts']] <- getVegTemporal(",run,", 'cpool', reread.file = FALSE, write=TRUE)", sep="")))
 }
 
 ## plot several columns together
-plotGGTemporal(base@temporal[['gpp']], c("BNE", "TeBS", "TrIBE", "TrBR"))
+plotGGTemporal(base@objects[['gpp.ts']], c("BNE", "TeBS", "TrIBE", "TrBR"))
 
-lon <- extract.seq(base@spatial[['lai']]@data$Lon)
-lat <- extract.seq(base@spatial[['lai']]@data$Lat)
+lon <- extract.seq(base@objects[['lai.sp']]@data$Lon)
+lat <- extract.seq(base@objects[['lai.sp']]@data$Lat)
 area2d <- gridarea2d(lon, lat, scale=1.e-12)
-land.area <- sum(area2d[base@spatial[['lai']]@data]$area)
+land.area <- sum(area2d[base@objects[['lai.sp']]@data]$area)
 ## plot several
-p <- plotGGTemporal(list(base@temporal[['gpp']],
-                         sens_constCO2@temporal[['gpp']],
-                         sens_daily@temporal[['gpp']],
-                         sens_CC@temporal[['gpp']],
-                         sens_centr@temporal[['gpp']],
-                         sens_CLM@temporal[['gpp']]), "Total", scale=land.area)
+p <- plotGGTemporal(list(base@objects[['gpp.ts']],
+                         sens_constCO2@objects[['gpp.ts']],
+                         sens_daily@objects[['gpp.ts']],
+                         sens_CC@objects[['gpp.ts']],
+                         sens_centr@objects[['gpp.ts']],
+                         sens_CLM@objects[['gpp.ts']]), "Total", scale=land.area)
 p <- p + guides(col = guide_legend(title="", ncol = 1))
 print(p)
 
@@ -177,7 +177,7 @@ print(p)
 
 ## Add some more time averaged spatial data
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@spatial[['cpool']] <- getVegSpatial(",run,", 'cpool', period)", sep="")))
+  eval(parse(text=paste(run, "@objects[['cpool.sp']] <- getVegSpatial(",run,", 'cpool', period)", sep="")))
 }
 
 ## create a new quantity description for Carbon residence time,
@@ -189,7 +189,7 @@ RT.quant <- new("VegQuant",
                 type="pools",
                 units="years")
 ## spatial
-t <- list(x=c("spatial", "cpool"), y=c("spatial", "gpp", "Total"))
+t <- list(x=c("cpool.sp"), y=c("gpp.sp", "Total"))
 residence.time <- calcNewVegObj(base, t, "/", quant=RT.quant)
 key.names <- key(residence.time@data)
 val.names <- names(residence.time@data)
@@ -202,29 +202,31 @@ for (j in val.names)
 residence.time@data[, logTotal:=log10(Total), ]
 plotGGSpatial(residence.time, "logTotal", colors=brewer.pal(9, "YlOrBr"))
 
-base@spatial[['residence.time']] = residence.time
-plotGGCategorialAggregated(base, targets=list(slot=c("residence.time", "lai"), col=c("Total", "Smith2014")), name.map=Smith2014.scheme@cols)
+base@objects[['rt.sp']] = residence.time
+plotGGCategorialAggregated(base, targets=list(slot=c("rt.sp", "lai.sp"), col=c("Total", "Smith2014")), name.map=Smith2014.scheme@cols)
 
 ## temporal
-plotGGTemporal(base@temporal[['cpool']], "Total", colors="green")
+plotGGTemporal(base@objects[['cpool.ts']], "Total", colors="green")
 
 ## This one has the wrong axis unit!
-plotGGTemporal(base@temporal[['cpool']], c("VegC", "LitterC", "SoilC"), scale=land.area)
+plotGGTemporal(base@objects[['cpool.ts']], c("VegC", "LitterC", "SoilC"), scale=land.area)
 
-t <- list(x=c("temporal", "cpool"), y=c("temporal", "gpp", "Total"))
+t <- list(x=c("cpool.ts"), y=c("gpp.ts", "Total"))
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
   message(run)
-  eval(parse(text=paste(run, "@temporal[['residence.time']] <- calcNewVegObj(", run, ", t, '/', quant=RT.quant)", sep="")))
+  eval(parse(text=paste(run, "@objects[['rt.ts']] <- calcNewVegObj(", run, ", t, '/', quant=RT.quant)", sep="")))
 }
-p <- plotGGTemporal(list(base@temporal[['residence.time']],
-                         sens_constCO2@temporal[['residence.time']],
-                         sens_daily@temporal[['residence.time']],
-                         sens_CC@temporal[['residence.time']],
-                         sens_centr@temporal[['residence.time']],
-                         sens_CLM@temporal[['residence.time']]), "Total")
+p <- plotGGTemporal(list(base@objects[['rt.ts']],
+                         sens_constCO2@objects[['rt.ts']],
+                         sens_daily@objects[['rt.ts']],
+                         sens_CC@objects[['rt.ts']],
+                         sens_centr@objects[['rt.ts']],
+                         sens_CLM@objects[['rt.ts']]), "Total")
 p <- p + guides(col = guide_legend(title="", ncol = 1))
 print(p)
 
+## The code below here is not yet working!
+q()
 #################################################
 ### get some temporal stand data (site level) ###
 #################################################
@@ -258,7 +260,7 @@ MoMo1 <- defineVegRun(run.dir = "/data/WIP/MoMo/output/Hyytiala/miroc-esm-chem/r
                       map.overlay = "",
                       lonlat.offset = c(0,0),
                       year.offset = 0)
-MoMo1@temporal[['height']] <- getVegTemporal(",run,", 'height', spatial.extent=Hyy, area.weighted=FALSE)
+MoMo1@objects[['height']] <- getVegTemporal(MoMo1, 'height', spatial.extent=Hyy, area.weighted=FALSE)
 
 hgt.quant <- new("VegQuant",
                 id="height",

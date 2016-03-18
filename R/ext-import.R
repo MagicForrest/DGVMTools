@@ -96,7 +96,7 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, forceReCalculation=FALSE, write=TRUE, verbose=TRUE, ...) {
   suppressWarnings(if (!is.na(temporal.extent)) {
     if (class(temporal.extent)[1]=="TemporalExtent" && attr(class(temporal.extent), "package")=="RVCTools") {
-      period <- c(period@start, period@end)
+      period <- c(temporal.extent@start, temporal.extent@end)
     } else {
       period <- c(min(temporal.extent, na.rm=TRUE), max(temporal.extent, na.rm=TRUE))
     }

@@ -22,11 +22,44 @@
 ###
 ###################################### 
 
-############################################################################################################################
-############################ FUNCTIONS TO BUILD VEG* OBJECTS ###############################################################
-############################################################################################################################
+######## SET KEY ON DATA TABLE USED TO STORE VEG INFORMATION
+#### PUT THIS HANDY HELPER FUNCTION FIRST TO AVOID NOTES
+
+#' Sets keys on data.table in order Lon, Lat, Year (if present)
+#' 
+#' Keys should be set on all data.table object for sorts, joins, RVCTool-defined operators etc.  
+#'  This function should be called on a data.table stored in a VegObject after it has been created,
+#'  including if it was created by avergaing another data.table because it seems as keys are not conserved.
+#'
+#' @param dt The data.table for which to set the key
+#' @return Nothing - changes the original data.table by reference (this is the data.table way)
+#' @import data.table
+setKeyRVC <- function(dt){
+  
+  keys.present <- c()
+  
+  if("Lon" %in% names(dt)) keys.present <- append(keys.present, "Lon")
+  if("Lat" %in% names(dt)) keys.present <- append(keys.present, "Lat")
+  if("Year" %in% names(dt)) keys.present <- append(keys.present, "Year")
+  
+  if(length(keys.present) > 0) setkeyv(dt, keys.present)
+  
+}
 
 
+######## DEFINE A VEGRUN OBJECT 
+
+#' Define a VegRun object, setting up all the required metadata (only). 
+#' 
+#' This function is preferred to a simple "new("VegRunInfo")" and "new("VegRunInfo") initialisation because it does both intialisations in one step and also performs some extra check and preamble such as prepared the map overlays
+#'
+#' Note that actual data from the run is not stored, only metadata. The data, stored as VegObjects and added to a VegRun object, are added built with later with other commands and added to \code{VegRun} command using \code{addToVegRun}
+#'
+#' @param ...  The parameters are the slots of a VegRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
+#' compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.
+#' @return A VegRun object, with metadata defined by empty data slots.s
+#' @export
+#' @seealso VegRun, VegRunInfo 
 
 defineVegRun <- function(...){
   
@@ -63,57 +96,74 @@ defineVegRun <- function(...){
 }
 
 
-addToVegRun <- function(object, run, id = NULL){
+############# ADD AN OBJECT TO A VEGRUN ######################################
+
+#' Add an object (either a \code{VegObject}, \code{BiomeComparison} or \code{RasterComparison}) to a \code{VegRun} object to be use later.  
+#' 
+#' Stores an object in its run for later calculations, plotting, comparisons.
+#' 
+#' @param object Object to add to the \code{VegRun},   The parameters are the slots of a VegRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
+#' compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.
+#' @param run The \code{VegRun} object to which the object argument shold be added
+#' @return A VegRun object the the object argument added
+#' @export
+#' @seealso VegRun, VegRunInfo 
+addToVegRun <- function(object, run){
   
-  object.class <- class(object)[1]
-  
-  if(object.class == "data.table") {
+  # Add a BiomeComaprison or RasterComparison to the list in the benchmarks slot 
+  if(is.BiomeComparison(object) | is.RasterComparison(object)) {
     
-    if(is.null(id)) stop("When adding a full data.table to a VegRun you *must* specific an id")
-    run@full[[id]] <- object
-    
-  }
-  
-  else if(object.class == "BiomeComparison" | object.class == "RasterComparison") {
-    
-    if(is.null(id)) id <- object@id
     benchmark.list <- run@benchmarks
-    benchmark.list[[id]] <- object
+    benchmark.list[[object@id]] <- object
     run@benchmarks <- benchmark.list
     rm(benchmark.list)
     
   }
   
-  
-  
+  # Add a VegObject to the list in the objects slot 
   else if(is.VegObject(object)) {
     
-    if(is.null(id)) id <- object@id
-    spatial.list <- run@spatial
-    spatial.list[[id]] <- object
-    run@spatial <- spatial.list
-    rm(spatial.list)
+    # Check that run ids match, if not, stop becuase something is really wrong
+    if(run@id != object@run@id){
+      stop(paste("Adding VegObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". I can think of no reason to do this, and doing so will break the internal logic of RVCTools so aborting. Contact the package creator if this seems wrng to you" , sep = ""))
+    }
+    
+    veg.objects.list <- run@objects
+    veg.objects.list[[object@id]] <- object
+    run@objects <- veg.objects.list
+    rm(veg.objects.list)
     
   }
   
   else{
     
-    warning(paste("Cannot add object of class", object.class, "to a VegRun object", sep = " "))
+    warning(paste("Cannot add object of class", class(object), "to a VegRun object", sep = " "))
     
   }
-  
   
   return(run)
   
 }
 
 
-################################# GET TIME-AVERAGED DATA #########################################
+################################# GET TEMPORALLY-AVERAGED DATA #########################################
 
+#' Get a temporally-averaged \code{VegObject}
+#' 
+#' Given a \code{VegRun} object, a \code{VegQuant} object and a \code{TemporalExtent} object, return an appropriate temporally-averaged \code{VegObject} oject for that run, quantity and time period over the whole simulation domain.
+#' 
+#' @param run The \code{VegRun} object for which the temporally-averaged \code{VegObject} should be built (eg. "lai")
+#' @param var The quantity (either a \code{VegQuant} or a string containing its \code{id}) 
+#' @param period The time period (as a \code{TemporalExtent} over which the data is to be averaged)
+#' @param ... additional arguments passed to \code{getVegObject}, for example \code{rereadfile}, and \code{store.internally}.
+#' @return A temporally averaged\code{VegObject}  but with no-spatial averaging or cropping (ie. include complete original simulation domain). In other words, a map!
+#' @export
+#' @seealso \code{getVegObject}, \code{getVegTemporal}
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#'  
 getVegSpatial <- function(run,
                           var,
                           period,
-                          reread.file = TRUE,
                           ...){
   
   
@@ -124,7 +174,6 @@ getVegSpatial <- function(run,
                  spatially.average = FALSE,
                  temporal.extent = period, 
                  temporally.average = TRUE, 
-                 reread.file = reread.file, 
                  ...)
   )
   
@@ -132,13 +181,25 @@ getVegSpatial <- function(run,
 }
 
 
-################################# GET SPACE-AVERAGED DATA #########################################
+################################# GET SPATIALLY-AVERAGED DATA #########################################
 
+
+#' Get a spatially-averaged \code{VegObject}
+#' 
+#' Given a \code{VegRun} object, a \code{VegQuant} object and a \code{SpatialExtent} object, return an appropriate spatially-averaged \code{VegObject} oject for that run, quantity and time period over the whole simulation domain.
+#' 
+#' @param run The \code{VegRun} object for which the spatially-averaged \code{VegObject} should be built (eg. "lai")
+#' @param var The quantity (either a \code{VegQuant} or a string containing its \code{id}) 
+#' @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
+#' @param ... additional arguments passed to \code{getVegObject}, for example \code{rereadfile}, \code{area.weighted} and \code{store.internally}.
+#' @return A spatially averaged\code{VegObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
+#' @export
+#' @seealso \code{getVegObject}, \code{getVegspatial}
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 getVegTemporal <- function(run,
                            var,
                            spatial.extent = NULL,
-                           reread.file = TRUE,
                            ...){
   
   return(
@@ -148,7 +209,6 @@ getVegTemporal <- function(run,
                  spatially.average = TRUE,
                  temporal.extent = NULL, 
                  temporally.average = FALSE, 
-                 reread.file = reread.file, 
                  ...)
   )
   
@@ -158,6 +218,32 @@ getVegTemporal <- function(run,
 
 
 ################################# GET VEGOBJECT - Does a lot! #########################################
+
+#' Get a \code{VegObject}, optionally for spatial/temporal averaging/cropping 
+#' 
+#' Given a \code{VegRun} object a \code{VegQuant} object, return an appropriate spatially-averaged \code{VegObject} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
+#' 
+#' Note that because there are two types of averaging available, the resulting \code{VegRun} obhect can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
+#' Also not that the data is stored internal as a data.table object, but this is mostly not important to the user.
+#'   
+#' @param run The \code{VegRun} object for which the spatially-averaged \code{VegObject} should be built (eg. "lai")
+#' @param var The quantity (either a \code{VegQuant} or a string containing its \code{id}) 
+#' @param temporal.extent The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)
+#' @param temporally.average Whether or not to temporally average (logical)
+#' @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
+#' @param spatially.average Whether or not to spatially average (logical)
+#' @param reread.file If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
+#' @param verbose If TRUE give a lot of information for debugging/checking.
+#' @param area.weighted If TRUE, perform weighting by gridcell area when doing spatial averaging
+#' @param write If TRUE, write the data of the \code{VegObject} to disk as text file.
+#' @param store.internally If TRUE store the resulting \code{VegObject} in the \code{VegRun} for using later
+#' @param store.full If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{VegObjects} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!
+#' @param adgvm.scheme In the case of analysing an aDGVM run, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.
+#' 
+#' @return A spatially averaged\code{VegObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
+#' @export
+#' @seealso \code{getVegObject}, \code{getVegspatial}
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 getVegObject <- function(run, 
                          var, 
@@ -170,9 +256,10 @@ getVegObject <- function(run,
                          reread.file = TRUE, 
                          verbose = TRUE, 
                          store.internally = FALSE,
+                         store.full = FALSE,
                          adgvm.scheme = 1){
   
-  # To avoid annoying NOTES when R CMD check-ing
+  # To avoid annoying NOTES when R CMD CHECK-ing
   Lon = Lat = Year = NULL  
   
   
@@ -186,47 +273,62 @@ getVegObject <- function(run,
     var.string <- quant@id
   }
   
-  ### MAKE file.name VARIABLE - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
+  ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
   TA.str = SA.str = "."
   if(spatially.average) SA.str <- ".SA."
   if(temporally.average) TA.str <- ".TA."
-  if(is.null(spatial.extent) & !is.null(temporal.extent)) file.name <- file.path(run@run.dir, paste(var.string, TA.str, paste(temporal.extent@start, temporal.extent@end, sep = "-"), ".Rtable", sep =""))
-  else if(!is.null(spatial.extent) & is.null(temporal.extent)) file.name <- file.path(run@run.dir, paste(var.string, SA.str, spatial.extent@id, ".Rtable", sep =""))
-  else if(!is.null(spatial.extent) & !is.null(temporal.extent)) file.name <- file.path(run@run.dir, paste(var.string, SA.str, spatial.extent@id, TA.str,  paste(temporal.extent@start, temporal.extent@end, sep = "-"), ".Rtable", sep =""))
-  else  file.name <- file.path(run@run.dir, paste(var.string, "Rtable", sep ="."))
+  if(is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, TA.str, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
+  else if(!is.null(spatial.extent) & is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, sep ="")
+  else if(!is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, TA.str,  paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
+  else  vegobject.id <- var.string
+  file.name <- file.path(run@run.dir, paste(vegobject.id, "Rtable", sep = "."))
   
+  ### FASTEST OPTION - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE VEGRUN
+  if(vegobject.id %in% names(run@objects)){
+    # if it is present it can be returned directly
+    if(verbose) message(paste("Exact VegObject (with id = ", vegobject.id, ") already found in memory for this VegRun, so using that.", sep = ""))
+    return(run@objects[[vegobject.id]])
+  }
   
-  ### USE THE PREAVERAGED/CROPPED FILE IF AVAILABLE (and we are not forcing a re-read and we have not already read the full file)
-  if(file.exists(paste(file.name)) & !reread.file & !var.string %in% names(run@full)){
+  # Other possibilities might need averaging and cropping but some not, so here is the flag to check for that
+  already.averaged.cropped <- FALSE
+  
+  ### NEXT FASTEST OPTION - IF THE WHOLE FILE HAS BEEN READ AND STORED IN MEMORY AS A VEGOBJECT,
+  ### THEN TAKE THAT AND EXTRACT THE DATA.TABLE FOR AVERAGING
+  if(var.string %in% names(run@objects)){
+    if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
+    this.dt <- run@objects[[var.string]]@data
+    setKeyRVC(this.dt)
+    
+  }
+  
+  ### NEXT NEXT FASTEST OPTION, USE THE PREAVERAGED/CROPPED FILE IF AVAILABLE (and we are not forcing a re-read and we have not already read the full file)
+  else if(file.exists(paste(file.name)) & !reread.file & !var.string %in% names(run@objects)){
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     this.dt <- fread(file.name)
-    .setKeyRVC(this.dt)
+    setKeyRVC(this.dt)
     if(spatially.average) {
       message(paste("getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent named", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area", sep = " "))
       warning(paste("getVegObject: Note that we are reading pre-averaged file", file.name, "which has been spatially averaged over the extent named", spatial.extent@id, "which might not correspond to the exact extent specified here.  If you changed the extent recently (or don't know the extent used) you might should consider setting reread.file = TRUE for a small increase in run time but you can be certain you are averaging over the right area", sep = " "))
     }
     
-    # Unique Lats if available
-    if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
-    else{ sorted.unique.lats <- NULL  }
-    # Unique Lons if available
-    if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
-    else{ sorted.unique.lons <- NULL }
-    # Unique Years if available  
-    if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
-    else{ sorted.unique.years <- NULL  }
+    # note that this file is already averaged so 
+    already.averaged.cropped <- TRUE
     
   }
   
   
-  ### IF PRE-AVERAGED/CROPPED FILE NOT AVAILABLE THEN CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT
-  ### AND DO THE CROPPING/AVERAGING 
+  ### IF PRE-AVERAGED/CROPPED FILE NOT AVAILABLE THEN CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT 
   else {
     
     ### !!! CALL MODEL SPECIFIC FUNTIONS HERE !!!
     if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") {
       
-      this.dt <- getVegQuantity_LPJ(run, var.string, store.internally, verbose)
+      if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
+      
+      this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
+      
+      #this.dt <- getVegQuantity_LPJ(run, var.string, store.internally, verbose)
       
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
@@ -234,56 +336,89 @@ getVegObject <- function(run,
       
       if(adgvm.scheme == 1) this.dt <- data.table(getVegQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
       if(adgvm.scheme == 2) this.dt <- data.table(getVegQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
-      
-      setkey(this.dt, Lon, Lat, Year)
+      setKeyRVC(this.dt)
       
     } # END IF aDGVM
     
+    ### STORE THE FULL MODEL OUTPUT AS AN UNAVERAGED VEGOBJECT IF REQUESTED
+    if(store.full){
+      
+      # Unique Lons, Lats and Years to build the extent objects
+      sorted.unique.lats = sorted.unique.lons = sorted.unique.years = NULL
+      if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
+      if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
+      if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
+      
+      # Build the full objecy
+      vegobject.full <- new("VegObject",
+                            id = var.string,
+                            data = this.dt,
+                            quant = quant,
+                            spatial.extent = new("SpatialExtent",
+                                                 id = "FullDomain",
+                                                 name = "Full simulation extent",
+                                                 extent =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
+                                                                  sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
+                                                                  sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
+                                                                  sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))),
+                            temporal.extent = new("TemporalExtent",
+                                                  id = "FullTS",
+                                                  name = "Full simulation duration",
+                                                  start = sorted.unique.years[1],
+                                                  end = sorted.unique.years[length(sorted.unique.years)]),
+                            is.site = FALSE,
+                            is.spatially.averaged = FALSE,
+                            is.temporally.averaged = FALSE,
+                            run = as(run, "VegRunInfo"))
+      
+      run <<- addToVegRun(vegobject.full, run)
+      
+    }
     
+  } # end 
+  
+  ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED (if not already done)
+  if(!already.averaged.cropped){
     
-    ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
     if(!is.null(spatial.extent))  this.dt <- cropRVC(this.dt, spatial.extent)      
     if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
     
-    
-    ### GET THE LONS, LATS AND YEAR BEFORE THEY ARE AVERAGED AWAY
-    sorted.unique.years <- sort(unique(this.dt[,Year]))
-    sorted.unique.lats <- sort(unique(this.dt[,Lat]))
-    sorted.unique.lons <- sort(unique(this.dt[,Lon]))
-    
-    
-    ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
-    if(spatially.average){
-      this.dt <- .doSpatialAverage(this.dt, verbose, area.weighted)
-      if(verbose) {
-        message("Head of spatially averaged data.table:")
-        print(head(this.dt))
-      }
-    }
-    
-    
-    ###  DO TIME AVERAGE
-    if(temporally.average){
-      this.dt <- .doTemporalAverage(this.dt, verbose)
-      if(verbose) {
-        message("Head of time averaged data.table:")
-        print(head(this.dt))
-      }
-    }
-    
-    ### WRITE THE TABLE IF REQUESTED
-    if(write) {
-      if(verbose) {message("Saving as a table...")}
-      write.table(this.dt, file = file.name, quote = FALSE, row.names = FALSE)
-    }
-    
-    
-  } # IF READING RAW DATA
+  }
+  
+  ### GET THE LONS, LATS AND YEAR BEFORE THEY ARE AVERAGED AWAY
+  sorted.unique.lats = sorted.unique.lons = sorted.unique.years = NULL
+  if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
+  if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
+  if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
   
   
-  ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE RETURN OBJECT
+  ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
+  if(spatially.average & !already.averaged.cropped){
+    this.dt <- .doSpatialAverage(this.dt, verbose, area.weighted)
+    if(verbose) {
+      message("Head of spatially averaged data.table:")
+      print(head(this.dt))
+    }
+  }
   
-  # But first build the VegObject id and ignore 
+  
+  ###  DO TIME AVERAGE
+  if(temporally.average & !already.averaged.cropped){
+    this.dt <- .doTemporalAverage(this.dt, verbose)
+    if(verbose) {
+      message("Head of time averaged data.table:")
+      print(head(this.dt))
+    }
+  }
+  
+  ### WRITE THE TABLE IF REQUESTED
+  if(write) {
+    if(verbose) {message("Saving as a table...")}
+    write.table(this.dt, file = file.name, quote = FALSE, row.names = FALSE)
+  }
+  
+  
+  ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE FINAL VEGOBJECT TO RETURN
   
   # TEMPORAL
   if(is.null(temporal.extent)) {
@@ -309,7 +444,7 @@ getVegObject <- function(run,
                              sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
     }
     else {
-       warning(paste("Orginal extent unknown when reading spatially averaged file ", file.name, ".  If you want need to have this metadata, call getVegObject with reread.file = TRUE to read to whole file.", sep =""))
+      warning(paste("Orginal extent unknown when reading spatially averaged file ", file.name, ".  If you want need to have this metadata, call getVegObject with reread.file = TRUE to read to whole file.", sep =""))
     }
     
     spatial.extent <- new("SpatialExtent",
@@ -318,20 +453,24 @@ getVegObject <- function(run,
                           extent =  extent.temp)
     
     if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
-  
+    
   }
   
+  ### BUILD THE FINAL VEGOBJECT, STORE IT IF REQUESTED AND RETURN IT
+  vegobject <- new("VegObject",
+                   id = vegobject.id,
+                   data = this.dt,
+                   quant = quant,
+                   spatial.extent = spatial.extent,
+                   temporal.extent = temporal.extent,
+                   is.site = FALSE,
+                   is.spatially.averaged = spatially.average,
+                   is.temporally.averaged = temporally.average,
+                   run = as(run, "VegRunInfo"))
   
-  return(new("VegObject",
-             id = paste(var.string, temporal.extent@id, spatial.extent@id, sep = "_"),
-             data = this.dt,
-             quant = quant,
-             spatial.extent = spatial.extent,
-             temporal.extent = temporal.extent,
-             is.site = FALSE,
-             is.spatially.averaged = spatially.average,
-             is.temporally.averaged = temporally.average,
-             run = as(run, "VegRunInfo")))
+  if(store.internally) {run <<- addToVegRun(vegobject, run)}
+  
+  return(vegobject)
   
 }
 
@@ -494,7 +633,7 @@ sanitiseNamesForRaster <- function(input){
   
   # Do the averaging
   if(verbose) message("Temporally averaging ...")
-  if("Lon" %in% names(input.dt))  output.dt <- input.dt[,lapply(.SD, mean), by=list(Lat, Lon)]
+  if("Lon" %in% names(input.dt))  output.dt <- input.dt[,lapply(.SD, mean), by=list(Lon, Lat)]
   else output.dt <- input.dt[,lapply(.SD, mean)]
   if(verbose) message("...done.")
   
@@ -507,7 +646,7 @@ sanitiseNamesForRaster <- function(input){
   gc()
   
   # Set keys and return the averaged table
-  .setKeyRVC(output.dt)
+  setKeyRVC(output.dt)
   return(output.dt)
   
 }
@@ -568,7 +707,7 @@ sanitiseNamesForRaster <- function(input){
   gc()
   
   # Set keys and return the averaged table
-  .setKeyRVC(output.dt)
+  setKeyRVC(output.dt)
   return(output.dt)
   
 }
@@ -585,15 +724,4 @@ sanitiseNamesForRaster <- function(input){
 }
 
 
-.setKeyRVC <- function(dt){
-  
-  keys.present <- c()
-  
-  if("Lon" %in% names(dt)) keys.present <- append(keys.present, "Lon")
-  if("Lat" %in% names(dt)) keys.present <- append(keys.present, "Lat")
-  if("Year" %in% names(dt)) keys.present <- append(keys.present, "Year")
-  
-  if(length(keys.present) > 0) setkeyv(dt, keys.present)
-  
-}
 

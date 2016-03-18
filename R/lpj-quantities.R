@@ -27,11 +27,23 @@ veg.palette <- colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4",
 
 
 
-# Global scope list of all LPJ-GUESS (and SPITFIRE) quantities that I could think of
+#' Global scope list of all LPJ-GUESS (and SPITFIRE) quantities defined as \code{VegQuant} object 
+#' from the default LPJ-GUESS model config and a few extra.
+#'
+#' These quantities have sensible colour schemes, long names and cut ranges for standard global runs,
+#' but they will likely need to be modified and new ones aded for a specific analysis.
+#' Once the package is loaded this is just a standard R list so can be modified and extended as you wish.
+#' 
+#' @format A list of \code{VegQuant} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)
 lpj.quantities <- list()
 
 
-# Global scope function to get an LPJ-GUESS quantity based on a string
+#' Function to get an LPJ-GUESS quantity based on a string
+#' 
+#' NEED to generalise this to deal with other lists of \code{VegQuants}, not just assuming all are LPJ-GUESS
+#' 
+#' @param quant.str String holding the id of the \code{VegQuant} you want
+#' @param verbose Logical, whether or not to announce which \code{VegQuant} has been found
 lookupVegQuantity <- function(quant.str, verbose = FALSE){
   
   # check if the quantity we are storing here is already in the list of pre-defined quantities (LAI, Cmass etc)
@@ -58,6 +70,7 @@ lookupVegQuantity <- function(quant.str, verbose = FALSE){
 
 # The is the implementation of a standard fraction quantity 
 # It contains no useful information, but sets the colour scheme to a greyscale with 20 level
+
 
 quant.name <- "fraction"
 

@@ -832,6 +832,7 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
   cex.axis.multi = 2
   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
   hist(stat.results@diff.raster,  breaks = breaks, xlim = plot.range, xlab = paste(quant@id, ": ", "LPJ-GUESS - ", data.name, sep = ""), prob = TRUE, main = paste(quant@full.string, ": ", "LPJ-GUESS - ", data.name, sep = ""), cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
+  x = NULL
   curve(dnorm(x, mean=stat.results@mean.diff, sd=stat.results@sd.diff), add=TRUE)
   abline(v=0,col="green", lwd = 4)
   legend('topright', c( paste("Mean = ", round(stat.results@mean.diff,3)), paste("SD = ", round(stat.results@sd.diff,3))), col = c("red","blue"), text.col = c("red","blue"), cex = 3, bty = "n") 

@@ -213,8 +213,11 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
         wrap <- list(run=wrap[1], name=wrap[2], column=wrap[3],
                     ncol={if (length(wrap)>=4) wrap[4] else 1},
                      map=NA, stringsAsFactors=FALSE)
-      ## needs a tryCatch, if the data is not available
-      dt.wrap <- eval(parse(text=paste(wrap$run, "@spatial[['", wrap$name, "']]@data[, c('Lon', 'Lat', '", wrap$column,"'), with=FALSE]", sep="")))
+    
+      if (!eval(parse(text=paste("is.VegObject(",wrap$run, "@objects[['", wrap$name,"']]",", spatial=TRUE)", sep=""))))
+        stop(paste("'", wrap$run, "@objects[['", wrap$name, "']] is not a spatial VegObject", sep=""))
+    
+      dt.wrap <- eval(parse(text=paste(wrap$run, "@objects[['", wrap$name, "']]@data[, c('Lon', 'Lat', '", wrap$column,"'), with=FALSE]", sep="")))
       setnames(dt.wrap, wrap$column, "wrap.tmp")
       dt <- dt[dt.wrap]
     
@@ -256,6 +259,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
         if (is.character(input[[i]]@run@map.overlay)) {
           map.overlay <- input[[i]]@map.overlay
         } else {
+          ## did not find a way how to replace depricated "getSLLLinesIDSlots" by "over"
           map.overlay <- fortify(SpatialLinesDataFrame(input[[i]]@run@map.overlay[[2]],
                                                        data.frame(ID=getSLLinesIDSlots(input[[i]]@run@map.overlay[[2]]))))
         }
@@ -659,16 +663,17 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     targets[, i] = as.character(targets[, i])  
   
   if (is.VegRun(input)) {
-    if (all(names(input@spatial) != targets$slot[1]))
+    ## include is.VegObject(.. Spatial=TRUE) check
+    if (all(names(input@objects) != targets$slot[1]))
       stop(paste("No VegSpatial object'", targets$slot[1], "' present in input!"))
-    if (all(names(input@spatial) != targets$slot[2]))
+    if (all(names(input@objects) != targets$slot[2]))
       stop(paste("No VegSpatial object'", targets$slot[2], "' present in input!"))
 
-    vsx <- eval(parse(text=paste("input@spatial[['",targets$slot[1],"']]", sep="")))
+    vsx <- eval(parse(text=paste("input@objects[['",targets$slot[1],"']]", sep="")))
     if (all(colnames(vsx@data) != targets$column[1]))
       stop(paste("No column named '",targets$column[1],"' present in VegSpatial ",targets$slot[1]," of input run!", sep=""))
     units <- vsx@quant@units
-    vsy <- eval(parse(text=paste("input@spatial[['",targets$slot[2],"']]", sep="")))
+    vsy <- eval(parse(text=paste("input@objects[['",targets$slot[2],"']]", sep="")))
     if (all(colnames(vsy@data) != targets$column[2]))
       stop(paste("No column named '",targets$column[2],"' present in VegSpatial ",targets$slot[2]," of input run!", sep=""))
 
@@ -683,8 +688,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
       dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
     }
-    print(str(dx))
-    print(str(dy))
+
     dt <- dy[dx]
     setnames(dt, targets$column[1], "value")
     setnames(dt, targets$column[2], "category")
@@ -696,17 +700,17 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
   } else if (is.list(input)) {
     for (n in 1:length(input)) {
       if (is.VegRun(input[[n]])) {
-        if (all(names(input[[n]]@spatial) != targets$slot[1]))
+        if (all(names(input[[n]]@objects) != targets$slot[1]))
           stop(paste("No VegSpatial object'", targets$slot[1], "' present in input ", n, "!", sep=""))
-        if (all(names(input[[n]]@spatial) != targets$slot[2]))
+        if (all(names(input[[n]]@objects) != targets$slot[2]))
           stop(paste("No VegSpatial object'", targets$slot[2], "' present in input ", n, "!", sep=""))
     
-        vsx <- eval(parse(text=paste("input[[n]]@spatial[['",targets$slot[1],"']]", sep="")))
+        vsx <- eval(parse(text=paste("input[[n]]@objects[['",targets$slot[1],"']]", sep="")))
         if (all(colnames(vsx@data) != targets$column[1]))
           stop(paste("No column named '",targets$column[1],"' present in VegSpatial ",targets$slot[1]," of input run ", n,"!", sep=""))
         units <- vsx@quant@units
     
-        vsy <- eval(parse(text=paste("input[[n]]@spatial[['",targets$slot[2],"']]", sep="")))
+        vsy <- eval(parse(text=paste("input[[n]]@objects[['",targets$slot[2],"']]", sep="")))
         if (all(colnames(vsy@data) != targets$column[2]))
           stop(paste("No column named '",targets$column[2],"' present in VegSpatial ",targets$slot[2]," of input run ", n, "!", sep=""))
 
@@ -948,7 +952,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
   } else {
     stop("'input' must either be a RCVTools::VegTemporal or a list of them!")
   }
-  
+
   dt[,value:=value*scale]
   
   if (!plot)
