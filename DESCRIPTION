@@ -12,7 +12,8 @@ Imports:
     fields,
     compiler,
     maps,
-    Cairo
+    Cairo,
+    grid
 Depends:
     R (>= 2.15.0),
     methods,

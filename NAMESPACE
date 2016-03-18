@@ -16,6 +16,8 @@ importFrom(compiler, cmpfun)
 importFrom(maps, map)
 importFrom(Cairo, Cairo)
 importFrom(Cairo, CairoPNG)
+importFrom(grid, unit)
+
 
 exportClasses(TemporalExtent, 
               SpatialExtent, 
