@@ -173,7 +173,7 @@ p <- plotGGTemporal(list(base@objects[['gpp.ts']],
 p <- p + guides(col = guide_legend(title="", ncol = 1))
 print(p)
 
-### Arithmetics
+### simple Arithmetics
 
 ## Add some more time averaged spatial data
 for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {

@@ -93,6 +93,7 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import RNetCDF
 #' @export
+#' @examples message("See templates/Example.ggplot.R")
 getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, forceReCalculation=FALSE, write=TRUE, verbose=TRUE, ...) {
   suppressWarnings(if (!is.na(temporal.extent)) {
     if (class(temporal.extent)[1]=="TemporalExtent" && attr(class(temporal.extent), "package")=="RVCTools") {
@@ -369,7 +370,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
       DT[, Year:=NULL, ]
     }
   }
-  
+
   if (is.VegRun(run)) {
     start <- year(start)
     end <- year(end)

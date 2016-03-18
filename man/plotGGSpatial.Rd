@@ -33,7 +33,7 @@ A ggplot object, which can either be printed directly or further modified, or a 
 Plots a map (or a set of maps) using the geom_raster from the ggplot2 library
 }
 \examples{
-paste("See templates/Example.ggplot.R")
+message("See templates/Example.ggplot.R")
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

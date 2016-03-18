@@ -13,13 +13,15 @@ Imports:
     compiler,
     maps,
     Cairo,
-    grid
+    grid,
+    RColorBrewer
 Depends:
     R (>= 2.15.0),
     methods,
     mapdata,
     maptools,
     ncdf4,
+    RNetCDF,
     rgdal,
     sp,
     raster,
@@ -28,12 +30,11 @@ Depends:
 Suggests:
     zoo,
     mgcv,
-    RColorBrewer,
     udunits2
 Description: Process output data produced by dynamic global vegetation
     model (DGVM) LPJ-GUESS for use in R. Create standard figures
     and benchmarking.
-License: GPL (>= 2)
+License: GPL (>= 2) | file LICENSE
 URL: https://www.bik-f.de
 NeedsCompilation: no
 RoxygenNote: 5.0.1
