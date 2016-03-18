@@ -32,7 +32,7 @@ Suggests:
     mgcv,
     udunits2
 Description: Process output data produced by dynamic global vegetation
-    models (DGVM) LPJ-GUESS(-SPITFIRE), aDGVM2 (under development) and possibly others, for use in R. Create standard figures
+    models (DGVMs) LPJ-GUESS(-SPITFIRE), aDGVM2 (under development) and possibly others, for use in R. Create standard figures
     and benchmarking.
 License: GPL (>= 2) | file LICENSE
 URL: https://www.bik-f.de

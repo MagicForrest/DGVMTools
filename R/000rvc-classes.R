@@ -219,44 +219,45 @@ setClass("VegObject",
 ########  CLIMATE DATASET CLASSES ##########################################
 ############################################################################
 
+### MF: NOT CURRENTLY USED, COMMENTED OUT TO AVOID DOCUMENTING!
 
-##### ClimDS - class to hold data about a climate dataset
-setClass("ClimDS", 
-         slots = c(id = "character",
-                   longname = "character",
-                   path = "character",
-                   filename = "character",
-                   first.year = "numeric",
-                   last.year = "numeric",
-                   type = "character",
-                   data = "Raster",
-                   map.overlay = "character",
-                   var.list = "list",
-                   kelvin = "logical",
-                   prec.mode = "character",
-                   colour = "character"
-         )
-)
-
-##### ClimVar - class to hold data about a climate variable
-setClass("ClimVar", 
-         slots = c(id = "character",
-                   varcode = "character",
-                   longname = "character",
-                   unit = "character",
-                   aggregate.method = "character",
-                   abs.clrs = "function",
-                   abs.intervals = "numeric", 
-                   anom.clrs = "function", 
-                   anom.intervals = "numeric",
-                   anom.type = "character",
-                   anom.min.val = "numeric",
-                   anom.crit.val = "numeric",
-                   data.type = "character"
-                   
-                   
-         )
-)
+# ##### ClimDS - class to hold data about a climate dataset
+# setClass("ClimDS", 
+#          slots = c(id = "character",
+#                    longname = "character",
+#                    path = "character",
+#                    filename = "character",
+#                    first.year = "numeric",
+#                    last.year = "numeric",
+#                    type = "character",
+#                    data = "Raster",
+#                    map.overlay = "character",
+#                    var.list = "list",
+#                    kelvin = "logical",
+#                    prec.mode = "character",
+#                    colour = "character"
+#          )
+# )
+# 
+# ##### ClimVar - class to hold data about a climate variable
+# setClass("ClimVar", 
+#          slots = c(id = "character",
+#                    varcode = "character",
+#                    longname = "character",
+#                    unit = "character",
+#                    aggregate.method = "character",
+#                    abs.clrs = "function",
+#                    abs.intervals = "numeric", 
+#                    anom.clrs = "function", 
+#                    anom.intervals = "numeric",
+#                    anom.type = "character",
+#                    anom.min.val = "numeric",
+#                    anom.crit.val = "numeric",
+#                    data.type = "character"
+#                    
+#                    
+#          )
+# )
 
 ##########################################################################################
 ########  BENCHMARKING DATASET SPECIFIC CLASSES ##########################################
