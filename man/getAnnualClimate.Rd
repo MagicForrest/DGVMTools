@@ -44,6 +44,9 @@ data.table if no VegRun was given, otherwise a VegObject
 \description{
 Get Annual values of climate drivers from netCDF files, files must be CF-compliant
 }
+\examples{
+message("See templates/Example.ggplot.R")
+}
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }

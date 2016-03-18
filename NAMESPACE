@@ -4,7 +4,8 @@ import(methods)
 import(mapdata,
        maptools, 
        ggplot2, 
-       ncdf4, 
+       ncdf4,
+       RNetCDF,
        rgdal, 
        sp,
        raster,
@@ -16,7 +17,7 @@ importFrom(maps, map)
 importFrom(Cairo, Cairo)
 importFrom(Cairo, CairoPNG)
 importFrom(grid, unit)
-
+importFrom(RColorBrewer, brewer.pal)
 
 exportClasses(TemporalExtent, 
               SpatialExtent, 

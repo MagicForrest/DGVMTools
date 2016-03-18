@@ -173,7 +173,7 @@ rvc.ggplot.theme <- function(x) {
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Additional parameters, which are ignored so far.
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
-#' @examples paste("See templates/Example.ggplot.R")
+#' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import raster sp maps ggplot2 data.table
 #' @export
@@ -447,7 +447,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Ignored further parameters
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
-#' @examples paste("See templates/Example.ggplot.R")
+#' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import ggplot2 data.table
@@ -637,7 +637,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Ignored further parameters
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
-#' @examples paste("See templates/Example.ggplot.R")
+#' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import RColorBrewer ggplot2 data.table
@@ -792,7 +792,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       } else {
         p <- ggplot(dt, aes(x=value, y=category, col=sens))
       }
-      p <- p + geom_point(size=2.5, position = position_jitter(w = 0, h = 0.2))
+      p <- p + geom_point(size=2.5, position = position_jitter(width = 0, height = 0.2))
       p <- p + scale_color_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"),
                                   na.value="grey", guide=guide_legend(ncol=2))
     } else {

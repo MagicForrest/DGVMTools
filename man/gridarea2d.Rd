@@ -28,7 +28,7 @@ calculated by as half of the distance to the next element in the latitude vector
 lon <- seq(- 179.75, 179.75, 0.5)
 lat <- seq(89.75,-89.75,-0.5) 
 sum(gridarea2d(lon,lat, scale=1.e-12)$area)
-# equivalent to the above
+message("equivalent:")
 sum(gridarea2d(lon,lat)$area)*1.e-12
 }
 \author{
