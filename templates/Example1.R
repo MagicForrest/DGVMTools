@@ -28,10 +28,6 @@ variable <- "lai"
 # Define a time period or TemporalExtent over which to average
 period = new("TemporalExtent", name = "Reference", start = 1961, end = 1990)
 
-lai.full.1 <- getVegObject(run, variable)
-print(lai.full.1@data)
-lai.full.2 <- getVegObject(run, variable, store.full = TRUE)
-
 # Open the lai.out file, and average over the reference period
 lai.reference.period <- getVegObject(run, 
                                      variable, 
@@ -40,9 +36,6 @@ lai.reference.period <- getVegObject(run,
                                      write = TRUE,
                                      reread.file = FALSE,
                                      store.internally = TRUE)
-
-stop()
-
 
 
 ##### STEP TWO: Simple summary plots
@@ -113,13 +106,13 @@ plotDominantPFTMap(lai.reference.period)
 ### BIOME CLASSIFICATION
 
 # specificy the biome scheme to use
-biome.scheme <- Smith2014.scheme
+biome.scheme <- Forrest2015.scheme
 
 #  calculate biomes from model output
 lai.reference.period <- addBiomes(lai.reference.period, biome.scheme)
 
 # read expert-derived PNV biomes
-PNV.biomes <-  readHandPBiomes(classification = Smith2014.scheme@id)
+PNV.biomes <-  readHandPBiomes(classification = biome.scheme@id)
 
 # plot biomes
 plotBiomeMap(lai.reference.period, 

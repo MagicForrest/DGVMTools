@@ -514,13 +514,13 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   }
   
   # PLOT MAIN TITLE
-  if(is.null(main.title)) this.main.title <- makePlotTitle(paste("Biomes"), main.title, run, period)
+  if(is.null(main.title)) this.main.title <- makePlotTitle(paste(scheme@id, "Biomes", sep =""), main.title, run, period)
   else this.main.title <- main.title
   
   for(format in Cairo.type){
     
     # FILENAME
-    if(is.null(file.name)) this.file.name <- makeFileName("Biomes", file.name = file.name, run = run, period = period, extension = format)
+    if(is.null(file.name)) this.file.name <- makeFileName(paste(scheme@id, "Biomes", sep =""), file.name = file.name, run = run, period = period, extension = format)
     else this.file.name <- paste(file.name, format, sep = ".")
     
     Cairo(file = file.path(plot.dir, this.file.name), 

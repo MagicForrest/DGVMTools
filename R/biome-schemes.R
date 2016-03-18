@@ -45,10 +45,10 @@ Smith2014BiomeRules <- function(lai){
   else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['DominantTree']] == "TrBE" | lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(3)}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']] )> 0.5 & (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
   
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  as.numeric(lai[['BorealFractionOfTree']] )> 0.5 & lai[['DominantTree']] == "BNS") {return(5)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 &  as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['DominantTree']] == "BNS") {return(5)}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
   else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['DominantTree']] == "TeBE") {return(6)}
@@ -98,7 +98,6 @@ Smith2014BiomeRules <- function(lai){
   
   
 }
-
 
 Smith2014.scheme <- new("BiomeClassification",
                         id = "Smith2014",
@@ -312,6 +311,107 @@ Hickler2012.scheme <- new("BiomeClassification",
 
 
 
+###############################################################################
+########### FORREST ET AL. 2015 MEGABIOME CLASSIFICATION ######################
+###############################################################################
+
+# This is described in Forrest et al. 2015.  Basically it calculates the Smith et al. 2014 biomes, but assigns them to broader categores
+
+Forrest2015MegaBiomeRules <- function(lai){
+  
+  # BIOME 1 - Tropical Rain Forest
+  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['DominantTree']] == "TrBE") {return(1)}
+  
+  # BIOME 2 - Tropical Deciduous Forest
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(5)}
+  
+  # BIOME 3 - Tropical Seasonal Forest
+  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['DominantTree']] == "TrBE" | lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(1)}
+  
+  # BIOME 4 - Boreal Evergreen Forest/Woodland
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
+  
+  # BIOME 5 - Boreal Deciduous Forest/Woodland
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['DominantTree']] == "BNS") {return(4)}
+  
+  # BIOME 6 - Temperate Broadleaved Evergreen Forest
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['DominantTree']] == "TeBE") {return(2)}
+  
+  # BIOME 7 - Temperate Deciduous Forest
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['DominantTree']] == "TeBS") {return(3)}
+  
+  # BIOME 8 - Temperate/Boreal Mixed Forest
+  else if(as.numeric(lai[['Tree']]) > 2.5) {return(3) }
+  
+  # BIOME 9 - Temperate Mixed Forest
+  else if(as.numeric(lai[['Tree']]) > 2.5) {return(3)}
+  
+  # BIOME 10 - Xeric Woodland/Shrubland
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return(5)}
+  
+  # BIOME 11 - Moist Savanna
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return(5)}
+  
+  # BIOME 12 - Dry Savanna
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return(6)}
+  
+  # BIOME 13 - Arctic/alpine Tundra
+  else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & as.numeric(lai[['Lat']]) >= 54) {return(7)}
+  
+  # BIOME 14 - Tall Grassland
+  else if(as.numeric(lai[['Grass']]) > 2.0) {return(6)}
+  
+  # BIOME 16 (1) - Arid Shrubland/Steppe
+  else if(as.numeric(lai[['Tree']]) > 0.2 & as.numeric(lai[['Grass']]) < 1.0) {return(6)}
+  
+  # BIOME 15 - Dry Grassland
+  else if(as.numeric(lai[['Grass']]) > 0.2) {return(6)}
+  
+  # BIOME 16 (2) - Arid Shrubland/Steppe
+  else if(as.numeric(lai[['Total']]) > 0.2) {return(6)}
+  
+  # BIOME 17 - Desert
+  else if(as.numeric(lai[['Total']]) < 0.2) {return(8)}
+  
+  # REMAINDER
+  else {
+    print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
+    return(NA)
+  }
+  
+  
+}
+
+
+Forrest2015.scheme <- new("BiomeClassification",
+                        id = "Forrest2015",
+                        name = "Forrest et al. 2015", 
+                        substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
+                        rules = Forrest2015MegaBiomeRules,
+                        totals.needed = c("lifeforms", "zones"),
+                        fraction.of.total = c("Grass"),
+                        fraction.of.tree = c("pft", "zones"),
+                        fraction.of.woody = c("NA"),
+                        combineShadeTolerance = TRUE,
+                        needGDD5 = FALSE,
+                        cols =  c("Tropical Forest" = "seagreen",                     
+                                  "Temperate Evergeen Forest"= "dodgerblue3", 
+                                  "Temperate Deciduous Forest "= "green3", 
+                                  "Boreal Forest" = "turquoise4",
+                                  "Savanna and Dry Woodlands" = "olivedrab2",
+                                  "Grasslands and Dry Shrublands" = "goldenrod2",
+                                  "Tundra" = "mediumpurple1",
+                                  "Desert" = "grey75"),
+                        strings =  c("Tropical Forest",                     
+                                     "Temperate Evergeen Forest", 
+                                     "Temperate Deciduous Forest", 
+                                     "Boreal Forest",
+                                     "Savanna and Dry Woodlands",
+                                     "Grasslands and Dry Shrublands",
+                                     "Tundra",
+                                     "Desert"),
+                        data.reference = "Haxeltime and Prentice 1996",
+                        published.reference = "Forrest et al 2015, Smith et al. 2014")
 
 
 #################################################################################################################################
@@ -320,7 +420,7 @@ Hickler2012.scheme <- new("BiomeClassification",
 
 
 
-MegaBiomeRules <- function(lai){
+MegaBiomeRules_dev <- function(lai){
   
   # BIOME 1 - Tropical Rain Forest
   if(as.numeric(lai[['Tree']]) > 2.5 &  lai[['DominantTree']] == "TrBE") {return(1)}
@@ -372,11 +472,11 @@ MegaBiomeRules <- function(lai){
   
 }
 
-Megabiomes.scheme <- new("BiomeClassification",
+Megabiomes_dev.scheme <- new("BiomeClassification",
                          id = "Megabiomes",
                          name = "Megabiomes", 
                          substitution = data.frame(id=1:18, v=c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,8,12,13,10)),
-                         rules = MegaBiomeRules,
+                         rules = MegaBiomeRules_dev,
                          combineShadeTolerance = TRUE,
                          fraction.of.total = c("NA"),
                          fraction.of.tree = c("NA"),
@@ -517,6 +617,7 @@ FPCMegabiomes.scheme <- new("BiomeClassification",
 
 supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
                              "Hickler2012" = Hickler2012.scheme,
-                             "Megabiomes" = Megabiomes.scheme,
+                             "Forrest2015" = Forrest2015.scheme,
+                             "Megabiomes_dev" = Megabiomes_dev.scheme,
                              "FPCMegabiomes" = FPCMegabiomes.scheme)
 
