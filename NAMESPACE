@@ -28,4 +28,4 @@ exportClasses(TemporalExtent,
               VegQuant,  
               SpatialDataset, 
               TemporalDataset, 
-              BiomeClassification)
+              BiomeScheme)

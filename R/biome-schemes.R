@@ -99,7 +99,7 @@ Smith2014BiomeRules <- function(lai){
   
 }
 
-Smith2014.scheme <- new("BiomeClassification",
+Smith2014.scheme <- new("BiomeScheme",
                         id = "Smith2014",
                         name = "Smith et al. 2014", 
                         substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
@@ -269,7 +269,7 @@ Hickler2012Rules <- function(lai){
 
 
 
-Hickler2012.scheme <- new("BiomeClassification",
+Hickler2012.scheme <- new("BiomeScheme",
                           id = "Hickler2012",
                           name = "Hickler2012", 
                           substitution = data.frame(id=1:18, v=1:18),
@@ -383,7 +383,7 @@ Forrest2015MegaBiomeRules <- function(lai){
 }
 
 
-Forrest2015.scheme <- new("BiomeClassification",
+Forrest2015.scheme <- new("BiomeScheme",
                         id = "Forrest2015",
                         name = "Forrest et al. 2015", 
                         substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
@@ -472,7 +472,7 @@ MegaBiomeRules_dev <- function(lai){
   
 }
 
-Megabiomes_dev.scheme <- new("BiomeClassification",
+Megabiomes_dev.scheme <- new("BiomeScheme",
                          id = "Megabiomes",
                          name = "Megabiomes", 
                          substitution = data.frame(id=1:18, v=c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,8,12,13,10)),
@@ -579,7 +579,7 @@ FPCMegaBiomeRules <- function(fpc){
   }
 }
 
-FPCMegabiomes.scheme <- new("BiomeClassification",
+FPCMegabiomes.scheme <- new("BiomeScheme",
                             id = "FPCMegabiomes",
                             name = "FPCMegabiomes", 
                             substitution = data.frame(id=1:18, v=1:18),

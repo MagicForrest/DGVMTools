@@ -15,7 +15,6 @@ prepareBenchmarkingDatasets <- function(benchmark.list, resolution = "HD"){
       benchmarking.datasets.list[[benchmark.string]] <- new("SpatialDataset",
                                                             id = benchmark.string,
                                                             name = paste("H&P PNV Biomes classified by scheme ", benchmark.string),
-                                                            abbreviation = paste("PNV", benchmark.string, sep = "_"),
                                                             temporal.extent = new("TemporalExtent", name = "PNV", start = 1961, end = 1990) ,
                                                             data = readHandPBiomes(resolution = resolution, classification = benchmark.string),
                                                             veg.quant = lookupVegQuantity("lai"),
@@ -190,7 +189,7 @@ compareRunToSpatialDataset <- function(dataset,
                           stat.results = comparison.results,
                           run = vegvar@run, 
                           period = dataset@temporal.extent,
-                          data.name = dataset@abbreviation, 
+                          data.name = dataset@name, 
                           quant = quant)
     
     

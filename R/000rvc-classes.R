@@ -30,10 +30,18 @@
 ##############################################################################
 
 
-##### TemporalExtent - class to hold the start and end years of a time span (often an period of years over which to average)
-#####            averaging period and a name to identify it
+#' Temporal extent for defining the duration of a model run and selecting time periods 
+#' 
+#' A simple S4 class to define a time period ie 1961-1990, but called here \code{TemporalExtent} to be analagous to \code{SpatialExtent} and distinct from the \code{Period} class (which contains months and seasons)
+#' 
+#' @slot id A unique character string to identify this particular time period.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot name A character string to describe the time period. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
+#' @slot start First year of the temporal extent (a year, eg 1961)
+#' @slot end Last year of the temporal extent (a year, eg 1990)
+#' @exportClass TemporalExtent
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("TemporalExtent",
-         slots = c(id= "character",
+         slots = c(id = "character",
                    name = "character",
                    start = "numeric",
                    end = "numeric"
@@ -41,10 +49,16 @@ setClass("TemporalExtent",
 )
 
 
- 
-##### Spatial Extent - class to hold a spatial extent the start (often an area over which to average and study a time series,
-#####                  for example Europe)
 
+#' Spatial extent for defining the spatial area covered by model output or other spatial data.
+#' 
+#' A simple S4 class to define a spatial extent.
+#' 
+#' @slot id A unique character string to identify this particular spatial extent.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot name A character string to describe the spatial extent. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
+#' @slot extent Currently can be a raster \code{Extent} object, but should be expanded to include a raster mask (to define an irregularly shaped spatial extent), or a c(Lon,Lat) coordinate to define a site.
+#' @exportClass SpatialExtent
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("SpatialExtent",
          slots = c(id = "character",
                    name = "character",
@@ -56,7 +70,31 @@ setClass("SpatialExtent",
          )
 )
 
-##### Period - class to hold the metadata about a month, seasonal or annual time period
+#' Time periods - eg. a month or a season or a year.
+#' 
+#' A simple S4 class to define a month, a season or a year used for aggregating monthly values to seasonal or annual values and for making monthly plots with nice labels etc.
+#' Since these are for the most part standard (ie. people commonly need the months, the seasons (DJF, MAM, JJA, SON) and annual) these are defined in simple list that might be commonly used and can be looped through.  These are:
+#' 
+#' \itemize{
+#'   \item \code{months} which contains all the months.
+#'   \item \code{seasons} which contains all the seasons
+#'   \item \code{annual} which only contains only the annual period
+#'   \item \code{all.periods} or just \code{periods} which contains all of the above
+#' }
+#'  
+#' However other periods can be defined for specific growing seasons etc.
+#' 
+#' @slot id A unique character string to identify this particular time period.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot name A character string to describe the spatial extent. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
+#' @slot abbreviation Not really sure if this is necessary, think is it covered by the "id" slot
+#' @slot index The index of the months of the year for this period.  For example, Jan has index = 1, DJF has index =c (12,1,2) and annual has index = c(1,2,3,4,5,6,7,8,9,10,11,12) 
+#' @slot padded.index As slot \code{index} but zero-padded strings for use in when encoding/decoding file names.
+#' @slot contains Holds the names of the other periods included in this period.  For example for Jan just contains "Jan", but DJF it contains c("Dec","Jan,"Feb)
+#' @slot days Number of days in this time period during a normal (non-leap) year
+#' @slot days.leap Number of days on this period during a leap year
+#' 
+#' @exportClass Period
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("Period",
          slots = c(id = "character",
                    name = "character",
@@ -71,10 +109,23 @@ setClass("Period",
 
 
 ###############################################################################
-########  LPJ-GUESS SPECIFIC CLASSES ##########################################
+########  VEGETATION SPECIFIC CLASSES #########################################
 ###############################################################################
 
-##### PFT  - class to hold the data for an LPJ-GUESS PFT
+#' Class to hold the metadata for a Plant Functional Type (PFT)
+#' 
+#' These will are defined in lists for the default PFTs (or common post-processing schemes in the case of aDGVM) for default model setups, but the user may well need to define their own 
+#' 
+#' @slot id A unique character string to identify this particular PFT.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot name A character string to describe the PFT. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
+#' @slot lifeform A string defining the lifeform of the PFT, typically either "Tree", "Grass" or "Shrub"
+#' @slot leafform A string defining the leafform of the PFT, typically either "Broadleaved" or "Needleleaved"
+#' @slot phenology A string defining the phenology of the PFT, typically "Evergreen", "Summergreen", "Raingreen" or "GrassPhenology"
+#' @slot zone A string defining the climate zone of a PFT, typically "Boreal", "Temperate" or "Tropical" (could go crazy and also have "Mediterranean", for example)
+#' @slot colour A string defining a preferred R colour to plot this PFT (for line graphs etc)
+#' @slot combine A string defining the \code{id} of a PFT that this PFT should be combined with when combining PFT with similar functioning but different shade tolerance.  Used primarily with LPJ-GUESS.
+#' @exportClass PFT
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("PFT", 
          slots = c(id = "character",
                    name = "character",
@@ -93,7 +144,7 @@ setClass("PFT",
 
 
 checkVegRun <- function(object){
-        
+  
   errors <- character()
   
   # Check model types is supported
@@ -125,7 +176,37 @@ checkVegRun <- function(object){
   if (length(errors) == 0) TRUE else errors
   
 }
-
+#' Class to hold the metadata for a vegetation model run
+#' 
+#' This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
+#' It is not primarily intended to be used by itself. Instead it is inherited by \code{VegRun} object (due to this inheritance the slots can be accessed directly)
+#' and included in a \code{VegObject} in the \code{run} slot (not inherited, so needs to be access be \code{@@run}).
+#' 
+#' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
+#' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
+#' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
+#' @slot description A character string describing this run, ie. "LPJ-GUESS v3.1"
+#' @slot run.dir The location of this run on the file system (Mandatory)
+#' @slot driving.data A character string identifying the climate or other data used to produce this model run
+#' @slot map.overlay A character defining which map overlay to plot as standard on for this model run.  Can be:
+#'  \itemize{
+#'   \item \code{hires} for a full high resolution outline of all countires of the world 
+#'   \item \code{lowres} for a low resolution outline of all countires of the world  (much faster to plot that \code{hires}, generally sufficient for global plot)
+#'   \item \code{hires-continents} for a full high resolution outline of the land masses only
+#'   \item \code{lowres-continents} for a low resolution outline of the land masses only
+#' }
+#' These data come from the \code{mapdata} package
+#' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
+#' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
+#' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
+#' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
+#' @slot fill.col A string to define an R colour used when plotting this run as a histogram or scatter plot or so
+#' @slot line.col  A string to define an R colour used when plotting this runs as a line graph
+#' @slot line.width A numeric to define the width of a line representing this model run
+#' @slot line.type A numeric to define the line style representing this model run
+#' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
+#' @exportClass VegRunInfo
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegRunInfo", 
          slots = c(id = "character",
                    model = "character",
@@ -160,6 +241,30 @@ setClass("VegRunInfo",
 #' 
 #' @slot objects List of \code{VegObjects} saved in this run
 #' @slot benchmarks List of benchmarks (\code{BiomeComparisons} and \code{RasterComparisons}) performed and saved for this run.
+#' The following slots are inherited from \code{VegRunInfo}.
+#' @slot id A unique character string to identify this particular model run.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
+#' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
+#' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
+#' @slot description A character string describing this run, ie. "LPJ-GUESS v3.1"
+#' @slot run.dir The location of this run on the file system (Mandatory)
+#' @slot driving.data A character string identifying the climate or other data used to produce this model run
+#' @slot map.overlay A character defining which map overlay to plot as standard on for this model run.  Can be:
+#'  \itemize{
+#'   \item \code{hires} for a full high resolution outline of all countires of the world 
+#'   \item \code{lowres} for a low resolution outline of all countires of the world  (much faster to plot that \code{hires}, generally sufficient for global plot)
+#'   \item \code{hires-continents} for a full high resolution outline of the land masses only
+#'   \item \code{lowres-continents} for a low resolution outline of the land masses only
+#' }
+#' These data come from the \code{mapdata} package
+#' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
+#' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
+#' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
+#' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
+#' @slot fill.col A string to define an R colour used when plotting this run as a histogram or scatter plot or so
+#' @slot line.col  A string to define an R colour used when plotting this runs as a line graph
+#' @slot line.width A numeric to define the width of a line representing this model run
+#' @slot line.type A numeric to define the line style representing this model run
+#' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @exportClass VegRun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegRun", 
@@ -167,14 +272,30 @@ setClass("VegRun",
                    benchmarks = "list"
          ),
          prototype = c(objects = list(),
-                      benchmarks = list()
+                       benchmarks = list()
          ),
          contains = "VegRunInfo"
          
 )
 
 
-##### VegQuant - class to hold the data for an LPJ quantity
+#' Class to hold the data for a vegetation quantity
+#' 
+#' Defines specific vegetation quantities like "lai" (LAI) or "mwcont_upper" (mean monthly water).  
+#' Includes metadata about the quantity (the units it is measured in for exampel), values for default plot proprties (color scales, plot ranges) and the aggragating method - ie whether the quantity shoudd generally be summed (for example monthly burnt area or C mass per PFT) or averaged (for example monthly soil water content).
+#' Note that the used will probably need to define their own, and modify these for their own analysis and plots
+#' 
+#' 
+#' @slot id A unique character string to identify this particular vegetation quantity, should match with the name of a particular model output variable.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot short.string A short character string to refer to this quantity
+#' @slot full.string A longer character string to provide a more complete description of this quantity
+#' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to RVCTools, but in principle the use can define anything.  
+#' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
+#' @slot colours A fucntion that retutns a colour scale suited for plotting this quantity.
+#' @slot cuts A numerical sequence defining the plot range and colour breakpoint when plotting the quantity
+#' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
+#' @exportClass VegQuant
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegQuant", 
          slots = c(id = "character",
                    short.string = "character",
@@ -198,6 +319,26 @@ setClass("VegQuant",
          
 )
 
+
+
+#' Contains one aspect of the model output, eg. LAI
+#' 
+#' A key class of the package.  A \code{VegObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
+#' For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
+#' 
+#' Generally these are not created directly by the user, but rather by functions like \code{getVegObject}.
+#' 
+#' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
+#' @slot quant A VegQuant object to define what output this VegObject contains
+#' @slot spatial.extent A SpatialExtent object which describes the area covered by this VegObject.  Particularly useful if the data has been spatially averaged.
+#' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this VegObject.  Particularly useful if the data has been temporally averaged.
+#' @slot is.site Set to TRUE is this VegObject describes a single site
+#' @slot is.spatially.averaged Set to TRUE is this VegObject has been spatially averaged
+#' @slot is.temporally.averaged Set to TRUE is this VegObject has been temporally averaged
+#' @slot run A VegRunInfo object which contains the metadata about the run which this VegObject belongs too.
+#' @exportClass VegObject
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegObject", 
          slots = c(id = "character",
                    data = "data.table",
@@ -263,13 +404,26 @@ setClass("VegObject",
 ########  BENCHMARKING DATASET SPECIFIC CLASSES ##########################################
 ##########################################################################################
 
+########## SPATIAL DATASET CLASS
 
-
-##### Spatial dataset - class to hold the data and metadata about spatial dataset
+#' Class to hold the data and metadata about spatial dataset
+#' 
+#' Gathers up the meta-data and a raster layer for one particular layer of spatial environmental data.  Not intended for model output, rather for a dataset like a above ground biomass, or MODIS tree cover.
+#' 
+#' @slot id A unique character string to identify this particular spatial dataset.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot name A character string to provide a fuller description of this dataset
+#' @slot temporal.extent A \code{TemporalExtent} oject to describe when this environmental data was measured.
+#' @slot data The actual data.  The slot type is currently "ANY" but perhaps it should be restricted to a \code{RasterLayer}.  That is what the benchmarking code certainly expects
+#' @slot veg.quant A \code{VegQuant} object to describe exactly what this dataset is
+#' @slot units A character string defining the units in which this data is measured.  Probably obselete because of the units slot in the veg.quant slot
+#' @slot correction.raster A \code{RasterLayer} to apply multiplicatively to correct model data before comparing to this dataset.  For example a land-use correction.
+#' 
+#' @exportClass SpatialDataset
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
 setClass("SpatialDataset",
          slots = c(id = "character",
                    name = "character",
-                   abbreviation = "character",
                    temporal.extent = "TemporalExtent",
                    data = "ANY",
                    veg.quant = "VegQuant",
@@ -278,11 +432,27 @@ setClass("SpatialDataset",
          )
 )
 
-##### Temporal dataset - class to hold the data and metadata about temporal dataset
+
+########## TEMPORAL DATASET CLASS
+
+#' Class to hold the data and metadata about temporal dataset
+#' 
+#' Gathers up the meta-data and data for one particular layer of temporal environmental data, for eample a burnt area times series a flux tower measurement.  Not intended for model output, rather for a dataset like a above ground biomass, or MODIS tree cover.
+#' 
+#' @slot id A unique character string to identify this particular spatial dataset.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot name A character string to provide a fuller description of this dataset
+#' @slot temporal.extent A \code{TemporalExtent} object to describe the length of the data times series
+#' @slot data The actual data.  The slot type is currently "ANY" but perhaps it should be restricted to a \code{RasterLayer}.  That is what the benchmarking code certainly expects
+#' @slot extent A \code{SpatialExtent} object define the spatial region over which this time series data applies.
+#' @slot veg.quant A \code{VegQuant} object to describe exactly what this dataset is
+#' @slot units A character string defining the units in which this data is measured.  Probably obselete because of the units slot in the veg.quant slot
+#' 
+#' @exportClass TemporalDataset
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
 setClass("TemporalDataset",
          slots = c(id = "character",
                    name = "character",
-                   abbreviation = "character",
                    temporal.extent = "TemporalExtent",
                    data = "ANY",
                    extent = "SpatialExtent",
@@ -292,18 +462,35 @@ setClass("TemporalDataset",
 )
 
 
+#' Result of comparing a model raster to a data raster
+#' 
+#' This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToSpatialDataset}
+#' 
+#' @slot id A unique character string to identify this particular raster compariosn.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot diff.raster A "RasterLayer" of the absolute difference (model - data)
+#' @slot perc.diff.raster A "RasterLayer" of the absolute difference (model - data / data) * 100
+#' @slot data.raster A "RasterLayer" holding the data
+#' @slot model.raster A "RasterLayer" holding the mode
+#' @slot R.squ The R squared between the model and the data
+#' @slot P.cor The Pearsons product moment correlation between the model and the the data,
+#' @slot RMSE The Root Mean Squared Error etween the model and the the data
+#' @slot mean.diff The difference between the model and the the data (all gridcells)
+#' @slot sd.diff The standard deviation of the difference between the model and the the data (all gridcells)
+#' @exportClass RasterComparison
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
 setClass("RasterComparison",
-          slots = c(id = "character",
-                    diff.raster = "RasterLayer", 
-                    perc.diff.raster = "RasterLayer", 
-                    data.raster = "RasterLayer", 
-                    model.raster = "RasterLayer", 
-                    R.squ = "numeric", 
-                    P.cor = "numeric", 
-                    RMSE = "numeric", 
-                    mean.diff = "numeric", 
-                    sd.diff = "numeric"
-                    )
+         slots = c(id = "character",
+                   diff.raster = "RasterLayer", 
+                   perc.diff.raster = "RasterLayer", 
+                   data.raster = "RasterLayer", 
+                   model.raster = "RasterLayer", 
+                   R.squ = "numeric", 
+                   P.cor = "numeric", 
+                   RMSE = "numeric", 
+                   mean.diff = "numeric", 
+                   sd.diff = "numeric"
+         )
 )
 
 
@@ -316,9 +503,32 @@ setClass("RasterComparison",
 ##########################################################################################
 
 
-
-##### Biome calssification - class to hold the data and metadata about biome classification
-setClass("BiomeClassification",
+########## BIOME SCHEME
+#
+#' A biome scheme
+#' 
+#' This class stores the information about a biome scheme.  It describes what how the model output (in the form of a data.table) must be prepared, and then the rules which are used to classify the biomes.
+#' 
+#' This is ultimately not flexible enough for all conceivable biome schemes from all models and will need to be somehow generalised and expanded at some point.  This is most certainly a challenge for another day!
+#' 
+#' 
+#' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot name A character string that can be more descriptive.
+#' @slot substitution A "data.frame" describing how the classifications should be substited in the data.  Eh?  Probably not appropriate here
+#' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
+#' @slot combineShadeTolerance If TRUE, call combineShadeTolerance before doing the biome classification
+#' @slot totals.needed List of vegetation totals needed to calculate biomes, for example c("Tree", "Grass")
+#' @slot fraction.of.total List of vegetation fraction of totals needed to calculate biomes
+#' @slot fraction.of.tree List of vegetation fraction of tree total needed to calculate biomes
+#' @slot fraction.of.woody List of vegetation fraction of woody total needed to calculate biomes
+#' @slot needGDD5 If TRUE the biome rules require GDD5 for the classification
+#' @slot strings List of character strings containing the names of the biomes
+#' @slot cols List of character strings containing the names of R colous for the biomes (ordering matching the string slot)
+#' @slot data.reference Character string giving a reference where the data for this biome scheme comes from
+#' @slot published.reference Character string giving a reference where this model output classification scheme was published
+#' @exportClass BiomeScheme
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+setClass("BiomeScheme",
          slots = c(id = "character",
                    name = "character", 
                    substitution = "data.frame",
@@ -336,11 +546,26 @@ setClass("BiomeClassification",
          )
 )
 
+########### BIOME COMPARISON
+# 
+#' Result of comparing a modelled biome map to a data biome map
+#' 
+#' This class stores the rasters (model, data), the biome scheme used and the Cohen's Kappa statistics resulting when two rasters of with identical biome categorisations are compared using \code{compareBiomes}
+#' 
+#' @slot id A unique character string to identify this particular biome compariosn.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot data.raster A "RasterLayer" holding the data biome map
+#' @slot model.raster A "RasterLayer" holding the model biome map
+#' @slot scheme A "BiomeScheme" object that desrcibes the biome scheme used.
+#' @slot Kappa The overall Cohen's Kappa obtained when comparing modelled biomes to data biomes.
+#' @slot individual.Kappas The individual Cohen's Kappas for each biome obtained when comparing modelled to data biomes
+#' @exportClass BiomeComparison
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
 setClass("BiomeComparison",
          slots = c(id = "character",
                    data.raster = "RasterLayer", 
                    model.raster = "RasterLayer", 
-                   scheme = "BiomeClassification",
+                   scheme = "BiomeScheme",
                    Kappa = "numeric", 
                    individual.Kappas = "numeric"  
          )

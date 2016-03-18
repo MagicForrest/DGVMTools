@@ -150,7 +150,6 @@ getSaatchi2011 <- function(resolution = "HD"){
   Saatchi.dataset <- new("SpatialDataset",
                          id = "Saatchi2011",
                          name = "Saatchi et al. 2011 Biomass",
-                         abbreviation = "Saatchi et al. 2011",   
                          temporal.extent = new("TemporalExtent", name = "Saatchi Period", start = 1999, end = 2001),
                          data = Saatchi.raster,
                          veg.quant = lookupVegQuantity("cmass"),
