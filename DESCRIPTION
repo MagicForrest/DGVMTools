@@ -23,7 +23,6 @@ Depends:
     rgdal,
     sp,
     raster,
-    lattice,
     data.table,
     ggplot2
 Suggests:
