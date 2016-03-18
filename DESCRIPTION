@@ -13,11 +13,11 @@ Imports:
     compiler,
     maps,
     Cairo,
-    grid
+    grid,
+    mapdata
 Depends:
     R (>= 2.15.0),
     methods,
-    mapdata,
     maptools,
     ncdf4,
     rgdal,
@@ -31,7 +31,7 @@ Suggests:
     RColorBrewer,
     udunits2
 Description: Process output data produced by dynamic global vegetation
-    model (DGVM) LPJ-GUESS for use in R. Create standard figures
+    models (DGVM) LPJ-GUESS(-SPITFIRE), aDGVM2 (under development) and possibly others, for use in R. Create standard figures
     and benchmarking.
 License: GPL (>= 2)
 URL: https://www.bik-f.de
