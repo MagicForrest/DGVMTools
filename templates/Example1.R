@@ -29,13 +29,49 @@ variable <- "lai"
 period = new("TemporalExtent", name = "Reference", start = 1961, end = 1990)
 
 # Open the lai.out file, and average over the reference period
-lai.reference.period <- getVegObject(run, 
-                                     variable, 
-                                     temporal.extent = period, 
-                                     temporally.average = TRUE, 
-                                     write = TRUE,
-                                     reread.file = FALSE,
-                                     store.internally = TRUE)
+# lai.reference.period <- getVegObject(run, 
+#                                      variable, 
+#                                      temporal.extent = period, 
+#                                      temporally.average = TRUE, 
+#                                      write = TRUE,
+#                                      reread.file = FALSE,
+#                                      store.internally = FALSE)
+
+temp.extent <- new("SpatialExtent", id  = "test", name = "asdas", extent = extent(-10,10,-10,10))
+
+
+lai.temp.1 <- getVegObject(run, 
+                           variable, 
+                           spatial.extent = temp.extent, 
+                           spatially.average = TRUE, 
+                           write = TRUE,
+                           reread.file = TRUE,
+                           store.internally = FALSE)
+
+
+lai.temp.2<- getVegObject(run, 
+                          variable, 
+                          spatial.extent = temp.extent, 
+                          spatially.average = TRUE, 
+                          write = TRUE,
+                          reread.file = FALSE,
+                          store.internally = FALSE)
+
+
+
+temp.extent <- new("SpatialExtent", id  = "test", name = "asdas", extent = extent(-10,20,-15,10))
+
+
+lai.temp.2 <- getVegObject(run, 
+                           variable, 
+                           spatial.extent = temp.extent, 
+                           spatially.average = TRUE, 
+                           write = TRUE,
+                           reread.file = FALSE,
+                           store.internally = FALSE)
+
+
+stop()
 
 
 ##### STEP TWO: Simple summary plots

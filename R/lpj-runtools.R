@@ -148,7 +148,7 @@ openLPJOutputFile <- function(run,
 
 
 ######################### RETURN A DATA.TABLE CONTAINING THE FULL DATA FROM ONE LPJ-GUESS OUTPUT VARIABLE #####################################################################
-#
+#  MF: DEPRECATED, FUNCTIONALITY MOVED TO openLPJOutputFile() and to getVegObject()
 #' Returns the data from one LPJ-GUESS output variable as a \code{data.table}.   
 #'
 #' \code{getVegQuantity_LPJ} returns a \code{data.table} containing the full data (not averaged spatially or temporally) data from an LPJ-GUESS
