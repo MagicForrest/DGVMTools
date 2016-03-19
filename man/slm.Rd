@@ -7,6 +7,3 @@
 \author{
   Joerg Steinkamp <joerg.steinkamp@senckenberg.de>
 }
-\references{
-
-}

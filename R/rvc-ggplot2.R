@@ -178,6 +178,8 @@ rvc.ggplot.theme <- function(x) {
 #' @import raster sp maps ggplot2 data.table
 #' @export
 plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, long.title=TRUE, plot=TRUE, ...) {
+  ## to avoid "no visible binding for global variable" during check
+  Lon = Lat = group = long = name = value = NULL
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
   if (is.VegObject(input, spatial=TRUE)) {
@@ -371,7 +373,6 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   fr_lat <- length(lat) / max(c(length(lat) + length(lon))) 
   fr_lon <- length(lon) / max(c(length(lat) + length(lon))) 
 
-
   if (wrap==1) {
     lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon", n.min=4, n.max=3+ceiling(fr_lon*4))
     lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=4, n.max=3+ceiling(fr_lat*4))
@@ -452,6 +453,9 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 #' @export
 #' @import ggplot2 data.table
 plotGGMeridional <- function(input, column='value', what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, plot=TRUE, ...) {
+  ## to avoid "no visible binding for global variable" during check
+  Lat = sens = value = value.center = value.sd = value.se = value.max = value.min = NULL
+
   if (!any(names(what)=="center"))
     stop("No definition for meridional average given. Must be either 'mn', 'mean' or 'md', 'median'.")
   if (!any(names(what)=="var"))
@@ -642,6 +646,8 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #' @export
 #' @import RColorBrewer ggplot2 data.table
 plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, vertical=FALSE, bar=FALSE, plot=TRUE, ...) {
+  ## to avoid "no visible binding for global variable" during check
+  sens = value = name = category = NULL
   if (is.null(targets)) {
     stop("Don't know what to do, if you are not telling me!")
   } else if (is.list(targets)) {
@@ -884,6 +890,8 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @import RColorBrewer ggplot2 
 #' 
 plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="line", wrap=NA, long.title=TRUE, lty="sens", alpha=NA, plot=TRUE, ...) {
+  ## to avoid "no visible binding for global variable" during check
+  Year = sens = value = variable = NULL
   if (is.VegObject(input, temporal=TRUE)) {
     if (is.na(columns) && all(colnames(input@data) != "value"))
       stop("No columns name given and no column named 'value' present!")
@@ -1087,6 +1095,8 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
 #' @import RColorBrewer
 #' @export
 plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE, bins=10, long.title=TRUE, plot=TRUE, ...) {
+  ## to avoid "no visible binding for global variable" during check
+  sens = bin = value = N = NULL
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
   if (is.VegObject(input, spatial=TRUE)) {
@@ -1169,11 +1179,11 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
   dt[,bin:=findInterval(value, brks, rightmost.closed = TRUE)]
   
   if (any(colnames(dt)=="sens")) {
-    binned.dt <- dt[, list(.N), by=.(bin, sens)]
+    binned.dt <- dt[, list("N"), by=c("bin", "sens")]
     p <- ggplot(binned.dt, aes(x=bin, y=N, fill=sens))
     p <- p + scale_fill_manual(values=colors)
   } else {
-    binned.dt <- dt[, list(.N), by=bin]
+    binned.dt <- dt[, list("N"), by="bin"]
     p <- ggplot(binned.dt, aes(x=bin, y=N))
   }
   
