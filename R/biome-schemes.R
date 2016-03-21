@@ -516,61 +516,53 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
 ###########  ##########################
 #################################################################################################################################
 
-FPCMegaBiomeRules <- function(fpc){
+FPCMegaBiomeRules <- function(fpc) {
  
-  # 10 - desert
-  if (as.numeric(fpc[['Total']]) < 0.2 &
-      as.numeric(fpc[['gdd5']]) > 1200) {return(10)}
+  # 9 - Desert
+  if (as.numeric(fpc[['Total']]) <= 0.2 &
+      as.numeric(fpc[['gdd5']]) >= 1200) {return(9)}
 
-  # 11 - arctic desert
-  else if (as.numeric(fpc[['Total']]) < 0.2 &
-           as.numeric(fpc[['gdd5']]) <= 1200) {return(11)}
+  # 10 - Arctic desert
+  else if (as.numeric(fpc[['Total']]) <= 0.2 &
+           as.numeric(fpc[['gdd5']]) < 1200) {return(10)}
 
   # 1 - Tropical Forest
   else if (as.numeric(fpc[['Tree']]) > 0.6 &
-           as.numeric(fpc[['Tropical']]) >= as.numeric(fpc[['Temperate']]) &
-           as.numeric(fpc[['Tropical']]) >= as.numeric(fpc[['Boreal']])) {return(1)}
-  
+           as.numeric(fpc[['Tropical']]) > as.numeric(fpc[['Temperate']]) &
+           as.numeric(fpc[['Tropical']]) > as.numeric(fpc[['Boreal']])) {return(1)}
+
   # 2 - Temperate Forest
   else if (as.numeric(fpc[['Tree']]) > 0.6 &
            as.numeric(fpc[['Temperate']]) > as.numeric(fpc[['Tropical']]) &
-           as.numeric(fpc[['Temperate']]) >= as.numeric(fpc[['Boreal']])) {return(2)}
-  
+           as.numeric(fpc[['Temperate']]) > as.numeric(fpc[['Boreal']])) {return(2)}
+
   # 3 - Boreal Forest
-  else if (as.numeric(fpc[['Tree']]) > 0.6 &
+  else if (as.numeric(fpc[['Tree']]) > 0.2 &
            as.numeric(fpc[['Boreal']]) > as.numeric(fpc[['Temperate']]) &
            as.numeric(fpc[['Boreal']]) > as.numeric(fpc[['Tropical']])) {return(3)}
-  
-  # 4 - tree savannah
+
+  # 4 - Savannah
   else if (as.numeric(fpc[['Tree']]) > 0.1 &
            as.numeric(fpc[['Tree']]) <= 0.6 &
            as.numeric(fpc[['C4G']]) >= as.numeric(fpc[['C3G']])) {return(4)}
 
-  # 5 - temperate woodland
+  # 5 - Temperate woodland
   else if (as.numeric(fpc[['Tree']]) > 0.1 &
            as.numeric(fpc[['Tree']]) <= 0.6 &
            as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
            as.numeric(fpc[['gdd5']]) > 1800) {return(5)}
 
-  # 6 - taiga
-  else if (as.numeric(fpc[['Tree']]) > 0.1 &
-           as.numeric(fpc[['Tree']]) <= 0.6 &
-           as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
-           as.numeric(fpc[['gdd5']]) <= 1800) {return(6)}
-
-  # 7 - grass savannah
+  # 6 - Tropical grassland
   else if (as.numeric(fpc[['Tree']]) <= 0.1 &
-           as.numeric(fpc[['C4G']]) >= as.numeric(fpc[['C3G']])) {return(7)}
+           as.numeric(fpc[['C4G']]) >= as.numeric(fpc[['C3G']])) {return(6)}
 
-  # 8 - steppe
+  # 7 - Temperate grassland
   else if (as.numeric(fpc[['Tree']]) <= 0.1 &
            as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
-           as.numeric(fpc[['gdd5']]) > 1200) {return(8)}
+           as.numeric(fpc[['gdd5']]) > 1200) {return(7)}
 
-  # 9 - tundra
-  else if (as.numeric(fpc[['Tree']]) <= 0.1 &
-           as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
-           as.numeric(fpc[['gdd5']]) <= 1200) {return(9)}
+  # 8 - Tundra
+  else if (as.numeric(fpc[['Tree']]) <= 0.2) {return(8)}
 
   # REMAINDER
   else {
@@ -593,22 +585,22 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                             cols = c("Tropical forest" = "darkgreen",
                                      "Temperate forest" = "seagreen",
                                      "Boreal forest" = "turquoise4",
-                                     "Tree savannah" = "tan",
+                                     "Savannah" = "tan",
                                      "Woodland" = "tan2",
-                                     "Taiga" = "tan4",
-                                     "Tropical savannah" = "gold",
-                                     "Steppe" = "yellow",
+#                                     "Taiga" = "tan4",
+                                     "C4-grassland" = "gold",
+                                     "C3-grassland" = "yellow",
                                      "Tundra" = "seagreen2",
                                      "Desert" = "lightgrey",
                                      "Arctic desert" = "grey"),
                          strings = c("Tropical forest",
                                      "Temperate forest",
                                      "Boreal forest",
-                                     "Tree savannah",
+                                     "Savannah",
                                      "Woodland",
-                                     "Taiga",
-                                     "Tropical savannah",
-                                     "Steppe",
+#                                     "Taiga",
+                                     "C4-grassland",
+                                     "C3-grassland",
                                      "Tundra",
                                      "Desert",
                                      "Arctic desert"),
@@ -620,4 +612,3 @@ supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
                              "Forrest2015" = Forrest2015.scheme,
                              "Megabiomes_dev" = Megabiomes_dev.scheme,
                              "FPCMegabiomes" = FPCMegabiomes.scheme)
-

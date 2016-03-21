@@ -95,6 +95,8 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @export
 #' @examples message("See templates/Example.ggplot.R")
 getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, forceReCalculation=FALSE, write=TRUE, verbose=TRUE, ...) {
+  ## to avoid "no visible binding for global variable" during check
+  Lon = Lat = Year = variable = value = NULL
   suppressWarnings(if (!is.na(temporal.extent)) {
     if (class(temporal.extent)[1]=="TemporalExtent" && attr(class(temporal.extent), "package")=="RVCTools") {
       period <- c(temporal.extent@start, temporal.extent@end)

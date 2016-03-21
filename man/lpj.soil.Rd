@@ -7,6 +7,4 @@ Half degree resolution data.table of numeric soil types used in LPJ-GUESS.
 \author{
   Joerg Steinkamp <joerg.steinkamp@senckenberg.de>
 }
-\references{
 
-}

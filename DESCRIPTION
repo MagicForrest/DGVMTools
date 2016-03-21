@@ -1,21 +1,16 @@
 Package: RVCTools
+Type: Package
 Version: 0.0.7
 Title: R Vegetation & Climate Tools
 Date: 2016-02-03
-Authors@R: c(person("Matthew", "Forrst", role = c("aut", "cre"), email
-        = "matthew.forrest@senckenberg.de"), person("Joerg",
-        "Steinkamp", role = c("aut"), email =
-        "joerg.steinkamp@senckenberg.de"))
+Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
+             person("Joerg", "Steinkamp", role=c("aut"), email="joerg.steinkamp@senckenberg.de"))
 Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
 Maintainer: Matthew Forrest <mforrest@senckenberg.de>
-Imports:
-    fields,
-    compiler,
-    maps,
-    Cairo,
-    grid,
-    mapdata,
-    RColorBrewer
+Description: Process output data produced by dynamic global vegetation
+    models (DGVMs) LPJ-GUESS(-SPITFIRE), aDGVM2 (under development) and
+    possibly others, for use in R. Create standard figures
+    and benchmarking.
 Depends:
     R (>= 2.15.0),
     methods,
@@ -27,14 +22,21 @@ Depends:
     raster,
     data.table,
     ggplot2
+Imports:
+    fields,
+    compiler,
+    maps,
+    Cairo,
+    grid,
+    mapdata,
+    RColorBrewer
 Suggests:
     zoo,
     mgcv,
     udunits2
-Description: Process output data produced by dynamic global vegetation
-    models (DGVMs) LPJ-GUESS(-SPITFIRE), aDGVM2 (under development) and possibly others, for use in R. Create standard figures
-    and benchmarking.
-License: GPL (>= 2) | file LICENSE
+License: GPL | file LICENSE
 URL: https://www.bik-f.de
+BugReports: https://github.com/joergsteinkamp/RVCTools/issues
 NeedsCompilation: no
+LazyData: true
 RoxygenNote: 5.0.1

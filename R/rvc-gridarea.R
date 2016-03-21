@@ -126,6 +126,8 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' @return same class as input
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
+  ## to avoid "no visible binding for global variable" during check
+  Lat = Lon = NULL
   if (is.na(unit))
     unit="m^2"
 

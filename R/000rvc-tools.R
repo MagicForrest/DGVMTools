@@ -176,6 +176,50 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
   return(FALSE)
 })
 
+## print an experimental summary of the class VegRun.
+##
+## Don't know, which were the really important information to return,
+## therfore this is just a template.
+## so far simply returns a list. 
+## Needs to also include a generic "print" for pretty output
+##
+setGeneric("summary")
+setMethod("summary", signature("VegRun"), function(object, ...) {
+  ret <- list(id=object@id, description=object@description, model=object@model)
+
+  spatial=NULL
+  temporal=NULL
+  full=NULL
+  for (n in names(object@objects)) {
+    if (object@objects[[n]]@is.spatially.averaged) {
+      temporal[[n]]=list(name=n,
+                         description=object@objects[[n]]@quant@full.string,
+                         units=object@objects[[n]]@quant@units,
+                         colnames=colnames(object@objects[[n]]@data))
+    } else if (object@objects[[n]]@is.temporally.averaged) {
+      spatial[[n]]=list(name=n,
+                        description=object@objects[[n]]@quant@full.string,
+                        units=object@objects[[n]]@quant@units,
+                        colnames=colnames(object@objects[[n]]@data))
+    } else {
+      full[[n]]=list(name=n,
+                     description=object@objects[[n]]@quant@full.string,
+                     units=object@objects[[n]]@quant@units,
+                     colnames=colnames(object@objects[[n]]@data))
+    }
+  }
+  if (!is.null(spatial)) {
+    ret[['spatial']] = spatial
+  }
+  if (!is.null(temporal)) {
+    ret[['temporal']] = temporal
+  }
+  if (!is.null(full)) {
+    ret[['full']] = full
+  }
+  
+  return(ret)
+})
 
 cropRVC <- function(input, extent){
   
