@@ -25,7 +25,7 @@ However other periods can be defined for specific growing seasons etc.
 
 \item{\code{name}}{A character string to describe the spatial extent. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.}
 
-\item{\code{abbreviation}}{Currently can be a raster \code{Extent} object, but should be expanded to include a raster mask (to define an irregularly shaped spatial extent), or a (Lon,Lat) coordinate to define a site.}
+\item{\code{abbreviation}}{Not really sure if this is necessary, think is it covered by the "id" slot}
 
 \item{\code{index}}{The index of the months of the year for this period.  For example, Jan has index = 1, DJF has index =c (12,1,2) and annual has index = c(1,2,3,4,5,6,7,8,9,10,11,12)}
 
