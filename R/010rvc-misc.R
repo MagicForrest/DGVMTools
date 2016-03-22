@@ -1,4 +1,3 @@
-# blahblah - test commit
 
 ########## STANDARD LPJ-GUESS HALF DEGREE GRIDLIST
 lpj.HD.gridlist <- file.path(auxiliary.data.dir, "Gridlists", "gridlist_global_0.5deg.txt")
@@ -65,27 +64,6 @@ subsetGridlist <- function(subset.extent, file.name = NULL, header = TRUE, gridl
 
 
 ########### CONSTANTY STRINGS AND VECTORS ######################
-
-##### Conversion factors 
-kmsq_to_ha <- 100
-
-# months.2digits <- c(paste("0", 1:9, sep = ""), paste(10:12))
-# months.padded <- months.2digits 
-# 
-# months.plus.annual = list("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December","Annual")
-# seasons = list("Winter", "Spring", "Summer", "Autumn")
-# seasons.string = list("DJF", "MAM", "JJA", "SON")
-# all.times <-c(unlist(months),unlist(seasons.string), "Annual")
-# season.numbers = list(c(12,1,2), c(3,4,5), c(6,7,8), c(9,10,11))
-# season.abbreviations = list("DJF", "MAM", "JJA", "SON")
-# 
-# #make lists of the number of days in the month
-# #and the cumulative days up to a new month
-# days.in.month =list(31,28,31,30,31,30,31,31,30,31,30,31)
-# days.in.month.leap.year=list(31,28,31,30,31,30,31,31,30,31,30,31)
-# cum.days.in.month= list(31,59,90,120,151,181,212,243,273,304,334,365)
-# cum.days.in.month.leap.year= list(31,60,91,121,152,182,213,244,274,305,335,366)
-
 
 
 ##### Period - class to hold the metadata about a month, seasonal or annual period
@@ -288,42 +266,6 @@ annual <- all.periods[17]
 # shorthand
 lsos <- function(..., n=10) {
   .ls.objects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
-}
-
-
-########### WORKAROUND TO USE DATA.TABLE FREAD() FUNCTION FOR VARIABLE WHITESPACE SEPARATORS ########### 
-
-
-#credit: see here http://stackoverflow.com/questions/22229109/r-data-table-fread-command-how-to-read-large-files-with-irregular-separators
-
-# Function to count rows with command wc for read.table() optimization.
-fileRowsCount <- function(file){
-  if(file.exists(file)){
-    sysCmd <- paste("wc -l", file)
-    rowCount <- system(sysCmd, intern=T)
-    rowCount <- sub('^\\s', '', rowCount)
-    as.numeric(
-      strsplit(rowCount, '\\s')[[1]][1]
-    )
-  }
-}
-
-#credit: see here http://stackoverflow.com/questions/22229109/r-data-table-fread-command-how-to-read-large-files-with-irregular-separators
-
-# function awkFread : first awk, then fread. Argument : colNums = selection of columns. 
-awkFread<-function(file, colNums, ...){
-  if(is.vector(colNums)){
-    tmpPath<-tempfile(pattern='tmp',fileext='.txt')
-    colGen<-paste0("$",colNums,"\",\"", collapse=",")
-    colGen<-substr(colGen,1,nchar(colGen)-3)
-    cmdAwk<-paste("awk '{print",colGen,"}'", file, '>', tmpPath)
-    try(system(cmdAwk))
-    DT<-fread(tmpPath,...)
-    # MF Addition, remove spaces frome column names
-    setnames(DT, old=names(DT), new=gsub("\\s","", names(DT)))
-    try(system(paste('rm', tmpPath)))
-    return(DT)
-  }
 }
 
 ########### HANDY PROCESSING FUNCTIONS ########### 

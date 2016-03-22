@@ -251,7 +251,6 @@ compareManyRunsToData <- function(runs,
   
   
   # ASSIGN NAMES
-  
   names(Absolute.stack) <- append(dataset@id, run.ids)
   names(Difference.stack) <- run.ids
   names(Percentage.Difference.stack) <- run.ids
@@ -266,8 +265,6 @@ compareManyRunsToData <- function(runs,
               plot.labels = plot.titles,
               layout.objs = layout.objs,
               ...)
-  
-  
   
   # MAKE R^2 LABELS (if required)
   if(showR2){
@@ -303,7 +300,7 @@ compareManyRunsToData <- function(runs,
               text.multiplier = 1.0,
               layout.objs = layout.objs,
               ...)
-  
+
   
   # PLOT PERCENTAGE DIFFERENCE
   plotVegMaps(Percentage.Difference.stack,
@@ -317,7 +314,6 @@ compareManyRunsToData <- function(runs,
               text.multiplier = 1.0,
               layout.objs = layout.objs,
               ...)
-  
   
   
   # Clear up
@@ -518,7 +514,7 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target,  expand.target
           comparison.dt[, eval(col.name) := get(paste(run@id, sub.target, sep = "_")) - get(paste(base.run.id, sub.target, sep = "_"))]
           
           # plot the difference
-          title <- paste(sub.target, paste(run@onjects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", runs[[base.run.id]]@description, sep = " ")
+          title <- paste(sub.target, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", runs[[base.run.id]]@description, sep = " ")
           
           plotVegMaps(comparison.dt,
                       targets = col.name,

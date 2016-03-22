@@ -139,9 +139,17 @@ setClass("PFT",
 )
 
 
-##### VegRunInfo - class to hold the metadata for an LPJ-GUESS run 
+########### VegRunInfo - class to hold the metadata for an LPJ-GUESS run
 
-
+#' Checks validity of a \code{VegRunInfo}.
+#' 
+#' Called internally as the validity slot of the \code{VegRunInfo}.  It checks that the essential slots are filled with sensible values ie a run.dir that
+#' exists on the file system; a model type which is valid and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
+#' 
+#' @param object The \code{VegRunInfo} object to check for vailidity.
+#' @return Empty string if the essential slots are fine, a string containing an error message if not.
+#'    
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 checkVegRun <- function(object){
   
@@ -176,6 +184,9 @@ checkVegRun <- function(object){
   if (length(errors) == 0) TRUE else errors
   
 }
+
+
+
 #' Class to hold the metadata for a vegetation model run
 #' 
 #' This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
@@ -229,6 +240,7 @@ setClass("VegRunInfo",
          
 )
 
+
 #' An S4 class to contain metadata and, optionally, data and benchmarks for a single vegetation run
 #' 
 #' A \code{VegRun} object contains the metadata concerning the an inherited \code{VegRunInfo} object
@@ -277,6 +289,7 @@ setClass("VegRun",
          contains = "VegRunInfo"
          
 )
+
 
 
 #' Class to hold the data for a vegetation quantity
