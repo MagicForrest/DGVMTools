@@ -476,7 +476,7 @@ getVegObject <- function(run,
                             name = "Single site simulation",
                             extent =  c(sorted.unique.lons[1], sorted.unique.lats[1]))
       
-      if(verbose) message(paste("No spatial extent specified, but noting that this is a single site with coordinates = (",  sorted.unique.lons[1], ",", spatial.extent@extent@xmax, ")", sep = ""))
+      if(verbose) message(paste("No spatial extent specified, but noting that this is a single site with coordinates = (",  sorted.unique.lons[1], ",", sorted.unique.lats[1], ")", sep = ""))
    
     }
     else  {
