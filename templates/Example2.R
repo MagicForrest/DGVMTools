@@ -60,7 +60,7 @@ t1 <- Sys.time()
 analysis.label <- "Example2"                    
 
 ### Plot directory for run comparison plots (create it if it doesn't exist)
-plot.dir <- "/home/matthew/RVCToolsExamples/Example2/Plots"
+plot.dir <- "/home/forrest/RVCToolsExamples/Example2/Plots"
 dir.create(plot.dir, showWarnings = FALSE) 
 
 ### Time spans and spatials extents over which to average t
@@ -96,7 +96,7 @@ verbose <- TRUE
 
 vegrun.list <- list()
 
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/matthew/RVCToolsExamples/Example2/Run1",
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example2/Run1",
                                                          id = "LPJ-GUESS-SPITFIRE-Run1",
                                                          description= "SPITFIRE Run 1",
                                                          pft.set = global.PFTs,
@@ -112,7 +112,7 @@ vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/matthe
                                                          line.type = 1
 )
 
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/home/matthew/RVCToolsExamples/Example2/Run2",
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example2/Run2",
                                                          id = "LPJ-GUESS-SPITFIRE-Run2",
                                                          description= "SPITFIRE Run 2",
                                                          pft.set = global.PFTs,

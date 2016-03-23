@@ -244,9 +244,6 @@ cropRVC <- function(input, extent){
   
 }
 
-cropLPJ <- cropRVC
-
-
 
 
 intersectionRVC <- function(object1, object2){

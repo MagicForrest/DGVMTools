@@ -32,7 +32,7 @@
 #'  including if it was created by avergaing another data.table because it seems as keys are not conserved.
 #'
 #' @param dt The data.table for which to set the key
-#' @return Nothing - changes the original data.table by reference (this is the data.table way)
+#' @return Returns nothing because changes the original data.table by reference (this is the data.table way)
 #' @import data.table
 setKeyRVC <- function(dt){
   
@@ -218,7 +218,7 @@ getVegTemporal <- function(run,
 
 
 ################################# GET VEGOBJECT - Does a lot! #########################################
-
+#
 #' Get a \code{VegObject}, optionally for spatial/temporal averaging/cropping 
 #' 
 #' Given a \code{VegRun} object a \code{VegQuant} object, return an appropriate spatially-averaged \code{VegObject} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
@@ -242,6 +242,7 @@ getVegTemporal <- function(run,
 #' 
 #' @return A spatially averaged\code{VegObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
 #' @export
+#' @import data.table raster
 #' @seealso \code{getVegObject}, \code{getVegspatial}
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -285,7 +286,7 @@ getVegObject <- function(run,
   
   
   
-  ### OPTION 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE VEGRUN IN MEMORY
+  ### CASE 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE VEGRUN IN MEMORY
   if(vegobject.id %in% names(run@objects)){
     
     # if it is present it in memory then can be returned directly
@@ -296,16 +297,16 @@ getVegObject <- function(run,
   
   
   
-  ### OPTION 2 - USE THE PREAVERAGED/CROPPED VEGOBJECT FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
+  ### CASE 2 - USE THE PREAVERAGED/CROPPED VEGOBJECT FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
   if(file.exists(paste(file.name)) & !reread.file){
     
     # get the object from disk
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     vegobject <- readRDS(file.name)
-     
+    
     # Check that the spatial extent matches before returning
     # Note that there are various cases to check here (the full spatial extent and specifically defined extents)
-      
+    
     if(is.null(spatial.extent) & vegobject@spatial.extent@id == "FullDomain"
        | identical(spatial.extent, vegobject@spatial.extent)){
       
@@ -320,14 +321,20 @@ getVegObject <- function(run,
     gc()
     
   }
-    
   
   
-    
-  ### OPTION 3 - IF THE WHOLE FILE HAS BEEN READ AND STORED IN MEMORY AS A VEGOBJECT, THEN TAKE THAT AND EXTRACT THE DATA.TABLE AND THEN AVERAGE IT BELOW
+  
+  ############################################################################################################  
+  #### NOTE: We don't pass this point if the correct pre-averaged data is available (on disk or in memory) ###
+  #### as we will have already returned in CASE 1 or CASE 2 above.                                         ###
+  ############################################################################################################
+  
+  
+  
+  ### CASE 3 - IF THE WHOLE FILE HAS BEEN READ AND STORED IN MEMORY AS A VEGOBJECT, THEN TAKE THAT AND EXTRACT THE DATA.TABLE AND THEN AVERAGE IT BELOW
   if(var.string %in% names(run@objects)){
     
-    if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
+    if(verbose) message(paste(var.string, " is already read, so using that internal copy.", sep = ""))
     this.dt <- run@objects[[var.string]]@data
     setKeyRVC(this.dt)
     
@@ -335,7 +342,7 @@ getVegObject <- function(run,
   
   
   
-  ### OPTION 4 - CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
+  ### CASE 4 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   else {
     
     ### !!! CALL MODEL SPECIFIC FUNTIONS HERE !!!
@@ -345,7 +352,7 @@ getVegObject <- function(run,
       if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
       
       this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
-  
+      
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
     
@@ -357,6 +364,8 @@ getVegObject <- function(run,
       
     } # END IF aDGVM
     
+    ### !!! END CALL MODEL SPECIFIC FUNCTIONS !!!
+    
     
     ### STORE THE FULL MODEL OUTPUT AS AN UNAVERAGED VEGOBJECT IF REQUESTED
     # Note we gotta do this now before the cropping and averaging below
@@ -364,9 +373,25 @@ getVegObject <- function(run,
       
       # Unique Lons, Lats and Years to build the extent objects
       sorted.unique.lats = sorted.unique.lons = sorted.unique.years = NULL
-      if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
+      if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))}
       if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
       if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
+      
+      
+      # build the spatial extent depending on if it is a single site or not
+      # if it is a site
+      if(length(sorted.unique.lons) == 1 & length(sorted.unique.lats) == 1){
+        extent.temp <- c(sorted.unique.lons[1], sorted.unique.lats[1])
+        is.site <- TRUE
+        
+      }
+      else{
+        extent.temp =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
+                              sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
+                              sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
+                              sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
+        is.site <- FALSE
+      }
       
       # Build the full object
       vegobject.full <- new("VegObject",
@@ -376,16 +401,13 @@ getVegObject <- function(run,
                             spatial.extent = new("SpatialExtent",
                                                  id = "FullDomain",
                                                  name = "Full simulation extent",
-                                                 extent =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
-                                                                  sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
-                                                                  sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
-                                                                  sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))),
+                                                 extent =  extent.temp),
                             temporal.extent = new("TemporalExtent",
                                                   id = "FullTS",
                                                   name = "Full simulation duration",
                                                   start = sorted.unique.years[1],
                                                   end = sorted.unique.years[length(sorted.unique.years)]),
-                            is.site = FALSE,
+                            is.site = is.site,
                             is.spatially.averaged = FALSE,
                             is.temporally.averaged = FALSE,
                             run = as(run, "VegRunInfo"))
@@ -400,18 +422,20 @@ getVegObject <- function(run,
   ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
   if(!is.null(spatial.extent))  this.dt <- cropRVC(this.dt, spatial.extent)      
   if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
-
+  
   
   ### GET THE LONS, LATS AND YEAR AFTER CROPPING BUT BEFORE THEY ARE AVERAGED AWAY
+  is.site <- FALSE
   sorted.unique.lats = sorted.unique.lons = sorted.unique.years = NULL
   if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
   if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
   if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
+  if(length(sorted.unique.lons) == 1 & length(sorted.unique.lats) == 1) is.site <- TRUE
   
   
   ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(spatially.average){
-    this.dt <- .doSpatialAverage(this.dt, verbose, area.weighted)
+    this.dt <- doSpatialAverage(this.dt, verbose, area.weighted)
     if(verbose) {
       message("Head of spatially averaged data.table:")
       print(head(this.dt))
@@ -421,13 +445,13 @@ getVegObject <- function(run,
   
   ###  DO TIME AVERAGE
   if(temporally.average){
-    this.dt <- .doTemporalAverage(this.dt, verbose)
+    this.dt <- doTemporalAverage(this.dt, verbose)
     if(verbose) {
       message("Head of time averaged data.table:")
       print(head(this.dt))
     }
   }
-    
+  
   
   ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE FINAL VEGOBJECT TO RETURN
   
@@ -445,25 +469,29 @@ getVegObject <- function(run,
   # SPATIAL
   if(is.null(spatial.extent)) {
     
-    # Handle the case when a file has been spatially averaged over the domain, and so the initial domain is lost
-    # Note that is the domain was the whole simulation domain then this information is lost and the used is warned.
-    extent.temp <- NULL
-    if(!is.null(sorted.unique.lons) & !is.null(sorted.unique.lats)){
-      extent.temp <-  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
-                             sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
-                             sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
-                             sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
+    # If it is
+    if(is.site){
+      spatial.extent <- new("SpatialExtent",
+                            id = "Site",
+                            name = "Single site simulation",
+                            extent =  c(sorted.unique.lons[1], sorted.unique.lats[1]))
+      
+      if(verbose) message(paste("No spatial extent specified, but noting that this is a single site with coordinates = (",  sorted.unique.lons[1], ",", spatial.extent@extent@xmax, ")", sep = ""))
+   
     }
-    else {
-      warning(paste("Orginal extent unknown when reading spatially averaged file ", file.name, ".  If you want need to have this metadata, call getVegObject with reread.file = TRUE to read to whole file.", sep =""))
+    else  {
+      spatial.extent <- new("SpatialExtent",
+                           id = "FullDomain",
+                           name = "Full simulation extent",
+                           extent =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
+                                            sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
+                                            sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
+                                            sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2)))
+      
+      if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+    
     }
-    
-    spatial.extent <- new("SpatialExtent",
-                          id = "FullDomain",
-                          name = "Full simulation extent",
-                          extent =  extent.temp)
-    
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+
     
   }
   
@@ -474,7 +502,7 @@ getVegObject <- function(run,
                    quant = quant,
                    spatial.extent = spatial.extent,
                    temporal.extent = temporal.extent,
-                   is.site = FALSE,
+                   is.site = is.site,
                    is.spatially.averaged = spatially.average,
                    is.temporally.averaged = temporally.average,
                    run = as(run, "VegRunInfo"))
@@ -495,8 +523,22 @@ getVegObject <- function(run,
 }
 
 
-
-
+################################# PROMOTE TO RASTER
+#
+#' Prepares data as a raster object for plotting.
+#' 
+#' Converts a data.table, VegObject or an Spatial*-object to Raster object, also subsetting the requested layers.  
+#' It can also handle a RasterLayber/Stack/Brick, in which case the only processing done is the subsetting since the data is already in Raster form.
+#' This is generally called in the \code{plotVegMaps} function (or potentially before any use of the raster::spplot and raster::plot functions),
+#' but can be useful in and of itself.
+#'   
+#' @param data data.table, VegObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
+#' @param layers The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.
+#' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats,  when converting gridded table to a raster, in the case the the gridded data is not commatters for uneven
+#' @param grid.topology A character string defining the grid topology when going from a table to raster, used in a call to SpatialPixels 
+#' @return A RasterLayer (or RasterBrick)
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
   
   ###  Get class of the objetc we are dealing with
@@ -517,8 +559,8 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   ### If data.table or VegObject (which contains a data.table) 
   # could make this a little bit more efficient maybe...
   else if(this.class == "data.table" | is.VegObject(data)){
-    if(this.class == "data.table") data.spdf <- .makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
-    if(is.VegObject(data)) data.spdf <- .makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
+    if(this.class == "data.table") data.spdf <- makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
+    if(is.VegObject(data)) data.spdf <- makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
     if(length(layers) == 1){
       data.raster <- raster(data.spdf)
       rm(data.spdf)
@@ -549,7 +591,18 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   
 }
 
-
+################################# SANITIZE NAMES FOR RASTER LAYESR
+#
+#' Make names appropriate for raster layers 
+#' 
+#' This "sanaitises" names of an object for use as Raster*-object laey names.  This just involves replacing "-" with "." in the names of the object or the character strings.
+#'       
+#' @param input A data.table, VegObject, Spatial*-object or vector of characters string to have the names (or itself in the case of a character string) 
+#' sanitised to be suitable for use as Raster*object layer names. Also takes a Raster*-object, but this is return directly.
+#' @return An object of the same type as was put in.
+#' @export
+#' @import data.table sp raster
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 sanitiseNamesForRaster <- function(input){
   
   ###  Get class of the object we are dealing with
@@ -601,13 +654,25 @@ sanitiseNamesForRaster <- function(input){
 ########### HELPER FUNCTIONS
 
 
-# Helper function to make a SpatialPixelsDateFrame from a data.table object
-# It is assumed that data.table has columns Lon and Lat to provide the spatial information
-.makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
+################################# MAKE SPATIALPIXELSDATAFRAME FROM DATA.FRAME OR DATA.TABLE
+#
+#' Make SpatialPixelDataFrame from a data.table
+#' 
+#' Converts a data.table (or data.frame) to a SpatialPixelsDataFrame, using the columns "Lon and "Lat" to provide the spatial information.  
+#' Mostly is called by \code{promoteToRaster}, but can be useful in and of itself.
+#'
+#' @param data data.table or data.frame, with columsn "Lon" and "Lat" which specify the spatial data 
+#' @param layers The columns to be selected included in the final SpatialPixelsDataFrame object.  Use NULL or "all" if all layers are required.
+#' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats
+#' @param grid.topology A character string defining the grid topology for the SpatialPixelsDataFrame object
+#' @return A SpatialPixelDataFrame
+#' @export
+#' @import data.table sp
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
   
   # to stop complaints at build time
-  Lon <- NULL
-  Lat <- NULL
+  Lon = Lat = NULL
   
   # sort the layers
   if(is.null(layers) | layers[1] == "all") {layers = names(data)}
@@ -642,10 +707,20 @@ sanitiseNamesForRaster <- function(input){
 
 
 
-######################### TIME AVERAGE AN LPJ-GUESS FULL OUTPUT FILE COMING IN AS A data.table  ##############################
-
-.doTemporalAverage.uncompiled <- function(input.dt,
-                                          verbose = FALSE){
+######################### TIME AVERAGE A DATA.TABLE  ##############################
+#
+#' Time average a data.table
+#' 
+#' Time average all availables years (denoted by column "Years") or a data.table object
+#'
+#' @param input.dt data.table  
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A data.table
+#' @keywords internal
+#' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+doTemporalAverage.uncompiled <- function(input.dt,
+                                         verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
@@ -671,27 +746,52 @@ sanitiseNamesForRaster <- function(input){
   
 }
 
-.doTemporalAverage <- cmpfun(.doTemporalAverage.uncompiled)
+
+
+#' Time average a data.table
+#' 
+#' Time average all availables years (denoted by column "Years") of a data.table object.  This function does not select the years, that should be done first.
+#'
+#' @param input.dt data.table  
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A data.table
+#' @keywords export
+#' @import cmpfun compiler
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+doTemporalAverage <- cmpfun(doTemporalAverage.uncompiled)
 
 
 
 
-.selectYears <- function(input.dt, temporal.extent){
+.selectYears <- function(input, temporal.extent){
   
   # To stop compiler NOTES
   Year = NULL
   
   # return the subsetted data.table
-  return(subset(input.dt, Year >= temporal.extent@start & Year <= temporal.extent@end))    
+  return(subset(input, Year >= temporal.extent@start & Year <= temporal.extent@end))    
   
 }
 
 
-######################### SPACE AVERAGE AN LPJ-GUESS FULL OUTPUT FILE COMING IN AS A data.table  ##############################
-
-.doSpatialAverage.uncompiled <- function(input.dt,
-                                         verbose = FALSE,
-                                         area.weighted=TRUE){
+######################### SPATIALLY AVERAGE A DATA.TABLE  ##############################
+#
+#' Spatially average a data.table
+#' 
+#' Spatially average all gridcells (identified by "Lat" and "Lon" columns) of a data.table object. 
+#' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
+#'
+#'
+#' @param input.dt data.table  
+#' @param area.weighted If TRUE area-weight the gridcells
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A data.table
+#' @keywords internal
+#' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+doSpatialAverage.uncompiled <- function(input.dt,
+                                        verbose = FALSE,
+                                        area.weighted=TRUE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
@@ -732,11 +832,31 @@ sanitiseNamesForRaster <- function(input){
   
 }
 
-.doSpatialAverage <- cmpfun(.doSpatialAverage.uncompiled)
+#' Spatially average a data.table
+#' 
+#' Spatially average all gridcells (identified by "Lat" and "Lon" columns) of a data.table object. 
+#' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
+#'
+#'
+#' @param input.dt data.table  
+#' @param area.weighted If TRUE area-weight the gridcells
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A data.table
+#' @export
+#' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+doSpatialAverage <- cmpfun(doSpatialAverage.uncompiled)
 
 
-
-.LondonCentre <- function(lon) {
+#' London centre a gridcell
+#' 
+#' Transform a longitude value to lie in the range (-180,180) instead of (0,36)
+#'
+#' @param lon A longitude value to transform data.table  
+#' @return The transformed longitude value
+#' @keyword internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+LondonCentre <- function(lon) {
   
   if(lon <= 180) return(lon)
   else return(lon - 360)

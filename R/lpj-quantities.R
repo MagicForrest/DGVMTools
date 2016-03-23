@@ -23,19 +23,14 @@
 #####################################
 
 
+
+# Here define the the colours and limits
 veg.palette <- colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black"))
+lai.palette <- colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "khaki1", "yellowgreen", "forestgreen", "saddlebrown","black" )) #this is a function which returns a list of colours
+cmass.palette <- colorRampPalette(c("lemonchiffon","peru", "forestgreen", "dodgerblue4", "orchid4", "hotpink", "red4"))
+fire.palette  <- colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+difference.palette <- colorRampPalette(c("green", "blue", "white", "red", "yellow")) #this is a function which returns a list of colours
 
-
-
-#' Global scope list of all LPJ-GUESS (and SPITFIRE) quantities defined as \code{VegQuant} object 
-#' from the default LPJ-GUESS model config and a few extra.
-#'
-#' These quantities have sensible colour schemes, long names and cut ranges for standard global runs,
-#' but they will likely need to be modified and new ones aded for a specific analysis.
-#' Once the package is loaded this is just a standard R list so can be modified and extended as you wish.
-#' 
-#' @format A list of \code{VegQuant} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)
-lpj.quantities <- list()
 
 
 #' Function to get an LPJ-GUESS quantity based on a string
@@ -61,6 +56,18 @@ lookupVegQuantity <- function(quant.str, verbose = FALSE){
   return(this.quantity)
   
 }
+
+
+
+#' Global scope list of all LPJ-GUESS (and SPITFIRE) quantities defined as \code{VegQuant} object 
+#' from the default LPJ-GUESS model config and a few extra.
+#'
+#' These quantities have sensible colour schemes, long names and cut ranges for standard global runs,
+#' but they will likely need to be modified and new ones aded for a specific analysis.
+#' Once the package is loaded this is just a standard R list so can be modified and extended as you wish.
+#' 
+#' @format A list of \code{VegQuant} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)
+lpj.quantities <- list()
 
 
 
@@ -125,11 +132,6 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
 ##### LAI PER PFT (lai) #####
 #############################
 
-# Here define the the colours and limits
-
-lai.palette = colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "khaki1", "yellowgreen", "forestgreen", "saddlebrown","black" )) #this is a function which returns a list of colours
-lai.diff.palette = colorRampPalette(c("green", "blue", "white", "red", "yellow")) #this is a function which returns a list of colours
-
 
 quant.name <- "lai"
 
@@ -169,7 +171,7 @@ lpj.quantities[["lai.diff"]] <- new("VegQuant",
                                     full.string = "LAI Difference",
                                     type = "annual",
                                     units = "m^2/m^2",
-                                    colours = lai.diff.palette,
+                                    colours = difference.palette,
                                     cuts = seq(-1.5,1.5, 0.05)
 )
 
@@ -241,9 +243,6 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
 ##### CARBON MASS PER PFT (cmass) #####
 #######################################
 
-# Here define the the colours and limits
-cmass.palette = colorRampPalette(c("lemonchiffon","peru", "forestgreen", "dodgerblue4", "orchid4", "hotpink", "red4"))
-cmass.diff.palette = colorRampPalette(c("green","blue","white","red", "yellow")) #this is a function which returns a list of colours
 
 quant.name <- "cmass"
 
@@ -265,7 +264,7 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
                                              full.string = "Carbon Mass Difference",
                                              type = "PFT",
                                              units = "kgC/m^2",
-                                             colours = cmass.diff.palette,
+                                             colours = difference.palette,
                                              cuts = seq(-26,26,2)
 )
 
@@ -442,7 +441,7 @@ lpj.quantities[["anpp.diff"]] <- new("VegQuant",
                                      full.string = "Difference in Annual NPP", 
                                      type = "annual",
                                      units = "kgC/m^2",
-                                     colours = lai.diff.palette,
+                                     colours = difference.palette,
                                      cuts = seq(-0.05,0.05, 0.0005)
 )
 
@@ -599,11 +598,6 @@ lpj.quantities[["msnowpack"]] <- new("VegQuant",
 ##### FIRE RETURN INTERVAL (firert) #####
 #############################################
 
-firert.palette  = colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
-fireseason.palette  = colorRampPalette(rev(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3")))
-firert.cuts <- c(0,3,6,12,25,50,100,200,400,800,1000)
-
-
 
 quant.name <- "firert"
 
@@ -613,8 +607,8 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
                                              full.string = "Fire Return Interval", 
                                              type = "annual",
                                              units = "years",
-                                             colours = firert.palette,
-                                             cuts = firert.cuts
+                                             colours = fire.palette,
+                                             cuts = c(0,3,6,12,25,50,100,200,400,800,1000)
 )
 
 quant.name <- "fireseason"
@@ -625,7 +619,7 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
                                              full.string = "Fire Season Length", 
                                              type = "annual",
                                              units = "days",
-                                             colours = fireseason.palette,
+                                             colours = fire.palette,
                                              cuts = seq(0, 365, 5)
 )
 
@@ -637,7 +631,7 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
                                              full.string = "Fire Season Length", 
                                              type = "annual",
                                              units = "days",
-                                             colours = fireseason.palette,
+                                             colours = fire.palette,
                                              cuts = seq(0, 365, 5)
 )
 
@@ -651,7 +645,7 @@ lpj.quantities[[tolower(quant.name)]] <- new("VegQuant",
                                              full.string = "Annual Area Burned", 
                                              type = "annual",
                                              units = "fraction of gridcell",
-                                             colours = fireseason.palette,
+                                             colours = fire.palette,
                                              cuts = seq(0, 1.0, 0.01)
 )
 
@@ -755,18 +749,15 @@ lpj.quantities[["pyro_flux"]] <- new("VegQuant",
 ##########################
 
 
-mfireintens <- new("VegQuant",
-                   id = "mfireintens",
-                   short.string = "mFireIntensity",
-                   full.string = "Monthly Fire Intensity", 
-                   type = "monthly",
-                   units = "kW/m^2",
-                   colours = tim.colors,
-                   cuts = seq(0, 5000, 50)
+lpj.quantities[["mfireintens"]] <- new("VegQuant",
+                                                 id = "mfireintens",
+                                                 short.string = "mFireIntensity",
+                                                 full.string = "Monthly Fire Intensity", 
+                                                 type = "monthly",
+                                                 units = "kW/m^2",
+                                                 colours = tim.colors,
+                                                 cuts = seq(0, 5000, 50)
 )
-
-lpj.quantities[[tolower(mfireintens@id)]] <- mfireintens
-
 
 
 ##################################################

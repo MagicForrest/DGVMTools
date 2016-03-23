@@ -59,50 +59,13 @@ openLPJOutputFile <- function(run,
   else if(file.exists(paste(file.string, "gz", sep = "."))){
     if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
     dt <- fread(paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
-    
-    #     # BLARP: ugly fix because of ugly bug with readr and large gzipped files.  Maybe this can be removed some day
-    #     # if gzipped file is greater than 100 MB
-    #     if(file.info(file.string)$size/(1024*1024)){
-    #       system(paste("gunzip -c",  paste(file.string, "gz", sep = "."), ">", file.string, sep = " "))
-    #       gzip = TRUE
-    #     }
-    #     else {
-    #       file.string <- paste(file.string, "gz", sep = ".") 
-    #     }
-    
+
   }
   else {
     stop(paste("File (or gzipped file) not found:", file.string))
   }
   
-  #   # OLD WAY - deprecated by new fread which can handle whitspace.  Notice also the ugly BLARP above
-  #   # Use the quite fantastic readr package to read the LPJ-GUESS files which have fixed width formatting
-  #   # Read the column names
-  #   column.names <- unlist(read.table(file.string, nrows = 1, header = FALSE, sep ='', stringsAsFactors = FALSE))
-  #   # Get the widths, and note that we also gotta broaden the widths because the fwf_empty() function reliably detects the end of a field but not the beginning
-  #   widths <- fwf_empty(file.string, skip = 1, col_names = column.names)
-  #   widths$begin[1] <- 0
-  #   for(counter in 2:length(widths$begin)){
-  #     widths$begin[counter] <- widths$end[counter-1]+1
-  #   }
-  #   # Read the file and put it straight into a data.table
-  #   dt <- as.data.table(read_fwf(file.string, widths, skip = 1))
-  #   
-  ### OLD, OLD WAY!  Slower, also depends on awk, this is definitely deprecated by the 
-  ### Read using fread function from data.table but with the white spaces handled correctly using an awk command
-  ### at time of writing fread does not handles multiple whitespaces as separators
-  ### get the number of columns which is and read the file
-  #ncols <- length(names(read.table(file.string, header=TRUE, dec=".",  colClasses="numeric", comment.char="", nrows = 1)))
-  #dt <- awkFread(file.string, colNums = c(1:ncols), header=T)
-  
-  #   
-  #   # Gzip the file again if that was requested - ignore
-  #   if(gzip){
-  #     if(verbose) message(paste("Gzipping file ", file.string, " again", sep = ""))
-  #     system(paste("gzip",  file.string, sep = " "))
-  #   }
-  
-  
+
   #  Print messages
   if(verbose) {
     message("Read table. It has header:")
@@ -131,7 +94,7 @@ openLPJOutputFile <- function(run,
   }
   
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
-  if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = .LondonCentre)] }
+  if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   
   # set some attributes about the file - works!
   attr(dt, "shadeToleranceCombined") <- FALSE
