@@ -286,7 +286,7 @@ getVegObject <- function(run,
   
   
   
-  ### OPTION 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE VEGRUN IN MEMORY
+  ### CASE 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE VEGRUN IN MEMORY
   if(vegobject.id %in% names(run@objects)){
     
     # if it is present it in memory then can be returned directly
@@ -297,16 +297,16 @@ getVegObject <- function(run,
   
   
   
-  ### OPTION 2 - USE THE PREAVERAGED/CROPPED VEGOBJECT FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
+  ### CASE 2 - USE THE PREAVERAGED/CROPPED VEGOBJECT FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
   if(file.exists(paste(file.name)) & !reread.file){
     
     # get the object from disk
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     vegobject <- readRDS(file.name)
-     
+    
     # Check that the spatial extent matches before returning
     # Note that there are various cases to check here (the full spatial extent and specifically defined extents)
-      
+    
     if(is.null(spatial.extent) & vegobject@spatial.extent@id == "FullDomain"
        | identical(spatial.extent, vegobject@spatial.extent)){
       
@@ -321,14 +321,20 @@ getVegObject <- function(run,
     gc()
     
   }
-    
   
   
-    
-  ### OPTION 3 - IF THE WHOLE FILE HAS BEEN READ AND STORED IN MEMORY AS A VEGOBJECT, THEN TAKE THAT AND EXTRACT THE DATA.TABLE AND THEN AVERAGE IT BELOW
+  
+  ############################################################################################################  
+  #### NOTE: We don't pass this point if the correct pre-averaged data is available (on disk or in memory) ###
+  #### as we will have already returned in CASE 1 or CASE 2 above.                                         ###
+  ############################################################################################################
+  
+  
+  
+  ### CASE 3 - IF THE WHOLE FILE HAS BEEN READ AND STORED IN MEMORY AS A VEGOBJECT, THEN TAKE THAT AND EXTRACT THE DATA.TABLE AND THEN AVERAGE IT BELOW
   if(var.string %in% names(run@objects)){
     
-    if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
+    if(verbose) message(paste(var.string, " is already read, so using that internal copy.", sep = ""))
     this.dt <- run@objects[[var.string]]@data
     setKeyRVC(this.dt)
     
@@ -336,7 +342,7 @@ getVegObject <- function(run,
   
   
   
-  ### OPTION 4 - CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
+  ### CASE 4 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   else {
     
     ### !!! CALL MODEL SPECIFIC FUNTIONS HERE !!!
@@ -346,7 +352,7 @@ getVegObject <- function(run,
       if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
       
       this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
-  
+      
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
     
@@ -367,9 +373,25 @@ getVegObject <- function(run,
       
       # Unique Lons, Lats and Years to build the extent objects
       sorted.unique.lats = sorted.unique.lons = sorted.unique.years = NULL
-      if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
+      if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))}
       if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
       if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
+      
+      
+      # build the spatial extent depending on if it is a single site or not
+      # if it is a site
+      if(length(sorted.unique.lons) == 1 & length(sorted.unique.lats) == 1){
+        extent.temp <- c(sorted.unique.lons[1], sorted.unique.lats[1])
+        is.site <- TRUE
+        
+      }
+      else{
+        extent.temp =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
+                              sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
+                              sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
+                              sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
+        is.site <- FALSE
+      }
       
       # Build the full object
       vegobject.full <- new("VegObject",
@@ -379,16 +401,13 @@ getVegObject <- function(run,
                             spatial.extent = new("SpatialExtent",
                                                  id = "FullDomain",
                                                  name = "Full simulation extent",
-                                                 extent =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
-                                                                  sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
-                                                                  sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
-                                                                  sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))),
+                                                 extent =  extent.temp),
                             temporal.extent = new("TemporalExtent",
                                                   id = "FullTS",
                                                   name = "Full simulation duration",
                                                   start = sorted.unique.years[1],
                                                   end = sorted.unique.years[length(sorted.unique.years)]),
-                            is.site = FALSE,
+                            is.site = is.site,
                             is.spatially.averaged = FALSE,
                             is.temporally.averaged = FALSE,
                             run = as(run, "VegRunInfo"))
@@ -403,13 +422,15 @@ getVegObject <- function(run,
   ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
   if(!is.null(spatial.extent))  this.dt <- cropRVC(this.dt, spatial.extent)      
   if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
-
+  
   
   ### GET THE LONS, LATS AND YEAR AFTER CROPPING BUT BEFORE THEY ARE AVERAGED AWAY
+  is.site <- FALSE
   sorted.unique.lats = sorted.unique.lons = sorted.unique.years = NULL
   if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
   if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
   if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
+  if(length(sorted.unique.lons) == 1 & length(sorted.unique.lats) == 1) is.site <- TRUE
   
   
   ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
@@ -430,7 +451,7 @@ getVegObject <- function(run,
       print(head(this.dt))
     }
   }
-    
+  
   
   ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE FINAL VEGOBJECT TO RETURN
   
@@ -448,25 +469,29 @@ getVegObject <- function(run,
   # SPATIAL
   if(is.null(spatial.extent)) {
     
-    # Handle the case when a file has been spatially averaged over the domain, and so the initial domain is lost
-    # Note that is the domain was the whole simulation domain then this information is lost and the used is warned.
-    extent.temp <- NULL
-    if(!is.null(sorted.unique.lons) & !is.null(sorted.unique.lats)){
-      extent.temp <-  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
-                             sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
-                             sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
-                             sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
+    # If it is
+    if(is.site){
+      spatial.extent <- new("SpatialExtent",
+                            id = "Site",
+                            name = "Single site simulation",
+                            extent =  c(sorted.unique.lons[1], sorted.unique.lats[1]))
+      
+      if(verbose) message(paste("No spatial extent specified, but noting that this is a single site with coordinates = (",  sorted.unique.lons[1], ",", spatial.extent@extent@xmax, ")", sep = ""))
+   
     }
-    else {
-      warning(paste("Orginal extent unknown when reading spatially averaged file ", file.name, ".  If you want need to have this metadata, call getVegObject with reread.file = TRUE to read to whole file.", sep =""))
+    else  {
+      spatial.extent <- new("SpatialExtent",
+                           id = "FullDomain",
+                           name = "Full simulation extent",
+                           extent =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
+                                            sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
+                                            sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
+                                            sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2)))
+      
+      if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+    
     }
-    
-    spatial.extent <- new("SpatialExtent",
-                          id = "FullDomain",
-                          name = "Full simulation extent",
-                          extent =  extent.temp)
-    
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+
     
   }
   
@@ -477,7 +502,7 @@ getVegObject <- function(run,
                    quant = quant,
                    spatial.extent = spatial.extent,
                    temporal.extent = temporal.extent,
-                   is.site = FALSE,
+                   is.site = is.site,
                    is.spatially.averaged = spatially.average,
                    is.temporally.averaged = temporally.average,
                    run = as(run, "VegRunInfo"))
@@ -695,7 +720,7 @@ makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.to
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 doTemporalAverage.uncompiled <- function(input.dt,
-                                          verbose = FALSE){
+                                         verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
@@ -765,8 +790,8 @@ doTemporalAverage <- cmpfun(doTemporalAverage.uncompiled)
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 doSpatialAverage.uncompiled <- function(input.dt,
-                                         verbose = FALSE,
-                                         area.weighted=TRUE){
+                                        verbose = FALSE,
+                                        area.weighted=TRUE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function

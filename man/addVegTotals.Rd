@@ -28,12 +28,12 @@ In this case, the function uses the default of the VegQuant object of the VegObj
 For example, per-PFT variables (such as lai or cmass) should typically be summed, 
 but monthly variables (such as soil water content) should be average to calculate the seasonal means.
 
-#' For convenience, both \code{targets}  will be expanded using \code{expandTargets}.
+For convenience, both \code{targets}  will be expanded using \code{expandTargets}.
 This allows all lifeforms totals in a VegObject to be calculated using a simple call such as
 
  \code{veg.obj <- addVegTotals(veg.obj, c("lifeforms"))}
  
-See documention of \code{expandTargets} for details
+See documention of \code{expandTargets} for details.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

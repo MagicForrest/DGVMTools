@@ -28,7 +28,7 @@ This allows all lifeforms fractions in a VegObject to be calculated using a simp
 
  \code{veg.obj <- addVegFractions(veg.obj, c("lifeforms")}
  
-See documention of \code{expandTargets} for details
+See documention of \code{expandTargets} for details.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

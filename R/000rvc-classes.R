@@ -62,7 +62,7 @@ setClass("TemporalExtent",
 setClass("SpatialExtent",
          slots = c(id = "character",
                    name = "character",
-                   extent = "Extent"
+                   extent = "ANY"
          ),
          prototype= c(id = "Global",
                       name = "Global",
