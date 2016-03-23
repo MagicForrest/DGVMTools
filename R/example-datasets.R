@@ -19,10 +19,10 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
     # divide Lon and Lat by 10, offset and London centre
     PNV.dt[,Lon := (Lon/10) + 0.25]
     PNV.dt[,Lat := (Lat/10) + 0.25]
-    PNV.dt[, Lon := vapply(PNV.dt[,Lon], 1, FUN = .LondonCentre)]    
+    PNV.dt[, Lon := vapply(PNV.dt[,Lon], 1, FUN = LondonCentre)]    
     
     # Make into a raster
-    PNV.spdf <- .makeSPDFfromDT(PNV.dt, tolerance = 0.00001)
+    PNV.spdf <- makeSPDFfromDT(PNV.dt, tolerance = 0.00001)
     PNV.raster <- raster(PNV.spdf, "Biome")
   }
   # Return half degree data from netCDF file (probably slightly faster)

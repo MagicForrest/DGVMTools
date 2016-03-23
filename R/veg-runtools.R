@@ -32,7 +32,7 @@
 #'  including if it was created by avergaing another data.table because it seems as keys are not conserved.
 #'
 #' @param dt The data.table for which to set the key
-#' @return Nothing - changes the original data.table by reference (this is the data.table way)
+#' @return Returns nothing because changes the original data.table by reference (this is the data.table way)
 #' @import data.table
 setKeyRVC <- function(dt){
   
@@ -218,7 +218,7 @@ getVegTemporal <- function(run,
 
 
 ################################# GET VEGOBJECT - Does a lot! #########################################
-
+#
 #' Get a \code{VegObject}, optionally for spatial/temporal averaging/cropping 
 #' 
 #' Given a \code{VegRun} object a \code{VegQuant} object, return an appropriate spatially-averaged \code{VegObject} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
@@ -242,6 +242,7 @@ getVegTemporal <- function(run,
 #' 
 #' @return A spatially averaged\code{VegObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
 #' @export
+#' @import data.table raster
 #' @seealso \code{getVegObject}, \code{getVegspatial}
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -357,6 +358,8 @@ getVegObject <- function(run,
       
     } # END IF aDGVM
     
+    ### !!! END CALL MODEL SPECIFIC FUNCTIONS !!!
+    
     
     ### STORE THE FULL MODEL OUTPUT AS AN UNAVERAGED VEGOBJECT IF REQUESTED
     # Note we gotta do this now before the cropping and averaging below
@@ -411,7 +414,7 @@ getVegObject <- function(run,
   
   ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(spatially.average){
-    this.dt <- .doSpatialAverage(this.dt, verbose, area.weighted)
+    this.dt <- doSpatialAverage(this.dt, verbose, area.weighted)
     if(verbose) {
       message("Head of spatially averaged data.table:")
       print(head(this.dt))
@@ -421,7 +424,7 @@ getVegObject <- function(run,
   
   ###  DO TIME AVERAGE
   if(temporally.average){
-    this.dt <- .doTemporalAverage(this.dt, verbose)
+    this.dt <- doTemporalAverage(this.dt, verbose)
     if(verbose) {
       message("Head of time averaged data.table:")
       print(head(this.dt))
@@ -495,8 +498,22 @@ getVegObject <- function(run,
 }
 
 
-
-
+################################# PROMOTE TO RASTER
+#
+#' Prepares data as a raster object for plotting.
+#' 
+#' Converts a data.table, VegObject or an Spatial*-object to Raster object, also subsetting the requested layers.  
+#' It can also handle a RasterLayber/Stack/Brick, in which case the only processing done is the subsetting since the data is already in Raster form.
+#' This is generally called in the \code{plotVegMaps} function (or potentially before any use of the raster::spplot and raster::plot functions),
+#' but can be useful in and of itself.
+#'   
+#' @param data data.table, VegObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
+#' @param layers The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.
+#' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats,  when converting gridded table to a raster, in the case the the gridded data is not commatters for uneven
+#' @param grid.topology A character string defining the grid topology when going from a table to raster, used in a call to SpatialPixels 
+#' @return A RasterLayer (or RasterBrick)
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
   
   ###  Get class of the objetc we are dealing with
@@ -517,8 +534,8 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   ### If data.table or VegObject (which contains a data.table) 
   # could make this a little bit more efficient maybe...
   else if(this.class == "data.table" | is.VegObject(data)){
-    if(this.class == "data.table") data.spdf <- .makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
-    if(is.VegObject(data)) data.spdf <- .makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
+    if(this.class == "data.table") data.spdf <- makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
+    if(is.VegObject(data)) data.spdf <- makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
     if(length(layers) == 1){
       data.raster <- raster(data.spdf)
       rm(data.spdf)
@@ -549,7 +566,18 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   
 }
 
-
+################################# SANITIZE NAMES FOR RASTER LAYESR
+#
+#' Make names appropriate for raster layers 
+#' 
+#' This "sanaitises" names of an object for use as Raster*-object laey names.  This just involves replacing "-" with "." in the names of the object or the character strings.
+#'       
+#' @param input A data.table, VegObject, Spatial*-object or vector of characters string to have the names (or itself in the case of a character string) 
+#' sanitised to be suitable for use as Raster*object layer names. Also takes a Raster*-object, but this is return directly.
+#' @return An object of the same type as was put in.
+#' @export
+#' @import data.table sp raster
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 sanitiseNamesForRaster <- function(input){
   
   ###  Get class of the object we are dealing with
@@ -601,13 +629,25 @@ sanitiseNamesForRaster <- function(input){
 ########### HELPER FUNCTIONS
 
 
-# Helper function to make a SpatialPixelsDateFrame from a data.table object
-# It is assumed that data.table has columns Lon and Lat to provide the spatial information
-.makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
+################################# MAKE SPATIALPIXELSDATAFRAME FROM DATA.FRAME OR DATA.TABLE
+#
+#' Make SpatialPixelDataFrame from a data.table
+#' 
+#' Converts a data.table (or data.frame) to a SpatialPixelsDataFrame, using the columns "Lon and "Lat" to provide the spatial information.  
+#' Mostly is called by \code{promoteToRaster}, but can be useful in and of itself.
+#'
+#' @param data data.table or data.frame, with columsn "Lon" and "Lat" which specify the spatial data 
+#' @param layers The columns to be selected included in the final SpatialPixelsDataFrame object.  Use NULL or "all" if all layers are required.
+#' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats
+#' @param grid.topology A character string defining the grid topology for the SpatialPixelsDataFrame object
+#' @return A SpatialPixelDataFrame
+#' @export
+#' @import data.table sp
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
   
   # to stop complaints at build time
-  Lon <- NULL
-  Lat <- NULL
+  Lon = Lat = NULL
   
   # sort the layers
   if(is.null(layers) | layers[1] == "all") {layers = names(data)}
@@ -642,9 +682,19 @@ sanitiseNamesForRaster <- function(input){
 
 
 
-######################### TIME AVERAGE AN LPJ-GUESS FULL OUTPUT FILE COMING IN AS A data.table  ##############################
-
-.doTemporalAverage.uncompiled <- function(input.dt,
+######################### TIME AVERAGE A DATA.TABLE  ##############################
+#
+#' Time average a data.table
+#' 
+#' Time average all availables years (denoted by column "Years") or a data.table object
+#'
+#' @param input.dt data.table  
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A data.table
+#' @keywords internal
+#' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+doTemporalAverage.uncompiled <- function(input.dt,
                                           verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
@@ -671,25 +721,50 @@ sanitiseNamesForRaster <- function(input){
   
 }
 
-.doTemporalAverage <- cmpfun(.doTemporalAverage.uncompiled)
+
+
+#' Time average a data.table
+#' 
+#' Time average all availables years (denoted by column "Years") of a data.table object.  This function does not select the years, that should be done first.
+#'
+#' @param input.dt data.table  
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A data.table
+#' @keywords export
+#' @import cmpfun compiler
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+doTemporalAverage <- cmpfun(doTemporalAverage.uncompiled)
 
 
 
 
-.selectYears <- function(input.dt, temporal.extent){
+.selectYears <- function(input, temporal.extent){
   
   # To stop compiler NOTES
   Year = NULL
   
   # return the subsetted data.table
-  return(subset(input.dt, Year >= temporal.extent@start & Year <= temporal.extent@end))    
+  return(subset(input, Year >= temporal.extent@start & Year <= temporal.extent@end))    
   
 }
 
 
-######################### SPACE AVERAGE AN LPJ-GUESS FULL OUTPUT FILE COMING IN AS A data.table  ##############################
-
-.doSpatialAverage.uncompiled <- function(input.dt,
+######################### SPATIALLY AVERAGE A DATA.TABLE  ##############################
+#
+#' Spatially average a data.table
+#' 
+#' Spatially average all gridcells (identified by "Lat" and "Lon" columns) of a data.table object. 
+#' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
+#'
+#'
+#' @param input.dt data.table  
+#' @param area.weighted If TRUE area-weight the gridcells
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A data.table
+#' @keywords internal
+#' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+doSpatialAverage.uncompiled <- function(input.dt,
                                          verbose = FALSE,
                                          area.weighted=TRUE){
   
@@ -732,11 +807,31 @@ sanitiseNamesForRaster <- function(input){
   
 }
 
-.doSpatialAverage <- cmpfun(.doSpatialAverage.uncompiled)
+#' Spatially average a data.table
+#' 
+#' Spatially average all gridcells (identified by "Lat" and "Lon" columns) of a data.table object. 
+#' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
+#'
+#'
+#' @param input.dt data.table  
+#' @param area.weighted If TRUE area-weight the gridcells
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A data.table
+#' @export
+#' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+doSpatialAverage <- cmpfun(doSpatialAverage.uncompiled)
 
 
-
-.LondonCentre <- function(lon) {
+#' London centre a gridcell
+#' 
+#' Transform a longitude value to lie in the range (-180,180) instead of (0,36)
+#'
+#' @param lon A longitude value to transform data.table  
+#' @return The transformed longitude value
+#' @keyword internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+LondonCentre <- function(lon) {
   
   if(lon <= 180) return(lon)
   else return(lon - 360)

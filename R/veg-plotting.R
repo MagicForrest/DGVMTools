@@ -125,7 +125,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else targets <- names(data)
   }
   if(expand.targets) {
-    targets <- expandTargets(targets, data, PFT.set)
+    targets <- expandTargets(targets, getPFTs(data, PFT.set))
     if(!is.null(special)){
       if(tolower(special) == "fraction" | tolower(special) == "frac") targets <- paste(targets, "Fraction", sep = sep.char)
     }
@@ -715,7 +715,7 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   
   
   # CONVERT TO SPDF FOR PLOTTING (PLOTTING FACTORS VIA RASTER IS ANNOYING)
-  data.toplot <- .makeSPDFfromDT(data@data, layers = which.dominant, tolerance = run@tolerance)
+  data.toplot <- makeSPDFfromDT(data@data, layers = which.dominant, tolerance = run@tolerance)
   
   # COLORLIST
   dom.PFT.colourlist <- vector()

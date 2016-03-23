@@ -94,7 +94,7 @@ openLPJOutputFile <- function(run,
   }
   
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
-  if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = .LondonCentre)] }
+  if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   
   # set some attributes about the file - works!
   attr(dt, "shadeToleranceCombined") <- FALSE

@@ -24,18 +24,29 @@
 
 
 
-###################################################################################
-######  GLOBAL VARIABLES
-
+########### SEPARATION CHARACTER
 # I am not sure if I prefer to use " ", "", "_" or "." when constructing variable names such as "EvergreenFractionofTree"
 # but here is an easy way to choose.
+
+#' Separation character for builidng variables names
+#' 
+#' Currently hard-coded to "", but could also be " ", "_" or "." (for example)
+#' This should clearly be implemented in a more useful way...
 sep.char = ""
 
 
 
-###################################################################################
-##### EXTRACT THE PFTS PRESENT IN A RUN USING THE DATA.TABLE HEADER
-
+############# EXTRACT THE PFTS PRESENT IN A RUN USING THE DATA.TABLE HEADER
+#' Get the PFTs present in a run
+#' 
+#' Extract the PFTs present in some data, given the set of possible PFTs.  The data can be represented as a data.table, VegObject, or Raster*-object.  The 
+#' It does thsi based on the names of the layers/columns of the data 
+#' @param input The data from which to retrieve the PFTs present (data.table, VegObject, or Raster*-object)
+#' @param PFT.data A list of PFTs which might be present (ie. a superset of those actually present)
+#' @return A list of PFT object which are actually present 
+#' @export
+#' @import data.table raster
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 getPFTs <- function(input, PFT.data){
   
   # Allow for rasters, Veg Objects and data.tables
@@ -57,17 +68,38 @@ getPFTs <- function(input, PFT.data){
   
 }
 
-
-
-expandTargets <- function(targets, data, PFT.data, include.woody = TRUE){
+############# EXPAND TARGETS
+#'
+#' Expand plotting/processing targets from convenient short hand codes.
+#' 
+#' Expands characters strings with particular meaning (eg. "lifefoms", "pfts", "seasons", etc...).  
+#' This allows the user to simply specify "lifeforms" to a plotting command instead of c("Tree","Grass","Shrub") when plotting or processing.
+#'
+#' @details Supported short-hand strings are:
+#' \itemize{
+#'   \item{"seasons"}{ expands to c("DJF","MAM","JJA","SON")}
+#'   \item{"PFTs"}{ expands to a vector of each of the ids of PFTs supplied in the \code{PFTs} argument.}
+#'   \item{"lifeforms"}{ expands all the different PFT lifeforms present as determined by the lifeform slots of the \code{PFTs} argument (and optionally "Woody").  For example c("Tree", "Grass", "Woody")}
+#'   \item{"zones"}{ expands all the different PFT climactic zones present as determined by the zone slots of the \code{PFTs} argument.  For example c("Temperature", "Boreal", "Tropical")}
+#'   \item{"leafforms"}{ expands all the different PFT leaf forms present as determined by the leafforms slot of the \code{PFTs} argument.  For example c("Needleleved", "Broadleaved")}
+#'   \item{"phenologies"}{ expands all the different PFT leaf forms present as determined by the phenology slot of the \code{PFTs} argument.  For example c("Evergreen", "Summergreen", "Raingreen", "GrassPhenology)}
+#'   \item{"all"}{ expands to c("pfts", "lifeforms", "leafforms", "zones", "phenologies"), and then these are further expanded.}
+#' }
+#' 
+#' 
+#' @param targets Character vector of targets to expand
+#' @param PFTs List of all PFTs present (can be determined beforehand with a call to \code{getPFTs})
+#' @param include.woody If TRUE and "lifeform" is included in the target list "Woody" is also returned
+#' @return A list of targets
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+expandTargets <- function(targets, PFTs, include.woody = TRUE){
   
   # remove "Lon", "Lat" and "Year" if present
   for(remove.header.from.header in c("Lat", "Lon", "Year")){
     if(remove.header.from.header %in% targets) targets <- targets[-which(targets == remove.header.from.header)]
   }
   
-  # get PFTs
-  all.PFTs <- getPFTs(data, PFT.data)
   
   # expand "all"
   if("all" %in% tolower(targets)) targets <- c("pfts", "lifeforms", "leafforms", "zones", "phenologies")
@@ -75,7 +107,7 @@ expandTargets <- function(targets, data, PFT.data, include.woody = TRUE){
   # expands "pfts"
   
   if("pft" %in% tolower(targets) || "pfts" %in% tolower(targets)) {
-    for(PFT in all.PFTs) {
+    for(PFT in PFTs) {
       targets <- append(targets, PFT@id)
     }
     
@@ -89,7 +121,7 @@ expandTargets <- function(targets, data, PFT.data, include.woody = TRUE){
     
     # Find all lifeforms present in PFTs 
     all.lifeforms <- vector()
-    for(PFT in all.PFTs) {all.lifeforms <- append(all.lifeforms, PFT@lifeform)}
+    for(PFT in PFTs) {all.lifeforms <- append(all.lifeforms, PFT@lifeform)}
     all.lifeforms <- unique(all.lifeforms)
     # MF: Special case to combine Trees and Shrubs inoo Woody category
     if(include.woody) all.lifeforms <- append(all.lifeforms, "Woody")
@@ -107,7 +139,7 @@ expandTargets <- function(targets, data, PFT.data, include.woody = TRUE){
     
     # Find all zones present in PFTs 
     all.zones <- vector()
-    for(PFT in all.PFTs) {all.zones <- append(all.zones, PFT@zone)}
+    for(PFT in PFTs) {all.zones <- append(all.zones, PFT@zone)}
     all.zones <- unique(all.zones)
     
     targets <- append(targets, all.zones)
@@ -122,7 +154,7 @@ expandTargets <- function(targets, data, PFT.data, include.woody = TRUE){
     
     # Find all leafforms present in PFTs 
     all.leafforms <- vector()
-    for(PFT in all.PFTs) {all.leafforms <- append(all.leafforms, PFT@leafform)}
+    for(PFT in PFTs) {all.leafforms <- append(all.leafforms, PFT@leafform)}
     all.leafforms <- unique(all.leafforms)
     
     targets <- append(targets, all.leafforms)
@@ -137,7 +169,7 @@ expandTargets <- function(targets, data, PFT.data, include.woody = TRUE){
     
     # Find all phenologys present in PFTs 
     all.phenologies <- vector()
-    for(PFT in all.PFTs) {all.phenologies <- append(all.phenologies, PFT@phenology)}
+    for(PFT in PFTs) {all.phenologies <- append(all.phenologies, PFT@phenology)}
     all.phenologies <- unique(all.phenologies)
     #if("NA" in all.phenologies) all.phenologies <- all.phenologies[-which(tolower(all.phenologies) == "NA")]
     
@@ -174,8 +206,16 @@ expandTargets <- function(targets, data, PFT.data, include.woody = TRUE){
 ###################################################################################
 ##### COMBINE SHADE-INTOLERANT PFTS WITH SHADE-TOLERANT PFTS FOR FINDING DOMINANT PFT
 ##### AND DOING BIOME CLASSIFICATIONS ETC
-
-
+#'
+#' Combine shade-intolerant PFTs with their shade-tolerant cousions
+#' 
+#' The effects of this depend on the shade-tolerant cousin PFTs being defined in the PFT list.
+#' 
+#' 
+#' @param input The VegObject which is to have the shade tolerance classes combined.
+#' @return A VegObject with the data for the shade-intolerant PFTs set to zero but their values added to the shade-tolerant versions
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 combineShadeTolerance <- function(input){
   
   # We get a warning about a shallow copy here, suppress it
@@ -214,9 +254,19 @@ combineShadeTolerance <- function(input){
 ##### FIND THE DOMINANT PFT (OF TOTAL AND/OR TREE AND/OR WOODY)
 ##### Notes: Could make this nicer using a list of inputs ("Total", "Tree", "Woody") that can be looped over
 ##### TODO   Low priority
-
-
-
+#'
+#' Find dominant PFT
+#' 
+#' Find the dominant PFT (for each point in space and/or time) and stored in the VegObject.  Can be of all PFTs, of all tree PFTs and/or of all woody PFTs 
+#' The resulting layers are called "Dominant", "DominantTree" and "DominantWoody" respectively.
+#' 
+#' @param input The VegObject which is to have the shade tolerance classes combined.
+#' @param do.all If TRUE calculate the dominant PFT out of all PFTs
+#' @param do.tree If TRUE calculate the dominant PFT out of all tree PFTs
+#' @param do.woody If TRUE calculate teh dominant PFT out of all woody PFTs
+#' @return The VegObject with the dominant layers PFTs added
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FALSE){
   
   # To avoid NOTES when checking
@@ -276,11 +326,22 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
 
 
 ###################################################################################################
-######### BIOME CLASSIFICATION  ###################################################################
-###################################################################################################
-
-
-addBiomes <-function(input, scheme = Smith2014.scheme){
+######### BIOME CLASSIFICATION
+#'
+#' Perform biome classification using this VegObject
+#' 
+#' This is very inflexible as it only allows the calcualtion of biomes with only one VegQuant.  This is not suitable for many biomes schemes, 
+#' so this will need to be re-written
+#' 
+#' 
+#' @param input The VegObject for which to calculate the biomes.
+#' @param scheme The biome scheme to use.
+#' @return A VegObject with the biomes added
+#' @export
+#' @import data.table
+#' @seealso BiomeScheme-class
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+addBiomes <-function(input, scheme){
   
   message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
   
@@ -324,7 +385,35 @@ addBiomes <-function(input, scheme = Smith2014.scheme){
 
 ###################################################################################
 ##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, SEASONAL ETC...)
-
+#'
+#' Combine layers of a VegObject (or a data.table)
+#' 
+#' This is very useful and important function.  It doesn't actually only do totals as suggested by the name, rather it aggregates different layers 
+#' of a VegObject according the the desired method (or a sensible default)
+#' 
+#' @param input The VegObject for which to aggregate layers.
+#' @param targets The new layers to produce
+#' @param method The method to use to aggregate the layers ie. "mean" or "sum".  However, the most sensible option is leave it unspecified and use the default (see below)
+#' @param PFT.data If calling the function on a data.table, it is neccessary to specify a PFT set here.  Normally this function will be called on  VegObject so it is not neccessary. 
+#'
+#' @details
+#' Whilst the \code{method} arguement can be specified for maximum flexibility, the recommended usage is not specify this arguement.
+#' In this case, the function uses the default of the VegQuant object of the VegObject, which should be the sensible option.  
+#' For example, per-PFT variables (such as lai or cmass) should typically be summed, 
+#' but monthly variables (such as soil water content) should be average to calculate the seasonal means.
+#' 
+#' For convenience, both \code{targets}  will be expanded using \code{expandTargets}.
+#' This allows all lifeforms totals in a VegObject to be calculated using a simple call such as
+#' 
+#'  \code{veg.obj <- addVegTotals(veg.obj, c("lifeforms"))}
+#'  
+#' See documention of \code{expandTargets} for details.
+#' 
+#' @return A VegObject (or data.table) with the new layers added
+#' @import data.table
+#' @export
+#' @seealso expandsTargets getVegFractions
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
   
   Woody <- NULL
@@ -375,7 +464,7 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
   all.PFTs <- getPFTs(dt, PFT.data)
   
   # expands targets
-  targets <- expandTargets(targets, dt, PFT.data)
+  targets <- expandTargets(targets, all.PFTs)
   
   # remove PFTs from targets since PFTs are already present as totals
   for(PFT in all.PFTs){ if(PFT@id %in% targets) targets <- targets[-which(targets == PFT@id)]}
@@ -431,24 +520,47 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
 
 
 
-
-
-
 ###################################################################################
 ##### MAKE PFT, LIFEFORM, PHENOLOGY ETC FRACTIONS
 # TODO:  Maybe take a look at the horrible "eval(quote(paste(" syntax below
+#'
+#' Calculate fractions from the layers of a VegObject with respect to other layers
+#' 
+#' This is very useful and important function.  It is fully flexible  -both the numerator and denominator can be specified (although the denominator defaults to "Total").
+#' Note that if a layer doesn't exist it will be created if possible.
+#' 
+#' @param input The VegObject for which to calculate the new fractional layers
+#' @param targets The layers to be divided (will be calculated by \code{getVegTotals} if the don't exist)
+#' @param denominators The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")
+#'
+#' @details
+#' Division is safe with respect to a zero denominator, the results of dividing by zero is, in this case, zero.
+#' 
+#' For convenience, both \code{targets} and \code{denominators} will be expanded using \code{expandTargets}.
+#' This allows all lifeforms fractions in a VegObject to be calculated using a simple call such as
+#' 
+#'  \code{veg.obj <- addVegFractions(veg.obj, c("lifeforms")}
+#'  
+#' See documention of \code{expandTargets} for details. 
+#' 
+#' @return A VegObject (or data.table) with the new layers added
+#' @import data.table
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @seealso expandsTargets getVegTotals
 
-addVegFractions <- function(input, targets = list("pfts", "lifeforms"), denominators = list("Total")){
+addVegFractions <- function(input, targets, denominators = list("Total")){
   
   # To avoid NOTES
-  Total = 
+  Total = NULL
   
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
   PFT.data <- input@run@pft.set
+  PFTs <- getPFTs(dt, input@run@pft.set)
   
   # First, expand denominator targets and make what aren't available
-  denominators <- expandTargets(denominators, dt, PFT.data)
+  denominators <- expandTargets(denominators, PFTs)
   for(denom in denominators) {
     if(!(denom %in% names(dt))) {
       dt <- addVegTotals(dt, denom, PFT.data)
@@ -457,7 +569,7 @@ addVegFractions <- function(input, targets = list("pfts", "lifeforms"), denomina
   
   
   # Second, expand numerator targets and make what aren't available
-  targets <- expandTargets(targets, dt, PFT.data)
+  targets <- expandTargets(targets, PFTs)
   for(target in targets) {
     if(!(target %in% names(dt))) {
       dt <- addVegTotals(dt, target, PFT.data)
@@ -482,48 +594,5 @@ addVegFractions <- function(input, targets = list("pfts", "lifeforms"), denomina
   return(input)
   
 }
-
-
-
-
-
-###########################################################################################
-######################### SEASONAL AVERAGES/AGGREGATES
-
-
-addSeasonal <- function(input, seasons = c("DJF", "MAM", "JJA", "SON", "Annual"), method = NULL, verbose = FALSE){
-  
-  # We get a warning about a shallow copy here, suppress it
-  suppressWarnings(dt <- input@data)
-  
-  
-  # check the input method
-  if(is.null(method)) method <- input@quant@aggregate.method
-  if(tolower(method) == "average" | tolower(method) == "avg" | tolower(method) == "mean"){
-    if(verbose) message("Adding seasonal means")
-  }
-  else if(tolower(method) == "sum"| tolower(method) == "total"){
-    if(verbose) message("Adding seasonal averages")
-  }
-  else {
-    message(paste("In addSeasonal() not sure how to deal with ", method, ", calculating mean instead!", sep = ""))
-    method = "mean"
-  }  
-  
-  
-  
-  # for each season
-  for(season.str in seasons){
-    season.obj <- all.periods[[season.str]]
-    total.str <- quote(paste(season.str, sep = ""))
-    suppressWarnings(dt[, eval(total.str) := rowSums(.SD), .SDcols = season.obj@contains])
-    if(method == "average" || method == "mean" || method == "avg") dt[, eval(total.str) := get(eval(total.str)) / length(season.obj@contains)]
-  } 
-  
-  input@data <- dt
-  
-  return(input)
-}
-
 
 

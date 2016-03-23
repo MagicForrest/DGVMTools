@@ -482,7 +482,7 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target,  expand.target
     temp.spatial <- run@objects[[veg.spatial.id]]
     
     # expand the target if necessary
-    if(expand.target){ target <- expandTargets(targets = target, data = temp.spatial, run@pft.set)  }
+    if(expand.target){ target <- expandTargets(targets = target, getPFTs(temp.spatial, run@pft.set))  }
     
     # Extract the columns that we need and add them to the data.table and set the names appropriately
     comparison.dt <- comparison.dt[temp.spatial@data[,c("Lon","Lat",target),with=FALSE]]
