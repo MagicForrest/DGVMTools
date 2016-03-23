@@ -38,5 +38,4 @@ License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/joergsteinkamp/RVCTools/issues
 NeedsCompilation: no
-LazyData: true
 RoxygenNote: 5.0.1
