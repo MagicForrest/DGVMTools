@@ -18,4 +18,5 @@ Transform a longitude value to lie in the range (-180,180) instead of (0,36)
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
+\keyword{internal}
 

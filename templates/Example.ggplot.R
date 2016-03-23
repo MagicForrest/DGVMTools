@@ -260,7 +260,9 @@ MoMo1 <- defineVegRun(run.dir = "/data/WIP/MoMo/output/Hyytiala/miroc-esm-chem/r
                       map.overlay = "",
                       lonlat.offset = c(0,0),
                       year.offset = 0)
-MoMo1@objects[['height']] <- getVegTemporal(MoMo1, 'height', spatial.extent=Hyy, area.weighted=FALSE)
+MoMo1@objects[['height']] <- getVegObject(MoMo1, 'height')
+
+MoMo1@objects[['height']]@data
 
 hgt.quant <- new("VegQuant",
                 id="height",

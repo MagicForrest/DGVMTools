@@ -854,7 +854,7 @@ doSpatialAverage <- cmpfun(doSpatialAverage.uncompiled)
 #'
 #' @param lon A longitude value to transform data.table  
 #' @return The transformed longitude value
-#' @keyword internal
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 LondonCentre <- function(lon) {
   
