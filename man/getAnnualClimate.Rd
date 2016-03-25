@@ -6,8 +6,9 @@
 \usage{
 getAnnualClimate(run = NA, file = NA, operation = "mean",
   temporal.extent = NA, spatial.extent = NA, full = FALSE,
-  data.name = NA, lon.name = NA, lat.name = NA, time.name = NA,
-  forceReCalculation = FALSE, write = TRUE, verbose = TRUE, ...)
+  monthly = FALSE, data.name = NA, lon.name = NA, lat.name = NA,
+  time.name = NA, reread.file = FALSE, write = TRUE, verbose = TRUE,
+  ...)
 }
 \arguments{
 \item{run}{a VegRun object, if a VegSpatial object should be returned, otherwise NA}
@@ -20,7 +21,9 @@ getAnnualClimate(run = NA, file = NA, operation = "mean",
 
 \item{spatial.extent}{Either a SpatialExtent object of a raster extent}
 
-\item{full}{should the full annual dataset be returned or an multiannual average (default).}
+\item{full}{should the full dataset be returned or an multiannual average (default).}
+
+\item{monthly}{logical, if monthly instead of annual values should be returned}
 
 \item{data.name}{Name of the data field in the netcdf file, if NA it will be guessed}
 
@@ -30,13 +33,15 @@ getAnnualClimate(run = NA, file = NA, operation = "mean",
 
 \item{time.name}{Name of the time vector in the netcdf file, if NA it will be guessed}
 
-\item{forceReCalculation}{Recalculate the desired values (default: FALSE)}
+\item{reread.file}{Recalculate the desired values (default: FALSE)}
 
 \item{write}{write the calculated values for fture speedup (default: TRUE)}
 
 \item{verbose}{print some messages}
 
 \item{...}{further so far ignored parameters}
+
+\item{monthly}{logical, if monthly instead of annual values should be returned}
 }
 \value{
 data.table if no VegRun was given, otherwise a VegObject

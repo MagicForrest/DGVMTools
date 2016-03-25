@@ -80,12 +80,14 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @param operation Any of sum, mean, gdd5
 #' @param temporal.extent Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)
 #' @param spatial.extent Either a SpatialExtent object of a raster extent
-#' @param full should the full annual dataset be returned or an multiannual average (default).
+#' @param full should the full dataset be returned or an multiannual average (default).
+#' @param monthly logical, if monthly instead of annual values should be returned
 #' @param data.name Name of the data field in the netcdf file, if NA it will be guessed
 #' @param lon.name Name of the longitude vector in the netcdf file, if NA it will be guessed
 #' @param lat.name Name of the latitude vector in the netcdf file, if NA it will be guessed
 #' @param time.name Name of the time vector in the netcdf file, if NA it will be guessed
-#' @param forceReCalculation Recalculate the desired values (default: FALSE)
+#' @param monthly logical, if monthly instead of annual values should be returned
+#' @param reread.file Recalculate the desired values (default: FALSE)
 #' @param write write the calculated values for fture speedup (default: TRUE)
 #' @param verbose print some messages
 #' @param ... further so far ignored parameters
@@ -94,7 +96,7 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @import RNetCDF
 #' @export
 #' @examples message("See templates/Example.ggplot.R")
-getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, forceReCalculation=FALSE, write=TRUE, verbose=TRUE, ...) {
+getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, monthly=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, reread.file=FALSE, write=TRUE, verbose=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lon = Lat = Year = variable = value = NULL
   suppressWarnings(if (!is.na(temporal.extent)) {
@@ -328,21 +330,32 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
         setkey(dt.tmp, Lon, Lat)
       }
 
-      if (att.get.nc(ncin, data.name, "units")=="K" && operation=="gdd5") 
-        dt.tmp[ ,(sdcols) := lapply(.SD, function(x){x -273.15 }), .SDcols=sdcols]
-      if (operation=="gdd5") {
-        dt.tmp[ ,(sdcols) := lapply(.SD, function(x){ifelse(x<5, 0, x) }), .SDcols=sdcols]
-        eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowSums(.SD), .SDcols=sdcols]", sep="")))
-      } else if (operation=="mean") {
-        eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowMeans(.SD), .SDcols=sdcols]", sep="")))
-      } else if (operation=="sum") {
-        eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowSums(.SD), .SDcols=sdcols]", sep=""))) 
+      dt.tmp <- melt(dt.tmp, id.vars=c("Lon", "Lat"))
+      dt.tmp[, Date:=as.Date(paste(y, "-01-01", sep="")) + as.numeric(substring(variable,2)) - 1, ]
+      
+      if (monthly) {
+        dt.tmp[, Month:=format(Date, "%b"), ]
+        dt.tmp[, Year:=y, ]
+        agg.by <- c("Month", "Year")
+      } else {
+        dt.tmp[, Year:=y, ]
+        agg.by <- "Year"
       }
 
-      dt.tmp <- dt.tmp[, !sdcols, with=FALSE]
+      if (att.get.nc(ncin, data.name, "units")=="K" && operation=="gdd5") 
+        dt.tmp[, value := value-273.15, ]
+
+      if (operation=="gdd5") {
+        dt.tmp[, value := ifelse(value<5, 0, value), ]
+        dt.tmp <- dt.tmp[, list(value=sum(value)), by=c("Lon", "Lat", agg.by)]
+      } else if (operation=="mean") {
+        dt.tmp <- dt.tmp[, list(value=mean(value, na.rm=TRUE)), by=c("Lon", "Lat", agg.by)]
+      } else if (operation=="sum") {
+        dt.tmp <- dt.tmp[, list(value=sum(value, na.rm=TRUE)), by=c("Lon", "Lat", agg.by)]
+      }
 
       if (exists("DT")) {
-        DT <- DT[dt.tmp]
+        DT <- rbind(DT, dt.tmp)
       } else {
         DT <- copy(dt.tmp)
       }
@@ -351,11 +364,11 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
     if (verbose)
       message("")
 
-    DT <- melt(DT, id.var=c("Lon", "Lat"))
-    DT[, Year:=as.numeric(sub("Y", "", variable)), ]
-    DT[, variable:=NULL]
-    setkey(DT, Lon, Lat, Year)
+    if (verbose)
+      print(head(DT))
     
+    setkeyv(DT, c("Lon", "Lat", agg.by))
+
     if (write) {
       if (verbose)
         message(paste("Write data to:", fout))
@@ -367,7 +380,13 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
 
   if (!full) {
     if (period[1] != period[2]) {
-      DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat")]
+      if (monthly) {
+        DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat", "Month")]
+        DT$Month = factor(DT$Month, levels=month.abb)
+        DT <- dcast(DT, Lon + Lat ~ Month, value.var=c("value"))
+      } else {
+        DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat")]
+      }
     } else {
       DT[, Year:=NULL, ]
     }
