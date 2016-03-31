@@ -204,7 +204,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
     if (length(column)==1) {
       setnames(dt, column, "value")
     } else {
-      dt <- melt(dt, key(dt), column)
+      dt <- data.table::melt(dt, key(dt), column)
       setnames(dt, "variable", "sens")
       dt <- dt[, sens:=factor(sens, column)]
       if (length(wrap)>1 || !is.numeric(wrap))
@@ -324,7 +324,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
                  xmn=min(lon) - res/2, xmx=max(lon) + res/2,
                  ymn=min(lat) - res/2, ymx=max(lat) + res/2,
                  crs=CRS("+proj=longlat +ellps=WGS84"))
-    data(slm)
+    data(slm, envir = environment())
     slm <- projectRaster(slm, to, "nbg")
     slm <- as.data.frame(slm, xy=TRUE)
     colnames(slm) <- c("Lon", "Lat", "value")
@@ -481,7 +481,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
     if (length(column)==1) {
       setnames(dt, column, "value")
     } else {
-      dt <- melt(dt, key(dt), column)
+      dt <- data.table::melt(dt, key(dt), column)
       setnames(dt, "variable", "sens")
       dt <- dt[, sens:=factor(sens, column)]
     }
@@ -905,7 +905,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
       stop(paste("No column named '",columns,"' present!", sep=""))
     }
     dt <- input@data[, c("Year", columns), with = FALSE]
-    dt <- melt(dt, "Year", columns)
+    dt <- data.table::melt(dt, "Year", columns)
     if (length(columns)>1) {
       dt$variable <- as.character(dt$variable)
       dt$variable <- factor(dt$variable, levels=columns)
@@ -952,7 +952,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
       }
     }
     dt <- dt[, sens:=factor(sens, titles)]
-    dt <- melt(dt, c("Year", "sens"), columns)
+    dt <- data.table::melt(dt, c("Year", "sens"), columns)
     if (length(columns)>1) {
       dt$variable <- as.character(dt$variable)
       dt$variable <- factor(dt$variable, levels=columns)
@@ -1114,7 +1114,7 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
     if (length(column)==1) {
       setnames(dt, column, "value")
     } else {
-      dt <- melt(dt, key(dt), column)
+      dt <- data.table::melt(dt, key(dt), column)
       setnames(dt, "variable", "sens")
       dt <- dt[, sens:=factor(sens, column)]
     }

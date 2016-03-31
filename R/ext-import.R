@@ -86,7 +86,6 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @param lon.name Name of the longitude vector in the netcdf file, if NA it will be guessed
 #' @param lat.name Name of the latitude vector in the netcdf file, if NA it will be guessed
 #' @param time.name Name of the time vector in the netcdf file, if NA it will be guessed
-#' @param monthly logical, if monthly instead of annual values should be returned
 #' @param reread.file Recalculate the desired values (default: FALSE)
 #' @param write write the calculated values for fture speedup (default: TRUE)
 #' @param verbose print some messages
@@ -98,7 +97,7 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @examples message("See templates/Example.ggplot.R")
 getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, monthly=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, reread.file=FALSE, write=TRUE, verbose=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
-  Lon = Lat = Year = variable = value = NULL
+  Lon = Lat = Year = Month = Date = variable = value = NULL
   suppressWarnings(if (!is.na(temporal.extent)) {
     if (class(temporal.extent)[1]=="TemporalExtent" && attr(class(temporal.extent), "package")=="RVCTools") {
       period <- c(temporal.extent@start, temporal.extent@end)
@@ -268,11 +267,21 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
   if (any(is.na(period)))
     period <- c(year(start), year(end)-1)
 
-  ## need also to include soatial extent in file name
-  fout <- paste(tools::file_path_sans_ext(file),
-                "_", max(year(start), period[1]), "-", min(year(end), period[2]),
-                "_", operation, ".Rtable", sep="")
-  if (file.exists(fout) && !forceReCalculation) {
+  ## need also to include spatial extent in file name
+  if (full) {
+    fout <- paste(tools::file_path_sans_ext(file),
+                  "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                  "_", operation, "_full.Rtable", sep="")
+  } else if (monthly) {
+    fout <- paste(tools::file_path_sans_ext(file),
+                  "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                  "_", operation, "_monthly.Rtable", sep="")
+  } else {
+    fout <- paste(tools::file_path_sans_ext(file),
+                  "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                  "_", operation, ".Rtable", sep="")
+  }
+  if (file.exists(fout) && !reread.file) {
     if (verbose)
       message(paste("Found '", fout, "'", sep=""))
     DT <- data.table(read.table(fout, header=TRUE, stringsAsFactors=FALSE))
@@ -330,7 +339,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
         setkey(dt.tmp, Lon, Lat)
       }
 
-      dt.tmp <- melt(dt.tmp, id.vars=c("Lon", "Lat"))
+      dt.tmp <- data.table::melt(dt.tmp, id.vars=c("Lon", "Lat"))
       dt.tmp[, Date:=as.Date(paste(y, "-01-01", sep="")) + as.numeric(substring(variable,2)) - 1, ]
       
       if (monthly) {
@@ -383,7 +392,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
       if (monthly) {
         DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat", "Month")]
         DT$Month = factor(DT$Month, levels=month.abb)
-        DT <- dcast(DT, Lon + Lat ~ Month, value.var=c("value"))
+        DT <- data.table::dcast(DT, Lon + Lat ~ Month, value.var=c("value"))
       } else {
         DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat")]
       }
@@ -441,5 +450,74 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
     }
   } else {
     return(DT)
+  }
+}
+
+#' Calculates the seasonality index
+#'
+#' Calculates a seasonality index based on a monthly vector by default, originally developed for precipitation. With specifying an additional wheighting vector different to months can be used.
+#' 
+#' @param x values, e.g. monthly precipitation values
+#' @param wgt weight for the angle width of each value, e.g. days per month (default)
+#' @return the seasonality index following Markhan (1970)
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
+#' @references Charles G. Markhan (1970) Seasonality of precipitation in the United States, Annals of the Association of American Geographers, 60:3, 593-597, DOI: 10.1111/j.1467-8306.1970.tb00743.x
+seasonalityIndex <- function(x, wgt=c(31, 28.2425, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)) {
+  if (!is.vector(x) || !is.vector(wgt))
+    stop("Any of 'x'/'wgt' is not a vector")
+  if (length(wgt)!=length(x)) {
+    message("Length of 'x' and 'wgt' differ. Assuming a regular wgt.")
+    warning("Length of 'x' and 'wgt' differ. Assuming a regular wgt.")
+    wgt <- rep(1, length(x))
+  }
+  # calculate the wheighted angles based on wgt
+  cwgt <- cumsum(wgt) - wgt/2
+  cwgt <- append(cwgt, cwgt[length(cwgt)] + wgt[length(cwgt)]/2)
+  angle <- 2 * pi * cwgt / cwgt[length(cwgt)]
+
+  # calculate the x and y component of each vector
+  vx <- sin(angle[1:(length(angle)-1)]) * x
+  vy <- cos(angle[1:(length(angle)-1)]) * x
+
+  # calculate the "seasonality" by summing up the x and y components
+  # of the vectors and divivion by the total precipitation
+  seasonality = (sqrt(sum(vx)^2 + sum(vy)^2)) / sum(x)
+  return(seasonality)
+}
+#' Adds a seasonality index column
+#' 
+#' Adds a column of the seasonality index based on Marhan (1970) to the input data
+#' 
+#' @param input Input data (either data.frame, data.table or VegObject) with at least the month abbreviations as column names.
+#' @param colname Name of the new created seasonality index column.
+#' @param verbose print some information
+#' @return same type as input with the seasonality index as new data column
+#' @export
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+addSeasonalityIndex <- function(input=NULL, colname="SI", verbose=TRUE) {
+  if (is.data.table(input)) {
+    if (verbose)
+      message("Input is a data.table")
+    if (length(setdiff(month.abb, colnames(input)))!=0)
+      stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(data)), collapse="', '"), sep=""))
+    eval(parse(text=paste("input[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))
+    return(input)
+  } else if (is.data.frame(input)) {
+    if (verbose)
+      message("Input is a data.frame")
+    if (length(setdiff(month.abb, colnames(input)))!=0)
+      stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(input)), collapse="', '"), sep=""))
+    eval(parse(text=paste("input$", colname, "=apply(input[, month.abb], 1, seasonalityIndex)", sep="")))
+    return(input)
+  } else if (is.VegObject(input, spatial=TRUE)) {
+    if (verbose)
+      message("Input is a spatial VegObject.")
+    if (length(setdiff(month.abb, colnames(input@data)))!=0)
+      stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(input@data)), collapse="', '"), sep=""))
+    eval(parse(text=paste("input@data[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))
+    return(input)
+  } else {
+    stop(paste("addSeasonalityIndex: Don't know what to to with class", class(input)))
   }
 }

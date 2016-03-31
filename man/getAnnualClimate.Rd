@@ -40,8 +40,6 @@ getAnnualClimate(run = NA, file = NA, operation = "mean",
 \item{verbose}{print some messages}
 
 \item{...}{further so far ignored parameters}
-
-\item{monthly}{logical, if monthly instead of annual values should be returned}
 }
 \value{
 data.table if no VegRun was given, otherwise a VegObject
