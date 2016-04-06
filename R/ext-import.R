@@ -521,3 +521,94 @@ addSeasonalityIndex <- function(input=NULL, colname="SI", verbose=TRUE) {
     stop(paste("addSeasonalityIndex: Don't know what to to with class", class(input)))
   }
 }
+
+
+#' daylength calculation
+#' 
+#' daylength calculation depending on latitude and day of year.
+#' taken from function daylengthinsoleet (driver.cpp) LPJ-GUESS v2.1
+#' 
+#' @param lat latitude (vector)
+#' @param doy day of the year (vector)
+#' @param leap use February 29th or not
+#' @return daylength in hours as vector or matrix, depending on input shape
+#' @export
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+daylength <- function(lat, doy, leap=FALSE) {
+  dom <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+  if (leap) dom[3] = 29
+  deg2rad <- pi / 180.0
+  hh      <- array(0., c(length(lat), length(doy)))
+
+  d <- -23.4 * deg2rad * cos(2.0 * pi * (doy + 10.5) / sum(dom))
+  u <- sin(lat * deg2rad) %*% t(sin(d))
+  v <- cos(lat * deg2rad) %*% t(cos(d))
+
+  hh[u>-v & u<v] = acos(-u[u>-v & u<v] / v[u>-v & u<v]) 
+  hh[u<=-v]      = 0.0
+  hh[u>=v]       = pi
+
+  ## daylength in hours
+  return(24.0 * t(hh) / pi)
+}
+
+#' Calculate the incoming solar radiation based of sunshine/cloudcover
+#' 
+#' incoming net solar radiation (W m^-2) reduced by albedo,
+#' cloud coverage or sun shine fraction, latitude and
+#' day of the year as done in function daylengthinsoleet
+#' (driver.cpp) LPJ-GUESS v2.1
+#' 
+#' @param lat latitude (vector)
+#' @param doy day of the year (vector)
+#' @param rad.frac sunshine/cloudcover. Must have the shape lat x doy
+#' @param cloudcover logical, if rad.frac is cloudcover (TRUE), default FALSE
+#' @param leap use February 29th or not
+#' @return incoming solar radiation in W m^-2 as vector or matrix, depending on input shape
+#' @export
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+lpj.radiation <- function(lat, doy, rad.frac, albedo=0.17, cloudcover=FALSE, leap=FALSE) {
+  dom <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+  if (leap) dom[3] = 29
+
+  ## convert fraction to percent
+  if (max(rad.frac) <= 1)
+    rad.frac <- rad.frac*100
+
+  ## Convert to percent sunshine hours if given as cloudcover
+  if (cloudcover) {
+    sun <- 100. - rad.frac
+  } else {
+    sun <- rad.frac
+  }
+
+  ## print(c(min(sun), max(sun)))
+
+  QOO <- 1360.0
+  A   <- 107.0
+  B   <- 0.2
+  C   <- 0.25
+  D   <- 0.5
+  K   <- 13750.98708
+
+  deg2rad <- pi / 180.0
+  hh      <- array(0., c(length(lat), length(doy)))
+
+  d <- -23.4 * deg2rad * cos(2.0 * pi * (doy + 10.5) / sum(dom))
+  u <- sin(lat * deg2rad) %*% t(sin(d))
+  v <- cos(lat * deg2rad) %*% t(cos(d))
+
+  hh[u>-v & u<v] = acos(-u[u>-v & u<v] / v[u>-v & u<v]) 
+  hh[u<=-v]      = 0.0
+  hh[u>=v]       = pi
+
+  u  <- t(u)
+  v  <- t(v)
+  hh <- t(hh)
+
+  qo <- QOO*(1.0 + 2.0 * 0.01675 * cos(2.0 * pi * (doy + 0.5) / sum(dom)))
+
+  w <- (C + D * sun / 100.0) * (1.0 - albedo) * qo
+  rs_day <- 2.0 * w * (u * hh + v * sin(hh)) * K
+  return(rs_day / 86400.)
+}
