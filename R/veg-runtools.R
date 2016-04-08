@@ -304,12 +304,15 @@ getVegObject <- function(run,
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     vegobject <- readRDS(file.name)
     
+    # Update the id, that might have (legitimately) changed compared to the id that was used when this veg object was created
+    vegobject@run@id <- run@id
+     
+    
     # Check that the spatial extent matches before returning
     # Note that there are various cases to check here (the full spatial extent and specifically defined extents)
     
     if(is.null(spatial.extent) & vegobject@spatial.extent@id == "FullDomain"
        | identical(spatial.extent, vegobject@spatial.extent)){
-      
       if(store.internally) {run <<- addToVegRun(vegobject, run)}
       return(vegobject)
       
@@ -411,7 +414,6 @@ getVegObject <- function(run,
                             is.spatially.averaged = FALSE,
                             is.temporally.averaged = FALSE,
                             run = as(run, "VegRunInfo"))
-      
       run <<- addToVegRun(vegobject.full, run)
       
     } # end if(store.full)
@@ -516,7 +518,9 @@ getVegObject <- function(run,
   }
   
   ### ADD TO THE VEGRUN OBJECT IF REQUESTED
-  if(store.internally) {run <<- addToVegRun(vegobject, run)}
+  if(store.internally) {
+    run <<- addToVegRun(vegobject, run)
+  }
   
   return(vegobject)
   

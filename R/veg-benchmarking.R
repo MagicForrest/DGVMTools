@@ -300,7 +300,7 @@ compareManyRunsToData <- function(runs,
               text.multiplier = 1.0,
               layout.objs = layout.objs,
               ...)
-
+  
   
   # PLOT PERCENTAGE DIFFERENCE
   plotVegMaps(Percentage.Difference.stack,
@@ -466,7 +466,7 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", ..
 }
 
 # Compare runs to each other
-compareVegSpatialObject <- function(runs, veg.spatial.id, target,  expand.target = TRUE, plot.comparison = TRUE, base.run.id = NULL, ...) {
+compareVegSpatialObject <- function(runs, veg.spatial.id, target, expand.target = TRUE, base.run.id = NULL, plot.perc.diff = TRUE, special = NULL, ...) {
   
   # To avoid NOTES
   Lon = Lat = NULL
@@ -493,10 +493,20 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target,  expand.target
   }
   
   
-  # now plot the comparisons
-  plotVegMaps(comparison.dt,
-              quant = run@objects[[veg.spatial.id]]@quant,
-              ...)
+  # now plot the absolute values for each target run on the same plot (one plot per target)
+  for(sub.target in target) {
+    targets <- c()
+    for(run in runs){
+      targets <- append(targets, paste(run@id, sub.target, sep = "_"))
+    }
+    plotVegMaps(comparison.dt,
+                targets = targets,
+                quant = run@objects[[veg.spatial.id]]@quant,
+                summary.title = sub.target,
+                special.string = paste("diff", sub.target, sep = "."),
+                special = special,
+                ...)
+  }
   
   
   # if a base.run is supplied, plot the the difference between each run and it
@@ -522,6 +532,27 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target,  expand.target
                       special = "diff",
                       summary.title = title,
                       ...)
+          
+          if(plot.perc.diff){
+            
+            # first add the precentage difference column
+            col.name <- paste(paste(run@id, sub.target, sep = "_"), "minus", paste(base.run.id, sub.target, sep = "_"), "perc.diff", sep = ".")
+            comparison.dt[, eval(col.name) := (get(paste(run@id, sub.target, sep = "_")) - get(paste(base.run.id, sub.target, sep = "_"))) %/0% get(paste(base.run.id, sub.target, sep = "_")) * 100]
+           
+            
+            # plot the difference
+            title <- paste(sub.target, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", runs[[base.run.id]]@description, sep = " ")
+            
+            plotVegMaps(comparison.dt,
+                        targets = col.name,
+                        quant = run@objects[[veg.spatial.id]]@quant,
+                        special = "perc.diff",
+                        summary.title = title,
+                        limit = TRUE,
+                        limits = c(-100,200),
+                        ...)
+            
+          }
           
           
         }

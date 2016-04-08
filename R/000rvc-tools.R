@@ -171,7 +171,7 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
                        a@extent@ymin, b@extent@ymin, a@extent@ymax, b@extent@ymax))))
     return(TRUE)
   if (a@extent@xmin==b@extent@xmin && a@extent@xmax==b@extent@xmax && 
-      a@extent@ymin==b@extent@ymin && a@extent@ymax==b@extent@ymax)
+        a@extent@ymin==b@extent@ymin && a@extent@ymax==b@extent@ymax)
     return(TRUE)
   return(FALSE)
 })
@@ -186,7 +186,7 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
 setGeneric("summary")
 setMethod("summary", signature("VegRun"), function(object, ...) {
   ret <- list(id=object@id, description=object@description, model=object@model)
-
+  
   spatial=NULL
   temporal=NULL
   full=NULL
@@ -259,7 +259,7 @@ intersectionRVC <- function(object1, object2){
       
       intersection.extent <- intersect(object1, object2)
       return(list(crop(object1, intersection.extent), crop(object2, intersection.extent)))
-        
+      
     }
     
     
@@ -274,8 +274,53 @@ intersectionRVC <- function(object1, object2){
   }
   
   
+}
+
+##### RETRIEVES AN OBJECT FROM A LIST BASED ON THE 'id' SLOTS
+#
+#' Retrieves an object from a list based on it's \code{id} slot
+#' 
+#' Looks through a list of arbitary object until it finds one which has a slot called "id" whose value matches the imput argument.
+#' The idea is that you can use this fucntion to pull a particular PFT from a list of PFT objects, or a a particular run from a list of VegRun objects etc.
+#' 
+#' @param id The id sought (must be string)
+#' @param list The list to be scanned (must be a list)
+#' 
+#' @return The matching object from the list or NULL.  If NULL it will give a message and a warning, the following code will probably fail. 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
+#' 
+IDFromList <- function(id, list) {
   
   
+  # Error checking
+  if(class(id)[1] != "character") {
+    stop(paste("From function IDfromList(): Argument 'id' not a string therefore not valid.  It has class = ",  class(id)[1], sep = ""))
+  }
+  
+  if(class(list)[1] != "list") {
+    stop(paste("From function IDfromList(): Argument 'list' is not a list therefore not valid.  It has class =",  class(list)[1], sep = ""))
+  }
+  
+  for(item in list){
+    
+    tryCatch(
+      {
+        if(item@id == id) return(item)
+    },
+      error= function(cond){
+      message(paste("Caught an expection. Function IDFromList(id, list) found an item in the list argument with no slots. ", sep = ""))
+    },
+    warning=function(cond) {
+     },
+    finally={}
+    )    
+
+  }
+
+  message(paste("ATTENTION! No object with id = ", id, " found in list ", deparse(substitute(list)), ", so probably your script will now fail.", sep = ""))
+  
+
 }
 
 

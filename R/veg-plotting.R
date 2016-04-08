@@ -139,8 +139,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CROP THE DATA IF PLOT EXTENT HAS BEEN SPECIFIED
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
-  
-  
+
   
   #####################################################################################
   ############# DEAL WITH SPECIAL CASES ###############################################
@@ -174,6 +173,39 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       quant@full.string = paste("Percentage Difference: ", quant@full.string, sep = "")
       plot.bg.col <- "grey"
       
+      # SET THE INTERVALS (using either these sensible options or the over-rides)
+      # if override cuts and cols specified use them, but note we have to then kill them otherwise they will over-ride the new cuts below
+      if(!is.null(override.cols)) {quant@colours <- override.cols}
+      if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
+      override.cols = override.cuts = NULL
+      
+          
+      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
+      # get lowest and highest '50's
+      smallest.limit = min(abs(quant@cuts[1]), abs(quant@cuts[length(quant@cuts)]))
+      print(smallest.limit)
+      interval <- 50
+      if(smallest.limit < 100) interval <- 25
+      if(smallest.limit < 50) interval <- 10
+      if(smallest.limit < 20) interval <- 5
+      if(smallest.limit < 10) interval <- 1
+      print(interval)
+      lower <- ceiling(quant@cuts[1]/interval) * interval
+      upper <- floor(quant@cuts[length(quant@cuts)]/interval) * interval
+      colourkey.at <- seq(lower, upper, by = interval)
+      colorkey.labels <- paste(seq(lower, upper, by = interval))
+      for(label.index in 1:length(colorkey.labels)){
+        if(!(substr(colorkey.labels[label.index], 1, 1) == "-" | substr(colorkey.labels[label.index], 1, 1) == "0")){
+          colorkey.labels[label.index] <- paste0("+", colorkey.labels[label.index])
+        }
+      }
+      if(limit) colorkey.labels[length(colorkey.labels)] <- paste0("\u2265", colorkey.labels[length(colorkey.labels)])
+      colorkey.labels <- paste(colorkey.labels, "%", sep = "")
+      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, "labels" = colorkey.labels, "at" = colourkey.at)
+      colorkey.list[["at"]] <- quant@cuts
+      
+      
+      
     }
     else if(tolower(special) == "fraction" | tolower(special) == "frac"){
       
@@ -192,8 +224,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       stop("plotVegMaps: special burnt.fraction or ba not impletemted yet")
       
     }
-    else if(tolower(special) == "firert" | tolower(special) == "fire.return.time"){
-      
+    else if(tolower(special) == "firert" | tolower(special) == "fire.return.time" | quant@id == "firert"){
+
       # SET THE INTERVALS (using either these sensible options or the over-rides)
       quant@cuts <- c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000)
       quant@colours <-  colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
@@ -215,7 +247,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       quant@cuts = 0:(length(quant@cuts)-1)
       
     }
-    else {
+    else if(special != ""){
       stop(paste("Special case", tolower(special), "not implemented yet", sep = " "))
     }
   }
@@ -301,7 +333,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       # PLOT MAIN TITLE
       if(is.null(summary.title)) this.main.title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), summary.title, run, period)
       else this.main.title <- summary.title
-      
+
       Cairo(file = file.path(plot.dir, this.file.name), 
             dpi = Cairo.dpi, 
             type = format, 
