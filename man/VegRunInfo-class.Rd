@@ -24,12 +24,12 @@ and included in a \code{VegObject} in the \code{run} slot (not inherited, so nee
 
 \item{\code{driving.data}}{A character string identifying the climate or other data used to produce this model run}
 
-\item{\code{map.overlay}}{A character defining which map overlay to plot as standard on for this model run.  Can be:
+\item{\code{map.overlay}}{A lists defining which map overlay to plot as standard on for this model run.  Each item in the list can be:
  \itemize{
-  \item \code{hires} for a full high resolution outline of all countires of the world 
-  \item \code{lowres} for a low resolution outline of all countires of the world  (much faster to plot that \code{hires}, generally sufficient for global plot)
-  \item \code{hires-continents} for a full high resolution outline of the land masses only
-  \item \code{lowres-continents} for a low resolution outline of the land masses only
+  \item A single string defining one of the standard maps from the maps or mapdata package (ie "world" or "worldHires" or "italy", or "rivers")
+  \item A further list containing in it's first argument a string (as above) and the further arguments interior.lines (logical), 
+  lwd (numeric) and col (string representing a colour), see \code{makeOverlay} for details
+  \item A string specifying some non-standard overlays, not yet defined
 }
 These data come from the \code{mapdata} package}
 
@@ -53,5 +53,8 @@ These data come from the \code{mapdata} package}
 }}
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}
+\seealso{
+makeOverlay
 }
 

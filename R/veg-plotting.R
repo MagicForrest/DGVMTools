@@ -106,7 +106,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field the add it
   if(!is.null(run)){
-    if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
+    if(!is.null(run@map.overlay)) {
+      layout.objs <- append(layout.objs, run@map.overlay)
+    }
   }
   
   
@@ -183,13 +185,11 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
       # get lowest and highest '50's
       smallest.limit = min(abs(quant@cuts[1]), abs(quant@cuts[length(quant@cuts)]))
-      print(smallest.limit)
       interval <- 50
       if(smallest.limit < 100) interval <- 25
       if(smallest.limit < 50) interval <- 10
       if(smallest.limit < 20) interval <- 5
       if(smallest.limit < 10) interval <- 1
-      print(interval)
       lower <- ceiling(quant@cuts[1]/interval) * interval
       upper <- floor(quant@cuts[length(quant@cuts)]/interval) * interval
       colourkey.at <- seq(lower, upper, by = interval)

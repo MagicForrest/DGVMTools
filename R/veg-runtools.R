@@ -70,7 +70,7 @@ defineVegRun <- function(...){
   if(length(info@pft.set) == 0) info@pft.set <- NULL
   if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
   if(length(info@description) == 0)  info@description <- "No description specified"
-  if(length(info@map.overlay) == 0 | info@map.overlay == "")  info@map.overlay <- NULL
+  if(length(info@map.overlay) == 0 | info@map.overlay[1] == "")  info@map.overlay <- NULL
   if(length(info@lonlat.offset) == 0)  info@tlonlat.offset <- c(0,0)
   if(length(info@year.offset) == 0)  info@year.offset <- 0
   if(length(info@tolerance) == 0)  info@tolerance <- 0.00001
@@ -84,8 +84,40 @@ defineVegRun <- function(...){
   
   # lookup map over from maps and mapdata package
   if(!is.null(info@map.overlay)) {
-    class(info@map.overlay)
-    info@map.overlay <- makeOverlay(info@map.overlay)
+    
+    # if we get a single characters string, assume it is a map and just a simple map from it
+    if(length(info@map.overlay) == 1 & class(info@map.overlay)[1] == "character") {
+       info@map.overlay <- makeOverlay(info@map.overlay)
+    }
+    # else if is a list 
+    else if(class(info@map.overlay)[1] == "list"){
+      
+      # check if it is actually a list of lists 
+      list.of.lists <- FALSE
+      for(test in info@map.overlay) {
+        if(class(test[1]) == "list") list.of.lists <- TRUE
+      }
+      
+      # if it is a simple list, then assumer it describes a single overlay and build a single overlay
+      if(!list.of.lists){
+        info@map.overlay <- do.call(makeOverlay, info@map.overlay)
+      }
+      # else assume each item is an overlay and try to make them all
+      else {
+        temp <- list()
+        counter <- 0
+        for(overlay in info@map.overlay){
+          counter <- counter +1
+          if(class(overlay[1]) == "character") temp[[counter]] <- makeOverlay(overlay)
+          else if(class(overlay[1]) == "list") temp[[counter]] <- do.call(makeOverlay, overlay)
+          else warning("Something funny specified in the overlays (ie not a character or a list), ignoring it.  You might want to check this.")
+        }
+        info@map.overlay <- temp
+      }
+      
+      
+    }
+    
   } 
   
   # return a VegRun object with empty data fields but meta data filled  
@@ -304,9 +336,10 @@ getVegObject <- function(run,
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
     vegobject <- readRDS(file.name)
     
-    # Update the id, that might have (legitimately) changed compared to the id that was used when this veg object was created
-    vegobject@run@id <- run@id
-     
+    # Update the run object, that might have (legitimately) changed compared to the id that was used when this veg object was created
+    # for example ti might be assigned a new id, or new map overlays or whatever
+    vegobject@run <- run
+    
     
     # Check that the spatial extent matches before returning
     # Note that there are various cases to check here (the full spatial extent and specifically defined extents)
@@ -479,21 +512,21 @@ getVegObject <- function(run,
                             extent =  c(sorted.unique.lons[1], sorted.unique.lats[1]))
       
       if(verbose) message(paste("No spatial extent specified, but noting that this is a single site with coordinates = (",  sorted.unique.lons[1], ",", sorted.unique.lats[1], ")", sep = ""))
-   
+      
     }
     else  {
       spatial.extent <- new("SpatialExtent",
-                           id = "FullDomain",
-                           name = "Full simulation extent",
-                           extent =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
-                                            sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
-                                            sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
-                                            sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2)))
+                            id = "FullDomain",
+                            name = "Full simulation extent",
+                            extent =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
+                                             sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
+                                             sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
+                                             sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2)))
       
       if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
-    
+      
     }
-
+    
     
   }
   

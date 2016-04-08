@@ -410,7 +410,7 @@ doKappa <- function(stack, scheme, labels = NULL, verbose = TRUE){
 
 
 
-compareBiomes <- function(run, variable, period, scheme, plot = TRUE){
+compareBiomes <- function(run, variable, period, scheme, plot = TRUE, ...){
   
   # Prepare the veg. spatial object
   this.VegSpatial <- getVegSpatial(run, variable, period, reread.file = FALSE)
@@ -435,6 +435,7 @@ compareBiomes <- function(run, variable, period, scheme, plot = TRUE){
                  addData = PNV.biomes, 
                  kappa.list = list(Kappa.comparison),
                  Cairo.type = c("png","ps"), 
+                 ...
     )
   }
   
@@ -524,7 +525,7 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target, expand.target 
           comparison.dt[, eval(col.name) := get(paste(run@id, sub.target, sep = "_")) - get(paste(base.run.id, sub.target, sep = "_"))]
           
           # plot the difference
-          title <- paste(sub.target, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", runs[[base.run.id]]@description, sep = " ")
+          title <- paste(sub.target, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " ")
           
           plotVegMaps(comparison.dt,
                       targets = col.name,
@@ -541,7 +542,7 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target, expand.target 
            
             
             # plot the difference
-            title <- paste(sub.target, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", runs[[base.run.id]]@description, sep = " ")
+            title <- paste(sub.target, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " ")
             
             plotVegMaps(comparison.dt,
                         targets = col.name,

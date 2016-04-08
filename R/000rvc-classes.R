@@ -23,8 +23,6 @@
 #####################################
 
 
-# TODO Document all classes!
-
 ##############################################################################
 ########  GENERAL CLASSES ####################################################
 ##############################################################################
@@ -199,12 +197,12 @@ checkVegRun <- function(object){
 #' @slot description A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot run.dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
-#' @slot map.overlay A character defining which map overlay to plot as standard on for this model run.  Can be:
+#' @slot map.overlay A lists defining which map overlay to plot as standard on for this model run.  Each item in the list can be:
 #'  \itemize{
-#'   \item \code{hires} for a full high resolution outline of all countires of the world 
-#'   \item \code{lowres} for a low resolution outline of all countires of the world  (much faster to plot that \code{hires}, generally sufficient for global plot)
-#'   \item \code{hires-continents} for a full high resolution outline of the land masses only
-#'   \item \code{lowres-continents} for a low resolution outline of the land masses only
+#'   \item A single string defining one of the standard maps from the maps or mapdata package (ie "world" or "worldHires" or "italy", or "rivers")
+#'   \item A further list containing in it's first argument a string (as above) and the further arguments interior.lines (logical), 
+#'   lwd (numeric) and col (string representing a colour), see \code{makeOverlay} for details
+#'   \item A string specifying some non-standard overlays, not yet defined
 #' }
 #' These data come from the \code{mapdata} package
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
@@ -217,6 +215,7 @@ checkVegRun <- function(object){
 #' @slot line.type A numeric to define the line style representing this model run
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @exportClass VegRunInfo
+#' @seealso makeOverlay
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegRunInfo", 
          slots = c(id = "character",
