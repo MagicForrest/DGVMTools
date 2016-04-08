@@ -196,6 +196,8 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
     london.centre <- input@run@london.centre
     if (is.character(input@run@map.overlay)) {
       map.overlay <- input@map.overlay
+    } else if (is.null(input@run@map.overlay)) {
+      map.overlay <- "lowres"
     } else {
       map.overlay <- fortify(SpatialLinesDataFrame(input@run@map.overlay[[2]],
                                                    data.frame(ID=getSLLinesIDSlots(input@run@map.overlay[[2]]))))
@@ -204,7 +206,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
     if (length(column)==1) {
       setnames(dt, column, "value")
     } else {
-      dt <- melt(dt, key(dt), column)
+      dt <- data.table::melt(dt, key(dt), column)
       setnames(dt, "variable", "sens")
       dt <- dt[, sens:=factor(sens, column)]
       if (length(wrap)>1 || !is.numeric(wrap))
@@ -260,6 +262,8 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
         london.centre <- input[[i]]@run@london.centre
         if (is.character(input[[i]]@run@map.overlay)) {
           map.overlay <- input[[i]]@map.overlay
+        } else if (is.null(input[[i]]@run@map.overlay)) {
+          map.overlay <- "lowres"
         } else {
           ## did not find a way how to replace depricated "getSLLLinesIDSlots" by "over"
           map.overlay <- fortify(SpatialLinesDataFrame(input[[i]]@run@map.overlay[[2]],
@@ -324,7 +328,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
                  xmn=min(lon) - res/2, xmx=max(lon) + res/2,
                  ymn=min(lat) - res/2, ymx=max(lat) + res/2,
                  crs=CRS("+proj=longlat +ellps=WGS84"))
-    data(slm)
+    data(slm, envir = environment())
     slm <- projectRaster(slm, to, "nbg")
     slm <- as.data.frame(slm, xy=TRUE)
     colnames(slm) <- c("Lon", "Lat", "value")
@@ -452,6 +456,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import ggplot2 data.table
+#' @importFrom RColorBrewer brewer.pal
 plotGGMeridional <- function(input, column='value', what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lat = sens = value = value.center = value.sd = value.se = value.max = value.min = NULL
@@ -481,7 +486,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
     if (length(column)==1) {
       setnames(dt, column, "value")
     } else {
-      dt <- melt(dt, key(dt), column)
+      dt <- data.table::melt(dt, key(dt), column)
       setnames(dt, "variable", "sens")
       dt <- dt[, sens:=factor(sens, column)]
     }
@@ -644,7 +649,8 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
-#' @import RColorBrewer ggplot2 data.table
+#' @import ggplot2 data.table
+#' @importFrom RColorBrewer brewer.pal
 plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, vertical=FALSE, bar=FALSE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   sens = value = name = category = NULL
@@ -887,8 +893,8 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @param ... Ignored further parameters
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
 #' @export
-#' @import RColorBrewer ggplot2 
-#' 
+#' @import ggplot2 
+#' @importFrom RColorBrewer brewer.pal
 plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="line", wrap=NA, long.title=TRUE, lty="sens", alpha=NA, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Year = sens = value = variable = NULL
@@ -905,7 +911,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
       stop(paste("No column named '",columns,"' present!", sep=""))
     }
     dt <- input@data[, c("Year", columns), with = FALSE]
-    dt <- melt(dt, "Year", columns)
+    dt <- data.table::melt(dt, "Year", columns)
     if (length(columns)>1) {
       dt$variable <- as.character(dt$variable)
       dt$variable <- factor(dt$variable, levels=columns)
@@ -952,7 +958,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
       }
     }
     dt <- dt[, sens:=factor(sens, titles)]
-    dt <- melt(dt, c("Year", "sens"), columns)
+    dt <- data.table::melt(dt, c("Year", "sens"), columns)
     if (length(columns)>1) {
       dt$variable <- as.character(dt$variable)
       dt$variable <- factor(dt$variable, levels=columns)
@@ -1092,8 +1098,9 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
 #' @param long.title If the description (default) should be used as titles or the shorter id.
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Ignored further parameters
-#' @import RColorBrewer
 #' @export
+#' @import ggplot2
+#' @importFrom RColorBrewer brewer.pal
 plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE, bins=10, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   sens = bin = value = N = NULL
@@ -1114,7 +1121,7 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
     if (length(column)==1) {
       setnames(dt, column, "value")
     } else {
-      dt <- melt(dt, key(dt), column)
+      dt <- data.table::melt(dt, key(dt), column)
       setnames(dt, "variable", "sens")
       dt <- dt[, sens:=factor(sens, column)]
     }

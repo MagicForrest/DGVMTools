@@ -80,12 +80,13 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @param operation Any of sum, mean, gdd5
 #' @param temporal.extent Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)
 #' @param spatial.extent Either a SpatialExtent object of a raster extent
-#' @param full should the full annual dataset be returned or an multiannual average (default).
+#' @param full should the full dataset be returned or an multiannual average (default).
+#' @param monthly logical, if monthly instead of annual values should be returned
 #' @param data.name Name of the data field in the netcdf file, if NA it will be guessed
 #' @param lon.name Name of the longitude vector in the netcdf file, if NA it will be guessed
 #' @param lat.name Name of the latitude vector in the netcdf file, if NA it will be guessed
 #' @param time.name Name of the time vector in the netcdf file, if NA it will be guessed
-#' @param forceReCalculation Recalculate the desired values (default: FALSE)
+#' @param reread.file Recalculate the desired values (default: FALSE)
 #' @param write write the calculated values for fture speedup (default: TRUE)
 #' @param verbose print some messages
 #' @param ... further so far ignored parameters
@@ -94,9 +95,9 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @import RNetCDF
 #' @export
 #' @examples message("See templates/Example.ggplot.R")
-getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, forceReCalculation=FALSE, write=TRUE, verbose=TRUE, ...) {
+getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, monthly=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, reread.file=FALSE, write=TRUE, verbose=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
-  Lon = Lat = Year = variable = value = NULL
+  Lon = Lat = Year = Month = Date = variable = value = NULL
   suppressWarnings(if (!is.na(temporal.extent)) {
     if (class(temporal.extent)[1]=="TemporalExtent" && attr(class(temporal.extent), "package")=="RVCTools") {
       period <- c(temporal.extent@start, temporal.extent@end)
@@ -266,11 +267,21 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
   if (any(is.na(period)))
     period <- c(year(start), year(end)-1)
 
-  ## need also to include soatial extent in file name
-  fout <- paste(tools::file_path_sans_ext(file),
-                "_", max(year(start), period[1]), "-", min(year(end), period[2]),
-                "_", operation, ".Rtable", sep="")
-  if (file.exists(fout) && !forceReCalculation) {
+  ## need also to include spatial extent in file name
+  if (full) {
+    fout <- paste(tools::file_path_sans_ext(file),
+                  "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                  "_", operation, "_full.Rtable", sep="")
+  } else if (monthly) {
+    fout <- paste(tools::file_path_sans_ext(file),
+                  "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                  "_", operation, "_monthly.Rtable", sep="")
+  } else {
+    fout <- paste(tools::file_path_sans_ext(file),
+                  "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                  "_", operation, ".Rtable", sep="")
+  }
+  if (file.exists(fout) && !reread.file) {
     if (verbose)
       message(paste("Found '", fout, "'", sep=""))
     DT <- data.table(read.table(fout, header=TRUE, stringsAsFactors=FALSE))
@@ -328,21 +339,32 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
         setkey(dt.tmp, Lon, Lat)
       }
 
-      if (att.get.nc(ncin, data.name, "units")=="K" && operation=="gdd5") 
-        dt.tmp[ ,(sdcols) := lapply(.SD, function(x){x -273.15 }), .SDcols=sdcols]
-      if (operation=="gdd5") {
-        dt.tmp[ ,(sdcols) := lapply(.SD, function(x){ifelse(x<5, 0, x) }), .SDcols=sdcols]
-        eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowSums(.SD), .SDcols=sdcols]", sep="")))
-      } else if (operation=="mean") {
-        eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowMeans(.SD), .SDcols=sdcols]", sep="")))
-      } else if (operation=="sum") {
-        eval(parse(text=paste("dt.tmp[ ,Y", y,":=rowSums(.SD), .SDcols=sdcols]", sep=""))) 
+      dt.tmp <- data.table::melt(dt.tmp, id.vars=c("Lon", "Lat"))
+      dt.tmp[, Date:=as.Date(paste(y, "-01-01", sep="")) + as.numeric(substring(variable,2)) - 1, ]
+      
+      if (monthly) {
+        dt.tmp[, Month:=format(Date, "%b"), ]
+        dt.tmp[, Year:=y, ]
+        agg.by <- c("Month", "Year")
+      } else {
+        dt.tmp[, Year:=y, ]
+        agg.by <- "Year"
       }
 
-      dt.tmp <- dt.tmp[, !sdcols, with=FALSE]
+      if (att.get.nc(ncin, data.name, "units")=="K" && operation=="gdd5") 
+        dt.tmp[, value := value-273.15, ]
+
+      if (operation=="gdd5") {
+        dt.tmp[, value := ifelse(value<5, 0, value), ]
+        dt.tmp <- dt.tmp[, list(value=sum(value)), by=c("Lon", "Lat", agg.by)]
+      } else if (operation=="mean") {
+        dt.tmp <- dt.tmp[, list(value=mean(value, na.rm=TRUE)), by=c("Lon", "Lat", agg.by)]
+      } else if (operation=="sum") {
+        dt.tmp <- dt.tmp[, list(value=sum(value, na.rm=TRUE)), by=c("Lon", "Lat", agg.by)]
+      }
 
       if (exists("DT")) {
-        DT <- DT[dt.tmp]
+        DT <- rbind(DT, dt.tmp)
       } else {
         DT <- copy(dt.tmp)
       }
@@ -351,11 +373,11 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
     if (verbose)
       message("")
 
-    DT <- melt(DT, id.var=c("Lon", "Lat"))
-    DT[, Year:=as.numeric(sub("Y", "", variable)), ]
-    DT[, variable:=NULL]
-    setkey(DT, Lon, Lat, Year)
+    if (verbose)
+      print(head(DT))
     
+    setkeyv(DT, c("Lon", "Lat", agg.by))
+
     if (write) {
       if (verbose)
         message(paste("Write data to:", fout))
@@ -367,7 +389,13 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
 
   if (!full) {
     if (period[1] != period[2]) {
-      DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat")]
+      if (monthly) {
+        DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat", "Month")]
+        DT$Month = factor(DT$Month, levels=month.abb)
+        DT <- data.table::dcast(DT, Lon + Lat ~ Month, value.var=c("value"))
+      } else {
+        DT <- DT[, list(value=mean(value)), by=c("Lon", "Lat")]
+      }
     } else {
       DT[, Year:=NULL, ]
     }
@@ -423,4 +451,164 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
   } else {
     return(DT)
   }
+}
+
+#' Calculates the seasonality index
+#'
+#' Calculates a seasonality index based on a monthly vector by default, originally developed for precipitation. With specifying an additional wheighting vector different to months can be used.
+#' 
+#' @param x values, e.g. monthly precipitation values
+#' @param wgt weight for the angle width of each value, e.g. days per month (default)
+#' @return the seasonality index following Markhan (1970)
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
+#' @references Charles G. Markhan (1970) Seasonality of precipitation in the United States, Annals of the Association of American Geographers, 60:3, 593-597, DOI: 10.1111/j.1467-8306.1970.tb00743.x
+seasonalityIndex <- function(x, wgt=c(31, 28.2425, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)) {
+  if (!is.vector(x) || !is.vector(wgt))
+    stop("Any of 'x'/'wgt' is not a vector")
+  if (length(wgt)!=length(x)) {
+    message("Length of 'x' and 'wgt' differ. Assuming a regular wgt.")
+    warning("Length of 'x' and 'wgt' differ. Assuming a regular wgt.")
+    wgt <- rep(1, length(x))
+  }
+  # calculate the wheighted angles based on wgt
+  cwgt <- cumsum(wgt) - wgt/2
+  cwgt <- append(cwgt, cwgt[length(cwgt)] + wgt[length(cwgt)]/2)
+  angle <- 2 * pi * cwgt / cwgt[length(cwgt)]
+
+  # calculate the x and y component of each vector
+  vx <- sin(angle[1:(length(angle)-1)]) * x
+  vy <- cos(angle[1:(length(angle)-1)]) * x
+
+  # calculate the "seasonality" by summing up the x and y components
+  # of the vectors and divivion by the total precipitation
+  seasonality = (sqrt(sum(vx)^2 + sum(vy)^2)) / sum(x)
+  return(seasonality)
+}
+#' Adds a seasonality index column
+#' 
+#' Adds a column of the seasonality index based on Marhan (1970) to the input data
+#' 
+#' @param input Input data (either data.frame, data.table or VegObject) with at least the month abbreviations as column names.
+#' @param colname Name of the new created seasonality index column.
+#' @param verbose print some information
+#' @return same type as input with the seasonality index as new data column
+#' @export
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+addSeasonalityIndex <- function(input=NULL, colname="SI", verbose=TRUE) {
+  if (is.data.table(input)) {
+    if (verbose)
+      message("Input is a data.table")
+    if (length(setdiff(month.abb, colnames(input)))!=0)
+      stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(data)), collapse="', '"), sep=""))
+    eval(parse(text=paste("input[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))
+    return(input)
+  } else if (is.data.frame(input)) {
+    if (verbose)
+      message("Input is a data.frame")
+    if (length(setdiff(month.abb, colnames(input)))!=0)
+      stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(input)), collapse="', '"), sep=""))
+    eval(parse(text=paste("input$", colname, "=apply(input[, month.abb], 1, seasonalityIndex)", sep="")))
+    return(input)
+  } else if (is.VegObject(input, spatial=TRUE)) {
+    if (verbose)
+      message("Input is a spatial VegObject.")
+    if (length(setdiff(month.abb, colnames(input@data)))!=0)
+      stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(input@data)), collapse="', '"), sep=""))
+    eval(parse(text=paste("input@data[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))
+    return(input)
+  } else {
+    stop(paste("addSeasonalityIndex: Don't know what to to with class", class(input)))
+  }
+}
+
+
+#' daylength calculation
+#' 
+#' daylength calculation depending on latitude and day of year.
+#' taken from function daylengthinsoleet (driver.cpp) LPJ-GUESS v2.1
+#' 
+#' @param lat latitude (vector)
+#' @param doy day of the year (vector)
+#' @param leap use February 29th or not
+#' @return daylength in hours as vector or matrix, depending on input shape
+#' @export
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+daylength <- function(lat, doy, leap=FALSE) {
+  dom <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+  if (leap) dom[3] = 29
+  deg2rad <- pi / 180.0
+  hh      <- array(0., c(length(lat), length(doy)))
+
+  d <- -23.4 * deg2rad * cos(2.0 * pi * (doy + 10.5) / sum(dom))
+  u <- sin(lat * deg2rad) %*% t(sin(d))
+  v <- cos(lat * deg2rad) %*% t(cos(d))
+
+  hh[u>-v & u<v] = acos(-u[u>-v & u<v] / v[u>-v & u<v]) 
+  hh[u<=-v]      = 0.0
+  hh[u>=v]       = pi
+
+  ## daylength in hours
+  return(24.0 * t(hh) / pi)
+}
+
+#' Calculate the incoming solar radiation based of sunshine/cloudcover
+#' 
+#' incoming net solar radiation (W m^-2) reduced by albedo,
+#' cloud coverage or sun shine fraction, latitude and
+#' day of the year as done in function daylengthinsoleet
+#' (driver.cpp) LPJ-GUESS v2.1
+#' 
+#' @param lat latitude (vector)
+#' @param doy day of the year (vector)
+#' @param rad.frac sunshine/cloudcover. Must have the shape lat x doy
+#' @param cloudcover logical, if rad.frac is cloudcover (TRUE), default FALSE
+#' @param leap use February 29th or not
+#' @return incoming solar radiation in W m^-2 as vector or matrix, depending on input shape
+#' @export
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+lpj.radiation <- function(lat, doy, rad.frac, albedo=0.17, cloudcover=FALSE, leap=FALSE) {
+  dom <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+  if (leap) dom[3] = 29
+
+  ## convert fraction to percent
+  if (max(rad.frac) <= 1)
+    rad.frac <- rad.frac*100
+
+  ## Convert to percent sunshine hours if given as cloudcover
+  if (cloudcover) {
+    sun <- 100. - rad.frac
+  } else {
+    sun <- rad.frac
+  }
+
+  ## print(c(min(sun), max(sun)))
+
+  QOO <- 1360.0
+  A   <- 107.0
+  B   <- 0.2
+  C   <- 0.25
+  D   <- 0.5
+  K   <- 13750.98708
+
+  deg2rad <- pi / 180.0
+  hh      <- array(0., c(length(lat), length(doy)))
+
+  d <- -23.4 * deg2rad * cos(2.0 * pi * (doy + 10.5) / sum(dom))
+  u <- sin(lat * deg2rad) %*% t(sin(d))
+  v <- cos(lat * deg2rad) %*% t(cos(d))
+
+  hh[u>-v & u<v] = acos(-u[u>-v & u<v] / v[u>-v & u<v]) 
+  hh[u<=-v]      = 0.0
+  hh[u>=v]       = pi
+
+  u  <- t(u)
+  v  <- t(v)
+  hh <- t(hh)
+
+  qo <- QOO*(1.0 + 2.0 * 0.01675 * cos(2.0 * pi * (doy + 0.5) / sum(dom)))
+
+  w <- (C + D * sun / 100.0) * (1.0 - albedo) * qo
+  rs_day <- 2.0 * w * (u * hh + v * sin(hh)) * K
+  return(rs_day / 86400.)
 }
