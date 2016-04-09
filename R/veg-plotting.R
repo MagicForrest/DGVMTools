@@ -25,11 +25,78 @@
 
 
 ##########################################################################################################################################
-################################################## PLOT LPJ MAPS #########################################################################
+################################################## PLOT VEG MAPS #########################################################################
 ##########################################################################################################################################
 ### This is a heavy lifting function for plotting LPJ variables flexibly but with some degree of automation
 ### It also acts as wrapper for non-standard plots, or at least it should soon.
-
+#
+#' Plots a map from a temporally-averaged \code{VegObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.
+#' 
+#' The primary use for this function in to plot a map from a \code{VegObject}, although plotting a Raster* is also useful.
+#' It has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults,
+#' so that in the case of plotting a \code{VegObject} all you *need* to supply is the data itself, everything else is eitehr set to a sensible default,
+#' or provided by the \code{VegObject} itself.  Note that the default behaviour is to write a .png to the run directory of the \code{VegObject} or,
+#' for other data types, the specified plot.dir (defaulting to the current working directory in no plot.dir is supplied).
+#'
+#' @param data The data to plot. Can be a VegObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
+#' @param targets A list of strings specifying which layers to plot.  Defaults to all layers.  
+#' @param expand.targets A boolean, determines wether to expand the targets arguement.  See documentation for \code{expandTargets} for details.
+#' @param period The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.   
+#' In the case of plotting a \code{VegRun} object this is taken automatically from he object, but this provides an override.
+#' @param quant A \code{VegQuantity} object describy the quantity to be plotted.  This provides an override \code{VegQuant} when plotting a \code{VegObject}
+#' and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.
+#' @param doSummary Boolean, whether to plot all \code{targets} on one plot.
+#' @param doIndividual Boolean, whether to plot all \code{targets} on individual plots.
+#' @param run A \code{VegRun} object from which to pull metadata.  Note that normally this information is stored in the \code{VegObject}. 
+#' @param PFT.set A PFT set, necessary for exapnding targets and plotting long names.  Normally taken from the \code{VegObject}.
+#' @param plot.dir A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{VegObject}, but this provides an override.
+#' If not a \code{VegObject} and not specified, this defaults to the current directory
+#' @param summary.file.name A character string to override the file name of the summary plot (not including the path, just the filename).
+#' @param summary.title A character string to override the title on the summary plot.
+#' @param special.string A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
+#' For example "Corrected" or "EuropeOnly"
+#' @param layout.objs List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
+#' so see the there for how to build them.  Note that the \code{map.overlay} slot of the relevant \code{VegRun} object will be plotted automatically, 
+#' so that need not be specified here.
+#' @param plot.labels List of character strings to be used as panel labels for summary plots.  Defaults to the layer names.
+#' @param plot.bg.col Colour string for the plot background.
+#' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. 
+#' @param Cairo.units The units to specify the canvas size, for the Cairo graphics function.  
+#' See \code{Cairo} documentation, but can generally be left at the default which is"px".
+#' @param Cairo.dpi The dpi for the Cairo graphics function.  
+#' See \code{Cairo} documentation, but can generally be left at the default which is 72.
+#' @param Cairo.type The file format for the plot.  Default is "png"  
+#' See \code{Cairo} documentation, change to "x11" for pop-up plots on GNU/linux, "win" for pop-up plots on Microsoft Windows.
+#' @param Cairo.width Width of the plots (units specified in Cairo.units argument)
+#' @param Cairo.height Height of the plots (units specified in Cairo.units argument)
+#' @param Cairo.bg Colour string specifying the background colour of the whole plot.
+#' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
+#' Make it bigger if the text is too small on large plots and vice-versa
+#' @param plot.extent An extent object to limit the plot area.
+#' @param limit Boolean, whether or not to limit the plotted values between a range, either the limits argument below,
+#' or the range of the plot.
+#' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values
+#' @param override.cols A colour palette function to override the defaults
+#' @param override.cuts Cut ranges (a numeric vector) to override the defaults.
+#' @param special A character string to indicate certain "special modes" which modifies the behaviour of the function a bit.
+#' Special modes are currectly "fraction", "difference", "percentage.difference" and "firert" (fire return time).
+#' Biomes, dominant PFT and burnt area fraction should be added soon.
+#' @param maxpixels Maximum number of pixels to plot (see \code{raster} version of \code{spplot})
+#' @param ... Extra arguments to be be passed to \code{spplot} and therefor also to \code{lattice::levelplot}.
+#' 
+#' This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
+#' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
+#' However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
+#' 
+#' The function works best for \code{VegObjects} (which contain a lot of useful metadata).   
+#' 
+#' @return Nothing, just makes the plot
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @importFrom Cairo Cairo
+#' @import raster data.table
+#' @export 
+#' @seealso \code{plotGGSpatial}, \code{expandTargets}, \code{sp::spplot}, \code{latice::levelplot}
 
 plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegObject
                         targets = NULL,
@@ -175,8 +242,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       quant@full.string = paste("Percentage Difference: ", quant@full.string, sep = "")
       plot.bg.col <- "grey"
       
-      # SET THE INTERVALS (using either these sensible options or the over-rides)
-      # if override cuts and cols specified use them, but note we have to then kill them otherwise they will over-ride the new cuts below
+      # SET THE INTERVALS (using either these sensible options or the overrides)
+      # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
       if(!is.null(override.cols)) {quant@colours <- override.cols}
       if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
       override.cols = override.cuts = NULL
@@ -226,10 +293,10 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
     else if(tolower(special) == "firert" | tolower(special) == "fire.return.time" | quant@id == "firert"){
 
-      # SET THE INTERVALS (using either these sensible options or the over-rides)
+      # SET THE INTERVALS (using either these sensible options or the overrides)
       quant@cuts <- c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000)
       quant@colours <-  colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
-      # if override cuts and cols specified use them, but note we have to then kill them otherwise they will over-ride the new cuts below
+      # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
       if(!is.null(override.cols)) {quant@colours <- override.cols}
       if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
       override.cols = override.cuts = NULL
@@ -806,37 +873,6 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   dev.off()
   
 }
-
-
-##########################################################################################################################################
-################################################## PLOT BA MAPS #########################################################################
-##########################################################################################################################################
-
-plotBAMaps <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented),
-                       targets = "all",
-                       period = NULL, 
-                       run = NULL, 
-                       plot.dir = NULL, 
-                       file.name = NULL, 
-                       summary.file.name = NULL,
-                       summary.title = NULL,
-                       special.string = NULL,
-                       layout.objs = NULL, 
-                       plot.labels =  NULL,
-                       useLongnames = FALSE,
-                       fraction = TRUE,
-                       background.colour = "transparent",
-                       ...){
-  
-  
-  
-  stop("plotBAMaps obselete: using plotFireRT instead (code up the inverting!)")
-  
-  
-}
-
-
-
 
 
 #######################################################################################################################################
