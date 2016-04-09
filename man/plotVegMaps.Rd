@@ -22,7 +22,7 @@ plotVegMaps(data, targets = NULL, expand.targets = TRUE, quant = NULL,
 
 \item{expand.targets}{A boolean, determines wether to expand the targets arguement.  See documentation for \code{expandTargets} for details.}
 
-\item{quant}{A \code{VegQuantity} object describy the quantity to be plotted.  This overrides the \code{VegQuant} when plotting a \code{VegObject}
+\item{quant}{A \code{VegQuantity} object describy the quantity to be plotted.  This provides an override \code{VegQuant} when plotting a \code{VegObject}
 and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.}
 
 \item{period}{The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.
@@ -50,7 +50,8 @@ For example "Corrected" or "EuropeOnly"}
 so see the there for how to build them.  Note that the \code{map.overlay} slot of the relevant \code{VegRun} object will be plotted automatically, 
 so that need not be specified here.}
 
-\item{plot.labels}{List of character strings to be used as panel labels for summary plots.  Defaults to the layer names.}
+\item{plot.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
+Sensible titles will be constructed if this is not specified.}
 
 \item{plot.bg.col}{Colour string for the plot background.}
 

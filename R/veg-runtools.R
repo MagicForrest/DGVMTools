@@ -87,7 +87,7 @@ defineVegRun <- function(...){
     
     # if we get a single characters string, assume it is a map and just a simple map from it
     if(length(info@map.overlay) == 1 & class(info@map.overlay)[1] == "character") {
-       info@map.overlay <- makeOverlay(info@map.overlay)
+      info@map.overlay <- makeOverlay(info@map.overlay)
     }
     # else if is a list 
     else if(class(info@map.overlay)[1] == "list"){
@@ -177,6 +177,36 @@ addToVegRun <- function(object, run){
   
 }
 
+
+############################## MAKE THE 'id' STRING FOR A VEGOBJECT
+#
+#' Make an ID string for a \code{VegObject}
+#' 
+#' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
+#' for use in the \code{id} slot of a \code{VegObject} and for filenames etc.
+#' 
+#' @param var.string Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"
+#' @param temporal.extent The temporal extent of this object if it has been cropped from the orginal duration, otherwise NULL
+#' @param spatial.extent The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL
+#' @param temporally.averaged Logical, should be TRUE if temporal averaging has been done
+#' @param spatially.averaged Logical, should be TRUE if spatial averaging has been done
+#' @return A character string 
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+
+
+makeVegObjectID <- function(var.string, temporal.extent = NULL, spatial.extent = NULL, temporally.averaged = FALSE, spatially.averaged = FALSE){
+  
+  TA.str = SA.str = "."
+  if(spatially.averaged) SA.str <- ".SA."
+  if(temporally.averaged) TA.str <- ".TA."
+  if(is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, TA.str, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
+  else if(!is.null(spatial.extent) & is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, sep ="")
+  else if(!is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, TA.str,  paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
+  else  vegobject.id <- var.string
+  
+  return(vegobject.id)
+}
 
 ################################# GET TEMPORALLY-AVERAGED DATA #########################################
 
@@ -306,14 +336,8 @@ getVegObject <- function(run,
     var.string <- quant@id
   }
   
-  ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
-  TA.str = SA.str = "."
-  if(spatially.average) SA.str <- ".SA."
-  if(temporally.average) TA.str <- ".TA."
-  if(is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, TA.str, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
-  else if(!is.null(spatial.extent) & is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, sep ="")
-  else if(!is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, TA.str,  paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
-  else  vegobject.id <- var.string
+  ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
+  vegobject.id <- makeVegObjectID(var.string, temporal.extent, spatial.extent, temporally.average, spatially.average)
   file.name <- file.path(run@run.dir, paste(vegobject.id, "RVCData", sep = "."))
   
   

@@ -24,7 +24,7 @@ This class stores the rasters (model, data, difference and precentage difference
 
 \item{\code{P.cor}}{The Pearsons product moment correlation between the model and the the data,}
 
-\item{\code{RMSE}}{The Root Mean Squared Error etween the model and the the data}
+\item{\code{RMSE}}{The Root Mean Squared Error between the model and the the data}
 
 \item{\code{mean.diff}}{The difference between the model and the the data (all gridcells)}
 

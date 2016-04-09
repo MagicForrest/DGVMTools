@@ -485,7 +485,7 @@ setClass("TemporalDataset",
 #' @slot model.raster A "RasterLayer" holding the mode
 #' @slot R.squ The R squared between the model and the data
 #' @slot P.cor The Pearsons product moment correlation between the model and the the data,
-#' @slot RMSE The Root Mean Squared Error etween the model and the the data
+#' @slot RMSE The Root Mean Squared Error between the model and the the data
 #' @slot mean.diff The difference between the model and the the data (all gridcells)
 #' @slot sd.diff The standard deviation of the difference between the model and the the data (all gridcells)
 #' @exportClass RasterComparison

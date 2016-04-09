@@ -58,7 +58,8 @@
 #' @param layout.objs List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
 #' so see the there for how to build them.  Note that the \code{map.overlay} slot of the relevant \code{VegRun} object will be plotted automatically, 
 #' so that need not be specified here.
-#' @param plot.labels List of character strings to be used as panel labels for summary plots.  Defaults to the layer names.
+#' @param plot.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
+#' Sensible titles will be constructed if this is not specified.
 #' @param plot.bg.col Colour string for the plot background.
 #' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. 
 #' @param Cairo.units The units to specify the canvas size, for the Cairo graphics function.  
@@ -149,7 +150,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       stop("plotVegMaps:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
     }
   }
-    
+  
   ### DIRECTORY TO SAVE PLOTS
   if(is.null(plot.dir)){
     if(!is.null(run)){ plot.dir <- run@run.dir} 
@@ -187,7 +188,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   ### TOLERANCE - for when making grid to rasterise
   if(is.null(run)) { tolerance <- 0.02 }
   else {tolerance <- run@tolerance}  
-    
+  
   ### EXPAND TARGETS
   if(is.null(targets)) {
     if(is.VegObject(data)) targets <- names(data@data)
@@ -201,14 +202,14 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   
   ### PROMOTE TO RASTER AND SANITISE NAMES - also make plot labels (if necessary) before the sanitatisation 
-  if(is.null(plot.labels)){  plot.labels <- targets }
+  original.targets <- targets # save for building plot label later
   targets <- sanitiseNamesForRaster(targets)
   data.toplot <- sanitiseNamesForRaster(data)
   data.toplot <- promoteToRaster(data.toplot, targets, tolerance)
   
   ### CROP THE DATA IF PLOT EXTENT HAS BEEN SPECIFIED
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
-
+  
   
   #####################################################################################
   ############# DEAL WITH SPECIAL CASES ###############################################
@@ -228,7 +229,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       quant@short.string = paste(quant@short.string, "Diff", sep = ".")
       quant@full.string = paste("Difference: ", quant@full.string, sep = "")
       plot.bg.col <- "grey"
-    
+      
       
     }
     else if(tolower(special) == "percentage.difference" | tolower(special) == "perc.diff"){
@@ -248,7 +249,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
       override.cols = override.cuts = NULL
       
-          
+      
       # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
       # get lowest and highest '50's
       smallest.limit = min(abs(quant@cuts[1]), abs(quant@cuts[length(quant@cuts)]))
@@ -287,12 +288,12 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
     else if(tolower(special) == "burnt.fraction" | tolower(special) == "ba"){
       
-  
+      
       stop("plotVegMaps: special burnt.fraction or ba not impletemted yet")
       
     }
     else if(tolower(special) == "firert" | tolower(special) == "fire.return.time" | quant@id == "firert"){
-
+      
       # SET THE INTERVALS (using either these sensible options or the overrides)
       quant@cuts <- c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000)
       quant@colours <-  colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
@@ -300,7 +301,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       if(!is.null(override.cols)) {quant@colours <- override.cols}
       if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
       override.cols = override.cuts = NULL
-            
+      
       # RECLASSIFY THE DATA ACCORDING TO THE CUTS 
       temp.names <- names(data.toplot)
       data.toplot <- cut(data.toplot, quant@cuts) 
@@ -322,18 +323,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   ### OVERRIDE (CUTS AND COLOUR SCHEME) 
   if(!is.null(override.cols)) {quant@colours <- override.cols}
   if(!is.null(override.cuts)) {quant@cuts <- override.cuts}
-  
-  
-  ### USE LONGNAMES - for PFTs
-  if(useLongnames) {
-    for(plot.label in plot.labels){
-      # look up PFT
-      for(PFT in PFT.set){
-        if(plot.label == PFT@id) plot.labels[[length(plot.labels )+1]] <- unlist(PFT@name)
-      }
-    }
-    plot.labels <- unlist(plot.labels)
-  }
   
   
   
@@ -385,7 +374,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     doSummary <- FALSE
     doIndividual <- TRUE
   }
-    
+  
   
   for(format in Cairo.type){
     
@@ -393,20 +382,36 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     if(doSummary){
       
       # FILENAME
-      this.id <- makeVariableIDString(quant@id, "Summary", special.string)
-      if(is.null(summary.file.name)) this.file.name <- makeFileName(this.id, file.name = summary.file.name, run = run, period = period)
+      # make a description of the variable
+      this.id.string <- makeVariableIDString(quant@id, "Summary",  run.id = run@id, special.string)
+      if(is.null(summary.file.name)) this.file.name <- paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = ".")
       else this.file.name <- paste(summary.file.name, format, sep = ".")
       
       # PLOT MAIN TITLE
-      if(is.null(summary.title)) this.main.title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), summary.title, run, period)
-      else this.main.title <- summary.title
-
+      if(is.null(summary.title)) summary.title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), run, period)
+      
+      # PANEL LABELS - note expand longnames here if requested 
+      if(is.null(plot.labels)) {
+        plot.labels.here <- original.targets
+        ### USE LONGNAMES - for PFTs
+        if(useLongnames) {
+          for(plot.label.index in 1:length(plot.labels.here)){
+            # look up PFT
+            for(PFT in PFT.set){
+              if(plot.labels.here[plot.label.index] == PFT@id) plot.labels.here[[plot.label.index]] <- unlist(PFT@name)
+            }
+          }
+          plot.labels.here<- unlist(plot.labels.here)
+        }
+      }
+      else plot.labels.here <- plot.labels
+      
       Cairo(file = file.path(plot.dir, this.file.name), 
             dpi = Cairo.dpi, 
             type = format, 
             width = Cairo.width, 
             height = Cairo.height, 
-            title = this.main.title, 
+            title = summary.title, 
             bg = Cairo.bg)  
       
       print(spplot(data.toplot,
@@ -419,17 +424,17 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                    at = quant@cuts,
                    scales = list(draw = TRUE, cex = 3 * text.multiplier),
                    as.table = TRUE,
-                   main=list(label=this.main.title, 
+                   main=list(label=summary.title, 
                              cex = 4 * text.multiplier),
                    par.strip.text = list(#lines = 1.0, 
                      cex = 2 * text.multiplier),
                    sp.layout = layout.objs,
                    maxpixels = maxpixels,
-                   names.attr = plot.labels,
+                   names.attr = plot.labels.here,
                    ...)
       )
-                 
-          
+      
+      
       dev.off()
       
     }
@@ -440,18 +445,32 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       for(layer in targets){
         
         # FILENAME
-        this.id <- makeVariableIDString(quant@id, layer, special.string)
-        this.file.name <- makeFileName(this.id, file.name = NULL, run = run, period = period)
+        this.id.string <- makeVariableIDString(quant@id, layer, run.id = run@id, special.string)
+        this.file.name <- paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = ".")
         
-        # PLOT TITLE
+        # PLOT TITLES
+        # If only one target overall
         if(length(targets) == 1){
-          if(is.null(summary.title)) plot.title <- makePlotTitle(paste(quant@full.string, layer, sep = " "), summary.title, run, period)
+          if(is.null(summary.title)) plot.title <- makePlotTitle(paste(quant@full.string, layer, sep = " "), run, period)
           else plot.title <- summary.title
         }
+        # If many individuals
         else {
-          if(!is.null(plot.labels[which(layer == targets)])) {plot.title <- plot.labels[which(layer == targets)]}
-          else { plot.title <- makePlotTitle(paste(quant@full.string, special.string, layer, sep = " "), plot.title, run, period) }
+          if(!is.null(plot.labels[which(layer == targets)])) {
+            plot.title <- plot.labels[which(layer == targets)]
+          }
+          else { 
+            plot.title <- makePlotTitle(paste(quant@full.string, special.string, layer, sep = " "), run, period) 
+            # if expand PFT names
+            if(useLongnames) {
+              # look up PFT
+              for(PFT in PFT.set){
+                if(layer == PFT@id) plot.title <- makePlotTitle(paste(quant@full.string, special.string, PFT@name, sep = " "), run, period)
+              }
+            }
+          }
         }
+        
         
         Cairo(file = file.path(plot.dir, this.file.name), 
               dpi = Cairo.dpi, 
@@ -480,7 +499,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                      ...)
         )
         dev.off()
-                
+        
         
       }
       
@@ -499,7 +518,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 ################################################## PLOT BIOME MAPS #######################################################################
 ##########################################################################################################################################
 
-
+# Obselete, Fold into plotVegMaps() with special = "biomes"
 plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
                          targets = NULL,
                          scheme = Smith2014.scheme,
@@ -613,13 +632,12 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   }
   
   # PLOT MAIN TITLE
-  if(is.null(main.title)) this.main.title <- makePlotTitle(paste(scheme@id, "Biomes", sep =""), main.title, run, period)
-  else this.main.title <- main.title
+  if(is.null(main.title)) main.title <- makePlotTitle(paste(scheme@id, "Biomes", sep =""), run, period)
   
   for(format in Cairo.type){
     
     # FILENAME
-    if(is.null(file.name)) this.file.name <- makeFileName(paste(scheme@id, "Biomes", sep =""), file.name = file.name, run = run, period = period, extension = format)
+    if(is.null(file.name)) this.file.name <- .makeFileName(paste(scheme@id, "Biomes", sep =""), file.name = file.name, run = run, period = period, extension = format)
     else this.file.name <- paste(file.name, format, sep = ".")
     
     Cairo(file = file.path(plot.dir, this.file.name), 
@@ -627,7 +645,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
           type = format, 
           width = Cairo.width, 
           height = Cairo.height, 
-          title = this.main.title, 
+          title = main.title, 
           bg = Cairo.bg)  
     
     print(spplot(data.toplot,
@@ -637,7 +655,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
                  at = 0:length(biome.strings),
                  scales = list(draw = TRUE, cex = 2),
                  as.table = TRUE,
-                 main=list(label=this.main.title, cex = 3),
+                 main=list(label=main.title, cex = 3),
                  par.strip.text = list(lines = 1.0, cex = 1.5),
                  sp.layout = layout.objs,
                  names.attr = plot.labels,
@@ -655,113 +673,6 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   }
   
 }
-
-
-##########################################################################################################################################
-################################################## PLOT FIRE RETURN MAPS #################################################################
-##########################################################################################################################################
-
-
-plotFireRT <- function(data, # can be a data.table, SpatialPixelsDataFrame or a raster
-                       targets = "all",
-                       cuts = c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000),
-                       cols = colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3")),  
-                       run = NULL, 
-                       period = NULL, 
-                       plot.dir = NULL, 
-                       file.name = NULL, 
-                       layout.objs = NULL, 
-                       main.title =  NULL,
-                       plot.labels = NULL,
-                       Cairo.units = "px",
-                       Cairo.dpi = 72,
-                       Cairo.type = "png", 
-                       Cairo.width = 1800, 
-                       Cairo.height = 1000,
-                       Cairo.bg = "transparent",
-                       ...){
-  
-  ##### Here take parameters from arguments or from supplied VegRun object
-  
-  # TOLERANCE - for when making grid
-  if(is.null(run)) { tolerance <- 0.02 }
-  else {tolerance <- run@tolerance}  
-  
-  # DIRECTORY TO SAVE PLOTS
-  if(is.null(plot.dir)){
-    if(!is.null(run)){ plot.dir <- run@run.dir} 
-    else { plot.dir = "." }
-  }
-  
-  ##### Here check data is right class for plotting, process it if not
-  data.toplot <- promoteToRaster(data, targets, run@tolerance) 
-  if(is.null(plot.labels)) {
-    if(is.null(run)){
-      plot.labels <- list()
-      for(layer in names(data.toplot)){
-        plot.labels <- append(plot.labels, layer) 
-      }
-    }
-    else{ plot.labels <- run@description}
-  }
-  
-  # CUT THE DATA ACCORDING TO THE CUTS
-  data.toplot <- cut(data.toplot, cuts) 
-  colourkey.labels <- paste(cuts)
-  colourkey.labels[length(colourkey.labels)] <- paste0(colourkey.labels[length(colourkey.labels)], "+")
-  
-  # PLOT MAIN TITLE
-  if(is.null(main.title)) this.main.title <- makePlotTitle(paste("Fire Return Time"), main.title, run, period)
-  else this.main.title <- main.title
-  
-  for(format in Cairo.type){
-    
-    # FILENAME
-    if(is.null(file.name)) this.file.name <- makeFileName("FireRT", file.name = file.name, run = run, period = period, extension = format)
-    else this.file.name <- file.name
-    
-    Cairo(file = file.path(plot.dir, this.file.name), 
-          dpi = Cairo.dpi, 
-          type = format, 
-          width = Cairo.width, 
-          height = Cairo.height, 
-          title = this.main.title, 
-          bg = Cairo.bg)  
-    
-    print(spplot(data.toplot,
-                 xlab = list(label = "Longitude", cex = 2),
-                 ylab = list(label = "Latitude", cex = 2),
-                 col.regions = cols,
-                 at = 0:(length(cuts)-1),
-                 scales = list(draw = TRUE, cex = 2),
-                 as.table = TRUE,
-                 main=list(label=this.main.title, cex = 3),
-                 par.strip.text = list(lines = 1.0, cex = 1.5),
-                 sp.layout = layout.objs,
-                 names.attr = plot.labels,
-                 colorkey = list(col = cols, 
-                                 space = "right",
-                                 labels = list(labels = colourkey.labels, 
-                                               cex = 2,
-                                               at = 0:(length(cuts)-1)
-                                 )
-                 ),
-                 ...
-    )
-    )
-    dev.off()
-    
-  }
-  
-  rm(data.toplot)
-  gc()
-  
-}
-
-
-
-
-
 
 
 
@@ -849,18 +760,20 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
   }
   
   # PLOT MAIN TITLE
-  if(is.null(summary.title)) this.main.title <- makePlotTitle(paste("Dominant PFT by", quant@id, sep = " ") , summary.title, run, period)
-  else this.main.title <- summary.title
+  if(is.null(summary.title)) summary.title <- makePlotTitle(paste("Dominant PFT by", quant@id, sep = " "), run, period)
   
-  
-  CairoPNG(file.path(plot.dir, current.filename), width = 1800, height = 1000, title = paste("Domiant PFT", sep = " "), bg = background.colour)  
+  CairoPNG(file.path(plot.dir, current.filename), 
+           width = 1800, 
+           height = 1000, 
+           title = paste("Domiant PFT", sep = " "), 
+           bg = background.colour)  
   print(spplot(data.toplot,
                which.dominant,
                xlab = list(label = "Longitude", cex = 2),
                ylab = list(label = "Latitude", cex = 2),
                col.regions = dom.PFT.colourlist,
                scales = list(draw = TRUE, cex = 2),
-               main=list(label=this.main.title, cex = 3),
+               main=list(label=summary.title, cex = 3),
                par.strip.text = list(lines = 1.0, cex = 1.5),
                sp.layout = layout.objs,
                #names.attr = plot.labels,
@@ -879,8 +792,38 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
 ################### PLOT HISTOS FOR COMPARING MODEL AND DATA  #########################################################################
 #######################################################################################################################################
 
+#' Make a histograms by comparing two rasters
+#' 
+#' Takes either two rasters or a \code{RasterComparion} object and makes a histograms.
+#' 
+#' Probably should be made a method of \code{RasterComparion}, 
+#' with further additions to that class necessary.
+#'  
+#' @param model Raster of the model
+#' @param data Raster of the data
+#' @param run The \code{VegRun} object for the run plotted (optional)
+#' @param period The time period plotted as \code{TemporalExtent} (optional)
+#' @param data.name Character string for the data
+#' @param quant The quantity plotted (as \code{VegQuant} object)
+#' @param breaks A numerical vector of the breakpoints for the histograms
+#' @param plot.range A numerical vector with two elements defining the range to plot on the histogram.
+#' @param stat.results The \code{RasterComparion} object if it has already been calculated
+#'
+#' The plot is saved to the run directory of the run object
+#' @importFrom Cairo CairoPNG
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#'
+#' @export 
 
-plotHistoComparison <- function(model, data, run, period, data.name, quant, breaks, plot.range, stat.results = NULL){
+plotHistoComparison <- function(model,
+                                data, 
+                                run, 
+                                period, 
+                                data.name, 
+                                quant, 
+                                breaks, 
+                                plot.range, 
+                                stat.results = NULL){
   
   if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
   
@@ -894,7 +837,7 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
   if(breaks.max - breaks.min > 100) breaks <- seq(breaks.min, breaks.max, by = 10) 
   else if(breaks.max - breaks.min < 10) breaks <- seq(breaks.min, breaks.max, by = 0.1)
   else breaks <- seq(breaks.min, breaks.max, by = 1)
-    
+  
   CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "DiffHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
   
   cex.axis.multi = 2
@@ -928,7 +871,34 @@ plotHistoComparison <- function(model, data, run, period, data.name, quant, brea
 ################### PLOT SCATTER PLOT FOR COMPARING MODEL AND DATA  ###################################################################
 #######################################################################################################################################
 
-plotScatterComparison <- function(model, data, run, period, data.name, quant, stat.results = NULL){
+#' Make a scatter plot by comparing two rasters
+#' 
+#' Takes either two rasters or a \code{RasterComparion} object and makes a scatter plot.
+#' 
+#' Probably should be made a method of \code{RasterComparion}, 
+#' with further additions to that class necessary.
+#'  
+#' @param model Raster of the model
+#' @param data Raster of the data
+#' @param run The \code{VegRun} object for the run plotted (optional)
+#' @param period The time period plotted as \code{TemporalExtent} (optional)
+#' @param data.name Character string for the data
+#' @param quant The quantity plotted (as \code{VegQuant} object)
+#' @param stat.results The \code{RasterComparion} object if it has already been calculated
+#'
+#' The plot is saved to the run directory of the run object
+#' @importFrom Cairo CairoPNG
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#'
+#' @export 
+
+plotScatterComparison <- function(model, 
+                                  data, 
+                                  run, 
+                                  period, 
+                                  data.name, 
+                                  quant, 
+                                  stat.results = NULL){
   
   if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
   
@@ -953,11 +923,23 @@ plotScatterComparison <- function(model, data, run, period, data.name, quant, st
 ################### HELPER FUNCTIONS FOR MAKING PLOT TITLES, FILENAMES ETC... #########################################################
 #######################################################################################################################################
 
-# Return this plot title,
-makePlotTitle <- function(quantity.str, plot.title = NULL, run = NULL, period = NULL){
+#' Make a plot title
+#' 
+#' Build an appropriate plot title from some possibly relevant variables.  
+#' It will use a string to represent the quantity (obligatory), and optionally a period and an ID.
+#' 
+#' @param quantity.str Character string for the quantity plotted
+#' @param run The \code{VegRun} object for the run plotted (optional)
+#' @param period The time period plotted as \code{TemporalExtent} (optional)
+#' @return A character string for use as a plot title
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#'
+#' @export 
+makePlotTitle <- function(quantity.str, run = NULL, period = NULL){
   
-  if(!is.null(plot.title)){ return(plot.title)}
-  else if(!is.null(period) & !is.null(run)) { return(paste(quantity.str,  ": ", run@description, " (", period@start, "-", period@end, ")", sep = ""))}
+  
+  if(!is.null(period) & !is.null(run)) { return(paste(quantity.str,  ": ", run@description, " (", period@start, "-", period@end, ")", sep = ""))}
   else if(is.null(period) & !is.null(run)) { return(paste(quantity.str,  ": ", run@description, sep = ""))}
   else if(is.null(run) & !is.null(period)) { return(paste(quantity.str,  ": ", " (", period@start, "-", period@end, ")", sep = ""))}
   else {return (quantity.str) }
@@ -965,7 +947,9 @@ makePlotTitle <- function(quantity.str, plot.title = NULL, run = NULL, period = 
 }
 
 
-makeFileName <- function(quantity.id, file.name = NULL, run = NULL, period = NULL, extension = "png"){
+
+# obselete can be removed with plotBiomes(), don't need to document
+.makeFileName <- function(quantity.id, file.name = NULL, run = NULL, period = NULL, extension = "png"){
   
   if(!is.null(file.name)){return(file.name)}
   else if(!is.null(period) & !is.null(run)) { return(paste(quantity.id, ".", run@id, ".TA.", period@start, "-", period@end, ".", extension , sep = ""))}
@@ -976,13 +960,26 @@ makeFileName <- function(quantity.id, file.name = NULL, run = NULL, period = NUL
 }
 
 
-makeVariableIDString  <- function(quantity.id, layer, special = NULL){
+#' Make a variable ID
+#' 
+#' Helper function to build an appropriate variable ID (for use in filenames) from some variables. 
+#' 
+#' @param quantity.str Character string for the quantity plotted (eg. "lai")
+#' @param layer Character string the particular subset of the quantity being plotted (eg. "Evergreen" or a PFT id)
+#' @param run.id Character string, the ID of the run
+#' @param special Character string, a free choice to provide extar information or differentiate this from other varibles (eg. "LanduseCorrected")
+#' @return A character string to describe a variable in a file name.  For example "lai.Evergreen.Test1.LanduseCorrected".
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' @export 
+
+makeVariableIDString  <- function(quantity.id, layer = NULL, run.id = NULL, special = NULL){
   
-  if(!is.null(special)) {
-    return(paste(quantity.id, special, layer, sep = "."))
-  }
-  else {
-    return(paste(quantity.id, layer, sep = "."))
-  }
+  string <- quantity.id
+  if(!is.null(layer)) string <- paste(string, layer, sep = ".")
+  if(!is.null(run.id)) string <- paste(string, run.id, sep = ".")
+  if(!is.null(special)) string <- paste(string, special, sep = ".")
+  return(string)
   
 }

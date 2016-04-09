@@ -33,7 +33,7 @@ lai.reference.period <- getVegObject(run,
                                      variable, 
                                      temporal.extent = period, 
                                      temporally.average = TRUE, 
-                                     write = TRUE,
+                                     write = FALSE,
                                      reread.file = FALSE,
                                      store.internally = FALSE)
 
@@ -45,7 +45,6 @@ lai.reference.period <- getVegObject(run,
 plotVegMaps(lai.reference.period, 
             doSummary = TRUE, 
             doIndividual = TRUE)
-
 
 
 ##### STEP THREE: More advanced analysis and plots
