@@ -802,7 +802,6 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
 #' @param model Raster of the model
 #' @param data Raster of the data
 #' @param run The \code{VegRun} object for the run plotted (optional)
-#' @param period The time period plotted as \code{TemporalExtent} (optional)
 #' @param data.name Character string for the data
 #' @param quant The quantity plotted (as \code{VegQuant} object)
 #' @param breaks A numerical vector of the breakpoints for the histograms
@@ -818,7 +817,6 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
 plotHistoComparison <- function(model,
                                 data, 
                                 run, 
-                                period, 
                                 data.name, 
                                 quant, 
                                 breaks, 
@@ -881,7 +879,6 @@ plotHistoComparison <- function(model,
 #' @param model Raster of the model
 #' @param data Raster of the data
 #' @param run The \code{VegRun} object for the run plotted (optional)
-#' @param period The time period plotted as \code{TemporalExtent} (optional)
 #' @param data.name Character string for the data
 #' @param quant The quantity plotted (as \code{VegQuant} object)
 #' @param stat.results The \code{RasterComparion} object if it has already been calculated
@@ -895,7 +892,6 @@ plotHistoComparison <- function(model,
 plotScatterComparison <- function(model, 
                                   data, 
                                   run, 
-                                  period, 
                                   data.name, 
                                   quant, 
                                   stat.results = NULL){

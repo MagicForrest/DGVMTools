@@ -4,8 +4,7 @@
 \alias{plotScatterComparison}
 \title{Make a scatter plot by comparing two rasters}
 \usage{
-plotScatterComparison(model, data, run, period, data.name, quant,
-  stat.results = NULL)
+plotScatterComparison(model, data, run, data.name, quant, stat.results = NULL)
 }
 \arguments{
 \item{model}{Raster of the model}
@@ -13,8 +12,6 @@ plotScatterComparison(model, data, run, period, data.name, quant,
 \item{data}{Raster of the data}
 
 \item{run}{The \code{VegRun} object for the run plotted (optional)}
-
-\item{period}{The time period plotted as \code{TemporalExtent} (optional)}
 
 \item{data.name}{Character string for the data}
 

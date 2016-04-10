@@ -4,8 +4,8 @@
 \alias{plotHistoComparison}
 \title{Make a histograms by comparing two rasters}
 \usage{
-plotHistoComparison(model, data, run, period, data.name, quant, breaks,
-  plot.range, stat.results = NULL)
+plotHistoComparison(model, data, run, data.name, quant, breaks, plot.range,
+  stat.results = NULL)
 }
 \arguments{
 \item{model}{Raster of the model}
@@ -13,8 +13,6 @@ plotHistoComparison(model, data, run, period, data.name, quant, breaks,
 \item{data}{Raster of the data}
 
 \item{run}{The \code{VegRun} object for the run plotted (optional)}
-
-\item{period}{The time period plotted as \code{TemporalExtent} (optional)}
 
 \item{data.name}{Character string for the data}
 
