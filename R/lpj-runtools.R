@@ -199,6 +199,7 @@ listAllLPJOutput <- function(run.directory){
 #'
 #' @param var.filename The string of the filename to be trimmed
 #' @return A string less the last four characters.
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 

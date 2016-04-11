@@ -109,7 +109,7 @@ Smith2014BiomeRules <- function(lai){
 
 #' Meta-data describing the Smith 2014 et al. 2014 biome scheme for LPJ-GUESS output.
 #' 
-#' Note 'substution' is probably a redundant slot, this is a part of the data, 
+#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
 #' not the classication of the model output.
 #' 
 #' @keywords internal
@@ -684,18 +684,17 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
 #' Currently supported biome schemes
 #' 
 #' The biomes schemes that are currently supported for LPJ-GUESS output.  
-#' 
 #' It a list of biomes schemes with elements with the followinf names/ids:
 #' 
 #' \describe{
-#' \item{Smith2014} {Classification of global output as per Smith et al. 2014. 
+#' \item{Smith2014}{Classification of global output as per Smith et al. 2014. 
 #'  Designed to be compared to Haxeltine and Prentice (1996) map of potential natural biomes.}
-#'  \item{Forrest2015} {Classification of of global output into coarser mega biomes as per Forrest et al. 2015 (see appendix), 
+#'  \item{Forrest2015}{Classification of of global output into coarser mega biomes as per Forrest et al. 2015 (see appendix), 
 #'  which is really just an aggregation of biomes following Harrison and Prentice 2006.  Can be compared to aggregated Haxeltine and Prentice (1996) map.}
-#'  \item{Hickler2012} {Classification of european output as per Hickler et al. 2012.}
-#'  \item{Megabiomes_dev} Unpublished for potentially useful classification of global biomes 
+#'  \item{Hickler2012}{Classification of european output as per Hickler et al. 2012.}
+#'  \item{Megabiomes_dev}{Unpublished for potentially useful classification of global biomes 
 #'  which is slightly simpler than Smith et al. 2014.}
-#'  \item{FPCMegabiomes} {Global biomes classification based on FPC.  Ask Joerg Steinkamp 
+#'  \item{FPCMegabiomes}{Global biomes classification based on FPC.  Ask Joerg Steinkamp 
 #'  about this one.} 
 #' }
 #' 

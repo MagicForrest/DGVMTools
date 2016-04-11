@@ -329,7 +329,7 @@ lpj.quantities <- list(
                         full.string = "Monthly Upper Soil Layer WC", 
                         type = "monthly",
                         units = "",
-                        colours = rev.tim.colors,
+                        colours = reversed.tim.colors,
                         cuts = seq(0, 1, 0.02)),
   
   "mwcont_lower" =  new("VegQuant",
@@ -338,7 +338,7 @@ lpj.quantities <- list(
                         full.string = "Monthly Lower Soil Layer", 
                         type = "monthly",
                         units = "",
-                        colours = rev.tim.colors,
+                        colours = reversed.tim.colors,
                         cuts = seq(0, 1, 0.02)),
   
   "msnowpack" = new("VegQuant",
@@ -347,7 +347,7 @@ lpj.quantities <- list(
                     full.string = "Monthly Snow Pack", 
                     type = "monthly",
                     units = "mm H20",
-                    colours = rev.tim.colors,
+                    colours = reversed.tim.colors,
                     cuts = seq(0, 5, 0.02)), 
   
   "firert" = new("VegQuant",

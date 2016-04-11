@@ -9,7 +9,7 @@
 Smith2014.scheme
 }
 \description{
-Note 'substution' is probably a redundant slot, this is a part of the data, 
+Note 'substitution' is probably a redundant slot, this is a part of the data, 
 not the classication of the model output.
 }
 \author{

@@ -61,12 +61,9 @@ subsetGridlist <- function(subset.extent, file.name = NULL, header = TRUE, gridl
   
 }
 
+############### SUB ANNUAL PERIODS
 
-
-########### CONSTANTY STRINGS AND VECTORS ######################
-
-
-##### Period - class to hold the metadata about a month, seasonal or annual period
+#' @rdname Period-class
 all.periods <- list(Jan = new("Period",
                               id = "Jan",
                               name = "January",
@@ -225,14 +222,19 @@ all.periods <- list(Jan = new("Period",
 )
 
 # subsets of periods
+#' @rdname Period-class
+#' @format List of\code{Period} objects
 periods <- all.periods
+
+#' @rdname Period-class
 months <- all.periods[1:12]
+
+#' @rdname Period-class
 seasons <- all.periods[13:16]
+
+#' @rdname Period-class
 annual <- all.periods[17]
 
-
-
-#all.periods <- list(unlist(months), list(seasons, annual))
 
 
 ########### MEMORY MANAGEMENT ########### 
@@ -294,13 +296,38 @@ lsos <- function (pos = 1, pattern, order.by = "Size",
 
 ########### COLOUR SCHEMES AND PRETTY PLOTTING FUNCTIONS AND PARAMETERS ########### 
 
-# a sort of dry/warm to cool/wet colour scheme 
-rev.tim.colors = function(x)rev(tim.colors(x))
+
+#' Helpful palettes for vegetation maps
+#'
+#' \describe{
+#' \item{veg.palette}{A nice white-green-brown color scheme.  Good for vegetation cover}
+#' \item{lai.palette}{Default colour scheme for LAI}
+#' \item{cmass.palette}{Default colour scheme for biomass}
+#' \item{difference.palette}{Colour scheme for differences. Symmetrical, centred on white}
+#' \item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned}
+#' \item{reversed.tim.colors}{The tim.colors scheme reversed to go from red (hot/dry) to blue (cold/wet)}
+#' }
+#' @param n Number of colour shades required
+#' @name veg.palettes
+NULL
+ 
+#' @rdname veg.palettes
 veg.palette <- colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black"))
+
+#' @rdname veg.palettes
 lai.palette <- colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "khaki1", "yellowgreen", "forestgreen", "saddlebrown","black" )) #this is a function which returns a list of colours
+
+#' @rdname veg.palettes
 cmass.palette <- colorRampPalette(c("lemonchiffon","peru", "forestgreen", "dodgerblue4", "orchid4", "hotpink", "red4"))
-fire.palette  <- colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+
+#' @rdname veg.palettes
 difference.palette <- colorRampPalette(c("green", "blue", "white", "red", "yellow")) #this is a function which returns a list of colours
+
+#' @rdname veg.palettes
+fire.palette <- colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+
+#' @rdname veg.palettes
+reversed.tim.colors = function(n) rev(tim.colors(n))
 
 
 ########### CONVERSION OF ABOVE-GROUND BIOMASS TO TOTAL CARBON ####################
