@@ -1,7 +1,23 @@
 
 
 ############# EXAMPLE DATA SET ONE - POTENTIAL NATURAL VEGETATION BIOMES
-
+#' Read Haxeltine and Prentice 1996 PNV biome map
+#' 
+#' An example dataset of distribution of global potential natural vegetation classified into biomes.
+#' 
+#' @param resolution A character string specifying the resolution, currently supported
+#' are "HD", "T63" and "original" (original is at half degree so equivalent to "HD")
+#' @param classification A character string specifying how the biomes should be classified. 
+#' Options are "original" (direct as per the H&P 1996 map), "Smith2014" (following Smith et al. 2014 and the ordering
+#' following the figure in that paper) and "Forrest2015" (an aggregated megabiomes scheme based and Harrsion and Presntice 2006,
+#' see the supplementary material in Forrest et al. 2015 for details and ordering).
+#' 
+#' This dataset has been used in various publications, but just because we include it here 
+#' doesn't mean we specifically recommend it's use.  It is included here as an example, judgement of the scientific merit is left 
+#' to the user.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import data.table raster
 
 readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
@@ -130,9 +146,21 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
 }
 
-
-
-
+############# EXAMPLE DATA SET ONE - POTENTIAL NATURAL VEGETATION BIOMES
+#' Read Saatchi et al. 2011 total biomass map
+#' 
+#' An example dataset of distribution total biomass across the tropics.  
+#' Original dataset is 1km, provided here at 0.5 degrees or T63.
+#'  
+#' @param resolution A character string specifying the resolution, currently supported
+#' are "HD" and "T63"
+#' 
+#' This dataset has been used in various publications, but just because we include it here 
+#' doesn't mean we specifically recommend it's use.  It is included here as an example, judgement of the scientific merit is left 
+#' to the user.
+#' @return A \code{SpatialDataset} object.  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
 getSaatchi2011 <- function(resolution = "HD"){
   
   

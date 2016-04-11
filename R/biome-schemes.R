@@ -33,6 +33,16 @@
 ########### SMITH ET AL. 2014 BIOME CLASSIFICATION ############################
 ###############################################################################
 
+#' Rules to classify biomes as per Smith et al. 2014
+#' 
+#' Based on LAI only, see paper for details.
+#' 
+#' @param lai Numerical vector of LAI values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-17, ordering as in Smith et al 2014 Figure)
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 Smith2014BiomeRules <- function(lai){
   
   # BIOME 1 - Tropical Rain Forest
@@ -95,10 +105,15 @@ Smith2014BiomeRules <- function(lai){
     return(NA)
   }
   
-  
-  
 }
 
+#' Meta-data describing the Smith 2014 et al. 2014 biome scheme for LPJ-GUESS output.
+#' 
+#' Note 'substution' is probably a redundant slot, this is a part of the data, 
+#' not the classication of the model output.
+#' 
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 Smith2014.scheme <- new("BiomeScheme",
                         id = "Smith2014",
                         name = "Smith et al. 2014", 
@@ -151,12 +166,21 @@ Smith2014.scheme <- new("BiomeScheme",
 
 
 
-
-
 ###############################################################################
 ########### HICKLER ET AL. 2012 BIOME CLASSIFICATION ##########################
 ###############################################################################
 
+
+#' Rules to classify biomes as per Hickler et al. 2012
+#' 
+#' Based on LAI, GDD5 and lon/lat only, see paper for details.
+#' 
+#' @param lai Numerical vector of LAI values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-13, ordering as in Hickler et al 2012 figure)
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 Hickler2012Rules <- function(lai){
   
   Mediterranean.Total <- as.numeric(lai[['Mediterranean']]) + as.numeric(lai[['Supra-mediterranean']])  
@@ -267,7 +291,13 @@ Hickler2012Rules <- function(lai){
   
 }
 
-
+#' Meta-data describing the Hickler et al. 2012 european biome scheme for LPJ-GUESS output.
+#' 
+#' Note 'substution' is probably a redundant slot, this is a part of the data, 
+#' not the classication of the model output.
+#' 
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 Hickler2012.scheme <- new("BiomeScheme",
                           id = "Hickler2012",
@@ -315,7 +345,17 @@ Hickler2012.scheme <- new("BiomeScheme",
 ########### FORREST ET AL. 2015 MEGABIOME CLASSIFICATION ######################
 ###############################################################################
 
-# This is described in Forrest et al. 2015.  Basically it calculates the Smith et al. 2014 biomes, but assigns them to broader categores
+#' Rules to classify coarses "mega biomes" as per Forrest et al. 2015
+#' 
+#' # This is described in Forrest et al. 2015 Climates of the Past.  Basically it calculates the Smith et al. 2014 biomes, 
+#' but assigns them to broader categories as per Harrison and Prentice 2006
+#' 
+#' @param lai Numerical vector of LAI values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-8, ordering as in the Forrest et al. 2015 figure)
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 Forrest2015MegaBiomeRules <- function(lai){
   
@@ -382,7 +422,14 @@ Forrest2015MegaBiomeRules <- function(lai){
   
 }
 
-
+#' Meta-data describing the Forrest et al. 2015 "mega biome" scheme for LPJ-GUESS output.
+#' 
+#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
+#' not the classication of the model output.
+#' 
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
 Forrest2015.scheme <- new("BiomeScheme",
                         id = "Forrest2015",
                         name = "Forrest et al. 2015", 
@@ -418,8 +465,16 @@ Forrest2015.scheme <- new("BiomeScheme",
 ########### UNPUBLISHED BUT POSSIBLY USEFUL GLOBAL SCHEME BASED ON FEWER TYPES THAN SMITH ET AL. 2014 ##########################
 #################################################################################################################################
 
-
-
+#' Rules to classify coarser "mega biomes" from LAI, latitude and GDD5
+#' 
+#' Unpublished but possibly useful in principle.  Simpler classes that Smith et al 2014,
+#' but more complex that Forrest et al 2015.  
+#' 
+#' @param lai Numerical vector of LAI values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-13)
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 MegaBiomeRules_dev <- function(lai){
   
   # BIOME 1 - Tropical Rain Forest
@@ -467,11 +522,18 @@ MegaBiomeRules_dev <- function(lai){
     print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
     return(NA)
   }
-  
-  
-  
+    
 }
 
+
+#' Meta-data describing an unpublished "mega biome" scheme for LPJ-GUESS output.
+#' 
+#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
+#' not the classication of the model output.
+#' 
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
 Megabiomes_dev.scheme <- new("BiomeScheme",
                          id = "Megabiomes",
                          name = "Megabiomes", 
@@ -516,6 +578,12 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
 ###########  ##########################
 #################################################################################################################################
 
+#' Rules for biome scheme based on FPC
+#' 
+#' Joerg fill this in
+#' 
+#' @param fpc Vector of FPC values
+#' @keywords internal
 FPCMegaBiomeRules <- function(fpc) {
  
   # 9 - Desert
@@ -571,6 +639,12 @@ FPCMegaBiomeRules <- function(fpc) {
   }
 }
 
+#' Meta-data for an FPC-based mega biome scheme
+#' 
+#' Joerg stuff here
+#'
+#' @keywords internal
+#' 
 FPCMegabiomes.scheme <- new("BiomeScheme",
                             id = "FPCMegabiomes",
                             name = "FPCMegabiomes", 
@@ -607,6 +681,29 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                          data.reference = "-",
                          published.reference = "-")
 
+#' Currently supported biome schemes
+#' 
+#' The biomes schemes that are currently supported for LPJ-GUESS output.  
+#' 
+#' It a list of biomes schemes with elements with the followinf names/ids:
+#' 
+#' \describe{
+#' \item{Smith2014} {Classification of global output as per Smith et al. 2014. 
+#'  Designed to be compared to Haxeltine and Prentice (1996) map of potential natural biomes.}
+#'  \item{Forrest2015} {Classification of of global output into coarser mega biomes as per Forrest et al. 2015 (see appendix), 
+#'  which is really just an aggregation of biomes following Harrison and Prentice 2006.  Can be compared to aggregated Haxeltine and Prentice (1996) map.}
+#'  \item{Hickler2012} {Classification of european output as per Hickler et al. 2012.}
+#'  \item{Megabiomes_dev} Unpublished for potentially useful classification of global biomes 
+#'  which is slightly simpler than Smith et al. 2014.}
+#'  \item{FPCMegabiomes} {Global biomes classification based on FPC.  Ask Joerg Steinkamp 
+#'  about this one.} 
+#' }
+#' 
+#' The mechanics of all this could do with a serious overhaul to deal with other model outputs
+#' and classifications involving more that one 'primary variable', ie FPC and biomass.
+#'   
+#' @seealso \code{BiomeClassification}, \code{readHandPBiomes}
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
                              "Hickler2012" = Hickler2012.scheme,
                              "Forrest2015" = Forrest2015.scheme,

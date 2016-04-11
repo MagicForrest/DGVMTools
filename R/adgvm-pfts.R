@@ -22,19 +22,17 @@
 ###
 ###################################### 
 
-###########################################################################
-###
-### Master list of PFT ids, properties, preferred plot colours etc
-###
-### Author: Matthew Forrest 
-### Date: 08/04/2013
-### Version: v1.0
-###
-### 'Stable' version for Allan
-###
-###########################################################################
 
-# now make a big list of the global PFTs 
+###############################################
+########### aDGVM PFTS ########################
+###############################################
+
+#' aDGVM PFTs (under development)
+#' 
+#' The list contains PFTs which could be used to classify individuals coming from the aDGVM 
+#' 
+#' @format A list of \code{PFT} objects that store meta-data for PFTs classified from aDGVM model output.
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aDGVM.PFTs <- list(
   
   C4G = new("PFT",
