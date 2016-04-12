@@ -157,9 +157,9 @@
 correct.map.offset <- function(spl) {
   we <- crop(spl, extent(-180, 180, -90, 90))
   ww <- crop(spl, extent(179.999, 200, -90, 90))
-  if(!is.null(ww)) {
+  if(!is.null(ww) & !is.null(we)) {
     ww <- raster::shift(ww, -360)
-    spl <- bind(we, ww)  
+    spl <- raster::bind(we, ww)  
   }
   return(spl)
 }

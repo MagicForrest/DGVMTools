@@ -1,7 +1,8 @@
 exportPattern("^[^\\.]")
 
 import(methods)
-import(mapdata,
+import(maps,
+       mapdata,
        maptools, 
        ggplot2, 
        ncdf4,
@@ -13,7 +14,6 @@ import(mapdata,
 
 importFrom(fields, tim.colors)
 importFrom(compiler, cmpfun)
-importFrom(maps, map)
 importFrom(Cairo, Cairo)
 importFrom(Cairo, CairoPNG)
 importFrom(grid, unit)

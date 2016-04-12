@@ -441,7 +441,7 @@ compareBiomes <- function(run, variable, period, scheme, plot = TRUE, ...){
   
 }
 
-compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", ...){
+compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", plot.data = TRUE, ...){
   
   # get biome scheme 
   scheme <- supported.biome.schemes[[biome.dataset@id]]
@@ -455,7 +455,7 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", ..
   }
   
   plotBiomeMap(biome.stack,
-               addData = biome.dataset, 
+               addData = ifelse(plot.data, biome.dataset, FALSE),
                targets = names(biome.stack),
                file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
                run.title = scheme@id,
