@@ -14,5 +14,11 @@ These quantities have sensible colour schemes, long names and cut ranges for sta
 but they will likely need to be modified and new ones aded for a specific analysis.
 Once the package is loaded this is just a standard R list so can be modified and extended as you wish.
 }
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}
+\seealso{
+\code{VegQuant}-class
+}
 \keyword{datasets}
 
