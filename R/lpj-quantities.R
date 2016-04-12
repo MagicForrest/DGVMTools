@@ -330,7 +330,9 @@ lpj.quantities <- list(
                         type = "monthly",
                         units = "",
                         colours = reversed.tim.colors,
-                        cuts = seq(0, 1, 0.02)),
+                        cuts = seq(0, 1, 0.02),
+                        aggregate.method = "mean")
+  ,
   
   "mwcont_lower" =  new("VegQuant",
                         id = "mwcont_lower",
@@ -339,7 +341,8 @@ lpj.quantities <- list(
                         type = "monthly",
                         units = "",
                         colours = reversed.tim.colors,
-                        cuts = seq(0, 1, 0.02)),
+                        cuts = seq(0, 1, 0.02),
+                        aggregate.method = "mean"),
   
   "msnowpack" = new("VegQuant",
                     id = "msnowpack",

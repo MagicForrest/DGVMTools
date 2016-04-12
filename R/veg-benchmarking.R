@@ -454,8 +454,16 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", pl
     labels <- append(labels, run@description)
   }
   
+  # Sort out whether or not we want to plot that data on the graph as well
+  if(plot.data){
+    addData <- biome.dataset
+  }
+  else{
+    addData <- NULL
+  }
+
   plotBiomeMap(biome.stack,
-               addData = ifelse(plot.data, biome.dataset, FALSE),
+               addData = addData,
                targets = names(biome.stack),
                file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
                run.title = scheme@id,
@@ -465,7 +473,19 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", pl
 }
 
 # Compare runs to each other
-compareVegSpatialObject <- function(runs, veg.spatial.id, target, expand.target = TRUE, base.run.id = NULL, plot.perc.diff = TRUE, special = NULL, ...) {
+compareVegSpatialObject <- function(runs, 
+                                    veg.spatial.id, 
+                                    target, 
+                                    expand.target = TRUE, 
+                                    base.run.id = NULL,
+                                    plot.side.by.side = TRUE,
+                                    side.by.side.cuts = NULL,
+                                    plot.diff = TRUE,
+                                    diff.cuts = NULL,
+                                    plot.perc.diff = TRUE, 
+                                    perc.diff.cuts = NULL,
+                                    special = NULL, 
+                                    ...) {
   
   # To avoid NOTES
   Lon = Lat = NULL
@@ -504,6 +524,7 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target, expand.target 
                 summary.title = sub.target,
                 special.string = paste("diff", sub.target, sep = "."),
                 special = special,
+                override.cuts = side.by.side.cuts,
                 ...)
   }
   
@@ -517,12 +538,15 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target, expand.target 
         
         # for each target
         for(sub.target in target){
+        
+          # plot the difference
+          if(plot.diff){
           
           # make a new column of the data.table by selecting the relevant target
           col.name <- paste(paste(run@id, sub.target, sep = "_"), "minus", paste(base.run.id, sub.target, sep = "_"), sep = ".")
           comparison.dt[, eval(col.name) := get(paste(run@id, sub.target, sep = "_")) - get(paste(base.run.id, sub.target, sep = "_"))]
           
-          # plot the difference
+         
           title <- paste(sub.target, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " ")
           
           plotVegMaps(comparison.dt,
@@ -530,8 +554,9 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target, expand.target 
                       quant = run@objects[[veg.spatial.id]]@quant,
                       special = "diff",
                       summary.title = title,
+                      override.cuts = diff.cuts,
                       ...)
-          
+          }
           if(plot.perc.diff){
             
             # first add the precentage difference column
@@ -549,6 +574,7 @@ compareVegSpatialObject <- function(runs, veg.spatial.id, target, expand.target 
                         summary.title = title,
                         limit = TRUE,
                         limits = c(-100,200),
+                        override.cuts = perc.diff.cuts,
                         ...)
             
           }

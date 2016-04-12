@@ -142,6 +142,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   if(is.VegObject(data)){
     if(data@is.temporally.averaged){
       run <- data@run
+      run.id <- run@id
       period <- data@temporal.extent
       PFT.set <- run@pft.set
       if(is.null(quant)) quant <- data@quant  
@@ -149,6 +150,10 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else {
       stop("plotVegMaps:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
     }
+  }
+  else{
+    if(!is.null(run)) run.id <- run@id
+    else run.id <- NULL
   }
   
   ### DIRECTORY TO SAVE PLOTS
@@ -383,7 +388,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
       # FILENAME
       # make a description of the variable
-      this.id.string <- makeVariableIDString(quant@id, "Summary",  run.id = run@id, special.string)
+      this.id.string <- makeVariableIDString(quant@id, "Summary",  run.id = run.id, special.string)
       if(is.null(summary.file.name)) this.file.name <- paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = ".")
       else this.file.name <- paste(summary.file.name, format, sep = ".")
       
@@ -445,7 +450,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       for(layer in targets){
         
         # FILENAME
-        this.id.string <- makeVariableIDString(quant@id, layer, run.id = run@id, special.string)
+        this.id.string <- makeVariableIDString(quant@id, layer, run.id = run.id, special.string)
         this.file.name <- paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = ".")
         
         # PLOT TITLES
