@@ -88,116 +88,167 @@ getPFTs <- function(input, PFT.data){
 #' 
 #' 
 #' @param targets Character vector of targets to expand
-#' @param PFTs List of all PFTs present (can be determined beforehand with a call to \code{getPFTs})
+#' @param data The data to which the targets will be applied, may be a \code{VegObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame. 
+#' @param PFT.set List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{VegObject}).
+#' @param type Character string irdentifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{VegObjects} which supply this data themselves.
+#' The function attempts to determine this argument if it is not provided.  
 #' @param include.woody If TRUE and "lifeform" is included in the target list "Woody" is also returned
 #' @return A list of targets
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-expandTargets <- function(targets, PFTs, include.woody = TRUE){
+expandTargets <- function(targets, data, PFT.set = NULL, type = "unknown", include.woody = TRUE){
   
   # remove "Lon", "Lat" and "Year" if present
   for(remove.header.from.header in c("Lat", "Lon", "Year")){
     if(remove.header.from.header %in% targets) targets <- targets[-which(targets == remove.header.from.header)]
   }
   
+  # read meta-data form VegObject if possible
+  if(is.VegObject(data)) {
+    type <- data@quant@type
+    if(is.null(PFT.set)) PFT.set <- data@run@pft.set
+    header <- names(data@data)
+  }
+  else{
+    header <- names(data)
+  }
   
-  # expand "all"
-  if("all" %in% tolower(targets)) targets <- c("pfts", "lifeforms", "leafforms", "zones", "phenologies")
+  # get PFTs present in data
+  PFTs <- getPFTs(data, PFT.set)
+
+  # if type is undertermined, try to figure it out
+  # if found at least one PFT and that PFT is not "Total" then assume we have a per PFT variable
+  if(type == "unknown"){
+    if(length(PFTs) > 0) {
+      if(PFTs[[1]]@id != "Total") {
+      type <- "pft"
+      }
+    }
+    else{
+      type <- "monthly"
+      for(month in months) {
+        if(!(month@id %in% header)){
+          type <- "unknown"
+        }
+      }
+    }
+  }
   
-  # expands "pfts"
-  
-  if("pft" %in% tolower(targets) || "pfts" %in% tolower(targets)) {
-    for(PFT in PFTs) {
-      targets <- append(targets, PFT@id)
+  if(tolower(type) == "pft") {
+    
+    # expand "all"
+    if("all" %in% tolower(targets)) targets <- c("pfts", "lifeforms", "leafforms", "zones", "phenologies")
+    
+    # expands "pfts"
+    
+    if("pft" %in% tolower(targets) || "pfts" %in% tolower(targets)) {
+      for(PFT in PFTs) {
+        targets <- append(targets, PFT@id)
+      }
+      
+      if("pft" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "pft")]
+      if("pfts" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "pfts")]
     }
     
-    if("pft" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "pft")]
-    if("pfts" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "pfts")]
-  }
-  
-  
-  # expand "lifeforms" 
-  if("lifeforms" %in% tolower(targets) | "lifeform" %in% tolower(targets)){
     
-    # Find all lifeforms present in PFTs 
-    all.lifeforms <- vector()
-    for(PFT in PFTs) {all.lifeforms <- append(all.lifeforms, PFT@lifeform)}
-    all.lifeforms <- unique(all.lifeforms)
-    # MF: Special case to combine Trees and Shrubs inoo Woody category
-    if(include.woody) all.lifeforms <- append(all.lifeforms, "Woody")
+    # expand "lifeforms" 
+    if("lifeforms" %in% tolower(targets) | "lifeform" %in% tolower(targets)){
+      
+      # Find all lifeforms present in PFTs 
+      all.lifeforms <- vector()
+      for(PFT in PFTs) {all.lifeforms <- append(all.lifeforms, PFT@lifeform)}
+      all.lifeforms <- unique(all.lifeforms)
+      # MF: Special case to combine Trees and Shrubs inoo Woody category
+      if(include.woody) all.lifeforms <- append(all.lifeforms, "Woody")
+      
+      targets <- append(targets, all.lifeforms)
+      
+      if("lifeforms" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "lifeforms")]
+      if("lifeform" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "lifeform")]
+      
+    }
     
-    targets <- append(targets, all.lifeforms)
     
-    if("lifeforms" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "lifeforms")]
-    if("lifeform" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "lifeform")]
+    # expand "zones" 
+    if("zones" %in% tolower(targets) | "zone" %in% tolower(targets)){
+      
+      # Find all zones present in PFTs 
+      all.zones <- vector()
+      for(PFT in PFTs) {all.zones <- append(all.zones, PFT@zone)}
+      all.zones <- unique(all.zones)
+      
+      targets <- append(targets, all.zones)
+      
+      if("zones" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "zones")]
+      if("zone" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "zone")]    
+      
+    }
     
-  }
-  
-  
-  # expand "zones" 
-  if("zones" %in% tolower(targets) | "zone" %in% tolower(targets)){
+    # Expand "leafforms" 
+    if("leafforms" %in% tolower(targets) | "leafform" %in% tolower(targets)){
+      
+      # Find all leafforms present in PFTs 
+      all.leafforms <- vector()
+      for(PFT in PFTs) {all.leafforms <- append(all.leafforms, PFT@leafform)}
+      all.leafforms <- unique(all.leafforms)
+      
+      targets <- append(targets, all.leafforms)
+      
+      if("leafforms" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "leafforms")]
+      if("leafform" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "leafform")] 
+      
+    }
     
-    # Find all zones present in PFTs 
-    all.zones <- vector()
-    for(PFT in PFTs) {all.zones <- append(all.zones, PFT@zone)}
-    all.zones <- unique(all.zones)
+    # Expand "phenologies" 
+    if("phenologies" %in% tolower(targets) | "phenology" %in% tolower(targets)){
+      
+      # Find all phenologys present in PFTs 
+      all.phenologies <- vector()
+      for(PFT in PFTs) {all.phenologies <- append(all.phenologies, PFT@phenology)}
+      all.phenologies <- unique(all.phenologies)
+      #if("NA" in all.phenologies) all.phenologies <- all.phenologies[-which(tolower(all.phenologies) == "NA")]
+      
+      targets <- append(targets, all.phenologies)
+      
+      if("phenologies" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenologies")]
+      if("phenology" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenology")] 
+      
+    }
     
-    targets <- append(targets, all.zones)
-    
-    if("zones" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "zones")]
-    if("zone" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "zone")]    
-    
-  }
-  
-  # Expand "leafforms" 
-  if("leafforms" %in% tolower(targets) | "leafform" %in% tolower(targets)){
-    
-    # Find all leafforms present in PFTs 
-    all.leafforms <- vector()
-    for(PFT in PFTs) {all.leafforms <- append(all.leafforms, PFT@leafform)}
-    all.leafforms <- unique(all.leafforms)
-    
-    targets <- append(targets, all.leafforms)
-    
-    if("leafforms" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "leafforms")]
-    if("leafform" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "leafform")] 
-    
-  }
-  
-  # Expand "phenologies" 
-  if("phenologies" %in% tolower(targets) | "phenology" %in% tolower(targets)){
-    
-    # Find all phenologys present in PFTs 
-    all.phenologies <- vector()
-    for(PFT in PFTs) {all.phenologies <- append(all.phenologies, PFT@phenology)}
-    all.phenologies <- unique(all.phenologies)
-    #if("NA" in all.phenologies) all.phenologies <- all.phenologies[-which(tolower(all.phenologies) == "NA")]
-    
-    targets <- append(targets, all.phenologies)
-    
-    if("phenologies" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenologies")]
-    if("phenology" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenology")] 
-    
-  }
-  
-  
-  # Expand seasons
-  if("seasons" %in% tolower(targets) | "season" %in% tolower(targets) | "seasonal" %in% tolower(targets)){
-    
-    targets <- append(targets, c("DJF", "MAM", "JJA", "SON"))
-    
-    if("seasons" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "seasons")]
-    if("season" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "season")] 
-    if("seasonal" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "seasonal")] 
     
   }
   
+  else if(tolower(type) == "monthly"){
+    
+    # Expand seasons
+    if("seasons" %in% tolower(targets) | "season" %in% tolower(targets) | "seasonal" %in% tolower(targets)){
+      
+      targets <- append(targets, c("DJF", "MAM", "JJA", "SON"))
+      
+      if("seasons" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "seasons")]
+      if("season" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "season")] 
+      if("seasonal" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "seasonal")] 
+      
+    }
+    
+    # Expand months/monthly
+    if("months" %in% tolower(targets) | "monthly" %in% tolower(targets)){
+      
+      for(month in months) {
+        targets <- append(targets, month@id)
+      }
+      
+      if("months" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "months")]
+      if("monthly" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "monthly")] 
+      
+    }
+    
+  }
   
   if("NA" %in% targets) targets <- targets[-which(targets == "NA")]
   if("all" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "all")]
-  
+
   return(targets)
-  
   
 }
 
@@ -437,9 +488,9 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
     method <- rowSums
     warning("addVegTotals has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
     message("addVegTotals has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
- 
+    
   }
-
+  
   
   ### SET UP THE AGGREGATE METHOD 
   if(is.null(method)) {
@@ -464,7 +515,7 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
   all.PFTs <- getPFTs(dt, PFT.data)
   
   # expands targets
-  targets <- expandTargets(targets, all.PFTs)
+  targets <- expandTargets(targets, dt, PFT.data)
   
   # remove PFTs from targets since PFTs are already present as totals
   for(PFT in all.PFTs){ if(PFT@id %in% targets) targets <- targets[-which(targets == PFT@id)]}
@@ -477,14 +528,14 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
     # build list of columns to combine for target
     target.cols <- c()
     for(PFT in all.PFTs){
-    if(PFT@lifeform == target) {target.cols <- append(target.cols, PFT@id)}
+      if(PFT@lifeform == target) {target.cols <- append(target.cols, PFT@id)}
       if(PFT@zone == target) {target.cols <- append(target.cols, PFT@id)}
       if(PFT@leafform == target) {target.cols <- append(target.cols, PFT@id)}
       if(PFT@phenology == target) {target.cols <- append(target.cols, PFT@id)}
       # Special case for Woody
       if(target == "Woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {target.cols <- append(target.cols, PFT@id)}
     }
-
+    
     # now combine the relevant columns
     if(!is.null(target.cols)) suppressWarnings(dt[, eval(target) := method(.SD), .SDcols = target.cols])
     
@@ -560,7 +611,7 @@ addVegFractions <- function(input, targets, denominators = list("Total")){
   PFTs <- getPFTs(dt, input@run@pft.set)
   
   # First, expand denominator targets and make what aren't available
-  denominators <- expandTargets(denominators, PFTs)
+  denominators <- expandTargets(denominators, dt, PFT.data)
   for(denom in denominators) {
     if(!(denom %in% names(dt))) {
       dt <- addVegTotals(dt, denom, PFT.data)
@@ -569,7 +620,7 @@ addVegFractions <- function(input, targets, denominators = list("Total")){
   
   
   # Second, expand numerator targets and make what aren't available
-  targets <- expandTargets(targets, PFTs)
+  targets <- expandTargets(targets, dt, PFT.data)
   for(target in targets) {
     if(!(target %in% names(dt))) {
       dt <- addVegTotals(dt, target, PFT.data)
