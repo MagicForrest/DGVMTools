@@ -4,12 +4,18 @@
 \alias{expandTargets}
 \title{Expand plotting/processing targets from convenient short hand codes.}
 \usage{
-expandTargets(targets, PFTs, include.woody = TRUE)
+expandTargets(targets, data, PFT.set = NULL, type = "unknown",
+  include.woody = TRUE)
 }
 \arguments{
 \item{targets}{Character vector of targets to expand}
 
-\item{PFTs}{List of all PFTs present (can be determined beforehand with a call to \code{getPFTs})}
+\item{data}{The data to which the targets will be applied, may be a \code{VegObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame.}
+
+\item{PFT.set}{List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{VegObject}).}
+
+\item{type}{Character string irdentifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{VegObjects} which supply this data themselves.
+The function attempts to determine this argument if it is not provided.}
 
 \item{include.woody}{If TRUE and "lifeform" is included in the target list "Woody" is also returned}
 }

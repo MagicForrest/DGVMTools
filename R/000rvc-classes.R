@@ -23,8 +23,6 @@
 #####################################
 
 
-# TODO Document all classes!
-
 ##############################################################################
 ########  GENERAL CLASSES ####################################################
 ##############################################################################
@@ -73,16 +71,6 @@ setClass("SpatialExtent",
 #' Time periods - eg. a month or a season or a year.
 #' 
 #' A simple S4 class to define a month, a season or a year used for aggregating monthly values to seasonal or annual values and for making monthly plots with nice labels etc.
-#' Since these are for the most part standard (ie. people commonly need the months, the seasons (DJF, MAM, JJA, SON) and annual) these are defined in simple list that might be commonly used and can be looped through.  These are:
-#' 
-#' \itemize{
-#'   \item \code{months} which contains all the months.
-#'   \item \code{seasons} which contains all the seasons
-#'   \item \code{annual} which only contains only the annual period
-#'   \item \code{all.periods} or just \code{periods} which contains all of the above
-#' }
-#'  
-#' However other periods can be defined for specific growing seasons etc.
 #' 
 #' @slot id A unique character string to identify this particular time period.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string to describe the spatial extent. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
@@ -92,6 +80,18 @@ setClass("SpatialExtent",
 #' @slot contains Holds the names of the other periods included in this period.  For example for Jan just contains "Jan", but DJF it contains c("Dec","Jan,"Feb)
 #' @slot days Number of days in this time period during a normal (non-leap) year
 #' @slot days.leap Number of days on this period during a leap year
+#' 
+#' @details 
+#' Since these are for the most part standard (ie. people commonly need the months, the seasons (DJF, MAM, JJA, SON) and annual) these are defined in simple list that might be commonly used and can be looped through.  These are:
+#' \describe{
+#'   \item{\code{months}}{which contains all the months.}
+#'   \item{\code{seasons}}{which contains all the seasons.}
+#'   \item{\code{annual}}{which only contains only the annual period.}
+#'   \item{\code{all.periods, periods}}{which contains all of the above.}
+#' }
+#'  
+#' However other periods can be defined for specific growing seasons etc.
+#' 
 #' 
 #' @exportClass Period
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -199,12 +199,12 @@ checkVegRun <- function(object){
 #' @slot description A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot run.dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
-#' @slot map.overlay A character defining which map overlay to plot as standard on for this model run.  Can be:
+#' @slot map.overlay A lists defining which map overlay to plot as standard on for this model run.  Each item in the list can be:
 #'  \itemize{
-#'   \item \code{hires} for a full high resolution outline of all countires of the world 
-#'   \item \code{lowres} for a low resolution outline of all countires of the world  (much faster to plot that \code{hires}, generally sufficient for global plot)
-#'   \item \code{hires-continents} for a full high resolution outline of the land masses only
-#'   \item \code{lowres-continents} for a low resolution outline of the land masses only
+#'   \item A single string defining one of the standard maps from the maps or mapdata package (ie "world" or "worldHires" or "italy", or "rivers")
+#'   \item A further list containing in it's first argument a string (as above) and the further arguments interior.lines (logical), 
+#'   lwd (numeric) and col (string representing a colour), see \code{makeOverlay} for details
+#'   \item A string specifying some non-standard overlays, not yet defined
 #' }
 #' These data come from the \code{mapdata} package
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
@@ -217,6 +217,7 @@ checkVegRun <- function(object){
 #' @slot line.type A numeric to define the line style representing this model run
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @exportClass VegRunInfo
+#' @seealso makeOverlay
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegRunInfo", 
          slots = c(id = "character",
@@ -261,11 +262,11 @@ setClass("VegRunInfo",
 #' @slot run.dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
 #' @slot map.overlay A character defining which map overlay to plot as standard on for this model run.  Can be:
-#'  \itemize{
-#'   \item \code{hires} for a full high resolution outline of all countires of the world 
-#'   \item \code{lowres} for a low resolution outline of all countires of the world  (much faster to plot that \code{hires}, generally sufficient for global plot)
-#'   \item \code{hires-continents} for a full high resolution outline of the land masses only
-#'   \item \code{lowres-continents} for a low resolution outline of the land masses only
+#'\itemize{
+#'  \item A single string defining one of the standard maps from the maps or mapdata package (ie "world" or "worldHires" or "italy", or "rivers")
+#'  \item A further list containing in it's first argument a string (as above) and the further arguments interior.lines (logical), 
+#'   lwd (numeric) and col (string representing a colour), see \code{makeOverlay} for details
+#'   \item A string specifying some non-standard overlays, not yet defined
 #' }
 #' These data come from the \code{mapdata} package
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
@@ -486,7 +487,7 @@ setClass("TemporalDataset",
 #' @slot model.raster A "RasterLayer" holding the mode
 #' @slot R.squ The R squared between the model and the data
 #' @slot P.cor The Pearsons product moment correlation between the model and the the data,
-#' @slot RMSE The Root Mean Squared Error etween the model and the the data
+#' @slot RMSE The Root Mean Squared Error between the model and the the data
 #' @slot mean.diff The difference between the model and the the data (all gridcells)
 #' @slot sd.diff The standard deviation of the difference between the model and the the data (all gridcells)
 #' @exportClass RasterComparison

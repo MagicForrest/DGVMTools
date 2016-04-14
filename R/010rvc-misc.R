@@ -61,12 +61,9 @@ subsetGridlist <- function(subset.extent, file.name = NULL, header = TRUE, gridl
   
 }
 
+############### SUB ANNUAL PERIODS
 
-
-########### CONSTANTY STRINGS AND VECTORS ######################
-
-
-##### Period - class to hold the metadata about a month, seasonal or annual period
+#' @rdname Period-class
 all.periods <- list(Jan = new("Period",
                               id = "Jan",
                               name = "January",
@@ -225,22 +222,38 @@ all.periods <- list(Jan = new("Period",
 )
 
 # subsets of periods
+#' @rdname Period-class
+#' @format List of\code{Period} objects
 periods <- all.periods
+
+#' @rdname Period-class
 months <- all.periods[1:12]
+
+#' @rdname Period-class
 seasons <- all.periods[13:16]
+
+#' @rdname Period-class
 annual <- all.periods[17]
 
 
 
-#all.periods <- list(unlist(months), list(seasons, annual))
-
-
 ########### MEMORY MANAGEMENT ########### 
 
-## Credit: Taken from: http://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session
-# improved list of objects
-.ls.objects <- function (pos = 1, pattern, order.by,
-                         decreasing=FALSE, head=FALSE, n=5) {
+#' Improved list of objects
+#' 
+#' Because rasters and \code{VegObject}s and so can be quite large, this function is useful for checking how large are the objects you have stored in memory.  
+#'  
+#' @param pos ???
+#' @param pattern Character, to match only certain objects
+#' @param orderby Character, can be "Type", "Size", "PrettySize", Rows" or "Columns" 
+#' @param decreasing Logical, whether to list the objects in decreasing size
+#' @param head Logical, if true just print the first \code{n} objects
+#' @param n Integer, how many objects to list if selecting just the head
+#' @keywords internal
+#' Credit: Taken from: http://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session
+
+lsos <- function (pos = 1, pattern, order.by = "Size",
+                         decreasing=TRUE, head=TRUE, n=10) {
   napply <- function(names, fn) sapply(names, function(x)
     fn(get(x, pos = pos)))
   names <- ls(pos = pos, pattern = pattern)
@@ -263,27 +276,70 @@ annual <- all.periods[17]
   out
 }
 
-# shorthand
-lsos <- function(..., n=10) {
-  .ls.objects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
-}
-
 ########### HANDY PROCESSING FUNCTIONS ########### 
 
 
-# Function to divide two number but return 0 if the denominator is 0
+#' Safe division
+#' 
+#' Function to divide two number but return 0 if the denominator is 0
+#' 
+#' @param x numerator
+#' @param y denominator
+#' 
+#' Handy little thing.
+#' @export
+#' 
+#' 
 "%/0%" <- function(x,y) ifelse(y==0,0,base::"/"(x,y))
 
 
 
 ########### COLOUR SCHEMES AND PRETTY PLOTTING FUNCTIONS AND PARAMETERS ########### 
 
-# a sort of dry/warm to cool/wet colour scheme 
-rev.tim.colors = function(x)rev(tim.colors(x))
+
+#' Helpful palettes for vegetation maps
+#'
+#' \describe{
+#' \item{veg.palette}{A nice white-green-brown color scheme.  Good for vegetation cover}
+#' \item{lai.palette}{Default colour scheme for LAI}
+#' \item{cmass.palette}{Default colour scheme for biomass}
+#' \item{difference.palette}{Colour scheme for differences. Symmetrical, centred on white}
+#' \item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned}
+#' \item{reversed.tim.colors}{The tim.colors scheme reversed to go from red (hot/dry) to blue (cold/wet)}
+#' }
+#' @param n Number of colour shades required
+#' @name veg.palettes
+NULL
+ 
+#' @rdname veg.palettes
+veg.palette <- colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black"))
+
+#' @rdname veg.palettes
+lai.palette <- colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "khaki1", "yellowgreen", "forestgreen", "saddlebrown","black" )) #this is a function which returns a list of colours
+
+#' @rdname veg.palettes
+cmass.palette <- colorRampPalette(c("lemonchiffon","peru", "forestgreen", "dodgerblue4", "orchid4", "hotpink", "red4"))
+
+#' @rdname veg.palettes
+difference.palette <- colorRampPalette(c("green", "blue", "white", "red", "yellow")) #this is a function which returns a list of colours
+
+#' @rdname veg.palettes
+fire.palette <- colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+
+#' @rdname veg.palettes
+reversed.tim.colors = function(n) rev(tim.colors(n))
+
 
 ########### CONVERSION OF ABOVE-GROUND BIOMASS TO TOTAL CARBON ####################
-### Used when reading the original Baccini et al. 2012 and Avitabile et al. 2015 dataset
-### Reference Baccini et al. 2012
+#' Calculate total Carbon given above ground biomass.
+#'
+#' Equation from Baccini et al . 2012. 
+#' Used when reading the original Baccini et al. 2012 and Avitabile et al. 2015 dataset
+#' 
+#' @param AGB ABive ground biomass (carbon)
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
 
 AGBtoTotalCarbon <- function(AGB){
   
@@ -292,6 +348,10 @@ AGBtoTotalCarbon <- function(AGB){
   return(total.carbon)
   
 }
+
+
+
+
 
 standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global", name = "Global", extent = extent(-180, 180, -90, 90)),
                                      Africa = new("SpatialExtent", id = "Africa", name = "Africa", extent =  extent(-20, 55, -30, 36)),
@@ -309,6 +369,9 @@ standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global"
                                      SHAfrica = new("SpatialExtent", id = "SHAfrica", name = "Southern Hemisphere Africa", extent = extent(5, 50, -30, 0))
                                      
 )
+
+
+
 
 ## define for older R versions, where this function does not exist.
 ## Just copied from a recent R version

@@ -22,9 +22,19 @@
 ###
 ###################################### 
 
-# blah abaim
 
-# now make a big list of the global PFTs 
+#####################################################################
+########### LPJ-GUESS(-SPITFIRE) GLOBAL PFTS ########################
+#####################################################################
+
+#' LPJ-GUESS(-SPITFIRE) Global PFTs
+#' 
+#' The list contain the standard LPJ-GUESS global PFTs and few more.  It includes some metadata 
+#' and a preferred plot colour.
+#' 
+#' @format A list of \code{PFT} objects that store meta-data for commonly used PFTs from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @seealso \code{PFT}-class
 global.PFTs <- list(
   
   # BOREAL TREES
@@ -371,8 +381,18 @@ global.PFTs <- list(
   
 )
 
+##########################################################
+########### LPJ-GUESS EUROPEAN PFTS ######################
+##########################################################
 
-# now make a big list of the european PFTs 
+#' LPJ-GUESS European PFTs
+#' 
+#' The list contain the standard LPJ-GUESS european PFTs (see Hickler at al. 2012) and few more.  It includes some metadata 
+#' and a preferred plot colour.
+#' 
+#' @format A list of \code{PFT} objects that store meta-data for commonly used European PFTs from LPJ-GUESS.
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @seealso \code{PFT}-class
 euro.PFTs <- list(
   
   # BOREAL TREES

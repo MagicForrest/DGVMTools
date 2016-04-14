@@ -11,13 +11,13 @@ t1 <- Sys.time()
 #### STEP ONE: Define the settings, open the run and average over the period we want
 
 # Define a RUN to process
-run <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example1",
+run <- defineVegRun(run.dir = "/home/matthew/RVCToolsExamples/Example1",
                     model = "LPJ-GUESS",
                     pft.set = global.PFTs,
                     id = "ExampleRun1",
                     description= "An example LPJ-GUESS run",
                     driving.data = "CRU",
-                    map.overlay = "lowres", # adding even low resolution country outlines more than doubles run time and plot files sizes :-/
+                    map.overlay = "world", # adding even low resolution country outlines more than doubles run time and plot files sizes :-/
                     lonlat.offset = c(0.25,0.25),
                     year.offset = 1401
 )
@@ -29,49 +29,14 @@ variable <- "lai"
 period = new("TemporalExtent", name = "Reference", start = 1961, end = 1990)
 
 # Open the lai.out file, and average over the reference period
-# lai.reference.period <- getVegObject(run, 
-#                                      variable, 
-#                                      temporal.extent = period, 
-#                                      temporally.average = TRUE, 
-#                                      write = TRUE,
-#                                      reread.file = FALSE,
-#                                      store.internally = FALSE)
+lai.reference.period <- getVegObject(run, 
+                                     variable, 
+                                     temporal.extent = period, 
+                                     temporally.average = TRUE, 
+                                     write = FALSE,
+                                     reread.file = FALSE,
+                                     store.internally = FALSE)
 
-temp.extent <- new("SpatialExtent", id  = "test", name = "asdas", extent = extent(-10,10,-10,10))
-
-
-lai.temp.1 <- getVegObject(run, 
-                           variable, 
-                           spatial.extent = temp.extent, 
-                           spatially.average = TRUE, 
-                           write = TRUE,
-                           reread.file = TRUE,
-                           store.internally = FALSE)
-
-
-lai.temp.2<- getVegObject(run, 
-                          variable, 
-                          spatial.extent = temp.extent, 
-                          spatially.average = TRUE, 
-                          write = TRUE,
-                          reread.file = FALSE,
-                          store.internally = FALSE)
-
-
-
-temp.extent <- new("SpatialExtent", id  = "test", name = "asdas", extent = extent(-10,20,-15,10))
-
-
-lai.temp.2 <- getVegObject(run, 
-                           variable, 
-                           spatial.extent = temp.extent, 
-                           spatially.average = TRUE, 
-                           write = TRUE,
-                           reread.file = FALSE,
-                           store.internally = FALSE)
-
-
-stop()
 
 
 ##### STEP TWO: Simple summary plots
@@ -80,7 +45,6 @@ stop()
 plotVegMaps(lai.reference.period, 
             doSummary = TRUE, 
             doIndividual = TRUE)
-
 
 
 ##### STEP THREE: More advanced analysis and plots
