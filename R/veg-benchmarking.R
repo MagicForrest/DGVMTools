@@ -486,6 +486,7 @@ compareVegSpatialObject <- function(runs,
                                     perc.diff.cuts = NULL,
                                     special = NULL,
                                     doIndividual = FALSE,
+                                    special.string = NULL,
                                     ...) {
   
   # To avoid NOTES
@@ -523,7 +524,7 @@ compareVegSpatialObject <- function(runs,
                 targets = targets,
                 quant = run@objects[[veg.spatial.id]]@quant,
                 summary.title = sub.target,
-                special.string = paste("RunComparison", sub.target, sep = "."),
+                special.string = paste(special.string, "RunComparison", sub.target, sep = "."),
                 special = special,
                 override.cuts = side.by.side.cuts,
                 doIndividual = FALSE,
@@ -569,6 +570,7 @@ compareVegSpatialObject <- function(runs,
                       plot.labels = diff.titles,
                       override.cuts = diff.cuts,
                       doIndividual = doIndividual,
+                      special.string = special.string,
                       ...)
         }
         
@@ -585,6 +587,7 @@ compareVegSpatialObject <- function(runs,
                       plot.labels = perc.diff.titles,
                       override.cuts = perc.diff.cuts,
                       doIndividual = doIndividual,
+                      special.string = special.string,
                       ...)
           
         }
