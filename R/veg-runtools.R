@@ -197,15 +197,15 @@ addToVegRun <- function(object, run){
 
 makeVegObjectID <- function(var.string, temporal.extent = NULL, spatial.extent = NULL, temporally.averaged = FALSE, spatially.averaged = FALSE){
   
-  TA.str = SA.str = "."
-  if(spatially.averaged) SA.str <- ".SA."
-  if(temporally.averaged) TA.str <- ".TA."
-  if(is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, TA.str, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
-  else if(!is.null(spatial.extent) & is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, sep ="")
-  else if(!is.null(spatial.extent) & !is.null(temporal.extent)) vegobject.id <- paste(var.string, SA.str, spatial.extent@id, TA.str,  paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep ="")
-  else  vegobject.id <- var.string
   
+  vegobject.id <- var.string
+  if(spatially.averaged)  vegboject.id <- paste(vegobject.id, "SA", sep = ".")
+  if(!is.null(spatial.extent)) vegobject.id <- paste(vegobject.id, spatial.extent@id, sep = ".")
+  if(temporally.averaged)  vegobject.id <- paste(vegobject.id, "TA", sep = ".")
+  if(!is.null(temporal.extent)) vegobject.id <- paste(vegobject.id, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep =".")
+    
   return(vegobject.id)
+  
 }
 
 ################################# GET TEMPORALLY-AVERAGED DATA #########################################
