@@ -627,9 +627,12 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
       rm(data.spdf)
     }
     else {
-      data.all.raster <- brick(data.spdf)
-      data.raster <- subset(data.all.raster, layers) 
-      rm(data.spdf, data.all.raster)   
+      #data.all.raster <- brick(data.spdf)
+      #data.raster <- subset(data.all.raster, layers) 
+      data.raster <- brick(data.spdf)
+      #rm(data.spdf, data.all.raster) 
+      rm(data.spdf)   
+      
     }
   } 
   ###  If a single raster layer then we are done
@@ -666,38 +669,51 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 sanitiseNamesForRaster <- function(input){
   
+  print("Input")
+  print(input)
+  
   ###  Get class of the object we are dealing with
   this.class = class(input)[1]
   
   
   ###  If SpatialPixelsDataFrame 
   if(this.class == "SpatialPixelsDataFrame"){ 
-    names(input) <- sub("-", ".", names(input))
+    names(input) <- gsub("-", ".", names(input))
+    print("Output")
+    print(input)
     return(input)
   }
   ### If data.table
   else if(this.class == "data.table"){ 
     input.copy <- copy(input)
-    setnames(input.copy, sub("-", ".", names(input.copy)))
+    setnames(input.copy, gsub("-", ".", names(input.copy)))
+    print("Output")
+    print(input)
     return(input.copy)
   }
   ### If VegObject (which contains a data.table) 
   else if(is.VegObject(input)){
     dt <- copy(input@data)
-    setnames(dt, sub("-", ".", names(dt)))
+    setnames(dt, gsub("-", ".", names(dt)))
     input@data <- dt
     rm(dt)
     gc()
+    print("Output")
+    print(input)
     return(input)
   }
   ### If "character"
   else if(this.class == "character"){
-    input <- sub("-", ".", input)
+    input <- gsub("-", ".", input)
+    print("Output")
+    print(input)
     return(input)
   }
   ###  If raster object already we are done
   else if(this.class == "RasterLayer" | this.class == "RasterBrick" | this.class == "RasterStack"){
     # Already a raster thing, donothing to do here
+    print("Output")
+    print(input)
     return(input)
   }
   ### else error 
