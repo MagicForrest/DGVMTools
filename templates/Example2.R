@@ -177,7 +177,7 @@ for(run in vegrun.list){
         if(this.VegQuantity@type == "PFT"){
           
           # Calculate the lifeform totals, the temperate total and the evergeen total
-          this.VegSpatial <- addVegTotals(this.VegSpatial, target = c("Lifeforms", "Zones", "Phenologies", "Leafforms"))
+          this.VegSpatial <- aggregateLayers(this.VegSpatial, target = c("Lifeforms", "Zones", "Phenologies", "Leafforms"))
           
           # plot the per lifeform summary and individual lifeform plots
           plotVegMaps(this.VegSpatial, targets = c("Lifeforms"), special.string = "Lifeforms")
@@ -206,7 +206,7 @@ for(run in vegrun.list){
         if(this.VegQuantity@type == "PFT"){
           
           # Add fractions and plot
-          this.VegSpatial <- addVegFractions(this.VegSpatial, targets =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), denominators = list("Total"))
+          this.VegSpatial <- divideLayers(this.VegSpatial, targets =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), denominators = list("Total"))
           plotVegMaps(this.VegSpatial, targets = c("PFTs"), special = "fraction", special.string = "PFT")
           plotVegMaps(this.VegSpatial, targets = c("Lifeforms"), special = "fraction", special.string = "Lifeforms")
           plotVegMaps(this.VegSpatial, targets = c("Zones"), special = "fraction",  special.string = "ClimateZones")
@@ -269,7 +269,7 @@ for(run in vegrun.list){
 
       # average across the Saatchi years, the calculate the Tree total
       Saatchi.VegSpatial <- getVegSpatial(run, period = benchmarking.dataset@temporal.extent, benchmarking.dataset@veg.quant, reread.file = FALSE)
-      Saatchi.VegSpatial <- addVegTotals(Saatchi.VegSpatial, "Tree")
+      Saatchi.VegSpatial <- aggregateLayers(Saatchi.VegSpatial, "Tree")
       
       # compare to data
       # Do the generic analysis   

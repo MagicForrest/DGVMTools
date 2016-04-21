@@ -414,12 +414,12 @@ addBiomes <-function(input, scheme){
   input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
   
   # Get the totals required
-  input <-addVegTotals(input, targets = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
+  input <-aggregateLayers(input, targets = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
   
   # Get the fractions required
-  input <- addVegFractions(input, targets = scheme@fraction.of.total, denominators = list("Total"))
-  input <- addVegFractions(input, targets = scheme@fraction.of.tree,  denominators = list("Tree"))
-  input <- addVegFractions(input, targets = scheme@fraction.of.woody, denominators = list("Woody"))
+  input <- divideLayers(input, targets = scheme@fraction.of.total, denominators = list("Total"))
+  input <- divideLayers(input, targets = scheme@fraction.of.tree,  denominators = list("Tree"))
+  input <- divideLayers(input, targets = scheme@fraction.of.woody, denominators = list("Woody"))
   
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
@@ -439,7 +439,7 @@ addBiomes <-function(input, scheme){
 #'
 #' Combine layers of a VegObject (or a data.table)
 #' 
-#' This is very useful and important function.  It doesn't actually only do totals as suggested by the name, rather it aggregates different layers 
+#' This is very useful and important function.  It aggregates different layers 
 #' of a VegObject according the the desired method (or a sensible default)
 #' 
 #' @param input The VegObject for which to aggregate layers.
@@ -456,7 +456,7 @@ addBiomes <-function(input, scheme){
 #' For convenience, both \code{targets}  will be expanded using \code{expandTargets}.
 #' This allows all lifeforms totals in a VegObject to be calculated using a simple call such as
 #' 
-#'  \code{veg.obj <- addVegTotals(veg.obj, c("lifeforms"))}
+#'  \code{veg.obj <- aggregateLayers(veg.obj, c("lifeforms"))}
 #'  
 #' See documention of \code{expandTargets} for details.
 #' 
@@ -465,7 +465,7 @@ addBiomes <-function(input, scheme){
 #' @export
 #' @seealso expandsTargets getVegFractions
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
+aggregateLayers <- function(input, targets, method = NULL, PFT.data = NULL){
   
   Woody <- NULL
   
@@ -486,8 +486,8 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
     suppressWarnings(dt <- input)
     # if a data.table has been supplied but not method, use sums, but issue a warning
     method <- rowSums
-    warning("addVegTotals has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
-    message("addVegTotals has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
+    warning("aggregateLayers has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
+    message("aggregateLayers has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
     
   }
   
@@ -503,8 +503,8 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
     method <- rowSums
   }
   else {
-    warning(paste("In addVegTotals() not sure how to deal with ", method, ", calculating sums instead!", sep = ""))
-    message(paste("In addVegTotals() not sure how to deal with ", method, ", calculating sums instead!", sep = ""))
+    warning(paste("In aggregateLayers() not sure how to deal with ", method, ", calculating sums instead!", sep = ""))
+    message(paste("In aggregateLayers() not sure how to deal with ", method, ", calculating sums instead!", sep = ""))
     method <- rowSums
   }  
   
@@ -590,7 +590,7 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
 #' For convenience, both \code{targets} and \code{denominators} will be expanded using \code{expandTargets}.
 #' This allows all lifeforms fractions in a VegObject to be calculated using a simple call such as
 #' 
-#'  \code{veg.obj <- addVegFractions(veg.obj, c("lifeforms")}
+#'  \code{veg.obj <- divideLayers(veg.obj, c("lifeforms")}
 #'  
 #' See documention of \code{expandTargets} for details. 
 #' 
@@ -600,7 +600,7 @@ addVegTotals <- function(input, targets, method = NULL, PFT.data = NULL){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @seealso expandsTargets getVegTotals
 
-addVegFractions <- function(input, targets, denominators = list("Total")){
+divideLayers <- function(input, targets, denominators = list("Total")){
   
   # To avoid NOTES
   Total = NULL
@@ -614,7 +614,7 @@ addVegFractions <- function(input, targets, denominators = list("Total")){
   denominators <- expandTargets(denominators, dt, PFT.data)
   for(denom in denominators) {
     if(!(denom %in% names(dt))) {
-      dt <- addVegTotals(dt, denom, PFT.data)
+      dt <- aggregateLayers(dt, denom, PFT.data)
     }
   }
   
@@ -623,7 +623,7 @@ addVegFractions <- function(input, targets, denominators = list("Total")){
   targets <- expandTargets(targets, dt, PFT.data)
   for(target in targets) {
     if(!(target %in% names(dt))) {
-      dt <- addVegTotals(dt, target, PFT.data)
+      dt <- aggregateLayers(dt, target, PFT.data)
     }
   }
   
