@@ -77,7 +77,7 @@ lpj.quantities <- list(
                   full.string = "Generic Variable",
                   type = "unknown",
                   units = "",
-                  colours = tim.colors,
+                  colours = fields::tim.colors,
                   cuts = integer(0)),
   
   "lai"= new("VegQuant",
@@ -131,7 +131,7 @@ lpj.quantities <- list(
                 full.string = "Annual GPP",
                 type = "PFT",
                 units = "kgC/m2/year",
-                colours = tim.colors,
+                colours = fields::tim.colors,
                 cuts = seq(0, 3, 0.05)),
   
   "cmass"= new("VegQuant",
@@ -158,7 +158,7 @@ lpj.quantities <- list(
                  full.string = "Carbon Pool",
                  type = "pools",
                  units = "kgC/m^2",
-                 colours = tim.colors,
+                 colours = fields::tim.colors,
                  cuts = seq(0,70,1)),
   
   "litter_wood"= new("VegQuant",
@@ -167,7 +167,7 @@ lpj.quantities <- list(
                      full.string = "Wood Litter",
                      type = "PFT",
                      units = "kgC/m^2",
-                     colours = tim.colors,
+                     colours = fields::tim.colors,
                      cuts = seq(0,2,0.1)),
   
   "litter_leaf" =  new("VegQuant",
@@ -176,7 +176,7 @@ lpj.quantities <- list(
                        full.string = "Leaf Litter",
                        type = "PFT",
                        units = "kgC/m^2",
-                       colours = tim.colors,
+                       colours = fields::tim.colors,
                        cuts = seq(0,1,0.002)),
   
   "litter_repr"=  new("VegQuant",
@@ -185,7 +185,7 @@ lpj.quantities <- list(
                       full.string = "Reproductive Litter",
                       type = "PFT",
                       units = "kgC/m^2",
-                      colours = tim.colors,
+                      colours = fields::tim.colors,
                       cuts = seq(0,1,0.05)),
   
   "fine_fuel" = new("VegQuant",
@@ -194,7 +194,7 @@ lpj.quantities <- list(
                     full.string = "Fine Fuel",
                     type = "PFT",
                     units = "kgC/m^2",
-                    colours = tim.colors,
+                    colours = fields::tim.colors,
                     cuts = seq(0,1,0.05)),
   
   "mnpp" =  new("VegQuant",
@@ -203,7 +203,7 @@ lpj.quantities <- list(
                 full.string = "Month NPP",
                 type = "monthly",
                 units = "kgC/m^2",
-                colours = tim.colors,
+                colours = fields::tim.colors,
                 cuts = seq(-0.1, 0.3, 0.01)),
   
   "mgpp" = new("VegQuant",
@@ -212,7 +212,7 @@ lpj.quantities <- list(
                full.string = "Monthly GPP", 
                type = "monthly",
                units = "kgC/m^2",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(0, 0.4, 0.01)),
   
   "mnee" = new("VegQuant",
@@ -221,7 +221,7 @@ lpj.quantities <- list(
                full.string = "Monthly NEE", 
                type = "monthly",
                units = "kgC/m^2",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(-0.1, 0.2, 0.01)),
   
   "mrh" =new("VegQuant",
@@ -230,7 +230,7 @@ lpj.quantities <- list(
              full.string = "Monthly Heterotrophic Respiration", 
              type = "monthly",
              units = "kgC/m^2",
-             colours = tim.colors,
+             colours = fields::tim.colors,
              cuts = seq(0.0, 0.3, 0.005)),
   
   "mra" =  new("VegQuant",
@@ -239,7 +239,7 @@ lpj.quantities <- list(
                full.string = "Monthly Autotrophic Respiration", 
                type = "monthly",
                units = "kgC/m^2",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(0.0, 0.3, 0.005)),
   
   "anpp" = new("VegQuant",
@@ -248,7 +248,7 @@ lpj.quantities <- list(
                full.string = "Annual NPP", 
                type = "PFT",
                units = "kgC/m^2",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(-0.5, 2, 0.1)),
   
   "cflux" = new("VegQuant",
@@ -257,7 +257,7 @@ lpj.quantities <- list(
                 full.string = "Carbon Flux", 
                 type = "flux",
                 units = "kgC/m^2/y",
-                colours = tim.colors,
+                colours = fields::tim.colors,
                 cuts = seq(-3, 3, 0.1)),
   
   "dens" = new("VegQuant",
@@ -266,7 +266,7 @@ lpj.quantities <- list(
                full.string = "PFT Density", 
                type = "PFT",
                units = "indiv/m^2",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(0, 0.1, 0.002)),
   
   "speciesheights"= new("VegQuant",
@@ -275,7 +275,7 @@ lpj.quantities <- list(
                         full.string = "PFT Average Heights", 
                         type = "PFT",
                         units = "m",
-                        colours = tim.colors,
+                        colours = fields::tim.colors,
                         cuts = seq(0, 40, 1)),
   
   "maet"  = new("VegQuant",
@@ -284,7 +284,7 @@ lpj.quantities <- list(
                 full.string = "Monthly Actual Evapotranspiration", 
                 type = "monthly",
                 units = "mm/month",
-                colours = tim.colors,
+                colours = fields::tim.colors,
                 cuts = seq(0, 200, 10)),
   
   "mpet" = new("VegQuant",
@@ -293,7 +293,7 @@ lpj.quantities <- list(
                full.string = "Monthly Potential Evapotranspiration", 
                type = "monthly",
                units = "mm/month",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(0, 300, 10)),
   
   "mevap" = new("VegQuant",
@@ -302,7 +302,7 @@ lpj.quantities <- list(
                 full.string = "Monthly Evaporation", 
                 type = "monthly",
                 units = "mm/month",
-                colours = tim.colors,
+                colours = fields::tim.colors,
                 cuts = seq(0, 100, 2)),
   
   "mrunoff" = new("VegQuant",
@@ -311,7 +311,7 @@ lpj.quantities <- list(
                   full.string = "Monthly Runoff", 
                   type = "monthly",
                   units = "mm/month",
-                  colours = tim.colors,
+                  colours = fields::tim.colors,
                   cuts = seq(0, 500, 10)),
   
   "mintercep" = new("VegQuant",
@@ -320,7 +320,7 @@ lpj.quantities <- list(
                     full.string = "Monthly Interception", 
                     type = "monthly",
                     units = "mm/month",
-                    colours = tim.colors,
+                    colours = fields::tim.colors,
                     cuts = seq(0, 50, 1)),
   
   "mwcont_upper" =  new("VegQuant",
@@ -395,7 +395,7 @@ lpj.quantities <- list(
                      full.string = "Annual Total Runoff", 
                      type = "annual",
                      units = "mm/year",
-                     colours = tim.colors,
+                     colours = fields::tim.colors,
                      cuts = seq(0, 1000, 50)), 
   
   "bioclim" = new("VegQuant",
@@ -404,7 +404,7 @@ lpj.quantities <- list(
                   full.string = "Bioclimatic Limit Variables",
                   type = "irregular",
                   units = "kgC/m^2",
-                  colours = tim.colors,
+                  colours = fields::tim.colors,
                   cuts = seq(-1, 3, 0.1)),
   
   "gdd5" = new("VegQuant",
@@ -413,7 +413,7 @@ lpj.quantities <- list(
                full.string = "Growing Degree Days (5deg C base)",
                type = "annual",
                units = "degree days",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(0, 5000, 100)),
   
   
@@ -427,7 +427,7 @@ lpj.quantities <- list(
                     full.string = "Monthly Burned Area Fraction", 
                     type = "monthly",
                     units = "",
-                    colours = tim.colors,
+                    colours = fields::tim.colors,
                     cuts = seq(0,1,0.05)),
   
   "mtau_l" =  new("VegQuant",
@@ -436,7 +436,7 @@ lpj.quantities <- list(
                   full.string = "Monthly Residence Time", 
                   type = "monthly",
                   units = "mins",
-                  colours = tim.colors,
+                  colours = fields::tim.colors,
                   cuts = seq(0,8,0.2)),
   
   "pyro_flux" = new("VegQuant",
@@ -445,7 +445,7 @@ lpj.quantities <- list(
                     full.string = "Pyrogenic Emmisions", 
                     type = "irregular",
                     units = "kg species/m^2",
-                    colours = tim.colors),
+                    colours = fields::tim.colors),
   
   "mfireintens" = new("VegQuant",
                       id = "mfireintens",
@@ -453,7 +453,7 @@ lpj.quantities <- list(
                       full.string = "Monthly Fire Intensity", 
                       type = "monthly",
                       units = "kW/m^2",
-                      colours = tim.colors,
+                      colours = fields::tim.colors,
                       cuts = seq(0, 5000, 50)),
   
   "mlivegrass_fuel" = new("VegQuant",
@@ -462,7 +462,7 @@ lpj.quantities <- list(
                           full.string = "Mean Monthly Live Grass Fuel", 
                           type = "monthly",
                           units = "kgC/m^2",
-                          colours = tim.colors,
+                          colours = fields::tim.colors,
                           cuts = seq(0,1,0.01)),
   
   "m1hr_fuel" = new("VegQuant",
@@ -471,7 +471,7 @@ lpj.quantities <- list(
                     full.string = "Mean Monthly 1hr Fuel", 
                     type = "monthly",
                     units = "kgC/m^2",
-                    colours = tim.colors,
+                    colours = fields::tim.colors,
                     cuts = seq(0,1,0.01)),
   
   "m10hr_fuel" = new("VegQuant",
@@ -480,7 +480,7 @@ lpj.quantities <- list(
                      full.string = "Mean Monthly 10hr Fuel", 
                      type = "monthly",
                      units = "kgC/m^2",
-                     colours = tim.colors,
+                     colours = fields::tim.colors,
                      cuts = seq(0,1,0.01)),
   
   "m100hr_fuel" = new("VegQuant",
@@ -489,7 +489,7 @@ lpj.quantities <- list(
                       full.string = "Mean Monthly 100hr Fuel", 
                       type = "monthly",
                       units = "kgC/m^2",
-                      colours = tim.colors,
+                      colours = fields::tim.colors,
                       cuts = seq(0,1,0.01)),
   
   "m1000hr_fuel" = new("VegQuant",
@@ -498,7 +498,7 @@ lpj.quantities <- list(
                        full.string = "Mean Monthly 1000hr Fuel", 
                        type = "monthly",
                        units = "kgC/m^2",
-                       colours = tim.colors,
+                       colours = fields::tim.colors,
                        cuts = seq(0,1,0.01)),
   
   "mlivegrass_cc" = new("VegQuant",
@@ -507,7 +507,7 @@ lpj.quantities <- list(
                         full.string = "Mean Monthly Live Grass Combustion Completeness", 
                         type = "monthly",
                         units = "kgC/m^2",
-                        colours = tim.colors,
+                        colours = fields::tim.colors,
                         cuts = seq(0,1,0.01)),     
   
   "m1hr_cc"= new("VegQuant",
@@ -516,7 +516,7 @@ lpj.quantities <- list(
                  full.string = "Mean Monthly 1hr Combustion Completeness", 
                  type = "monthly",
                  units = "kgC/m^2",
-                 colours = tim.colors,
+                 colours = fields::tim.colors,
                  cuts = seq(0,1,0.01)),
   
   "m10hr_cc" = new("VegQuant",
@@ -525,7 +525,7 @@ lpj.quantities <- list(
                    full.string = "Mean Monthly 10hr Combustion Completeness", 
                    type = "monthly",
                    units = "kgC/m^2",
-                   colours = tim.colors,
+                   colours = fields::tim.colors,
                    cuts = seq(0,1,0.01)),
   
   "m100hr_cc" = new("VegQuant",
@@ -534,7 +534,7 @@ lpj.quantities <- list(
                     full.string = "Mean Monthly 100hr Combustion Completeness", 
                     type = "monthly",
                     units = "kgC/m^2",
-                    colours = tim.colors,
+                    colours = fields::tim.colors,
                     cuts = seq(0,1,0.01)),
   
   "m1000hr_cc" = new("VegQuant",
@@ -543,7 +543,7 @@ lpj.quantities <- list(
                      full.string = "Mean Monthly 1000hr Combustion Completeness", 
                      type = "monthly",
                      units = "kgC/m^2",
-                     colours = tim.colors,
+                     colours = fields::tim.colors,
                      cuts = seq(0,1,0.01)),
   
   "afdays" = new("VegQuant",
@@ -552,7 +552,7 @@ lpj.quantities <- list(
                  full.string = "Fire Days per Year", 
                  type = "annual",
                  units = "days",
-                 colours = tim.colors,
+                 colours = fields::tim.colors,
                  cuts = seq(0, 366, 12)),
   
   "mavenest" = new("VegQuant",
@@ -561,7 +561,7 @@ lpj.quantities <- list(
                    full.string = "Average Monthly Nesterov", 
                    type = "monthly",
                    units = "",
-                   colours = tim.colors,
+                   colours = fields::tim.colors,
                    cuts = seq(0, 100000, 5000)),
   
   "mdlm_livegrass" = new("VegQuant",
@@ -570,7 +570,7 @@ lpj.quantities <- list(
                          full.string = "Monthly Litter Moisture of Live Grass", 
                          type = "monthly",
                          units = "",
-                         colours = tim.colors,
+                         colours = fields::tim.colors,
                          cuts = seq(0, 1, 0.02)),
   
   "mdlm_deadfuel" = new("VegQuant",
@@ -579,7 +579,7 @@ lpj.quantities <- list(
                         full.string = "Monthly Litter Moisture of Dead Fuel", 
                         type = "monthly",
                         units = "",
-                        colours = tim.colors,
+                        colours = fields::tim.colors,
                         cuts = seq(0, 1, 0.02)),
   
   "meff_wind" = new("VegQuant",
@@ -588,7 +588,7 @@ lpj.quantities <- list(
                     full.string = "Monthly Effective Windspeed", 
                     type = "monthly",
                     units = "m/min",
-                    colours = tim.colors,
+                    colours = fields::tim.colors,
                     cuts = seq(0, 100, 0.2)),
   
   "mnfdi" = new("VegQuant",
@@ -597,7 +597,7 @@ lpj.quantities <- list(
                 full.string = "Monthly Nesterov Fire Danger Index", 
                 type = "monthly",
                 units = "m/min",
-                colours = tim.colors,
+                colours = fields::tim.colors,
                 cuts = seq(0, 1, 0.02)),
   
   "mFBD" = new("VegQuant",
@@ -606,7 +606,7 @@ lpj.quantities <- list(
                full.string = "Monthly Fuel Bulk Density", 
                type = "monthly",
                units = "m^3/m^3",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(0, 30, 1)),
   
   "mSAV" = new("VegQuant",
@@ -615,7 +615,7 @@ lpj.quantities <- list(
                full.string = "Monthly Surface Area to Volume Ratio", 
                type = "monthly",
                units = "m^2/m^3",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(25, 100, 5)),
   
   "mMoE" = new("VegQuant",
@@ -624,7 +624,7 @@ lpj.quantities <- list(
                full.string = "Monthly Moisture of Extinction", 
                type = "monthly",
                units = "",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(0.2, 0.4, 0.01)),
   
   "mmcont" = new("VegQuant",
@@ -633,7 +633,7 @@ lpj.quantities <- list(
                  full.string = "Monthly Fuel Moisture Content", 
                  type = "monthly",
                  units = "",
-                 colours = tim.colors,
+                 colours = fields::tim.colors,
                  cuts = seq(0, 1, 0.05)),
   
   "mfire_durat" = new("VegQuant",
@@ -642,7 +642,7 @@ lpj.quantities <- list(
                       full.string = "Monthly Fire Duration", 
                       type = "monthly",
                       units = "mins",
-                      colours = tim.colors,
+                      colours = fields::tim.colors,
                       cuts = seq(0, 250, 5)),
   
   "mscorch_height" = new("VegQuant",
@@ -651,7 +651,7 @@ lpj.quantities <- list(
                          full.string = "Monthly Scorch Height", 
                          type = "monthly",
                          units = "m",
-                         colours = tim.colors,
+                         colours = fields::tim.colors,
                          cuts = seq(0, 30, 1)),
   
   "mros" = new("VegQuant",
@@ -660,7 +660,7 @@ lpj.quantities <- list(
                full.string = "Monthly Rate of Spread", 
                type = "monthly",
                units = "m/min",
-               colours = tim.colors,
+               colours = fields::tim.colors,
                cuts = seq(0, 30, 1)),
   
   "mfire_size" = new("VegQuant",
@@ -669,7 +669,7 @@ lpj.quantities <- list(
                      full.string = "Monthly Fire Size", 
                      type = "monthly",
                      units = "ha",
-                     colours = tim.colors,
+                     colours = fields::tim.colors,
                      cuts = seq(0, 100, 1)),
   
   "mhuman_ign" = new("VegQuant",
@@ -678,7 +678,7 @@ lpj.quantities <- list(
                      full.string = "Monthly average of human ignition rate", 
                      type = "monthly",
                      units = "ign/day",
-                     colours = tim.colors,
+                     colours = fields::tim.colors,
                      cuts = seq(0, 100, 1)),
   
   "mlightning_ign" = new("VegQuant",
@@ -687,7 +687,7 @@ lpj.quantities <- list(
                          full.string = "Monthly average of lightning ignition rate", 
                          type = "monthly",
                          units = "ign/day",
-                         colours = tim.colors,
+                         colours = fields::tim.colors,
                          cuts = seq(0, 5, 0.1)),
   
   "mfireday_duration" = new("VegQuant",
@@ -696,7 +696,7 @@ lpj.quantities <- list(
                             full.string = "Monthly Fire Duration (Fire Days Only)", 
                             type = "monthly",
                             units = "mins",
-                            colours = tim.colors,
+                            colours = fields::tim.colors,
                             cuts = seq(0, 250, 5)),
   
   "mfireday_scorch_height" = new("VegQuant",
@@ -705,7 +705,7 @@ lpj.quantities <- list(
                                  full.string = "Monthly Scorch Height (Fire Days Only)", 
                                  type = "monthly",
                                  units = "m",
-                                 colours = tim.colors,
+                                 colours = fields::tim.colors,
                                  cuts = seq(0, 30, 1)),
   
   "mfireday_intensity" = new("VegQuant",
@@ -714,7 +714,7 @@ lpj.quantities <- list(
                              full.string = "Monthly Fire Intensity (Fire Days Only)", 
                              type = "monthly",
                              units = "kW/m",
-                             colours = tim.colors,
+                             colours = fields::tim.colors,
                              cuts = seq(0, 500000, 5000)),
   
   "mfireday_nesterov" =  new("VegQuant",
@@ -723,7 +723,7 @@ lpj.quantities <- list(
                              full.string = "Monthly Nesterov (Fire Days Only)", 
                              type = "monthly",
                              units = "",
-                             colours = tim.colors,
+                             colours = fields::tim.colors,
                              cuts = seq(0, 5000000, 5000)),
   
   "mfireday_residence_time" = new("VegQuant",
@@ -732,7 +732,7 @@ lpj.quantities <- list(
                                   full.string = "Monthly Residence Time (Fire Days Only)", 
                                   type = "monthly",
                                   units = "min",
-                                  colours = tim.colors,
+                                  colours = fields::tim.colors,
                                   cuts = seq(0, 10, 0.1)),
   
   "allocation_fails" = new("VegQuant",
@@ -741,7 +741,7 @@ lpj.quantities <- list(
                            full.string = "Monthly Allocation Fails", 
                            type = "annual",
                            units = "days",
-                           colours = tim.colors,
+                           colours = fields::tim.colors,
                            cuts = seq(0,31,1)),
   
   "allocation_iters" = new("VegQuant",
@@ -750,8 +750,51 @@ lpj.quantities <- list(
                            full.string = "Monthly Iteration To Allocation Fire", 
                            type = "annual",
                            units = "days",
-                           colours = tim.colors,
-                           cuts = seq(0,20,1))
+                           colours = fields::tim.colors,
+                           cuts = seq(0,20,1)),
+  
+  "mfuel" = new("VegQuant",
+                id = "mfuel",
+                short.string = "mFuel",
+                full.string = "Monthly Fuel", 
+                type = "monthly",
+                units = "kgC/m^2",
+                colours = fields::tim.colors,
+                cuts = seq(0,20,0.2),
+                aggregate.method = "mean"),
+  
+  "mfinefuel" = new("VegQuant",
+                    id = "mfinefuel",
+                    short.string = "mFineFuel",
+                    full.string = "Monthly Fine Fuel", 
+                    type = "monthly",
+                    units = "kgC/m^2",
+                    colours = fields::tim.colors,
+                    cuts = seq(0,2,0.02),
+                    aggregate.method = "mean"),
+  
+  "mfiredays" = new("VegQuant",
+                    id = "mfiredays",
+                    short.string = "mFireDays",
+                    full.string = "Monthly sum of daily fire probabilites", 
+                    type = "monthly",
+                    units = "days",
+                    colours = fields::tim.colors,
+                    cuts = seq(0,31,1),
+                    aggregate.method = "sum"),
+  
+  "mfiredays_fine" = new("VegQuant",
+                         id = "mfiredaysfine",
+                         short.string = "mFireDaysFineFuel",
+                         full.string = "Monthly sum of daily fire probabilites (based on fine fuel threshold)", 
+                         type = "monthly",
+                         units = "days",
+                         colours = fields::tim.colors,
+                         cuts = seq(0,31,1),
+                         aggregate.method = "sum")#,
+  
+  
+  
 )
 
 

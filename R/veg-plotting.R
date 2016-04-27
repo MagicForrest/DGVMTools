@@ -208,9 +208,10 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### PROMOTE TO RASTER AND SANITISE NAMES - also make plot labels (if necessary) before the sanitatisation 
   original.targets <- targets # save for building plot label later
-  targets <- sanitiseNamesForRaster(targets)
-  data.toplot <- sanitiseNamesForRaster(data)
-  data.toplot <- promoteToRaster(data.toplot, targets, tolerance)
+  ##targets <- sanitiseNamesForRaster(targets)
+  ##data.toplot <- sanitiseNamesForRaster(data)
+  data.toplot <- promoteToRaster(data, targets, tolerance)
+  targets <- names(data.toplot) # update targets to be the names of the raster layers  (which might have changed)
   
   ### CROP THE DATA IF PLOT EXTENT HAS BEEN SPECIFIED
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}

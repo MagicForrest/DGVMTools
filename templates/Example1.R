@@ -52,7 +52,7 @@ plotVegMaps(lai.reference.period,
 ### TOTALS
 
 # Calculate the lifeform totals, the temperate total and the evergeen total
-lai.reference.period <- addVegTotals(lai.reference.period, target = c("Lifeforms", "Temperate", "Evergreen"))
+lai.reference.period <- aggregateLayers(lai.reference.period, target = c("Lifeforms", "Temperate", "Evergreen"))
 
 # Plot the Evergreen and Temperate totals indivdually
 plotVegMaps(lai.reference.period, 
@@ -70,7 +70,7 @@ plotVegMaps(lai.reference.period,
 ### FRACTIONS
 
 # calculate the tree and grass fractions (if no denominator specified, Total is assumed)
-lai.reference.period <- addVegFractions(lai.reference.period, targets = "lifeforms")
+lai.reference.period <- divideLayers(lai.reference.period, targets = "lifeforms")
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
@@ -80,7 +80,7 @@ plotVegMaps(lai.reference.period,
 
 
 # calculate the TeBS fraction of trees
-lai.reference.period <- addVegFractions(lai.reference.period, targets = c("TeBS"), denominators = list("Tree"))
+lai.reference.period <- divideLayers(lai.reference.period, targets = c("TeBS"), denominators = list("Tree"))
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
