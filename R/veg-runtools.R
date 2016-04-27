@@ -199,7 +199,7 @@ makeVegObjectID <- function(var.string, temporal.extent = NULL, spatial.extent =
   
   
   vegobject.id <- var.string
-  if(spatially.averaged)  vegboject.id <- paste(vegobject.id, "SA", sep = ".")
+  if(spatially.averaged)  vegobject.id <- paste(vegobject.id, "SA", sep = ".")
   if(!is.null(spatial.extent)) vegobject.id <- paste(vegobject.id, spatial.extent@id, sep = ".")
   if(temporally.averaged)  vegobject.id <- paste(vegobject.id, "TA", sep = ".")
   if(!is.null(temporal.extent)) vegobject.id <- paste(vegobject.id, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep =".")
