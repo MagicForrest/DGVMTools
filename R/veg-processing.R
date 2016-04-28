@@ -403,34 +403,34 @@ addBiomes <-function(input, scheme){
   # If GDD5 required for classification
   if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
     # get gdd5
-    print(paste("JS_DEBUG", class(input@run)))
+    stop("input@run is not a class 'VegRun' it is class 'VegRunInfo'!")
     gdd5 <- getVegSpatial(input@run, "gdd5", input@temporal.extent, reread.file = FALSE)
     dt <- input@data
     dt.gdd5 <- gdd5@data
     dt <- dt[dt.gdd5]
     input@data <- dt
   }
-  
+
   # Get the dominant tree and dominant woody PFTs
   input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
-  
+
   # Get the totals required
   input <-aggregateLayers(input, targets = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
-  
+
   # Get the fractions required
   input <- divideLayers(input, targets = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, targets = scheme@fraction.of.tree,  denominators = list("Tree"))
   input <- divideLayers(input, targets = scheme@fraction.of.woody, denominators = list("Woody"))
-  
+
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
-  
+
   # Apply biome rules and return
   if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
   suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1), with = FALSE])
   input@data <- dt
   return(input)
-  
+
 }
 
 
