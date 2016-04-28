@@ -326,7 +326,15 @@ IDFromList <- function(id, list) {
 
 
 
-writeNetCDF <- function(raster.in, var.name, var.units, time.resolution = "annual", time.units.string = NULL, long.name = "", filename = "test.nc", ordering = "standard", missing.value = -999999){
+writeNetCDF <- function(raster.in, 
+                        var.name, 
+                        var.units, 
+                        time.resolution = "annual", 
+                        time.units.string = NULL, 
+                        long.name = "", 
+                        filename = "test.nc", 
+                        ordering = "standard", 
+                        missing.value = -999999){
   
   # MAKE LONGITUDE AND LATITUDE DIMENSION
   lon.list <- seq(from = xmin(raster.in) + xres(raster.in)/2 , to = xmax(raster.in) - xres(raster.in)/2, by = xres(raster.in))
@@ -353,6 +361,14 @@ writeNetCDF <- function(raster.in, var.name, var.units, time.resolution = "annua
     time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
     
   }
+  else if(tolower(time.resolution) == "none"){
+    # if we have a third dimension but no time resolution we have a multivariable netCDF file
+    # in this case check that the var.name matches 
+  
+    ## TOO COMPLICATD, ABORT
+    
+  }
+  
   
   # PERMUTE THE DATA AND SET UP THE VARIABLE DIMENSION
   
