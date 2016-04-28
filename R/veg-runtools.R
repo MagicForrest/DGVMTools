@@ -227,8 +227,7 @@ getVegSpatial <- function(run,
                           var,
                           period,
                           ...){
-  
-  
+
   return(
     getVegObject(run, 
                  var, 
@@ -335,7 +334,7 @@ getVegObject <- function(run,
     quant <- var
     var.string <- quant@id
   }
-  
+
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
   vegobject.id <- makeVegObjectID(var.string, temporal.extent, spatial.extent, temporally.average, spatially.average)
   file.name <- file.path(run@run.dir, paste(vegobject.id, "RVCData", sep = "."))
