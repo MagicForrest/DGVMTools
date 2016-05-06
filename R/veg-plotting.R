@@ -351,12 +351,13 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
     
     quant@cuts <- seq(from = limits[1], to = limits[2], length.out = length(quant@cuts))
-    data.limited <- stack()
+
     for(layer in 1:nlayers(data.toplot)) {
       this.layer <- subset(data.toplot, layer)
       this.layer[this.layer < limits[1]] <- limits[1]
       this.layer[this.layer > limits[2]] <- limits[2]
-      data.limited <- addLayer(data.limited, this.layer)
+      if(exists("data.limited")) data.limited <- addLayer(data.limited, this.layer)
+      else data.limited <- brick(this.layer)
       rm(this.layer)
     }
     rm(data.toplot)
@@ -591,7 +592,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
     }
     else{ plot.labels <- run@description}
   }
-  
+
   # EXTENT
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
   
@@ -599,6 +600,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
   if(!is.null(run)){
     if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
   }
+
   
   # Add PNV data if requested read it in and compare rasters
   if(!is.null(addData)) {
@@ -618,13 +620,14 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
     }
     addData <- crop(addData, data.toplot)
     data.toplot <- mask(data.toplot, addData)  
-    
+   
     # add the PNV raster layer and its title
-    data.toplot <- stack(data.toplot, addData) 
+    data.toplot <- addLayer(data.toplot, addData) 
     plot.labels <- c(plot.labels, "PNV (Hickler et al. 2006)")
+
   }
-  
-  # KAPPA
+
+    # KAPPA
   if(!is.null(kappa.list)){
     
     # if only one model run put individual Kappas into biome legend
@@ -810,7 +813,6 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
 #' @param run The \code{VegRun} object for the run plotted (optional)
 #' @param data.name Character string for the data
 #' @param quant The quantity plotted (as \code{VegQuant} object)
-#' @param breaks A numerical vector of the breakpoints for the histograms
 #' @param plot.range A numerical vector with two elements defining the range to plot on the histogram.
 #' @param stat.results The \code{RasterComparion} object if it has already been calculated
 #'
@@ -825,7 +827,6 @@ plotHistoComparison <- function(model,
                                 run, 
                                 data.name, 
                                 quant, 
-                                breaks, 
                                 plot.range, 
                                 stat.results = NULL){
   

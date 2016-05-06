@@ -1,41 +1,42 @@
 
+# MF: Deprecated, not general enough.  Just call the relevant function to make the dataset in the analysis script.
 
-prepareBenchmarkingDatasets <- function(benchmark.list, resolution = "HD"){
-  
-  benchmarking.datasets.list <- list()
-  
-  
-  # For each benchmark string 
-  for(benchmark.string in benchmark.list){
-    
-    # If it is a biome classification
-    if(benchmark.string %in% names(supported.biome.schemes)) {
-      
-      message(paste("Reading PNV biomes using" ,benchmark.string, "scheme", sep = " "))
-      benchmarking.datasets.list[[benchmark.string]] <- new("SpatialDataset",
-                                                            id = benchmark.string,
-                                                            name = paste("H&P PNV Biomes classified by scheme ", benchmark.string),
-                                                            temporal.extent = new("TemporalExtent", name = "PNV", start = 1961, end = 1990) ,
-                                                            data = readHandPBiomes(resolution = resolution, classification = benchmark.string),
-                                                            veg.quant = lookupVegQuantity("lai"),
-                                                            units = ""
-      )
-      
-    } # if it is a biome classification
-    
-    # If it is the Saatchi data
-    if(benchmark.string == "Saatchi2011") { benchmarking.datasets.list[[benchmark.string]] <- getSaatchi2011(resolution = resolution) }
-    
-    
-    # If it is the GFED data
-    
-  } # for each benchmark
-  
-  
-  
-  return(benchmarking.datasets.list)
-  
-}
+# prepareBenchmarkingDatasets <- function(benchmark.list, resolution = "HD"){
+#   
+#   benchmarking.datasets.list <- list()
+#   
+#   
+#   # For each benchmark string 
+#   for(benchmark.string in benchmark.list){
+#     
+#     # If it is a biome classification
+#     if(benchmark.string %in% names(supported.biome.schemes)) {
+#       
+#       message(paste("Reading PNV biomes using" ,benchmark.string, "scheme", sep = " "))
+#       benchmarking.datasets.list[[benchmark.string]] <- new("SpatialDataset",
+#                                                             id = benchmark.string,
+#                                                             name = paste("H&P PNV Biomes classified by scheme ", benchmark.string),
+#                                                             temporal.extent = new("TemporalExtent", name = "PNV", start = 1961, end = 1990) ,
+#                                                             data = readHandPBiomes(resolution = resolution, classification = benchmark.string),
+#                                                             veg.quant = lookupVegQuantity("lai"),
+#                                                             units = ""
+#       )
+#       
+#     } # if it is a biome classification
+#     
+#     # If it is the Saatchi data
+#     if(benchmark.string == "Saatchi2011") { benchmarking.datasets.list[[benchmark.string]] <- getSaatchi2011(resolution = resolution) }
+#     
+#     
+#     # If it is the GFED data
+#     
+#   } # for each benchmark
+#   
+#   
+#   
+#   return(benchmarking.datasets.list)
+#   
+# }
 
 
 
@@ -44,9 +45,31 @@ prepareBenchmarkingDatasets <- function(benchmark.list, resolution = "HD"){
 
 #############################################################################################################
 ############################ COMPARE TWO RASTERS 
-
+#' Statistically compare two rasters 
+#' 
+#' Returns the R^2, RMSE and Pearson's correlation coefficient between two rasters, as well as the rasters themselves 
+#' (on a common extent and with the NA areas masked from both data datasets), 
+#' a raster of the difference and their percentage difference (relative to the data).
+#' 
+#' @param data.raster The data as a raster
+#' @param model.raster The model output as a raster
+#' 
+#' @return An object of class RasterComparison
+#' 
+#' The choice of statistical measures might not be the best but can easily be improved.  No spatial correlations are considered.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#' @export
 
 compareTwoRastersStats <- function(data.raster, model.raster){
+  
+  if(extent(data.raster) != extent(model.raster)){
+    
+    data.raster <- intersect(data.raster, model.raster)
+    model.raster <- intersect(model.raster, data.raster)
+    
+  }
   
   
   model.raster <- mask(model.raster, data.raster)
@@ -72,7 +95,8 @@ compareTwoRastersStats <- function(data.raster, model.raster){
   comparison.results <- new("RasterComparison",
                             diff.raster = diff, 
                             perc.diff.raster = perc.diff.raster, 
-                            data.raster = data.raster, model.raster = model.raster, 
+                            data.raster = data.raster, 
+                            model.raster = model.raster, 
                             R.squ = R.squ, 
                             P.cor = P.cor, 
                             RMSE = RMSE, 
@@ -85,11 +109,30 @@ compareTwoRastersStats <- function(data.raster, model.raster){
 }
 
 
-
-
+#' Compare a layer from a VegObject to a spatial dataset
+#' 
+#' Produces standard plot to compare model output to a spatial dataset.
+#' 
+#' @param dataset The data set as a SpatialDataset object
+#' @param vegobject The VegObject which contains the layer to be compared from the model (and, helpfully, meta-data about the run)
+#' @param layer The name of the layer to be compared to the spatial dataset
+#' @param diff.cuts A sequence of bins for the histo plot (defaults to the cuts)
+#' @param histo.plot.range A two-value numeric vector defining the range for the histo plots
+#' @param doScatterPlots Logical, if TRUE make a scatter plot (default is TRUE)
+#' @param doHistoPlots Logical, if TRUE make histograms plots (default is TRUE)
+#' @param quant A VegQuant object to override the one from vegobject (if necessary)
+#' @param ignore.raster A raster used to mask out gridcells wich are not to be compared (ie any gridcells set to NA in the ignore.raster
+#' are set to NA in thr model and data rasters)
+#' @param ... Parameters passed to plotVegMaps() for the spatial plots.
+#'
+#' @return An object of class RasterComparison
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#' @export
 
 compareRunToSpatialDataset <- function(dataset, 
-                                       vegvar, 
+                                       vegobject, 
                                        layer,
                                        diff.cuts = NULL, 
                                        histo.plot.range = NULL, 
@@ -97,12 +140,10 @@ compareRunToSpatialDataset <- function(dataset,
                                        doHistoPlots=TRUE, 
                                        quant = NULL, 
                                        ignore.raster = NULL,
-                                       correction.raster = NULL,
-                                       tolerance = NULL,
                                        ...){
   
   # PROMOTE MODEL TO RASTER FOR PROCESSING
-  model.raster <- promoteToRaster(vegvar, layer, vegvar@run@tolerance)
+  model.raster <- promoteToRaster(vegobject, layer, vegobject@run@tolerance)
   
   # PREPARE CUTS AND HISTO PLOT RANGE (if not specificed)
   if(is.null(diff.cuts)) {
@@ -115,14 +156,15 @@ compareRunToSpatialDataset <- function(dataset,
   # PREPARE QUANT
   if(is.null(quant)) quant <- dataset@veg.quant 
   
-  # crop all rasters to the same size
-  temp <- intersectionRVC(model.raster, dataset@data)
-  model.raster <- temp[[1]]
-  data.raster <- temp[[2]]
-  rm(temp)
+  # crop all rasters to the same size - not necessary now?
+  #temp <- intersectionRVC(model.raster, dataset@data)
+  #model.raster <- temp[[1]]
+  #data.raster <- temp[[2]]
+  #rm(temp)
   
-  # set names of raster layers
+  # EXTRA DATA FROM SpATIAL DATASET AND SET NAMES
   names(model.raster) <- layer
+  data.raster <- dataset@data
   names(data.raster) <- dataset@id
   
   # make difference map and a stack to plot
@@ -131,12 +173,14 @@ compareRunToSpatialDataset <- function(dataset,
     data.raster <- mask(data.raster, ignore.raster)
   }
   
-  # also mask out data where there is no model and vice versa
-  model.raster <- mask(model.raster, data.raster)
-  data.raster <- mask(data.raster, model.raster)
+  # also mask out data where there is no model and vice versa - not necessary now, done in compareRasterStat?
+  # model.raster <- mask(model.raster, data.raster)
+  # data.raster <- mask(data.raster, model.raster)
   
   # calculate comparison
   comparison.results <- compareTwoRastersStats(data.raster, model.raster)
+  data.raster <- comparison.results@data.raster
+  model.raster
   
   ##### DIFFERENCE MAPS
   plotVegMaps(comparison.results@diff.raster,
@@ -144,7 +188,7 @@ compareRunToSpatialDataset <- function(dataset,
               period = dataset@temporal.extent, 
               doSummary = TRUE, 
               doIndividual = FALSE, 
-              run = vegvar@run,
+              run = vegobject@run,
               summary.file.name = paste(quant@id, "Vs", dataset@id, sep = "."),
               special.string = "Corrected",
               maxpixels = 1000000,
@@ -152,30 +196,28 @@ compareRunToSpatialDataset <- function(dataset,
               ...)
   
   ##### ABSOLUTE MAPS
-  plotVegMaps(stack(model.raster, data.raster),
-              targets = c(names(model.raster), names(data.raster)),
+  plotVegMaps(stack(comparison.results@model.raster, comparison.results@data.raster),
               quant = quant, 
               period = dataset@temporal.extent, 
               doSummary = TRUE, 
               doIndividual = TRUE, 
-              run = vegvar@run,
+              run = vegobject@run,
               summary.file.name = paste(quant@id, "comp", dataset@id, "2-up", sep = "."),
               special.string = "Corrected",
               maxpixels = 1000000,
-              plot.labels = c(vegvar@run@description, dataset@name),
+              plot.labels = c(vegobject@run@description, dataset@name),
               ...)
   
   
   ##### HISTOS
   if(doHistoPlots){
     
-    plotHistoComparison(model = model.raster, 
-                        data = data.raster, 
+    plotHistoComparison(model = comparison.results@model.raster, 
+                        data = comparison.results@data.raster, 
                         stat.results = comparison.results,
-                        run = vegvar@run, 
-                        data.name = names(data.raster), 
+                        run = vegobject@run, 
+                        data.name = dataset@id, 
                         quant = quant, 
-                        breaks = diff.cuts,
                         plot.range = histo.plot.range)
     
   }
@@ -183,11 +225,11 @@ compareRunToSpatialDataset <- function(dataset,
   ##### SCATTER PLOT
   if(doScatterPlots){
     
-    plotScatterComparison(model = model.raster, 
-                          data = data.raster,  
+    plotScatterComparison(model = comparison.results@model.raster, 
+                          data = comparison.results@data.raster,  
                           stat.results = comparison.results,
-                          run = vegvar@run, 
-                          data.name = dataset@name, 
+                          run = vegobject@run, 
+                          data.name = dataset@id, 
                           quant = quant)
     
     
@@ -198,11 +240,34 @@ compareRunToSpatialDataset <- function(dataset,
   
 }
 
-
-
-compareManyRunsToData <- function(runs,
+#' Compare many VegRuns to a spatial dataset
+#' 
+#' To use this function it is *required* that \code{compareRunToSpatialDataset()} has been performed on each of the runs with 
+#' the dataset to which we are comparing.
+#' 
+#' @param runs A list of VegRun objects (each with the RasterComparison object already created)
+#' @param dataset The spatial dataset to which we are comparing (represented as a SpatialDataset object)
+#' @param label A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
+#' for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.
+#' @param diff.cuts Numeric vector of cuts for plotting the absolute difference.  If not specified it is derived as the maximum
+#' possible range based on the VegQuant object in the dataset.
+#' @param perc.diff.cuts Numerice vector of cuts for plotting the percentage differences.  If not specified defaults to -100\% to +200\%
+#' in 5\% intervals.
+#' @param spatial.extent If specified (as a raster::Extent object), the spatial extent to plot.  Note that the statistics will *not* reflect
+#'this extent
+#' @param showR2 A logical, if TRUE, put the R squared values on the plots.
+#' @param layout.objs A list of layout objects (see the \code{sp} package) for putting on the spatial plots.  For example,
+#' continent outlines
+#' @param ... Arguments to be passed to plotVegMaps when making the spatial plots.  
+#' 
+#' @return No return, just makes plots.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#' @export
+summariseRasterComparisons <- function(runs,
                                   dataset, 
-                                  label,
+                                  label = NULL,
                                   diff.cuts = NULL,
                                   perc.diff.cuts = seq(-100,200,5),
                                   spatial.extent = NULL,
@@ -211,13 +276,10 @@ compareManyRunsToData <- function(runs,
                                   ...) {
   
   message(paste("Comparing runs to ", dataset@name))
-  
-  
+
   # BUILD STACKS, NAMES AND PLOT TITLE LISTS FOR PLOTTING
-  # raster stacks 
-  Absolute.stack <- stack(runs[[1]]@benchmarks[[dataset@id]]@data.raster)
-  Difference.stack <- stack()
-  Percentage.Difference.stack <- stack()
+  # the data 
+  Absolute.stack <- brick(runs[[1]]@benchmarks[[dataset@id]]@data.raster)
   
   # text lists
   run.ids <- list()
@@ -226,19 +288,25 @@ compareManyRunsToData <- function(runs,
   # add each model run to stacks and text lists
   for(run in runs){
     
+    # retrieve the comparison objec
     comparison.obj <- run@benchmarks[[dataset@id]]
     
+    # add the text to the text lists
     run.ids <- append(run.ids, run@id)
     plot.titles <- append(plot.titles, run@description)
-    
+   
+    # add the raster layers to the stack
     Absolute.stack <- addLayer(Absolute.stack,  comparison.obj@model.raster)
-    Difference.stack <- addLayer(Difference.stack,  comparison.obj@diff.raster)
-    Percentage.Difference.stack <- addLayer(Percentage.Difference.stack,  comparison.obj@perc.diff.raster)
-    
-    rm(comparison.obj)
-    
-  }
+    #if(exists("Difference.stack")) Difference.stack <- addLayer(Difference.stack,  comparison.obj@diff.raster)
+    #else Difference.stack <- brick(comparison.obj@diff.raster)
+    #if(exists("Percentage.Difference.stack")) Percentage.Difference.stack <- addLayer(Percentage.Difference.stack,  comparison.obj@perc.diff.raster)
+    #else Percentage.Difference.stack <- brick(comparison.obj@perc.diff.raster)
   
+    rm(comparison.obj)
+    print("lalala")
+    stop()
+  }
+ 
   
   # CROP/EXTEND RASTERS (if extent specified)
   if(!is.null(spatial.extent)){
@@ -252,8 +320,7 @@ compareManyRunsToData <- function(runs,
   names(Absolute.stack) <- append(dataset@id, run.ids)
   names(Difference.stack) <- run.ids
   names(Percentage.Difference.stack) <- run.ids
-  
-  
+ 
   # PLOT ABSOLUTE VALUES
   plotVegMaps(Absolute.stack,
               quant = dataset@veg.quant, 
@@ -275,8 +342,7 @@ compareManyRunsToData <- function(runs,
       rm(comparison.obj)
     }
   }
-  
-  
+ 
   # PREPARE CUTS (if not specificed)
   if(is.null(diff.cuts)) {
     interval <- (range(dataset@veg.quant@cuts)[2] - range(dataset@veg.quant@cuts)[1] )/ (length(dataset@veg.quant@cuts)-1)
@@ -299,7 +365,7 @@ compareManyRunsToData <- function(runs,
               layout.objs = layout.objs,
               ...)
   
-  
+ 
   # PLOT PERCENTAGE DIFFERENCE
   plotVegMaps(Percentage.Difference.stack,
               quant = dataset@veg.quant, 
@@ -318,6 +384,9 @@ compareManyRunsToData <- function(runs,
   rm(run.ids, plot.titles, Absolute.stack, Difference.stack, Percentage.Difference.stack)
   gc()
   
+  
+
+  
 }
 
 
@@ -325,9 +394,25 @@ compareManyRunsToData <- function(runs,
 ####################  BIOME COMPARISIONS AND STATS ################################################
 ###################################################################################################
 
-
-
-doKappa <- function(stack, scheme, labels = NULL, verbose = TRUE){
+#' Kappa comparison between two biome rasters
+#' 
+#' Calculates a BiomeComparison object (which contains the Cohen's Kappa scores) given a stack containing two biome maps.
+#' 
+#' @param stack A two-layer stack containing the biomes maps (or other categorical data) represented as integer codes
+#' @param id A character string to identify this comparison, typically the id of the biome scheme.
+#' @param labels A vector of character strings to describe the categories over which Kappa is compared (typically a list of biomes)
+#' following the order of the integer codes used in the data (see \code{stack} argument)
+#' @param verbose A logical, if TRUE print out all the Kappa scores
+#' 
+#' @return A Biome comparison object
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#' @export
+doKappa <- function(stack, 
+                    id, 
+                    labels = NULL, 
+                    verbose = TRUE){
   
   # get the unique classes and put them in a vector with no missing values
   unique.classes <- union(unique(subset(stack,1)),unique(subset(stack,2)))
@@ -394,10 +479,9 @@ doKappa <- function(stack, scheme, labels = NULL, verbose = TRUE){
   
   
   return(new("BiomeComparison",
-             id = scheme@id,
+             id = id,
              data.raster = subset(stack,2), 
              model.raster = subset(stack,1), 
-             scheme = scheme,
              Kappa = kappa, 
              individual.Kappas = per.class.kappa)
   )
@@ -405,10 +489,32 @@ doKappa <- function(stack, scheme, labels = NULL, verbose = TRUE){
   
 }
 
-
-
-
-compareBiomes <- function(run, variable, period, scheme, plot = TRUE, ...){
+#' Compare a run to a biome map
+#' 
+#' Takes a run, a time period and a variable from which to calculate a modelled biome map, and biome scheme, 
+#' and compares the model to the data
+#' 
+#' @param run The VegRun to be compared to the data
+#' @param variable The VegQuant (or name) of the variable from which the biomes are to be derived. This is not flexible enough, 
+#' and should be folded into the scheme.
+#' @param period The temporal extent over which the model output should be averaged for calculating the biomes
+#' @param scheme The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or SpatialDataset?) 
+#' containing the data
+#' @param plot Logical, if true make a biome plot.
+#' @param ... Additional parameters supplied to the plotting function (at time of writing the plotting function is plotBiomes(),
+#'  but should be changed soon to plotVegMaps())
+#'  
+#' @return A Biome comparison object
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#' @export
+compareBiomes <- function(run, 
+                          variable, 
+                          period, 
+                          scheme, 
+                          plot = TRUE, 
+                          ...){
   
   # Prepare the veg. spatial object
   this.VegSpatial <- getVegSpatial(run, variable, period, reread.file = FALSE)
@@ -423,7 +529,7 @@ compareBiomes <- function(run, variable, period, scheme, plot = TRUE, ...){
   comparison.stack <- stack(intersectionRVC(promoteToRaster(this.VegSpatial, scheme@id, run@tolerance), PNV.biomes))
   
   # calculate Kappa statistics (and possibily other similarity/dissimilarity metrics)
-  Kappa.comparison <- doKappa(comparison.stack, scheme = scheme, labels = scheme@strings, verbose = TRUE)
+  Kappa.comparison <- doKappa(comparison.stack, id = scheme@id, labels = scheme@strings, verbose = TRUE)
   
   
   # plot biomes if requested
@@ -441,19 +547,39 @@ compareBiomes <- function(run, variable, period, scheme, plot = TRUE, ...){
   
 }
 
-compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", plot.data = TRUE, ...){
+#' Compare many runs to a biome map
+#' 
+#' Takes a list of VegRuns, looks up the relevant BiomeComparison object (which should have been pre-calculated)
+#' and plots all the biome maps on one plot, including the data
+#' 
+#' @param runs List of VegRun objects, each run should have already had \code{compareBiomes()} for the relevant biome dataset 
+#' run on it.
+#' @param biome.dataset A SpatialDataset object holding the biomes to which we are comparing.
+#' @param analysis.label A character string to differentiate the resulting plot from similar plots, e.g. "VariableSoilDepth"
+#' @param plot.data A logical, if TRUE put the data on the plot as well as the model runs
+#' @param ... Further arguments passed to the plotting function.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#' @export
+
+compareManyRunsToBiomes <- function(runs, 
+                                    biome.dataset, 
+                                    analysis.label = "", 
+                                    plot.data = TRUE, 
+                                    ...){
   
   # get biome scheme 
-  scheme <- supported.biome.schemes[[biome.dataset@id]]
-  
+  scheme <-IDFromList(biome.dataset@id,supported.biome.schemes)
+ 
   # make a raster stack with all the runs
-  biome.stack <- stack()
   labels <- list()
   for(run in runs){
-    biome.stack <- addLayer(biome.stack, run@benchmarks[[biome.dataset@id]]@model.raster)
+    if(exists("biome.stack")) biome.stack <- addLayer(biome.stack, run@benchmarks[[biome.dataset@id]]@model.raster)
+    else biome.stack <- brick(run@benchmarks[[biome.dataset@id]]@model.raster)
     labels <- append(labels, run@description)
   }
-  
+
   # Sort out whether or not we want to plot that data on the graph as well
   if(plot.data){
     addData <- biome.dataset
@@ -461,7 +587,7 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", pl
   else{
     addData <- NULL
   }
-  
+
   plotBiomeMap(biome.stack,
                addData = addData,
                targets = names(biome.stack),
@@ -470,23 +596,49 @@ compareManyRunsToBiomes <- function(runs, biome.dataset, analysis.label = "", pl
                plot.labels = labels,
                ...)
   
+  
 }
 
-# Compare runs to each other
+#' Compare runs to each other
+#' 
+#' Given a list of runs and an id of a spatial VegObjects, compare the specified layers between all runs, and, 
+#' if a base line run is specified, also plot comaprisons relative to that
+#' 
+#' @param runs List of VegRun objects to be compared
+#' @param veg.spatial.id Character string holding the id of the VegObject to be compared
+#' @param layer The layer to be compared across all VegRuns
+#' @param expand.layer Logical, if TRUE expand the layer arguments use \code{expandTargets}
+#' @param base.run.id A character string to which (if specified) all the other runs are compared by plotting the difference 
+#' and percentage difference relative to this base run
+#' @param abs.value.cuts A numeric vector which (if specified), defines the cuts for the plot of the absolute values of each 
+#' run on one figure 
+#' @param plot.diff Logical, if TRUE and a base.run.id supplied, plot the absolute difference of each run relative to the base run.
+#' @param diff.cuts A numeric vector which (if specified), defines the cuts for the difference plot of each run compared to the base run
+#' @param plot.perc.diff Logical, if TRUE and a base.run.id supplied, plot the percentage difference of each run relative to the base run.
+#' @param perc.diff.cuts A numeric vector which (if specified), defines the cuts for the percentage difference plot of each run compared to the base run
+#' @param special A character string which, if specified, is used to give special plotting instructions to \code{plotVegMaps}, 
+#' see the documentation of that function for details.
+#' @param doIndividual Logical, if TRUE, make individual comparison plot for, say, all PFTs, as well as putting them all on one plot.
+#' @param tag A character string to identify this plot/analysis in comparison to others, eg. "SoilDepthTests" or "NewSLAForumalation"  
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#' @export
+
+
 compareVegSpatialObject <- function(runs, 
                                     veg.spatial.id, 
-                                    target, 
-                                    expand.target = TRUE, 
+                                    layer, 
+                                    expand.layer = TRUE, 
                                     base.run.id = NULL,
-                                    plot.side.by.side = TRUE,
-                                    side.by.side.cuts = NULL,
+                                    abs.value.cuts = NULL,
                                     plot.diff = TRUE,
                                     diff.cuts = NULL,
                                     plot.perc.diff = TRUE, 
                                     perc.diff.cuts = NULL,
                                     special = NULL,
                                     doIndividual = FALSE,
-                                    special.string = NULL,
+                                    tag = NULL,
                                     ...) {
   
   # To avoid NOTES
@@ -502,31 +654,31 @@ compareVegSpatialObject <- function(runs,
     # grab the VegObject that we want from the vegRun
     temp.spatial <- run@objects[[veg.spatial.id]]
     
-    # expand the target if necessary
-    if(expand.target){ target <- expandTargets(targets = target, temp.spatial, run@pft.set) }
+    # expand the layer if necessary
+    if(expand.layer){ layer <- expandTargets(targets = layer, temp.spatial, run@pft.set) }
     
     # Extract the columns that we need and add them to the data.table and set the names appropriately
-    comparison.dt <- comparison.dt[temp.spatial@data[,c("Lon","Lat",target),with=FALSE]]
-    setnames(comparison.dt, c(names(comparison.dt)[1:(length(names(comparison.dt))-length(target))], paste(run@id, target, sep = "_")))
+    comparison.dt <- comparison.dt[temp.spatial@data[,c("Lon","Lat",layer),with=FALSE]]
+    setnames(comparison.dt, c(names(comparison.dt)[1:(length(names(comparison.dt))-length(layer))], paste(run@id, layer, sep = "_")))
     
     rm(temp.spatial)
     
   }
   
   
-  # now plot the absolute values for each target run on the same plot (one plot per target)
-  for(sub.target in target) {
-    targets <- c()
+  # now plot the absolute values for each layer run on the same plot (one plot per layer)
+  for(sub.layer in layer) {
+    layers <- c()
     for(run in runs){
-      targets <- append(targets, paste(run@id, sub.target, sep = "_"))
+      layers <- append(layers, paste(run@id, sub.layer, sep = "_"))
     }
     plotVegMaps(comparison.dt,
-                targets = targets,
+                targets = layers,
                 quant = run@objects[[veg.spatial.id]]@quant,
-                summary.title = sub.target,
-                special.string = paste(special.string, "RunComparison", sub.target, sep = "."),
+                summary.title = sub.layer,
+                special.string = paste(tag, "RunComparison", sub.layer, sep = "."),
                 special = special,
-                override.cuts = side.by.side.cuts,
+                override.cuts = abs.value.cuts,
                 doIndividual = FALSE,
                 ...
                 )
@@ -539,23 +691,23 @@ compareVegSpatialObject <- function(runs,
     for(run in runs){
       if(run@id != base.run.id){
         
-        # for each target
+        # for each layer
         diff.titles = diff.names = c()
         perc.diff.titles = perc.diff.names = c()
         
-        for(sub.target in target){
+        for(sub.layer in layer){
           
           # calculate the difference
-          col.name <- paste(paste(run@id, sub.target, sep = "_"), "minus", paste(base.run.id, sub.target, sep = "_"), sep = ".")
-          comparison.dt[, eval(col.name) := get(paste(run@id, sub.target, sep = "_")) - get(paste(base.run.id, sub.target, sep = "_"))]
+          col.name <- paste(paste(run@id, sub.layer, sep = "_"), "minus", paste(base.run.id, sub.layer, sep = "_"), sep = ".")
+          comparison.dt[, eval(col.name) := get(paste(run@id, sub.layer, sep = "_")) - get(paste(base.run.id, sub.layer, sep = "_"))]
           diff.names <- append(diff.names, col.name)
-          diff.titles <- append(diff.titles, paste(sub.target, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " "))
+          diff.titles <- append(diff.titles, paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " "))
           
           # calculate the percentage difference
-          col.name <- paste(paste(run@id, sub.target, sep = "_"), "minus", paste(base.run.id, sub.target, sep = "_"), "perc.diff", sep = ".")
-          comparison.dt[, eval(col.name) := (get(paste(run@id, sub.target, sep = "_")) - get(paste(base.run.id, sub.target, sep = "_"))) %/0% get(paste(base.run.id, sub.target, sep = "_")) * 100]
+          col.name <- paste(paste(run@id, sub.layer, sep = "_"), "minus", paste(base.run.id, sub.layer, sep = "_"), "perc.diff", sep = ".")
+          comparison.dt[, eval(col.name) := (get(paste(run@id, sub.layer, sep = "_")) - get(paste(base.run.id, sub.layer, sep = "_"))) %/0% get(paste(base.run.id, sub.layer, sep = "_")) * 100]
           perc.diff.names <- append(perc.diff.names, col.name)
-          perc.diff.titles <- append(perc.diff.titles, paste(sub.target, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " "))
+          perc.diff.titles <- append(perc.diff.titles, paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " "))
          
         }
         
@@ -570,7 +722,7 @@ compareVegSpatialObject <- function(runs,
                       plot.labels = diff.titles,
                       override.cuts = diff.cuts,
                       doIndividual = doIndividual,
-                      special.string = special.string,
+                      special.string = tag,
                       ...)
         }
         
@@ -587,7 +739,7 @@ compareVegSpatialObject <- function(runs,
                       plot.labels = perc.diff.titles,
                       override.cuts = perc.diff.cuts,
                       doIndividual = doIndividual,
-                      special.string = special.string,
+                      special.string = tag,
                       ...)
           
         }
