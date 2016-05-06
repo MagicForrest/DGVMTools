@@ -94,10 +94,10 @@ benchmarking.datasets.list <- list(
                     temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990) ,
                     data = readHandPBiomes(resolution = universal.resolution, classification = "Smith2014"),
                     veg.quant = lookupVegQuantity("lai"),
-                    units = "")#,
+                    units = ""),
   
   # Satchi 2011 above ground biomass
-  #"Saatchi2011" = getSaatchi2011(resolution = universal.resolution)
+  "Saatchi2011" = getSaatchi2011(resolution = universal.resolution)
   
 )
 

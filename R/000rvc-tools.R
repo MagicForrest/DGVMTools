@@ -27,12 +27,6 @@
 ### Need a new way to handle this stuff with file paths etc
 
 
-####### SPECIFY LOCATION OF AUXILIARY DATA HERE 
-# TODO - add LPJ-GUESS standard gridlist to the package so we can remove this ugliness
-
-auxiliary.data.dir <- "/home/forrest/AuxiliaryData" # NOTE: must be the full path or OGR gets confused :-(
-
-
 #' Check is an object is a \code{VegObject}.   
 #'
 #' Returns TRUE if an object is a \code{VegObject}, and FALSE otherwise 
@@ -246,36 +240,6 @@ cropRVC <- function(input, extent){
 
 
 
-intersectionRVC <- function(object1, object2){
-  
-  object1.class <- class(object1)[1]
-  object2.class <- class(object2)[1]
-  
-  # CASE 1 - object 1 is raster/layer/stack
-  if(object1.class == "RasterLayer" | object1.class == "RasterStack"  | object1.class == "RasterStack"){
-    
-    # CASE 1a - object 2 is also a raster/layer/stack
-    if(object2.class == "RasterLayer" | object2.class == "RasterStack"  | object2.class == "RasterStack"){
-      
-      intersection.extent <- intersect(object1, object2)
-      return(list(crop(object1, intersection.extent), crop(object2, intersection.extent)))
-      
-    }
-    
-    
-  }
-  
-  else {
-    
-    
-    stop(paste("IntersectionRVC not defined for combination of classes ", object1.class, " and ", object2.class))
-    
-    
-  }
-  
-  
-}
-
 ##### RETRIEVES AN OBJECT FROM A LIST BASED ON THE 'id' SLOTS
 #
 #' Retrieves an object from a list based on it's \code{id} slot
@@ -365,7 +329,7 @@ writeNetCDF <- function(raster.in,
     # if we have a third dimension but no time resolution we have a multivariable netCDF file
     # in this case check that the var.name matches 
   
-    ## TOO COMPLICATD, ABORT
+    ## TOO COMPLICATED, ABORT
     
   }
   

@@ -172,15 +172,11 @@ compareRunToSpatialDataset <- function(dataset,
     model.raster <- mask(model.raster, ignore.raster)
     data.raster <- mask(data.raster, ignore.raster)
   }
-  
-  # also mask out data where there is no model and vice versa - not necessary now, done in compareRasterStat?
-  # model.raster <- mask(model.raster, data.raster)
-  # data.raster <- mask(data.raster, model.raster)
-  
+
   # calculate comparison
   comparison.results <- compareTwoRastersStats(data.raster, model.raster)
   data.raster <- comparison.results@data.raster
-  model.raster
+  model.raster <- comparison.results@model.raster
   
   ##### DIFFERENCE MAPS
   plotVegMaps(comparison.results@diff.raster,
@@ -297,14 +293,13 @@ summariseRasterComparisons <- function(runs,
    
     # add the raster layers to the stack
     Absolute.stack <- addLayer(Absolute.stack,  comparison.obj@model.raster)
-    #if(exists("Difference.stack")) Difference.stack <- addLayer(Difference.stack,  comparison.obj@diff.raster)
-    #else Difference.stack <- brick(comparison.obj@diff.raster)
-    #if(exists("Percentage.Difference.stack")) Percentage.Difference.stack <- addLayer(Percentage.Difference.stack,  comparison.obj@perc.diff.raster)
-    #else Percentage.Difference.stack <- brick(comparison.obj@perc.diff.raster)
+    if(exists("Difference.stack")) Difference.stack <- addLayer(Difference.stack,  comparison.obj@diff.raster)
+    else Difference.stack <- brick(comparison.obj@diff.raster)
+    if(exists("Percentage.Difference.stack")) Percentage.Difference.stack <- addLayer(Percentage.Difference.stack,  comparison.obj@perc.diff.raster)
+    else Percentage.Difference.stack <- brick(comparison.obj@perc.diff.raster)
   
     rm(comparison.obj)
-    print("lalala")
-    stop()
+
   }
  
   
@@ -525,12 +520,14 @@ compareBiomes <- function(run,
   # read expert-derived PNV biomes
   PNV.biomes <- readHandPBiomes(resolution = "HD", classification = scheme@id)
   
-  # make the stack for the comparisons
-  comparison.stack <- stack(intersectionRVC(promoteToRaster(this.VegSpatial, scheme@id, run@tolerance), PNV.biomes))
+  # build the model biomes as a raster
+  model.biomes <- promoteToRaster(this.VegSpatial, scheme@id, run@tolerance)
+  
+  # make the stack for the comparisons (note they needed to be cropped to the same size)
+  comparison.stack <- stack(crop(model.biomes, PNV.biomes), crop(PNV.biomes, model.biomes))
   
   # calculate Kappa statistics (and possibily other similarity/dissimilarity metrics)
   Kappa.comparison <- doKappa(comparison.stack, id = scheme@id, labels = scheme@strings, verbose = TRUE)
-  
   
   # plot biomes if requested
   if(plot){
@@ -543,6 +540,7 @@ compareBiomes <- function(run,
     )
   }
   
+  rm(PNV.biomes, model.biomes)
   return(Kappa.comparison)
   
 }
