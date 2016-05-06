@@ -215,6 +215,21 @@ setMethod("summary", signature("VegRun"), function(object, ...) {
   return(ret)
 })
 
+
+#' Crop VegObjects (or data.tables, or Raster* objects)
+#' 
+#' A more flexible version of raster::crop() which also take VegObjects and data.tables for cropping, 
+#' and can use a SpatialExtent object to define the domain.  SHOULD BE DEFINED AS A METHOD EXTENDING raster::crop()!
+#' 
+#' @param input The VegObject, data.table or Raster* object to be cropped
+#' @param extent The spatial extent to be be cropped to, defined as a SpatialExtent or raster::extent
+#' 
+#' @return A VegObject, data.table or Raster* object cropped to the desired extent.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster data.table
+#' @export
+
 cropRVC <- function(input, extent){
   
   Lat = Lon = NULL
