@@ -620,6 +620,7 @@ compareManyRunsToBiomes <- function(runs,
 #' see the documentation of that function for details.
 #' @param doIndividual Logical, if TRUE, make individual comparison plot for, say, all PFTs, as well as putting them all on one plot.
 #' @param tag A character string to identify this plot/analysis in comparison to others, eg. "SoilDepthTests" or "NewSLAForumalation"  
+#' @param ... Further arguments passed to the \code{plotVegMaps} function.
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster

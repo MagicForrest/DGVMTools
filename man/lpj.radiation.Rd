@@ -14,6 +14,8 @@ lpj.radiation(lat, doy, rad.frac, albedo = 0.17, cloudcover = FALSE,
 
 \item{rad.frac}{sunshine/cloudcover. Must have the shape lat x doy}
 
+\item{albedo}{overall land surface albedo value to be applied (default is the the standard LPJ-GUESS value of 0.17)}
+
 \item{cloudcover}{logical, if rad.frac is cloudcover (TRUE), default FALSE}
 
 \item{leap}{use February 29th or not}
