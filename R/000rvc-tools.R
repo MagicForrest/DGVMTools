@@ -302,9 +302,28 @@ IDFromList <- function(id, list) {
 
 }
 
-
-
-
+#' Write a netCDF file
+#' 
+#' This function gives more flexibility (for example it can write more meta-data and can re-order the dimensions for efficient LPJ-GUESS reading) 
+#' than the similar raster::\code{writeRaster} function.  It is also intended that this function can write single sites/time series functionality 
+#' is not included yet.  Also might need some work to be CF compliant on the time dimension.
+#' 
+#' @param raster.in The data as a Raster* object.  This should be broadened to also include data.frames and data.tables for writing 
+#' time series from a particular point.
+#' @param var.name A character string containing the name of the variable as used in the netCDF file produced.
+#' @param var.units A character string containing the units of the variable as used in the netCDF file produced.
+#' @param time.resolution A character string denoting the time resolution of the data. Currently can be "monthly" or "annual".
+#' @param time.units.string A string to represent the time units.  CHECK THIS.
+#' @param long.name A charcter string for the "long_name" of the netCDF file.
+#' @param filename A character string (including the path) specifiying the name of the netCDF file.
+#' @param ordering A character string specifying the ordering of the dimension in the resulting netCDF file, can be "standard" for normal ordering 
+#' or "lpj" for ordering for fast LPJ-GUESS reading.
+#' @param missing.value A numeric value for the "missing_value" of the netCDF file.
+#'
+#' @return Noting, writes a netCDF file to disk
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
+#' @import ncdf4 raster
 writeNetCDF <- function(raster.in, 
                         var.name, 
                         var.units, 
