@@ -4,7 +4,7 @@
 #' Read the Globcover2009 landcover dataset at its original resution and process it by counting the number of original resolution pixels to fall into each 
 #' gridcell of the target grid for each landcover. Then return the fraction of each landcover type per class in a RasterBrick.
 #' 
-#' @param location A chaaracter string specifying the location of the original Globcover2009 data
+#' @param location A character string specifying the location of the original Globcover2009 data
 #' @param target.grid A RasterLayer definging the target extent and resoutuion of the processed data
 #' 
 #' @return A RasterBrick with one layer for each landover catorgory

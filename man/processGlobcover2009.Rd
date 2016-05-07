@@ -10,7 +10,7 @@
   -90, ymx = 90))
 }
 \arguments{
-\item{location}{A chaaracter string specifying the location of the original Globcover2009 data}
+\item{location}{A character string specifying the location of the original Globcover2009 data}
 
 \item{target.grid}{A RasterLayer definging the target extent and resoutuion of the processed data}
 }

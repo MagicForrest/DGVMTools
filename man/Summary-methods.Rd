@@ -2,12 +2,7 @@
 % Please edit documentation in R/000rvc-tools.R
 \docType{methods}
 \name{Summary-methods}
-\alias{Print}
 \alias{Summary-methods}
-\alias{VegRun}
-\alias{a}
-\alias{object}
-\alias{of}
 \alias{summary}
 \alias{summary,VegRun-method}
 \title{Summary methods}
@@ -22,10 +17,10 @@ summary(object, ...)
 \item{...}{Other arguments, not currently used}
 }
 \value{
-Not sure
+A list of strings
 }
 \description{
-Print easy to read summaries of RVCTool objects
+Print easy to read summaries of RVCTools objects
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

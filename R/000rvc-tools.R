@@ -180,7 +180,7 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
 
 #' Summary methods
 #' 
-#' Print easy to read summaries of RVCTool objects
+#' Print easy to read summaries of RVCTools objects
 #' 
 #' @param object a RVCTools object
 #' @param ... Other arguments, not currently used
@@ -193,7 +193,6 @@ setGeneric("summary", function(object,...) standardGeneric("summary"))
 
 #' @rdname Summary-methods
 #' @aliases summary
-#' Print summary of a VegRun object
 setMethod("summary", signature("VegRun"), function(object, ...) {
   ret <- list(id=object@id, description=object@description, model=object@model)
   
