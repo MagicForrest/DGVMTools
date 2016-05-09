@@ -144,7 +144,7 @@ vegrun.list[["Original"]] <- defineVegRun(run.dir = "/home/forrest/GuessRuns/Ori
 
 vegrun.list[["Original2"]] <- defineVegRun(run.dir = "/home/forrest/GuessRuns/Original",
                                            id = "Original2",
-                                           description= "Orirignal Repeated",
+                                           description= "Original Repeated",
                                            pft.set = global.PFTs,
                                            model = "LPJ-GUESS-SPITFIRE",
                                            driving.data = "CRUNCEP",
@@ -305,7 +305,6 @@ for(run in vegrun.list){
                                         plot.extent = plot.extent)
       vegrun.list[[run@id]] <- addToVegRun(biome.comparison, IDFromList(run@id,vegrun.list))
       
-      stop()
       #run <- addToVegRun(biome.comparison, run)
       rm(scheme, biome.comparison)
       
@@ -352,7 +351,7 @@ if(verbose) message(paste("Comparing all runs to benchmarks simultaneously, savi
 for(benchmarking.dataset in benchmarking.datasets.list){
   
   layout.objs <- vegrun.list[[1]]@map.overlay
-  
+
   ### if benchmark is Saatchi2011 
   if(benchmarking.dataset@id == "Saatchi2011"){
     

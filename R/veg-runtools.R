@@ -87,7 +87,7 @@ defineVegRun <- function(...){
     
     # if we get a single characters string, assume it is a map and just a simple map from it
     if(length(info@map.overlay) == 1 & class(info@map.overlay)[1] == "character") {
-      info@map.overlay <- makeOverlay(info@map.overlay)
+      info@map.overlay <- list("map" = makeOverlay(info@map.overlay))
     }
     # else if is a list 
     else if(class(info@map.overlay)[1] == "list"){
@@ -100,7 +100,7 @@ defineVegRun <- function(...){
       
       # if it is a simple list, then assumer it describes a single overlay and build a single overlay
       if(!list.of.lists){
-        info@map.overlay <- do.call(makeOverlay, info@map.overlay)
+        info@map.overlay <- list(map = do.call(makeOverlay, info@map.overlay))
       }
       # else assume each item is an overlay and try to make them all
       else {

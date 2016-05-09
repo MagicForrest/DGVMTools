@@ -15,7 +15,7 @@ plotVegMaps(data, targets = NULL, expand.targets = TRUE, quant = NULL,
   override.cols = NULL, override.cuts = NULL, special = NULL,
   maxpixels = 1e+06, biome.scheme = Smith2014.scheme, biome.data = NULL,
   biome.strings = NULL, biome.cols = NULL, kappa.list = NULL,
-  showKappa = TRUE, kappa.position = NULL, ...)
+  kappa.position = NULL, ...)
 }
 \arguments{
 \item{data}{The data to plot. Can be a VegObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}

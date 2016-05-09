@@ -543,7 +543,7 @@ compareBiomes <- function(run,
                 biome.scheme = scheme, 
                 special = "biomes", 
                 biome.data = PNV.biomes, 
-                #kappa.list = list(Kappa.comparison),
+                kappa.list = list(Kappa.comparison),
                 ...)
     
   }

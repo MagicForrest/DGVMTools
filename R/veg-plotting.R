@@ -135,7 +135,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         biome.strings = NULL,
                         biome.cols = NULL,  
                         kappa.list = NULL,
-                        showKappa = TRUE,
                         kappa.position = NULL,
                         ...){
   
@@ -202,7 +201,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   else {tolerance <- run@tolerance}  
   
   ### SPECIAL CASE OF BIOMES WITH NULL TARGET (assume the biome scheme id)
-  if(is.null(targets) & (tolower(special) == "biomes" | tolower(special) == "biome")) targets = biome.scheme@id
+  if(is.null(targets) & !is.null(special)){
+    if(tolower(special) == "biomes" | tolower(special) == "biome") targets = biome.scheme@id
+  }
   
   ### EXPAND TARGETS
   if(is.null(targets)) {
@@ -218,8 +219,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### PROMOTE TO RASTER AND SANITISE NAMES - also make plot labels (if necessary) before the sanitatisation 
   original.targets <- targets # save for building plot label later
-  ##targets <- sanitiseNamesForRaster(targets)
-  ##data.toplot <- sanitiseNamesForRaster(data)
   data.toplot <- promoteToRaster(data, targets, tolerance)
   targets <- names(data.toplot) # update targets to be the names of the raster layers  (which might have changed)
   
@@ -332,7 +331,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       data.toplot <- cut(data.toplot, quant@cuts) 
       names(data.toplot) <- temp.names
       
-      # UPDATE LABELS AND CUTS FOR SEINSIBLE PLOTTING
+      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
       colorkey.labels <- paste(quant@cuts)
       colorkey.labels[length(colorkey.labels)] <- paste0(colorkey.labels[length(colorkey.labels)], "+")
       colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, "labels" = colorkey.labels, "at" = 0:(length(quant@cuts)-1))
@@ -358,7 +357,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                    aggregate.method = "categorical"
       )
       
-      # UPDATE LABELS AND CUTS FOR SEINSIBLE PLOTTING
+      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
       colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
                                         "labels" = rev(biome.scheme@strings), 
                                         "at" = (0:(length(biome.scheme@strings)-1)) + 0.5)
@@ -392,22 +391,21 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         targets <- names(data.toplot)
         
         # And finally build plot labels
-
+        
         original.targets <- c(original.targets, data.name)
         if(!is.null(plot.labels)) plot.labels <-  c(plot.labels, data.name) 
-    
-      
+        
       }
       
       # KAPPA
       if(!is.null(kappa.list)){
-        
+      
         # if only one model run put individual Kappas into biome legend
-        if(nlayers(data.toplot)-1 == 1) biome.strings <- paste0(biome.strings, " (", round(kappa.list[[1]]@individual.Kappas,2), ")", sep = "")
+        if(nlayers(data.toplot)-1 == 1) colorkey.list[["labels"]][["labels"]] <- paste0(colorkey.list[["labels"]][["labels"]], " (", rev(round(kappa.list[[1]]@individual.Kappas,2)), ")", sep = "")
         # place overall Kappa on each modelled biome map 
         if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
-        for(layer in 1:(nlayers(data.toplot)-1)){
-          layout.objs[[paste(layer)]] <- list("sp.text", kappa.position, paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
+        for(layer in 1:(nlayers(data.toplot)-1)) {
+          layout.objs[[paste(layer)]]  <- list("sp.text", loc = kappa.position, txt = paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
         }
         
       }
