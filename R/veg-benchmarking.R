@@ -538,6 +538,14 @@ compareBiomes <- function(run,
                  Cairo.type = c("png","ps"), 
                  ...
     )
+    
+    plotVegMaps(this.VegSpatial, 
+                biome.scheme = scheme, 
+                special = "biomes", 
+                biome.data = PNV.biomes, 
+                #kappa.list = list(Kappa.comparison),
+                ...)
+    
   }
   
   rm(PNV.biomes, model.biomes)

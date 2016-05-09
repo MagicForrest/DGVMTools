@@ -304,6 +304,8 @@ for(run in vegrun.list){
                                         plot = TRUE,
                                         plot.extent = plot.extent)
       vegrun.list[[run@id]] <- addToVegRun(biome.comparison, IDFromList(run@id,vegrun.list))
+      
+      stop()
       #run <- addToVegRun(biome.comparison, run)
       rm(scheme, biome.comparison)
       
