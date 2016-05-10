@@ -417,7 +417,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
 #' @param P monthly precipitation in mm. Needed for everything without PET.
 #' @param variable any of PET (potential evapotranspiration), AET (actual evapotranspiration), WC (water content), WD (water deficit)
 #' @param as desired output type 'data.table', 'data.frame', anything else will try to return a VegObject, which need 'run' to be defined.
-#' @value the requested variable in the requested ('as') container
+#' @return the requested variable in the requested ('as') container
 #' @export
 #' @import data.table
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
