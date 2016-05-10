@@ -108,8 +108,12 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
     period <- NA
   })
 
-  operation <- tolower(operation)
-
+  if (toupper(operation)=="GDD5") {
+    operation <- toupper(operation)
+  } else {
+    operation <- tolower(operation)
+  }
+    
   ncin <- open.nc(file)
 
 ## get the dimension properties
@@ -351,10 +355,10 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
         agg.by <- "Year"
       }
 
-      if (att.get.nc(ncin, data.name, "units")=="K" && operation=="gdd5") 
+      if (att.get.nc(ncin, data.name, "units")=="K" && operation=="GDD5") 
         dt.tmp[, value := value-273.15, ]
 
-      if (operation=="gdd5") {
+      if (operation=="GDD5") {
         dt.tmp[, value := ifelse(value<5, 0, value), ]
         dt.tmp <- dt.tmp[, list(value=sum(value)), by=c("Lon", "Lat", agg.by)]
       } else if (operation=="mean") {
@@ -408,7 +412,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
                            id = paste(max(start, period[1]), "_", min(end, period[2]), sep=""),
                            name =  paste(max(start, period[1]), "-", min(end, period[2]), sep=""),
                            start = max(start, period[1]), end = min(end, period[2]))
-    if (operation=="gdd5") {
+    if (operation=="GDD5") {
       id <- operation
       quant <- new("VegQuant",
                    id=id,
