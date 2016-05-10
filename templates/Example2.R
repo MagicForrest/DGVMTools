@@ -96,15 +96,15 @@ verbose <- TRUE
 
 vegrun.list <- list()
 
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example2/Run1",
-                                                         id = "LPJ-GUESS-SPITFIRE-Run1",
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/forrest/GuessRuns/Original",
+                                                         id = "Test",
                                                          description= "SPITFIRE Run 1",
                                                          pft.set = global.PFTs,
                                                          model = "LPJ-GUESS-SPITFIRE",
                                                          driving.data = "CRUNCEP",
                                                          map.overlay = "",
                                                          london.centre = TRUE,
-                                                         lonlat.offset = c(0.25,0.25),
+                                                         lonlat.offset = c(0.0,0.0),
                                                          landuseSimulated = TRUE,
                                                          year.offset = 0,
                                                          line.col = "darkviolet",
@@ -112,15 +112,15 @@ vegrun.list[["LPJ-GUESS-SPITFIRE-Run1"]] <- defineVegRun(run.dir = "/home/forres
                                                          line.type = 1
 )
 
-vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/home/forrest/RVCToolsExamples/Example2/Run2",
-                                                         id = "LPJ-GUESS-SPITFIRE-Run2",
+vegrun.list[["LPJ-GUESS-SPITFIRE-Run2"]] <- defineVegRun(run.dir = "/home/forrest/GuessRuns/Original",
+                                                         id = "TestAgain",
                                                          description= "SPITFIRE Run 2",
                                                          pft.set = global.PFTs,
                                                          model = "LPJ-GUESS-SPITFIRE",
                                                          driving.data = "CRUNCEP",
                                                          map.overlay = "",
                                                          london.centre = TRUE,
-                                                         lonlat.offset = c(0.25,0.25),
+                                                         lonlat.offset = c(0.0,0.0),
                                                          landuseSimulated = TRUE,
                                                          year.offset = 0,
                                                          line.col = "darkgreen",

@@ -12,12 +12,15 @@ import(maps,
        raster,
        data.table)
 
-importFrom(fields, tim.colors)
-importFrom(compiler, cmpfun)
-importFrom(Cairo, Cairo)
-importFrom(Cairo, CairoPNG)
-importFrom(grid, unit)
-importFrom(RColorBrewer, brewer.pal)
+importFrom("fields", "tim.colors")
+importFrom("compiler", "cmpfun")
+importFrom("Cairo", "Cairo", "CairoPNG")
+importFrom("grid", "unit")
+importFrom("RColorBrewer", "brewer.pal")
+importFrom("grDevices", "col2rgb", "colorRampPalette", "dev.off", "rgb")
+importFrom("graphics", "abline", "curve", "legend", "par")
+importFrom("stats", "dnorm", "median", "na.omit", "sd")
+importFrom("utils", "capture.output", "data", "file_test", "object.size", "read.table", "write.table")
 
 exportClasses(TemporalExtent, 
               SpatialExtent, 

@@ -130,6 +130,12 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         override.cuts = NULL,
                         special = NULL,
                         maxpixels = 1E6,
+                        biome.scheme = Smith2014.scheme,
+                        biome.data = NULL,
+                        biome.strings = NULL,
+                        biome.cols = NULL,  
+                        kappa.list = NULL,
+                        kappa.position = NULL,
                         ...){
   
   
@@ -194,6 +200,11 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   if(is.null(run)) { tolerance <- 0.02 }
   else {tolerance <- run@tolerance}  
   
+  ### SPECIAL CASE OF BIOMES WITH NULL TARGET (assume the biome scheme id)
+  if(is.null(targets) & !is.null(special)){
+    if(tolower(special) == "biomes" | tolower(special) == "biome") targets = biome.scheme@id
+  }
+  
   ### EXPAND TARGETS
   if(is.null(targets)) {
     if(is.VegObject(data)) targets <- names(data@data)
@@ -208,8 +219,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### PROMOTE TO RASTER AND SANITISE NAMES - also make plot labels (if necessary) before the sanitatisation 
   original.targets <- targets # save for building plot label later
-  ##targets <- sanitiseNamesForRaster(targets)
-  ##data.toplot <- sanitiseNamesForRaster(data)
   data.toplot <- promoteToRaster(data, targets, tolerance)
   targets <- names(data.toplot) # update targets to be the names of the raster layers  (which might have changed)
   
@@ -223,6 +232,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### IF SPECIALS 
   if(!is.null(special)){
+    
+    ### PLOT DIFFERENCE MAPS
     if(tolower(special) == "difference" | tolower(special) == "diff"){
       
       minmax <- max(quant@cuts) - min(quant@cuts)
@@ -236,8 +247,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       quant@full.string = paste("Difference: ", quant@full.string, sep = "")
       plot.bg.col <- "grey"
       
-      
     }
+    
+    ### PLOT PERCENTAGE DIFFERENCE MAPS
     else if(tolower(special) == "percentage.difference" | tolower(special) == "perc.diff"){
       
       quant@cuts <- seq(from = -100, to = 200, by = 10)
@@ -281,6 +293,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
       
     }
+    
+    #### PLOT FRACTION MAPS
     else if(tolower(special) == "fraction" | tolower(special) == "frac"){
       
       quant@cuts <- seq(from = 0, to = 1, by = 0.05)
@@ -292,12 +306,16 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       colorkey.list[["col"]] <- quant@colours
       
     }
+    
+    #### PLOT BURNT FRACTION
     else if(tolower(special) == "burnt.fraction" | tolower(special) == "ba"){
       
       
       stop("plotVegMaps: special burnt.fraction or ba not impletemted yet")
       
     }
+    
+    #### PLOT FIRE RETURN TIME
     else if(tolower(special) == "firert" | tolower(special) == "fire.return.time" | quant@id == "firert"){
       
       # SET THE INTERVALS (using either these sensible options or the overrides)
@@ -313,7 +331,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       data.toplot <- cut(data.toplot, quant@cuts) 
       names(data.toplot) <- temp.names
       
-      # UPDATE LABELS AND CUTS FOR SEINSIBLE PLOTTING
+      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
       colorkey.labels <- paste(quant@cuts)
       colorkey.labels[length(colorkey.labels)] <- paste0(colorkey.labels[length(colorkey.labels)], "+")
       colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, "labels" = colorkey.labels, "at" = 0:(length(quant@cuts)-1))
@@ -321,6 +339,81 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       quant@cuts = 0:(length(quant@cuts)-1)
       
     }
+    
+    #### PLOT BIOMES
+    else if(tolower(special) == "biomes" || tolower(special) == "biome"){
+      
+      # Build a VegQuant object with the appropriate colours and cuts 
+      if(!is.null(quant)) warning("When plotting biome scheme in plotVegMaps(), argument quant is ignored")
+      
+      quant <- new("VegQuant",
+                   id = biome.scheme@id,
+                   short.string = biome.scheme@id,
+                   full.string = biome.scheme@name,
+                   type = "BiomeClassification",
+                   units = "categorical",
+                   colours = colorRampPalette(biome.scheme@cols),
+                   cuts = 0:length(biome.scheme@strings),
+                   aggregate.method = "categorical"
+      )
+      
+      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
+      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
+                                        "labels" = rev(biome.scheme@strings), 
+                                        "at" = (0:(length(biome.scheme@strings)-1)) + 0.5)
+      colorkey.list[["at"]] <- 0:length(biome.scheme@strings)
+      colorkey.list[["col"]] <- rev(biome.scheme@cols)
+      
+      # Add PNV data if requested read it in and compare rasters
+      if(!is.null(biome.data)) {
+        data.name <- "Data"
+        if(class(biome.data)[[1]] == "SpatialDataset") {
+          data.name <- biome.data@name
+          biome.data <- biome.data@data
+        }
+        # first check if they are on identical grids, then one can simply add the layers
+        if(compareRaster(biome.data, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
+          print("woohoo!")
+        }
+        else if(compareRaster(biome.data, data.toplot, extent=FALSE, rowcol=FALSE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
+          biome.data <- crop(biome.data, data.toplot, snap = "out")
+          biome.data <- extend(biome.data, data.toplot)
+        }
+        else {
+          biome.data <- resample(biome.data, data.toplot, method = "ngb")
+          
+        }
+        biome.data <- crop(biome.data, data.toplot)
+        data.toplot <- mask(data.toplot, biome.data)  
+        
+        # add the PNV raster layer and its title
+        data.toplot <- addLayer(data.toplot, biome.data) 
+        targets <- names(data.toplot)
+        
+        # And finally build plot labels
+        
+        original.targets <- c(original.targets, data.name)
+        if(!is.null(plot.labels)) plot.labels <-  c(plot.labels, data.name) 
+        
+      }
+      
+      # KAPPA
+      if(!is.null(kappa.list)){
+      
+        # if only one model run put individual Kappas into biome legend
+        if(nlayers(data.toplot)-1 == 1) colorkey.list[["labels"]][["labels"]] <- paste0(colorkey.list[["labels"]][["labels"]], " (", rev(round(kappa.list[[1]]@individual.Kappas,2)), ")", sep = "")
+        # place overall Kappa on each modelled biome map 
+        if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
+        for(layer in 1:(nlayers(data.toplot)-1)) {
+          layout.objs[[paste(layer)]]  <- list("sp.text", loc = kappa.position, txt = paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
+        }
+        
+      }
+      
+      
+    }
+    
+    #### CATCH UNIMPLEMENTED SPECIAL CASES
     else if(special != ""){
       stop(paste("Special case", tolower(special), "not implemented yet", sep = " "))
     }
@@ -351,12 +444,13 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
     
     quant@cuts <- seq(from = limits[1], to = limits[2], length.out = length(quant@cuts))
-    data.limited <- stack()
+    
     for(layer in 1:nlayers(data.toplot)) {
       this.layer <- subset(data.toplot, layer)
       this.layer[this.layer < limits[1]] <- limits[1]
       this.layer[this.layer > limits[2]] <- limits[2]
-      data.limited <- addLayer(data.limited, this.layer)
+      if(exists("data.limited")) data.limited <- addLayer(data.limited, this.layer)
+      else data.limited <- brick(this.layer)
       rm(this.layer)
     }
     rm(data.toplot)
@@ -485,7 +579,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
               height = Cairo.height, 
               title = plot.title, 
               bg = Cairo.bg)  
-
+        
         print(spplot(data.toplot,
                      layer,
                      par.settings = list(panel.background=list(col=plot.bg.col)),
@@ -600,6 +694,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
     if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
   }
   
+  
   # Add PNV data if requested read it in and compare rasters
   if(!is.null(addData)) {
     if(class(addData)[[1]] == "SpatialDataset") addData <- addData@data
@@ -620,8 +715,9 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
     data.toplot <- mask(data.toplot, addData)  
     
     # add the PNV raster layer and its title
-    data.toplot <- stack(data.toplot, addData) 
+    data.toplot <- addLayer(data.toplot, addData) 
     plot.labels <- c(plot.labels, "PNV (Hickler et al. 2006)")
+    
   }
   
   # KAPPA
@@ -810,7 +906,6 @@ plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFra
 #' @param run The \code{VegRun} object for the run plotted (optional)
 #' @param data.name Character string for the data
 #' @param quant The quantity plotted (as \code{VegQuant} object)
-#' @param breaks A numerical vector of the breakpoints for the histograms
 #' @param plot.range A numerical vector with two elements defining the range to plot on the histogram.
 #' @param stat.results The \code{RasterComparion} object if it has already been calculated
 #'
@@ -825,7 +920,6 @@ plotHistoComparison <- function(model,
                                 run, 
                                 data.name, 
                                 quant, 
-                                breaks, 
                                 plot.range, 
                                 stat.results = NULL){
   

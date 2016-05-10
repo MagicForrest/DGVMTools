@@ -16,8 +16,6 @@ This class stores the rasters (model, data), the biome scheme used and the Cohen
 
 \item{\code{model.raster}}{A "RasterLayer" holding the model biome map}
 
-\item{\code{scheme}}{A "BiomeScheme" object that desrcibes the biome scheme used.}
-
 \item{\code{Kappa}}{The overall Cohen's Kappa obtained when comparing modelled biomes to data biomes.}
 
 \item{\code{individual.Kappas}}{The individual Cohen's Kappas for each biome obtained when comparing modelled to data biomes}

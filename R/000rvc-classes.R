@@ -569,7 +569,6 @@ setClass("BiomeScheme",
 #' @slot id A unique character string to identify this particular biome compariosn.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data.raster A "RasterLayer" holding the data biome map
 #' @slot model.raster A "RasterLayer" holding the model biome map
-#' @slot scheme A "BiomeScheme" object that desrcibes the biome scheme used.
 #' @slot Kappa The overall Cohen's Kappa obtained when comparing modelled biomes to data biomes.
 #' @slot individual.Kappas The individual Cohen's Kappas for each biome obtained when comparing modelled to data biomes
 #' @exportClass BiomeComparison
@@ -579,7 +578,6 @@ setClass("BiomeComparison",
          slots = c(id = "character",
                    data.raster = "RasterLayer", 
                    model.raster = "RasterLayer", 
-                   scheme = "BiomeScheme",
                    Kappa = "numeric", 
                    individual.Kappas = "numeric"  
          )

@@ -566,6 +566,7 @@ daylength <- function(lat, doy, leap=FALSE) {
 #' @param lat latitude (vector)
 #' @param doy day of the year (vector)
 #' @param rad.frac sunshine/cloudcover. Must have the shape lat x doy
+#' @param albedo overall land surface albedo value to be applied (default is the the standard LPJ-GUESS value of 0.17)
 #' @param cloudcover logical, if rad.frac is cloudcover (TRUE), default FALSE
 #' @param leap use February 29th or not
 #' @return incoming solar radiation in W m^-2 as vector or matrix, depending on input shape
