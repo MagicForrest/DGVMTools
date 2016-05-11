@@ -4,7 +4,7 @@
 \alias{plotHistoComparison}
 \title{Make a histograms by comparing two rasters}
 \usage{
-plotHistoComparison(model, data, run, data.name, quant, breaks, plot.range,
+plotHistoComparison(model, data, run, data.name, quant, plot.range,
   stat.results = NULL)
 }
 \arguments{
@@ -17,8 +17,6 @@ plotHistoComparison(model, data, run, data.name, quant, breaks, plot.range,
 \item{data.name}{Character string for the data}
 
 \item{quant}{The quantity plotted (as \code{VegQuant} object)}
-
-\item{breaks}{A numerical vector of the breakpoints for the histograms}
 
 \item{plot.range}{A numerical vector with two elements defining the range to plot on the histogram.}
 

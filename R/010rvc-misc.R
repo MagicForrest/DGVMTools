@@ -1,63 +1,42 @@
 
-########## STANDARD LPJ-GUESS HALF DEGREE GRIDLIST
-lpj.HD.gridlist <- file.path(auxiliary.data.dir, "Gridlists", "gridlist_global_0.5deg.txt")
 
+#' Select a subset of a gridlist
+#' 
+#' Crop a gridlist (taken as a file in the form of a two-columned table to a smaller subset provided by an Extent object
+#' 
+#' @param gridlist.file A character string giving the location of the original gridlist
+#' @param subset.extent  A raster Extent object specifying the geograpical sub-domain required
+#' @param file.name A character string specifying a path to write the new gridlist (can be ignored to write no file)
+#' @param header Logical, whether or not the original file has a header
+#' @param offset A two-member numeric vector specifying the longitude-latitude offset from the given coordinates 
+#' to the gridcell centre, ie. should be c(0.25,0.25) for old LPj-GUESS gridlists, and c(0.0,0.0) for most other more sensible scenarios
+#' 
+#' @return The new gridlist as a data.frame   
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
-# read gridlist and make 
-makeGridlistMask <- function(gridlist.file = lpj.HD.gridlist, offset = c(0.25, 0.25)){
+subsetGridlist <- function(gridlist.file, subset.extent, file.name = NULL, header = TRUE, offset = c(0.25, 0.25)){
   
-  gridlist <-read.table(gridlist.file, header = FALSE)
-  setnames(gridlist, "V1", "Lon")
-  setnames(gridlist, "V2", "Lat")
+  
+  gridlist <- read.table(gridlist.file, header)
+  names(gridlist )  <- c("Lon", "Lat")
   
   gridlist$Lon <- gridlist$Lon + offset[1]
   gridlist$Lat <- gridlist$Lat + offset[2]
   
-  gridlist$Present <- 1
+  gridlist<-gridlist[gridlist$Lon<=subset.extent@xmax 
+                       & gridlist$Lon>=subset.extent@xmin 
+                       & gridlist$Lat<=subset.extent@ymax 
+                       & gridlist$Lat>=subset.extent@ymin]
   
-  gridlist.points <- SpatialPoints(gridlist[,c("Lon", "Lat")], proj4string = CRS("+proj=longlat +datum=WGS84"))
-  gridlist.pixels <- SpatialPixels(gridlist.points)
-  gridlist.spdf <- SpatialPixelsDataFrame(gridlist.pixels, data.frame(gridlist[,c("Present")])) 
+ 
+  gridlist$Lon <- gridlist$Lon - offset[1]
+  gridlist$Lat <- gridlist$Lat - offset[2]
   
-  gridlist.raster <- raster(gridlist.spdf)
+  if(!is.null(file.name)) write.table(gridlist, file.name, quote = FALSE, row.names = FALSE)
   
-  return(gridlist.raster)
-  
-}
-
-
-subsetGridlist <- function(subset.extent, file.name = NULL, header = TRUE, gridlist.file = lpj.HD.gridlist, offset = c(0.25, 0.25)){
-  
-  if(header) {gridlist <-read.table(gridlist.file, header)}
-  else{
-    gridlist <- read.table(gridlist.file, header)
-    setnames(gridlist, "V1", "Lon")
-    setnames(gridlist, "V2", "Lat")
-  }
-  
-  gridlist$Lon <- gridlist$Lon + offset[1]
-  gridlist$Lat <- gridlist$Lat + offset[2]
-  
-  gridlist$Present <- 1
-  print(gridlist)
-  gridlist.points <- SpatialPoints(gridlist[,c("Lon", "Lat")], proj4string = CRS("+proj=longlat +datum=WGS84"))
-  gridlist.pixels <- SpatialPixels(gridlist.points)
-  gridlist.spdf <- SpatialPixelsDataFrame(gridlist.pixels, data.frame(gridlist[,c("Present")])) 
-  gridlist.raster <- raster(gridlist.spdf)
-  
-  cropped.gridlist.raster <- crop(gridlist.raster, subset.extent)
-  cropped.gridlist.spdf <- as(cropped.gridlist.raster, "SpatialPixelsDataFrame")
-  cropped.gridlist.spdf <- na.omit(cropped.gridlist.spdf)
-  cropped.gridlist <- data.frame(cropped.gridlist.spdf)
-  cropped.gridlist[1] <- NULL
-  names(cropped.gridlist) <- c("Lon", "Lat")
-  
-  cropped.gridlist$Lon <- cropped.gridlist$Lon - offset[1]
-  cropped.gridlist$Lat <- cropped.gridlist$Lat - offset[2]
-  
-  if(!is.null(file.name)) write.table(cropped.gridlist, file.name, quote = FALSE, row.names = FALSE)
-  
-  return(cropped.gridlist)
+  return(gridlist)
   
 }
 
@@ -339,8 +318,6 @@ reversed.tim.colors = function(n) rev(tim.colors(n))
 #' @param AGB ABive ground biomass (carbon)
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-
-
 AGBtoTotalCarbon <- function(AGB){
   
   BGB <- 0.489 * AGB^0.89
@@ -352,7 +329,11 @@ AGBtoTotalCarbon <- function(AGB){
 
 
 
-
+#' Continental extents
+#'
+#' These were just defined by the author for studying different regions of the world.  Maybe also be handy for other people.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global", name = "Global", extent = extent(-180, 180, -90, 90)),
                                      Africa = new("SpatialExtent", id = "Africa", name = "Africa", extent =  extent(-20, 55, -30, 36)),
                                      Europe = new("SpatialExtent", id = "Europe", name = "Europe", extent =  extent(-30, 40, 36, 70)),

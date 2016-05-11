@@ -588,11 +588,11 @@ FPCMegaBiomeRules <- function(fpc) {
  
   # 9 - Desert
   if (as.numeric(fpc[['Total']]) <= 0.2 &
-      as.numeric(fpc[['gdd5']]) >= 1200) {return(9)}
+      as.numeric(fpc[['GDD5']]) >= 1200) {return(9)}
 
   # 10 - Arctic desert
   else if (as.numeric(fpc[['Total']]) <= 0.2 &
-           as.numeric(fpc[['gdd5']]) < 1200) {return(10)}
+           as.numeric(fpc[['GDD5']]) < 1200) {return(10)}
 
   # 1 - Tropical Forest
   else if (as.numeric(fpc[['Tree']]) > 0.6 &
@@ -618,7 +618,7 @@ FPCMegaBiomeRules <- function(fpc) {
   else if (as.numeric(fpc[['Tree']]) > 0.1 &
            as.numeric(fpc[['Tree']]) <= 0.6 &
            as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
-           as.numeric(fpc[['gdd5']]) > 1800) {return(5)}
+           as.numeric(fpc[['GDD5']]) > 1800) {return(5)}
 
   # 6 - Tropical grassland
   else if (as.numeric(fpc[['Tree']]) <= 0.1 &
@@ -627,7 +627,7 @@ FPCMegaBiomeRules <- function(fpc) {
   # 7 - Temperate grassland
   else if (as.numeric(fpc[['Tree']]) <= 0.1 &
            as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
-           as.numeric(fpc[['gdd5']]) > 1200) {return(7)}
+           as.numeric(fpc[['GDD5']]) > 1200) {return(7)}
 
   # 8 - Tundra
   else if (as.numeric(fpc[['Tree']]) <= 0.2) {return(8)}

@@ -1,4 +1,30 @@
 
+#' Read the original GFED4 files
+#' 
+#' Read the original GFED4 data files, and optionally aggregates/averages and crops the data in time and space.
+#' 
+#' @param location A character string specifying the the location of the original data files
+#' @param list.of.spatial.extents A list of objects of type SpatialExtent, the funtion will return a dataset for each one.  
+#' This is intended so that one can retrieve time series for particular regions, for example the GFED regions as used in the GFED publications. 
+#' If not specified the function just returns the global data.
+#' @param temporal.extent A TemporalExtent object defining the time period for the data, the default are the currently available full monthly GFED4 
+#' years (1996-2013)
+#' @param temporally.average Logical, whether or not to temporal average the data to return yearly, monthly or daily averages (depending on the \code{temporal.resolution} 
+#' argument)
+#' @param spatially.aggregate Logical, whether or not to sun the burned area across the spatial domain
+#' @param spatial.resolution Character string defing the desired spatial resolution, can be "QD" (0.25 degree, the original resolution) or "HD" (0.5 degree)
+#' @param temporal.resolution Character string defing the desired temporal resolution, can be "Annual", "Monthly" or "Daily"
+#' @param output.files A vector of character strings for the output files.  MOVE TO A DIFFERENT FUNCTION
+#' @param maxmemory Integer to specify the maximum memory to use raster processing.  If you have a lot of memory, consider increasing this so that calculations 
+#' are al done in memory for better performance.
+#' @param units A string specifying the units in which to return the data: can be "fraction" (fractional area burnt, weighted by gridcell area but no by sea-land mask), 
+#' "ha" (hectares) or "kmsq" (square kilometers) 
+#' @param archive  Logical, whether or not to write the data to disk. MOVE TO A DIFFERENT FUNCTION.
+#' 
+#' @return A raster (if spatial aggregating not requested) or a data.table (if spatially aggregating requested)
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#' @export
 
 
 readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",  
@@ -25,7 +51,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   ha_to_kmsq <- 0.01
   
   
-  ######### PART ZERO: DEAL WITH THE GLOBAL CASE, SINGLETON CASE AND MAKE THE DATASET IDS
+  ######### PART ZERO: DEAL WITH THE GLOBAL CASE, SINGLETON DOMAIN CASE AND MAKE THE DATASET IDS
   
   # If no spatial extent is specified use a global extent
   if(is.null(list.of.spatial.extents)){
@@ -54,10 +80,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
                                                       temporally.averaged = temporally.average, 
                                                       spatially.averaged = spatially.aggregate)
     
-    
-    
-    
-  }
+   }
   
   
   ######### PART ONE: READ THE DATA
@@ -177,7 +200,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   if(units == "ha"){
     GFED4.total <- GFED4.total * GFED4.scale.factor
   }
-  else if(units == "km"){
+  else if(units == "kmsq" | units == "km"){
     GFED4.total <- GFED4.total * (GFED4.scale.factor * ha_to_kmsq)
   }
   else if(units == "fraction"){
@@ -277,44 +300,4 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   
 }
 
-
-############################## MAKE THE 'id' STRING FOR A DATASET 
-#
-#' Make an ID string for a \code{VegObject}
-#' 
-#' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-#' for use in the \code{id} slot of a \code{VegObject} and for filenames etc.
-#' 
-#' @param var.string Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"
-#' @param temporal.extent The temporal extent of this object if it has been cropped from the orginal duration, otherwise NULL
-#' @param spatial.extent The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL
-#' @param temporally.averaged Logical, should be TRUE if temporal averaging has been done
-#' @param spatially.averaged Logical, should be TRUE if spatial averaging has been done
-#' @return A character string 
-#' @export
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
-
-
-makeDatasetID <- function(data.string, 
-                          units = NULL, 
-                          temporal.resolution = NULL, 
-                          spatial.resolution = NULL, 
-                          temporal.extent = NULL, 
-                          spatial.extent = NULL, 
-                          temporally.averaged = FALSE, 
-                          spatially.averaged = FALSE){
-  
-  
-  dataset.id <- data.string
-  if(!is.null(units))  dataset.id <- paste(dataset.id, units, sep = ".")
-  if(!is.null(temporal.resolution))  dataset.id <- paste(dataset.id, temporal.resolution, sep = ".")
-  if(!is.null(spatial.resolution))  dataset.id <- paste(dataset.id, spatial.resolution, sep = ".")
-  if(spatially.averaged)  dataset.id <- paste(dataset.id, "SA", sep = ".")
-  if(!is.null(spatial.extent)) dataset.id <- paste(dataset.id, spatial.extent@id, sep = ".")
-  if(temporally.averaged)  datasett.id <- paste(dataset.id, "TA", sep = ".")
-  if(!is.null(temporal.extent)) dataset.id <- paste(dataset.id, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep =".")
-  
-  return(dataset.id)
-  
-}
 

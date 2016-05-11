@@ -409,3 +409,230 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
   }
   stop("MISSING: Not implemented yet.")
 }
+
+#' calculate monthly PET, AET, WC, WD based on Thornthwaite
+#' 
+#' @param run the VegRun object, if desired (see 'as', below).
+#' @param T monthly temperature (degree Celcius )VegObject, data.table or data.frame
+#' @param P monthly precipitation in mm. Needed for everything without PET.
+#' @param variable any of PET (potential evapotranspiration), AET (actual evapotranspiration), WC (water content), WD (water deficit)
+#' @param as desired output type 'data.table', 'data.frame', anything else will try to return a VegObject, which need 'run' to be defined.
+#' @return the requested variable in the requested ('as') container
+#' @export
+#' @import data.table
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @references Bonan, G. (2002): Ecological Climatology. Chapter 5 (Hydrological Cycle), Cambridge University Press, 690p. (http://www.cgd.ucar.edu/tss/aboutus/staff/bonan/ecoclim/index-2002.htm)
+thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject") {
+  AET.Jan=Annual=P.Jan=PET.Jan=WC.Dec=WC.Jan=WD.Jan=a=Lon=Lat=NULL
+  dom <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+  names(dom) <- month.abb
+  mid.month <- cumsum(dom) - dom/2
+  
+  ## make sure we do not overwrite the original data.table
+  if (is.VegObject(T)) {
+    if (T@is.spatially.averaged)
+      stop("Operation not possible for spatially averaged VegObect!")
+    
+    if (!T@is.temporally.averaged) {
+      warning("Operation not tested for temporally not averaged VegObect!")
+      message("Operation not tested for temporally not averaged VegObect!")
+    }
+    is.temporally.averaged <- T@is.temporally.averaged
+    spatial.extent  <- T@spatial.extent
+    temporal.extent <- T@temporal.extent
+    T <- copy(T@data)
+  } else if (is.data.table(T)) {
+    T <- copy(T)
+  }
+  
+  ## chech the column names
+  if (!all(c("Lat", month.abb)%in%colnames(T)))
+    stop(paste("Any of '", paste(c("Lat", month.abb), collapse="', "), "' missing in column names.", sep=""))
+  
+  ## calculate the daylength and convert to data.frame
+  L <- as.data.frame(t(daylength(T$Lat, mid.month)))
+  colnames(L) <- month.abb
+  
+  if (is.data.table(T)) {
+    L <- cbind(T[, c("Lon", "Lat"), with=FALSE], L)  
+  } else {
+    L <- as.data.table(cbind(T[, c("Lon", "Lat") ], L))
+  }
+  setkey(L, Lon, Lat)
+  
+  ## replace temperatures below zero
+  T[, (month.abb):=ifelse(.SD<0, 0, .SD), by=c("Lon", "Lat")]
+  
+  ## calculate some new columns
+  T[, I:=rowSums((.SD/5)^1.514), .SDcols=month.abb]
+  T[, a:=6.75e-7 * I^3 - 7.71e-5 * I^2 + 1.79e-2 * I + 0.49, by=c("Lon", "Lat")]
+  
+  DT <- L[T]
+  
+  formula.str <- NULL
+  for (m in month.abb) {
+    formula.str <- rbind(formula.str, paste(m, "=16*(", m, "/12)*(dom['", m, "']/30)*(i.", m, "*10/I)^a", sep=""))
+  }
+  formula.str <- paste(formula.str, collapse=", ")
+  PET <- eval(parse(text=paste("DT[, list(", formula.str, "), by=c('Lon', 'Lat')]", sep="")))
+  
+  if (toupper(variable)=="PET") {
+    if (as=="data.table") {
+      return(PET)      
+    } else if (as=="data.frame") {
+      return(as.data.frame(PET))
+    } else {
+      quant <- new("VegQuant",
+                   id="pet",
+                   short.string="PET",
+                   full.string="potential evapotranspiration (Thonthwaite)",
+                   type="",
+                   units="mm")
+      return(new('VegObject',
+                 id="pet",
+                 data=PET,
+                 quant = quant,
+                 spatial.extent = spatial.extent,
+                 temporal.extent = temporal.extent,
+                 is.site = FALSE,
+                 is.temporally.averaged = is.temporally.averaged,
+                 is.spatially.averaged = FALSE,
+                 run = as(run, "VegRunInfo")))
+    }
+  }
+  
+  if (is.VegObject(P)) {
+    P <- copy(P@data)
+  } else if (is.data.table(P)) {
+    P <- copy(P)
+  } else if (is.null(P)) {
+    stop("No P (precipitation) data given!")
+  }
+  
+  DT <- PET[P]
+  
+  formula.str <- NULL
+  for (m in month.abb) {
+    formula.str <- rbind(formula.str, paste(m, "=ifelse(",m,"-i.",m, "<0, 0, ",m,"-i.",m, ")", sep=""))
+  }
+  formula.str <- paste(formula.str, collapse=", ")
+  WD <- eval(parse(text=paste("DT[, list(", formula.str, "), by=c('Lon', 'Lat')]", sep="")))
+  WD[ ,Annual:=rowSums(.SD), .SDcols = month.abb]
+  
+  if (toupper(variable)=="WD") {
+    if (as=="data.table") {
+      return(WD)      
+    } else if (as=="data.frame") {
+      return(as.data.frame(WD))
+    } else {
+      quant <- new("VegQuant",
+                   id="wd",
+                   short.string="wd",
+                   full.string="water deficit (Thonthwaite)",
+                   type="",
+                   units="mm")
+      return(new('VegObject',
+                 id="wd",
+                 data=WD,
+                 quant = quant,
+                 spatial.extent = spatial.extent,
+                 temporal.extent = temporal.extent,
+                 is.site = FALSE,
+                 is.temporally.averaged = is.temporally.averaged,
+                 is.spatially.averaged = FALSE,
+                 run = as(run, "VegRunInfo")))
+    }
+  }
+  
+  WC.init <- 75.0
+  WC.max  <- 150.0
+  WC <- data.table(array(WC.init, c(nrow(PET),12)))
+  colnames(WC) <- month.abb
+  WC <- cbind(PET[, c("Lon", "Lat"), with=FALSE], WC)
+  setkey(WC, Lon, Lat)
+  
+  AET <- data.table(array(0.0, c(nrow(PET),12)))
+  colnames(AET) <- month.abb
+  AET <- cbind(PET[, c("Lon", "Lat"), with=FALSE], AET)
+  setkey(WC, Lon, Lat)
+  
+  DT <- PET[P]
+  setnames(DT, month.abb, paste("PET", month.abb, sep="."))
+  setnames(DT, paste("i", month.abb, sep="."), paste("P", month.abb, sep="."))
+  DT = WD[DT]
+  setnames(DT, month.abb, paste("WD", month.abb, sep="."))
+  DT = WC[DT]
+  setnames(DT, month.abb, paste("WC", month.abb, sep="."))
+  DT = AET[DT]
+  setnames(DT, month.abb, paste("AET", month.abb, sep="."))
+  
+  DT[, AET.Jan:=ifelse(PET.Jan <= P.Jan, PET.Jan, P.Jan + WD.Jan * WC.Dec/WC.max), by=c('Lon', 'Lat')]
+  DT[, WC.Jan:=ifelse(WC.Dec + P.Jan - AET.Jan > WC.max, WC.max, WC.Dec + P.Jan - AET.Jan), by=c('Lon', 'Lat')]
+  niterations <- 2
+  for (i in 1:(niterations*12)) {
+    pm <- month.abb[((i-1)%%12)+1]
+    m <- month.abb[(i%%12)+1]
+    formula.str <- paste("DT[, AET.", m, ":=ifelse(PET.",m," <= P.", m, ", PET.", m, ", P.", m, " + WD.", m, "*WC.",pm,"/WC.max), by=c('Lon', 'Lat')]",sep="")
+    eval(parse(text=formula.str))
+    
+    formula.str <- paste("DT[, WC.", m, ":=ifelse(WC.",pm," + P.", m, " > WC.max, WC.max, WC.", pm, "+P.", m, "-AET.", m, "), by=c('Lon', 'Lat')]", sep="")
+    eval(parse(text=formula.str))
+  }
+  
+  if (toupper(variable)=="WC") {
+    WC <- DT[, c("Lon", "Lat", paste("WC", month.abb, sep=".")), with=FALSE]
+    setnames(WC,  paste("WC", month.abb, sep="."), month.abb)
+    setkey(WC, Lon, Lat)
+    if (as=="data.table") {
+      return(WC)      
+    } else if (as=="data.frame") {
+      return(as.data.frame(WC))
+    } else {
+      quant <- new("VegQuant",
+                   id="wc",
+                   short.string="wc",
+                   full.string="water content (Thonthwaite)",
+                   type="",
+                   units="mm")
+      return(new('VegObject',
+                 id="wc",
+                 data=WC,
+                 quant = quant,
+                 spatial.extent = spatial.extent,
+                 temporal.extent = temporal.extent,
+                 is.site = FALSE,
+                 is.temporally.averaged = is.temporally.averaged,
+                 is.spatially.averaged = FALSE,
+                 run = as(run, "VegRunInfo")))
+    }
+  }
+  
+  if (toupper(variable)=="AET") {
+    AET <- DT[, c("Lon", "Lat", paste("AET", month.abb, sep=".")), with=FALSE]
+    setnames(AET,  paste("AET", month.abb, sep="."), month.abb)
+    setkey(AET, Lon, Lat)
+    if (as=="data.table") {
+      return(AET)      
+    } else if (as=="data.frame") {
+      return(as.data.frame(AET))
+    } else {
+      quant <- new("VegQuant",
+                   id="AET",
+                   short.string="AET",
+                   full.string="actual evapotranspiration (Thonthwaite)",
+                   type="",
+                   units="mm")
+      return(new('VegObject',
+                 id="aet",
+                 data=AET,
+                 quant = quant,
+                 spatial.extent = spatial.extent,
+                 temporal.extent = temporal.extent,
+                 is.site = FALSE,
+                 is.temporally.averaged = is.temporally.averaged,
+                 is.spatially.averaged = FALSE,
+                 run = as(run, "VegRunInfo")))
+    }
+  }
+}
+

@@ -27,12 +27,6 @@
 ### Need a new way to handle this stuff with file paths etc
 
 
-####### SPECIFY LOCATION OF AUXILIARY DATA HERE 
-# TODO - add LPJ-GUESS standard gridlist to the package so we can remove this ugliness
-
-auxiliary.data.dir <- "/home/forrest/AuxiliaryData" # NOTE: must be the full path or OGR gets confused :-(
-
-
 #' Check is an object is a \code{VegObject}.   
 #'
 #' Returns TRUE if an object is a \code{VegObject}, and FALSE otherwise 
@@ -183,7 +177,22 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
 ## so far simply returns a list. 
 ## Needs to also include a generic "print" for pretty output
 ##
-setGeneric("summary")
+
+#' Summary methods
+#' 
+#' Print easy to read summaries of RVCTools objects
+#' 
+#' @param object a RVCTools object
+#' @param ... Other arguments, not currently used
+#' @return A list of strings
+#' @name Summary-methods
+#' @rdname Summary-methods
+#' @exportMethod 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}         
+setGeneric("summary", function(object,...) standardGeneric("summary"))
+
+#' @rdname Summary-methods
+#' @aliases summary
 setMethod("summary", signature("VegRun"), function(object, ...) {
   ret <- list(id=object@id, description=object@description, model=object@model)
   
@@ -221,6 +230,21 @@ setMethod("summary", signature("VegRun"), function(object, ...) {
   return(ret)
 })
 
+
+#' Crop VegObjects (or data.tables, or Raster* objects)
+#' 
+#' A more flexible version of raster::crop() which also take VegObjects and data.tables for cropping, 
+#' and can use a SpatialExtent object to define the domain.  SHOULD BE DEFINED AS A METHOD EXTENDING raster::crop()!
+#' 
+#' @param input The VegObject, data.table or Raster* object to be cropped
+#' @param extent The spatial extent to be be cropped to, defined as a SpatialExtent or raster::extent
+#' 
+#' @return A VegObject, data.table or Raster* object cropped to the desired extent.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster data.table
+#' @export
+
 cropRVC <- function(input, extent){
   
   Lat = Lon = NULL
@@ -245,36 +269,6 @@ cropRVC <- function(input, extent){
 }
 
 
-
-intersectionRVC <- function(object1, object2){
-  
-  object1.class <- class(object1)[1]
-  object2.class <- class(object2)[1]
-  
-  # CASE 1 - object 1 is raster/layer/stack
-  if(object1.class == "RasterLayer" | object1.class == "RasterStack"  | object1.class == "RasterStack"){
-    
-    # CASE 1a - object 2 is also a raster/layer/stack
-    if(object2.class == "RasterLayer" | object2.class == "RasterStack"  | object2.class == "RasterStack"){
-      
-      intersection.extent <- intersect(object1, object2)
-      return(list(crop(object1, intersection.extent), crop(object2, intersection.extent)))
-      
-    }
-    
-    
-  }
-  
-  else {
-    
-    
-    stop(paste("IntersectionRVC not defined for combination of classes ", object1.class, " and ", object2.class))
-    
-    
-  }
-  
-  
-}
 
 ##### RETRIEVES AN OBJECT FROM A LIST BASED ON THE 'id' SLOTS
 #
@@ -323,9 +317,28 @@ IDFromList <- function(id, list) {
 
 }
 
-
-
-
+#' Write a netCDF file
+#' 
+#' This function gives more flexibility (for example it can write more meta-data and can re-order the dimensions for efficient LPJ-GUESS reading) 
+#' than the similar raster::\code{writeRaster} function.  It is also intended that this function can write single sites/time series functionality 
+#' is not included yet.  Also might need some work to be CF compliant on the time dimension.
+#' 
+#' @param raster.in The data as a Raster* object.  This should be broadened to also include data.frames and data.tables for writing 
+#' time series from a particular point.
+#' @param var.name A character string containing the name of the variable as used in the netCDF file produced.
+#' @param var.units A character string containing the units of the variable as used in the netCDF file produced.
+#' @param time.resolution A character string denoting the time resolution of the data. Currently can be "monthly" or "annual".
+#' @param time.units.string A string to represent the time units.  CHECK THIS.
+#' @param long.name A charcter string for the "long_name" of the netCDF file.
+#' @param filename A character string (including the path) specifiying the name of the netCDF file.
+#' @param ordering A character string specifying the ordering of the dimension in the resulting netCDF file, can be "standard" for normal ordering 
+#' or "lpj" for ordering for fast LPJ-GUESS reading.
+#' @param missing.value A numeric value for the "missing_value" of the netCDF file.
+#'
+#' @return Noting, writes a netCDF file to disk
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
+#' @import ncdf4 raster
 writeNetCDF <- function(raster.in, 
                         var.name, 
                         var.units, 
@@ -365,7 +378,7 @@ writeNetCDF <- function(raster.in,
     # if we have a third dimension but no time resolution we have a multivariable netCDF file
     # in this case check that the var.name matches 
   
-    ## TOO COMPLICATD, ABORT
+    ## TOO COMPLICATED, ABORT
     
   }
   
