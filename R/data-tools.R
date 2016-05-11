@@ -14,7 +14,7 @@ countCategoricalData <- function(original.data, output.raster, categories = NULL
   
   t1 <- Sys.time()
   for(cell in 1:ncell(output.raster)) {
-  #for(cell in 1:1000) {
+    #for(cell in 1:1000) {
     
     # look up lon and lat
     coords <- xyFromCell(output.raster,cell)
@@ -24,22 +24,31 @@ countCategoricalData <- function(original.data, output.raster, categories = NULL
     # get the frequency table (as a data.table) for this extent
     this.extent <- extent(lon-lon.res.div.2,lon+lon.res.div.2, lat-lat.res.div.2,lat+lat.res.div.2)
     
-    # make a frequency table for the data in the extent.  This is the rate limiting step.
-    #freq1 <- Sys.time()
-    this.freq.df <- data.frame(table(extract(original.data, this.extent)))
-    #freq2 <- Sys.time()
-    #print("Extract")
-    #print(freq2-freq1)
-    
-    # convert the frequency table into a vector and slot it into the overall raster
-    temp.vector <- rep(0, 23)
-    for(entry in 1:nrow(this.freq.df)){
-      temp.vector[which(categories == this.freq.df$Var1[entry])] <- this.freq.df$Freq[entry]
+    # check for non-NULL extent which will cause the code to fail.
+    if(!intersect(this.extent, original.data)) {
+      
+      
+      # make a frequency table for the data in the extent.  
+      # This is the rate limiting step (by about one of order of magnitude), so if anyone can optimise this it would be great.
+      #freq1 <- Sys.time()
+      this.freq.df <- data.frame(table(extract(original.data, this.extent)))
+      #freq2 <- Sys.time()
+      #print("Extract")
+      #print(freq2-freq1)
+      
+      # convert the frequency table into a vector and slot it into the overall raster
+      temp.vector <- rep(0, 23)
+      for(entry in 1:nrow(this.freq.df)){
+        temp.vector[which(categories == this.freq.df$Var1[entry])] <- this.freq.df$Freq[entry]
+      }
+      output.df  <- rbind(output.df, c(lon, lat, temp.vector))
+      
+      # remove unused stuff to save memory
+      rm(coords, lat, lon, this.freq.df, temp.vector)
+      
     }
-    output.df  <- rbind(output.df, c(lon, lat, temp.vector))
     
-    # remove unused stuff to save memory
-    rm(coords, lat, lon, this.extent, this.freq.df, temp.vector)
+    rm(this.extent)
     
     # show progress and garbage collect every so often
     if(cell %% 10 == 0) {
