@@ -423,7 +423,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @references Bonan, G. (2002): Ecological Climatology. Chapter 5 (Hydrological Cycle), Cambridge University Press, 690p. (http://www.cgd.ucar.edu/tss/aboutus/staff/bonan/ecoclim/index-2002.htm)
 thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject") {
-  Lon=Lat=NULL
+  AET.Jan=Annual=P.Jan=PET.Jan=WC.Dec=WC.Jan=WD.Jan=a=Lon=Lat=NULL
   dom <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
   names(dom) <- month.abb
   mid.month <- cumsum(dom) - dom/2
