@@ -1,8 +1,6 @@
 ##### PREAMBLE: Load the packages and start the timer
 
 # Load RVCTools package, unload the package first in case we are actively developing the package
-rm(list = ls())
-if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
 library(RVCTools)
 
 # start the timer
@@ -11,7 +9,7 @@ t1 <- Sys.time()
 #### STEP ONE: Define the settings, open the run and average over the period we want
 
 # Define a RUN to process
-run <- defineVegRun(run.dir = "/home/forrest/GuessRuns/Original",
+run <- defineVegRun(run.dir = "/home/forrest/FastData/Example1",
                     model = "LPJ-GUESS",
                     pft.set = global.PFTs,
                     id = "ExampleRun1",
@@ -33,7 +31,7 @@ lai.reference.period <- getVegObject(run,
                                      variable, 
                                      temporal.extent = period, 
                                      temporally.average = TRUE, 
-                                     write = FALSE,
+                                     write = TRUE,
                                      reread.file = FALSE,
                                      store.internally = FALSE)
 
@@ -41,10 +39,19 @@ lai.reference.period <- getVegObject(run,
 
 ##### STEP TWO: Simple summary plots
 
-# Plot all PFTs on one figure and each one individually
+# Plot all PFTs on one figure and plot it to the screen
 plotVegMaps(lai.reference.period, 
             doSummary = TRUE, 
-            doIndividual = TRUE)
+            doIndividual = FALSE,
+            Cairo.type = "x11")
+
+
+
+# Plot each PFT individually ikn a file for study later
+plotVegMaps(lai.reference.period, 
+            doSummary = FALSE, 
+            doIndividual = TRUE,
+            Cairo.type = "png")
 
 
 ##### STEP THREE: More advanced analysis and plots
@@ -54,13 +61,15 @@ plotVegMaps(lai.reference.period,
 # Calculate the lifeform totals, the temperate total and the evergeen total
 lai.reference.period <- aggregateLayers(lai.reference.period, target = c("Lifeforms", "Temperate", "Evergreen"))
 
-# Plot the Evergreen and Temperate totals indivdually
+# Plot the Evergreen and Temperate totals indivdually (to the screen)
 plotVegMaps(lai.reference.period, 
             targets = c("Evergreen", "Temperate"),
             doSummary = FALSE, 
-            doIndividual = TRUE)
+            doIndividual = TRUE,
+            Cairo.type = "x11")
 
 
+# Plot the Tree, Grass and Total LAIs all on one plot in a file 
 plotVegMaps(lai.reference.period, 
             targets = c("Tree", "Grass", "Total"),
             special.string = "Lifeforms")
@@ -114,12 +123,14 @@ lai.reference.period <- addBiomes(lai.reference.period, biome.scheme)
 # read expert-derived PNV biomes
 PNV.biomes <-  readHandPBiomes(classification = biome.scheme@id)
 
-# plot biomes
-plotBiomeMap(lai.reference.period, 
-             scheme = biome.scheme,
-             addData = PNV.biomes, 
-             Cairo.type = c("png","ps"), 
+# plot biomes (first to the screen, then as both as a .png and .ps file on disk)
+plotVegMaps(lai.reference.period, 
+            biome.scheme = biome.scheme, 
+            special = "biomes", 
+            biome.data = PNV.biomes, 
+            Cairo.type = c("x11", "png","ps")
 )
+
 
 # print the time
 t2 <- Sys.time()

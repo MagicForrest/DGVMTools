@@ -200,7 +200,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   if(is.null(run)) { tolerance <- 0.02 }
   else {tolerance <- run@tolerance}  
   
-  ### SPECIAL CASE OF BIOMES WITH NULL TARGET (assume the biome scheme id)
+  ### SPECIAL CASE OF BIOMES WITH NULL TARGET (assume the biome scheme id is the layer name)
   if(is.null(targets) & !is.null(special)){
     if(tolower(special) == "biomes" | tolower(special) == "biome") targets = biome.scheme@id
   }
@@ -413,6 +413,36 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
     }
     
+    #### PLOT BIOMES
+    
+    else if(tolower(special) == "dominant" |  tolower(special) == "dominantpft" ){
+      
+      # COLORLIST
+      dom.PFT.colourlist <- vector()
+      DomPFTs <- vector()
+      if(length(targets) == 1 ) {
+        if(is.VegObject(data)) {
+          DomPFTs <- levels(data.toplot@data[,which.dominant])
+        }
+      }
+      else{
+        stop("Construction Site:  plotDominantPFTMaps() cannot currently deal with more than one map")
+        #for(var in which.dominant){
+        #  DomPFTs <- append(DomPFTs, levels(data.toplot[,var,with=FALSE]))    
+        #}
+      }
+      for(PFT.id in DomPFTs){
+        if(PFT.id == "Barren"){ dom.PFT.colourlist[["Barren"]] <- "gray75"}
+        else{ 
+          if(useLongnames) {dom.PFT.colourlist[[PFT.set[[PFT.id]]@id]] <- PFT.set[[PFT.id]]@colour}
+          else {dom.PFT.colourlist[[PFT.id]] <- PFT.set[[PFT.id]]@colour}
+        }
+      }
+      
+      
+      
+    }
+    
     #### CATCH UNIMPLEMENTED SPECIAL CASES
     else if(special != ""){
       stop(paste("Special case", tolower(special), "not implemented yet", sep = " "))
@@ -484,8 +514,12 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       # FILENAME
       # make a description of the variable
       this.id.string <- makeVariableIDString(quant@id, "Summary",  run.id = run.id, special.string)
-      if(is.null(summary.file.name)) this.file.name <- paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = ".")
-      else this.file.name <- paste(summary.file.name, format, sep = ".")
+      if(is.null(summary.file.name)) this.file.path <- file.path(plot.dir, paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = "."))
+      else this.file.name <- file.path(plot.dir, paste(summary.file.name, format, sep = "."))
+      
+      # Special case for frmat "x11", filename should be ""
+      if(format == "x11") this.file.path <- ""
+      
       
       # PLOT MAIN TITLE
       if(is.null(summary.title)) summary.title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), run, period)
@@ -506,14 +540,14 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       }
       else plot.labels.here <- plot.labels
       
-      Cairo(file = file.path(plot.dir, this.file.name), 
+      Cairo(file = this.file.path, 
             dpi = Cairo.dpi, 
             type = format, 
             width = Cairo.width, 
             height = Cairo.height, 
             title = summary.title, 
             bg = Cairo.bg)  
-      
+  
       print(spplot(data.toplot,
                    targets,
                    par.settings = list(panel.background=list(col=plot.bg.col)),
@@ -534,6 +568,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                    ...)
       )
       
+      if(format == "x11")  invisible(readline(prompt="Press [enter] to continue"))
       
       dev.off()
       
@@ -546,7 +581,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         
         # FILENAME
         this.id.string <- makeVariableIDString(quant@id, layer, run.id = run.id, special.string)
-        this.file.name <- paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = ".")
+        this.file.path <- file.path(plot.dir, paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = "."))
+        # Special case for format "x11", filename should be NULL
+        if(format == "x11") this.file.path <- ""
         
         # PLOT TITLES
         # If only one target overall
@@ -572,7 +609,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         }
         
         
-        Cairo(file = file.path(plot.dir, this.file.name), 
+        Cairo(file = this.file.path, 
               dpi = Cairo.dpi, 
               type = Cairo.type, 
               width = Cairo.width, 
@@ -598,9 +635,11 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                      #names.attr = PFT.plottitles,
                      ...)
         )
+        
+        if(format == "x11")  invisible(readline(prompt="Press [enter] to continue"))
+        
         dev.off()
-        
-        
+
       }
       
     }
@@ -1046,7 +1085,7 @@ makePlotTitle <- function(quantity.str, run = NULL, period = NULL){
 
 # obselete can be removed with plotBiomes(), don't need to document
 .makeFileName <- function(quantity.id, file.name = NULL, run = NULL, period = NULL, extension = "png"){
-  
+   
   if(!is.null(file.name)){return(file.name)}
   else if(!is.null(period) & !is.null(run)) { return(paste(quantity.id, ".", run@id, ".TA.", period@start, "-", period@end, ".", extension , sep = ""))}
   else if(is.null(period )& !is.null(run)) { return(paste(quantity.id, ".", run@id, ".TA.", extension , sep = ""))}
