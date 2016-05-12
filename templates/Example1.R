@@ -35,19 +35,17 @@ lai.reference.period <- getVegObject(run,
                                      reread.file = FALSE,
                                      store.internally = FALSE)
 
-
-
 ##### STEP TWO: Simple summary plots
 
 # Plot all PFTs on one figure and plot it to the screen
 plotVegMaps(lai.reference.period, 
             doSummary = TRUE, 
             doIndividual = FALSE,
-            Cairo.type = "x11")
+            Cairo.type = "png")
 
 
 
-# Plot each PFT individually ikn a file for study later
+# Plot each PFT individually in a file for study later
 plotVegMaps(lai.reference.period, 
             doSummary = FALSE, 
             doIndividual = TRUE,
@@ -66,7 +64,7 @@ plotVegMaps(lai.reference.period,
             targets = c("Evergreen", "Temperate"),
             doSummary = FALSE, 
             doIndividual = TRUE,
-            Cairo.type = "x11")
+            Cairo.type = "png")
 
 
 # Plot the Tree, Grass and Total LAIs all on one plot in a file 
@@ -108,8 +106,7 @@ lai.reference.period <- combineShadeTolerance(lai.reference.period)
 lai.reference.period <- addDominantPFT(lai.reference.period)
 
 # plot dominant PFT
-plotDominantPFTMap(lai.reference.period)
-
+plotVegMaps(lai.reference.period, special = "Dominant")
 
 
 ### BIOME CLASSIFICATION

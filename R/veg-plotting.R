@@ -83,6 +83,14 @@
 #' Special modes are currectly "fraction", "difference", "percentage.difference" and "firert" (fire return time).
 #' Biomes, dominant PFT and burnt area fraction should be added soon.
 #' @param maxpixels Maximum number of pixels to plot (see \code{raster} version of \code{spplot})
+#' @param biome.scheme A biome scheme of type BiomeScheme.  This control the defines the biomes types, names, colours for 
+#' plotting etc (only used if argument "special" = "biomes")
+#' @param biome.data A biome dataset, as a Raster or a SpatialDataset (can be left NULL to plot no data, 
+#' only used if argument "special" = "biomes")
+#' @param kappa.list A list of Kappa scores (to be coded in a more friendly style, 
+#' only used if argument "special" = "biomes")
+#' @param kappa.position A numeric vector with two elements to define the position (in Lon-Lat) of the overall 
+#' Kappa score on the plot (only used if argument "special" = "biomes") 
 #' @param ... Extra arguments to be be passed to \code{spplot} and therefor also to \code{lattice::levelplot}.
 #' 
 #' This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
@@ -132,17 +140,25 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         maxpixels = 1E6,
                         biome.scheme = Smith2014.scheme,
                         biome.data = NULL,
-                        biome.strings = NULL,
-                        biome.cols = NULL,  
                         kappa.list = NULL,
                         kappa.position = NULL,
                         ...){
   
   
   #####################################################################################
-  ############# PRE-AMBLE - WHEN THINGS ARE NOT SPECIFIED, PULL SOME DEFAULTS #########
+  ### PRE-AMBLE:                                               ########################
+  ### 1. INITIAL WARNINGS ABOUT ARGUMENT  COMBINATIONS         ########################
+  ### 1. WHEN THINGS ARE NOT SPECIFIED, PULL SOME DEFAULTS     ########################
   #####################################################################################
   
+  ##### 1. WARNINGS
+  if(!is.null(quant) & !is.null(special)){
+    if(tolower(special) == "dominant" | tolower(special) == "biomes")
+    warning(paste("When using a \"special\" = ", special, ", argument \"quant\" is ignored"))
+  }
+  
+  
+  ##### 2. DEFAULTS
   
   ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
   if(is.VegObject(data)){
@@ -151,7 +167,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       run.id <- run@id
       period <- data@temporal.extent
       PFT.set <- run@pft.set
-      if(is.null(quant)) quant <- data@quant  
+      if(is.null(quant)) quant <- data@quant
     } 
     else {
       stop("plotVegMaps:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
@@ -193,16 +209,17 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   #####################################################################################
-  ############# PREPARE DATA AND TARGET LIST FOR PLOTTING #############################
+  ############# PREPARE DATA AND TARGET LIST FOR PLOTTING        ######################
   #####################################################################################
   
   ### TOLERANCE - for when making grid to rasterise
   if(is.null(run)) { tolerance <- 0.02 }
   else {tolerance <- run@tolerance}  
   
-  ### SPECIAL CASE OF BIOMES WITH NULL TARGET (assume the biome scheme id is the layer name)
+  ### SPECIAL CASE OF BIOMES OR DOMINANT WITH NULL TARGET (assume the biome scheme id is the layer name)
   if(is.null(targets) & !is.null(special)){
     if(tolower(special) == "biomes" | tolower(special) == "biome") targets = biome.scheme@id
+    if(tolower(special) == "dominant") targets = "Dominant"
   }
   
   ### EXPAND TARGETS
@@ -227,7 +244,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   #####################################################################################
-  ############# DEAL WITH SPECIAL CASES ###############################################
+  ############# DEAL WITH SPECIAL CASES    ############################################
   #####################################################################################
   
   ### IF SPECIALS 
@@ -344,9 +361,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else if(tolower(special) == "biomes" || tolower(special) == "biome"){
       
       # Build a VegQuant object with the appropriate colours and cuts 
-      if(!is.null(quant)) warning("When plotting biome scheme in plotVegMaps(), argument quant is ignored")
-      
-      quant <- new("VegQuant",
+       quant <- new("VegQuant",
                    id = biome.scheme@id,
                    short.string = biome.scheme@id,
                    full.string = biome.scheme@name,
@@ -358,7 +373,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       )
       
       # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
-      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
+      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex * 2/3, 
                                         "labels" = rev(biome.scheme@strings), 
                                         "at" = (0:(length(biome.scheme@strings)-1)) + 0.5)
       colorkey.list[["at"]] <- 0:length(biome.scheme@strings)
@@ -399,7 +414,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
       # KAPPA
       if(!is.null(kappa.list)){
-      
+        
         # if only one model run put individual Kappas into biome legend
         if(nlayers(data.toplot)-1 == 1) colorkey.list[["labels"]][["labels"]] <- paste0(colorkey.list[["labels"]][["labels"]], " (", rev(round(kappa.list[[1]]@individual.Kappas,2)), ")", sep = "")
         # place overall Kappa on each modelled biome map 
@@ -417,29 +432,59 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     else if(tolower(special) == "dominant" |  tolower(special) == "dominantpft" ){
       
-      # COLORLIST
-      dom.PFT.colourlist <- vector()
-      DomPFTs <- vector()
-      if(length(targets) == 1 ) {
-        if(is.VegObject(data)) {
-          DomPFTs <- levels(data.toplot@data[,which.dominant])
-        }
-      }
-      else{
-        stop("Construction Site:  plotDominantPFTMaps() cannot currently deal with more than one map")
-        #for(var in which.dominant){
-        #  DomPFTs <- append(DomPFTs, levels(data.toplot[,var,with=FALSE]))    
-        #}
-      }
-      for(PFT.id in DomPFTs){
-        if(PFT.id == "Barren"){ dom.PFT.colourlist[["Barren"]] <- "gray75"}
-        else{ 
-          if(useLongnames) {dom.PFT.colourlist[[PFT.set[[PFT.id]]@id]] <- PFT.set[[PFT.id]]@colour}
-          else {dom.PFT.colourlist[[PFT.id]] <- PFT.set[[PFT.id]]@colour}
-        }
-      }
+     
+      # Get Raster Attribute Table and then convert raster back to simple integers instead of factors 
+      # because currently (May 2016) raster package doesn't handle factor rasters very well
+      RAT <- data.toplot@data@attributes[[1]]
+      data.toplot <- deratify(data.toplot, complete = TRUE)
       
+      # Set colours to be the list of PFT colours
+      col.list <- c()
+      label.list <- c()
       
+      # for each row of the RAT
+      for(row.index in 1:NROW(RAT)){
+        
+        # get the row
+        row <- RAT[row.index,]
+        
+        # special case if barren
+        if(as.character(row$levels == "Barren")) {
+          col.list <- append(col.list, "gray75")
+          label.list <- append(label.list, "Barren")
+        }
+        
+        # else (assuming others rows are PFTs)
+        else{
+          
+          # get the PFT data, append the colour and the id/long name (as appropriate)
+          PFT <- IDFromList(as.character(row$levels), PFT.set)
+          col.list <- append(col.list, PFT@colour)
+          if(useLongnames) label.list <- append(label.list, PFT@name)
+          else  label.list <- append(label.list, PFT@id)
+          
+        }
+        
+      }
+
+      
+      quant <- new("VegQuant",
+                   id = "Domiant",
+                   short.string = "Domiant",
+                   full.string = "Dominant PFTs",
+                   type = "DominantPFTs",
+                   units = "categorical",
+                   colours = colorRampPalette(col.list),
+                   cuts = 0:length(col.list),
+                   aggregate.method = "categorical"
+      )
+      
+      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
+      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
+                                        "labels" = rev(label.list), 
+                                        "at" = ((0:length(col.list))-1) + 0.5)
+      colorkey.list[["at"]] <- 0:length(col.list)
+      colorkey.list[["col"]] <- rev(col.list)
       
     }
     
@@ -491,9 +536,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   
-  
-  
-  
   #####################################################################################
   ############# MAKE THE PLOTS ########################################################
   #####################################################################################
@@ -505,7 +547,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     doIndividual <- TRUE
   }
   
-  
   for(format in Cairo.type){
     
     ### PRINT SUMMARY PLOT WITH ALL DATA IN ONE PLOT
@@ -515,7 +556,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       # make a description of the variable
       this.id.string <- makeVariableIDString(quant@id, "Summary",  run.id = run.id, special.string)
       if(is.null(summary.file.name)) this.file.path <- file.path(plot.dir, paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = "."))
-      else this.file.name <- file.path(plot.dir, paste(summary.file.name, format, sep = "."))
+      else this.file.path <- file.path(plot.dir, paste(summary.file.name, format, sep = "."))
       
       # Special case for frmat "x11", filename should be ""
       if(format == "x11") this.file.path <- ""
@@ -547,7 +588,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
             height = Cairo.height, 
             title = summary.title, 
             bg = Cairo.bg)  
-  
+      
+      
       print(spplot(data.toplot,
                    targets,
                    par.settings = list(panel.background=list(col=plot.bg.col)),
@@ -639,7 +681,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         if(format == "x11")  invisible(readline(prompt="Press [enter] to continue"))
         
         dev.off()
-
+        
       }
       
     }
@@ -658,7 +700,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 ##########################################################################################################################################
 
 # Obselete, Fold into plotVegMaps() with special = "biomes"
-plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
+.plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
                          targets = NULL,
                          scheme = Smith2014.scheme,
                          biome.strings = NULL,
@@ -822,7 +864,7 @@ plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, Ve
 ##########################################################################################################################################
 
 
-plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
+.plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
                                which.dominant = "Dominant",
                                quant = NULL, 
                                run = NULL, 
@@ -1085,7 +1127,7 @@ makePlotTitle <- function(quantity.str, run = NULL, period = NULL){
 
 # obselete can be removed with plotBiomes(), don't need to document
 .makeFileName <- function(quantity.id, file.name = NULL, run = NULL, period = NULL, extension = "png"){
-   
+  
   if(!is.null(file.name)){return(file.name)}
   else if(!is.null(period) & !is.null(run)) { return(paste(quantity.id, ".", run@id, ".TA.", period@start, "-", period@end, ".", extension , sep = ""))}
   else if(is.null(period )& !is.null(run)) { return(paste(quantity.id, ".", run@id, ".TA.", extension , sep = ""))}

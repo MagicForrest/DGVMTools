@@ -59,7 +59,7 @@ t1 <- Sys.time()
 analysis.label <- "Example3"                    
 
 ### Plot directory for run comparison plots (create it if it doesn't exist)
-plot.dir <- "/home/forrest/temp/plots"
+plot.dir <- "/home/forrest/RVCToolsExamples/Example3/Plots"
 dir.create(plot.dir, showWarnings = FALSE) 
 
 ### Time spans and spatials extents over which to average t
@@ -80,7 +80,7 @@ doRunComparisons <- TRUE
 var.list <- c("lai") # simple summary analysis
 detailed.var.list <- NULL #c("anpp") # for which variable to plot in more detail (make individual plots, lifeform plots for PFTs, seasonal plots for monthly variable etc)
 fraction.pft.var.list <- NULL #c("lai") # for which PFT variables to plot fractions
-do.dominant.pft.var.list <- NULL # c("lai") # for which PFT variables to calculate dominant PFT for
+do.dominant.pft.var.list <- c("lai") # for which PFT variables to calculate dominant PFT for
 
 
 
@@ -90,7 +90,7 @@ benchmarking.datasets.list <- list(
   # H&P biome map (Smith2014 scheme)
   "Smith2014" = new("SpatialDataset",
                     id = "Smith2014",
-                    name = paste("H&P PNV Biomes classified by scheme ", "Smith2014"),
+                    name = paste("H&P PNV Biomes classified by scheme", "Smith2014", sep = " "),
                     temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990) ,
                     data = readHandPBiomes(resolution = universal.resolution, classification = "Smith2014"),
                     veg.quant = lookupVegQuantity("lai"),
@@ -125,7 +125,7 @@ vegrun.list <- list()
 
 ### ORIGINAL TRUNK VERSION RUNS
 
-vegrun.list[["Original"]] <- defineVegRun(run.dir = "/home/forrest/GuessRuns/Original",
+vegrun.list[["Original"]] <- defineVegRun(run.dir = "/home/forrest/GuessRuns/SPITFIRE/OriginalTrunk/CRUNCEP_daily_nc/",
                                           id = "Original",
                                           description= "Original Phenology",
                                           pft.set = global.PFTs,
@@ -142,9 +142,9 @@ vegrun.list[["Original"]] <- defineVegRun(run.dir = "/home/forrest/GuessRuns/Ori
 )
 
 
-vegrun.list[["Original2"]] <- defineVegRun(run.dir = "/home/forrest/GuessRuns/Original",
-                                           id = "Original2",
-                                           description= "Original Repeated",
+vegrun.list[["SubAnnual"]] <- defineVegRun(run.dir = "/home/forrest/GuessRuns/SPITFIRE/Snapshots/2016-04-28-fixed-CtoN/Daily-subannualturnover",
+                                           id = "SubAnnual",
+                                           description= "Updated Phenology and Turnover",
                                            pft.set = global.PFTs,
                                            model = "LPJ-GUESS-SPITFIRE",
                                            driving.data = "CRUNCEP",
@@ -264,10 +264,9 @@ for(run in vegrun.list){
         this.VegSpatial <- addDominantPFT(this.VegSpatial, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
         
         # plot dominant PFT
-        plotDominantPFTMap(this.VegSpatial, "Dominant")
-        plotDominantPFTMap(this.VegSpatial, "DominantTree")
-        plotDominantPFTMap(this.VegSpatial, "DominantWoody")
-        
+        plotVegMaps(this.VegSpatial, special = "Dominant")
+        plotVegMaps(this.VegSpatial, target = "DominantTree", special = "Dominant")
+      
       }
       
       ### SAVE VEGOBJ FOR COMPARISON LATER - note that we have to explicitly access the list element, not the local one inside the loop 
@@ -381,7 +380,8 @@ for(benchmarking.dataset in benchmarking.datasets.list){
                             layout.objs = layout.objs)
     
   }
-  
+ 
+  stop() 
 }
 
 ####################################################################################

@@ -365,10 +365,7 @@ getVegQuantity_aDGVM_Scheme1 <- function(run, period, variable)
       }
     }
   }
-  
-  write.table(out.abm, file=file.path(run@run.dir, paste("aDGVM2_", run@id, "_scheme1_yearly_agbm", sep="")), row.names=F, quote=F )
-  write.table(out.lai, file=file.path(run@run.dir, paste("aDGVM2_", run@id, "_scheme1_yearly_lai",  sep="")), row.names=F, quote=F )
-  
+ 
   
   if(variable@id == "lai"){
     return(out.lai)

@@ -14,8 +14,7 @@ plotVegMaps(data, targets = NULL, expand.targets = TRUE, quant = NULL,
   text.multiplier = 1, plot.extent = NULL, limit = FALSE, limits = NULL,
   override.cols = NULL, override.cuts = NULL, special = NULL,
   maxpixels = 1e+06, biome.scheme = Smith2014.scheme, biome.data = NULL,
-  biome.strings = NULL, biome.cols = NULL, kappa.list = NULL,
-  kappa.position = NULL, ...)
+  kappa.list = NULL, kappa.position = NULL, ...)
 }
 \arguments{
 \item{data}{The data to plot. Can be a VegObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
@@ -93,6 +92,18 @@ Special modes are currectly "fraction", "difference", "percentage.difference" an
 Biomes, dominant PFT and burnt area fraction should be added soon.}
 
 \item{maxpixels}{Maximum number of pixels to plot (see \code{raster} version of \code{spplot})}
+
+\item{biome.scheme}{A biome scheme of type BiomeScheme.  This control the defines the biomes types, names, colours for 
+plotting etc (only used if argument "special" = "biomes")}
+
+\item{biome.data}{A biome dataset, as a Raster or a SpatialDataset (can be left NULL to plot no data, 
+only used if argument "special" = "biomes")}
+
+\item{kappa.list}{A list of Kappa scores (to be coded in a more friendly style, 
+only used if argument "special" = "biomes")}
+
+\item{kappa.position}{A numeric vector with two elements to define the position (in Lon-Lat) of the overall 
+Kappa score on the plot (only used if argument "special" = "biomes")}
 
 \item{...}{Extra arguments to be be passed to \code{spplot} and therefor also to \code{lattice::levelplot}.
 

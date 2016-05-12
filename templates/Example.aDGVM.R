@@ -40,14 +40,29 @@ period = new("TemporalExtent", name = "Reference", start = 81, end = 100)
 # Define the VARIABLE to look at
 variable <- "lai"
 
+# Read the lai from both runs
+lai.1 <- getVegSpatial(run = run1, 
+                       period = period,
+                       var = variable, 
+                       adgvm.scheme = 1,
+                       write = TRUE,
+                       reread.file = FALSE)
 
+lai.2 <- getVegSpatial(run = run2, 
+                       period = period, 
+                       var = variable, 
+                       adgvm.scheme = 1,
+                       write = TRUE,
+                       reread.file = FALSE)
 
-
-# Open the lai.out file, and average over the reference period
-lai.reference.period <- getVegSpatial(run = run, period = period, var = variable, adgvm.scheme = 1)
+stop()
 
 ### Simple summary plots of each "PFT" - one plot for each PFT and a summary plot of them all
-plotVegMaps(lai.reference.period, 
+plotVegMaps(lai.1, 
+            doSummary = TRUE, 
+            doIndividual = TRUE)
+
+plotVegMaps(lai.2, 
             doSummary = TRUE, 
             doIndividual = TRUE)
 

@@ -172,7 +172,7 @@ compareRunToSpatialDataset <- function(dataset,
     model.raster <- mask(model.raster, ignore.raster)
     data.raster <- mask(data.raster, ignore.raster)
   }
-
+  
   # calculate comparison
   comparison.results <- compareTwoRastersStats(data.raster, model.raster)
   data.raster <- comparison.results@data.raster
@@ -262,17 +262,17 @@ compareRunToSpatialDataset <- function(dataset,
 #' @import raster
 #' @export
 summariseRasterComparisons <- function(runs,
-                                  dataset, 
-                                  label = NULL,
-                                  diff.cuts = NULL,
-                                  perc.diff.cuts = seq(-100,200,5),
-                                  spatial.extent = NULL,
-                                  showR2 = TRUE,
-                                  layout.objs = NULL,
-                                  ...) {
+                                       dataset, 
+                                       label = NULL,
+                                       diff.cuts = NULL,
+                                       perc.diff.cuts = seq(-100,200,5),
+                                       spatial.extent = NULL,
+                                       showR2 = TRUE,
+                                       layout.objs = NULL,
+                                       ...) {
   
   message(paste("Comparing runs to ", dataset@name))
-
+  
   # BUILD STACKS, NAMES AND PLOT TITLE LISTS FOR PLOTTING
   # the data 
   Absolute.stack <- brick(runs[[1]]@benchmarks[[dataset@id]]@data.raster)
@@ -290,18 +290,18 @@ summariseRasterComparisons <- function(runs,
     # add the text to the text lists
     run.ids <- append(run.ids, run@id)
     plot.titles <- append(plot.titles, run@description)
-   
+    
     # add the raster layers to the stack
     Absolute.stack <- addLayer(Absolute.stack,  comparison.obj@model.raster)
     if(exists("Difference.stack")) Difference.stack <- addLayer(Difference.stack,  comparison.obj@diff.raster)
     else Difference.stack <- brick(comparison.obj@diff.raster)
     if(exists("Percentage.Difference.stack")) Percentage.Difference.stack <- addLayer(Percentage.Difference.stack,  comparison.obj@perc.diff.raster)
     else Percentage.Difference.stack <- brick(comparison.obj@perc.diff.raster)
-  
+    
     rm(comparison.obj)
-
+    
   }
- 
+  
   
   # CROP/EXTEND RASTERS (if extent specified)
   if(!is.null(spatial.extent)){
@@ -315,7 +315,7 @@ summariseRasterComparisons <- function(runs,
   names(Absolute.stack) <- append(dataset@id, run.ids)
   names(Difference.stack) <- run.ids
   names(Percentage.Difference.stack) <- run.ids
- 
+  
   # PLOT ABSOLUTE VALUES
   plotVegMaps(Absolute.stack,
               quant = dataset@veg.quant, 
@@ -337,7 +337,7 @@ summariseRasterComparisons <- function(runs,
       rm(comparison.obj)
     }
   }
- 
+  
   # PREPARE CUTS (if not specificed)
   if(is.null(diff.cuts)) {
     interval <- (range(dataset@veg.quant@cuts)[2] - range(dataset@veg.quant@cuts)[1] )/ (length(dataset@veg.quant@cuts)-1)
@@ -360,7 +360,7 @@ summariseRasterComparisons <- function(runs,
               layout.objs = layout.objs,
               ...)
   
- 
+  
   # PLOT PERCENTAGE DIFFERENCE
   plotVegMaps(Percentage.Difference.stack,
               quant = dataset@veg.quant, 
@@ -380,7 +380,7 @@ summariseRasterComparisons <- function(runs,
   gc()
   
   
-
+  
   
 }
 
@@ -531,13 +531,12 @@ compareBiomes <- function(run,
   
   # plot biomes if requested
   if(plot){
-    plotBiomeMap(this.VegSpatial, 
-                 scheme = scheme,
-                 addData = PNV.biomes, 
-                 kappa.list = list(Kappa.comparison),
-                 Cairo.type = c("png","ps"), 
-                 ...
-    )
+    # plotBiomeMap(this.VegSpatial, 
+    #              scheme = scheme,
+    #              addData = PNV.biomes, 
+    #              kappa.list = list(Kappa.comparison),
+    #              ...
+    # )
     
     plotVegMaps(this.VegSpatial, 
                 biome.scheme = scheme, 
@@ -577,7 +576,7 @@ compareManyRunsToBiomes <- function(runs,
   
   # get biome scheme 
   scheme <-IDFromList(biome.dataset@id,supported.biome.schemes)
- 
+  
   # make a raster stack with all the runs
   labels <- list()
   for(run in runs){
@@ -585,22 +584,34 @@ compareManyRunsToBiomes <- function(runs,
     else biome.stack <- brick(run@benchmarks[[biome.dataset@id]]@model.raster)
     labels <- append(labels, run@description)
   }
-
+  
   # Sort out whether or not we want to plot that data on the graph as well
   if(plot.data){
-    addData <- biome.dataset
+    PNV.biomes <- biome.dataset
   }
   else{
-    addData <- NULL
+    PNV.biomes <- NULL
   }
-
-  plotBiomeMap(biome.stack,
-               addData = addData,
-               targets = names(biome.stack),
-               file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
-               run.title = scheme@id,
-               plot.labels = labels,
-               ...)
+  
+  # plotBiomeMap(biome.stack,
+  #              addData = addData,
+  #              targets = names(biome.stack),
+  #              file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
+  #              run.title = scheme@id,
+  #              plot.labels = labels,
+  #              ...)
+ 
+  plotVegMaps(biome.stack, 
+              targets = names(biome.stack),
+              file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
+              special = "biomes", 
+              biome.scheme = scheme, 
+              biome.data = PNV.biomes, 
+              plot.labels = labels,
+              summary.title = paste("Comparison of", scheme@name, "biomes", sep = " "),
+              ...)
+  
+  
   
   
 }
@@ -688,7 +699,7 @@ compareVegSpatialObject <- function(runs,
                 override.cuts = abs.value.cuts,
                 doIndividual = FALSE,
                 ...
-                )
+    )
   }
   
   # if a base.run is supplied, plot the the difference between each run and it
@@ -715,7 +726,7 @@ compareVegSpatialObject <- function(runs,
           comparison.dt[, eval(col.name) := (get(paste(run@id, sub.layer, sep = "_")) - get(paste(base.run.id, sub.layer, sep = "_"))) %/0% get(paste(base.run.id, sub.layer, sep = "_")) * 100]
           perc.diff.names <- append(perc.diff.names, col.name)
           perc.diff.titles <- append(perc.diff.titles, paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " "))
-         
+          
         }
         
         # plot the difference

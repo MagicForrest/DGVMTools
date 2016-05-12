@@ -71,7 +71,7 @@ defineVegRun <- function(...){
   if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
   if(length(info@description) == 0)  info@description <- "No description specified"
   if(length(info@map.overlay) == 0 | info@map.overlay[1] == "")  info@map.overlay <- NULL
-  if(length(info@lonlat.offset) == 0)  info@tlonlat.offset <- c(0,0)
+  if(length(info@lonlat.offset) == 0)  info@lonlat.offset <- c(0,0)
   if(length(info@year.offset) == 0)  info@year.offset <- 0
   if(length(info@tolerance) == 0)  info@tolerance <- 0.00001
   if(length(info@driving.data) == 0)  info@driving.data <- "No forcing data set"
@@ -601,7 +601,7 @@ getVegObject <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
   
-  ###  Get class of the objetc we are dealing with
+  ###  Get class of the object we are dealing with
   this.class = class(data)[1]
   
   ###  Define the layers we are pulling out
@@ -619,20 +619,21 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   ### If data.table or VegObject (which contains a data.table) 
   # could make this a little bit more efficient maybe...
   else if(this.class == "data.table" | is.VegObject(data)){
+    
+    # first make a SpatialPointsDataFrame
     if(this.class == "data.table") data.spdf <- makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
     if(is.VegObject(data)) data.spdf <- makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
+    
+    # now convert to raster
     if(length(layers) == 1){
       data.raster <- raster(data.spdf)
       rm(data.spdf)
     }
     else {
-      #data.all.raster <- brick(data.spdf)
-      #data.raster <- subset(data.all.raster, layers) 
       data.raster <- brick(data.spdf)
-      #rm(data.spdf, data.all.raster) 
       rm(data.spdf)   
-      
     }
+    
   } 
   ###  If a single raster layer then we are done
   else if(this.class == "RasterLayer"){
@@ -651,77 +652,6 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   
   gc()
   return(data.raster)
-  
-}
-
-################################# SANITIZE NAMES FOR RASTER LAYESR
-#
-#' Make names appropriate for raster layers 
-#' 
-#' This "sanaitises" names of an object for use as Raster*-object laey names.  This just involves replacing "-" with "." in the names of the object or the character strings.
-#'       
-#' @param input A data.table, VegObject, Spatial*-object or vector of characters string to have the names (or itself in the case of a character string) 
-#' sanitised to be suitable for use as Raster*object layer names. Also takes a Raster*-object, but this is return directly.
-#' @return An object of the same type as was put in.
-#' @export
-#' @import data.table sp raster
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-sanitiseNamesForRaster <- function(input){
-  
-  print("Input")
-  print(input)
-  
-  ###  Get class of the object we are dealing with
-  this.class = class(input)[1]
-  
-  
-  ###  If SpatialPixelsDataFrame 
-  if(this.class == "SpatialPixelsDataFrame"){ 
-    names(input) <- gsub("-", ".", names(input))
-    print("Output")
-    print(input)
-    return(input)
-  }
-  ### If data.table
-  else if(this.class == "data.table"){ 
-    input.copy <- copy(input)
-    setnames(input.copy, gsub("-", ".", names(input.copy)))
-    print("Output")
-    print(input)
-    return(input.copy)
-  }
-  ### If VegObject (which contains a data.table) 
-  else if(is.VegObject(input)){
-    dt <- copy(input@data)
-    setnames(dt, gsub("-", ".", names(dt)))
-    input@data <- dt
-    rm(dt)
-    gc()
-    print("Output")
-    print(input)
-    return(input)
-  }
-  ### If "character"
-  else if(this.class == "character"){
-    input <- gsub("-", ".", input)
-    print("Output")
-    print(input)
-    return(input)
-  }
-  ###  If raster object already we are done
-  else if(this.class == "RasterLayer" | this.class == "RasterBrick" | this.class == "RasterStack"){
-    # Already a raster thing, donothing to do here
-    print("Output")
-    print(input)
-    return(input)
-  }
-  ### else error 
-  else{
-    # catch -proper exceptions later?
-    stop(paste("Trying to sanitise names object of type", class(input), ", which I don't know how to do.", sep = ""))
-  }
-  
-  
   
 }
 
