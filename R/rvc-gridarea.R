@@ -575,7 +575,7 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
     formula.str <- paste("DT[, AET.", m, ":=ifelse(PET.",m," <= P.", m, ", PET.", m, ", P.", m, " + WD.", m, "*WC.",pm,"/WC.max), by=c('Lon', 'Lat')]",sep="")
     eval(parse(text=formula.str))
     
-    formula.str <- paste("DT[, WC.", m, ":=ifelse(WC.",pm," + P.", m, " > WC.max, WC.max, WC.", pm, "+P.", m, "-AET.", m, "), by=c('Lon', 'Lat')]", sep="")
+    formula.str <- paste("DT[, WC.", m, ":=ifelse(WC.",pm," + P.", m, " - AET.",m," > WC.max, WC.max, WC.", pm, " + P.", m, " - AET.", m, "), by=c('Lon', 'Lat')]", sep="")
     eval(parse(text=formula.str))
   }
   
