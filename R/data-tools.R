@@ -48,7 +48,7 @@ countCategoricalData <- function(original.data, output.raster, categories = NULL
     this.extent <- extent(lon-lon.res.div.2,lon+lon.res.div.2, lat-lat.res.div.2,lat+lat.res.div.2)
     
     # check for non-NULL extent which will cause the code to fail.
-    if(!intersect(this.extent, original.data)) {
+    if(!is.null(intersect(this.extent, original.data))) {
       
       
       # make a frequency table for the data in the extent.  
