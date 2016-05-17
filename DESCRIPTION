@@ -2,11 +2,11 @@ Package: RVCTools
 Type: Package
 Version: 0.0.9
 Title: R Vegetation & Climate Tools
-Date: 2016-02-03
+Date: 2016-05-17
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
              person("Joerg", "Steinkamp", role=c("aut"), email="joerg.steinkamp@senckenberg.de"))
 Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
-Maintainer: Matthew Forrest <mforrest@senckenberg.de>
+Maintainer: Matthew Forrest <matthew.forrest@senckenberg.de>
 Description: Process output data produced by dynamic global vegetation
     models (DGVMs) LPJ-GUESS(-SPITFIRE), aDGVM2 (under development) and
     possibly others, for use in R. Create standard figures
