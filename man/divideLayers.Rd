@@ -4,12 +4,12 @@
 \alias{divideLayers}
 \title{Calculate fractions from the layers of a VegObject with respect to other layers}
 \usage{
-divideLayers(input, targets, denominators = list("Total"))
+divideLayers(input, layers, denominators = list("Total"))
 }
 \arguments{
 \item{input}{The VegObject for which to calculate the new fractional layers}
 
-\item{targets}{The layers to be divided (will be calculated by \code{getVegTotals} if the don't exist)}
+\item{layers}{The layers to be divided (will be calculated by \code{getVegTotals} if the don't exist)}
 
 \item{denominators}{The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")}
 }
@@ -23,17 +23,17 @@ Note that if a layer doesn't exist it will be created if possible.
 \details{
 Division is safe with respect to a zero denominator, the results of dividing by zero is, in this case, zero.
 
-For convenience, both \code{targets} and \code{denominators} will be expanded using \code{expandTargets}.
+For convenience, both \code{layers} and \code{denominators} will be expanded using \code{expandLayers}.
 This allows all lifeforms fractions in a VegObject to be calculated using a simple call such as
 
  \code{veg.obj <- divideLayers(veg.obj, c("lifeforms")}
  
-See documention of \code{expandTargets} for details.
+See documention of \code{expandLayers} for details.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \seealso{
-expandsTargets getVegTotals
+expandslayers getVegTotals
 }
 

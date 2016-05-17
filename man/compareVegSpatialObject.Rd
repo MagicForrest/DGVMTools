@@ -16,7 +16,7 @@ compareVegSpatialObject(runs, veg.spatial.id, layer, expand.layer = TRUE,
 
 \item{layer}{The layer to be compared across all VegRuns}
 
-\item{expand.layer}{Logical, if TRUE expand the layer arguments use \code{expandTargets}}
+\item{expand.layer}{Logical, if TRUE expand the layer arguments use \code{expandLayers}}
 
 \item{base.run.id}{A character string to which (if specified) all the other runs are compared by plotting the difference 
 and percentage difference relative to this base run}

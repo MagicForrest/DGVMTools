@@ -4,12 +4,12 @@
 \alias{aggregateLayers}
 \title{Combine layers of a VegObject (or a data.table)}
 \usage{
-aggregateLayers(input, targets, method = NULL, PFT.data = NULL)
+aggregateLayers(input, layers, method = NULL, PFT.data = NULL)
 }
 \arguments{
 \item{input}{The VegObject for which to aggregate layers.}
 
-\item{targets}{The new layers to produce}
+\item{layers}{The new layers to produce}
 
 \item{method}{The method to use to aggregate the layers ie. "mean" or "sum".  However, the most sensible option is leave it unspecified and use the default (see below)}
 
@@ -28,17 +28,17 @@ In this case, the function uses the default of the VegQuant object of the VegObj
 For example, per-PFT variables (such as lai or cmass) should typically be summed, 
 but monthly variables (such as soil water content) should be average to calculate the seasonal means.
 
-For convenience, both \code{targets}  will be expanded using \code{expandTargets}.
+For convenience, both \code{layers}  will be expanded using \code{expandLayers}.
 This allows all lifeforms totals in a VegObject to be calculated using a simple call such as
 
  \code{veg.obj <- aggregateLayers(veg.obj, c("lifeforms"))}
  
-See documention of \code{expandTargets} for details.
+See documention of \code{expandLayers} for details.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \seealso{
-expandsTargets getVegFractions
+expandslayers getVegFractions
 }
 

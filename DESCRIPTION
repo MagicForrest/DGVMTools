@@ -1,6 +1,6 @@
 Package: RVCTools
 Type: Package
-Version: 0.0.8
+Version: 0.0.9
 Title: R Vegetation & Climate Tools
 Date: 2016-02-03
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),

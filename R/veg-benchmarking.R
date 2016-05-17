@@ -595,14 +595,14 @@ compareManyRunsToBiomes <- function(runs,
   
   # plotBiomeMap(biome.stack,
   #              addData = addData,
-  #              targets = names(biome.stack),
+  #              layers = names(biome.stack),
   #              file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
   #              run.title = scheme@id,
   #              plot.labels = labels,
   #              ...)
  
   plotVegMaps(biome.stack, 
-              targets = names(biome.stack),
+              layers = names(biome.stack),
               file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
               special = "biomes", 
               biome.scheme = scheme, 
@@ -624,7 +624,7 @@ compareManyRunsToBiomes <- function(runs,
 #' @param runs List of VegRun objects to be compared
 #' @param veg.spatial.id Character string holding the id of the VegObject to be compared
 #' @param layer The layer to be compared across all VegRuns
-#' @param expand.layer Logical, if TRUE expand the layer arguments use \code{expandTargets}
+#' @param expand.layer Logical, if TRUE expand the layer arguments use \code{expandLayers}
 #' @param base.run.id A character string to which (if specified) all the other runs are compared by plotting the difference 
 #' and percentage difference relative to this base run
 #' @param abs.value.cuts A numeric vector which (if specified), defines the cuts for the plot of the absolute values of each 
@@ -673,7 +673,7 @@ compareVegSpatialObject <- function(runs,
     temp.spatial <- run@objects[[veg.spatial.id]]
     
     # expand the layer if necessary
-    if(expand.layer){ layer <- expandTargets(targets = layer, temp.spatial, run@pft.set) }
+    if(expand.layer){ layer <- expandLayers(layers = layer, temp.spatial, run@pft.set) }
     
     # Extract the columns that we need and add them to the data.table and set the names appropriately
     comparison.dt <- comparison.dt[temp.spatial@data[,c("Lon","Lat",layer),with=FALSE]]
@@ -691,7 +691,7 @@ compareVegSpatialObject <- function(runs,
       layers <- append(layers, paste(run@id, sub.layer, sep = "_"))
     }
     plotVegMaps(comparison.dt,
-                targets = layers,
+                layers = layers,
                 quant = run@objects[[veg.spatial.id]]@quant,
                 summary.title = sub.layer,
                 special.string = paste(tag, "RunComparison", sub.layer, sep = "."),
@@ -733,7 +733,7 @@ compareVegSpatialObject <- function(runs,
         if(plot.diff){
           
           plotVegMaps(comparison.dt,
-                      targets = diff.names,
+                      layers = diff.names,
                       quant = run@objects[[veg.spatial.id]]@quant,
                       special = "Diff",
                       summary.title = paste(paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " "),
@@ -748,7 +748,7 @@ compareVegSpatialObject <- function(runs,
         if(plot.perc.diff){
           
           plotVegMaps(comparison.dt,
-                      targets = perc.diff.names,
+                      layers = perc.diff.names,
                       quant = run@objects[[veg.spatial.id]]@quant,
                       special = "Perc.Diff",
                       summary.title = paste(paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, "(% diff)", sep = " "),

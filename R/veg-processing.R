@@ -68,9 +68,9 @@ getPFTs <- function(input, PFT.data){
   
 }
 
-############# EXPAND TARGETS
+############# EXPAND LAYERS
 #'
-#' Expand plotting/processing targets from convenient short hand codes.
+#' Expand plotting/processing layers from convenient short hand codes.
 #' 
 #' Expands characters strings with particular meaning (eg. "lifefoms", "pfts", "seasons", etc...).  
 #' This allows the user to simply specify "lifeforms" to a plotting command instead of c("Tree","Grass","Shrub") when plotting or processing.
@@ -78,7 +78,7 @@ getPFTs <- function(input, PFT.data){
 #' @details Supported short-hand strings are:
 #' \itemize{
 #'   \item{"seasons"}{ expands to c("DJF","MAM","JJA","SON")}
-#'   \item{"PFTs"}{ expands to a vector of each of the ids of PFTs supplied in the \code{PFTs} argument.}
+#'   \item{"PFTs"}{ expands to a vector of each of the ids of PFTs present in the data (requires the \code{PFT.set} argument).}
 #'   \item{"lifeforms"}{ expands all the different PFT lifeforms present as determined by the lifeform slots of the \code{PFTs} argument (and optionally "Woody").  For example c("Tree", "Grass", "Woody")}
 #'   \item{"zones"}{ expands all the different PFT climactic zones present as determined by the zone slots of the \code{PFTs} argument.  For example c("Temperature", "Boreal", "Tropical")}
 #'   \item{"leafforms"}{ expands all the different PFT leaf forms present as determined by the leafforms slot of the \code{PFTs} argument.  For example c("Needleleved", "Broadleaved")}
@@ -87,20 +87,20 @@ getPFTs <- function(input, PFT.data){
 #' }
 #' 
 #' 
-#' @param targets Character vector of targets to expand
-#' @param data The data to which the targets will be applied, may be a \code{VegObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame. 
+#' @param layers Character vector of layers to expand
+#' @param data The data to which the layers will be applied, may be a \code{VegObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame. 
 #' @param PFT.set List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{VegObject}).
 #' @param type Character string irdentifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{VegObjects} which supply this data themselves.
 #' The function attempts to determine this argument if it is not provided.  
-#' @param include.woody If TRUE and "lifeform" is included in the target list "Woody" is also returned
-#' @return A list of targets
+#' @param include.woody If TRUE and "lifeform" is included in the layer list "Woody" is also returned
+#' @return A list of layers
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-expandTargets <- function(targets, data, PFT.set = NULL, type = "unknown", include.woody = TRUE){
+expandLayers <- function(layers, data, PFT.set = NULL, type = "unknown", include.woody = TRUE){
   
   # remove "Lon", "Lat" and "Year" if present
   for(remove.header.from.header in c("Lat", "Lon", "Year")){
-    if(remove.header.from.header %in% targets) targets <- targets[-which(targets == remove.header.from.header)]
+    if(remove.header.from.header %in% layers) layers <- layers[-which(layers == remove.header.from.header)]
   }
   
   # read meta-data form VegObject if possible
@@ -137,22 +137,22 @@ expandTargets <- function(targets, data, PFT.set = NULL, type = "unknown", inclu
   if(tolower(type) == "pft") {
     
     # expand "all"
-    if("all" %in% tolower(targets)) targets <- c("pfts", "lifeforms", "leafforms", "zones", "phenologies")
+    if("all" %in% tolower(layers)) layers <- c("pfts", "lifeforms", "leafforms", "zones", "phenologies")
     
     # expands "pfts"
     
-    if("pft" %in% tolower(targets) || "pfts" %in% tolower(targets)) {
+    if("pft" %in% tolower(layers) || "pfts" %in% tolower(layers)) {
       for(PFT in PFTs) {
-        targets <- append(targets, PFT@id)
+        layers <- append(layers, PFT@id)
       }
       
-      if("pft" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "pft")]
-      if("pfts" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "pfts")]
+      if("pft" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "pft")]
+      if("pfts" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "pfts")]
     }
     
     
     # expand "lifeforms" 
-    if("lifeforms" %in% tolower(targets) | "lifeform" %in% tolower(targets)){
+    if("lifeforms" %in% tolower(layers) | "lifeform" %in% tolower(layers)){
       
       # Find all lifeforms present in PFTs 
       all.lifeforms <- vector()
@@ -161,46 +161,46 @@ expandTargets <- function(targets, data, PFT.set = NULL, type = "unknown", inclu
       # MF: Special case to combine Trees and Shrubs inoo Woody category
       if(include.woody) all.lifeforms <- append(all.lifeforms, "Woody")
       
-      targets <- append(targets, all.lifeforms)
+      layers <- append(layers, all.lifeforms)
       
-      if("lifeforms" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "lifeforms")]
-      if("lifeform" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "lifeform")]
+      if("lifeforms" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "lifeforms")]
+      if("lifeform" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "lifeform")]
       
     }
     
     
     # expand "zones" 
-    if("zones" %in% tolower(targets) | "zone" %in% tolower(targets)){
+    if("zones" %in% tolower(layers) | "zone" %in% tolower(layers)){
       
       # Find all zones present in PFTs 
       all.zones <- vector()
       for(PFT in PFTs) {all.zones <- append(all.zones, PFT@zone)}
       all.zones <- unique(all.zones)
       
-      targets <- append(targets, all.zones)
+      layers <- append(layers, all.zones)
       
-      if("zones" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "zones")]
-      if("zone" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "zone")]    
+      if("zones" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "zones")]
+      if("zone" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "zone")]    
       
     }
     
     # Expand "leafforms" 
-    if("leafforms" %in% tolower(targets) | "leafform" %in% tolower(targets)){
+    if("leafforms" %in% tolower(layers) | "leafform" %in% tolower(layers)){
       
       # Find all leafforms present in PFTs 
       all.leafforms <- vector()
       for(PFT in PFTs) {all.leafforms <- append(all.leafforms, PFT@leafform)}
       all.leafforms <- unique(all.leafforms)
       
-      targets <- append(targets, all.leafforms)
+      layers <- append(layers, all.leafforms)
       
-      if("leafforms" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "leafforms")]
-      if("leafform" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "leafform")] 
+      if("leafforms" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "leafforms")]
+      if("leafform" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "leafform")] 
       
     }
     
     # Expand "phenologies" 
-    if("phenologies" %in% tolower(targets) | "phenology" %in% tolower(targets)){
+    if("phenologies" %in% tolower(layers) | "phenology" %in% tolower(layers)){
       
       # Find all phenologys present in PFTs 
       all.phenologies <- vector()
@@ -208,10 +208,10 @@ expandTargets <- function(targets, data, PFT.set = NULL, type = "unknown", inclu
       all.phenologies <- unique(all.phenologies)
       #if("NA" in all.phenologies) all.phenologies <- all.phenologies[-which(tolower(all.phenologies) == "NA")]
       
-      targets <- append(targets, all.phenologies)
+      layers <- append(layers, all.phenologies)
       
-      if("phenologies" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenologies")]
-      if("phenology" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "phenology")] 
+      if("phenologies" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "phenologies")]
+      if("phenology" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "phenology")] 
       
     }
     
@@ -221,34 +221,34 @@ expandTargets <- function(targets, data, PFT.set = NULL, type = "unknown", inclu
   else if(tolower(type) == "monthly"){
     
     # Expand seasons
-    if("seasons" %in% tolower(targets) | "season" %in% tolower(targets) | "seasonal" %in% tolower(targets)){
+    if("seasons" %in% tolower(layers) | "season" %in% tolower(layers) | "seasonal" %in% tolower(layers)){
       
-      targets <- append(targets, c("DJF", "MAM", "JJA", "SON"))
+      layers <- append(layers, c("DJF", "MAM", "JJA", "SON"))
       
-      if("seasons" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "seasons")]
-      if("season" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "season")] 
-      if("seasonal" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "seasonal")] 
+      if("seasons" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "seasons")]
+      if("season" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "season")] 
+      if("seasonal" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "seasonal")] 
       
     }
     
     # Expand months/monthly
-    if("months" %in% tolower(targets) | "monthly" %in% tolower(targets)){
+    if("months" %in% tolower(layers) | "monthly" %in% tolower(layers)){
       
       for(month in months) {
-        targets <- append(targets, month@id)
+        layers <- append(layers, month@id)
       }
       
-      if("months" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "months")]
-      if("monthly" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "monthly")] 
+      if("months" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "months")]
+      if("monthly" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "monthly")] 
       
     }
     
   }
   
-  if("NA" %in% targets) targets <- targets[-which(targets == "NA")]
-  if("all" %in% tolower(targets)) targets <- targets[-which(tolower(targets) == "all")]
+  if("NA" %in% layers) layers <- layers[-which(layers == "NA")]
+  if("all" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "all")]
 
-  return(targets)
+  return(layers)
   
 }
 
@@ -415,12 +415,12 @@ addBiomes <-function(input, scheme){
   input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
 
   # Get the totals required
-  input <-aggregateLayers(input, targets = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
+  input <-aggregateLayers(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
 
   # Get the fractions required
-  input <- divideLayers(input, targets = scheme@fraction.of.total, denominators = list("Total"))
-  input <- divideLayers(input, targets = scheme@fraction.of.tree,  denominators = list("Tree"))
-  input <- divideLayers(input, targets = scheme@fraction.of.woody, denominators = list("Woody"))
+  input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
+  input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
+  input <- divideLayers(input, layers = scheme@fraction.of.woody, denominators = list("Woody"))
 
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
@@ -444,7 +444,7 @@ addBiomes <-function(input, scheme){
 #' of a VegObject according the the desired method (or a sensible default)
 #' 
 #' @param input The VegObject for which to aggregate layers.
-#' @param targets The new layers to produce
+#' @param layers The new layers to produce
 #' @param method The method to use to aggregate the layers ie. "mean" or "sum".  However, the most sensible option is leave it unspecified and use the default (see below)
 #' @param PFT.data If calling the function on a data.table, it is neccessary to specify a PFT set here.  Normally this function will be called on  VegObject so it is not neccessary. 
 #'
@@ -454,19 +454,19 @@ addBiomes <-function(input, scheme){
 #' For example, per-PFT variables (such as lai or cmass) should typically be summed, 
 #' but monthly variables (such as soil water content) should be average to calculate the seasonal means.
 #' 
-#' For convenience, both \code{targets}  will be expanded using \code{expandTargets}.
+#' For convenience, both \code{layers}  will be expanded using \code{expandLayers}.
 #' This allows all lifeforms totals in a VegObject to be calculated using a simple call such as
 #' 
 #'  \code{veg.obj <- aggregateLayers(veg.obj, c("lifeforms"))}
 #'  
-#' See documention of \code{expandTargets} for details.
+#' See documention of \code{expandLayers} for details.
 #' 
 #' @return A VegObject (or data.table) with the new layers added
 #' @import data.table
 #' @export
-#' @seealso expandsTargets getVegFractions
+#' @seealso expandslayers getVegFractions
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-aggregateLayers <- function(input, targets, method = NULL, PFT.data = NULL){
+aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
   
   Woody <- NULL
   
@@ -515,41 +515,41 @@ aggregateLayers <- function(input, targets, method = NULL, PFT.data = NULL){
   # get PFTs present
   all.PFTs <- getPFTs(dt, PFT.data)
   
-  # expands targets
-  targets <- expandTargets(targets, dt, PFT.data)
+  # expands layers
+  layers <- expandLayers(layers, dt, PFT.data)
   
-  # remove PFTs from targets since PFTs are already present as totals
-  for(PFT in all.PFTs){ if(PFT@id %in% targets) targets <- targets[-which(targets == PFT@id)]}
+  # remove PFTs from layers since PFTs are already present as totals
+  for(PFT in all.PFTs){ if(PFT@id %in% layers) layers <- layers[-which(layers == PFT@id)]}
   
   
   
   ### FOR PER-PFT FILES
-  for(target in targets){
+  for(layer in layers){
     
-    # build list of columns to combine for target
-    target.cols <- c()
+    # build list of columns to combine for layer
+    layer.cols <- c()
     for(PFT in all.PFTs){
-      if(PFT@lifeform == target) {target.cols <- append(target.cols, PFT@id)}
-      if(PFT@zone == target) {target.cols <- append(target.cols, PFT@id)}
-      if(PFT@leafform == target) {target.cols <- append(target.cols, PFT@id)}
-      if(PFT@phenology == target) {target.cols <- append(target.cols, PFT@id)}
+      if(PFT@lifeform == layer) {layer.cols <- append(layer.cols, PFT@id)}
+      if(PFT@zone == layer) {layer.cols <- append(layer.cols, PFT@id)}
+      if(PFT@leafform == layer) {layer.cols <- append(layer.cols, PFT@id)}
+      if(PFT@phenology == layer) {layer.cols <- append(layer.cols, PFT@id)}
       # Special case for Woody
-      if(target == "Woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {target.cols <- append(target.cols, PFT@id)}
+      if(layer == "Woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {layer.cols <- append(layer.cols, PFT@id)}
     }
     
     # now combine the relevant columns
-    if(!is.null(target.cols)) suppressWarnings(dt[, eval(target) := method(.SD), .SDcols = target.cols])
+    if(!is.null(layer.cols)) suppressWarnings(dt[, eval(layer) := method(.SD), .SDcols = layer.cols])
     
   }
   
   
   
   ### FOR MONTHLY FILES
-  # Loop through all targets to pick out the seasons/annual and make them 
-  for(target in targets){
+  # Loop through all layers to pick out the seasons/annual and make them 
+  for(layer in layers){
     for(period in all.periods){
-      if(target == period@id){
-        total.str <- quote(paste(target, sep = ""))
+      if(layer == period@id){
+        total.str <- quote(paste(layer, sep = ""))
         suppressWarnings(dt[, eval(total.str) := method(.SD), .SDcols = period@contains])
       }
     }
@@ -582,26 +582,26 @@ aggregateLayers <- function(input, targets, method = NULL, PFT.data = NULL){
 #' Note that if a layer doesn't exist it will be created if possible.
 #' 
 #' @param input The VegObject for which to calculate the new fractional layers
-#' @param targets The layers to be divided (will be calculated by \code{getVegTotals} if the don't exist)
+#' @param layers The layers to be divided (will be calculated by \code{getVegTotals} if the don't exist)
 #' @param denominators The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")
 #'
 #' @details
 #' Division is safe with respect to a zero denominator, the results of dividing by zero is, in this case, zero.
 #' 
-#' For convenience, both \code{targets} and \code{denominators} will be expanded using \code{expandTargets}.
+#' For convenience, both \code{layers} and \code{denominators} will be expanded using \code{expandLayers}.
 #' This allows all lifeforms fractions in a VegObject to be calculated using a simple call such as
 #' 
 #'  \code{veg.obj <- divideLayers(veg.obj, c("lifeforms")}
 #'  
-#' See documention of \code{expandTargets} for details. 
+#' See documention of \code{expandLayers} for details. 
 #' 
 #' @return A VegObject (or data.table) with the new layers added
 #' @import data.table
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @seealso expandsTargets getVegTotals
+#' @seealso expandslayers getVegTotals
 
-divideLayers <- function(input, targets, denominators = list("Total")){
+divideLayers <- function(input, layers, denominators = list("Total")){
   
   # To avoid NOTES
   Total = NULL
@@ -611,8 +611,8 @@ divideLayers <- function(input, targets, denominators = list("Total")){
   PFT.data <- input@run@pft.set
   PFTs <- getPFTs(dt, input@run@pft.set)
   
-  # First, expand denominator targets and make what aren't available
-  denominators <- expandTargets(denominators, dt, PFT.data)
+  # First, expand denominator layers and make what aren't available
+  denominators <- expandLayers(denominators, dt, PFT.data)
   for(denom in denominators) {
     if(!(denom %in% names(dt))) {
       dt <- aggregateLayers(dt, denom, PFT.data)
@@ -620,23 +620,23 @@ divideLayers <- function(input, targets, denominators = list("Total")){
   }
   
   
-  # Second, expand numerator targets and make what aren't available
-  targets <- expandTargets(targets, dt, PFT.data)
-  for(target in targets) {
-    if(!(target %in% names(dt))) {
-      dt <- aggregateLayers(dt, target, PFT.data)
+  # Second, expand numerator layers and make what aren't available
+  layers <- expandLayers(layers, dt, PFT.data)
+  for(layer in layers) {
+    if(!(layer %in% names(dt))) {
+      dt <- aggregateLayers(dt, layer, PFT.data)
     }
   }
   
   
   # Finally loop through all denominators and numerators and calculate the fractions
   for(denominator in denominators) {
-    for(target in targets){
+    for(layer in layers){
       
       if(denominator == "Total") 
-        suppressWarnings(dt[, eval(quote(paste(target, "Fraction", sep = sep.char))) := get(paste(target, sep = sep.char))%/0%Total])
+        suppressWarnings(dt[, eval(quote(paste(layer, "Fraction", sep = sep.char))) := get(paste(layer, sep = sep.char))%/0%Total])
       else
-        suppressWarnings(dt[, eval(quote(paste(target, "Fraction", "Of", denominator, sep = sep.char))) := get(paste(target, sep = sep.char))%/0%get(paste(denominator, sep = sep.char))])
+        suppressWarnings(dt[, eval(quote(paste(layer, "Fraction", "Of", denominator, sep = sep.char))) := get(paste(layer, sep = sep.char))%/0%get(paste(denominator, sep = sep.char))])
       
     }
   }

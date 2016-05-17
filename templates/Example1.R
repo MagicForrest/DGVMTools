@@ -57,11 +57,11 @@ plotVegMaps(lai.reference.period,
 ### TOTALS
 
 # Calculate the lifeform totals, the temperate total and the evergeen total
-lai.reference.period <- aggregateLayers(lai.reference.period, target = c("Lifeforms", "Temperate", "Evergreen"))
+lai.reference.period <- aggregateLayers(lai.reference.period, layer = c("Lifeforms", "Temperate", "Evergreen"))
 
 # Plot the Evergreen and Temperate totals indivdually (to the screen)
 plotVegMaps(lai.reference.period, 
-            targets = c("Evergreen", "Temperate"),
+            layers = c("Evergreen", "Temperate"),
             doSummary = FALSE, 
             doIndividual = TRUE,
             Cairo.type = "png")
@@ -69,7 +69,7 @@ plotVegMaps(lai.reference.period,
 
 # Plot the Tree, Grass and Total LAIs all on one plot in a file 
 plotVegMaps(lai.reference.period, 
-            targets = c("Tree", "Grass", "Total"),
+            layers = c("Tree", "Grass", "Total"),
             special.string = "Lifeforms")
 
 
@@ -77,22 +77,22 @@ plotVegMaps(lai.reference.period,
 ### FRACTIONS
 
 # calculate the tree and grass fractions (if no denominator specified, Total is assumed)
-lai.reference.period <- divideLayers(lai.reference.period, targets = "lifeforms")
+lai.reference.period <- divideLayers(lai.reference.period, layers = "lifeforms")
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            targets = c("lifeforms"),
+            layers = c("lifeforms"),
             special.string = "Lifeform",
             special = "fraction")
 
 
 # calculate the TeBS fraction of trees
-lai.reference.period <- divideLayers(lai.reference.period, targets = c("TeBS"), denominators = list("Tree"))
+lai.reference.period <- divideLayers(lai.reference.period, layers = c("TeBS"), denominators = list("Tree"))
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            targets = c("TeBSFractionOfTree"),
-            expand.targets = FALSE,
+            layers = c("TeBSFractionOfTree"),
+            expand.layers = FALSE,
             special = "fraction")
 
 
@@ -132,13 +132,6 @@ plotVegMaps(lai.reference.period,
 # print the time
 t2 <- Sys.time()
 print(t2-t1)
-
-
-
-# blah - test commit
-
-
-
 
 
 

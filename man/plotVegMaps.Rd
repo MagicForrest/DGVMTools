@@ -4,7 +4,7 @@
 \alias{plotVegMaps}
 \title{Plots a map from a temporally-averaged \code{VegObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.}
 \usage{
-plotVegMaps(data, targets = NULL, expand.targets = TRUE, quant = NULL,
+plotVegMaps(data, layers = NULL, expand.layers = TRUE, quant = NULL,
   period = NULL, doSummary = TRUE, doIndividual = FALSE, run = NULL,
   PFT.set = global.PFTs, plot.dir = NULL, summary.file.name = NULL,
   summary.title = NULL, special.string = NULL, layout.objs = NULL,
@@ -19,9 +19,9 @@ plotVegMaps(data, targets = NULL, expand.targets = TRUE, quant = NULL,
 \arguments{
 \item{data}{The data to plot. Can be a VegObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
 
-\item{targets}{A list of strings specifying which layers to plot.  Defaults to all layers.}
+\item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
-\item{expand.targets}{A boolean, determines wether to expand the targets arguement.  See documentation for \code{expandTargets} for details.}
+\item{expand.layers}{A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.}
 
 \item{quant}{A \code{VegQuantity} object describy the quantity to be plotted.  This provides an override \code{VegQuant} when plotting a \code{VegObject}
 and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.}
@@ -29,13 +29,13 @@ and is useful to specify metadata (colours, plot ranges, names, etc.) when plott
 \item{period}{The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.
 In the case of plotting a \code{VegRun} object this is taken automatically from he object, but this provides an override.}
 
-\item{doSummary}{Boolean, whether to plot all \code{targets} on one plot.}
+\item{doSummary}{Boolean, whether to plot all \code{layers} on one plot.}
 
-\item{doIndividual}{Boolean, whether to plot all \code{targets} on individual plots.}
+\item{doIndividual}{Boolean, whether to plot all \code{layers} on individual plots.}
 
 \item{run}{A \code{VegRun} object from which to pull metadata.  Note that normally this information is stored in the \code{VegObject}.}
 
-\item{PFT.set}{A PFT set, necessary for exapnding targets and plotting long names.  Normally taken from the \code{VegObject}.}
+\item{PFT.set}{A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{VegObject}.}
 
 \item{plot.dir}{A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{VegObject}, but this provides an override.
 If not a \code{VegObject} and not specified, this defaults to the current directory}
@@ -127,6 +127,6 @@ for other data types, the specified plot.dir (defaulting to the current working 
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \seealso{
-\code{plotGGSpatial}, \code{expandTargets}, \code{sp::spplot}, \code{latice::levelplot}
+\code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 }
 

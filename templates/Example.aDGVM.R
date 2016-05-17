@@ -69,11 +69,11 @@ plotVegMaps(lai.2,
 ### Fractions of each PFT
 
 # calculate the PFT fractions
-lai.reference.period <- divideLayers(lai.reference.period, targets = "pfts")
+lai.reference.period <- divideLayers(lai.reference.period, layers = "pfts")
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            targets = c("pfts"),
+            layers = c("pfts"),
             special.string = "PFT.Fractions",
             special = "fraction")
 
@@ -108,10 +108,10 @@ plotVegMaps(lai.reference.period,
 ### TOTALS
 
 # Calculate the lifeform totals, the temperate total and the evergeen total
-lai.reference.period <- aggregateLayers(lai.reference.period, targets = c("Lifeforms"))
+lai.reference.period <- aggregateLayers(lai.reference.period, layers = c("Lifeforms"))
 
 plotVegMaps(lai.reference.period, 
-            targets = c("Tree", "Grass", "Total"),
+            layers = c("Tree", "Grass", "Total"),
             special.string = "Lifeforms")
 
 
@@ -119,11 +119,11 @@ plotVegMaps(lai.reference.period,
 ### FRACTIONS
 
 # calculate the tree and grass fractions (if no denominators specified, "Total" is assumed)
-lai.reference.period <- divideLayers(lai.reference.period, targets = "lifeforms")
+lai.reference.period <- divideLayers(lai.reference.period, layers = "lifeforms")
 
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
-            targets = c("lifeforms"),
+            layers = c("lifeforms"),
             special.string = "Lifeform",
             special = "fraction")
 

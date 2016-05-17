@@ -72,7 +72,7 @@ universal.resolution <- "HD"
 ### OPTIMISING SWITCHES
 reread.file <- FALSE # Force re-reading the .out file - in case the raw data have been updated
 write <- TRUE # Whether to write the VegObjects to disk for faster reading next time (set this to TRUE when you are sure the data has been properly processed)
-single.run.plots <- FALSE # Whether to re-make the 'run summary plots' in a given directory
+single.run.plots <- TRUE # Whether to re-make the 'run summary plots' in a given directory
 doRunComparisons <- TRUE
 
 ### Which variables to analyse and in what detail (use "all" to choose all *.out files in the run directory)
@@ -214,13 +214,13 @@ for(run in vegrun.list){
         if(this.VegQuantity@type == "PFT"){
           
           # Calculate the lifeform totals, the temperate total and the evergeen total
-          this.VegSpatial <- aggregateLayers(this.VegSpatial, target = c("Lifeforms", "Zones", "Phenologies", "Leafforms"))
+          this.VegSpatial <- aggregateLayers(this.VegSpatial, layer = c("Lifeforms", "Zones", "Phenologies", "Leafforms"))
           
           # plot the per lifeform summary and individual lifeform plots
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("Lifeforms"), special.string = "Lifeforms", plot.extent = plot.extent)
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("Zones"),  special.string = "ClimateZones", plot.extent = plot.extent)
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("Phenologies"), special.string = "Phenologies", plot.extent = plot.extent)
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("Leafforms"),  special.string = "Leafforms", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("Lifeforms"), special.string = "Lifeforms", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("Zones"),  special.string = "ClimateZones", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("Phenologies"), special.string = "Phenologies", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("Leafforms"),  special.string = "Leafforms", plot.extent = plot.extent)
           
           
           
@@ -230,8 +230,8 @@ for(run in vegrun.list){
           this.VegSpatial <- aggregateLayers(this.VegSpatial, c("seasons", "Annual"))
           
           # plot the per lifeform summary and individual lifeform plots
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = "Annual", plot.extent = plot.extent)
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("DJF", "MAM", "JJA", "SON"), special.string = "Seasonal", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = "Annual", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("DJF", "MAM", "JJA", "SON"), special.string = "Seasonal", plot.extent = plot.extent)
           
         }
         
@@ -243,12 +243,12 @@ for(run in vegrun.list){
         if(this.VegQuantity@type == "PFT"){
           
           # Add fractions and plot
-          this.VegSpatial <- divideLayers(this.VegSpatial, targets =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), denominators = list("Total"), plot.extent = plot.extent)
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("PFTs"), special = "fraction", special.string = "PFT", plot.extent = plot.extent)
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("Lifeforms"), special = "fraction", special.string = "Lifeforms", plot.extent = plot.extent)
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("Zones"), special = "fraction",  special.string = "ClimateZones", plot.extent = plot.extent)
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("Phenologies"), special = "fraction", special.string = "Phenologies", plot.extent = plot.extent)
-          if(single.run.plots) plotVegMaps(this.VegSpatial, targets = c("Leafforms"), special = "fraction",  special.string = "Leafforms", plot.extent = plot.extent)
+          this.VegSpatial <- divideLayers(this.VegSpatial, layers =  c("PFTs", "Lifeforms", "Zones", "Phenologies", "Leafforms"), denominators = list("Total"), plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("PFTs"), special = "fraction", special.string = "PFT", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("Lifeforms"), special = "fraction", special.string = "Lifeforms", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("Zones"), special = "fraction",  special.string = "ClimateZones", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("Phenologies"), special = "fraction", special.string = "Phenologies", plot.extent = plot.extent)
+          if(single.run.plots) plotVegMaps(this.VegSpatial, layers = c("Leafforms"), special = "fraction",  special.string = "Leafforms", plot.extent = plot.extent)
           
         }
       }
@@ -265,7 +265,7 @@ for(run in vegrun.list){
         
         # plot dominant PFT
         plotVegMaps(this.VegSpatial, special = "Dominant")
-        plotVegMaps(this.VegSpatial, target = "DominantTree", special = "Dominant")
+        plotVegMaps(this.VegSpatial, layer = "DominantTree", special = "Dominant")
       
       }
       
@@ -381,7 +381,6 @@ for(benchmarking.dataset in benchmarking.datasets.list){
     
   }
  
-  stop() 
 }
 
 ####################################################################################

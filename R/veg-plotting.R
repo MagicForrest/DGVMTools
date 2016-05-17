@@ -39,16 +39,16 @@
 #' for other data types, the specified plot.dir (defaulting to the current working directory in no plot.dir is supplied).
 #'
 #' @param data The data to plot. Can be a VegObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
-#' @param targets A list of strings specifying which layers to plot.  Defaults to all layers.  
-#' @param expand.targets A boolean, determines wether to expand the targets arguement.  See documentation for \code{expandTargets} for details.
+#' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
+#' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
 #' @param period The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.   
 #' In the case of plotting a \code{VegRun} object this is taken automatically from he object, but this provides an override.
 #' @param quant A \code{VegQuantity} object describy the quantity to be plotted.  This provides an override \code{VegQuant} when plotting a \code{VegObject}
 #' and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.
-#' @param doSummary Boolean, whether to plot all \code{targets} on one plot.
-#' @param doIndividual Boolean, whether to plot all \code{targets} on individual plots.
+#' @param doSummary Boolean, whether to plot all \code{layers} on one plot.
+#' @param doIndividual Boolean, whether to plot all \code{layers} on individual plots.
 #' @param run A \code{VegRun} object from which to pull metadata.  Note that normally this information is stored in the \code{VegObject}. 
-#' @param PFT.set A PFT set, necessary for exapnding targets and plotting long names.  Normally taken from the \code{VegObject}.
+#' @param PFT.set A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{VegObject}.
 #' @param plot.dir A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{VegObject}, but this provides an override.
 #' If not a \code{VegObject} and not specified, this defaults to the current directory
 #' @param summary.file.name A character string to override the file name of the summary plot (not including the path, just the filename).
@@ -105,11 +105,11 @@
 #' @importFrom Cairo Cairo
 #' @import raster data.table
 #' @export 
-#' @seealso \code{plotGGSpatial}, \code{expandTargets}, \code{sp::spplot}, \code{latice::levelplot}
+#' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
 plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegObject
-                        targets = NULL,
-                        expand.targets = TRUE,
+                        layers = NULL,
+                        expand.layers = TRUE,
                         quant = NULL, 
                         period = NULL, 
                         doSummary = TRUE, 
@@ -209,35 +209,35 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   #####################################################################################
-  ############# PREPARE DATA AND TARGET LIST FOR PLOTTING        ######################
+  ############# PREPARE DATA AND layer LIST FOR PLOTTING        ######################
   #####################################################################################
   
   ### TOLERANCE - for when making grid to rasterise
   if(is.null(run)) { tolerance <- 0.02 }
   else {tolerance <- run@tolerance}  
   
-  ### SPECIAL CASE OF BIOMES OR DOMINANT WITH NULL TARGET (assume the biome scheme id is the layer name)
-  if(is.null(targets) & !is.null(special)){
-    if(tolower(special) == "biomes" | tolower(special) == "biome") targets = biome.scheme@id
-    if(tolower(special) == "dominant") targets = "Dominant"
+  ### SPECIAL CASE OF BIOMES OR DOMINANT WITH NULL layer (assume the biome scheme id is the layer name)
+  if(is.null(layers) & !is.null(special)){
+    if(tolower(special) == "biomes" | tolower(special) == "biome") layers = biome.scheme@id
+    if(tolower(special) == "dominant") layers = "Dominant"
   }
   
-  ### EXPAND TARGETS
-  if(is.null(targets)) {
-    if(is.VegObject(data)) targets <- names(data@data)
-    else targets <- names(data)
+  ### EXPAND layerS
+  if(is.null(layers)) {
+    if(is.VegObject(data)) layers <- names(data@data)
+    else layers <- names(data)
   }
-  if(expand.targets) {
-    targets <- expandTargets(targets, data, PFT.set)
+  if(expand.layers) {
+    layers <- expandLayers(layers, data, PFT.set)
     if(!is.null(special)){
-      if(tolower(special) == "fraction" | tolower(special) == "frac") targets <- paste(targets, "Fraction", sep = sep.char)
+      if(tolower(special) == "fraction" | tolower(special) == "frac") layers <- paste(layers, "Fraction", sep = sep.char)
     }
   }
   
   ### PROMOTE TO RASTER AND SANITISE NAMES - also make plot labels (if necessary) before the sanitatisation 
-  original.targets <- targets # save for building plot label later
-  data.toplot <- promoteToRaster(data, targets, tolerance)
-  targets <- names(data.toplot) # update targets to be the names of the raster layers  (which might have changed)
+  original.layers <- layers # save for building plot label later
+  data.toplot <- promoteToRaster(data, layers, tolerance)
+  layers <- names(data.toplot) # update layers to be the names of the raster layers  (which might have changed)
   
   ### CROP THE DATA IF PLOT EXTENT HAS BEEN SPECIFIED
   if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
@@ -403,11 +403,11 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         
         # add the PNV raster layer and its title
         data.toplot <- addLayer(data.toplot, biome.data) 
-        targets <- names(data.toplot)
+        layers <- names(data.toplot)
         
         # And finally build plot labels
         
-        original.targets <- c(original.targets, data.name)
+        original.layers <- c(original.layers, data.name)
         if(!is.null(plot.labels)) plot.labels <-  c(plot.labels, data.name) 
         
       }
@@ -567,7 +567,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
       # PANEL LABELS - note expand longnames here if requested 
       if(is.null(plot.labels)) {
-        plot.labels.here <- original.targets
+        plot.labels.here <- original.layers
         ### USE LONGNAMES - for PFTs
         if(useLongnames) {
           for(plot.label.index in 1:length(plot.labels.here)){
@@ -591,7 +591,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
       
       print(spplot(data.toplot,
-                   targets,
+                   layers,
                    par.settings = list(panel.background=list(col=plot.bg.col)),
                    xlab = list(label = "Longitude", cex = 3 * text.multiplier),
                    ylab = list(label = "Latitude", cex = 3 * text.multiplier),
@@ -619,7 +619,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     ### PRINT INDIVIUAL PLOTS
     if(doIndividual){
       
-      for(layer in targets){
+      for(layer in layers){
         
         # FILENAME
         this.id.string <- makeVariableIDString(quant@id, layer, run.id = run.id, special.string)
@@ -628,15 +628,15 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         if(format == "x11") this.file.path <- ""
         
         # PLOT TITLES
-        # If only one target overall
-        if(length(targets) == 1){
+        # If only one layer overall
+        if(length(layers) == 1){
           if(is.null(summary.title)) plot.title <- makePlotTitle(paste(quant@full.string, layer, sep = " "), run, period)
           else plot.title <- summary.title
         }
         # If many individuals
         else {
-          if(!is.null(plot.labels[which(layer == targets)])) {
-            plot.title <- plot.labels[which(layer == targets)]
+          if(!is.null(plot.labels[which(layer == layers)])) {
+            plot.title <- plot.labels[which(layer == layers)]
           }
           else { 
             plot.title <- makePlotTitle(paste(quant@full.string, special.string, layer, sep = " "), run, period) 
@@ -701,7 +701,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 
 # Obselete, Fold into plotVegMaps() with special = "biomes"
 .plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                         targets = NULL,
+                         layers = NULL,
                          scheme = Smith2014.scheme,
                          biome.strings = NULL,
                          biome.cols = NULL,  
@@ -741,7 +741,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   
   # IF NO LAYERS, COLS OR STRINGS SUPPLIED, USE THE  DEFAULTS OF THE SCHEME
-  if(is.null(targets)) targets = scheme@id
+  if(is.null(layers)) layers = scheme@id
   if(is.null(biome.strings)) biome.strings = scheme@strings
   if(is.null(biome.cols)) biome.cols = scheme@cols
   
@@ -756,7 +756,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   
   ##### Here check data is right class for plotting, process it if not
-  data.toplot <- promoteToRaster(data, targets, run@tolerance) 
+  data.toplot <- promoteToRaster(data, layers, run@tolerance) 
   if(is.null(plot.labels)) {
     if(is.null(run)){
       plot.labels <- list()
