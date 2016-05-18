@@ -117,8 +117,8 @@ rvc.ggplot.theme <- function(x) {
 
   if (!is.na(label)) {
     if (tolower(label)=="lon" || label=="long" || label=="longitude") {
-      ## sprintf("%X", as.integer(charToRaw("°"))) => [1] "C2" "B0"
-      ## paste0("\u00B0") => "°"
+      ## sprintf("%X", as.integer(charToRaw("-was a degree sign-"))) => [1] "C2" "B0"
+      ## paste0("\u00B0") => "-was a degree sign-"
       names.lab <- lab
       names.lab[lab < 0]  = paste(abs(lab[lab < 0]), "\u00B0W", sep="")
       names.lab[lab >= 0] = paste(abs(lab[lab >= 0]), "\u00B0E", sep="")

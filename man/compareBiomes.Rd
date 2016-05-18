@@ -4,7 +4,7 @@
 \alias{compareBiomes}
 \title{Compare a run to a biome map}
 \usage{
-compareBiomes(run, variable, period, scheme, plot = TRUE, ...)
+compareBiomes(run, variable, period, scheme, biome.dataset, plot = TRUE, ...)
 }
 \arguments{
 \item{run}{The VegRun to be compared to the data}
@@ -16,6 +16,8 @@ and should be folded into the scheme.}
 
 \item{scheme}{The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or SpatialDataset?) 
 containing the data}
+
+\item{biome.dataset}{The biomes to which you wish to comapre, as a SpatialDataset.}
 
 \item{plot}{Logical, if true make a biome plot.}
 

@@ -4,11 +4,11 @@
 \alias{promoteToRaster}
 \title{Prepares data as a raster object for plotting.}
 \usage{
-promoteToRaster(data, layers = "all", tolerance = 1e-07,
+promoteToRaster(input.data, layers = "all", tolerance = 1e-07,
   grid.topology = NULL)
 }
 \arguments{
-\item{data}{data.table, VegObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he}
+\item{input.data}{data.table, VegObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he}
 
 \item{layers}{The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.}
 

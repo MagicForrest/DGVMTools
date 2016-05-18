@@ -4,11 +4,11 @@
 \alias{makeSPDFfromDT}
 \title{Make SpatialPixelDataFrame from a data.table}
 \usage{
-makeSPDFfromDT(data, layers = "all", tolerance = 1e-07,
+makeSPDFfromDT(input.data, layers = "all", tolerance = 1e-07,
   grid.topology = NULL)
 }
 \arguments{
-\item{data}{data.table or data.frame, with columsn "Lon" and "Lat" which specify the spatial data}
+\item{input.data}{data.table or data.frame, with columsn "Lon" and "Lat" which specify the spatial data}
 
 \item{layers}{The columns to be selected included in the final SpatialPixelsDataFrame object.  Use NULL or "all" if all layers are required.}
 

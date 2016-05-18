@@ -142,7 +142,18 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   }
   PNV.raster <- subs(PNV.raster, subs.rules)
   
-  return(PNV.raster)
+  
+  
+  
+  return(
+    new("SpatialDataset",
+             id = classification,
+             name = paste("H&P PNV Biomes classified by scheme", classification, sep = " "),
+             temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990) ,
+             data = PNV.raster,
+             veg.quant = lookupVegQuantity("lai"),
+             units = "")
+    )
   
 }
 

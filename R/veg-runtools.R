@@ -571,37 +571,37 @@ getVegObject <- function(run,
 #' This is generally called in the \code{plotVegMaps} function (or potentially before any use of the raster::spplot and raster::plot functions),
 #' but can be useful in and of itself.
 #'   
-#' @param data data.table, VegObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
+#' @param input.data data.table, VegObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
 #' @param layers The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.
 #' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats,  when converting gridded table to a raster, in the case the the gridded data is not commatters for uneven
 #' @param grid.topology A character string defining the grid topology when going from a table to raster, used in a call to SpatialPixels 
 #' @return A RasterLayer (or RasterBrick)
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
+promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
   
   ###  Get class of the object we are dealing with
-  this.class = class(data)[1]
+  this.class = class(input.data)[1]
   
   ###  Define the layers we are pulling out
   # for VegObject - note could define a methods "names" do cover this exception
-  if(is.VegObject(data) & (is.null(layers) | layers[1] == "all")) {layers <- names(data@data)} 
+  if(is.VegObject(input.data) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
   # for data.table or rasters
-  else if(is.null(layers) | layers[1] == "all") {layers = names(data)}
+  else if(is.null(layers) | layers[1] == "all") {layers = names(input.data)}
   
   
-  ###  If wSpatialPixelsDataFrame we can plot it
+  ###  If SpatialPixelsDataFrame rasterise it directly
   if(this.class == "SpatialPixelsDataFrame"){ 
     print("If error check here: promoteToRaster in veg-runtools.R")
-    data.raster <- raster(data, layers)
+    data.raster <- brick(input.data, layers)
   }
   ### If data.table or VegObject (which contains a data.table) 
   # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table" | is.VegObject(data)){
+  else if(this.class == "data.table" | is.VegObject(input.data)){
     
     # first make a SpatialPointsDataFrame
-    if(this.class == "data.table") data.spdf <- makeSPDFfromDT(data, layers, tolerance, grid.topology = NULL)
-    if(is.VegObject(data)) data.spdf <- makeSPDFfromDT(data@data, layers, tolerance, grid.topology = NULL)
+    if(this.class == "data.table") data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = NULL)
+    if(is.VegObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = NULL)
     
     # now convert to raster
     if(length(layers) == 1){
@@ -616,17 +616,17 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
   } 
   ###  If a single raster layer then we are done
   else if(this.class == "RasterLayer"){
-    data.raster <- data    
+    data.raster <- input.data    
   }
   ### If a stack or a brick, then subset 
   else if(this.class == "RasterBrick" | this.class == "RasterStack"){
-    data.raster <- subset(data, layers)
+    data.raster <- subset(input.data, layers)
     names(data.raster) <- layers
   }
   ### else error 
   else{
     # catch -proper exceptions later?
-    stop(paste("Trying to promote object of type", class(data), "to Raster, which I don't know how to do.", sep = " "))
+    stop(paste("Trying to promote object of type", class(input.data), "to Raster, which I don't know how to do.", sep = " "))
   }
   
   gc()
@@ -646,7 +646,7 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
 #' Converts a data.table (or data.frame) to a SpatialPixelsDataFrame, using the columns "Lon and "Lat" to provide the spatial information.  
 #' Mostly is called by \code{promoteToRaster}, but can be useful in and of itself.
 #'
-#' @param data data.table or data.frame, with columsn "Lon" and "Lat" which specify the spatial data 
+#' @param input.data data.table or data.frame, with columsn "Lon" and "Lat" which specify the spatial data 
 #' @param layers The columns to be selected included in the final SpatialPixelsDataFrame object.  Use NULL or "all" if all layers are required.
 #' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats
 #' @param grid.topology A character string defining the grid topology for the SpatialPixelsDataFrame object
@@ -654,13 +654,13 @@ promoteToRaster <- function(data, layers = "all", tolerance = 0.0000001, grid.to
 #' @export
 #' @import data.table sp
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
+makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
   
   # to stop complaints at build time
   Lon = Lat = NULL
   
   # sort the layers
-  if(is.null(layers) | layers[1] == "all") {layers = names(data)}
+  if(is.null(layers) | layers[1] == "all") {layers = names(input.data)}
   
   # remove things we don't want to plot like "Lon" and "Lat"
   remove.list <- c("Lon", "Lat", "Year")
@@ -670,12 +670,12 @@ makeSPDFfromDT <- function(data, layers = "all",  tolerance = 0.0000001, grid.to
   
   # convert to SPDF
   #sp.points <- SpatialPoints(data.frame(data[,list(Lon, Lat)]), proj4string = CRS("+proj=longlat +datum=WGS84"))
-  sp.points <- SpatialPoints(data.frame(data[,list(Lon, Lat)]))
+  sp.points <- SpatialPoints(data.frame(input.data[,list(Lon, Lat)]))
   suppressWarnings( # suppress the "grid has empty column/rows in dimension 1" warning
     sp.pixels <- SpatialPixels(sp.points, tolerance = tolerance, grid = grid.topology)
   )
   suppressWarnings( # suppress the "grid has empty column/rows in dimension 1" warning
-    data.spdf <- SpatialPixelsDataFrame(sp.pixels, data[,layers,with=FALSE], tolerance = tolerance)
+    data.spdf <- SpatialPixelsDataFrame(sp.pixels, input.data[,layers,with=FALSE], tolerance = tolerance)
   )
   # clean up
   rm(sp.points, sp.pixels)

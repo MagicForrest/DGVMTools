@@ -495,6 +495,7 @@ doKappa <- function(stack,
 #' @param period The temporal extent over which the model output should be averaged for calculating the biomes
 #' @param scheme The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or SpatialDataset?) 
 #' containing the data
+#' @param biome.dataset The biomes to which you wish to comapre, as a SpatialDataset.
 #' @param plot Logical, if true make a biome plot.
 #' @param ... Additional parameters supplied to the plotting function (at time of writing the plotting function is plotBiomes(),
 #'  but should be changed soon to plotVegMaps())
@@ -508,6 +509,7 @@ compareBiomes <- function(run,
                           variable, 
                           period, 
                           scheme, 
+                          biome.dataset, 
                           plot = TRUE, 
                           ...){
   
@@ -517,37 +519,29 @@ compareBiomes <- function(run,
   #  calculate biomes from model output
   this.VegSpatial <- addBiomes(this.VegSpatial, scheme)
   
-  # read expert-derived PNV biomes
-  PNV.biomes <- readHandPBiomes(resolution = "HD", classification = scheme@id)
-  
   # build the model biomes as a raster
   model.biomes <- promoteToRaster(this.VegSpatial, scheme@id, run@tolerance)
   
   # make the stack for the comparisons (note they needed to be cropped to the same size)
-  comparison.stack <- stack(crop(model.biomes, PNV.biomes), crop(PNV.biomes, model.biomes))
+  comparison.stack <- stack(crop(model.biomes, biome.dataset@data), crop(biome.dataset@data, model.biomes))
   
   # calculate Kappa statistics (and possibily other similarity/dissimilarity metrics)
   Kappa.comparison <- doKappa(comparison.stack, id = scheme@id, labels = scheme@strings, verbose = TRUE)
   
   # plot biomes if requested
   if(plot){
-    # plotBiomeMap(this.VegSpatial, 
-    #              scheme = scheme,
-    #              addData = PNV.biomes, 
-    #              kappa.list = list(Kappa.comparison),
-    #              ...
-    # )
+   
     
     plotVegMaps(this.VegSpatial, 
                 biome.scheme = scheme, 
                 special = "biomes", 
-                biome.data = PNV.biomes, 
+                biome.data = biome.dataset, 
                 kappa.list = list(Kappa.comparison),
                 ...)
     
   }
   
-  rm(PNV.biomes, model.biomes)
+  rm(this.VegSpatial, model.biomes, comparison.stack)
   return(Kappa.comparison)
   
 }

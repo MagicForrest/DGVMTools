@@ -37,7 +37,7 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
   lat.border[nlat+1] = lat[nlat] + (lat[nlat] - lat[nlat-1])/2.
   
   for (i in 1:nlat) {
-# this causes a negligible difference (510.068 compared to 510.1013 10^6 km^2 @ 0.5° resolution globally).
+# this causes a negligible difference (510.068 compared to 510.1013 10^6 km^2 @ 0.5 degree resolution globally).
     if (ellipse)
         .EarthRadius = .EarthRadius.equator * cos(lat[i]/180.0*pi)^2 + .EarthRadius.polar * sin(lat[i]/180*pi)^2;
     x <- cos(lat[i]/180.0*pi) * 2. * pi * .EarthRadius / (360.0/dlon);
