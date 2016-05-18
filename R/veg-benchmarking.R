@@ -569,7 +569,7 @@ compareManyRunsToBiomes <- function(runs,
                                     ...){
   
   # get biome scheme 
-  scheme <-IDFromList(biome.dataset@id,supported.biome.schemes)
+  scheme <-byIDfromList(biome.dataset@id,supported.biome.schemes)
   
   # make a raster stack with all the runs
   labels <- list()
@@ -713,13 +713,13 @@ compareVegSpatialObject <- function(runs,
           col.name <- paste(paste(run@id, sub.layer, sep = "_"), "minus", paste(base.run.id, sub.layer, sep = "_"), sep = ".")
           comparison.dt[, eval(col.name) := get(paste(run@id, sub.layer, sep = "_")) - get(paste(base.run.id, sub.layer, sep = "_"))]
           diff.names <- append(diff.names, col.name)
-          diff.titles <- append(diff.titles, paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " "))
+          diff.titles <- append(diff.titles, paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "))
           
           # calculate the percentage difference
           col.name <- paste(paste(run@id, sub.layer, sep = "_"), "minus", paste(base.run.id, sub.layer, sep = "_"), "perc.diff", sep = ".")
           comparison.dt[, eval(col.name) := (get(paste(run@id, sub.layer, sep = "_")) - get(paste(base.run.id, sub.layer, sep = "_"))) %/0% get(paste(base.run.id, sub.layer, sep = "_")) * 100]
           perc.diff.names <- append(perc.diff.names, col.name)
-          perc.diff.titles <- append(perc.diff.titles, paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " "))
+          perc.diff.titles <- append(perc.diff.titles, paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "))
           
         }
         
@@ -730,7 +730,7 @@ compareVegSpatialObject <- function(runs,
                       layers = diff.names,
                       quant = run@objects[[veg.spatial.id]]@quant,
                       special = "Diff",
-                      summary.title = paste(paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, sep = " "),
+                      summary.title = paste(paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
                       plot.labels = diff.titles,
                       override.cuts = diff.cuts,
                       doIndividual = doIndividual,
@@ -745,7 +745,7 @@ compareVegSpatialObject <- function(runs,
                       layers = perc.diff.names,
                       quant = run@objects[[veg.spatial.id]]@quant,
                       special = "Perc.Diff",
-                      summary.title = paste(paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", IDFromList(base.run.id, runs)@description, "(% diff)", sep = " "),
+                      summary.title = paste(paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
                       limit = TRUE,
                       limits = c(-100,200),
                       plot.labels = perc.diff.titles,

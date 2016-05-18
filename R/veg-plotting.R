@@ -435,7 +435,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         else{
           
           # get the PFT data, append the colour and the id/long name (as appropriate)
-          PFT <- IDFromList(as.character(row$levels), PFT.set)
+          PFT <- byIDfromList(as.character(row$levels), PFT.set)
           col.list <- append(col.list, PFT@colour)
           if(useLongnames) label.list <- append(label.list, PFT@name)
           else  label.list <- append(label.list, PFT@id)

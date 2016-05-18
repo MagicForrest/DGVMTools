@@ -250,7 +250,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
                                            name = "GFED4 Burnt Area",
                                            temporal.extent = temporal.extent,
                                            data = GFED4.data.cropped.timeseries,
-                                           veg.quant = IDFromList("burntarea", lpj.quantities),
+                                           veg.quant = byIDfromList("burntarea", lpj.quantities),
                                            extent = extent,
                                            units = units)  
       
@@ -263,7 +263,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
                                            name = "GFED4 Burnt Area",
                                            temporal.extent = temporal.extent,
                                            data = GFED4.data.cropped,
-                                           veg.quant = IDFromList("burntarea", lpj.quantities),
+                                           veg.quant = byIDfromList("burntarea", lpj.quantities),
                                            units = units)  
       
       

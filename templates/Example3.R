@@ -270,7 +270,7 @@ for(run in vegrun.list){
       }
       
       ### SAVE VEGOBJ FOR COMPARISON LATER - note that we have to explicitly access the list element, not the local one inside the loop 
-      vegrun.list[[run@id]] <- addToVegRun(this.VegSpatial, IDFromList(run@id,vegrun.list))
+      vegrun.list[[run@id]] <- addToVegRun(this.VegSpatial, byIDfromList(run@id,vegrun.list))
       
       # clean up temporal averages to save memory
       rm(this.VegSpatial)
@@ -302,7 +302,7 @@ for(run in vegrun.list){
                                         scheme, 
                                         plot = TRUE,
                                         plot.extent = plot.extent)
-      vegrun.list[[run@id]] <- addToVegRun(biome.comparison, IDFromList(run@id,vegrun.list))
+      vegrun.list[[run@id]] <- addToVegRun(biome.comparison, byIDfromList(run@id,vegrun.list))
       
       #run <- addToVegRun(biome.comparison, run)
       rm(scheme, biome.comparison)
@@ -327,7 +327,7 @@ for(run in vegrun.list){
                                                        plot.extent = plot.extent)
       
       # save the comparison for plotting later - note that you cannot use just 'run' here, otherwise it won't be saved outside the loop
-      vegrun.list[[run@id]] <- addToVegRun(saatchi.comparison, IDFromList(run@id,vegrun.list))
+      vegrun.list[[run@id]] <- addToVegRun(saatchi.comparison, byIDfromList(run@id,vegrun.list))
       rm(Saatchi.VegSpatial, cmass.local, saatchi.comparison)
       
     } # if doing Saatchi2011 benchmark

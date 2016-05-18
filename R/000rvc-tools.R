@@ -262,7 +262,7 @@ cropRVC <- function(input, extent){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 #' 
-IDFromList <- function(id, list) {
+byIDfromList <- function(id, list) {
   
   
   # Error checking
@@ -281,7 +281,7 @@ IDFromList <- function(id, list) {
         if(item@id == id) return(item)
     },
       error= function(cond){
-      message(paste("Caught an expection. Function IDFromList(id, list) found an item in the list argument with no slots. ", sep = ""))
+      message(paste("Caught an expection. Function byIDfromList(id, list) found an item in the list argument with no slots. ", sep = ""))
     },
     warning=function(cond) {
      },

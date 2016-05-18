@@ -55,7 +55,7 @@ readGlobcover2009 <- function(location){
                        name = "Globcover2009 Spatial Dataset",
                        temporal.extent = new("TemporalExtent", id = "Globcover2009", name = "Globcover2009", start = 2009, end = 2009),
                        data = full.original.data,
-                       veg.quant = IDFromList(id = "generic", list = lpj.quantities), # define a VegQuant quant here?
+                       veg.quant = byIDfromList(id = "generic", list = lpj.quantities), # define a VegQuant quant here?
                        units = "categorical",
                        correction.raster = raster()
                        )
