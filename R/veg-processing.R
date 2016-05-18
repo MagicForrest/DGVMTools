@@ -92,13 +92,13 @@ expandLayers <- function(layers, data, PFT.set = NULL, type = "unknown", include
   
   # get PFTs present in data
   PFTs <- getPFTs(data, PFT.set)
-
+  
   # if type is undertermined, try to figure it out
   # if found at least one PFT and that PFT is not "Total" then assume we have a per PFT variable
   if(type == "unknown"){
     if(length(PFTs) > 0) {
       if(PFTs[[1]]@id != "Total") {
-      type <- "pft"
+        type <- "pft"
       }
     }
     else{
@@ -224,7 +224,7 @@ expandLayers <- function(layers, data, PFT.set = NULL, type = "unknown", include
   
   if("NA" %in% layers) layers <- layers[-which(layers == "NA")]
   if("all" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "all")]
-
+  
   return(layers)
   
 }
@@ -387,27 +387,27 @@ addBiomes <-function(input, scheme){
     dt <- dt[dt.gdd5]
     input@data <- dt
   }
-
+  
   # Get the dominant tree and dominant woody PFTs
   input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
-
+  
   # Get the totals required
   input <-aggregateLayers(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
-
+  
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
   input <- divideLayers(input, layers = scheme@fraction.of.woody, denominators = list("Woody"))
-
+  
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
-
+  
   # Apply biome rules and return
   if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
   suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1), with = FALSE])
   input@data <- dt
   return(input)
-
+  
 }
 
 
@@ -463,30 +463,22 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
   else{
     suppressWarnings(dt <- input)
     # if a data.table has been supplied but not method, use sums, but issue a warning
-    method <- rowSums
-    warning("aggregateLayers has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
-    message("aggregateLayers has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
-    
+    if(is.null(method)) {
+      method <- "sum"
+      warning("aggregateLayers() has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
+      message("aggregateLayers() has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
+    }
   }
   
   
   ### SET UP THE AGGREGATE METHOD 
-  if(is.null(method)) {
-    method <- input@quant@aggregate.method
-  }
-  if(tolower(method) == "average" | tolower(method) == "avg" | tolower(method) == "mean"){
-    method <- rowMeans
-  }
-  else if(tolower(method) == "sum"| tolower(method) == "total"){
-    method <- rowSums
-  }
-  else {
-    warning(paste("In aggregateLayers() not sure how to deal with ", method, ", calculating sums instead!", sep = ""))
-    message(paste("In aggregateLayers() not sure how to deal with ", method, ", calculating sums instead!", sep = ""))
-    method <- rowSums
-  }  
-  
-  
+  method <- match.arg(method, c("average", "mean", "sum", "total"))
+  method <- switch(method,
+                  mean = rowMeans,
+                  average = rowMeans,
+                  sum = rowSums,
+                  total = rowSums)
+
   
   ### GENERAL PREPARATION
   # get PFTs present
