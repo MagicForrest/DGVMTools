@@ -7,7 +7,7 @@
 compareVegSpatialObject(runs, veg.spatial.id, layer, expand.layer = TRUE,
   base.run.id = NULL, abs.value.cuts = NULL, plot.diff = TRUE,
   diff.cuts = NULL, plot.perc.diff = TRUE, perc.diff.cuts = NULL,
-  special = NULL, doIndividual = FALSE, tag = NULL, ...)
+  special = "none", doIndividual = FALSE, tag = NULL, ...)
 }
 \arguments{
 \item{runs}{List of VegRun objects to be compared}

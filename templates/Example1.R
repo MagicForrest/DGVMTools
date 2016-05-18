@@ -70,7 +70,7 @@ plotVegMaps(lai.reference.period,
 # Plot the Tree, Grass and Total LAIs all on one plot in a file 
 plotVegMaps(lai.reference.period, 
             layers = c("Tree", "Grass", "Total"),
-            special.string = "Lifeforms")
+            tag = "Lifeforms")
 
 
 
@@ -82,7 +82,7 @@ lai.reference.period <- divideLayers(lai.reference.period, layers = "lifeforms")
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
             layers = c("lifeforms"),
-            special.string = "Lifeform",
+            tag = "Lifeform",
             special = "fraction")
 
 

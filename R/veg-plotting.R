@@ -30,7 +30,7 @@
 #' If not a \code{VegObject} and not specified, this defaults to the current directory
 #' @param summary.file.name A character string to override the file name of the summary plot (not including the path, just the filename).
 #' @param summary.title A character string to override the title on the summary plot.
-#' @param special.string A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
+#' @param tag A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
 #' For example "Corrected" or "EuropeOnly"
 #' @param layout.objs List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
 #' so see the there for how to build them.  Note that the \code{map.overlay} slot of the relevant \code{VegRun} object will be plotted automatically, 
@@ -96,7 +96,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         plot.dir = NULL, 
                         summary.file.name = NULL,
                         summary.title = NULL,
-                        special.string = NULL,
+                        tag = NULL,
                         layout.objs = NULL, 
                         plot.labels =  NULL,
                         plot.bg.col =  "transparent",
@@ -113,7 +113,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         limits = NULL,
                         override.cols = NULL,
                         override.cuts = NULL,
-                        special = NULL,
+                        special = "none",
                         maxpixels = 1E6,
                         biome.scheme = Smith2014.scheme,
                         biome.data = NULL,
@@ -122,17 +122,49 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         ...){
   
   
-  #####################################################################################
-  ### PRE-AMBLE:                                               ########################
-  ### 1. INITIAL WARNINGS ABOUT ARGUMENT  COMBINATIONS         ########################
-  ### 1. WHEN THINGS ARE NOT SPECIFIED, PULL SOME DEFAULTS     ########################
-  #####################################################################################
+  ###################################################################################################
+  ### PRE-AMBLE:                                                             ########################
+  ### 1. INITIAL ARGUMENT CHACKSWND WARNINGS ABOUT ARGUMENT  COMBINATIONS    ########################
+  ### 2. WHEN THINGS ARE NOT SPECIFIED, PULL SOME DEFAULTS                   ########################
+  ###################################################################################################
   
-  ##### 1. WARNINGS
-  if(!is.null(quant) & !is.null(special)){
-    if(tolower(special) == "dominant" | tolower(special) == "biomes")
+  ##### 1. ARGUMENTS, WARNINGS
+  
+  ### HANDLE SPECIAL
+  print(paste("special before = ", special))
+  if(!is.null(special)) special <- tolower(special)
+  special <- match.arg(special, 
+                       c("none",
+                         "difference", 
+                         "percentage.difference",
+                         "perc.diff",
+                         "fraction",
+                         "burnt.area",
+                         "burnt.fraction",
+                         "firert",
+                         "fire.return.time",
+                         "biomes",
+                         "dominant.pft"))
+  special <- switch(special,
+                    none = "none", 
+                    difference = "difference", 
+                    percentage.difference  = "percentage.difference",
+                    perc.diff= "percentage.difference",
+                    fraction = "fraction",
+                    burnt.area = "burnt.area",
+                    burnt.fraction = "burnt.fraction",
+                    firert = "fire.return.time",
+                    fire.return.time = "fire.return.time",
+                    biomes = "biomes" ,
+                    dominant.pft = "dominant" )
+  print(paste("special after = ", special))
+  
+  # Warn ig quant is being ignored in special
+  if(!is.null(quant) & (special == "dominant" | special == "biomes"))
     warning(paste("When using a \"special\" = ", special, ", argument \"quant\" is ignored"))
-  }
+  
+  
+  
   
   
   ##### 2. DEFAULTS
@@ -195,8 +227,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### SPECIAL CASE OF BIOMES OR DOMINANT WITH NULL layer (assume the biome scheme id is the layer name)
   if(is.null(layers) & !is.null(special)){
-    if(tolower(special) == "biomes" | tolower(special) == "biome") layers = biome.scheme@id
-    if(tolower(special) == "dominant") layers = "Dominant"
+    if(special == "biomes") layers = biome.scheme@id
+    if(special == "dominant") layers = "Dominant"
   }
   
   ### EXPAND layerS
@@ -207,7 +239,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   if(expand.layers) {
     layers <- expandLayers(layers, data, PFT.set)
     if(!is.null(special)){
-      if(tolower(special) == "fraction" | tolower(special) == "frac") layers <- paste(layers, "Fraction", sep = sep.char)
+      if(special == "fraction") layers <- paste(layers, "Fraction", sep = sep.char)
     }
   }
   
@@ -225,251 +257,259 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   #####################################################################################
   
   ### IF SPECIALS 
-  if(!is.null(special)){
+  
+  
+  ### PLOT DIFFERENCE MAPS
+  if(special == "difference"){
     
-    ### PLOT DIFFERENCE MAPS
-    if(tolower(special) == "difference" | tolower(special) == "diff"){
-      
-      minmax <- max(quant@cuts) - min(quant@cuts)
-      step <- (max(quant@cuts) - min(quant@cuts)) / (length(quant@cuts) - 1)
-      quant@cuts <- seq(from = -minmax, to = minmax, by = step)
-      quant@colours <- colorRampPalette(c("green","blue","white","red", "yellow"))
-      # also update colorkey
-      colorkey.list[["col"]] <- quant@colours
-      quant@id <-  paste(quant@id, "diff", sep =".")
-      quant@short.string = paste(quant@short.string, "Diff", sep = ".")
-      quant@full.string = paste("Difference: ", quant@full.string, sep = "")
-      plot.bg.col <- "grey"
-      
-    }
+    minmax <- max(quant@cuts) - min(quant@cuts)
+    step <- (max(quant@cuts) - min(quant@cuts)) / (length(quant@cuts) - 1)
+    quant@cuts <- seq(from = -minmax, to = minmax, by = step)
+    quant@colours <- colorRampPalette(c("green","blue","white","red", "yellow"))
+    # also update colorkey
+    colorkey.list[["col"]] <- quant@colours
+    quant@id <-  paste(quant@id, "diff", sep =".")
+    quant@short.string = paste(quant@short.string, "Diff", sep = ".")
+    quant@full.string = paste("Difference: ", quant@full.string, sep = "")
+    plot.bg.col <- "grey"
     
-    ### PLOT PERCENTAGE DIFFERENCE MAPS
-    else if(tolower(special) == "percentage.difference" | tolower(special) == "perc.diff"){
-      
-      quant@cuts <- seq(from = -100, to = 200, by = 10)
-      quant@colours <- colorRampPalette(c("blue","white","red", "yellow"))
-      # also update colorkey
-      colorkey.list[["col"]] <- quant@colours
-      quant@id <-  paste(quant@id, "percdiff", sep =".")
-      quant@short.string = paste(quant@short.string, "PercDiff", sep = ".")
-      quant@full.string = paste("Percentage Difference: ", quant@full.string, sep = "")
-      plot.bg.col <- "grey"
-      
-      # SET THE INTERVALS (using either these sensible options or the overrides)
-      # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
-      if(!is.null(override.cols)) {quant@colours <- override.cols}
-      if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
-      override.cols = override.cuts = NULL
-      
-      
-      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
-      # get lowest and highest '50's
-      smallest.limit = min(abs(quant@cuts[1]), abs(quant@cuts[length(quant@cuts)]))
-      interval <- 50
-      if(smallest.limit < 100) interval <- 25
-      if(smallest.limit < 50) interval <- 10
-      if(smallest.limit < 20) interval <- 5
-      if(smallest.limit < 10) interval <- 1
-      lower <- ceiling(quant@cuts[1]/interval) * interval
-      upper <- floor(quant@cuts[length(quant@cuts)]/interval) * interval
-      colourkey.at <- seq(lower, upper, by = interval)
-      colorkey.labels <- paste(seq(lower, upper, by = interval))
-      for(label.index in 1:length(colorkey.labels)){
-        if(!(substr(colorkey.labels[label.index], 1, 1) == "-" | substr(colorkey.labels[label.index], 1, 1) == "0")){
-          colorkey.labels[label.index] <- paste0("+", colorkey.labels[label.index])
-        }
-      }
-      if(limit) colorkey.labels[length(colorkey.labels)] <- paste0("\u2265", colorkey.labels[length(colorkey.labels)])
-      colorkey.labels <- paste(colorkey.labels, "%", sep = "")
-      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, "labels" = colorkey.labels, "at" = colourkey.at)
-      colorkey.list[["at"]] <- quant@cuts
-      
-      
-      
-    }
-    
-    #### PLOT FRACTION MAPS
-    else if(tolower(special) == "fraction" | tolower(special) == "frac"){
-      
-      quant@cuts <- seq(from = 0, to = 1, by = 0.05)
-      quant@id <- paste(quant@id, "fraction", sep = ".")
-      quant@short.string <- paste(quant@short.string, "fraction", sep = ".")
-      quant@full.string <- paste(quant@full.string, "Fraction", sep = " ")
-      quant@colours <- colorRampPalette(c("grey85", "black"))
-      # also update colorkey
-      colorkey.list[["col"]] <- quant@colours
-      
-    }
-    
-    #### PLOT BURNT FRACTION
-    else if(tolower(special) == "burnt.fraction" | tolower(special) == "ba"){
-      
-      
-      stop("plotVegMaps: special burnt.fraction or ba not impletemted yet")
-      
-    }
-    
-    #### PLOT FIRE RETURN TIME
-    else if(tolower(special) == "firert" | tolower(special) == "fire.return.time" | quant@id == "firert"){
-      
-      # SET THE INTERVALS (using either these sensible options or the overrides)
-      quant@cuts <- c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000)
-      quant@colours <-  colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
-      # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
-      if(!is.null(override.cols)) {quant@colours <- override.cols}
-      if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
-      override.cols = override.cuts = NULL
-      
-      # RECLASSIFY THE DATA ACCORDING TO THE CUTS 
-      temp.names <- names(data.toplot)
-      data.toplot <- cut(data.toplot, quant@cuts) 
-      names(data.toplot) <- temp.names
-      
-      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
-      colorkey.labels <- paste(quant@cuts)
-      colorkey.labels[length(colorkey.labels)] <- paste0(colorkey.labels[length(colorkey.labels)], "+")
-      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, "labels" = colorkey.labels, "at" = 0:(length(quant@cuts)-1))
-      colorkey.list[["at"]] <- 0:(length(quant@cuts)-1)
-      quant@cuts = 0:(length(quant@cuts)-1)
-      
-    }
-    
-    #### PLOT BIOMES
-    else if(tolower(special) == "biomes" || tolower(special) == "biome"){
-      
-      # Build a VegQuant object with the appropriate colours and cuts 
-       quant <- new("VegQuant",
-                   id = biome.scheme@id,
-                   short.string = biome.scheme@id,
-                   full.string = biome.scheme@name,
-                   type = "BiomeClassification",
-                   units = "categorical",
-                   colours = colorRampPalette(biome.scheme@cols),
-                   cuts = 0:length(biome.scheme@strings),
-                   aggregate.method = "categorical"
-      )
-      
-      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
-      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex * 2/3, 
-                                        "labels" = rev(biome.scheme@strings), 
-                                        "at" = (0:(length(biome.scheme@strings)-1)) + 0.5)
-      colorkey.list[["at"]] <- 0:length(biome.scheme@strings)
-      colorkey.list[["col"]] <- rev(biome.scheme@cols)
-      
-      # Add PNV data if requested read it in and compare rasters
-      if(!is.null(biome.data)) {
-        data.name <- "Data"
-        if(class(biome.data)[[1]] == "SpatialDataset") {
-          data.name <- biome.data@name
-          biome.data <- biome.data@data
-        }
-        # first check if they are on identical grids, then one can simply add the layers
-        if(compareRaster(biome.data, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
-          print("woohoo!")
-        }
-        else if(compareRaster(biome.data, data.toplot, extent=FALSE, rowcol=FALSE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
-          biome.data <- crop(biome.data, data.toplot, snap = "out")
-          biome.data <- extend(biome.data, data.toplot)
-        }
-        else {
-          biome.data <- resample(biome.data, data.toplot, method = "ngb")
-          
-        }
-        biome.data <- crop(biome.data, data.toplot)
-        data.toplot <- mask(data.toplot, biome.data)  
-        
-        # add the PNV raster layer and its title
-        data.toplot <- addLayer(data.toplot, biome.data) 
-        layers <- names(data.toplot)
-        
-        # And finally build plot labels
-        
-        original.layers <- c(original.layers, data.name)
-        if(!is.null(plot.labels)) plot.labels <-  c(plot.labels, data.name) 
-        
-      }
-      
-      # KAPPA
-      if(!is.null(kappa.list)){
-        
-        # if only one model run put individual Kappas into biome legend
-        if(nlayers(data.toplot)-1 == 1) colorkey.list[["labels"]][["labels"]] <- paste0(colorkey.list[["labels"]][["labels"]], " (", rev(round(kappa.list[[1]]@individual.Kappas,2)), ")", sep = "")
-        # place overall Kappa on each modelled biome map 
-        if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
-        for(layer in 1:(nlayers(data.toplot)-1)) {
-          layout.objs[[paste(layer)]]  <- list("sp.text", loc = kappa.position, txt = paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
-        }
-        
-      }
-      
-      
-    }
-    
-    #### PLOT BIOMES
-    
-    else if(tolower(special) == "dominant" |  tolower(special) == "dominantpft" ){
-      
-     
-      # Get Raster Attribute Table and then convert raster back to simple integers instead of factors 
-      # because currently (May 2016) raster package doesn't handle factor rasters very well
-      RAT <- data.toplot@data@attributes[[1]]
-      data.toplot <- deratify(data.toplot, complete = TRUE)
-      
-      # Set colours to be the list of PFT colours
-      col.list <- c()
-      label.list <- c()
-      
-      # for each row of the RAT
-      for(row.index in 1:NROW(RAT)){
-        
-        # get the row
-        row <- RAT[row.index,]
-        
-        # special case if barren
-        if(as.character(row$levels == "Barren")) {
-          col.list <- append(col.list, "gray75")
-          label.list <- append(label.list, "Barren")
-        }
-        
-        # else (assuming others rows are PFTs)
-        else{
-          
-          # get the PFT data, append the colour and the id/long name (as appropriate)
-          PFT <- byIDfromList(as.character(row$levels), PFT.set)
-          col.list <- append(col.list, PFT@colour)
-          if(useLongnames) label.list <- append(label.list, PFT@name)
-          else  label.list <- append(label.list, PFT@id)
-          
-        }
-        
-      }
-
-      
-      quant <- new("VegQuant",
-                   id = "Domiant",
-                   short.string = "Domiant",
-                   full.string = "Dominant PFTs",
-                   type = "DominantPFTs",
-                   units = "categorical",
-                   colours = colorRampPalette(col.list),
-                   cuts = 0:length(col.list),
-                   aggregate.method = "categorical"
-      )
-      
-      # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
-      colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
-                                        "labels" = rev(label.list), 
-                                        "at" = ((0:length(col.list))-1) + 0.5)
-      colorkey.list[["at"]] <- 0:length(col.list)
-      colorkey.list[["col"]] <- rev(col.list)
-      
-    }
-    
-    #### CATCH UNIMPLEMENTED SPECIAL CASES
-    else if(special != ""){
-      stop(paste("Special case", tolower(special), "not implemented yet", sep = " "))
-    }
   }
+  
+  ### PLOT PERCENTAGE DIFFERENCE MAPS
+  else if(special == "percentage.difference"){
+    
+    quant@cuts <- seq(from = -100, to = 200, by = 10)
+    quant@colours <- colorRampPalette(c("blue","white","red", "yellow"))
+    # also update colorkey
+    colorkey.list[["col"]] <- quant@colours
+    quant@id <-  paste(quant@id, "percdiff", sep =".")
+    quant@short.string = paste(quant@short.string, "PercDiff", sep = ".")
+    quant@full.string = paste("Percentage Difference: ", quant@full.string, sep = "")
+    plot.bg.col <- "grey"
+    
+    # SET THE INTERVALS (using either these sensible options or the overrides)
+    # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
+    if(!is.null(override.cols)) {quant@colours <- override.cols}
+    if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
+    override.cols = override.cuts = NULL
+    
+    
+    # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
+    # get lowest and highest '50's
+    smallest.limit = min(abs(quant@cuts[1]), abs(quant@cuts[length(quant@cuts)]))
+    interval <- 50
+    if(smallest.limit < 100) interval <- 25
+    if(smallest.limit < 50) interval <- 10
+    if(smallest.limit < 20) interval <- 5
+    if(smallest.limit < 10) interval <- 1
+    lower <- ceiling(quant@cuts[1]/interval) * interval
+    upper <- floor(quant@cuts[length(quant@cuts)]/interval) * interval
+    colourkey.at <- seq(lower, upper, by = interval)
+    colorkey.labels <- paste(seq(lower, upper, by = interval))
+    for(label.index in 1:length(colorkey.labels)){
+      if(!(substr(colorkey.labels[label.index], 1, 1) == "-" | substr(colorkey.labels[label.index], 1, 1) == "0")){
+        colorkey.labels[label.index] <- paste0("+", colorkey.labels[label.index])
+      }
+    }
+    if(limit) colorkey.labels[length(colorkey.labels)] <- paste0("\u2265", colorkey.labels[length(colorkey.labels)])
+    colorkey.labels <- paste(colorkey.labels, "%", sep = "")
+    colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, "labels" = colorkey.labels, "at" = colourkey.at)
+    colorkey.list[["at"]] <- quant@cuts
+    
+    
+    
+  }
+  
+  #### PLOT FRACTION MAPS
+  else if(special == "fraction"){
+    
+    quant@cuts <- seq(from = 0, to = 1, by = 0.05)
+    quant@id <- paste(quant@id, "fraction", sep = ".")
+    quant@short.string <- paste(quant@short.string, "fraction", sep = ".")
+    quant@full.string <- paste(quant@full.string, "Fraction", sep = " ")
+    quant@colours <- colorRampPalette(c("grey85", "black"))
+    # also update colorkey
+    colorkey.list[["col"]] <- quant@colours
+    
+  }
+  
+  #### PLOT BURNT FRACTION
+  else if(special == "burnt.fraction"){
+    
+    
+    stop("plotVegMaps: special burnt.fraction or ba not impletemted yet")
+    
+  }
+  
+  #### PLOT BURNT FRACTION
+  else if(special == "burnt.area"){
+    
+    
+    stop("plotVegMaps: special burnt.fraction or ba not impletemted yet")
+    
+  }
+  
+  #### PLOT FIRE RETURN TIME
+  else if(special == "fire.return.time" | quant@id == "firert"){
+    
+    # SET THE INTERVALS (using either these sensible options or the overrides)
+    quant@cuts <- c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000)
+    quant@colours <-  colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+    # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
+    if(!is.null(override.cols)) {quant@colours <- override.cols}
+    if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
+    override.cols = override.cuts = NULL
+    
+    # RECLASSIFY THE DATA ACCORDING TO THE CUTS 
+    temp.names <- names(data.toplot)
+    data.toplot <- cut(data.toplot, quant@cuts) 
+    names(data.toplot) <- temp.names
+    
+    # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
+    colorkey.labels <- paste(quant@cuts)
+    colorkey.labels[length(colorkey.labels)] <- paste0(colorkey.labels[length(colorkey.labels)], "+")
+    colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, "labels" = colorkey.labels, "at" = 0:(length(quant@cuts)-1))
+    colorkey.list[["at"]] <- 0:(length(quant@cuts)-1)
+    quant@cuts = 0:(length(quant@cuts)-1)
+    
+  }
+  
+  #### PLOT BIOMES
+  else if(special == "biomes"){
+    
+    # Build a VegQuant object with the appropriate colours and cuts 
+    quant <- new("VegQuant",
+                 id = biome.scheme@id,
+                 short.string = biome.scheme@id,
+                 full.string = biome.scheme@name,
+                 type = "BiomeClassification",
+                 units = "categorical",
+                 colours = colorRampPalette(biome.scheme@cols),
+                 cuts = 0:length(biome.scheme@strings),
+                 aggregate.method = "categorical"
+    )
+    
+    # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
+    colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex * 2/3, 
+                                      "labels" = rev(biome.scheme@strings), 
+                                      "at" = (0:(length(biome.scheme@strings)-1)) + 0.5)
+    colorkey.list[["at"]] <- 0:length(biome.scheme@strings)
+    colorkey.list[["col"]] <- rev(biome.scheme@cols)
+    
+    # Add PNV data if requested read it in and compare rasters
+    if(!is.null(biome.data)) {
+      data.name <- "Data"
+      if(class(biome.data)[[1]] == "SpatialDataset") {
+        data.name <- biome.data@name
+        biome.data <- biome.data@data
+      }
+      # first check if they are on identical grids, then one can simply add the layers
+      if(compareRaster(biome.data, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
+        print("woohoo!")
+      }
+      else if(compareRaster(biome.data, data.toplot, extent=FALSE, rowcol=FALSE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
+        biome.data <- crop(biome.data, data.toplot, snap = "out")
+        biome.data <- extend(biome.data, data.toplot)
+      }
+      else {
+        biome.data <- resample(biome.data, data.toplot, method = "ngb")
+        
+      }
+      biome.data <- crop(biome.data, data.toplot)
+      data.toplot <- mask(data.toplot, biome.data)  
+      
+      # add the PNV raster layer and its title
+      data.toplot <- addLayer(data.toplot, biome.data) 
+      layers <- names(data.toplot)
+      
+      # And finally build plot labels
+      
+      original.layers <- c(original.layers, data.name)
+      if(!is.null(plot.labels)) plot.labels <-  c(plot.labels, data.name) 
+      
+    }
+    
+    # KAPPA
+    if(!is.null(kappa.list)){
+      
+      # if only one model run put individual Kappas into biome legend
+      if(nlayers(data.toplot)-1 == 1) colorkey.list[["labels"]][["labels"]] <- paste0(colorkey.list[["labels"]][["labels"]], " (", rev(round(kappa.list[[1]]@individual.Kappas,2)), ")", sep = "")
+      # place overall Kappa on each modelled biome map 
+      if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
+      for(layer in 1:(nlayers(data.toplot)-1)) {
+        layout.objs[[paste(layer)]]  <- list("sp.text", loc = kappa.position, txt = paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
+      }
+      
+    }
+    
+    
+  }
+  
+  #### PLOT BIOMES
+  
+  else if(special == "dominant"){
+    
+    
+    # Get Raster Attribute Table and then convert raster back to simple integers instead of factors 
+    # because currently (May 2016) raster package doesn't handle factor rasters very well
+    RAT <- data.toplot@data@attributes[[1]]
+    data.toplot <- deratify(data.toplot, complete = TRUE)
+    
+    # Set colours to be the list of PFT colours
+    col.list <- c()
+    label.list <- c()
+    
+    # for each row of the RAT
+    for(row.index in 1:NROW(RAT)){
+      
+      # get the row
+      row <- RAT[row.index,]
+      
+      # special case if barren
+      if(as.character(row$levels == "Barren")) {
+        col.list <- append(col.list, "gray75")
+        label.list <- append(label.list, "Barren")
+      }
+      
+      # else (assuming others rows are PFTs)
+      else{
+        
+        # get the PFT data, append the colour and the id/long name (as appropriate)
+        PFT <- byIDfromList(as.character(row$levels), PFT.set)
+        col.list <- append(col.list, PFT@colour)
+        if(useLongnames) label.list <- append(label.list, PFT@name)
+        else  label.list <- append(label.list, PFT@id)
+        
+      }
+      
+    }
+    
+    
+    quant <- new("VegQuant",
+                 id = "Domiant",
+                 short.string = "Domiant",
+                 full.string = "Dominant PFTs",
+                 type = "DominantPFTs",
+                 units = "categorical",
+                 colours = colorRampPalette(col.list),
+                 cuts = 0:length(col.list),
+                 aggregate.method = "categorical"
+    )
+    
+    # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
+    colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
+                                      "labels" = rev(label.list), 
+                                      "at" = ((0:length(col.list))-1) + 0.5)
+    colorkey.list[["at"]] <- 0:length(col.list)
+    colorkey.list[["col"]] <- rev(col.list)
+    
+  }
+  
+  #### CATCH UNIMPLEMENTED SPECIAL CASES
+  else if(!(special != "" | special != "none")){
+    stop(paste("Special case", tolower(special), "not implemented yet", sep = " "))
+  }
+  
   
   ### OVERRIDE (CUTS AND COLOUR SCHEME) 
   if(!is.null(override.cols)) {quant@colours <- override.cols}
@@ -531,7 +571,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
       # FILENAME
       # make a description of the variable
-      this.id.string <- makeVariableIDString(quant@id, "Summary",  run.id = run.id, special.string)
+      this.id.string <- makeVariableIDString(quant@id, "Summary",  run.id = run.id, tag)
       if(is.null(summary.file.name)) this.file.path <- file.path(plot.dir, paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = "."))
       else this.file.path <- file.path(plot.dir, paste(summary.file.name, format, sep = "."))
       
@@ -599,7 +639,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       for(layer in layers){
         
         # FILENAME
-        this.id.string <- makeVariableIDString(quant@id, layer, run.id = run.id, special.string)
+        this.id.string <- makeVariableIDString(quant@id, layer, run.id = run.id, tag)
         this.file.path <- file.path(plot.dir, paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = "."))
         # Special case for format "x11", filename should be NULL
         if(format == "x11") this.file.path <- ""
@@ -616,12 +656,12 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
             plot.title <- plot.labels[which(layer == layers)]
           }
           else { 
-            plot.title <- makePlotTitle(paste(quant@full.string, special.string, layer, sep = " "), run, period) 
+            plot.title <- makePlotTitle(paste(quant@full.string, tag, layer, sep = " "), run, period) 
             # if expand PFT names
             if(useLongnames) {
               # look up PFT
               for(PFT in PFT.set){
-                if(layer == PFT@id) plot.title <- makePlotTitle(paste(quant@full.string, special.string, PFT@name, sep = " "), run, period)
+                if(layer == PFT@id) plot.title <- makePlotTitle(paste(quant@full.string, tag, PFT@name, sep = " "), run, period)
               }
             }
           }
@@ -678,30 +718,30 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 
 # Obselete, Fold into plotVegMaps() with special = "biomes"
 .plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                         layers = NULL,
-                         scheme = Smith2014.scheme,
-                         biome.strings = NULL,
-                         biome.cols = NULL,  
-                         run = NULL, 
-                         period = NULL, 
-                         plot.dir = NULL, 
-                         file.name = NULL, 
-                         layout.objs = NULL, 
-                         main.title =  NULL,
-                         plot.labels = NULL,
-                         addData = NULL,
-                         kappa.list = NULL,
-                         showKappa = TRUE,
-                         kappa.position = NULL,
-                         Cairo.units = "px",
-                         Cairo.dpi = 72,
-                         Cairo.type = "png", 
-                         Cairo.width = 1800, 
-                         Cairo.height = 1000,
-                         Cairo.bg = "transparent",
-                         plot.extent = NULL,
-                         maxpixels = 1E6,
-                         ...){
+                          layers = NULL,
+                          scheme = Smith2014.scheme,
+                          biome.strings = NULL,
+                          biome.cols = NULL,  
+                          run = NULL, 
+                          period = NULL, 
+                          plot.dir = NULL, 
+                          file.name = NULL, 
+                          layout.objs = NULL, 
+                          main.title =  NULL,
+                          plot.labels = NULL,
+                          addData = NULL,
+                          kappa.list = NULL,
+                          showKappa = TRUE,
+                          kappa.position = NULL,
+                          Cairo.units = "px",
+                          Cairo.dpi = 72,
+                          Cairo.type = "png", 
+                          Cairo.width = 1800, 
+                          Cairo.height = 1000,
+                          Cairo.bg = "transparent",
+                          plot.extent = NULL,
+                          maxpixels = 1E6,
+                          ...){
   
   ##### Here take parameters from arguments or from supplied VegRun object
   
@@ -842,19 +882,19 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 
 
 .plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                               which.dominant = "Dominant",
-                               quant = NULL, 
-                               run = NULL, 
-                               PFT.set = global.PFTs,
-                               period = NULL, 
-                               plot.dir = NULL, 
-                               filename = NULL, 
-                               layout.objs = NULL, 
-                               summary.title =  NULL,
-                               run.title = NULL,
-                               addData = FALSE,
-                               useLongnames = FALSE,
-                               background.colour = "transparent"){
+                                which.dominant = "Dominant",
+                                quant = NULL, 
+                                run = NULL, 
+                                PFT.set = global.PFTs,
+                                period = NULL, 
+                                plot.dir = NULL, 
+                                filename = NULL, 
+                                layout.objs = NULL, 
+                                summary.title =  NULL,
+                                run.title = NULL,
+                                addData = FALSE,
+                                useLongnames = FALSE,
+                                background.colour = "transparent"){
   
   
   

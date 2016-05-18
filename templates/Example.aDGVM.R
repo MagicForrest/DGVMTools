@@ -74,7 +74,7 @@ lai.reference.period <- divideLayers(lai.reference.period, layers = "pfts")
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
             layers = c("pfts"),
-            special.string = "PFT.Fractions",
+            tag = "PFT.Fractions",
             special = "fraction")
 
 
@@ -112,7 +112,7 @@ lai.reference.period <- aggregateLayers(lai.reference.period, layers = c("Lifefo
 
 plotVegMaps(lai.reference.period, 
             layers = c("Tree", "Grass", "Total"),
-            special.string = "Lifeforms")
+            tag = "Lifeforms")
 
 
 
@@ -124,7 +124,7 @@ lai.reference.period <- divideLayers(lai.reference.period, layers = "lifeforms")
 # Plot the tree and grass fraction
 plotVegMaps(lai.reference.period, 
             layers = c("lifeforms"),
-            special.string = "Lifeform",
+            tag = "Lifeform",
             special = "fraction")
 
 

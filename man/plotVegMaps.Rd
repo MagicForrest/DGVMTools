@@ -7,12 +7,12 @@
 plotVegMaps(data, layers = NULL, expand.layers = TRUE, quant = NULL,
   period = NULL, doSummary = TRUE, doIndividual = FALSE, run = NULL,
   PFT.set = global.PFTs, plot.dir = NULL, summary.file.name = NULL,
-  summary.title = NULL, special.string = NULL, layout.objs = NULL,
+  summary.title = NULL, tag = NULL, layout.objs = NULL,
   plot.labels = NULL, plot.bg.col = "transparent", useLongnames = FALSE,
   Cairo.units = "px", Cairo.dpi = 72, Cairo.type = "png",
   Cairo.width = 1800, Cairo.height = 1000, Cairo.bg = "transparent",
   text.multiplier = 1, plot.extent = NULL, limit = FALSE, limits = NULL,
-  override.cols = NULL, override.cuts = NULL, special = NULL,
+  override.cols = NULL, override.cuts = NULL, special = "none",
   maxpixels = 1e+06, biome.scheme = Smith2014.scheme, biome.data = NULL,
   kappa.list = NULL, kappa.position = NULL, ...)
 }
@@ -44,7 +44,7 @@ If not a \code{VegObject} and not specified, this defaults to the current direct
 
 \item{summary.title}{A character string to override the title on the summary plot.}
 
-\item{special.string}{A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
+\item{tag}{A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
 For example "Corrected" or "EuropeOnly"}
 
 \item{layout.objs}{List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
