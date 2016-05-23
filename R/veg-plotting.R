@@ -131,8 +131,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   ##### 1. ARGUMENTS, WARNINGS
   
   ### HANDLE SPECIAL
-  print(paste("special before = ", special))
+  
   if(!is.null(special)) special <- tolower(special)
+  
   special <- match.arg(special, 
                        c("none",
                          "difference", 
@@ -145,6 +146,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                          "fire.return.time",
                          "biomes",
                          "dominant.pft"))
+  
   special <- switch(special,
                     none = "none", 
                     difference = "difference", 
@@ -157,12 +159,10 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                     fire.return.time = "fire.return.time",
                     biomes = "biomes" ,
                     dominant.pft = "dominant" )
-  print(paste("special after = ", special))
   
   # Warn ig quant is being ignored in special
   if(!is.null(quant) & (special == "dominant" | special == "biomes"))
     warning(paste("When using a \"special\" = ", special, ", argument \"quant\" is ignored"))
-  
   
   
   

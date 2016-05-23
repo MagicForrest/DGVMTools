@@ -25,7 +25,7 @@ sep.char = ""
 #' @import data.table raster
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 getPFTs <- function(input, PFT.data){
-  
+ 
   # Allow for rasters, Veg Objects and data.tables
   input.class <- class(input)[1]
   if(is.VegObject(input)) suppressWarnings(input.names <- names(input@data))
@@ -65,7 +65,7 @@ getPFTs <- function(input, PFT.data){
 #' 
 #' 
 #' @param layers Character vector of layers to expand
-#' @param data The data to which the layers will be applied, may be a \code{VegObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame. 
+#' @param input.data The data to which the layers will be applied, may be a \code{VegObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame. 
 #' @param PFT.set List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{VegObject}).
 #' @param type Character string irdentifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{VegObjects} which supply this data themselves.
 #' The function attempts to determine this argument if it is not provided.  
@@ -73,7 +73,7 @@ getPFTs <- function(input, PFT.data){
 #' @return A list of layers
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-expandLayers <- function(layers, data, PFT.set = NULL, type = "unknown", include.woody = TRUE){
+expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", include.woody = TRUE){
   
   # remove "Lon", "Lat" and "Year" if present
   for(remove.header.from.header in c("Lat", "Lon", "Year")){
@@ -81,17 +81,17 @@ expandLayers <- function(layers, data, PFT.set = NULL, type = "unknown", include
   }
   
   # read meta-data form VegObject if possible
-  if(is.VegObject(data)) {
-    type <- data@quant@type
-    if(is.null(PFT.set)) PFT.set <- data@run@pft.set
-    header <- names(data@data)
+  if(is.VegObject(input.data)) {
+    type <- input.data@quant@type
+    if(is.null(PFT.set)) PFT.set <- input.data@run@pft.set
+    header <- names(input.data@data)
   }
   else{
-    header <- names(data)
+    header <- names(input.data)
   }
   
   # get PFTs present in data
-  PFTs <- getPFTs(data, PFT.set)
+  PFTs <- getPFTs(input.data, PFT.set)
   
   # if type is undertermined, try to figure it out
   # if found at least one PFT and that PFT is not "Total" then assume we have a per PFT variable
@@ -584,7 +584,7 @@ divideLayers <- function(input, layers, denominators = list("Total")){
   denominators <- expandLayers(denominators, dt, PFT.data)
   for(denom in denominators) {
     if(!(denom %in% names(dt))) {
-      dt <- aggregateLayers(dt, denom, PFT.data)
+      dt <- aggregateLayers(dt, denom, PFT.data = PFT.data)
     }
   }
   
@@ -593,7 +593,7 @@ divideLayers <- function(input, layers, denominators = list("Total")){
   layers <- expandLayers(layers, dt, PFT.data)
   for(layer in layers) {
     if(!(layer %in% names(dt))) {
-      dt <- aggregateLayers(dt, layer, PFT.data)
+      dt <- aggregateLayers(dt, layer, PFT.data = PFT.data)
     }
   }
   

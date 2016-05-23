@@ -664,10 +664,12 @@ compareVegSpatialObject <- function(runs,
   for(run in runs){
     
     # grab the VegObject that we want from the vegRun
-    temp.spatial <- run@objects[[veg.spatial.id]]
+    temp.spatial <- byIDfromList(veg.spatial.id, run@objects)
+   
+    print(names(run@objects))
     
     # expand the layer if necessary
-    if(expand.layer){ layer <- expandLayers(layers = layer, temp.spatial, run@pft.set) }
+    if(expand.layer){ layer <- expandLayers(layers = layer, input.data = temp.spatial, PFT.set = run@pft.set) }
     
     # Extract the columns that we need and add them to the data.table and set the names appropriately
     comparison.dt <- comparison.dt[temp.spatial@data[,c("Lon","Lat",layer),with=FALSE]]

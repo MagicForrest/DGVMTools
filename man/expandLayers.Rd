@@ -4,13 +4,13 @@
 \alias{expandLayers}
 \title{Expand plotting/processing layers from convenient short hand codes.}
 \usage{
-expandLayers(layers, data, PFT.set = NULL, type = "unknown",
+expandLayers(layers, input.data, PFT.set = NULL, type = "unknown",
   include.woody = TRUE)
 }
 \arguments{
 \item{layers}{Character vector of layers to expand}
 
-\item{data}{The data to which the layers will be applied, may be a \code{VegObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame.}
+\item{input.data}{The data to which the layers will be applied, may be a \code{VegObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame.}
 
 \item{PFT.set}{List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{VegObject}).}
 
