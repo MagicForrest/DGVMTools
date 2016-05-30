@@ -1,12 +1,12 @@
-# RVCtools
-R Vegetation &amp; Climate Tools
+# DGVM Ctools
+Tools for processing, analysing and plotting output from DGVMs (Dynamic Global Vegetation Models) in R
 
 ### Installation
-execute 'R CMD build RVCTools' from the parent directory
+execute 'R CMD build DGVMTools' from the parent directory
 
 ### Uplading modifications
 Before uploading modifications, make sure there are no error messages by executing
-R CMD check RVCTools
+R CMD check DGVMTools
 
 git commit -a -m  "short text about the modifications"
 git push origin master
