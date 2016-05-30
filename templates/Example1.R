@@ -1,7 +1,7 @@
 ##### PREAMBLE: Load the packages and start the timer
 
-# Load RVCTools package, unload the package first in case we are actively developing the package
-library(RVCTools)
+# Load DGVMTools package
+library(DGVMTools)
 
 # start the timer
 t1 <- Sys.time()

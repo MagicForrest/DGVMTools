@@ -35,10 +35,8 @@
 #######           You shouldn't need to change anything here  
 
 
-# Load RVCTools package (clear the environment and unload the package first in case we are actively developing the package)
-rm(list = ls())
-if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
-library(RVCTools)
+# Load DGVMTools package
+library(DGVMTools)
 
 # Load extra packages to allow multi-threading, and also set the number of threads 
 library(foreach)

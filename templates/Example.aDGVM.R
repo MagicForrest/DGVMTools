@@ -1,9 +1,8 @@
 # start the timer
 t1 <- Sys.time()
 
-# Load RVCTools package, unload the package first in case we are actively developing the package
-if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
-library(RVCTools)
+# Load DGVMTools package
+library(DGVMTools)
 
 
 ############################################################################

@@ -1,6 +1,6 @@
-#detach('package:RVCTools', unload=TRUE)
-if("package:RVCTools" %in% search()) detach(name = "package:RVCTools", unload = TRUE)
-suppressMessages(library(RVCTools))
+#detach('package:DGVMTools', unload=TRUE)
+if("package:DGVMTools" %in% search()) detach(name = "package:DGVMTools", unload = TRUE)
+suppressMessages(library(DGVMTools))
 library(RColorBrewer)
 
 ## Define a TIME PERIOD over which to average
