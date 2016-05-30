@@ -1,7 +1,7 @@
-Package: RVCTools
+Package: DGVMTools
 Type: Package
 Version: 0.0.9
-Title: R Vegetation & Climate Tools
+Title: DGVM Processing, Analysis and Plotting Tools
 Date: 2016-05-17
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
              person("Joerg", "Steinkamp", role=c("aut"), email="joerg.steinkamp@senckenberg.de"))
@@ -36,6 +36,6 @@ Suggests:
     udunits2
 License: GPL | file LICENSE
 URL: https://www.bik-f.de
-BugReports: https://github.com/joergsteinkamp/RVCTools/issues
+BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
 RoxygenNote: 5.0.1
