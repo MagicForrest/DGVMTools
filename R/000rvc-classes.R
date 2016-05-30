@@ -281,7 +281,7 @@ setClass("VegRun",
 #' @slot id A unique character string to identify this particular vegetation quantity, should match with the name of a particular model output variable.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot short.string A short character string to refer to this quantity
 #' @slot full.string A longer character string to provide a more complete description of this quantity
-#' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to RVCTools, but in principle the use can define anything.  
+#' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.  
 #' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
 #' @slot colours A fucntion that retutns a colour scale suited for plotting this quantity.
 #' @slot cuts A numerical sequence defining the plot range and colour breakpoint when plotting the quantity

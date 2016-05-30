@@ -14,7 +14,7 @@ convertYearlyScheme2(runid, fire, directory)
 \item{directory}{Character string specifying the run directory}
 }
 \description{
-Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the RVC framework and is probably now
+Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the DGVM framework and is probably now
 redundant.  Classifies as evergreen tree, deciduous tree or grass based on the pop file and the trait file.
 }
 \author{

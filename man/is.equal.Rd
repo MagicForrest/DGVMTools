@@ -6,7 +6,7 @@
 \alias{is.equal,SpatialExtent,SpatialExtent-method}
 \alias{is.equal,TemporalExtent,TemporalExtent-method}
 \alias{is.equal,VegQuant,VegQuant-method}
-\title{Checks two RVCTools metadata objects for equality}
+\title{Checks two DGVMTools metadata objects for equality}
 \usage{
 is.equal(a, b)
 
@@ -17,9 +17,9 @@ is.equal(a, b)
 \S4method{is.equal}{SpatialExtent,SpatialExtent}(a, b)
 }
 \arguments{
-\item{a}{a RVCTools metadata object}
+\item{a}{a DGVMTools metadata object}
 
-\item{b}{another RVCTools metadata object of the same type}
+\item{b}{another DGVMTools metadata object of the same type}
 }
 \value{
 logical

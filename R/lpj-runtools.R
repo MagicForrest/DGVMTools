@@ -113,7 +113,7 @@ getVegQuantity_LPJ <- function(run, var.string, store.internally = FALSE,verbose
   #if(var.string %in% names(run@objects)){
   #  if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
   #  this.dt <- run@objects[[var.string]]
-  #  setKeyRVC(this.dt, Lon, Lat, Year)
+  #  setKeyDGVM(this.dt, Lon, Lat, Year)
   #}
   
   # READ THE FULL FILE

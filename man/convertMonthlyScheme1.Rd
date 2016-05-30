@@ -14,7 +14,7 @@ convertMonthlyScheme1(runid, fire, directory)
 \item{directory}{Character string specifying the run directory}
 }
 \description{
-Original from Simon Scheiter, ***THERE IS CURRENTLY NO INTERGATED VERSION OF THIS WHICH FITS INTO RVC TOOLS*
+Original from Simon Scheiter, ***THERE IS CURRENTLY NO INTERGATED VERSION OF THIS WHICH FITS INTO DGVM TOOLS*
 Someone needs to do that...    
 Classifies only as tree or grass based on only the pop file, doesn't open the trait file.
 }

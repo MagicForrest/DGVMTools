@@ -14,7 +14,7 @@ getVegQuantity_aDGVM_Scheme2(run, period, variable)
 \item{variable}{A character string specifying which variable to get, only "agb" currently supported}
 }
 \description{
-Original from Simon Scheiter, this version modified by M. Forrest to fit into the RVC framework. 
+Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
 Classifies as evergreen tree, deciduous tree or grass based on the pop file and the trait file.
 }
 \author{

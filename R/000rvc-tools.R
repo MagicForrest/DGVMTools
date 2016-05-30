@@ -20,7 +20,7 @@
 is.VegObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package"))) {
-    if (class.def[1] == "VegObject" && attr(class.def, "package")=="RVCTools") {
+    if (class.def[1] == "VegObject" && attr(class.def, "package")=="DGVMTools") {
       ## JS: check more carefully if this if structure makes sense
       if (spatial && !temporal && !site) {
         if (!input@is.site && !input@is.spatially.averaged)
@@ -54,7 +54,7 @@ is.VegObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
 is.VegRun <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "VegRun" && attr(class.def, "package")=="RVCTools")
+    if (class.def[1] == "VegRun" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
@@ -71,7 +71,7 @@ is.VegRun <- function(input) {
 is.VegQuant <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "VegQuant" && attr(class.def, "package")=="RVCTools")
+    if (class.def[1] == "VegQuant" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
@@ -87,7 +87,7 @@ is.VegQuant <- function(input) {
 is.BiomeComparison <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "BiomeComparison" && attr(class.def, "package")=="RVCTools")
+    if (class.def[1] == "BiomeComparison" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
@@ -103,19 +103,19 @@ is.BiomeComparison <- function(input) {
 is.RasterComparison <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "RasterComparison" && attr(class.def, "package")=="RVCTools")
+    if (class.def[1] == "RasterComparison" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
 
 
 ## check if two classes are comparable
-#' Checks two RVCTools metadata objects for equality
+#' Checks two DGVMTools metadata objects for equality
 #' 
 #' @description checks if two objects have the same quantity, spatial or temporal extent
 #' 
-#' @param a a RVCTools metadata object
-#' @param b another RVCTools metadata object of the same type
+#' @param a a DGVMTools metadata object
+#' @param b another DGVMTools metadata object of the same type
 #' @return logical
 #' @name is.equal
 #' @rdname is.equal
@@ -158,9 +158,9 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
 
 #' Summary methods
 #' 
-#' Print easy to read summaries of RVCTools objects
+#' Print easy to read summaries of DGVMTools objects
 #' 
-#' @param object a RVCTools object
+#' @param object a DGVMTools object
 #' @param ... Other arguments, not currently used
 #' @return A list of strings
 #' @name Summary-methods
@@ -223,7 +223,7 @@ setMethod("summary", signature("VegRun"), function(object, ...) {
 #' @import raster data.table
 #' @export
 
-cropRVC <- function(input, extent){
+cropDGVM <- function(input, extent){
   
   Lat = Lon = NULL
   

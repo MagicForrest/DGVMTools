@@ -23,14 +23,14 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   Lon = Lat = Year = NULL
   
-  original.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.out", package = "RVCTools")
-  HD.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.HD.nc", package = "RVCTools")
-  T63.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.T63.nc", package = "RVCTools")
+  original.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.out", package = "DGVMTools")
+  HD.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.HD.nc", package = "DGVMTools")
+  T63.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.T63.nc", package = "DGVMTools")
   
   # If original is required, open the origina text file
   if(resolution == "original"){
    
-    PNV.dt <- fread(original.data, sep = "", header=T)
+    PNV.dt <- fread(original.data, sep = " ", header=T)
     
     # divide Lon and Lat by 10, offset and London centre
     PNV.dt[,Lon := (Lon/10) + 0.25]
@@ -176,10 +176,10 @@ getSaatchi2011 <- function(resolution = "HD"){
   
   
   if(resolution == "T63"){
-    Saatchi.raster <- trim(rotate(raster(system.file("extdata", "Saatchi2011.T63.nc", package = "RVCTools"))/10))
+    Saatchi.raster <- trim(rotate(raster(system.file("extdata", "Saatchi2011.T63.nc", package = "DGVMTools"))/10))
   }
   else if(resolution == "HD"){
-    Saatchi.raster <- trim(raster(system.file("extdata", "Saatchi2011.HD.nc", package = "RVCTools"))/10)
+    Saatchi.raster <- trim(raster(system.file("extdata", "Saatchi2011.HD.nc", package = "DGVMTools"))/10)
   }
   
   Saatchi.dataset <- new("SpatialDataset",

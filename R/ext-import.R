@@ -99,7 +99,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
   ## to avoid "no visible binding for global variable" during check
   Lon = Lat = Year = Month = Date = variable = value = NULL
   suppressWarnings(if (!is.na(temporal.extent)) {
-    if (class(temporal.extent)[1]=="TemporalExtent" && attr(class(temporal.extent), "package")=="RVCTools") {
+    if (class(temporal.extent)[1]=="TemporalExtent" && attr(class(temporal.extent), "package")=="DGVMTools") {
       period <- c(temporal.extent@start, temporal.extent@end)
     } else {
       period <- c(min(temporal.extent, na.rm=TRUE), max(temporal.extent, na.rm=TRUE))
@@ -219,7 +219,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
   if (verbose)
     message(paste("NetCDF spatial extent: Lon: ", min(lon), "-", max(lon), "; Lat:", min(lat), "-", max(lat)))
 
-  if (!is.na(spatial.extent) && class(spatial.extent)=="Spatial.Extent" && names(class(spatial.extent))=="RVCTools") {
+  if (!is.na(spatial.extent) && class(spatial.extent)=="Spatial.Extent" && names(class(spatial.extent))=="DGVMTools") {
     extent <- spatial.extent@extent
   } else if (!is.na(spatial.extent) && class(spatial.extent)=="Extent") {
     extent <- spatial.extent

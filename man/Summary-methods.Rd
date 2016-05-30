@@ -12,7 +12,7 @@ summary(object, ...)
 \S4method{summary}{VegRun}(object, ...)
 }
 \arguments{
-\item{object}{a RVCTools object}
+\item{object}{a DGVMTools object}
 
 \item{...}{Other arguments, not currently used}
 }
@@ -20,7 +20,7 @@ summary(object, ...)
 A list of strings
 }
 \description{
-Print easy to read summaries of RVCTools objects
+Print easy to read summaries of DGVMTools objects
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

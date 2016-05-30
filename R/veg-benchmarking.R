@@ -155,13 +155,7 @@ compareRunToSpatialDataset <- function(dataset,
   
   # PREPARE QUANT
   if(is.null(quant)) quant <- dataset@veg.quant 
-  
-  # crop all rasters to the same size - not necessary now?
-  #temp <- intersectionRVC(model.raster, dataset@data)
-  #model.raster <- temp[[1]]
-  #data.raster <- temp[[2]]
-  #rm(temp)
-  
+
   # EXTRA DATA FROM SpATIAL DATASET AND SET NAMES
   names(model.raster) <- layer
   data.raster <- dataset@data
@@ -588,7 +582,7 @@ compareManyRunsToBiomes <- function(runs,
  
   plotVegMaps(biome.stack, 
               layers = names(biome.stack),
-              file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
+              file.name = paste("Biomes", scheme@id, tag, sep = "."),
               special = "biomes", 
               biome.scheme = scheme, 
               biome.data = PNV.biomes, 

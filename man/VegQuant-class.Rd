@@ -18,7 +18,7 @@ Note that the used will probably need to define their own, and modify these for 
 
 \item{\code{full.string}}{A longer character string to provide a more complete description of this quantity}
 
-\item{\code{type}}{A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to RVCTools, but in principle the use can define anything.}
+\item{\code{type}}{A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.}
 
 \item{\code{units}}{A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?}
 

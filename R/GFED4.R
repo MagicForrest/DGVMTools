@@ -225,7 +225,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   for(extent in list.of.spatial.extents){
     
     # crop
-    GFED4.data.cropped <- cropRVC(GFED4.total, extent)
+    GFED4.data.cropped <- cropDGVM(GFED4.total, extent)
     
     print(names(GFED4.data.cropped))
     

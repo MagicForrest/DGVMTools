@@ -6,14 +6,14 @@
 
 #' Sets keys on data.table in order Lon, Lat, Year (if present)
 #' 
-#' Keys should be set on all data.table object for sorts, joins, RVCTool-defined operators etc.  
+#' Keys should be set on all data.table object for sorts, joins, DGVMTool-defined operators etc.  
 #'  This function should be called on a data.table stored in a VegObject after it has been created,
 #'  including if it was created by avergaing another data.table because it seems as keys are not conserved.
 #'
 #' @param dt The data.table for which to set the key
 #' @return Returns nothing because changes the original data.table by reference (this is the data.table way)
 #' @import data.table
-setKeyRVC <- function(dt){
+setKeyDGVM <- function(dt){
   
   keys.present <- c()
   
@@ -136,7 +136,7 @@ addToVegRun <- function(object, run){
     
     # Check that run ids match, if not, stop becuase something is really wrong
     if(run@id != object@run@id){
-      stop(paste("Adding VegObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". I can think of no reason to do this, and doing so will break the internal logic of RVCTools so aborting. Contact the package creator if this seems wrng to you" , sep = ""))
+      stop(paste("Adding VegObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". I can think of no reason to do this, and doing so will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrng to you" , sep = ""))
     }
     
     veg.objects.list <- run@objects
@@ -316,7 +316,7 @@ getVegObject <- function(run,
 
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
   vegobject.id <- makeVegObjectID(var.string, temporal.extent, spatial.extent, temporally.average, spatially.average)
-  file.name <- file.path(run@run.dir, paste(vegobject.id, "RVCData", sep = "."))
+  file.name <- file.path(run@run.dir, paste(vegobject.id, "DGVMData", sep = "."))
   
   
   
@@ -374,7 +374,7 @@ getVegObject <- function(run,
     
     if(verbose) message(paste(var.string, " is already read, so using that internal copy.", sep = ""))
     this.dt <- run@objects[[var.string]]@data
-    setKeyRVC(this.dt)
+    setKeyDGVM(this.dt)
     
   }
   
@@ -398,7 +398,7 @@ getVegObject <- function(run,
       
       if(adgvm.scheme == 1) this.dt <- data.table(getVegQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
       if(adgvm.scheme == 2) this.dt <- data.table(getVegQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
-      setKeyRVC(this.dt)
+      setKeyDGVM(this.dt)
       
     } # END IF aDGVM
     
@@ -457,7 +457,7 @@ getVegObject <- function(run,
   
   
   ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
-  if(!is.null(spatial.extent))  this.dt <- cropRVC(this.dt, spatial.extent)      
+  if(!is.null(spatial.extent))  this.dt <- cropDGVM(this.dt, spatial.extent)      
   if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
   
   
@@ -545,9 +545,9 @@ getVegObject <- function(run,
                    run = as(run, "VegRunInfo"))
   
   
-  ### WRITE THE VEGOBJECT TO DISK AS AN RVCData OBJECT IF REQUESTED
+  ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
-    if(verbose) {message("Saving as a .RVCData object...")}
+    if(verbose) {message("Saving as a .DGVMData object...")}
     saveRDS(vegobject, file = file.name)
     if(verbose) {message("...done.")}
   }
@@ -726,7 +726,7 @@ doTemporalAverage.uncompiled <- function(input.dt,
   gc()
   
   # Set keys and return the averaged table
-  setKeyRVC(output.dt)
+  setKeyDGVM(output.dt)
   return(output.dt)
   
 }
@@ -812,7 +812,7 @@ doSpatialAverage.uncompiled <- function(input.dt,
   gc()
   
   # Set keys and return the averaged table
-  setKeyRVC(output.dt)
+  setKeyDGVM(output.dt)
   return(output.dt)
   
 }

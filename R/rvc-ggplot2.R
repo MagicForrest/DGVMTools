@@ -2,7 +2,7 @@
 ## ggplot2 themes for nicer plots #####################################
 #######################################################################
 
-.rvc.spatial_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.dgvm.spatial_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.background  = element_rect(fill="#cae1ff"),
                                  panel.border      = element_rect(fill=NA, linetype = "solid", colour = "black"),
@@ -20,7 +20,7 @@
                                  plot.title        = element_text(size=22),
                                  strip.background  = element_rect(fill=NA)))
 
-.rvc.scatter_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.dgvm.scatter_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.background  = element_blank(),
                                  panel.border      = element_blank(),
@@ -38,7 +38,7 @@
                                  plot.title        = element_text(size=22),
                                  strip.background  = element_rect(fill=NA)))
 
-.rvc.temporal_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.dgvm.temporal_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                   panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                   panel.background  = element_blank(),
                                   panel.border      = element_blank(),
@@ -68,13 +68,13 @@
 #' @return theme list
 #' @export
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-rvc.ggplot.theme <- function(x) {
+dgvm.ggplot.theme <- function(x) {
   if(x=="scatter") {
-    return(.rvc.scatter_theme)
+    return(.dgvm.scatter_theme)
   } else if (x=="temporal" || x=="ts" || x=="timeseries") {
-    return(.rvc.temporal_theme)
+    return(.dgvm.temporal_theme)
   } else if (x=="spatial" || x=="map") {
-    return(.rvc.spatial_theme)
+    return(.dgvm.spatial_theme)
   } else {
     return(FALSE)
   }
@@ -387,7 +387,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
     
   ## create plot
   p <- ggplot(dt, aes(y=Lat, x=Lon))
-  p <- p + .rvc.spatial_theme
+  p <- p + .dgvm.spatial_theme
 
   if (!is.na(terr.bg))
     p <- p + geom_raster(data=slm, fill=terr.bg)
@@ -576,7 +576,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
   if (!plot)
     return(md)
   
-  p <- p + .rvc.scatter_theme
+  p <- p + .dgvm.scatter_theme
 
   if (!is.na(what[["var"]])) {
     if (any(colnames(dt)=="sens")) {
@@ -839,7 +839,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     }
     p <- p + xlab("") + ylab(units)
   }
-  p <- p + .rvc.scatter_theme
+  p <- p + .dgvm.scatter_theme
   if ((vertical && !bar) || (!vertical && bar))
     p <- p + coord_flip()
   
@@ -979,7 +979,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
     colors="black"
 
   p <- ggplot(dt, aes(x=Year, y=value))
-  p <- p + .rvc.temporal_theme
+  p <- p + .dgvm.temporal_theme
   if (grepl("^l", type)) {
     if (!is.numeric(alpha))
       alpha=1
@@ -1197,7 +1197,7 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
   if (!plot)
     return(binned.dt)
 
-  p <- p + rvc.ggplot.theme("scatter")
+  p <- p + dgvm.ggplot.theme("scatter")
   if (bars)
     p <- p + geom_bar(stat="identity", position="dodge")
   if (any(colnames(dt)=="sens") && lines) {

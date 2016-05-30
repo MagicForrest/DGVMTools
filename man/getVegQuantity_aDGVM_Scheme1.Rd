@@ -14,7 +14,7 @@ getVegQuantity_aDGVM_Scheme1(run, period, variable)
 \item{variable}{A character string specifying which variable to get, can be "lai" or "agb"}
 }
 \description{
-Original from Simon Scheiter, this version modified by M. Forrest to fit into the RVC framework. 
+Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
 Simple scheme, classifies only as tree or grass based on only the pop file, doesn't open the trait file.
 }
 \author{

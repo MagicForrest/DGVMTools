@@ -40,7 +40,7 @@
 #
 #' Simple classification of yearly output for aDGVM 
 #' 
-#' Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the RVC framework and is probably now
+#' Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the DGVM framework and is probably now
 #' redundant.  Classifies only as tree or grass based on only the pop file, doesn't open the trait file.
 #' 
 #' @param runid Character string identifying the run
@@ -128,7 +128,7 @@ convertYearlyScheme1 <- function( runid, fire, directory )
 #' Slightly more complex classification of yearly output for aDGVM output
 #' 
 #' 
-#' Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the RVC framework and is probably now
+#' Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the DGVM framework and is probably now
 #' redundant.  Classifies as evergreen tree, deciduous tree or grass based on the pop file and the trait file.
 #' 
 #' @param runid Character string identifying the run
@@ -219,7 +219,7 @@ convertYearlyScheme2 <- function( runid, fire, directory )
 # ----------------------------------------------------
 #' Simple classification of monthly output for aDGVM 
 #' 
-#' Original from Simon Scheiter, ***THERE IS CURRENTLY NO INTERGATED VERSION OF THIS WHICH FITS INTO RVC TOOLS*
+#' Original from Simon Scheiter, ***THERE IS CURRENTLY NO INTERGATED VERSION OF THIS WHICH FITS INTO DGVM TOOLS*
 #' Someone needs to do that...    
 #' Classifies only as tree or grass based on only the pop file, doesn't open the trait file.
 #' 
@@ -308,7 +308,7 @@ convertMonthlyScheme1 <- function( runid, fire, directory )
 
 #' Simple classification of yearly output for aDGVM
 #' 
-#' Original from Simon Scheiter, this version modified by M. Forrest to fit into the RVC framework. 
+#' Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
 #' Simple scheme, classifies only as tree or grass based on only the pop file, doesn't open the trait file.
 #' 
 #' @param run A \code{VegRun}
@@ -379,7 +379,7 @@ getVegQuantity_aDGVM_Scheme1 <- function(run, period, variable)
 
 #' Slightty more complex classification of yearly output for aDGVM
 #' 
-#' Original from Simon Scheiter, this version modified by M. Forrest to fit into the RVC framework. 
+#' Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
 #' Classifies as evergreen tree, deciduous tree or grass based on the pop file and the trait file.
 #' 
 #' @param run A \code{VegRun}
