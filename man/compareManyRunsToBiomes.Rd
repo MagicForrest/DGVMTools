@@ -4,8 +4,7 @@
 \alias{compareManyRunsToBiomes}
 \title{Compare many runs to a biome map}
 \usage{
-compareManyRunsToBiomes(runs, biome.dataset, analysis.label = "",
-  plot.data = TRUE, ...)
+compareManyRunsToBiomes(runs, biome.dataset, plot.data = TRUE, ...)
 }
 \arguments{
 \item{runs}{List of VegRun objects, each run should have already had \code{compareBiomes()} for the relevant biome dataset 
@@ -13,11 +12,9 @@ run on it.}
 
 \item{biome.dataset}{A SpatialDataset object holding the biomes to which we are comparing.}
 
-\item{analysis.label}{A character string to differentiate the resulting plot from similar plots, e.g. "VariableSoilDepth"}
-
 \item{plot.data}{A logical, if TRUE put the data on the plot as well as the model runs}
 
-\item{...}{Further arguments passed to the plotting function.}
+\item{...}{Further arguments passed to the plotting function plotVegMaps(). Note in particular that "tag" is a useful option to differentiate the resulting plot from other plots of the same type in the same directory}
 }
 \description{
 Takes a list of VegRuns, looks up the relevant BiomeComparison object (which should have been pre-calculated)

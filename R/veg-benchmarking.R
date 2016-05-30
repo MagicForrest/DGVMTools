@@ -554,9 +554,8 @@ compareBiomes <- function(run,
 #' @param runs List of VegRun objects, each run should have already had \code{compareBiomes()} for the relevant biome dataset 
 #' run on it.
 #' @param biome.dataset A SpatialDataset object holding the biomes to which we are comparing.
-#' @param analysis.label A character string to differentiate the resulting plot from similar plots, e.g. "VariableSoilDepth"
 #' @param plot.data A logical, if TRUE put the data on the plot as well as the model runs
-#' @param ... Further arguments passed to the plotting function.
+#' @param ... Further arguments passed to the plotting function plotVegMaps(). Note in particular that "tag" is a useful option to differentiate the resulting plot from other plots of the same type in the same directory
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
@@ -564,7 +563,6 @@ compareBiomes <- function(run,
 
 compareManyRunsToBiomes <- function(runs, 
                                     biome.dataset, 
-                                    analysis.label = "", 
                                     plot.data = TRUE, 
                                     ...){
   
@@ -586,14 +584,7 @@ compareManyRunsToBiomes <- function(runs,
   else{
     PNV.biomes <- NULL
   }
-  
-  # plotBiomeMap(biome.stack,
-  #              addData = addData,
-  #              layers = names(biome.stack),
-  #              file.name = paste("Biomes", scheme@id, analysis.label, sep = "."),
-  #              run.title = scheme@id,
-  #              plot.labels = labels,
-  #              ...)
+ 
  
   plotVegMaps(biome.stack, 
               layers = names(biome.stack),

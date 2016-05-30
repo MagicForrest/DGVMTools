@@ -737,7 +737,7 @@ lpj.quantities <- list(
                 type = "monthly",
                 units = "kgC/m^2",
                 colours = fields::tim.colors,
-                cuts = seq(0,20,0.2),
+                cuts = seq(0,1.0,0.1),
                 aggregate.method = "mean"),
   
   "mfinefuel" = new("VegQuant",
@@ -747,7 +747,7 @@ lpj.quantities <- list(
                     type = "monthly",
                     units = "kgC/m^2",
                     colours = fields::tim.colors,
-                    cuts = seq(0,2,0.02),
+                    cuts = seq(0,1.0,0.1),
                     aggregate.method = "mean"),
   
   "mfiredays" = new("VegQuant",
