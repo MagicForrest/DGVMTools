@@ -18,8 +18,11 @@
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table raster
+#' @importFrom plyr mapvalues
 
 readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
+  
+  dataset.id = "HandPBiomes"
   
   Lon = Lat = Year = NULL
   
@@ -29,32 +32,37 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   # If original is required, open the origina text file
   if(resolution == "original"){
-   
+    
     PNV.dt <- fread(original.data, sep = " ", header=T)
     
     # divide Lon and Lat by 10, offset and London centre
     PNV.dt[,Lon := (Lon/10) + 0.25]
     PNV.dt[,Lat := (Lat/10) + 0.25]
-    PNV.dt[, Lon := vapply(PNV.dt[,Lon], 1, FUN = LondonCentre)]    
+    PNV.dt[, Lon := vapply(PNV.dt[,Lon], 1, FUN = LondonCentre)]   
     
-    # Make into a raster
-    PNV.spdf <- makeSPDFfromDT(PNV.dt, tolerance = 0.00001)
-    PNV.raster <- raster(PNV.spdf, "Biome")
   }
   # Return half degree data from netCDF file (probably slightly faster)
   else if(resolution == "HD"){
     PNV.raster <- raster(HD.data)
+    PNV.dt <- data.table(as.data.frame(PNV.raster,xy = TRUE))
   }
   # Return T63 data from netCDF file 
   else if(resolution == "T63"){
     PNV.raster <- raster(T63.data)
     PNV.raster <- rotate(PNV.raster)
+    PNV.dt <- data.table(as.data.frame(PNV.raster,xy = TRUE))
   }
   # Else default to original resolution
   else{
     message(paste("readPNVBiomes: Unknown resolution ", resolution, "returned half degree (native resolution)"))
     PNV.raster <- raster(HD.data)
+    PNV.dt <- data.table(as.data.frame(PNV.raster,xy = TRUE))
   }
+  
+  # set names and key
+  setnames(PNV.dt, c("Lon", "Lat", paste(dataset.id, classification, sep = ".")))
+  setkey(PNV.dt, Lon, Lat)
+  
   
   ################### Smith2014 ##########################
   
@@ -125,35 +133,38 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   # from above orderings
   if(classification == "Smith2014") {
-    subs.rules <- data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13))
+    subs.rules <- c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)
   }
   else if(classification == "Forrest2015"){
-    subs.rules <- data.frame(id=1:18, v=c(4,4,3,3,3,2,3,1,1,5,5,6,6,6,5,6,8,7))
+    subs.rules <- c(4,4,3,3,3,2,3,1,1,5,5,6,6,6,5,6,8,7)
   }
   # MF: Note: This is a potentially useful Megabiomes scheme 
   else if(classification == "Megabiomes_dev"){
     #subs.rules <- data.frame(id=1:18, v=c(5,4,7,6,7,6,7,3,1,2,9,10,12,13,8,13,14,11))  
     #subs.rules <- data.frame(id=1:18, v=c(5,4,7,6,7,6,7,1,1,2,9,10,12,13,8,13,14,11))
-    subs.rules <- data.frame(id=1:18, v=c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,7,12,13,10))
+    subs.rules <- c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,7,12,13,10)
     #subs.rules <- data.frame(id=1:18, v=c(5,4,7,6,7,6,7,2,1,2,9,9,12,13,8,13,14,11))
   }
   else if(classification == "original"){
-    subs.rules <- data.frame(id=1:18, v=1:18)
+    subs.rules <- 1:18
   }
-  PNV.raster <- subs(PNV.raster, subs.rules)
   
   
-  
-  
+  PNV.dt[, paste(dataset.id, classification, sep = ".") := plyr::mapvalues(PNV.dt[[paste(dataset.id, classification, sep = ".")]], from = 1:18, to = subs.rules),with=FALSE]
+ 
   return(
-    new("SpatialDataset",
-             id = classification,
-             name = paste("H&P PNV Biomes classified by scheme", classification, sep = " "),
-             temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990) ,
-             data = PNV.raster,
-             veg.quant = lookupVegQuantity("lai"),
-             units = "")
+    new("DataObject",
+        id =  paste(dataset.id, classification, sep = "."),
+        name = paste("H&P PNV Biomes classified by scheme", classification, sep = " "),
+        data = PNV.dt,
+        quant = lookupVegQuantity("lai"),
+        spatial.extent = new("SpatialExtent", id = "PNVExtent", name = "PNV Extent", extent = extentFromDT(PNV.dt)),
+        temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990),
+        correction.layer =  ""
     )
+  )
+  
+  
   
 }
 
@@ -182,13 +193,18 @@ getSaatchi2011 <- function(resolution = "HD"){
     Saatchi.raster <- trim(raster(system.file("extdata", "Saatchi2011.HD.nc", package = "DGVMTools"))/10)
   }
   
-  Saatchi.dataset <- new("SpatialDataset",
+  Saatchi.dt <- data.table(as.data.frame(Saatchi.raster,xy = TRUE))
+  setnames(Saatchi.dt, c("Lon", "Lat", "Saatchi2011"))
+  setkey(Saatchi.dt, Lon, Lat)
+  
+  Saatchi.dataset <- new("DataObject",
                          id = "Saatchi2011",
                          name = "Saatchi et al. 2011 Biomass",
                          temporal.extent = new("TemporalExtent", name = "Saatchi Period", start = 1999, end = 2001),
-                         data = Saatchi.raster,
-                         veg.quant = lookupVegQuantity("cmass"),
-                         units = "kgC/m^2")
+                         data = Saatchi.dt,
+                         quant = lookupVegQuantity("cmass"),
+                         spatial.extent = new("SpatialExtent", id = "SaatchiExtent", name = "Saatchi extent", extent = extentFromDT(Saatchi.dt)),
+                         correction.layer =  "")
   
   
   return(Saatchi.dataset)

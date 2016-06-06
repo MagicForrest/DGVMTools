@@ -49,7 +49,6 @@ defineVegRun <- function(...){
   if(length(info@pft.set) == 0) info@pft.set <- NULL
   if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
   if(length(info@description) == 0)  info@description <- "No description specified"
-  if(length(info@map.overlay) == 0 | info@map.overlay[1] == "")  info@map.overlay <- NULL
   if(length(info@lonlat.offset) == 0)  info@lonlat.offset <- c(0,0)
   if(length(info@year.offset) == 0)  info@year.offset <- 0
   if(length(info@tolerance) == 0)  info@tolerance <- 0.00001
@@ -61,44 +60,7 @@ defineVegRun <- function(...){
   if(length(info@line.type) == 0)  info@line.type <- 1
   if(length(info@landuseSimulated) == 0)  info@landuseSimulated <- FALSE
   
-  # lookup map over from maps and mapdata package
-  if(!is.null(info@map.overlay)) {
-    
-    # if we get a single characters string, assume it is a map and just a simple map from it
-    if(length(info@map.overlay) == 1 & class(info@map.overlay)[1] == "character") {
-      info@map.overlay <- list("map" = makeOverlay(info@map.overlay))
-    }
-    # else if is a list 
-    else if(class(info@map.overlay)[1] == "list"){
-      
-      # check if it is actually a list of lists 
-      list.of.lists <- FALSE
-      for(test in info@map.overlay) {
-        if(class(test[1]) == "list") list.of.lists <- TRUE
-      }
-      
-      # if it is a simple list, then assumer it describes a single overlay and build a single overlay
-      if(!list.of.lists){
-        info@map.overlay <- list(map = do.call(makeOverlay, info@map.overlay))
-      }
-      # else assume each item is an overlay and try to make them all
-      else {
-        temp <- list()
-        counter <- 0
-        for(overlay in info@map.overlay){
-          counter <- counter +1
-          if(class(overlay[1]) == "character") temp[[counter]] <- makeOverlay(overlay)
-          else if(class(overlay[1]) == "list") temp[[counter]] <- do.call(makeOverlay, overlay)
-          else warning("Something funny specified in the overlays (ie not a character or a list), ignoring it.  You might want to check this.")
-        }
-        info@map.overlay <- temp
-      }
-      
-      
-    }
-    
-  } 
-  
+ 
   # return a VegRun object with empty data fields but meta data filled  
   return(new("VegRun",
              info))
@@ -122,7 +84,7 @@ defineVegRun <- function(...){
 addToVegRun <- function(object, run){
   
   # Add a BiomeComaprison or RasterComparison to the list in the benchmarks slot 
-  if(is.BiomeComparison(object) | is.RasterComparison(object)) {
+  if(is.BiomeComparison(object) | is.RasterComparison(object) | is.SpatialComparison(object)) {
     
     benchmark.list <- run@benchmarks
     benchmark.list[[object@id]] <- object
@@ -600,7 +562,11 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   else if(this.class == "data.table" | is.VegObject(input.data)){
     
     # first make a SpatialPointsDataFrame
-    if(this.class == "data.table") data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = NULL)
+   
+    if(this.class == "data.table") {
+      data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = NULL)
+    }
+      
     if(is.VegObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = NULL)
     
     # now convert to raster

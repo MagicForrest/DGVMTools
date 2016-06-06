@@ -372,11 +372,11 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
 addBiomes <-function(input, scheme){
   
   message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
-  
+
   
   # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
   if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
-  
+
   # If GDD5 required for classification
   if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
     # get gdd5
@@ -390,15 +390,15 @@ addBiomes <-function(input, scheme){
   
   # Get the dominant tree and dominant woody PFTs
   input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
-  
+
   # Get the totals required
   input <-aggregateLayers(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
-  
+
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
   input <- divideLayers(input, layers = scheme@fraction.of.woody, denominators = list("Woody"))
-  
+
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
   

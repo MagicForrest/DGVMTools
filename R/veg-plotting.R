@@ -22,19 +22,15 @@
 #' In the case of plotting a \code{VegRun} object this is taken automatically from he object, but this provides an override.
 #' @param quant A \code{VegQuantity} object describy the quantity to be plotted.  This provides an override \code{VegQuant} when plotting a \code{VegObject}
 #' and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.
-#' @param doSummary Boolean, whether to plot all \code{layers} on one plot.
-#' @param doIndividual Boolean, whether to plot all \code{layers} on individual plots.
 #' @param run A \code{VegRun} object from which to pull metadata.  Note that normally this information is stored in the \code{VegObject}. 
 #' @param PFT.set A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{VegObject}.
 #' @param plot.dir A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{VegObject}, but this provides an override.
 #' If not a \code{VegObject} and not specified, this defaults to the current directory
-#' @param summary.file.name A character string to override the file name of the summary plot (not including the path, just the filename).
-#' @param summary.title A character string to override the title on the summary plot.
+#' @param title A character string to override the title on the summary plot.
 #' @param tag A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
 #' For example "Corrected" or "EuropeOnly"
 #' @param layout.objs List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
-#' so see the there for how to build them.  Note that the \code{map.overlay} slot of the relevant \code{VegRun} object will be plotted automatically, 
-#' so that need not be specified here.
+#' so see the there for how to build them.
 #' @param plot.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
 #' @param plot.bg.col Colour string for the plot background.
@@ -89,24 +85,15 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         expand.layers = TRUE,
                         quant = NULL, 
                         period = NULL, 
-                        doSummary = TRUE, 
-                        doIndividual = FALSE, 
                         run = NULL, 
                         PFT.set = global.PFTs,
                         plot.dir = NULL, 
-                        summary.file.name = NULL,
-                        summary.title = NULL,
+                        title = NULL,
                         tag = NULL,
                         layout.objs = NULL, 
                         plot.labels =  NULL,
                         plot.bg.col =  "transparent",
                         useLongnames = FALSE,
-                        Cairo.units = "px",
-                        Cairo.dpi = 72,
-                        Cairo.type = "png", 
-                        Cairo.width = 1800, 
-                        Cairo.height = 1000,
-                        Cairo.bg = "transparent",
                         text.multiplier = 1,
                         plot.extent = NULL,
                         limit = FALSE,
@@ -120,7 +107,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         kappa.list = NULL,
                         kappa.position = NULL,
                         ...){
-  
   
   ###################################################################################################
   ### PRE-AMBLE:                                                             ########################
@@ -208,15 +194,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         labels = list(cex = 3 * text.multiplier)
   )
   
-  ### LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field the add it
-  if(!is.null(run)){
-    if(!is.null(run@map.overlay)) {
-      layout.objs <- append(layout.objs, run@map.overlay)
-    }
-  }
-  
-  
-  
+
   #####################################################################################
   ############# PREPARE DATA AND layer LIST FOR PLOTTING        ######################
   #####################################################################################
@@ -399,9 +377,10 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # Add PNV data if requested read it in and compare rasters
     if(!is.null(biome.data)) {
       data.name <- "Data"
-      if(class(biome.data)[[1]] == "SpatialDataset") {
+      if(class(biome.data)[[1]] == "DataObject") {
         data.name <- biome.data@name
-        biome.data <- biome.data@data
+        data.id <- biome.data@id
+        biome.data <- promoteToRaster(biome.data@data)
       }
       # first check if they are on identical grids, then one can simply add the layers
       if(compareRaster(biome.data, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
@@ -559,151 +538,122 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CHECK SUMMARY/INDIVIDUAL
   # If only one layer has been selected, don't plot as summary, plot it as individual, regardless of settings
+  multi.panel <- TRUE
   if(nlayers(data.toplot) == 1){
-    doSummary <- FALSE
-    doIndividual <- TRUE
+    multi.panel <- FALSE
   }
   
-  for(format in Cairo.type){
-    
-    ### PRINT SUMMARY PLOT WITH ALL DATA IN ONE PLOT
-    if(doSummary){
-      
-      # FILENAME
-      # make a description of the variable
-      this.id.string <- makeVariableIDString(quant@id, "Summary",  run.id = run.id, tag)
-      if(is.null(summary.file.name)) this.file.path <- file.path(plot.dir, paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = "."))
-      else this.file.path <- file.path(plot.dir, paste(summary.file.name, format, sep = "."))
-      
-      # Special case for frmat "x11", filename should be ""
-      if(format == "x11") this.file.path <- ""
-      
-      
-      # PLOT MAIN TITLE
-      if(is.null(summary.title)) summary.title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), run, period)
-      
-      # PANEL LABELS - note expand longnames here if requested 
-      if(is.null(plot.labels)) {
-        plot.labels.here <- original.layers
-        ### USE LONGNAMES - for PFTs
-        if(useLongnames) {
-          for(plot.label.index in 1:length(plot.labels.here)){
-            # look up PFT
-            for(PFT in PFT.set){
-              if(plot.labels.here[plot.label.index] == PFT@id) plot.labels.here[[plot.label.index]] <- unlist(PFT@name)
-            }
-          }
-          plot.labels.here<- unlist(plot.labels.here)
+
+  # PLOT MAIN TITLE
+  if(is.null(title)) title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), run, period)
+  
+  # PANEL LABELS - note expand longnames here if requested 
+  if(is.null(plot.labels)) {
+    plot.labels.here <- original.layers
+    ### USE LONGNAMES - for PFTs
+    if(useLongnames) {
+      for(plot.label.index in 1:length(plot.labels.here)){
+        # look up PFT
+        for(PFT in PFT.set){
+          if(plot.labels.here[plot.label.index] == PFT@id) plot.labels.here[[plot.label.index]] <- unlist(PFT@name)
         }
       }
-      else plot.labels.here <- plot.labels
-      
-      Cairo(file = this.file.path, 
-            dpi = Cairo.dpi, 
-            type = format, 
-            width = Cairo.width, 
-            height = Cairo.height, 
-            title = summary.title, 
-            bg = Cairo.bg)  
-      
-      
-      print(spplot(data.toplot,
-                   layers,
-                   par.settings = list(panel.background=list(col=plot.bg.col)),
-                   xlab = list(label = "Longitude", cex = 3 * text.multiplier),
-                   ylab = list(label = "Latitude", cex = 3 * text.multiplier),
-                   col.regions= quant@colours,
-                   colorkey = colorkey.list,                                                                                            
-                   at = quant@cuts,
-                   scales = list(draw = TRUE, cex = 3 * text.multiplier),
-                   as.table = TRUE,
-                   main=list(label=summary.title, 
-                             cex = 4 * text.multiplier),
-                   par.strip.text = list(#lines = 1.0, 
-                     cex = 2 * text.multiplier),
-                   sp.layout = layout.objs,
-                   maxpixels = maxpixels,
-                   names.attr = plot.labels.here,
-                   ...)
-      )
-      
-      if(format == "x11")  invisible(readline(prompt="Press [enter] to continue"))
-      
-      dev.off()
-      
+      plot.labels.here<- unlist(plot.labels.here)
     }
-    
-    ### PRINT INDIVIUAL PLOTS
-    if(doIndividual){
-      
-      for(layer in layers){
-        
-        # FILENAME
-        this.id.string <- makeVariableIDString(quant@id, layer, run.id = run.id, tag)
-        this.file.path <- file.path(plot.dir, paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = "."))
-        # Special case for format "x11", filename should be NULL
-        if(format == "x11") this.file.path <- ""
-        
-        # PLOT TITLES
-        # If only one layer overall
-        if(length(layers) == 1){
-          if(is.null(summary.title)) plot.title <- makePlotTitle(paste(quant@full.string, layer, sep = " "), run, period)
-          else plot.title <- summary.title
-        }
-        # If many individuals
-        else {
-          if(!is.null(plot.labels[which(layer == layers)])) {
-            plot.title <- plot.labels[which(layer == layers)]
-          }
-          else { 
-            plot.title <- makePlotTitle(paste(quant@full.string, tag, layer, sep = " "), run, period) 
-            # if expand PFT names
-            if(useLongnames) {
-              # look up PFT
-              for(PFT in PFT.set){
-                if(layer == PFT@id) plot.title <- makePlotTitle(paste(quant@full.string, tag, PFT@name, sep = " "), run, period)
-              }
-            }
-          }
-        }
-        
-        
-        Cairo(file = this.file.path, 
-              dpi = Cairo.dpi, 
-              type = Cairo.type, 
-              width = Cairo.width, 
-              height = Cairo.height, 
-              title = plot.title, 
-              bg = Cairo.bg)  
-        
-        print(spplot(data.toplot,
-                     layer,
-                     par.settings = list(panel.background=list(col=plot.bg.col)),
-                     xlab = list(label = "Longitude", cex = 3 * text.multiplier),
-                     ylab = list(label = "Latitude", cex = 3 * text.multiplier),
-                     col.regions= quant@colours,
-                     colorkey = colorkey.list,
-                     at = quant@cuts,
-                     scales = list(draw = TRUE, cex = 3 * text.multiplier),
-                     as.table = TRUE,
-                     main=list(label = plot.title, 
-                               cex = 4 * text.multiplier),
-                     par.strip.text = list(lines = 1.0, cex = 2 * text.multiplier),
-                     sp.layout = layout.objs,
-                     maxpixels = maxpixels,
-                     #names.attr = PFT.plottitles,
-                     ...)
-        )
-        
-        if(format == "x11")  invisible(readline(prompt="Press [enter] to continue"))
-        
-        dev.off()
-        
-      }
-      
-    }
-    
   }
+  else plot.labels.here <- plot.labels
+  
+  
+  return(spplot(data.toplot,
+               layers,
+               par.settings = list(panel.background=list(col=plot.bg.col)),
+               xlab = list(label = "Longitude", cex = 3 * text.multiplier),
+               ylab = list(label = "Latitude", cex = 3 * text.multiplier),
+               col.regions= quant@colours,
+               colorkey = colorkey.list,                                                                                            
+               at = quant@cuts,
+               scales = list(draw = TRUE, cex = 3 * text.multiplier),
+               as.table = TRUE,
+               main=list(label=title, 
+                         cex = 4 * text.multiplier),
+               par.strip.text = list(#lines = 1.0, 
+                 cex = 2 * text.multiplier),
+               sp.layout = layout.objs,
+               maxpixels = maxpixels,
+               names.attr = plot.labels.here,
+               ...)
+  )
+  
+  
+  # }
+  # 
+  # ### PRINT INDIVIUAL PLOTS
+  # if(doIndividual){
+  #   
+  #   for(layer in layers){
+  #     
+  #     # FILENAME
+  #     this.id.string <- makeVariableIDString(quant@id, layer, run.id = run.id, tag)
+  #     this.file.path <- file.path(plot.dir, paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = "."))
+  #     # Special case for format "x11", filename should be NULL
+  #     if(format == "x11") this.file.path <- ""
+  #     
+  #     # PLOT TITLES
+  #     # If only one layer overall
+  #     if(length(layers) == 1){
+  #       if(is.null(title)) plot.title <- makePlotTitle(paste(quant@full.string, layer, sep = " "), run, period)
+  #       else plot.title <- title
+  #     }
+  #     # If many individuals
+  #     else {
+  #       if(!is.null(plot.labels[which(layer == layers)])) {
+  #         plot.title <- plot.labels[which(layer == layers)]
+  #       }
+  #       else { 
+  #         plot.title <- makePlotTitle(paste(quant@full.string, tag, layer, sep = " "), run, period) 
+  #         # if expand PFT names
+  #         if(useLongnames) {
+  #           # look up PFT
+  #           for(PFT in PFT.set){
+  #             if(layer == PFT@id) plot.title <- makePlotTitle(paste(quant@full.string, tag, PFT@name, sep = " "), run, period)
+  #           }
+  #         }
+  #       }
+  #     }
+  #     
+  #     
+  #     Cairo(file = this.file.path, 
+  #           dpi = Cairo.dpi, 
+  #           type = Cairo.type, 
+  #           width = Cairo.width, 
+  #           height = Cairo.height, 
+  #           title = plot.title, 
+  #           bg = Cairo.bg)  
+  #     
+  #     print(spplot(data.toplot,
+  #                  layer,
+  #                  par.settings = list(panel.background=list(col=plot.bg.col)),
+  #                  xlab = list(label = "Longitude", cex = 3 * text.multiplier),
+  #                  ylab = list(label = "Latitude", cex = 3 * text.multiplier),
+  #                  col.regions= quant@colours,
+  #                  colorkey = colorkey.list,
+  #                  at = quant@cuts,
+  #                  scales = list(draw = TRUE, cex = 3 * text.multiplier),
+  #                  as.table = TRUE,
+  #                  main=list(label = plot.title, 
+  #                            cex = 4 * text.multiplier),
+  #                  par.strip.text = list(lines = 1.0, cex = 2 * text.multiplier),
+  #                  sp.layout = layout.objs,
+  #                  maxpixels = maxpixels,
+  #                  #names.attr = PFT.plottitles,
+  #                  ...)
+  #     )
+  #     
+  #   }
+  #   
+  # }
+  # 
+  # }
   
   # clean up
   rm(data.toplot)
@@ -712,280 +662,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 }
 
 
-##########################################################################################################################################
-################################################## PLOT BIOME MAPS #######################################################################
-##########################################################################################################################################
-
-# Obselete, Fold into plotVegMaps() with special = "biomes"
-.plotBiomeMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                          layers = NULL,
-                          scheme = Smith2014.scheme,
-                          biome.strings = NULL,
-                          biome.cols = NULL,  
-                          run = NULL, 
-                          period = NULL, 
-                          plot.dir = NULL, 
-                          file.name = NULL, 
-                          layout.objs = NULL, 
-                          main.title =  NULL,
-                          plot.labels = NULL,
-                          addData = NULL,
-                          kappa.list = NULL,
-                          showKappa = TRUE,
-                          kappa.position = NULL,
-                          Cairo.units = "px",
-                          Cairo.dpi = 72,
-                          Cairo.type = "png", 
-                          Cairo.width = 1800, 
-                          Cairo.height = 1000,
-                          Cairo.bg = "transparent",
-                          plot.extent = NULL,
-                          maxpixels = 1E6,
-                          ...){
-  
-  ##### Here take parameters from arguments or from supplied VegRun object
-  
-  ### IF VEGOBJECT HAS BEEN SUPPLIED MANY THINGS ARE DEFINED FROM IT 
-  if(is.VegObject(data)){
-    if(data@is.temporally.averaged){
-      run <- data@run
-      period <- data@temporal.extent
-      PFT.set <- run@pft.set
-    } 
-    else {
-      stop("plotBiomeMaps:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all these years of data?!")
-    }
-  }
-  
-  # IF NO LAYERS, COLS OR STRINGS SUPPLIED, USE THE  DEFAULTS OF THE SCHEME
-  if(is.null(layers)) layers = scheme@id
-  if(is.null(biome.strings)) biome.strings = scheme@strings
-  if(is.null(biome.cols)) biome.cols = scheme@cols
-  
-  # TOLERANCE - for when making grid
-  if(is.null(run)) { tolerance <- 0.02 }
-  else {tolerance <- run@tolerance}  
-  
-  # DIRECTORY TO SAVE PLOTS
-  if(is.null(plot.dir)){
-    if(!is.null(run)){ plot.dir <- run@run.dir} 
-    else { plot.dir = "." }
-  }
-  
-  ##### Here check data is right class for plotting, process it if not
-  data.toplot <- promoteToRaster(data, layers, run@tolerance) 
-  if(is.null(plot.labels)) {
-    if(is.null(run)){
-      plot.labels <- list()
-      for(layer in names(data.toplot)){
-        plot.labels <- append(plot.labels, layer) 
-      }
-    }
-    else{ plot.labels <- run@description}
-  }
-  
-  # EXTENT
-  if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
-  
-  # LAYOUT OBJECTS - if a run has been supplied and it has a valid map.overlay field
-  if(!is.null(run)){
-    if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}
-  }
-  
-  
-  # Add PNV data if requested read it in and compare rasters
-  if(!is.null(addData)) {
-    if(class(addData)[[1]] == "SpatialDataset") addData <- addData@data
-    
-    # first check if they are on identical grids, then one can simply add the layers
-    if(compareRaster(addData, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
-      print("woohoo!")
-    }
-    else if(compareRaster(addData, data.toplot, extent=FALSE, rowcol=FALSE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
-      addData <- crop(addData, data.toplot, snap = "out")
-      addData <- extend(addData, data.toplot)
-    }
-    else {
-      addData <- resample(addData, data.toplot, method = "ngb")
-      
-    }
-    addData <- crop(addData, data.toplot)
-    data.toplot <- mask(data.toplot, addData)  
-    
-    # add the PNV raster layer and its title
-    data.toplot <- addLayer(data.toplot, addData) 
-    plot.labels <- c(plot.labels, "PNV (Hickler et al. 2006)")
-    
-  }
-  
-  # KAPPA
-  if(!is.null(kappa.list)){
-    
-    # if only one model run put individual Kappas into biome legend
-    if(nlayers(data.toplot)-1 == 1) biome.strings <- paste0(biome.strings, " (", round(kappa.list[[1]]@individual.Kappas,2), ")", sep = "")
-    # place overall Kappa on each modelled biome map 
-    if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
-    for(layer in 1:(nlayers(data.toplot)-1)){
-      layout.objs[[paste(layer)]] <- list("sp.text", kappa.position, paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
-    }
-    
-  }
-  
-  # PLOT MAIN TITLE
-  if(is.null(main.title)) main.title <- makePlotTitle(paste(scheme@id, "Biomes", sep =""), run, period)
-  
-  for(format in Cairo.type){
-    
-    # FILENAME
-    if(is.null(file.name)) this.file.name <- .makeFileName(paste(scheme@id, "Biomes", sep =""), file.name = file.name, run = run, period = period, extension = format)
-    else this.file.name <- paste(file.name, format, sep = ".")
-    
-    Cairo(file = file.path(plot.dir, this.file.name), 
-          dpi = Cairo.dpi, 
-          type = format, 
-          width = Cairo.width, 
-          height = Cairo.height, 
-          title = main.title, 
-          bg = Cairo.bg)  
-    
-    print(spplot(data.toplot,
-                 xlab = list(label = "Longitude", cex = 2),
-                 ylab = list(label = "Latitude", cex = 2),
-                 col.regions = biome.cols,
-                 at = 0:length(biome.strings),
-                 scales = list(draw = TRUE, cex = 2),
-                 as.table = TRUE,
-                 main=list(label=main.title, cex = 3),
-                 par.strip.text = list(lines = 1.0, cex = 1.5),
-                 sp.layout = layout.objs,
-                 names.attr = plot.labels,
-                 maxpixels = maxpixels,
-                 colorkey = list(col = rev(biome.cols), 
-                                 space = "right",
-                                 labels = list(labels = rev(biome.strings), 
-                                               cex = 2,
-                                               at = seq(0, length(biome.strings), 1)+0.5)),
-                 ...
-    )
-    )
-    dev.off()
-    
-  }
-  
-}
-
-
-
-##########################################################################################################################################
-################################################## PLOT DOMINANT #########################################################################
-##########################################################################################################################################
-
-
-.plotDominantPFTMap <- function(data, # can be a data.table, SpatialPixelsDataFrame, VegVarTA (not implemented) or a raster (not implemented)
-                                which.dominant = "Dominant",
-                                quant = NULL, 
-                                run = NULL, 
-                                PFT.set = global.PFTs,
-                                period = NULL, 
-                                plot.dir = NULL, 
-                                filename = NULL, 
-                                layout.objs = NULL, 
-                                summary.title =  NULL,
-                                run.title = NULL,
-                                addData = FALSE,
-                                useLongnames = FALSE,
-                                background.colour = "transparent"){
-  
-  
-  
-  
-  ### IF IS VEGOBJECT THE SIMILAR
-  if(is.VegObject(data)){
-    if(data@is.temporally.averaged){
-      run <- data@run
-      period <- data@temporal.extent
-      PFT.set <- run@pft.set
-      if(is.null(quant)) quant <- data@quant  
-    } 
-    else {
-      stop("plotDominantPFTMap:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
-    }
-  }
-  
-  
-  # TOLERANCE - for when making grid
-  if(is.null(run)) { tolerance <- 0.02 }
-  else {tolerance <- run@tolerance}  
-  
-  # DIRECTORY TO SAVE PLOTS
-  if(is.null(plot.dir)){
-    if(!is.null(run)){ plot.dir <- run@run.dir} 
-    else { plot.dir = "." }
-  }
-  
-  
-  # CONVERT TO SPDF FOR PLOTTING (PLOTTING FACTORS VIA RASTER IS ANNOYING)
-  data.toplot <- makeSPDFfromDT(data@data, layers = which.dominant, tolerance = run@tolerance)
-  
-  # COLORLIST
-  dom.PFT.colourlist <- vector()
-  DomPFTs <- vector()
-  if(length(which.dominant) == 1 ) {
-    if(is.VegObject(data)) {
-      DomPFTs <- levels(data.toplot@data[,which.dominant])
-    }
-  }
-  else{
-    stop("Construction Site:  plotDominantPFTMaps() cannot currently deal with more than one map")
-    #for(var in which.dominant){
-    #  DomPFTs <- append(DomPFTs, levels(data.toplot[,var,with=FALSE]))    
-    #}
-  }
-  for(PFT.id in DomPFTs){
-    if(PFT.id == "Barren"){ dom.PFT.colourlist[["Barren"]] <- "gray75"}
-    else{ 
-      if(useLongnames) {dom.PFT.colourlist[[PFT.set[[PFT.id]]@id]] <- PFT.set[[PFT.id]]@colour}
-      else {dom.PFT.colourlist[[PFT.id]] <- PFT.set[[PFT.id]]@colour}
-    }
-  }
-  
-  # LAYOUT OBJECTS
-  if(!is.null(run@map.overlay)) {layout.objs <- append(layout.objs, run@map.overlay)}  
-  
-  # FILENAME
-  if(!is.null(filename)){ current.filename <- filename}
-  else {
-    if(!is.null(period)){ current.filename = paste(which.dominant, "by", quant@id, ".TA.", period@start, "-", period@start, ".png", sep = "") }
-    else { current.filename = paste(which.dominant, "by", quant@id, ".TA.", "png", sep = "") }
-  }
-  
-  # PLOT MAIN TITLE
-  if(is.null(summary.title)) summary.title <- makePlotTitle(paste("Dominant PFT by", quant@id, sep = " "), run, period)
-  
-  CairoPNG(file.path(plot.dir, current.filename), 
-           width = 1800, 
-           height = 1000, 
-           title = paste("Domiant PFT", sep = " "), 
-           bg = background.colour)  
-  print(spplot(data.toplot,
-               which.dominant,
-               xlab = list(label = "Longitude", cex = 2),
-               ylab = list(label = "Latitude", cex = 2),
-               col.regions = dom.PFT.colourlist,
-               scales = list(draw = TRUE, cex = 2),
-               main=list(label=summary.title, cex = 3),
-               par.strip.text = list(lines = 1.0, cex = 1.5),
-               sp.layout = layout.objs,
-               #names.attr = plot.labels,
-               colorkey = list(col = dom.PFT.colourlist, 
-                               space = "right",
-                               labels = list(labels = names(dom.PFT.colourlist),
-                                             at = 1:length(dom.PFT.colourlist),
-                                             cex = 2))
-  ))
-  dev.off()
-  
-}
 
 
 #######################################################################################################################################

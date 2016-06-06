@@ -29,7 +29,8 @@ Imports:
     Cairo,
     grid,
     mapdata,
-    RColorBrewer
+    RColorBrewer,
+    plyr
 Suggests:
     zoo,
     mgcv,

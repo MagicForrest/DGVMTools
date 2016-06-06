@@ -1,4 +1,4 @@
-# DGVM Ctools
+# DGVM Tools
 Tools for processing, analysing and plotting output from DGVMs (Dynamic Global Vegetation Models) in R
 
 ### Installation

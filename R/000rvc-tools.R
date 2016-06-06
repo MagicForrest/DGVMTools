@@ -108,6 +108,22 @@ is.RasterComparison <- function(input) {
   return(FALSE)
 }
 
+#' Check if an object is a \code{SpatialComparison}.   
+#'
+#' Returns TRUE if an object is a \code{SpatialComparison}, and FALSE otherwise 
+#' 
+#' @param input Any R object to be checked
+#' @return logical
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
+is.SpatialComparison <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "SpatialComparison" && attr(class.def, "package")=="DGVMTools")
+      return(TRUE)
+  return(FALSE)
+}
+
 
 ## check if two classes are comparable
 #' Checks two DGVMTools metadata objects for equality
@@ -143,7 +159,7 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
                        a@extent@ymin, b@extent@ymin, a@extent@ymax, b@extent@ymax))))
     return(TRUE)
   if (a@extent@xmin==b@extent@xmin && a@extent@xmax==b@extent@xmax && 
-        a@extent@ymin==b@extent@ymin && a@extent@ymax==b@extent@ymax)
+      a@extent@ymin==b@extent@ymin && a@extent@ymax==b@extent@ymax)
     return(TRUE)
   return(FALSE)
 })
@@ -246,7 +262,28 @@ cropDGVM <- function(input, extent){
   
 }
 
+extentFromDT <- function(this.dt) {
+  
+  # Unique Lons, Lats and Years to build the extent objects
+  sorted.unique.lats = sorted.unique.lons = NULL
+  if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))}
+  if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
 
+  # build the spatial extent depending on if it is a single site or not
+  # if it is a site
+  if(length(sorted.unique.lons) == 1 & length(sorted.unique.lats) == 1){
+    extent.temp <- c(sorted.unique.lons[1], sorted.unique.lats[1])
+  }
+  else{
+    extent.temp =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
+                          sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
+                          sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
+                          sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
+  }
+  
+  return(extent.temp)
+  
+  }
 
 ##### RETRIEVES AN OBJECT FROM A LIST BASED ON THE 'id' SLOTS
 #
@@ -279,20 +316,20 @@ byIDfromList <- function(id, list) {
     tryCatch(
       {
         if(item@id == id) return(item)
-    },
+      },
       error= function(cond){
-      message(paste("Caught an expection. Function byIDfromList(id, list) found an item in the list argument with no slots. ", sep = ""))
-    },
-    warning=function(cond) {
-     },
-    finally={}
+        message(paste("Caught an expection. Function byIDfromList(id, list) found an item in the list argument with no slots. ", sep = ""))
+      },
+      warning=function(cond) {
+      },
+      finally={}
     )    
-
+    
   }
-
+  
   message(paste("ATTENTION! No object with id = ", id, " found in list ", deparse(substitute(list)), ", so probably your script will now fail.", sep = ""))
   
-
+  
 }
 
 #' Write a netCDF file
@@ -355,7 +392,7 @@ writeNetCDF <- function(raster.in,
   else if(tolower(time.resolution) == "none"){
     # if we have a third dimension but no time resolution we have a multivariable netCDF file
     # in this case check that the var.name matches 
-  
+    
     ## TOO COMPLICATED, ABORT
     
   }

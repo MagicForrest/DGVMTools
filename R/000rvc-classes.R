@@ -177,14 +177,6 @@ checkVegRun <- function(object){
 #' @slot description A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot run.dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
-#' @slot map.overlay A lists defining which map overlay to plot as standard on for this model run.  Each item in the list can be:
-#'  \itemize{
-#'   \item A single string defining one of the standard maps from the maps or mapdata package (ie "world" or "worldHires" or "italy", or "rivers")
-#'   \item A further list containing in it's first argument a string (as above) and the further arguments interior.lines (logical), 
-#'   lwd (numeric) and col (string representing a colour), see \code{makeOverlay} for details
-#'   \item A string specifying some non-standard overlays, not yet defined
-#' }
-#' These data come from the \code{mapdata} package
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
@@ -195,7 +187,6 @@ checkVegRun <- function(object){
 #' @slot line.type A numeric to define the line style representing this model run
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @exportClass VegRunInfo
-#' @seealso makeOverlay
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegRunInfo", 
          slots = c(id = "character",
@@ -204,7 +195,6 @@ setClass("VegRunInfo",
                    description = "character",
                    run.dir = "character",                              
                    driving.data = "character",
-                   map.overlay = "ANY",
                    lonlat.offset = "numeric",
                    year.offset = "numeric",
                    tolerance = "numeric",
@@ -239,14 +229,6 @@ setClass("VegRunInfo",
 #' @slot description A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot run.dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
-#' @slot map.overlay A character defining which map overlay to plot as standard on for this model run.  Can be:
-#'\itemize{
-#'  \item A single string defining one of the standard maps from the maps or mapdata package (ie "world" or "worldHires" or "italy", or "rivers")
-#'  \item A further list containing in it's first argument a string (as above) and the further arguments interior.lines (logical), 
-#'   lwd (numeric) and col (string representing a colour), see \code{makeOverlay} for details
-#'   \item A string specifying some non-standard overlays, not yet defined
-#' }
-#' These data come from the \code{mapdata} package
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
@@ -342,7 +324,7 @@ setClass("VegObject",
                    is.temporally.averaged = "logical",
                    run = "VegRunInfo"
                    
-         ),
+         )
          
 )
 
@@ -395,6 +377,37 @@ setClass("VegObject",
 ##########################################################################################
 ########  BENCHMARKING DATASET SPECIFIC CLASSES ##########################################
 ##########################################################################################
+
+
+#### DATA OBJECT CLASS
+
+#' Contains one dataset (ie. measured, not model-generated).
+#' 
+#' A key class of the package.  A \code{DataObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
+#' For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
+#' 
+#' Generally these are not created directly by the user, but rather by functions like \code{getVegObject}.
+#' 
+#' @slot id A unique character string to identify this particular dataobject.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
+#' @slot quant A VegQuant object to define what output this DataObject contains
+#' @slot spatial.extent A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.
+#' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.
+#' @exportClass DataObject
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+setClass("DataObject", 
+         slots = c(id = "character",
+                   name = "character",
+                   data = "data.table",
+                   quant = "VegQuant",
+                   spatial.extent = "SpatialExtent",
+                   temporal.extent = "TemporalExtent",
+                   correction.layer =  "character"
+         )
+         
+)
+
+
 
 ########## SPATIAL DATASET CLASS
 
@@ -471,12 +484,9 @@ setClass("TemporalDataset",
 #' @exportClass RasterComparison
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
-setClass("RasterComparison",
+setClass("SpatialComparison",
          slots = c(id = "character",
-                   diff.raster = "RasterLayer", 
-                   perc.diff.raster = "RasterLayer", 
-                   data.raster = "RasterLayer", 
-                   model.raster = "RasterLayer", 
+                   data = "data.table",
                    R.squ = "numeric", 
                    P.cor = "numeric", 
                    RMSE = "numeric", 
@@ -554,8 +564,7 @@ setClass("BiomeScheme",
 #' 
 setClass("BiomeComparison",
          slots = c(id = "character",
-                   data.raster = "RasterLayer", 
-                   model.raster = "RasterLayer", 
+                   data = "data.table",
                    Kappa = "numeric", 
                    individual.Kappas = "numeric"  
          )
