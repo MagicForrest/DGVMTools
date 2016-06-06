@@ -388,11 +388,13 @@ setClass("VegObject",
 #' 
 #' Generally these are not created directly by the user, but rather by functions like \code{getVegObject}.
 #' 
-#' @slot id A unique character string to identify this particular dataobject.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot id A unique character string to identify this particular DataObject.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot name A character string to more fully describe this DataObject
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant A VegQuant object to define what output this DataObject contains
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.
+#' @slot correction.layer A character string defining a multiplicative corection layer that can be used for the data set
 #' @exportClass DataObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("DataObject", 
@@ -472,10 +474,6 @@ setClass("TemporalDataset",
 #' This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToSpatialDataset}
 #' 
 #' @slot id A unique character string to identify this particular raster compariosn.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot diff.raster A "RasterLayer" of the absolute difference (model - data)
-#' @slot perc.diff.raster A "RasterLayer" of the absolute difference (model - data / data) * 100
-#' @slot data.raster A "RasterLayer" holding the data
-#' @slot model.raster A "RasterLayer" holding the mode
 #' @slot R.squ The R squared between the model and the data
 #' @slot P.cor The Pearsons product moment correlation between the model and the the data,
 #' @slot RMSE The Root Mean Squared Error between the model and the the data
@@ -486,7 +484,6 @@ setClass("TemporalDataset",
 #' 
 setClass("SpatialComparison",
          slots = c(id = "character",
-                   data = "data.table",
                    R.squ = "numeric", 
                    P.cor = "numeric", 
                    RMSE = "numeric", 
@@ -555,8 +552,6 @@ setClass("BiomeScheme",
 #' This class stores the rasters (model, data), the biome scheme used and the Cohen's Kappa statistics resulting when two rasters of with identical biome categorisations are compared using \code{compareBiomes}
 #' 
 #' @slot id A unique character string to identify this particular biome compariosn.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot data.raster A "RasterLayer" holding the data biome map
-#' @slot model.raster A "RasterLayer" holding the model biome map
 #' @slot Kappa The overall Cohen's Kappa obtained when comparing modelled biomes to data biomes.
 #' @slot individual.Kappas The individual Cohen's Kappas for each biome obtained when comparing modelled to data biomes
 #' @exportClass BiomeComparison
@@ -564,7 +559,6 @@ setClass("BiomeScheme",
 #' 
 setClass("BiomeComparison",
          slots = c(id = "character",
-                   data = "data.table",
                    Kappa = "numeric", 
                    individual.Kappas = "numeric"  
          )

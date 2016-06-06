@@ -12,6 +12,7 @@ import(maps,
        raster,
        data.table)
 
+importFrom("stats", "cor")
 importFrom("fields", "tim.colors")
 importFrom("compiler", "cmpfun")
 importFrom("Cairo", "Cairo", "CairoPNG")

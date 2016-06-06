@@ -24,15 +24,6 @@ and included in a \code{VegObject} in the \code{run} slot (not inherited, so nee
 
 \item{\code{driving.data}}{A character string identifying the climate or other data used to produce this model run}
 
-\item{\code{map.overlay}}{A lists defining which map overlay to plot as standard on for this model run.  Each item in the list can be:
- \itemize{
-  \item A single string defining one of the standard maps from the maps or mapdata package (ie "world" or "worldHires" or "italy", or "rivers")
-  \item A further list containing in it's first argument a string (as above) and the further arguments interior.lines (logical), 
-  lwd (numeric) and col (string representing a colour), see \code{makeOverlay} for details
-  \item A string specifying some non-standard overlays, not yet defined
-}
-These data come from the \code{mapdata} package}
-
 \item{\code{lonlat.offset}}{A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.}
 
 \item{\code{year.offset}}{A numeric of length 1 to match be added to the simulation years to convert them to calendar years}
@@ -53,8 +44,5 @@ These data come from the \code{mapdata} package}
 }}
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
-\seealso{
-makeOverlay
 }
 

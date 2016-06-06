@@ -185,6 +185,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
 #' @import raster
 getSaatchi2011 <- function(resolution = "HD"){
   
+  Lat = Lon = NULL
   
   if(resolution == "T63"){
     Saatchi.raster <- trim(rotate(raster(system.file("extdata", "Saatchi2011.T63.nc", package = "DGVMTools"))/10))

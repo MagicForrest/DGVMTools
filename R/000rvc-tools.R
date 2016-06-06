@@ -262,7 +262,23 @@ cropDGVM <- function(input, extent){
   
 }
 
+#' Extract the extent from a data.table
+#' 
+#' Returns an raster::extent object based on the "Lon" and "Lat" columns of the data.table
+#' 
+#' @param this.dt A data.table (which is assumed to have columns "Lon" and "Lat)
+#'
+#' Note that it guesses the gridcell spacing.
+#' 
+#' @return A raster::extent object
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster data.table
+#' @export
+
 extentFromDT <- function(this.dt) {
+  
+  Lat = Lon = NULL
   
   # Unique Lons, Lats and Years to build the extent objects
   sorted.unique.lats = sorted.unique.lons = NULL

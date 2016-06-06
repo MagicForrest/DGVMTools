@@ -4,10 +4,11 @@
 \alias{compareBiomes}
 \title{Compare a run to a biome map}
 \usage{
-compareBiomes(run, variable, period, scheme, biome.dataset, plot = TRUE, ...)
+compareBiomes(runs, variable, period, scheme, biome.dataset, plot = TRUE,
+  summary.plot.dir = NULL, tag = "", canvas.options = canvas.options, ...)
 }
 \arguments{
-\item{run}{The VegRun to be compared to the data}
+\item{runs}{List of VegRuns to be compared to the biome data}
 
 \item{variable}{The VegQuant (or name) of the variable from which the biomes are to be derived. This is not flexible enough, 
 and should be folded into the scheme.}
@@ -20,6 +21,13 @@ containing the data}
 \item{biome.dataset}{The biomes to which you wish to comapre, as a SpatialDataset.}
 
 \item{plot}{Logical, if true make a biome plot.}
+
+\item{summary.plot.dir}{A directory (full path as a character string) so save the plots which compare many runs}
+
+\item{tag}{A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
+For example "Corrected" or "EuropeOnly"}
+
+\item{canvas.options}{A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation}
 
 \item{...}{Additional parameters supplied to the plotting function (at time of writing the plotting function is plotBiomes(),
 but should be changed soon to plotVegMaps())}

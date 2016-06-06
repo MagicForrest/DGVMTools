@@ -5,13 +5,10 @@
 \title{Plots a map from a temporally-averaged \code{VegObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.}
 \usage{
 plotVegMaps(data, layers = NULL, expand.layers = TRUE, quant = NULL,
-  period = NULL, doSummary = TRUE, doIndividual = FALSE, run = NULL,
-  PFT.set = global.PFTs, plot.dir = NULL, summary.file.name = NULL,
-  summary.title = NULL, tag = NULL, layout.objs = NULL,
-  plot.labels = NULL, plot.bg.col = "transparent", useLongnames = FALSE,
-  Cairo.units = "px", Cairo.dpi = 72, Cairo.type = "png",
-  Cairo.width = 1800, Cairo.height = 1000, Cairo.bg = "transparent",
-  text.multiplier = 1, plot.extent = NULL, limit = FALSE, limits = NULL,
+  period = NULL, run = NULL, PFT.set = global.PFTs, plot.dir = NULL,
+  title = NULL, tag = NULL, layout.objs = NULL, plot.labels = NULL,
+  plot.bg.col = "transparent", useLongnames = FALSE, text.multiplier = 1,
+  plot.extent = NULL, limit = FALSE, limits = NULL,
   override.cols = NULL, override.cuts = NULL, special = "none",
   maxpixels = 1e+06, biome.scheme = Smith2014.scheme, biome.data = NULL,
   kappa.list = NULL, kappa.position = NULL, ...)
@@ -29,10 +26,6 @@ and is useful to specify metadata (colours, plot ranges, names, etc.) when plott
 \item{period}{The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.
 In the case of plotting a \code{VegRun} object this is taken automatically from he object, but this provides an override.}
 
-\item{doSummary}{Boolean, whether to plot all \code{layers} on one plot.}
-
-\item{doIndividual}{Boolean, whether to plot all \code{layers} on individual plots.}
-
 \item{run}{A \code{VegRun} object from which to pull metadata.  Note that normally this information is stored in the \code{VegObject}.}
 
 \item{PFT.set}{A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{VegObject}.}
@@ -40,16 +33,13 @@ In the case of plotting a \code{VegRun} object this is taken automatically from 
 \item{plot.dir}{A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{VegObject}, but this provides an override.
 If not a \code{VegObject} and not specified, this defaults to the current directory}
 
-\item{summary.file.name}{A character string to override the file name of the summary plot (not including the path, just the filename).}
+\item{title}{A character string to override the title on the summary plot.}
 
-\item{summary.title}{A character string to override the title on the summary plot.}
-
-\item{tag}{A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
-For example "Corrected" or "EuropeOnly"}
+\item{tag}{A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
+for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.}
 
 \item{layout.objs}{List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
-so see the there for how to build them.  Note that the \code{map.overlay} slot of the relevant \code{VegRun} object will be plotted automatically, 
-so that need not be specified here.}
+so see the there for how to build them.}
 
 \item{plot.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
 Sensible titles will be constructed if this is not specified.}
@@ -57,21 +47,6 @@ Sensible titles will be constructed if this is not specified.}
 \item{plot.bg.col}{Colour string for the plot background.}
 
 \item{useLongnames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots.}
-
-\item{Cairo.units}{The units to specify the canvas size, for the Cairo graphics function.
-See \code{Cairo} documentation, but can generally be left at the default which is"px".}
-
-\item{Cairo.dpi}{The dpi for the Cairo graphics function.
-See \code{Cairo} documentation, but can generally be left at the default which is 72.}
-
-\item{Cairo.type}{The file format for the plot.  Default is "png"
-See \code{Cairo} documentation, change to "x11" for pop-up plots on GNU/linux, "win" for pop-up plots on Microsoft Windows.}
-
-\item{Cairo.width}{Width of the plots (units specified in Cairo.units argument)}
-
-\item{Cairo.height}{Height of the plots (units specified in Cairo.units argument)}
-
-\item{Cairo.bg}{Colour string specifying the background colour of the whole plot.}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa}

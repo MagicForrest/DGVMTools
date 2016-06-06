@@ -27,23 +27,14 @@
 #' @param plot.dir A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{VegObject}, but this provides an override.
 #' If not a \code{VegObject} and not specified, this defaults to the current directory
 #' @param title A character string to override the title on the summary plot.
-#' @param tag A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
-#' For example "Corrected" or "EuropeOnly"
+#' @param tag A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
+#' for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.
 #' @param layout.objs List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
 #' so see the there for how to build them.
 #' @param plot.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
 #' @param plot.bg.col Colour string for the plot background.
 #' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. 
-#' @param Cairo.units The units to specify the canvas size, for the Cairo graphics function.  
-#' See \code{Cairo} documentation, but can generally be left at the default which is"px".
-#' @param Cairo.dpi The dpi for the Cairo graphics function.  
-#' See \code{Cairo} documentation, but can generally be left at the default which is 72.
-#' @param Cairo.type The file format for the plot.  Default is "png"  
-#' See \code{Cairo} documentation, change to "x11" for pop-up plots on GNU/linux, "win" for pop-up plots on Microsoft Windows.
-#' @param Cairo.width Width of the plots (units specified in Cairo.units argument)
-#' @param Cairo.height Height of the plots (units specified in Cairo.units argument)
-#' @param Cairo.bg Colour string specifying the background colour of the whole plot.
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa
 #' @param plot.extent An extent object to limit the plot area.

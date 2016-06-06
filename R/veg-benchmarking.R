@@ -1,79 +1,12 @@
 
 
-
-#############################################################################################################
-############################ COMPARE TWO RASTERS 
-#' Statistically compare two rasters 
-#' 
-#' Returns the R^2, RMSE and Pearson's correlation coefficient between two rasters, as well as the rasters themselves 
-#' (on a common extent and with the NA areas masked from both data datasets), 
-#' a raster of the difference and their percentage difference (relative to the data).
-#' 
-#' @param data.raster The data as a raster
-#' @param model.raster The model output as a raster
-#' 
-#' @return An object of class RasterComparison
-#' 
-#' The choice of statistical measures might not be the best but can easily be improved.  No spatial correlations are considered.
-#' 
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import raster
-#' @export
-
-compareTwoRastersStats <- function(data.raster, model.raster){
-  
-  if(extent(data.raster) != extent(model.raster)){
-    
-    data.raster <- intersect(data.raster, model.raster)
-    model.raster <- intersect(model.raster, data.raster)
-    
-  }
-  
-  
-  model.raster <- mask(model.raster, data.raster)
-  data.raster <- mask(data.raster, model.raster)
-  
-  # difference raster
-  diff <- model.raster - data.raster
-  names(diff) <- "Model.minus.Data"
-  
-  # calculated mean, SD, MSE, RMSE, R^2, Pearson correlation etc
-  mean.diff <- cellStats(diff, stat= mean , na.rm=TRUE, asSample=FALSE)
-  sd.diff <- cellStats(diff, stat= sd , na.rm=TRUE, asSample=FALSE)
-  sd.observed <- cellStats(data.raster, stat= sd , na.rm=TRUE, asSample=FALSE)
-  var.observed <- sd.observed^2
-  MSE <- cellStats(diff^2, stat= sum, na.rm=TRUE, asSample=FALSE)/ cellStats(is.finite(diff), stat= sum, asSample=FALSE)
-  RMSE <- (MSE)^(0.5)
-  R.squ <- 1 - (MSE/var.observed)
-  
-  P.cor.full <- layerStats(stack(data.raster, model.raster), 'pearson', na.rm=TRUE, asSample=FALSE)
-  P.cor <- P.cor.full$`pearson correlation coefficient`[1,2]
-  
-  perc.diff.raster <- (diff / data.raster) * 100
-  comparison.results <- new("RasterComparison",
-                            diff.raster = diff, 
-                            perc.diff.raster = perc.diff.raster, 
-                            data.raster = data.raster, 
-                            model.raster = model.raster, 
-                            R.squ = R.squ, 
-                            P.cor = P.cor, 
-                            RMSE = RMSE, 
-                            mean.diff = mean.diff, 
-                            sd.diff = sd.diff)
-  
-  
-  return(comparison.results)
-  
-}
-
-
-
 #' Benchmark VegRuns against a spatial dataset
 #'
 #' To use this function it is *required* that \code{compareRunToSpatialDataset()} has been performed on each of the runs with 
 #' the dataset to which we are comparing.
 #' 
 #' @param runs A list of VegRun objects (each with the RasterComparison object already created)
+#' @param layer.name Layer in the vegetation model output to compare to the data
 #' @param dataset The spatial dataset to which we are comparing (represented as a SpatialDataset object)
 #' @param tag A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
 #' for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.
@@ -86,6 +19,11 @@ compareTwoRastersStats <- function(data.raster, model.raster){
 #' @param showR2 A logical, if TRUE, put the R squared values on the plots.
 #' @param layout.objs A list of layout objects (see the \code{sp} package) for putting on the spatial plots.  For example,
 #' continent outlines
+#' @param histo.plot.range A two-value numeric vector defining the range for the histo plots
+#' @param ignore.raster A raster used to mask out gridcells wich are not to be compared (ie any gridcells set to NA in the ignore.raster
+#' are set to NA in thr model and data rasters)
+#' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs
+#' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation
 #' @param ... Arguments to be passed to plotVegMaps when making the spatial plots.  
 #' 
 #' @return No return, just makes plots.
@@ -103,10 +41,7 @@ benchmarkSpatial <- function(runs,
                              spatial.extent = NULL,
                              showR2 = TRUE,
                              layout.objs = NULL,
-                             doScatterPlots=TRUE, 
-                             doHistoPlots=TRUE, 
                              histo.plot.range = NULL, 
-                             quant = NULL, 
                              ignore.raster = NULL,
                              summary.plot.dir = NULL,
                              canvas.options = list(dpi = 72,
@@ -127,10 +62,7 @@ benchmarkSpatial <- function(runs,
   
   if(is.null(histo.plot.range)) histo.plot.range <- c(diff.cuts[[1]], diff.cuts[[length(diff.cuts)]])
   
-  # PREPARE QUANT
-  if(is.null(quant)) quant <- dataset@quant 
-  
-  
+
   # FIRST BENCHMARK EACH RUN SEPARATELY
   # but save the comparisons in a list
   comparison.objects.list <- list()
@@ -186,22 +118,21 @@ benchmarkSpatial <- function(runs,
     
     comparison.result <- new("SpatialComparison",
                              id = paste(run@id, dataset@id, sep = "."), 
-                             data = comparison.dt,
                              R.squ = R.squ, 
                              P.cor = P.cor, 
                              RMSE = RMSE, 
                              mean.diff = mean.diff, 
                              sd.diff = sd.diff)
     
-    runs[[run@id]] <- addToVegRun(comparison.result, vegrun.list[[run@id]])
+    #runs[[run@id]] <- addToVegRun(comparison.result, vegrun.list[[run@id]])
     
     ##### DIFFERENCE MAPS
     
-    do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(quant@id, "Diff", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
+    do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Diff", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     print(plotVegMaps(new.data.dt,
-                layer = paste(run@id, "diff", sep = sep.char),
-                quant = quant, 
+                layers = paste(run@id, "diff", sep = sep.char),
+                quant = dataset@quant, 
                 period = dataset@temporal.extent, 
                 run = run,
                 tag = "Corrected",
@@ -214,17 +145,17 @@ benchmarkSpatial <- function(runs,
     
     ##### ABSOLUTE MAPS
     
-    do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(quant@id, "Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
+    do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
     print(plotVegMaps(new.data.dt,
-                layer = c(run@id, dataset@id),
-                quant = quant, 
+                layers = c(run@id, dataset@id),
+                quant = dataset@quant, 
                 period = dataset@temporal.extent, 
                 doSummary = TRUE, 
                 doIndividual = TRUE, 
                 run = run,
-                summary.file.name = paste(quant@id, "comp", dataset@id, "2-up", sep = "."),
+                summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
                 tag = "Corrected",
                 maxpixels = 1000000,
                 plot.labels = c(run@description, dataset@name),
@@ -243,7 +174,7 @@ benchmarkSpatial <- function(runs,
     #                       stat.results = comparison.results,
     #                       run = vegobject@run, 
     #                       data.name = dataset@id, 
-    #                       quant = quant, 
+    #                       quant = dataset@quant, 
     #                       plot.range = histo.plot.range)
     #   
     # }
@@ -256,7 +187,7 @@ benchmarkSpatial <- function(runs,
     #                         stat.results = comparison.results,
     #                         run = vegobject@run, 
     #                         data.name = dataset@id, 
-    #                         quant = quant)
+    #                         quant = dataset@quant)
     #   
     #   
     # }
@@ -301,7 +232,7 @@ benchmarkSpatial <- function(runs,
     # CROP/EXTEND RASTERS (if extent specified)
     # MF: reprogram for new implemetation, need to decide exactly how to handle  
     
-    do.call(Cairo, args = append(list(file = file.path(plot.dir, paste("Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
+    do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
     # PLOT ABSOLUTE VALUES
@@ -312,7 +243,6 @@ benchmarkSpatial <- function(runs,
                 tag = "Corrected",               
                 plot.labels = plot.titles,
                 layout.objs = layout.obs.without.Rsquared,
-                plot.dir = summary.plot.dir,
                 ...)
     )
     
@@ -322,7 +252,7 @@ benchmarkSpatial <- function(runs,
     # PLOT ABSOLUTE DIFFERENCE
     plot.titles <- plot.titles[-1]
     
-    do.call(Cairo, args = append(list(file = file.path(plot.dir, paste("Difference", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
+    do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Difference", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                 canvas.options)) 
     
     print(plotVegMaps(new.data.dt,
@@ -335,7 +265,6 @@ benchmarkSpatial <- function(runs,
                 override.cuts = diff.cuts,
                 text.multiplier = 1.0,
                 layout.objs = layout.objs,
-                plot.dir = summary.plot.dir,
                 ...)
     )
     
@@ -345,7 +274,7 @@ benchmarkSpatial <- function(runs,
     
     
     # PLOT PERCENTAGE DIFFERENCE
-    do.call(Cairo, args = append(list(file = file.path(plot.dir, paste("PercentageDifference", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
+    do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("PercentageDifference", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
     print(plotVegMaps(new.data.dt,
@@ -358,7 +287,6 @@ benchmarkSpatial <- function(runs,
                 override.cuts = perc.diff.cuts,
                 text.multiplier = 1.0,
                 layout.objs = layout.objs,
-                plot.dir = summary.plot.dir, 
                 ...)
     )
     
@@ -405,6 +333,8 @@ doKappa <- function(dt,
                     id, 
                     labels = NULL, 
                     verbose = TRUE){
+  
+  x = y = code = NULL
   
   # get the unique classes and put them in a vector with no missing values
   unique.classes <- unique(c(as.matrix(dt)))
@@ -474,7 +404,6 @@ doKappa <- function(dt,
   
   return(new("BiomeComparison",
              id = id,
-             data = dt,
              Kappa = kappa, 
              individual.Kappas = per.class.kappa)
   )
@@ -495,9 +424,13 @@ doKappa <- function(dt,
 #' containing the data
 #' @param biome.dataset The biomes to which you wish to comapre, as a SpatialDataset.
 #' @param plot Logical, if true make a biome plot.
+#' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs
 #' @param ... Additional parameters supplied to the plotting function (at time of writing the plotting function is plotBiomes(),
 #'  but should be changed soon to plotVegMaps())
 #'  
+#' @param tag A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
+#' For example "Corrected" or "EuropeOnly"
+#' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation
 #' @return A Biome comparison object
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -510,7 +443,6 @@ compareBiomes <- function(runs,
                           biome.dataset, 
                           plot = TRUE, 
                           summary.plot.dir = NULL,
-                          plot.data = TRUE, 
                           tag = "",
                           canvas.options = canvas.options,
                           ...){
@@ -576,13 +508,11 @@ compareBiomes <- function(runs,
     # also compare kappas?
     
   }
-  
-  if(plot.data) {
-    labels <- append(labels, biome.dataset@name)
-    layers <- append(layers, biome.dataset@id)
-  }
-  
-  do.call(Cairo, args = append(list(file = file.path(plot.dir, paste("Biomes", scheme@id, tag, canvas.options[["type"]], sep = "."))), 
+
+  labels <- append(labels, biome.dataset@name)
+  layers <- append(layers, biome.dataset@id)
+
+  do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Biomes", scheme@id, tag, canvas.options[["type"]], sep = "."))), 
                                canvas.options)) 
   print(plotVegMaps(new.data.dt, 
                     layers = layers,

@@ -12,10 +12,6 @@ This class stores the rasters (model, data), the biome scheme used and the Cohen
 \describe{
 \item{\code{id}}{A unique character string to identify this particular biome compariosn.  Recommended to be alphanumeric because it is used to construct file names.}
 
-\item{\code{data.raster}}{A "RasterLayer" holding the data biome map}
-
-\item{\code{model.raster}}{A "RasterLayer" holding the model biome map}
-
 \item{\code{Kappa}}{The overall Cohen's Kappa obtained when comparing modelled biomes to data biomes.}
 
 \item{\code{individual.Kappas}}{The individual Cohen's Kappas for each biome obtained when comparing modelled to data biomes}
