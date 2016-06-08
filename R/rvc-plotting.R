@@ -177,7 +177,7 @@ makeOverlay <- function(which, interior.lines = TRUE, lwd = 0.5, col = NULL){
   # if no special case then we have standard map data
   map.sp.lines <- map2SpatialLines(map(which, plot = FALSE, interior = interior.lines), proj4string = CRS(proj4str))
   map.sp.lines <- correct.map.offset(map.sp.lines)
-  return(list("sp.lines", map.sp.lines, lwd = lwd, col = col))
+  return(list(list("sp.lines", map.sp.lines, lwd = lwd, col = col)))
   
   
 }

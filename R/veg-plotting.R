@@ -554,7 +554,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   else plot.labels.here <- plot.labels
   
-  
   return(spplot(data.toplot,
                layers,
                par.settings = list(panel.background=list(col=plot.bg.col)),

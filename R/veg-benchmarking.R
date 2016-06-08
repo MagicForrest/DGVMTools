@@ -62,7 +62,7 @@ benchmarkSpatial <- function(runs,
   
   if(is.null(histo.plot.range)) histo.plot.range <- c(diff.cuts[[1]], diff.cuts[[length(diff.cuts)]])
   
-
+  
   # FIRST BENCHMARK EACH RUN SEPARATELY
   # but save the comparisons in a list
   comparison.objects.list <- list()
@@ -84,7 +84,7 @@ benchmarkSpatial <- function(runs,
     # get the layer 
     if(!(layer.name %in% names(model.vegobject@data))) model.obj <- aggregateLayers(model.vegobject, layer.name, PFT.data = run@pft.set)
     
-    # add the model output (keeping only points where there are data) and and rename the colum with the run id
+     # add the model output (keeping only points where there are data) and and rename the colum with the run id
     new.data.dt <- merge(x = new.data.dt, y = model.obj@data[, c("Lat", "Lon", layer.name), with=FALSE], all.x = TRUE, all.y = FALSE)
     setnames(new.data.dt, ncol(new.data.dt), run@id)
     
@@ -124,21 +124,21 @@ benchmarkSpatial <- function(runs,
                              mean.diff = mean.diff, 
                              sd.diff = sd.diff)
     
-    #runs[[run@id]] <- addToVegRun(comparison.result, vegrun.list[[run@id]])
+    runs[[run@id]] <- addToVegRun(comparison.result, runs[[run@id]])
     
     ##### DIFFERENCE MAPS
     
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Diff", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     print(plotVegMaps(new.data.dt,
-                layers = paste(run@id, "diff", sep = sep.char),
-                quant = dataset@quant, 
-                period = dataset@temporal.extent, 
-                run = run,
-                tag = "Corrected",
-                maxpixels = 1000000,
-                special = "diff",
-                ...)
+                      layers = paste(run@id, "diff", sep = sep.char),
+                      quant = dataset@quant, 
+                      period = dataset@temporal.extent, 
+                      run = run,
+                      tag = "Corrected",
+                      maxpixels = 1000000,
+                      special = "diff",
+                      ...)
     )
     
     dev.off()
@@ -149,17 +149,15 @@ benchmarkSpatial <- function(runs,
                                  canvas.options)) 
     
     print(plotVegMaps(new.data.dt,
-                layers = c(run@id, dataset@id),
-                quant = dataset@quant, 
-                period = dataset@temporal.extent, 
-                doSummary = TRUE, 
-                doIndividual = TRUE, 
-                run = run,
-                summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
-                tag = "Corrected",
-                maxpixels = 1000000,
-                plot.labels = c(run@description, dataset@name),
-                ...)
+                      layers = c(run@id, dataset@id),
+                      quant = dataset@quant, 
+                      period = dataset@temporal.extent, 
+                      run = run,
+                      summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
+                      tag = "Corrected",
+                      maxpixels = 1000000,
+                      plot.labels = c(run@description, dataset@name),
+                      ...)
     )
     
     dev.off()
@@ -210,6 +208,9 @@ benchmarkSpatial <- function(runs,
     # add each model run to stacks and text lists
     counter <- 0
     layout.obs.without.Rsquared <- layout.objs
+    this.extent <- extentFromDT(new.data.dt)
+    stats.pos.x <- (this.extent@xmax-this.extent@xmin) * 0.1 + this.extent@xmin
+    stats.pos.y <- (this.extent@ymax-this.extent@ymin) * 0.1 + this.extent@ymin
     for(run in runs){
       
       abs.layers <- append(abs.layers, run@id)
@@ -220,7 +221,8 @@ benchmarkSpatial <- function(runs,
       counter <- counter + 1
       comparison.obj <- run@benchmarks[[paste(run@id, dataset@id, sep = ".")]]
       R2.val <- round(comparison.obj@R.squ, 3)
-      layout.objs[[run@id]] <- list("sp.text", c(dataset@spatial.extent@extent@xmin * 0.8, dataset@spatial.extent@extent@ymin * 0.7), bquote(R^2 ~ "=" ~ .(R2.val)), which = counter, cex = 1.5)
+      layout.objs[[run@id]] <- list("sp.text", txt = bquote(R^2 ~ "=" ~ .(R2.val)), loc = c(stats.pos.x,stats.pos.y), which = counter, cex = 2)
+      
       rm(comparison.obj)
       
       # add the text to the text lists
@@ -229,21 +231,24 @@ benchmarkSpatial <- function(runs,
       
     }
     
+    #print(str(layout.objs))
+    
     # CROP/EXTEND RASTERS (if extent specified)
     # MF: reprogram for new implemetation, need to decide exactly how to handle  
+    
     
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
     # PLOT ABSOLUTE VALUES
     print(plotVegMaps(new.data.dt,
-                layers = abs.layers,
-                quant = dataset@quant, 
-                period = dataset@temporal.extent, 
-                tag = "Corrected",               
-                plot.labels = plot.titles,
-                layout.objs = layout.obs.without.Rsquared,
-                ...)
+                      layers = abs.layers,
+                      quant = dataset@quant, 
+                      period = dataset@temporal.extent, 
+                      tag = "Corrected",               
+                      plot.labels = plot.titles,
+                      layout.objs = layout.obs.without.Rsquared,
+                      ...)
     )
     
     dev.off()
@@ -253,19 +258,19 @@ benchmarkSpatial <- function(runs,
     plot.titles <- plot.titles[-1]
     
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Difference", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
-                                canvas.options)) 
+                                 canvas.options)) 
     
     print(plotVegMaps(new.data.dt,
-                layers = diff.layers,
-                quant = dataset@quant, 
-                period = dataset@temporal.extent, 
-                title = paste("Simulated - ", dataset@id, " (", dataset@quant@units, ")", sep = ""),
-                special = "difference",               
-                plot.labels = plot.titles,
-                override.cuts = diff.cuts,
-                text.multiplier = 1.0,
-                layout.objs = layout.objs,
-                ...)
+                      layers = diff.layers,
+                      quant = dataset@quant, 
+                      period = dataset@temporal.extent, 
+                      title = paste("Simulated - ", dataset@id, " (", dataset@quant@units, ")", sep = ""),
+                      special = "difference",               
+                      plot.labels = plot.titles,
+                      override.cuts = diff.cuts,
+                      text.multiplier = 1.0,
+                      layout.objs = layout.objs,
+                      ...)
     )
     
     dev.off()
@@ -278,16 +283,16 @@ benchmarkSpatial <- function(runs,
                                  canvas.options)) 
     
     print(plotVegMaps(new.data.dt,
-                layers = perc.diff.layers,
-                quant = dataset@quant, 
-                period = dataset@temporal.extent, 
-                title = paste("Simulated - ", dataset@id, "(percentage difference)"),
-                special = "percentage.difference",               
-                plot.labels = plot.titles,
-                override.cuts = perc.diff.cuts,
-                text.multiplier = 1.0,
-                layout.objs = layout.objs,
-                ...)
+                      layers = perc.diff.layers,
+                      quant = dataset@quant, 
+                      period = dataset@temporal.extent, 
+                      title = paste("Simulated - ", dataset@id, "(percentage difference)"),
+                      special = "percentage.difference",               
+                      plot.labels = plot.titles,
+                      override.cuts = perc.diff.cuts,
+                      text.multiplier = 1.0,
+                      layout.objs = layout.objs,
+                      ...)
     )
     
     dev.off()
@@ -430,7 +435,7 @@ doKappa <- function(dt,
 #'  
 #' @param tag A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
 #' For example "Corrected" or "EuropeOnly"
-#' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation
+#' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} documentation
 #' @return A Biome comparison object
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -508,10 +513,10 @@ compareBiomes <- function(runs,
     # also compare kappas?
     
   }
-
+  
   labels <- append(labels, biome.dataset@name)
   layers <- append(layers, biome.dataset@id)
-
+  
   do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Biomes", scheme@id, tag, canvas.options[["type"]], sep = "."))), 
                                canvas.options)) 
   print(plotVegMaps(new.data.dt, 
@@ -525,11 +530,11 @@ compareBiomes <- function(runs,
   )
   
   dev.off()
-
+  
   biome.dataset@data <- new.data.dt
   
   return(biome.dataset)
-    
+  
 }
 
 
@@ -552,8 +557,10 @@ compareBiomes <- function(runs,
 #' @param perc.diff.cuts A numeric vector which (if specified), defines the cuts for the percentage difference plot of each run compared to the base run
 #' @param special A character string which, if specified, is used to give special plotting instructions to \code{plotVegMaps}, 
 #' see the documentation of that function for details.
-#' @param doIndividual Logical, if TRUE, make individual comparison plot for, say, all PFTs, as well as putting them all on one plot.
+#' @param single.page Logical, if TRUE, put all "sub-layers" on one plot instead of separate individual plots.
 #' @param tag A character string to identify this plot/analysis in comparison to others, eg. "SoilDepthTests" or "NewSLAForumalation"  
+#' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} documentation
+#' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs
 #' @param ... Further arguments passed to the \code{plotVegMaps} function.
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -561,7 +568,7 @@ compareBiomes <- function(runs,
 #' @export
 
 
-compareVegSpatialObject <- function(runs, 
+compareRuns <- function(runs, 
                                     veg.spatial.id, 
                                     layer, 
                                     expand.layer = TRUE, 
@@ -572,8 +579,10 @@ compareVegSpatialObject <- function(runs,
                                     plot.perc.diff = TRUE, 
                                     perc.diff.cuts = NULL,
                                     special = "none",
-                                    doIndividual = FALSE,
+                                    single.page = FALSE,
                                     tag = NULL,
+                                    canvas.options = canvas.options,
+                                    summary.plot.dir = NULL,
                                     ...) {
   
   # To avoid NOTES
@@ -584,13 +593,14 @@ compareVegSpatialObject <- function(runs,
   setkey(comparison.dt, Lon, Lat)
   
   # for each run
+  original.layers <- layer
   for(run in runs){
     
     # grab the VegObject that we want from the vegRun
     temp.spatial <- byIDfromList(veg.spatial.id, run@objects)
     
     # expand the layer if necessary
-    if(expand.layer){ layer <- expandLayers(layers = layer, input.data = temp.spatial, PFT.set = run@pft.set) }
+    if(expand.layer){layer <- expandLayers(layers = layer, input.data = temp.spatial, PFT.set = run@pft.set) }
     
     # Extract the columns that we need and add them to the data.table and set the names appropriately
     comparison.dt <- comparison.dt[temp.spatial@data[,c("Lon","Lat",layer),with=FALSE]]
@@ -602,92 +612,182 @@ compareVegSpatialObject <- function(runs,
   
   
   # now plot the absolute values for each layer run on the same plot (one plot per layer)
+  all.layers <- c()
   for(sub.layer in layer) {
     layers <- c()
     for(run in runs){
       layers <- append(layers, paste(run@id, sub.layer, sep = "_"))
+      all.layers  <- append(all.layers, paste(run@id, sub.layer, sep = "_"))
     }
+    
+    do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", sub.layer, veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
+                                 canvas.options)) 
+    
     print(plotVegMaps(comparison.dt,
-                layers = layers,
-                quant = run@objects[[veg.spatial.id]]@quant,
-                summary.title = sub.layer,
-                tag = paste(tag, "RunComparison", sub.layer, sep = "."),
-                special = special,
-                override.cuts = abs.value.cuts,
-                doIndividual = FALSE,
-                ...)
+                      layers = layers,
+                      quant = run@objects[[veg.spatial.id]]@quant,
+                      title = sub.layer,
+                      tag = paste(tag, "RunComparison", sub.layer, sep = "."),
+                      special = special,
+                      override.cuts = abs.value.cuts,
+                      ...)
     )
+    
+    dev.off()
+  }
+  
+  if(single.page){
+    
+    do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
+                                 canvas.options)) 
+    
+    print(plotVegMaps(comparison.dt,
+                      layers = all.layers,
+                      quant = run@objects[[veg.spatial.id]]@quant,
+                      title = paste(paste(original.layers, collapse= " ", sep = ""), run@objects[[veg.spatial.id]]@quant@full.string, sep = " "),
+                      tag = paste(tag, "RunComparison", sub.layer, sep = "."),
+                      special = special,
+                      override.cuts = abs.value.cuts,
+                      ...)
+    )
+    
+    dev.off()
+    
   }
   
   # if a base.run is supplied, plot the the difference between each run and it
   if(!is.null(base.run.id)){
     
+    # save for making an overall plot later
+    all.diff.titles = all.diff.names = c()
+    all.perc.diff.titles = all.perc.diff.names = c()
+    
     # for each run that is not the base.run
     for(run in runs){
+      
       if(run@id != base.run.id){
-        
-        # for each layer
-        diff.titles = diff.names = c()
-        perc.diff.titles = perc.diff.names = c()
         
         for(sub.layer in layer){
           
-          # calculate the difference
+          ### ABSOLUTE DIFFERENCE
           col.name <- paste(paste(run@id, sub.layer, sep = "_"), "minus", paste(base.run.id, sub.layer, sep = "_"), sep = ".")
           comparison.dt[, eval(col.name) := get(paste(run@id, sub.layer, sep = "_")) - get(paste(base.run.id, sub.layer, sep = "_"))]
-          diff.names <- append(diff.names, col.name)
-          diff.titles <- append(diff.titles, paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "))
+          this.diff.names <- col.name
+          this.diff.titles <- paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " ")
+          all.diff.names <- append(all.diff.names, this.diff.names)
+          all.diff.titles <- append(all.diff.titles, this.diff.titles)
           
-          # calculate the percentage difference
+          
+          # plot the difference
+          if(plot.diff){
+            
+            do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunDifference", sub.layer, veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
+                                         canvas.options)) 
+            
+            print(plotVegMaps(comparison.dt,
+                              layers = this.diff.names,
+                              quant = run@objects[[veg.spatial.id]]@quant,
+                              special = "Diff",
+                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
+                              plot.labels = this.diff.titles,
+                              override.cuts = diff.cuts,
+                              tag = tag,
+                              ...)
+            )
+            
+            dev.off()
+            
+          } # if plot difference
+          
+          
+          # PERCENTAGE DIFFERENCE
           col.name <- paste(paste(run@id, sub.layer, sep = "_"), "minus", paste(base.run.id, sub.layer, sep = "_"), "perc.diff", sep = ".")
           comparison.dt[, eval(col.name) := (get(paste(run@id, sub.layer, sep = "_")) - get(paste(base.run.id, sub.layer, sep = "_"))) %/0% get(paste(base.run.id, sub.layer, sep = "_")) * 100]
-          perc.diff.names <- append(perc.diff.names, col.name)
-          perc.diff.titles <- append(perc.diff.titles, paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "))
+          this.perc.diff.names <- col.name
+          this.perc.diff.titles <- paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " ")
+          all.perc.diff.names <- append(all.perc.diff.names, this.perc.diff.names)
+          all.perc.diff.titles <- append(all.perc.diff.titles, this.perc.diff.titles)
           
-        }
-        
-        # plot the difference
-        if(plot.diff){
           
-          print(plotVegMaps(comparison.dt,
-                      layers = diff.names,
-                      quant = run@objects[[veg.spatial.id]]@quant,
-                      special = "Diff",
-                      title = paste(paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
-                      plot.labels = diff.titles,
-                      override.cuts = diff.cuts,
-                      doIndividual = doIndividual,
-                      tag = tag,
-                      ...)
-          )
-        }
-        
-        # plot the percentage difference
-        if(plot.perc.diff){
+          # plot the percentage difference
+          if(plot.perc.diff){
+            
+            do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunPercentageDifference", sub.layer, veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
+                                         canvas.options)) 
+            
+            print(plotVegMaps(comparison.dt,
+                              layers = this.perc.diff.names,
+                              quant = run@objects[[veg.spatial.id]]@quant,
+                              special = "Perc.Diff",
+                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
+                              limit = TRUE,
+                              limits = c(-100,200),
+                              plot.labels = this.perc.diff.titles,
+                              override.cuts = perc.diff.cuts,
+                              tag = tag,
+                              ...)
+            )
+            
+            dev.off()
+            
+          } # if plot percentage difference
           
-          print(plotVegMaps(comparison.dt,
-                      layers = perc.diff.names,
-                      quant = run@objects[[veg.spatial.id]]@quant,
-                      special = "Perc.Diff",
-                      title = paste(paste(run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
-                      limit = TRUE,
-                      limits = c(-100,200),
-                      plot.labels = perc.diff.titles,
-                      override.cuts = perc.diff.cuts,
-                      doIndividual = doIndividual,
-                      tag = tag,
-                      ...)
-          )
-          
-        }
+        } # for each sublayer
         
+      } # if run is not baseline run
+      
+    } # for each run
+    
+    
+    # Now plot all layers together if requested
+    if(single.page) {
+      
+      # plot the difference
+      if(plot.diff){
         
+        do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunDifference", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
+                                     canvas.options)) 
         
+        print(plotVegMaps(comparison.dt,
+                          layers = all.diff.names,
+                          quant = run@objects[[veg.spatial.id]]@quant,
+                          special = "Diff",
+                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
+                          plot.labels = all.diff.titles,
+                          override.cuts = diff.cuts,
+                          tag = tag,
+                          ...)
+        )
         
-      }
-    }
+        dev.off()
+        
+      } # if plot.diff
+      
+      if(plot.perc.diff){
+        
+        do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunPercentageDifference", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
+                                     canvas.options)) 
+        
+        print(plotVegMaps(comparison.dt,
+                          layers = all.perc.diff.names,
+                          quant = run@objects[[veg.spatial.id]]@quant,
+                          special = "Perc.Diff",
+                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@full.string, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
+                          limit = TRUE,
+                          limits = c(-100,200),
+                          plot.labels = all.perc.diff.titles,
+                          override.cuts = perc.diff.cuts,
+                          tag = tag,
+                          ...)
+        )
+        
+        dev.off()
+        
+      } # if plot.perc.diff
+      
+    } # if single.page 
     
   } # if base run is specified  
   
-}
+} # end function
 

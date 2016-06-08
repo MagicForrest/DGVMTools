@@ -27,7 +27,7 @@ containing the data}
 \item{tag}{A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
 For example "Corrected" or "EuropeOnly"}
 
-\item{canvas.options}{A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation}
+\item{canvas.options}{A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} documentation}
 
 \item{...}{Additional parameters supplied to the plotting function (at time of writing the plotting function is plotBiomes(),
 but should be changed soon to plotVegMaps())}

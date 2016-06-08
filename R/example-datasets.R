@@ -168,7 +168,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
 }
 
-############# EXAMPLE DATA SET ONE - POTENTIAL NATURAL VEGETATION BIOMES
+############# EXAMPLE DATA SET TWO - TROPICAL BIOMASS
 #' Read Saatchi et al. 2011 total biomass map
 #' 
 #' An example dataset of distribution total biomass across the tropics.  
