@@ -261,8 +261,7 @@ setClass("VegRun",
 #' 
 #' 
 #' @slot id A unique character string to identify this particular vegetation quantity, should match with the name of a particular model output variable.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot short.string A short character string to refer to this quantity
-#' @slot full.string A longer character string to provide a more complete description of this quantity
+#' @slot name A longer character string to provide a more complete description of this quantity
 #' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.  
 #' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
 #' @slot colours A fucntion that retutns a colour scale suited for plotting this quantity.
@@ -272,8 +271,7 @@ setClass("VegRun",
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegQuant", 
          slots = c(id = "character",
-                   short.string = "character",
-                   full.string = "character",
+                   name = "character",
                    type = "character",
                    units = "character",
                    colours = "function",
@@ -281,8 +279,7 @@ setClass("VegQuant",
                    aggregate.method = "character"
          ),
          prototype = c(id = "UnknownID",
-                       short.string = "UnknownID",
-                       full.string = "UnknownString",
+                       name = "UnknownString",
                        type = "UnknownType",
                        units = "-",
                        colours = tim.colors,

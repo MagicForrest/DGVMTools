@@ -63,7 +63,7 @@
 #' 
 #' The function works best for \code{VegObjects} (which contain a lot of useful metadata).   
 #' 
-#' @return Nothing, just makes the plot
+#' @return Returns a plot object (from spplot)
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @importFrom Cairo Cairo
@@ -238,8 +238,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     quant@id <-  paste(quant@id, "diff", sep =".")
-    quant@short.string = paste(quant@short.string, "Diff", sep = ".")
-    quant@full.string = paste("Difference: ", quant@full.string, sep = "")
+    quant@name = paste("Difference: ", quant@full.string, sep = "")
     plot.bg.col <- "grey"
     
   }
@@ -252,8 +251,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     quant@id <-  paste(quant@id, "percdiff", sep =".")
-    quant@short.string = paste(quant@short.string, "PercDiff", sep = ".")
-    quant@full.string = paste("Percentage Difference: ", quant@full.string, sep = "")
+    quant@name = paste("Percentage Difference: ", quant@full.string, sep = "")
     plot.bg.col <- "grey"
     
     # SET THE INTERVALS (using either these sensible options or the overrides)
@@ -294,8 +292,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     quant@cuts <- seq(from = 0, to = 1, by = 0.05)
     quant@id <- paste(quant@id, "fraction", sep = ".")
-    quant@short.string <- paste(quant@short.string, "fraction", sep = ".")
-    quant@full.string <- paste(quant@full.string, "Fraction", sep = " ")
+    quant@name <- paste(quant@full.string, "Fraction", sep = " ")
     quant@colours <- colorRampPalette(c("grey85", "black"))
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
@@ -349,8 +346,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # Build a VegQuant object with the appropriate colours and cuts 
     quant <- new("VegQuant",
                  id = biome.scheme@id,
-                 short.string = biome.scheme@id,
-                 full.string = biome.scheme@name,
+                 name = biome.scheme@name,
                  type = "BiomeClassification",
                  units = "categorical",
                  colours = colorRampPalette(biome.scheme@cols),
@@ -457,8 +453,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     quant <- new("VegQuant",
                  id = "Domiant",
-                 short.string = "Domiant",
-                 full.string = "Dominant PFTs",
+                 name = "Dominant PFTs",
                  type = "DominantPFTs",
                  units = "categorical",
                  colours = colorRampPalette(col.list),
@@ -573,77 +568,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                names.attr = plot.labels.here,
                ...)
   )
-  
-  
-  # }
-  # 
-  # ### PRINT INDIVIUAL PLOTS
-  # if(doIndividual){
-  #   
-  #   for(layer in layers){
-  #     
-  #     # FILENAME
-  #     this.id.string <- makeVariableIDString(quant@id, layer, run.id = run.id, tag)
-  #     this.file.path <- file.path(plot.dir, paste(makeVegObjectID(this.id.string, temporal.extent = period, spatial.extent = NULL, temporally.averaged = TRUE, spatially.averaged = FALSE), format, sep = "."))
-  #     # Special case for format "x11", filename should be NULL
-  #     if(format == "x11") this.file.path <- ""
-  #     
-  #     # PLOT TITLES
-  #     # If only one layer overall
-  #     if(length(layers) == 1){
-  #       if(is.null(title)) plot.title <- makePlotTitle(paste(quant@full.string, layer, sep = " "), run, period)
-  #       else plot.title <- title
-  #     }
-  #     # If many individuals
-  #     else {
-  #       if(!is.null(plot.labels[which(layer == layers)])) {
-  #         plot.title <- plot.labels[which(layer == layers)]
-  #       }
-  #       else { 
-  #         plot.title <- makePlotTitle(paste(quant@full.string, tag, layer, sep = " "), run, period) 
-  #         # if expand PFT names
-  #         if(useLongnames) {
-  #           # look up PFT
-  #           for(PFT in PFT.set){
-  #             if(layer == PFT@id) plot.title <- makePlotTitle(paste(quant@full.string, tag, PFT@name, sep = " "), run, period)
-  #           }
-  #         }
-  #       }
-  #     }
-  #     
-  #     
-  #     Cairo(file = this.file.path, 
-  #           dpi = Cairo.dpi, 
-  #           type = Cairo.type, 
-  #           width = Cairo.width, 
-  #           height = Cairo.height, 
-  #           title = plot.title, 
-  #           bg = Cairo.bg)  
-  #     
-  #     print(spplot(data.toplot,
-  #                  layer,
-  #                  par.settings = list(panel.background=list(col=plot.bg.col)),
-  #                  xlab = list(label = "Longitude", cex = 3 * text.multiplier),
-  #                  ylab = list(label = "Latitude", cex = 3 * text.multiplier),
-  #                  col.regions= quant@colours,
-  #                  colorkey = colorkey.list,
-  #                  at = quant@cuts,
-  #                  scales = list(draw = TRUE, cex = 3 * text.multiplier),
-  #                  as.table = TRUE,
-  #                  main=list(label = plot.title, 
-  #                            cex = 4 * text.multiplier),
-  #                  par.strip.text = list(lines = 1.0, cex = 2 * text.multiplier),
-  #                  sp.layout = layout.objs,
-  #                  maxpixels = maxpixels,
-  #                  #names.attr = PFT.plottitles,
-  #                  ...)
-  #     )
-  #     
-  #   }
-  #   
-  # }
-  # 
-  # }
   
   # clean up
   rm(data.toplot)
@@ -806,18 +730,6 @@ makePlotTitle <- function(quantity.str, run = NULL, period = NULL){
   
 }
 
-
-
-# obselete can be removed with plotBiomes(), don't need to document
-.makeFileName <- function(quantity.id, file.name = NULL, run = NULL, period = NULL, extension = "png"){
-  
-  if(!is.null(file.name)){return(file.name)}
-  else if(!is.null(period) & !is.null(run)) { return(paste(quantity.id, ".", run@id, ".TA.", period@start, "-", period@end, ".", extension , sep = ""))}
-  else if(is.null(period )& !is.null(run)) { return(paste(quantity.id, ".", run@id, ".TA.", extension , sep = ""))}
-  else if(is.null(run)& !is.null(period)) {return(paste(quantity.id, ".TA.", period@start, "-", period@end, ".", extension , sep = ""))}
-  else {return (paste(quantity.id, extension, sep = "."))}
-  
-}
 
 
 #' Make a variable ID

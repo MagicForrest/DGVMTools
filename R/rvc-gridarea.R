@@ -284,8 +284,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
   if (!is.VegQuant(quant) ) {
     quant <- x.quant
     quant@id = paste(targets[[1]][1], operator, targets[[2]][1], sep="")
-    quant@short.string = quant@id
-    quant@full.string = quant@id
+    quant@name = quant@id
     if (operator=="*" || operator=="/")
       quant@units = paste("(", x.quant@units, ") ", operator, " (", y.quant@units, ")", sep="")
   }
@@ -484,8 +483,7 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
     } else {
       quant <- new("VegQuant",
                    id="pet",
-                   short.string="PET",
-                   full.string="potential evapotranspiration (Thonthwaite)",
+                   name="potential evapotranspiration (Thonthwaite)",
                    type="",
                    units="mm")
       return(new('VegObject',
@@ -527,8 +525,7 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
     } else {
       quant <- new("VegQuant",
                    id="wd",
-                   short.string="wd",
-                   full.string="water deficit (Thonthwaite)",
+                   name="water deficit (Thonthwaite)",
                    type="",
                    units="mm")
       return(new('VegObject',
@@ -590,8 +587,7 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
     } else {
       quant <- new("VegQuant",
                    id="wc",
-                   short.string="wc",
-                   full.string="water content (Thonthwaite)",
+                   name="water content (Thonthwaite)",
                    type="",
                    units="mm")
       return(new('VegObject',
@@ -618,8 +614,7 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
     } else {
       quant <- new("VegQuant",
                    id="AET",
-                   short.string="AET",
-                   full.string="actual evapotranspiration (Thonthwaite)",
+                   name="actual evapotranspiration (Thonthwaite)",
                    type="",
                    units="mm")
       return(new('VegObject',

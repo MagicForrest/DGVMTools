@@ -416,16 +416,14 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
       id <- operation
       quant <- new("VegQuant",
                    id=id,
-                   short.string="GDD5",
-                   full.string="Growing degree days",
+                   name="Growing degree days",
                    type="",
                    units="\u00B0C days")
     } else {
       id <- paste(operation, ".", data.name)
       quant <- new("VegQuant",
                    id=id,
-                   short.string=att.get.nc(ncin, data.name, "standard_name"),
-                   full.string=att.get.nc(ncin, data.name, "long_name"),
+                   name=att.get.nc(ncin, data.name, "long_name"),
                    type=operation,
                    units=att.get.nc(ncin, data.name, "units"))
     }
