@@ -14,9 +14,7 @@ Note that the used will probably need to define their own, and modify these for 
 \describe{
 \item{\code{id}}{A unique character string to identify this particular vegetation quantity, should match with the name of a particular model output variable.  Recommended to be alphanumeric because it is used to construct file names.}
 
-\item{\code{short.string}}{A short character string to refer to this quantity}
-
-\item{\code{full.string}}{A longer character string to provide a more complete description of this quantity}
+\item{\code{name}}{A longer character string to provide a more complete description of this quantity}
 
 \item{\code{type}}{A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.}
 

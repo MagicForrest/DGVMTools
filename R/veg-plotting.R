@@ -156,13 +156,14 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       if(is.null(quant)) quant <- data@quant
     } 
     else {
-      stop("plotVegMaps:: trying to plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
+      stop("plotVegMaps:: trying to spatially plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
     }
   }
   else{
     if(!is.null(run)) run.id <- run@id
     else run.id <- NULL
   }
+  
   
   ### DIRECTORY TO SAVE PLOTS
   if(is.null(plot.dir)){
@@ -171,8 +172,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   
   ### QUANTITY AND COLS
-  if(is.null(quant)){ quant = lpj.quantities[["generic"]]}
-  else if(class(quant) == "character"){ quant = lpj.quantities[[quant]] }
+  if(class(quant) == "character"){ quant = lpj.quantities[[quant]] }
   else if((class(quant) != "VegQuant")){
     warning("Invalid quantity found in plotLPJMaps using generic quantity")
     quant = lpj.quantities[["generic"]]
@@ -185,7 +185,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         labels = list(cex = 3 * text.multiplier)
   )
   
-
+  
   #####################################################################################
   ############# PREPARE DATA AND layer LIST FOR PLOTTING        ######################
   #####################################################################################
@@ -238,7 +238,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     quant@id <-  paste(quant@id, "diff", sep =".")
-    quant@name = paste("Difference: ", quant@full.string, sep = "")
+    quant@name = paste("Difference: ", quant@name, sep = "")
     plot.bg.col <- "grey"
     
   }
@@ -251,7 +251,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     quant@id <-  paste(quant@id, "percdiff", sep =".")
-    quant@name = paste("Percentage Difference: ", quant@full.string, sep = "")
+    quant@name = paste("Percentage Difference: ", quant@name, sep = "")
     plot.bg.col <- "grey"
     
     # SET THE INTERVALS (using either these sensible options or the overrides)
@@ -292,7 +292,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     quant@cuts <- seq(from = 0, to = 1, by = 0.05)
     quant@id <- paste(quant@id, "fraction", sep = ".")
-    quant@name <- paste(quant@full.string, "Fraction", sep = " ")
+    quant@name <- paste(quant@name, "Fraction", sep = " ")
     quant@colours <- colorRampPalette(c("grey85", "black"))
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
@@ -303,8 +303,29 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   else if(special == "burnt.fraction"){
     
     
-    stop("plotVegMaps: special burnt.fraction or ba not impletemted yet")
     
+    # SET THE INTERVALS (using either these sensible options or the overrides)
+    quant@cuts <- c(0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1)
+    quant@colours <-  colorRampPalette(rev(c("red4", "red","orange","yellow", "palegreen2", "cyan", "dodgerblue2", "blue", "midnightblue")))
+
+    # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
+    if(!is.null(override.cols)) {quant@colours <- override.cols}
+    if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
+    override.cols = override.cuts = NULL
+    
+    # RECLASSIFY THE DATA ACCORDING TO THE CUTS 
+    temp.names <- names(data.toplot)
+    data.toplot <- cut(data.toplot, quant@cuts, include.lower = TRUE, right = FALSE) 
+    names(data.toplot) <- temp.names
+    
+    # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
+    colorkey.labels <- paste(quant@cuts)
+    colorkey.labels[length(colorkey.labels)] <- paste0(colorkey.labels[length(colorkey.labels)], "+")
+    colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, "labels" = colorkey.labels, "at" = 0:(length(quant@cuts)-1))
+    colorkey.list[["at"]] <- 0:(length(quant@cuts)-1)
+    colorkey.list[["col"]] <- quant@colours
+    quant@cuts = 0:(length(quant@cuts)-1)
+
   }
   
   #### PLOT BURNT FRACTION
@@ -401,7 +422,12 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       # if only one model run put individual Kappas into biome legend
       if(nlayers(data.toplot)-1 == 1) colorkey.list[["labels"]][["labels"]] <- paste0(colorkey.list[["labels"]][["labels"]], " (", rev(round(kappa.list[[1]]@individual.Kappas,2)), ")", sep = "")
       # place overall Kappa on each modelled biome map 
-      if(is.null(kappa.position)) { kappa.position <- c(extent(data.toplot)@xmin * 0.8, extent(data.toplot)@ymin * 0.8) }
+      if(is.null(kappa.position)) { 
+        this.extent <- extent(data.toplot)
+        stats.pos.x <- (this.extent@xmax-this.extent@xmin) * 0.15 + this.extent@xmin
+        stats.pos.y <- (this.extent@ymax-this.extent@ymin) * 0.15 + this.extent@ymin
+        kappa.position <- c(stats.pos.x, stats.pos.y) }
+        print(kappa.position)
       for(layer in 1:(nlayers(data.toplot)-1)) {
         layout.objs[[paste(layer)]]  <- list("sp.text", loc = kappa.position, txt = paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
       }
@@ -529,9 +555,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     multi.panel <- FALSE
   }
   
-
+  
   # PLOT MAIN TITLE
-  if(is.null(title)) title <- makePlotTitle(paste(quant@full.string, "Summary", sep = " "), run, period)
+  if(is.null(title)) title <- makePlotTitle(paste(quant@name, "Summary", sep = " "), run, period)
   
   # PANEL LABELS - note expand longnames here if requested 
   if(is.null(plot.labels)) {
@@ -550,23 +576,23 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   else plot.labels.here <- plot.labels
   
   return(spplot(data.toplot,
-               layers,
-               par.settings = list(panel.background=list(col=plot.bg.col)),
-               xlab = list(label = "Longitude", cex = 3 * text.multiplier),
-               ylab = list(label = "Latitude", cex = 3 * text.multiplier),
-               col.regions= quant@colours,
-               colorkey = colorkey.list,                                                                                            
-               at = quant@cuts,
-               scales = list(draw = TRUE, cex = 3 * text.multiplier),
-               as.table = TRUE,
-               main=list(label=title, 
-                         cex = 4 * text.multiplier),
-               par.strip.text = list(#lines = 1.0, 
-                 cex = 2 * text.multiplier),
-               sp.layout = layout.objs,
-               maxpixels = maxpixels,
-               names.attr = plot.labels.here,
-               ...)
+                layers,
+                par.settings = list(panel.background=list(col=plot.bg.col)),
+                xlab = list(label = "Longitude", cex = 3 * text.multiplier),
+                ylab = list(label = "Latitude", cex = 3 * text.multiplier),
+                col.regions= quant@colours,
+                colorkey = colorkey.list,                                                                                            
+                at = quant@cuts,
+                scales = list(draw = TRUE, cex = 3 * text.multiplier),
+                as.table = TRUE,
+                main=list(label=title, 
+                          cex = 4 * text.multiplier),
+                par.strip.text = list(#lines = 1.0, 
+                  cex = 2 * text.multiplier),
+                sp.layout = layout.objs,
+                maxpixels = maxpixels,
+                names.attr = plot.labels.here,
+                ...)
   )
   
   # clean up
@@ -628,7 +654,7 @@ plotHistoComparison <- function(model,
   
   cex.axis.multi = 2
   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
-  hist(stat.results@diff.raster,  breaks = breaks, xlim = plot.range, xlab = paste(quant@id, ": ", "LPJ-GUESS - ", data.name, sep = ""), prob = TRUE, main = paste(quant@full.string, ": ", "LPJ-GUESS - ", data.name, sep = ""), cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
+  hist(stat.results@diff.raster,  breaks = breaks, xlim = plot.range, xlab = paste(quant@id, ": ", "LPJ-GUESS - ", data.name, sep = ""), prob = TRUE, main = paste(quant@name, ": ", "LPJ-GUESS - ", data.name, sep = ""), cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
   x = NULL
   curve(dnorm(x, mean=stat.results@mean.diff, sd=stat.results@sd.diff), add=TRUE)
   abline(v=0,col="green", lwd = 4)
@@ -641,9 +667,9 @@ plotHistoComparison <- function(model,
   cex.axis.multi = 2
   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
   y.height <- 2*max(hist(stat.results@diff.raster, breaks = breaks, plot = FALSE)$counts, hist(data, breaks = breaks, plot = FALSE)$counts,  hist(model, breaks = breaks, plot = FALSE)$counts)
-  diff.histo <- hist(stat.results@diff.raster,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@full.string, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis = cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
-  hist(data,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@full.string, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "red", maxpixels =100000000, right = FALSE)
-  hist(model,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@full.string, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "blue", maxpixels =100000000, right = FALSE)
+  diff.histo <- hist(stat.results@diff.raster,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@name, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis = cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
+  hist(data,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@name, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "red", maxpixels =100000000, right = FALSE)
+  hist(model,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@name, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "blue", maxpixels =100000000, right = FALSE)
   curve(dnorm(x, mean=stat.results@mean.diff, sd=stat.results@sd.diff)*diff(diff.histo$mids[1:2])*cellStats(is.finite(stat.results@diff.raster), stat= sum, na.rm=TRUE, asSample=FALSE), add=TRUE)
   abline(v=0,col="green", lwd = 4)
   legend('topright', c(data.name, "LPJ-GUESS", paste("LPJ-GUESS -", data.name, sep = " "), paste("Mean = ", round(stat.results@mean.diff,6)), paste("SD =", round(stat.results@sd.diff,6))), col = c("red","blue", "black", "black", "black"), text.col = c("red","blue", "black", "black", "black"), cex = 3, bty = "n") 
@@ -691,7 +717,7 @@ plotScatterComparison <- function(model,
   cex.axis.multi = 2
   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
   
-  plot(model, data, col = rgb(0.1,0.1,0.1,0.1), pch = 20, xlab = paste(run@description, " ", quant@full.string, " (", quant@units, ")", sep = ""), ylab = paste(data.name, " ", quant@full.string, " (", quant@units, ")", sep =""), ylim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), xlim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), main = paste("Scatter vs. ", data.name, sep = ""), maxpixels = 100000000, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 4)
+  plot(model, data, col = rgb(0.1,0.1,0.1,0.1), pch = 20, xlab = paste(run@description, " ", quant@name, " (", quant@units, ")", sep = ""), ylab = paste(data.name, " ", quant@name, " (", quant@units, ")", sep =""), ylim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), xlim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), main = paste("Scatter vs. ", data.name, sep = ""), maxpixels = 100000000, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 4)
   abline(0, 1, col = "red")
   legend('topleft', c(paste("RMSE:", round(stat.results@RMSE, 2), sep = " "), paste("R^2:", round(stat.results@R.squ, 2), sep = " "), paste("Pearsons:", round(stat.results@P.cor, 2), sep = " ")), text.col = c("red", "blue", "green"), cex = 3, bty = "n")
   dev.off()
@@ -700,7 +726,22 @@ plotScatterComparison <- function(model,
 
 
 
-
+# plotScatter <- function(x.obj, y.obj = NULL, x.layer, y.layer, col, x.quant, y.quant = NULL, comparison.object = NULL){
+#   
+#   # get the classes
+#   class.x <- class(x.obj)
+#   class.y <- class(y.obj)
+#   
+#   # if y.obj
+#   if(!is.null)
+#   
+#   
+#   
+#   
+#   
+#   
+#   
+# }
 
 
 #######################################################################################################################################

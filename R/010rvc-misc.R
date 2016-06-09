@@ -283,7 +283,8 @@ lsos <- function (pos = 1, pattern, order.by = "Size",
 #' \item{lai.palette}{Default colour scheme for LAI}
 #' \item{cmass.palette}{Default colour scheme for biomass}
 #' \item{difference.palette}{Colour scheme for differences. Symmetrical, centred on white}
-#' \item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned}
+#' \item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from more-to-less fire)}
+#' \item{reversed.fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from less-to-more fire)}
 #' \item{reversed.tim.colors}{The tim.colors scheme reversed to go from red (hot/dry) to blue (cold/wet)}
 #' }
 #' @param n Number of colour shades required
@@ -304,6 +305,9 @@ difference.palette <- colorRampPalette(c("green", "blue", "white", "red", "yello
 
 #' @rdname veg.palettes
 fire.palette <- colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+
+#' @rdname veg.palettes
+reversed.fire.palette <- colorRampPalette(rev(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3")))
 
 #' @rdname veg.palettes
 reversed.tim.colors = function(n) rev(tim.colors(n))

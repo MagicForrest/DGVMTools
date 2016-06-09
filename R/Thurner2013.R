@@ -1,3 +1,18 @@
+#' Read Thurner et al. 2013 total biomass map
+#' 
+#' Total biomass across the nothern temperate and boreal zones.
+#' Original dataset is 1km, also provided here at 0.5 degrees or T63.
+#'  
+#' @param location A character string specifying the the location of the original data files
+#' @param resolution A character string specifying the resolution, currently supported
+#' are "HD" and "T63" and "original"
+#' 
+#' Should be moved to DGVMDatasets, not distributed with DGVMTools
+#' 
+#' @return A \code{SpatialDataset} object.  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+
 getThurner2013 <- function(location = "/data/forrest/Biomass/Thurner2013/", resolution = "original") {
 
   Lon = Lat = NULL

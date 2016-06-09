@@ -7,7 +7,7 @@
 benchmarkSpatial(runs, layer.name, dataset, tag = NULL, diff.cuts = NULL,
   perc.diff.cuts = seq(-100, 200, 5), spatial.extent = NULL,
   showR2 = TRUE, layout.objs = NULL, histo.plot.range = NULL,
-  ignore.raster = NULL, summary.plot.dir = NULL, canvas.options = list(dpi
+  correction.dt = NULL, summary.plot.dir = NULL, canvas.options = list(dpi
   = 72, type = "png", width = 1800, height = 1000, bg = "transparent"), ...)
 }
 \arguments{
@@ -36,8 +36,8 @@ continent outlines}
 
 \item{histo.plot.range}{A two-value numeric vector defining the range for the histo plots}
 
-\item{ignore.raster}{A raster used to mask out gridcells wich are not to be compared (ie any gridcells set to NA in the ignore.raster
-are set to NA in thr model and data rasters)}
+\item{correction.dt}{A data.table with columns "Lon", "Lat" and "Correction" to apply a multiplicative correction to the model data before performing the benchmark 
+to account for (for example) land cover.  NA's can be used to completely mask out areas from the comparison.}
 
 \item{summary.plot.dir}{A directory (full path as a character string) so save the plots which compare many runs}
 

@@ -24,6 +24,8 @@ importFrom("stats", "dnorm", "median", "na.omit", "sd")
 importFrom("utils", "capture.output", "data", "file_test", "object.size", "read.table", "write.table")
 importFrom("plyr", "mapvalues")
 importMethodsFrom("data.table")
+importMethodsFrom("raster")
+importMethodsFrom("sp")
 
 exportClasses(TemporalExtent, 
               SpatialExtent, 

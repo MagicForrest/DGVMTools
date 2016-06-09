@@ -5,6 +5,7 @@
 \alias{difference.palette}
 \alias{fire.palette}
 \alias{lai.palette}
+\alias{reversed.fire.palette}
 \alias{reversed.tim.colors}
 \alias{veg.palette}
 \alias{veg.palettes}
@@ -20,6 +21,8 @@ difference.palette(n)
 
 fire.palette(n)
 
+reversed.fire.palette(n)
+
 reversed.tim.colors(n)
 }
 \arguments{
@@ -31,7 +34,8 @@ reversed.tim.colors(n)
 \item{lai.palette}{Default colour scheme for LAI}
 \item{cmass.palette}{Default colour scheme for biomass}
 \item{difference.palette}{Colour scheme for differences. Symmetrical, centred on white}
-\item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned}
+\item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from more-to-less fire)}
+\item{reversed.fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from less-to-more fire)}
 \item{reversed.tim.colors}{The tim.colors scheme reversed to go from red (hot/dry) to blue (cold/wet)}
 }
 }

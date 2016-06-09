@@ -1080,7 +1080,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
   p <- p + scale_x_continuous(expand=c(0, 0))
   if (grepl("^s", type) || grepl("^a", type)) 
     p <- p + scale_y_continuous(limits=c(0, NA), expand=c(0, 0))
-  p <- p + ylab(paste(quant@full.string, " [", quant@units,"]", sep=""))
+  p <- p + ylab(paste(quant@name, " [", quant@units,"]", sep=""))
 
   return(p)
 }

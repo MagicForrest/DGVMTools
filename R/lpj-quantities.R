@@ -331,12 +331,12 @@ lpj.quantities <- list(
                     cuts = seq(0, 1.0, 0.01)),
   
   "burntfraction" = new("VegQuant",
-                    id = "burnfraction",
+                    id = "burntfraction",
                     name = "Annual Fraction Burned", 
                     type = "annual",
                     units = "fraction of gridcell",
-                    colours = fire.palette,
-                    cuts = seq(0, 1.0, 0.01)),
+                    colours = reversed.fire.palette,
+                    cuts = seq(0, 1.0, 0.02)),
   
   "tot_runoff" = new("VegQuant",
                      id = "tot_runoff",

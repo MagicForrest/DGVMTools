@@ -89,7 +89,7 @@ However, the \code{plotGGSpatial} function makes pretty plots with a simpler syn
 The function works best for \code{VegObjects} (which contain a lot of useful metadata).}
 }
 \value{
-Nothing, just makes the plot
+Returns a plot object (from spplot)
 }
 \description{
 The primary use for this function in to plot a map from a \code{VegObject}, although plotting a Raster* is also useful.

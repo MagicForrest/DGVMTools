@@ -196,17 +196,17 @@ setMethod("summary", signature("VegRun"), function(object, ...) {
   for (n in names(object@objects)) {
     if (object@objects[[n]]@is.spatially.averaged) {
       temporal[[n]]=list(name=n,
-                         description=object@objects[[n]]@quant@full.string,
+                         description=object@objects[[n]]@quant@name,
                          units=object@objects[[n]]@quant@units,
                          colnames=colnames(object@objects[[n]]@data))
     } else if (object@objects[[n]]@is.temporally.averaged) {
       spatial[[n]]=list(name=n,
-                        description=object@objects[[n]]@quant@full.string,
+                        description=object@objects[[n]]@quant@name,
                         units=object@objects[[n]]@quant@units,
                         colnames=colnames(object@objects[[n]]@data))
     } else {
       full[[n]]=list(name=n,
-                     description=object@objects[[n]]@quant@full.string,
+                     description=object@objects[[n]]@quant@name,
                      units=object@objects[[n]]@quant@units,
                      colnames=colnames(object@objects[[n]]@data))
     }
