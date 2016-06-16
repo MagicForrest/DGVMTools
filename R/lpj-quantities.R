@@ -111,6 +111,14 @@ lpj.quantities <- list(
                colours = cmass.palette,
                cuts = seq(0,40,1)),
   
+  "clitter"= new("VegQuant",
+               id = "clitter",
+               name = "Litter Carbon Mass",
+               type = "PFT",
+               units = "kgC/m^2",
+               colours = cmass.palette,
+               cuts = seq(0,10,1)),
+  
   "agb" = new("VegQuant",
               id = "agb",
               name = "Above Ground Biomass",

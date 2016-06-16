@@ -2,7 +2,7 @@
 % Please edit documentation in R/veg-runtools.R
 \name{addToVegRun}
 \alias{addToVegRun}
-\title{Add an object (either a \code{VegObject}, \code{BiomeComparison} or \code{RasterComparison}) to a \code{VegRun} object to be use later.}
+\title{Add an object (either a \code{VegObject} or a  \code{SpatialComparison}) to a \code{VegRun} object to be use later.}
 \usage{
 addToVegRun(object, run)
 }

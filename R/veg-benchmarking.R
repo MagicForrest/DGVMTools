@@ -51,7 +51,7 @@ benchmarkSpatial <- function(runs,
                                                    bg = "transparent"),
                              ...) {
   
-  message(paste("Comparing runs to ", dataset@name))
+  message(paste("*** Comparing runs to ", dataset@name, " ***"))
   
   Correction = NULL
   
@@ -60,8 +60,34 @@ benchmarkSpatial <- function(runs,
     interval <- (range(dataset@quant@cuts)[2] - range(dataset@quant@cuts)[1] )/ (length(dataset@quant@cuts)-1)
     diff.cuts <-  seq(-(max(dataset@quant@cuts)), max(dataset@quant@cuts), interval)
   }
-  
   if(is.null(histo.plot.range)) histo.plot.range <- c(diff.cuts[[1]], diff.cuts[[length(diff.cuts)]])
+  
+  
+  ### HANDLE ARGUMENTS
+  args1 <- list() # specify defaults here
+  inargs <- list(...)
+  args1[names(inargs)] <- inargs
+  args1 <- c(args1, plot.options)
+  
+  # COMBINE LAYOUT OBJ FROM DIFFERENT SOURCES
+  if(!is.null(layout.objs)){
+    
+    # check if there is a layout.objs in the plot.options
+    if("layout.objs" %in% names(args1)){
+      
+      layout.objs <- append(layout.objs, args1["layout.objs"])
+      args1[["layout.objs"]] <- NULL
+      
+    }
+    
+  }
+  
+  # SET UP A SQUARE CANVAS FOR SCATTER AND HISTO PLOTS
+  # set up up a square canvas
+  canvas.options.square <- canvas.options
+  height.width = min(canvas.options$width, canvas.options$height)
+  canvas.options.square$width <- height.width
+  canvas.options.square$height <- height.width
   
   
   # FIRST BENCHMARK EACH RUN SEPARATELY
@@ -70,6 +96,10 @@ benchmarkSpatial <- function(runs,
   
   # make a new data.table to store the data and the comparison layers 
   new.data.dt <- dataset@data
+  
+  # list of scatter plots (to plot all together later)
+  scatter.plots <- list()
+  
   
   for(run in runs){
     
@@ -96,7 +126,7 @@ benchmarkSpatial <- function(runs,
       # remove the extra columns
       model.dt[,"Correction" := NULL,with=FALSE]
       model.dt[,layer.name := NULL,with=FALSE]
-
+      
     }
     # else just change the name of the colum to the run ID 
     else{
@@ -107,7 +137,7 @@ benchmarkSpatial <- function(runs,
     
     # add the model output (keeping only points where there are data) and and rename the colum with the run id
     new.data.dt <- merge(x = new.data.dt, y = model.dt, all.x = TRUE, all.y = FALSE)
-
+    
     # calculate the difference and percentage difference
     difference.string <- paste(run@id, "diff", sep = sep.char)
     new.data.dt[,eval(difference.string) := get(paste(run@id)) - get(paste(dataset@id))]
@@ -127,21 +157,35 @@ benchmarkSpatial <- function(runs,
     
     
     # calculated mean, SD, MSE, RMSE, R^2, Pearson correlation etc
-    mean.diff <- mean(difference.vector, na.rm=TRUE)
-    sd.diff <-sd(difference.vector, na.rm=TRUE)
+    
+    # standard deviation and variance of the data
     sd.observed <- sd(data.vector, na.rm=TRUE)
     var.observed <- sd.observed^2
+    sd.diff <-sd(difference.vector, na.rm=TRUE)
+    
+    
+    # ME and NME 
+    ME <- mean(abs(difference.vector), na.rm=TRUE)
+    NME <- ME / mean(abs(data.vector - mean(data.vector)))
+    
+    # MSE, RMSE, NMSE
     MSE <- mean(difference.vector^2, na.rm=TRUE)
-    RMSE <- (MSE)^(0.5)
+    NMSE <- MSE/var.observed
+    RMSE <- MSE^0.5
+    
+  
+    
     R.squ <- 1 - (MSE/var.observed)
     P.cor <- cor(data.vector, model.vector, method = "pearson")
     
     comparison.result <- new("SpatialComparison",
                              id = paste(run@id, dataset@id, sep = "."), 
+                             ME = ME,
+                             NME = NME,
+                             RMSE = RMSE, 
+                             NMSE = NMSE,
                              R.squ = R.squ, 
                              P.cor = P.cor, 
-                             RMSE = RMSE, 
-                             mean.diff = mean.diff, 
                              sd.diff = sd.diff)
     
     runs[[run@id]] <- addToVegRun(comparison.result, runs[[run@id]])
@@ -150,16 +194,17 @@ benchmarkSpatial <- function(runs,
     
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Diff", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
-    print(plotVegMaps(new.data.dt,
-                      layers = paste(run@id, "diff", sep = sep.char),
-                      quant = dataset@quant, 
-                      period = dataset@temporal.extent, 
-                      run = run,
-                      tag = "Corrected",
-                      maxpixels = 1000000,
-                      special = "diff",
-                      layout.objs = layout.objs,
-                      ...)
+    print(
+      do.call(plotVegMaps, c(list(data = new.data.dt,
+                                  layers = paste(run@id, "diff", sep = sep.char),
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  run = run,
+                                  tag = "Corrected",
+                                  maxpixels = 1000000,
+                                  special = "diff"),
+                             args1)
+      )
     )
     
     dev.off()
@@ -169,17 +214,18 @@ benchmarkSpatial <- function(runs,
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
-    print(plotVegMaps(new.data.dt,
-                      layers = c(run@id, dataset@id),
-                      quant = dataset@quant, 
-                      period = dataset@temporal.extent, 
-                      run = run,
-                      summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
-                      tag = "Corrected",
-                      maxpixels = 1000000,
-                      plot.labels = c(run@description, dataset@name),
-                      layout.objs = layout.objs,
-                      ...)
+    print(
+      do.call(plotVegMaps, c(list(data = new.data.dt,
+                                  layers = c(run@id, dataset@id),
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  run = run,
+                                  summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
+                                  tag = "Corrected",
+                                  maxpixels = 1000000,
+                                  plot.labels = c(run@description, dataset@name)),
+                             args1)
+      )
     )
     
     dev.off()
@@ -200,17 +246,53 @@ benchmarkSpatial <- function(runs,
     # }
     # 
     ##### SCATTER PLOT
-    # if(doScatterPlots){
+    
+    
+    
     # 
-    #   plotScatterComparison(model = comparison.results@model.raster,
-    #                         data = comparison.results@data.raster,
-    #                         stat.results = comparison.results,
-    #                         run = vegobject@run,
-    #                         data.name = dataset@id,
-    #                         quant = dataset@quant)
+    do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Scatter", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
+                                 canvas.options.square)) 
+ 
+    scatter.plot <- ggplot(as.data.frame(na.omit(new.data.dt)), aes_string(x=dataset@id, y=run@id)) +  geom_point(size=2, alpha = 0.1)
+    scatter.plot <- scatter.plot + theme(text = element_text(size=25))
+    scatter.plot <- scatter.plot  + ggtitle(paste(paste(run@model,run@description,sep = " "), "vs.", paste(dataset@name, sep = " "))) + theme(plot.title = element_text(lineheight=.8, face="bold"))
+    scatter.plot <- scatter.plot +  xlab(paste(dataset@name, dataset@quant@name ,sep = " "))   +   ylab(paste(run@model,run@description,sep = " "))     
+    scatter.plot <- scatter.plot +  coord_cartesian(xlim = c(dataset@quant@cuts[1], dataset@quant@cuts[length(dataset@quant@cuts)]), ylim = c(dataset@quant@cuts[1], dataset@quant@cuts[length(dataset@quant@cuts)])) 
+    scatter.plot <- scatter.plot + geom_abline(intercept = 0, slope = 1, colour = "red")
+    scatter.plot <- scatter.plot + geom_smooth(method = "lm", se = FALSE)
+    # calculate the line of best fit
+    # lm.eq <-  as.character(
+    #   as.expression(
+    #     substitute(y == a + b %.% x*","~~r^2~"="~r2, 
+    #                list(a = format(coef(lm.model)[1], digits = 2), 
+    #                     b = format(coef(lm.model)[2], digits = 2), 
+    #                     r2 = format(summary(lm.model)$r.squared, digits = 3))
+    #     )
+    #   ))   
     # 
-    # 
-    # }
+
+    
+    #scatter.plot <- scatter.plot + geom_text(x = 10, y = 10, label = lm.eq)
+    #scatter.plot <- scatter.plot + annotate("text", x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.75, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.9, label = lm.eq, colour = "black", size = 10, hjust = 0)
+    
+    lm.model <- lm(get(run@id) ~ get(dataset@id), as.data.frame(na.omit(new.data.dt)))
+    lm.eq <- paste("y = ", signif(coef(lm.model)[2], digits = 3), "*x + ",  signif(coef(lm.model)[1], digits = 3), ", R^2 =", signif(summary(lm.model)$r.squared, digits = 3), sep = "")
+    scatter.plot <- scatter.plot + annotate("text", x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.50, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.95, label = lm.eq, colour = "blue", size = 10, hjust = 0, parse = FALSE)
+    
+    
+    #scatter.plot <- scatter.plot + geom_text(x = 10, y = 10, label = lm.eq, parse = TRUE)
+    #scatter.plot <- scatter.plot + annotate("text", x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.75, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.9, label = lm.eq, colour = "black", size = 10, hjust = 0)
+    
+    
+    label.text <- paste("NME = ", signif(NME, 3), "\nNMSE = ", signif(NMSE, 3), "\nRMSE = ", signif(RMSE, 3), "\nR^2 = ", signif(R.squ, 3), "\nPearman Corr. = ", signif(P.cor, 3), sep = "")
+    scatter.plot <- scatter.plot + annotate("text", x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.05, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.9, label = label.text, colour = "black", size = 10, hjust = 0)
+    
+    
+    print(scatter.plot)
+    scatter.plots[[run@id]] <- scatter.plot
+    
+    dev.off()
+    
     
   }
   
@@ -228,9 +310,13 @@ benchmarkSpatial <- function(runs,
     perc.diff.layers <- c()
     
     # add each model run to stacks and text lists
-    counter <- 0
-    layout.objs.without.Rsquared <- layout.objs
+    counter <- 1
     this.extent <- extentFromDT(new.data.dt)
+    if(!is.null(args1[["plot.extent"]])) {
+      this.extent <- intersect(args1[["plot.extent"]], this.extent)
+      warning("Reported R^2 value in benchmarkSpatial applies to the whole spatial extent, not the smaller extent you have plotted.  If you want the R^2 for this sub-region, crop the data *before* called the benchmarking routine.")
+    }
+    
     stats.pos.x <- (this.extent@xmax-this.extent@xmin) * 0.1 + this.extent@xmin
     stats.pos.y <- (this.extent@ymax-this.extent@ymin) * 0.1 + this.extent@ymin
     for(run in runs){
@@ -243,7 +329,7 @@ benchmarkSpatial <- function(runs,
       counter <- counter + 1
       comparison.obj <- run@benchmarks[[paste(run@id, dataset@id, sep = ".")]]
       R2.val <- round(comparison.obj@R.squ, 3)
-      layout.objs[[run@id]] <- list("sp.text", txt = bquote(R^2 ~ "=" ~ .(R2.val)), loc = c(stats.pos.x,stats.pos.y), which = counter, cex = 2)
+      args1[["layout.objs"]][[run@id]] <- list("sp.text", txt = bquote(R^2 ~ "=" ~ .(R2.val)), loc = c(stats.pos.x,stats.pos.y), which = counter, cex = 2)
       
       rm(comparison.obj)
       
@@ -253,7 +339,7 @@ benchmarkSpatial <- function(runs,
       
     }
     
-    #print(str(layout.objs))
+    
     
     # CROP/EXTEND RASTERS (if extent specified)
     # MF: reprogram for new implemetation, need to decide exactly how to handle  
@@ -263,38 +349,49 @@ benchmarkSpatial <- function(runs,
                                  canvas.options)) 
     
     # PLOT ABSOLUTE VALUES
-    print(plotVegMaps(new.data.dt,
-                      layers = abs.layers,
-                      quant = dataset@quant, 
-                      period = dataset@temporal.extent, 
-                      tag = "Corrected",               
-                      plot.labels = plot.titles,
-                      layout.objs = layout.objs.without.Rsquared,
-                      ...)
+    print(
+      do.call(plotVegMaps, c(list(data = new.data.dt,
+                                  layers = abs.layers,
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  tag = "Corrected",               
+                                  plot.labels = plot.titles),
+                             args1)
+      )
     )
     
     dev.off()
     
     
     # PLOT ABSOLUTE DIFFERENCE
+    
+    # first remove the data from the plot title list and also decrease the plot number for the R-sqauareds 
     plot.titles <- plot.titles[-1]
+    if(!is.null(args1[["layout.objs"]]))
+      for(temp.layout.obj.name in names(args1[["layout.objs"]])){
+        if("which" %in% names(args1[["layout.objs"]][[temp.layout.obj.name]]) ) {
+          args1[["layout.objs"]][[temp.layout.obj.name]]$which <-  args1[["layout.objs"]][[temp.layout.obj.name]]$which -1
+        }
+      }
+    
+    
     
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Difference", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
-    print(plotVegMaps(new.data.dt,
-                      layers = diff.layers,
-                      quant = dataset@quant, 
-                      period = dataset@temporal.extent, 
-                      title = paste("Simulated - ", dataset@id, " (", dataset@quant@units, ")", sep = ""),
-                      special = "difference",               
-                      plot.labels = plot.titles,
-                      override.cuts = diff.cuts,
-                      text.multiplier = 1.0,
-                      layout.objs = layout.objs,
-                      ...)
+    print(
+      do.call(plotVegMaps, c(list(data = new.data.dt,
+                                  layers = diff.layers,
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  title = paste("Simulated - ", dataset@id, " (", dataset@quant@units, ")", sep = ""),
+                                  special = "difference",               
+                                  plot.labels = plot.titles,
+                                  override.cuts = diff.cuts,
+                                  text.multiplier = 1.0),
+                             args1)
+      )
     )
-    
     dev.off()
     
     
@@ -304,18 +401,35 @@ benchmarkSpatial <- function(runs,
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("PercentageDifference", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
-    print(plotVegMaps(new.data.dt,
-                      layers = perc.diff.layers,
-                      quant = dataset@quant, 
-                      period = dataset@temporal.extent, 
-                      title = paste("Simulated - ", dataset@id, "(percentage difference)"),
-                      special = "percentage.difference",               
-                      plot.labels = plot.titles,
-                      override.cuts = perc.diff.cuts,
-                      text.multiplier = 1.0,
-                      layout.objs = layout.objs,
-                      ...)
+    print(
+      do.call(plotVegMaps, c(list(data = new.data.dt,
+                                  layers = perc.diff.layers,
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  title = paste("Simulated - ", dataset@id, "(percentage difference)"),
+                                  special = "percentage.difference",               
+                                  plot.labels = plot.titles,
+                                  override.cuts = perc.diff.cuts,
+                                  text.multiplier = 1.0),
+                             args1)
+      )
     )
+    dev.off()
+    
+    
+    # PLOT ALL SCATTERS ON ONE CANVAS
+    
+    if(length(runs) > 2) {
+      do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Scatters", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
+                                   canvas.options.square)) 
+    }
+    else {
+      do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Scatters", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
+                                   canvas.options)) 
+    }
+    
+    multiplot(plotlist=scatter.plots, cols=2)
+    
     
     dev.off()
     
@@ -343,15 +457,17 @@ benchmarkSpatial <- function(runs,
 
 #' Kappa comparison between two biome rasters
 #' 
-#' Calculates a BiomeComparison object (which contains the Cohen's Kappa scores) given a stack containing two biome maps.
+#' Calculates a SpatialComparison object (which contains the Cohen's Kappa scores) given a stack containing two maps of categorical data (eg. biomes, land cover classes).
 #' 
 #' @param dt A two-columned data.table containing the biomes (or other categorical data) represented as integer codes
-#' @param id A character string to identify this comparison, typically the id of the biome scheme.
+#' @param id A character string to identify this comparison, typically a combination the id of the biome scheme and the id of the vegetation model run.
 #' @param labels A vector of character strings to describe the categories over which Kappa is compared (typically a list of biomes)
 #' following the order of the integer codes used in the data (see \code{stack} argument)
 #' @param verbose A logical, if TRUE print out all the Kappa scores
 #' 
-#' @return A Biome comparison object
+#' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are for continuous as opposed to categorical data
+#' 
+#' @return A spatial comparison object
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
@@ -359,7 +475,7 @@ benchmarkSpatial <- function(runs,
 doKappa <- function(dt, 
                     id, 
                     labels = NULL, 
-                    verbose = TRUE){
+                    verbose = FALSE){
   
   x = y = code = NULL
   
@@ -429,7 +545,7 @@ doKappa <- function(dt,
   if(verbose) print(paste("Overall Kappa", round(kappa, 3), sep = " "))
   
   
-  return(new("BiomeComparison",
+  return(new("SpatialComparison",
              id = id,
              Kappa = kappa, 
              individual.Kappas = per.class.kappa)
@@ -474,10 +590,13 @@ compareBiomes <- function(runs,
                           canvas.options = canvas.options,
                           ...){
   
+  ### HANDLE ARGUMENTS
+  args1 <- list() # specify defaults here
+  inargs <- list(...)
+  args1[names(inargs)] <- inargs
+  args1 <- c(args1, plot.options)
   
   # First loop through runs calculate biomes and Kappas and plot individually
-  
-  
   list.of.comparisons <- list()
   
   # new data
@@ -506,12 +625,16 @@ compareBiomes <- function(runs,
     if(plot){
       do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste("Biomes", this.VegSpatial@id, scheme@id, tag, canvas.options[["type"]], sep = "."))), 
                                    canvas.options)) 
-      print(plotVegMaps(this.VegSpatial, 
-                        biome.scheme = scheme, 
-                        special = "biomes", 
-                        biome.data = biome.dataset, 
-                        kappa.list = list(list.of.comparisons[[run@id]]),
-                        ...)
+      print(
+        do.call(plotVegMaps, c(
+          list(data = this.VegSpatial,
+               biome.scheme = scheme, 
+               special = "biomes", 
+               biome.data = biome.dataset, 
+               kappa.list = list(list.of.comparisons[[run@id]])
+          ),
+          args1)
+        )
       )
       
       dev.off()
@@ -542,15 +665,17 @@ compareBiomes <- function(runs,
   do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Biomes", scheme@id, tag, canvas.options[["type"]], sep = "."))), 
                                canvas.options)) 
   
-  print(plotVegMaps(new.data.dt, 
-                    layers = layers,
-                    summary.file.name = paste("Biomes", scheme@id, tag, sep = "."),
-                    special = "biomes", 
-                    biome.scheme = scheme, 
-                    plot.labels = labels,
-                    summary.title = paste("Comparison of", scheme@name, "biomes", sep = " "),
-                    kappa.list = list.of.comparisons,
-                    ...)
+  print(
+    do.call(plotVegMaps, c(list(data = new.data.dt, 
+                                layers = layers,
+                                summary.file.name = paste("Biomes", scheme@id, tag, sep = "."),
+                                special = "biomes", 
+                                biome.scheme = scheme, 
+                                plot.labels = labels,
+                                summary.title = paste("Comparison of", scheme@name, "biomes", sep = " "),
+                                kappa.list = list.of.comparisons),
+                           args1)
+    )
   )
   
   dev.off()
@@ -593,21 +718,21 @@ compareBiomes <- function(runs,
 
 
 compareRuns <- function(runs, 
-                                    veg.spatial.id, 
-                                    layer, 
-                                    expand.layer = TRUE, 
-                                    base.run.id = NULL,
-                                    abs.value.cuts = NULL,
-                                    plot.diff = TRUE,
-                                    diff.cuts = NULL,
-                                    plot.perc.diff = TRUE, 
-                                    perc.diff.cuts = NULL,
-                                    special = "none",
-                                    single.page = FALSE,
-                                    tag = NULL,
-                                    canvas.options = canvas.options,
-                                    summary.plot.dir = NULL,
-                                    ...) {
+                        veg.spatial.id, 
+                        layer, 
+                        expand.layer = TRUE, 
+                        base.run.id = NULL,
+                        abs.value.cuts = NULL,
+                        plot.diff = TRUE,
+                        diff.cuts = NULL,
+                        plot.perc.diff = TRUE, 
+                        perc.diff.cuts = NULL,
+                        special = "none",
+                        single.page = FALSE,
+                        tag = NULL,
+                        canvas.options = canvas.options,
+                        summary.plot.dir = NULL,
+                        ...) {
   
   # To avoid NOTES
   Lon = Lat = NULL

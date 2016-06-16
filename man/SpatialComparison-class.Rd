@@ -21,6 +21,10 @@ This class stores the rasters (model, data, difference and precentage difference
 \item{\code{mean.diff}}{The difference between the model and the the data (all gridcells)}
 
 \item{\code{sd.diff}}{The standard deviation of the difference between the model and the the data (all gridcells)}
+
+\item{\code{Kappa}}{The overall Cohen's Kappa obtained when comparing categorical variables.}
+
+\item{\code{individual.Kappas}}{The individual Cohen's Kappas for each category when comparing categorical data}
 }}
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

@@ -76,34 +76,19 @@ is.VegQuant <- function(input) {
   return(FALSE)
 }
 
-#' Check if an object is a \code{BiomeComparison}.   
-#'
-#' Returns TRUE if an object is a \code{BiomeComparison}, and FALSE otherwise 
-#' 
-#' @param input Any R object to be checked
-#' @return logical
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @export
-is.BiomeComparison <- function(input) {
-  class.def <- class(input)
-  if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "BiomeComparison" && attr(class.def, "package")=="DGVMTools")
-      return(TRUE)
-  return(FALSE)
-}
 
-#' Check if an object is a \code{RasterComparison}.   
+#' Check if an object is a \code{SpatialComparison}.   
 #'
-#' Returns TRUE if an object is a \code{RasterComparison}, and FALSE otherwise 
+#' Returns TRUE if an object is a \code{SpatialComparison}, and FALSE otherwise 
 #' 
 #' @param input Any R object to be checked
 #' @return logical
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
-is.RasterComparison <- function(input) {
+is.SpatialComparison <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "RasterComparison" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "SpatialComparison" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }

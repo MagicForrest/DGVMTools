@@ -164,6 +164,15 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else run.id <- NULL
   }
   
+  ### CHECK FOR SPECIAL VARIABLES FOR NICER PLOTTING
+  if(special == "none" | is.null(special)){
+    
+  
+    if(quant@id == "burntfraction") special <- "burnt.fraction"
+
+    
+  }
+  
   
   ### DIRECTORY TO SAVE PLOTS
   if(is.null(plot.dir)){
@@ -302,8 +311,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   #### PLOT BURNT FRACTION
   else if(special == "burnt.fraction"){
     
-    
-    
     # SET THE INTERVALS (using either these sensible options or the overrides)
     quant@cuts <- c(0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1)
     quant@colours <-  colorRampPalette(rev(c("red4", "red","orange","yellow", "palegreen2", "cyan", "dodgerblue2", "blue", "midnightblue")))
@@ -427,7 +434,6 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         stats.pos.x <- (this.extent@xmax-this.extent@xmin) * 0.15 + this.extent@xmin
         stats.pos.y <- (this.extent@ymax-this.extent@ymin) * 0.15 + this.extent@ymin
         kappa.position <- c(stats.pos.x, stats.pos.y) }
-        print(kappa.position)
       for(layer in 1:(nlayers(data.toplot)-1)) {
         layout.objs[[paste(layer)]]  <- list("sp.text", loc = kappa.position, txt = paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
       }
@@ -727,20 +733,20 @@ plotScatterComparison <- function(model,
 
 
 # plotScatter <- function(x.obj, y.obj = NULL, x.layer, y.layer, col, x.quant, y.quant = NULL, comparison.object = NULL){
-#   
+# 
 #   # get the classes
 #   class.x <- class(x.obj)
 #   class.y <- class(y.obj)
-#   
-#   # if y.obj
+# 
+#   # if y.obj 
 #   if(!is.null)
-#   
-#   
-#   
-#   
-#   
-#   
-#   
+# 
+# 
+# 
+# 
+# 
+# 
+# 
 # }
 
 

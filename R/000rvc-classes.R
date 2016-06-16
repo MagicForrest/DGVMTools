@@ -476,17 +476,34 @@ setClass("TemporalDataset",
 #' @slot RMSE The Root Mean Squared Error between the model and the the data
 #' @slot mean.diff The difference between the model and the the data (all gridcells)
 #' @slot sd.diff The standard deviation of the difference between the model and the the data (all gridcells)
+#' @slot Kappa The overall Cohen's Kappa obtained when comparing categorical variables.
+#' @slot individual.Kappas The individual Cohen's Kappas for each category when comparing categorical data
 #' @exportClass RasterComparison
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
 setClass("SpatialComparison",
          slots = c(id = "character",
                    R.squ = "numeric", 
-                   P.cor = "numeric", 
+                   P.cor = "numeric",
+                   ME = "numeric", 
+                   NME = "numeric",
+                   NMSE = "numeric",
                    RMSE = "numeric", 
-                   mean.diff = "numeric", 
-                   sd.diff = "numeric"
-         )
+                   sd.diff = "numeric",
+                   Kappa = "numeric", 
+                   individual.Kappas = "numeric"  
+         ),
+         prototype = c(id = "-",
+                       R.squ = NA, 
+                       P.cor = NA,
+                       ME = NA, 
+                       NME = NA,
+                       NMSE = NA,
+                       RMSE = NA, 
+                       sd.diff = NA,
+                       Kappa = NA, 
+                       individual.Kappas = NA 
+         ) 
 )
 
 
@@ -542,24 +559,7 @@ setClass("BiomeScheme",
          )
 )
 
-########### BIOME COMPARISON
-# 
-#' Result of comparing a modelled biome map to a data biome map
-#' 
-#' This class stores the rasters (model, data), the biome scheme used and the Cohen's Kappa statistics resulting when two rasters of with identical biome categorisations are compared using \code{compareBiomes}
-#' 
-#' @slot id A unique character string to identify this particular biome compariosn.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot Kappa The overall Cohen's Kappa obtained when comparing modelled biomes to data biomes.
-#' @slot individual.Kappas The individual Cohen's Kappas for each biome obtained when comparing modelled to data biomes
-#' @exportClass BiomeComparison
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' 
-setClass("BiomeComparison",
-         slots = c(id = "character",
-                   Kappa = "numeric", 
-                   individual.Kappas = "numeric"  
-         )
-)
+
 
 
 

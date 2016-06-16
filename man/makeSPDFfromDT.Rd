@@ -14,7 +14,7 @@ makeSPDFfromDT(input.data, layers = "all", tolerance = 1e-07,
 
 \item{tolerance}{Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats}
 
-\item{grid.topology}{A character string defining the grid topology for the SpatialPixelsDataFrame object}
+\item{grid.topology}{A GridTopology defining the grid topology for the SpatialPixelsDataFrame object}
 }
 \value{
 A SpatialPixelDataFrame

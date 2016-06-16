@@ -71,7 +71,7 @@ defineVegRun <- function(...){
 
 ############# ADD AN OBJECT TO A VEGRUN ######################################
 
-#' Add an object (either a \code{VegObject}, \code{BiomeComparison} or \code{RasterComparison}) to a \code{VegRun} object to be use later.  
+#' Add an object (either a \code{VegObject} or a  \code{SpatialComparison}) to a \code{VegRun} object to be use later.  
 #' 
 #' Stores an object in its run for later calculations, plotting, comparisons.
 #' 
@@ -84,7 +84,7 @@ defineVegRun <- function(...){
 addToVegRun <- function(object, run){
   
   # Add a BiomeComaprison or RasterComparison to the list in the benchmarks slot 
-  if(is.BiomeComparison(object) | is.RasterComparison(object) | is.SpatialComparison(object)) {
+  if(is.SpatialComparison(object)) {
     
     benchmark.list <- run@benchmarks
     benchmark.list[[object@id]] <- object
@@ -564,10 +564,10 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
     # first make a SpatialPointsDataFrame
    
     if(this.class == "data.table") {
-      data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = NULL)
+      data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = grid.topology)
     }
       
-    if(is.VegObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = NULL)
+    if(is.VegObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
     
     # now convert to raster
     if(length(layers) == 1){
@@ -615,7 +615,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
 #' @param input.data data.table or data.frame, with columsn "Lon" and "Lat" which specify the spatial data 
 #' @param layers The columns to be selected included in the final SpatialPixelsDataFrame object.  Use NULL or "all" if all layers are required.
 #' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats
-#' @param grid.topology A character string defining the grid topology for the SpatialPixelsDataFrame object
+#' @param grid.topology A GridTopology defining the grid topology for the SpatialPixelsDataFrame object
 #' @return A SpatialPixelDataFrame
 #' @export
 #' @import data.table sp

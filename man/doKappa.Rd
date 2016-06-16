@@ -4,23 +4,25 @@
 \alias{doKappa}
 \title{Kappa comparison between two biome rasters}
 \usage{
-doKappa(dt, id, labels = NULL, verbose = TRUE)
+doKappa(dt, id, labels = NULL, verbose = FALSE)
 }
 \arguments{
 \item{dt}{A two-columned data.table containing the biomes (or other categorical data) represented as integer codes}
 
-\item{id}{A character string to identify this comparison, typically the id of the biome scheme.}
+\item{id}{A character string to identify this comparison, typically a combination the id of the biome scheme and the id of the vegetation model run.}
 
 \item{labels}{A vector of character strings to describe the categories over which Kappa is compared (typically a list of biomes)
 following the order of the integer codes used in the data (see \code{stack} argument)}
 
-\item{verbose}{A logical, if TRUE print out all the Kappa scores}
+\item{verbose}{A logical, if TRUE print out all the Kappa scores
+
+Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are for continuous as opposed to categorical data}
 }
 \value{
-A Biome comparison object
+A spatial comparison object
 }
 \description{
-Calculates a BiomeComparison object (which contains the Cohen's Kappa scores) given a stack containing two biome maps.
+Calculates a SpatialComparison object (which contains the Cohen's Kappa scores) given a stack containing two maps of categorical data (eg. biomes, land cover classes).
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
