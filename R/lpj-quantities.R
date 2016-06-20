@@ -354,6 +354,14 @@ lpj.quantities <- list(
                      colours = fields::tim.colors,
                      cuts = seq(0, 1000, 50)), 
   
+  "vmaxnlim" = new("VegQuant",
+                     id = "vmaxnlim",
+                     name = "Annual Nitrogen Limitation", 
+                     type = "PFT",
+                     units = "fraction",
+                     colours = fields::tim.colors,
+                     cuts = seq(0, 1, 0.02)), 
+  
   "bioclim" = new("VegQuant",
                   id = "bioclim",
                   name = "Bioclimatic Limit Variables",
