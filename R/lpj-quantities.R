@@ -696,6 +696,16 @@ lpj.quantities <- list(
                     cuts = seq(0,1.0,0.1),
                     aggregate.method = "mean"),
   
+  "mleaffuel" = new("VegQuant",
+                    id = "mleaffuel",
+                    name = "Monthly Leaf Fuel", 
+                    type = "monthly",
+                    units = "kgC/m^2",
+                    colours = fields::tim.colors,
+                    cuts = seq(0,1.0,0.1),
+                    aggregate.method = "mean"),
+  
+  
   "mfiredays" = new("VegQuant",
                     id = "mfiredays",
                     name = "Monthly sum of daily fire probabilites", 
