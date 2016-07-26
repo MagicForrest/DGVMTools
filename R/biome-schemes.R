@@ -437,6 +437,90 @@ Forrest2015.scheme <- new("BiomeScheme",
                                      "Desert"),
                         data.reference = "Haxeltime and Prentice 1996",
                         published.reference = "Forrest et al 2015, Smith et al. 2014")
+doSmith2014Biomes <- FALSE
+
+
+
+
+#####################################################################
+########### MEDITERRANEAN BIOME CLASSIFICATION ######################
+#####################################################################
+
+#' Rules to classify coarses Mediterranean biomes
+#' 
+#' No reference yet
+#' 
+#' @param lai Numerical vector of LAI values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-8, ordering as in the Forrest et al. 2015 figure)
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
+MeditBiomeRules <- function(lai){
+  
+  
+  # BIOME 4 - Deciduous forest
+  if(as.numeric(lai[['Woody']]) > 2.0 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  
+  # BIOME 5 - Cold Montane forest
+  else if(as.numeric(lai[['Woody']]) > 1.0 && as.numeric(lai[['BorealFractionOfTree']]) > 0.5) {return(5)}
+  # BIOME 2 - Needle-leaved evergreen forest
+  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['DominantWoody']] == "TeNE") {return(2)}
+  # BIOME 3 - Mediterranean woodland/scrub
+  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['DominantWoody']] == "TeBE") {return(3)}
+  # BIOME 6 - Pre-steppe deciduous woodlands
+  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > 0.5 && lai[['DominantWoody']] == "TeBS") {return(6)}
+  # BIOME 8 - Shrublands/Shrub Steppe
+  else if((as.numeric(lai[['Woody']]) > 1.0 && (lai[['DominantWoody']] == "MeES" || lai[['DominantWoody']] == "MeRS" ))  
+          || as.numeric(lai[['Woody']]) > as.numeric(lai[['Grass']])) {return(8)}
+  # BIOME 7 - Grass Steppe  
+  else if(as.numeric(lai[['Grass']]) > 1.0 & as.numeric(lai[['Woody']] < 1.0)) {return(7)}
+  # BIOME 1 - Remainder, Unclassified
+  else {
+    #print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
+    return(1)
+  }
+  
+  
+}
+
+#' Meta-data describing the Forrest et al. 2015 Mediterranean scheme for LPJ-GUESS output.
+#' 
+#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
+#' not the classication of the model output.
+#' 
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
+MeditBiomes.scheme <- new("BiomeScheme",
+                          id = "MeditBiomes",
+                          name = "Mediterranean Biomes", 
+                          substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
+                          rules = MeditBiomeRules,
+                          totals.needed = c("lifeforms", "zones"),
+                          fraction.of.total = c("Grass"),
+                          fraction.of.tree = c("Boreal", "Summergreen"),
+                          fraction.of.woody = c("NA"),
+                          combineShadeTolerance = TRUE,
+                          needGDD5 = FALSE,
+                          cols =  c("black",
+                                    "darkolivegreen",
+                                    "orangered4",
+                                    "green3",
+                                    "royalblue4",
+                                    "sandybrown",
+                                    "darkseagreen1",
+                                    "tan"),
+                          strings =  c("Not\nclassifiable",
+                                       "Needleleaved\nEvergreen\nWoodlands",
+                                       "Broadleaved\nEvergreen\nWoodlands",
+                                       "Deciduous\nForest",
+                                       "Cold\nMontane\nForest",
+                                       "Presteppe\nWoodlands",
+                                       "Grass\nsteppe",
+                                       "Woody steppe/\nShrublands"),
+                          data.reference = "-",
+                          published.reference = "-")
 
 
 #################################################################################################################################
@@ -685,4 +769,5 @@ supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
                              "Hickler2012" = Hickler2012.scheme,
                              "Forrest2015" = Forrest2015.scheme,
                              "Megabiomes_dev" = Megabiomes_dev.scheme,
-                             "FPCMegabiomes" = FPCMegabiomes.scheme)
+                             "FPCMegabiomes" = FPCMegabiomes.scheme,
+                             "MeditBiomes" = MeditBiomes.scheme)

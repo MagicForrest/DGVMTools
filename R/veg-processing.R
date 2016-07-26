@@ -389,7 +389,7 @@ addBiomes <-function(input, scheme){
   }
   
   # Get the dominant tree and dominant woody PFTs
-  input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
+  input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
 
   # Get the totals required
   input <-aggregateLayers(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))

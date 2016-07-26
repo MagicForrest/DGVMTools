@@ -4,7 +4,7 @@
 \name{supported.biome.schemes}
 \alias{supported.biome.schemes}
 \title{Currently supported biome schemes}
-\format{An object of class \code{list} of length 5.}
+\format{An object of class \code{list} of length 6.}
 \usage{
 supported.biome.schemes
 }

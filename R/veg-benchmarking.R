@@ -596,12 +596,30 @@ compareBiomes <- function(runs,
   args1[names(inargs)] <- inargs
   args1 <- c(args1, plot.options)
   
+ 
+  
+  # align the data to be on the same grid as the model using the nearest neqbour algorthim
+  
+  # first rasterise the data and model
+  biome.data.raster <- promoteToRaster(biome.dataset@data)
+  model.data.raster <- promoteToRaster(getVegSpatial(runs[[1]], variable, period, reread.file = FALSE))
+  
+  # 
+  # first check if they are on identical grids
+  if(!compareRaster(biome.data.raster, model.data.raster, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
+     biome.data.raster <- resample(biome.data.raster, model.data.raster, method = "ngb")
+  }
+
+  # make the new data.table on the aligned grid
+  new.data.dt <- data.table(as.data.frame(biome.data.raster,xy = TRUE))
+  new.data.dt <- na.omit(new.data.dt)
+  setnames(new.data.dt, append(c("Lon", "Lat"), names(new.data.dt)[length(names(new.data.dt))]))
+  setkey(new.data.dt, Lon, Lat)
+
+  
+  
   # First loop through runs calculate biomes and Kappas and plot individually
   list.of.comparisons <- list()
-  
-  # new data
-  new.data.dt <- biome.dataset@data
-  
   for(run in runs) {
     
     # Prepare the veg. spatial object
@@ -609,18 +627,18 @@ compareBiomes <- function(runs,
     
     #  calculate biomes from model output
     this.VegSpatial <- addBiomes(this.VegSpatial, scheme)
-    
+
     # add the modelled biomes to the dataset object
-    new.data.dt <- merge(new.data.dt, this.VegSpatial@data[,c("Lon", "Lat", scheme@id), with=FALSE], all.x = TRUE, all.y = FALSE)
+    new.data.dt <- merge(round(new.data.dt, 3), round(this.VegSpatial@data[,c("Lon", "Lat", scheme@id), with=FALSE],3), all = FALSE)
     setnames(new.data.dt, ncol(new.data.dt), run@id)
     
     # Make a comparison data.table for the statisticsd
     comparison.dt <- new.data.dt[,c(run@id, biome.dataset@id), with= FALSE]
     comparison.dt <- na.omit(comparison.dt)
     
-    # calculate Kappa statistics (and possibily other similarity/dissimilarity metrics)
+    # calculate Kappa statistics (and possibily other similarity/dissimilarity metrics
     list.of.comparisons[[run@id]] <- doKappa(comparison.dt, id = scheme@id, labels = scheme@strings, verbose = TRUE)
-    
+
     # plot biomes if requested
     if(plot){
       do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste("Biomes", this.VegSpatial@id, scheme@id, tag, canvas.options[["type"]], sep = "."))), 
@@ -654,8 +672,7 @@ compareBiomes <- function(runs,
     labels <- append(labels, run@description)
     layers <- append(layers, run@id)
     
-    comparison.obj <- list.of.comparisons[[run@id]]
-    # also compare kappas?
+      # also compare kappas?
     
   }
   

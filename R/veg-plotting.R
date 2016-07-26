@@ -200,7 +200,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   #####################################################################################
   
   ### TOLERANCE - for when making grid to rasterise
-  if(is.null(run)) { tolerance <- 0.02 }
+  if(is.null(run)) { tolerance <- 0.001 }
   else {tolerance <- run@tolerance}  
   
   ### SPECIAL CASE OF BIOMES OR DOMINANT WITH NULL layer (assume the biome scheme id is the layer name)
@@ -397,21 +397,14 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         data.id <- biome.data@id
         biome.data <- promoteToRaster(biome.data@data)
       }
-      # first check if they are on identical grids, then one can simply add the layers
-      if(compareRaster(biome.data, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
-        print("woohoo!")
+      # first check if they are on identical grids, in nor resample with nearest neighbour algorithm
+      if(!compareRaster(biome.data, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
+          biome.data <- resample(biome.data, data.toplot, method = "ngb")
       }
-      else if(compareRaster(biome.data, data.toplot, extent=FALSE, rowcol=FALSE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
-        biome.data <- crop(biome.data, data.toplot, snap = "out")
-        biome.data <- extend(biome.data, data.toplot)
-      }
-      else {
-        biome.data <- resample(biome.data, data.toplot, method = "ngb")
-        
-      }
+
       biome.data <- crop(biome.data, data.toplot)
       data.toplot <- mask(data.toplot, biome.data)  
-      
+    
       # add the PNV raster layer and its title
       data.toplot <- addLayer(data.toplot, biome.data) 
       layers <- names(data.toplot)
@@ -443,7 +436,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
   }
   
-  #### PLOT BIOMES
+  #### PLOT DOMINANT
   
   else if(special == "dominant"){
     
@@ -580,7 +573,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
   }
   else plot.labels.here <- plot.labels
-  
+ 
   return(spplot(data.toplot,
                 layers,
                 par.settings = list(panel.background=list(col=plot.bg.col)),

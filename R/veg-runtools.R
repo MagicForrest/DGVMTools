@@ -47,11 +47,10 @@ defineVegRun <- function(...){
   
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
   if(length(info@pft.set) == 0) info@pft.set <- NULL
-  if(length(info@tolerance) == 0)  info@tolerance <- 0.0000001
   if(length(info@description) == 0)  info@description <- "No description specified"
   if(length(info@lonlat.offset) == 0)  info@lonlat.offset <- c(0,0)
   if(length(info@year.offset) == 0)  info@year.offset <- 0
-  if(length(info@tolerance) == 0)  info@tolerance <- 0.00001
+  if(length(info@tolerance) == 0)  info@tolerance <- 0.001
   if(length(info@driving.data) == 0)  info@driving.data <- "No forcing data set"
   if(length(info@london.centre) == 0)  info@london.centre <- TRUE
   if(length(info@fill.col) == 0)  info@fill.col <- "transparent"
