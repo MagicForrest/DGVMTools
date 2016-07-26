@@ -379,6 +379,16 @@ lpj.quantities <- list(
                cuts = seq(0, 5000, 100)),
   
   
+  "aleafshed" = new("VegQuant",
+               id = "aleafshed",
+               name = "Number times leafs shed per year",
+               type = "PFT",
+               units = "-",
+               colours = fields::tim.colors,
+               cuts = seq(0, 20, 0.1),
+               aggregate.method = "mean"),
+  
+  
   #############################################################################################
   ############################# SPITFIRE QUANTITES ############################################
   #############################################################################################

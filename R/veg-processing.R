@@ -389,7 +389,7 @@ addBiomes <-function(input, scheme){
   }
   
   # Get the dominant tree and dominant woody PFTs
-  input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = FALSE)
+  input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
 
   # Get the totals required
   input <-aggregateLayers(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
@@ -504,6 +504,8 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
       if(PFT@phenology == layer) {layer.cols <- append(layer.cols, PFT@id)}
       # Special case for Woody
       if(layer == "Woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {layer.cols <- append(layer.cols, PFT@id)}
+      # Special case for Total
+      if(layer == "Total") {layer.cols <- append(layer.cols, PFT@id)}
     }
     
     # now combine the relevant columns
@@ -523,9 +525,7 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
       }
     }
   } 
-  
-  
-  
+
   if(is.VegObject(input)) {
     input@data <- dt
     return(input)
@@ -535,7 +535,7 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
   }
   
   
-  
+ 
   
 }
 
@@ -584,7 +584,7 @@ divideLayers <- function(input, layers, denominators = list("Total")){
   denominators <- expandLayers(denominators, dt, PFT.data)
   for(denom in denominators) {
     if(!(denom %in% names(dt))) {
-      dt <- aggregateLayers(dt, denom, PFT.data = PFT.data)
+      dt <- aggregateLayers(dt, denom, method = sum, PFT.data = PFT.data)
     }
   }
   
