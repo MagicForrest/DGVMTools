@@ -169,6 +169,7 @@ dgvm.ggplot.theme <- function(x) {
 #' @param sym.col boolean, if the colors should be distributed symetrically around 0.
 #' @param wrap a single number of facet_wrap columns or a vector/list with the run, VegSpatial name, column and optionally ncol (number of columns), which is used to split the data in different panels. Only valid when a vector of column names or a list of VegSpatial was given as input. Otherwise it is ignored.
 #' @param terr.bg which colour should be used for missing terrestial pixels (e.g. Greenland)
+#' @param map.overlay if set to 'lowres' or 'highres' national borders are included (uses package maps). It can also be a data.frame as returned by \code{ggplot2::fortify}.
 #' @param long.title If the description (default) should be used as titles or the shorter id.
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Additional parameters, which are ignored so far.
@@ -177,7 +178,7 @@ dgvm.ggplot.theme <- function(x) {
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import raster sp maps ggplot2 data.table
 #' @export
-plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, long.title=TRUE, plot=TRUE, ...) {
+plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, map.overlay=NA, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lon = Lat = group = long = name = value = NULL
   ## check if a VegSpatial or a list of VegSpatial is given as input
@@ -194,14 +195,14 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
       stop(paste("No column named '",column,"' present!", sep=""))
     }
     london.centre <- input@run@london.centre
-    if (is.character(input@run@map.overlay)) {
-      map.overlay <- input@map.overlay
-    } else if (is.null(input@run@map.overlay)) {
-      map.overlay <- "lowres"
-    } else {
-      map.overlay <- fortify(SpatialLinesDataFrame(input@run@map.overlay[[2]],
-                                                   data.frame(ID=getSLLinesIDSlots(input@run@map.overlay[[2]]))))
-    }
+    ##if (is.character(input@run@map.overlay)) {
+    ##  map.overlay <- input@map.overlay
+    ##} else if (is.null(input@run@map.overlay)) {
+    ##  map.overlay <- "lowres"
+    ##} else {
+    ##  map.overlay <- fortify(SpatialLinesDataFrame(input@run@map.overlay[[2]],
+    ##                                               data.frame(ID=getSLLinesIDSlots(input@run@map.overlay[[2]]))))
+    ##}
     dt <- input@data[, c("Lon", "Lat", column), with = FALSE]
     if (length(column)==1) {
       setnames(dt, column, "value")
@@ -260,15 +261,15 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
       
       if (i==1) {
         london.centre <- input[[i]]@run@london.centre
-        if (is.character(input[[i]]@run@map.overlay)) {
-          map.overlay <- input[[i]]@map.overlay
-        } else if (is.null(input[[i]]@run@map.overlay)) {
-          map.overlay <- "lowres"
-        } else {
-          ## did not find a way how to replace depricated "getSLLLinesIDSlots" by "over"
-          map.overlay <- fortify(SpatialLinesDataFrame(input[[i]]@run@map.overlay[[2]],
-                                                       data.frame(ID=getSLLinesIDSlots(input[[i]]@run@map.overlay[[2]]))))
-        }
+        ##if (is.character(input[[i]]@run@map.overlay)) {
+        ##  map.overlay <- input[[i]]@map.overlay
+        ##} else if (is.null(input[[i]]@run@map.overlay)) {
+        ##  map.overlay <- "lowres"
+        ##} else {
+        ##  ## did not find a way how to replace depricated "getSLLLinesIDSlots" by "over"
+        ##  map.overlay <- fortify(SpatialLinesDataFrame(input[[i]]@run@map.overlay[[2]],
+        ##                                               data.frame(ID=getSLLinesIDSlots(input[[i]]@run@map.overlay[[2]]))))
+        ##}
         dt <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
           dt[, sens:=input[[i]]@run@description, ]
@@ -414,7 +415,8 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
       p <- p + guides(fill=guide_colorbar(nbin = 101, expand=c(0, 0)))
     }
   }
-  p <- p + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group=group))
+  if (is.data.frame(map.overlay))
+    p <- p + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group=group))
   p <- p + scale_x_continuous(breaks=lon, labels=names(lon), expand=c(0, 0))
   p <- p + scale_y_continuous(breaks=lat, labels=names(lat), expand=c(0, 0)) 
   p <- p + coord_fixed(xlim=lon.limit, ylim=lat.limit)

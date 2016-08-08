@@ -426,16 +426,12 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
   dom <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
   names(dom) <- month.abb
   mid.month <- cumsum(dom) - dom/2
-  
+
   ## make sure we do not overwrite the original data.table
   if (is.VegObject(T)) {
     if (T@is.spatially.averaged)
-      stop("Operation not possible for spatially averaged VegObect!")
-    
-    if (!T@is.temporally.averaged) {
-      warning("Operation not tested for temporally not averaged VegObect!")
-      message("Operation not tested for temporally not averaged VegObect!")
-    }
+      stop("Operation not possible for spatially averaged VegObject!")
+
     is.temporally.averaged <- T@is.temporally.averaged
     spatial.extent  <- T@spatial.extent
     temporal.extent <- T@temporal.extent
@@ -443,38 +439,44 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
   } else if (is.data.table(T)) {
     T <- copy(T)
   }
-  
-  ## chech the column names
+
+  ## check the column names
   if (!all(c("Lat", month.abb)%in%colnames(T)))
     stop(paste("Any of '", paste(c("Lat", month.abb), collapse="', "), "' missing in column names.", sep=""))
   
   ## calculate the daylength and convert to data.frame
   L <- as.data.frame(t(daylength(T$Lat, mid.month)))
   colnames(L) <- month.abb
-  
-  if (is.data.table(T)) {
-    L <- cbind(T[, c("Lon", "Lat"), with=FALSE], L)  
+
+  if (is.temporally.averaged) {
+    key.names <- c("Lon", "Lat")
   } else {
-    L <- as.data.table(cbind(T[, c("Lon", "Lat") ], L))
+    key.names <- c("Lon", "Lat", "Year")
   }
-  setkey(L, Lon, Lat)
-  
+
+  if (is.data.table(T)) {
+    L <- cbind(T[, key.names, with=FALSE], L)  
+  } else {
+    L <- as.data.table(cbind(T[, key.names ], L))
+  }
+  setkeyv(L, key.names)
+
   ## replace temperatures below zero
-  T[, (month.abb):=ifelse(.SD<0, 0, .SD), by=c("Lon", "Lat")]
-  
+  T[, (month.abb):=ifelse(.SD<0, 0, .SD), by=key.names]
+
   ## calculate some new columns
   T[, I:=rowSums((.SD/5)^1.514), .SDcols=month.abb]
-  T[, a:=6.75e-7 * I^3 - 7.71e-5 * I^2 + 1.79e-2 * I + 0.49, by=c("Lon", "Lat")]
-  
+  T[, a:=6.75e-7 * I^3 - 7.71e-5 * I^2 + 1.79e-2 * I + 0.49, by=key.names]
+
   DT <- L[T]
-  
+
   formula.str <- NULL
   for (m in month.abb) {
     formula.str <- rbind(formula.str, paste(m, "=16*(", m, "/12)*(dom['", m, "']/30)*(i.", m, "*10/I)^a", sep=""))
   }
   formula.str <- paste(formula.str, collapse=", ")
-  PET <- eval(parse(text=paste("DT[, list(", formula.str, "), by=c('Lon', 'Lat')]", sep="")))
-  
+  PET <- eval(parse(text=paste("DT[, list(", formula.str, "), by=key.names]", sep="")))
+
   if (toupper(variable)=="PET") {
     if (as=="data.table") {
       return(PET)      
@@ -498,7 +500,7 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
                  run = as(run, "VegRunInfo")))
     }
   }
-  
+
   if (is.VegObject(P)) {
     P <- copy(P@data)
   } else if (is.data.table(P)) {
@@ -506,17 +508,17 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
   } else if (is.null(P)) {
     stop("No P (precipitation) data given!")
   }
-  
+
   DT <- PET[P]
-  
+
   formula.str <- NULL
   for (m in month.abb) {
     formula.str <- rbind(formula.str, paste(m, "=ifelse(",m,"-i.",m, "<0, 0, ",m,"-i.",m, ")", sep=""))
   }
   formula.str <- paste(formula.str, collapse=", ")
-  WD <- eval(parse(text=paste("DT[, list(", formula.str, "), by=c('Lon', 'Lat')]", sep="")))
+  WD <- eval(parse(text=paste("DT[, list(", formula.str, "), by=key.names]", sep="")))
   WD[ ,Annual:=rowSums(.SD), .SDcols = month.abb]
-  
+
   if (toupper(variable)=="WD") {
     if (as=="data.table") {
       return(WD)      
@@ -540,19 +542,19 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
                  run = as(run, "VegRunInfo")))
     }
   }
-  
+
   WC.init <- 75.0
   WC.max  <- 150.0
   WC <- data.table(array(WC.init, c(nrow(PET),12)))
   colnames(WC) <- month.abb
-  WC <- cbind(PET[, c("Lon", "Lat"), with=FALSE], WC)
-  setkey(WC, Lon, Lat)
-  
+  WC <- cbind(PET[, key.names, with=FALSE], WC)
+  setkeyv(WC, key.names)
+
   AET <- data.table(array(0.0, c(nrow(PET),12)))
   colnames(AET) <- month.abb
-  AET <- cbind(PET[, c("Lon", "Lat"), with=FALSE], AET)
-  setkey(WC, Lon, Lat)
-  
+  AET <- cbind(PET[, key.names, with=FALSE], AET)
+  setkeyv(WC, key.names)
+
   DT <- PET[P]
   setnames(DT, month.abb, paste("PET", month.abb, sep="."))
   setnames(DT, paste("i", month.abb, sep="."), paste("P", month.abb, sep="."))
@@ -562,26 +564,26 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
   setnames(DT, month.abb, paste("WC", month.abb, sep="."))
   DT = AET[DT]
   setnames(DT, month.abb, paste("AET", month.abb, sep="."))
-  
-  DT[, AET.Jan:=ifelse(PET.Jan <= P.Jan, PET.Jan, P.Jan + WD.Jan * WC.Dec/WC.max), by=c('Lon', 'Lat')]
-  DT[, WC.Jan:=ifelse(WC.Dec + P.Jan - AET.Jan > WC.max, WC.max, WC.Dec + P.Jan - AET.Jan), by=c('Lon', 'Lat')]
+
+  DT[, AET.Jan:=ifelse(PET.Jan <= P.Jan, PET.Jan, P.Jan + WD.Jan * WC.Dec/WC.max), by=key.names]
+  DT[, WC.Jan:=ifelse(WC.Dec + P.Jan - AET.Jan > WC.max, WC.max, WC.Dec + P.Jan - AET.Jan), by=key.names]
   niterations <- 2
   for (i in 1:(niterations*12)) {
     pm <- month.abb[((i-1)%%12)+1]
     m <- month.abb[(i%%12)+1]
-    formula.str <- paste("DT[, AET.", m, ":=ifelse(PET.",m," <= P.", m, ", PET.", m, ", P.", m, " + WD.", m, "*WC.",pm,"/WC.max), by=c('Lon', 'Lat')]",sep="")
+    formula.str <- paste("DT[, AET.", m, ":=ifelse(PET.",m," <= P.", m, ", PET.", m, ", P.", m, " + WD.", m, "*WC.",pm,"/WC.max), by=key.names]",sep="")
     eval(parse(text=formula.str))
-    
-    formula.str <- paste("DT[, WC.", m, ":=ifelse(WC.",pm," + P.", m, " - AET.",m," > WC.max, WC.max, WC.", pm, " + P.", m, " - AET.", m, "), by=c('Lon', 'Lat')]", sep="")
+
+    formula.str <- paste("DT[, WC.", m, ":=ifelse(WC.",pm," + P.", m, " - AET.",m," > WC.max, WC.max, WC.", pm, " + P.", m, " - AET.", m, "), by=key.names]", sep="")
     eval(parse(text=formula.str))
   }
-  
+
   if (toupper(variable)=="WC") {
-    WC <- DT[, c("Lon", "Lat", paste("WC", month.abb, sep=".")), with=FALSE]
+    WC <- DT[, c(key.names, paste("WC", month.abb, sep=".")), with=FALSE]
     setnames(WC,  paste("WC", month.abb, sep="."), month.abb)
-    setkey(WC, Lon, Lat)
+    setkeyv(WC, key.names)
     if (as=="data.table") {
-      return(WC)      
+      return(WC)
     } else if (as=="data.frame") {
       return(as.data.frame(WC))
     } else {
@@ -602,13 +604,13 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
                  run = as(run, "VegRunInfo")))
     }
   }
-  
+
   if (toupper(variable)=="AET") {
-    AET <- DT[, c("Lon", "Lat", paste("AET", month.abb, sep=".")), with=FALSE]
+    AET <- DT[, c(key.names, paste("AET", month.abb, sep=".")), with=FALSE]
     setnames(AET,  paste("AET", month.abb, sep="."), month.abb)
-    setkey(AET, Lon, Lat)
+    setkeyv(AET, key.names)
     if (as=="data.table") {
-      return(AET)      
+      return(AET)
     } else if (as=="data.frame") {
       return(as.data.frame(AET))
     } else {

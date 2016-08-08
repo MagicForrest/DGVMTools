@@ -345,7 +345,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
 
       dt.tmp <- data.table::melt(dt.tmp, id.vars=c("Lon", "Lat"))
       dt.tmp[, Date:=as.Date(paste(y, "-01-01", sep="")) + as.numeric(substring(variable,2)) - 1, ]
-      
+
       if (monthly) {
         dt.tmp[, Month:=format(Date, "%b"), ]
         dt.tmp[, Year:=y, ]
@@ -367,7 +367,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
         dt.tmp <- dt.tmp[, list(value=sum(value, na.rm=TRUE)), by=c("Lon", "Lat", agg.by)]
       }
 
-      if (exists("DT")) {
+      if (exists("DT", where=sys.frames()[[1]], inherits=FALSE)) {
         DT <- rbind(DT, dt.tmp)
       } else {
         DT <- copy(dt.tmp)
@@ -403,6 +403,9 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
     } else {
       DT[, Year:=NULL, ]
     }
+  } else if (monthly) {
+    DT$Month = factor(DT$Month, levels=month.abb)
+    DT <- data.table::dcast(DT, Lon + Lat + Year ~ Month, value.var=c("value"))
   }
 
   if (is.VegRun(run)) {
