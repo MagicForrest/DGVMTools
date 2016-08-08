@@ -5,8 +5,8 @@
 #' 
 #' lalal
 #' 
-#' @param quant.str String holding the id of the \code{VegQuant} you want
-#' @param model.str String holding the name og the model or "Standard"
+#' @param quant.id String holding the id of the \code{VegQuant} you want
+#' @param model.str String holding the name of the model or "Standard"
 lookupVegQuant <- function(quant.id, model.str = "Standard"){
   
   for(quant in veg.quantities){

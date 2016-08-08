@@ -387,7 +387,7 @@ getVegObject <- function(run,
     
     else {
       
-      error(paste0("The VegQuant ", quant@id, " is defined for models ", paste(quant@models, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", run@model, ").  Please check this."))
+      stop(paste0("The VegQuant ", quant@id, " is defined for models ", paste(quant@models, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", run@model, ").  Please check this."))
       
       
     }

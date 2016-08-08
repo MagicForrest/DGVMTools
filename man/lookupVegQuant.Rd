@@ -7,9 +7,9 @@
 lookupVegQuant(quant.id, model.str = "Standard")
 }
 \arguments{
-\item{model.str}{String holding the name og the model or "Standard"}
+\item{quant.id}{String holding the id of the \code{VegQuant} you want}
 
-\item{quant.str}{String holding the id of the \code{VegQuant} you want}
+\item{model.str}{String holding the name of the model or "Standard"}
 }
 \description{
 lalal
