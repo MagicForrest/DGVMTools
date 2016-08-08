@@ -276,7 +276,8 @@ setClass("VegQuant",
                    units = "character",
                    colours = "function",
                    cuts = "numeric",
-                   aggregate.method = "character"
+                   aggregate.method = "character",
+                   model = "character"
          ),
          prototype = c(id = "UnknownID",
                        name = "UnknownString",
@@ -284,7 +285,8 @@ setClass("VegQuant",
                        units = "-",
                        colours = tim.colors,
                        cuts = integer(0),
-                       aggregate.method = "sum"
+                       aggregate.method = "sum",
+                       model = "Standard"
          )
          
          

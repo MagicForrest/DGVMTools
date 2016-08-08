@@ -26,7 +26,7 @@
 #' @param PFT.set A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{VegObject}.
 #' @param plot.dir A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{VegObject}, but this provides an override.
 #' If not a \code{VegObject} and not specified, this defaults to the current directory
-#' @param title A character string to override the title on the summary plot.
+#' @param title A character string to override the deafualt title.
 #' @param tag A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
 #' for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.
 #' @param layout.objs List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
@@ -95,7 +95,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         maxpixels = 1E6,
                         biome.scheme = Smith2014.scheme,
                         biome.data = NULL,
-                        kappa.list = NULL,
+                        kappa.list = NA,
                         kappa.position = NULL,
                         ...){
   
@@ -148,6 +148,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
   if(is.VegObject(data)){
+
     if(data@is.temporally.averaged){
       run <- data@run
       run.id <- run@id
@@ -158,8 +159,21 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else {
       stop("plotVegMaps:: trying to spatially plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
     }
+    
   }
   else{
+    if(is.null(quant)) {
+      
+       quant <- new("VegQuant",
+                   id = "generic",
+                   type = "unknown",
+                   name = "Generic",
+                   units = "unknown",
+                   colours = fields::tim.colors, 
+                   cuts = seq(0,1,0.05),
+                   model = "none")
+      } 
+    
     if(!is.null(run)) run.id <- run@id
     else run.id <- NULL
   }
@@ -180,17 +194,12 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else { plot.dir = "." }
   }
   
-  ### QUANTITY AND COLS
-  if(class(quant) == "character"){ quant = lpj.quantities[[quant]] }
-  else if((class(quant) != "VegQuant")){
-    warning("Invalid quantity found in plotLPJMaps using generic quantity")
-    quant = lpj.quantities[["generic"]]
-  }
-  
-  
+ 
   ### COLORKEY - standard, updated by specials below
+  if(!is.null(quant)) colours <- quant@colours
+  else colours <- fields::tim.colors
   colorkey.list <- list(space = "right", 
-                        col = quant@colours, 
+                        col = colours, 
                         labels = list(cex = 3 * text.multiplier)
   )
   
@@ -417,7 +426,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
     
     # KAPPA
-    if(!is.null(kappa.list)){
+    if(!is.na(kappa.list)){
       
       # if only one model run put individual Kappas into biome legend
       if(nlayers(data.toplot)-1 == 1) colorkey.list[["labels"]][["labels"]] <- paste0(colorkey.list[["labels"]][["labels"]], " (", rev(round(kappa.list[[1]]@individual.Kappas,2)), ")", sep = "")

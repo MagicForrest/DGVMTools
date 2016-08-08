@@ -437,7 +437,7 @@ Forrest2015.scheme <- new("BiomeScheme",
                                      "Desert"),
                         data.reference = "Haxeltime and Prentice 1996",
                         published.reference = "Forrest et al 2015, Smith et al. 2014")
-doSmith2014Biomes <- FALSE
+
 
 
 
@@ -484,7 +484,7 @@ MeditBiomeRules <- function(lai){
   
 }
 
-#' Meta-data describing the Forrest et al. 2015 Mediterranean scheme for LPJ-GUESS output.
+#' Meta-data describing a Mediterranean scheme for LPJ-GUESS output.
 #' 
 #' Note 'substitution' is probably a redundant slot, this is a part of the data, 
 #' not the classication of the model output.

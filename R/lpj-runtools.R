@@ -87,49 +87,101 @@ openLPJOutputFile <- function(run,
 }
 
 
-######################### RETURN A DATA.TABLE CONTAINING THE FULL DATA FROM ONE LPJ-GUESS OUTPUT VARIABLE #####################################################################
-#  MF: DEPRECATED, FUNCTIONALITY MOVED TO openLPJOutputFile() and to getVegObject()
+
+
 #' Returns the data from one LPJ-GUESS output variable as a \code{data.table}.   
 #'
-#' \code{getVegQuantity_LPJ} returns a \code{data.table} containing the full data (not averaged spatially or temporally) data from an LPJ-GUESS
+#' 
+#' This fucntion can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
+#' to compare to other models and to data.  This must be implemented for each and every Standard quantity 
+#' for each and every model to to ensure completeness.
+#' 
+#' 
 #' output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
 #' \code{VegRun} object, it will return that to save time.
 #' 
 #' @param run A \code{VegRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param var.string A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
-#' @param store.internally A logical defining whether to attach the resulting to the \code{data.table} to the \code{VegRun} object for later use
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
 #' @export
 
-getVegQuantity_LPJ <- function(run, var.string, store.internally = FALSE,verbose = FALSE) {
+getStandardVegQuant_LPJ <- function(run, quant, verbose = FALSE) {
   
-  # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Year = NULL
+  
+  # columns not to be modified for unit conversions etc.
+  unmod.cols <- c("Lon", "Lat", "Year", "Day")
+  
+  # Check that this really is a standard VegQuant and therefore should have behaviour defined here
+  if(!"Standard" %in% quant@model) {
+        stop()(paste("getStandardVegQuant_LPJ called for a non-standard VegQuant (", quant@id, ")", sep = ""))
+  }
+  
+  
+  
+  #### Here is the code to define each and every Standard VegQuant for LPJ-GUESS output
+  
+  # vegcover_std
+  if(quant@id == "vegcover_std") {
+    
+    # vegcover.out provides the right quantity here (note this is not standard LPJ-GUESS)
+    this.dt <- openLPJOutputFile(run, "vegcover", verbose = TRUE)
+    
+    # But we need to scale it to %
+    if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
+    mod.cols <- names(this.dt)
+    mod.cols <- mod.cols[!mod.cols %in% unmod.cols]
+    this.dt <- this.dt[, (mod.cols) := lapply(.SD, function(x) x * 100 ), .SDcols = mod.cols]
+    
+    
+    return(this.dt)
+    
+  }
+  
+  # vegC_std 
+  else if(quant@id == "vegC_std") {
+    
+    # cmass provides the right quantity here - so done
+    this.dt <- openLPJOutputFile(run, "cmass", verbose = TRUE)
+    
+    return(this.dt)
+    
+  }
+  
+  # LAI_std 
+  else if(quant@id == "LAI_std") {
+    
+    # lai provides the right quantity here - so done
+    this.dt <- openLPJOutputFile(run, "lai", verbose = TRUE)
+    
+    return(this.dt)
+    
+  }
+  
+  # mGPP_std 
+  else if(quant@id == "aGPP_std") {
+    
+    # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
+    # newer versions have the agpp output variable which has the per PFT version
+    this.dt <- openLPJOutputFile(run, "mgpp", verbose = TRUE)
+    this.dt <- aggregateLayers(this.dt, "Annual")
+
+    return(this.dt)
+    
+  }
+  
+  
+  else {
+    
+    stop(paste("Unfortunately "))
+    
+    
+  }
+  
    
-  # USE THE FULL FILE IF ALREADY STORED IN MEMORY
-  #if(var.string %in% names(run@objects)){
-  #  if(verbose) message(paste(var.string, ".out is already read, so using that internal copy.", sep = ""))
-  #  this.dt <- run@objects[[var.string]]
-  #  setKeyDGVM(this.dt, Lon, Lat, Year)
-  #}
-  
-  # READ THE FULL FILE
-  #else {
-    if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
-    
-    this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
-   
-    
-    # if requested save the full data.table containing the entire ,out file to the run object
-    if(store.internally) {run <<- addToVegRun(this.dt, run)}
-    
-  #}
-  
-  return(this.dt)
-  
+ 
 }
 
 

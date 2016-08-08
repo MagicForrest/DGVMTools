@@ -3,7 +3,7 @@
 \docType{data}
 \name{MeditBiomes.scheme}
 \alias{MeditBiomes.scheme}
-\title{Meta-data describing the Forrest et al. 2015 Mediterranean scheme for LPJ-GUESS output.}
+\title{Meta-data describing a Mediterranean scheme for LPJ-GUESS output.}
 \format{An object of class \code{BiomeScheme} of length 1.}
 \usage{
 MeditBiomes.scheme

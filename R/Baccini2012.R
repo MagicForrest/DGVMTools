@@ -69,7 +69,7 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass/Baccini2012", resol
                          name = "Baccini et al. 2012 Biomass",
                          temporal.extent = new("TemporalExtent", name = "Baccini Period", start = 2006, end = 2008),
                          data = Baccini.dt,
-                         quant = lookupVegQuantity("cmass"),
+                         quant = lookupVegQuant("vegC_std", "Standard"),
                          spatial.extent = new("SpatialExtent", id = "BacciniExtent", name = "Baccini extent", extent = extentFromDT(Baccini.dt)),
                          correction.layer =  "")
   

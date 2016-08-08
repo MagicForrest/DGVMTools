@@ -30,6 +30,9 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/Thurner2013/", reso
   else if(resolution == "T63"){
     Thurner.raster <- trim(rotate(raster(file.path(location, "processed/Thurner2013.T63.nc"))))
   }
+  else if(resolution == "1km-Turkey"){
+    Thurner.raster <- trim(rotate(raster(file.path(location, "processed/Thurner2013.1km-Turkey.nc"))))
+  }
   
   
   Thurner.dt <- data.table(as.data.frame(Thurner.raster,xy = TRUE))
@@ -39,14 +42,15 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/Thurner2013/", reso
 
   setkey(Thurner.dt, Lon, Lat)
 
-  
+  quant <- lookupVegQuant("vegC_std", "Standard")
+  quant@cuts <- seq(0,25,1)
   
   Thurner.dataset <- new("DataObject",
                          id = "Thurner2013",
-                         name = "Thurner et al. 2015 Biomass",
+                         name = "Thurner et al. 2015",
                          temporal.extent = new("TemporalExtent", id = "ThurnerPeriod", name = "Thurner Period", start = 2000, end = 2010),
                          data = Thurner.dt,
-                         quant = lookupVegQuantity("cmass"),
+                         quant = quant,
                          spatial.extent = new("SpatialExtent", id = "ThurnerExtent", name = "Thurner extent", extent = extentFromDT(Thurner.dt)),
                          correction.layer =  "")
   

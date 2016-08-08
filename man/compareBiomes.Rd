@@ -5,7 +5,8 @@
 \title{Compare a run to a biome map}
 \usage{
 compareBiomes(runs, variable, period, scheme, biome.dataset, plot = TRUE,
-  summary.plot.dir = NULL, tag = "", canvas.options = canvas.options, ...)
+  show.stats = TRUE, summary.plot.dir = NULL, tag = "",
+  canvas.options = canvas.options, ...)
 }
 \arguments{
 \item{runs}{List of VegRuns to be compared to the biome data}
@@ -22,6 +23,8 @@ containing the data}
 
 \item{plot}{Logical, if true make a biome plot.}
 
+\item{show.stats}{A logical, if TRUE, put the Kappa values on the plots.}
+
 \item{summary.plot.dir}{A directory (full path as a character string) so save the plots which compare many runs}
 
 \item{tag}{A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
@@ -29,8 +32,7 @@ For example "Corrected" or "EuropeOnly"}
 
 \item{canvas.options}{A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} documentation}
 
-\item{...}{Additional parameters supplied to the plotting function (at time of writing the plotting function is plotBiomes(),
-but should be changed soon to plotVegMaps())}
+\item{...}{Additional parameters supplied to the plotVegMaps() plotting function.}
 }
 \value{
 A Biome comparison object

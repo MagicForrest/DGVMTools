@@ -11,7 +11,7 @@ plotVegMaps(data, layers = NULL, expand.layers = TRUE, quant = NULL,
   plot.extent = NULL, limit = FALSE, limits = NULL,
   override.cols = NULL, override.cuts = NULL, special = "none",
   maxpixels = 1e+06, biome.scheme = Smith2014.scheme, biome.data = NULL,
-  kappa.list = NULL, kappa.position = NULL, ...)
+  kappa.list = NA, kappa.position = NULL, ...)
 }
 \arguments{
 \item{data}{The data to plot. Can be a VegObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
@@ -33,7 +33,7 @@ In the case of plotting a \code{VegRun} object this is taken automatically from 
 \item{plot.dir}{A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{VegObject}, but this provides an override.
 If not a \code{VegObject} and not specified, this defaults to the current directory}
 
-\item{title}{A character string to override the title on the summary plot.}
+\item{title}{A character string to override the deafualt title.}
 
 \item{tag}{A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
 for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.}

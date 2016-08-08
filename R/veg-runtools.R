@@ -97,7 +97,7 @@ addToVegRun <- function(object, run){
     
     # Check that run ids match, if not, stop becuase something is really wrong
     if(run@id != object@run@id){
-      stop(paste("Adding VegObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". I can think of no reason to do this, and doing so will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrng to you" , sep = ""))
+      stop(paste("Adding VegObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". If you are doing something funky, like averaging VegObjects from different runs to make a a VegRun represnting an ensmble mean, then make sure that the ids match. Otherwise you will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrong to you." , sep = ""))
     }
     
     veg.objects.list <- run@objects
@@ -267,7 +267,7 @@ getVegObject <- function(run,
   
   ### CONVERT STRING TO VEGQUANT
   if(class(var) == "character") {
-    quant <- lookupVegQuantity(var)
+    quant <- lookupVegQuant(var, run@model)
     var.string <- var
   }
   else {
@@ -346,7 +346,8 @@ getVegObject <- function(run,
     
     ### !!! CALL MODEL SPECIFIC FUNTIONS HERE !!!
     
-    if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") {
+    # If model is LPJ-GUESS(-SPITFIRE) and the required VegQuant is defined for LPJ-GUESS(-SPITFIRE)
+    if((run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") & ("LPJ-GUESS" %in% quant@model  | "LPJ-GUESS-SPITFIRE" %in% quant@model)) {
       
       if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
       
@@ -355,13 +356,45 @@ getVegObject <- function(run,
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
     
-    else if(run@model == "aDGVM") {
+    # If model is aDGVM and the required VegQuant is defined for aDGVM
+    else if(run@model == "aDGVM" & "aDGVM" %in% quant@model) {
       
       if(adgvm.scheme == 1) this.dt <- data.table(getVegQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
       if(adgvm.scheme == 2) this.dt <- data.table(getVegQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
       setKeyDGVM(this.dt)
       
     } # END IF aDGVM
+    
+    # 
+    else if(quant@model == "Standard") {
+    
+      if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE"){
+        
+        this.dt <- getStandardVegQuant_LPJ(run, quant, verbose = TRUE)
+      }
+      
+      else if(run@model == "aDGVM"){
+        
+        #
+        
+      }
+      
+    
+    
+      setKeyDGVM(this.dt)
+      
+    } # End if is a Standard quantity
+    
+    else {
+      
+      error(paste0("The VegQuant ", quant@id, " is defined for models ", paste(quant@models, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", run@model, ").  Please check this."))
+      
+      
+    }
+    
+    
+    
+    
     
     ### !!! END CALL MODEL SPECIFIC FUNCTIONS !!!
     
@@ -410,6 +443,9 @@ getVegObject <- function(run,
                             is.spatially.averaged = FALSE,
                             is.temporally.averaged = FALSE,
                             run = as(run, "VegRunInfo"))
+      
+      names(vegobject.full) <- var.string
+      
       run <<- addToVegRun(vegobject.full, run)
       
     } # end if(store.full)
