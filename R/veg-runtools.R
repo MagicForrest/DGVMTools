@@ -59,7 +59,7 @@ defineVegRun <- function(...){
   if(length(info@line.type) == 0)  info@line.type <- 1
   if(length(info@landuseSimulated) == 0)  info@landuseSimulated <- FALSE
   
- 
+  
   # return a VegRun object with empty data fields but meta data filled  
   return(new("VegRun",
              info))
@@ -143,7 +143,7 @@ makeVegObjectID <- function(var.string, temporal.extent = NULL, spatial.extent =
   if(!is.null(spatial.extent)) vegobject.id <- paste(vegobject.id, spatial.extent@id, sep = ".")
   if(temporally.averaged)  vegobject.id <- paste(vegobject.id, "TA", sep = ".")
   if(!is.null(temporal.extent)) vegobject.id <- paste(vegobject.id, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep =".")
-    
+  
   return(vegobject.id)
   
 }
@@ -167,7 +167,7 @@ getVegSpatial <- function(run,
                           var,
                           period,
                           ...){
-
+  
   return(
     getVegObject(run, 
                  var, 
@@ -274,7 +274,7 @@ getVegObject <- function(run,
     quant <- var
     var.string <- quant@id
   }
-
+  
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
   vegobject.id <- makeVegObjectID(var.string, temporal.extent, spatial.extent, temporally.average, spatially.average)
   file.name <- file.path(run@run.dir, paste(vegobject.id, "DGVMData", sep = "."))
@@ -367,7 +367,7 @@ getVegObject <- function(run,
     
     # 
     else if(quant@model == "Standard") {
-    
+      
       if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE"){
         
         this.dt <- getStandardVegQuant_LPJ(run, quant, verbose = TRUE)
@@ -379,8 +379,8 @@ getVegObject <- function(run,
         
       }
       
-    
-    
+      
+      
       setKeyDGVM(this.dt)
       
     } # End if is a Standard quantity
@@ -403,29 +403,8 @@ getVegObject <- function(run,
     # Note we gotta do this now before the cropping and averaging below
     if(store.full){
       
-      # Unique Lons, Lats and Years to build the extent objects
-      sorted.unique.lats = sorted.unique.lons = sorted.unique.years = NULL
-      if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))}
-      if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
-      if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
-      
-      
-      # build the spatial extent depending on if it is a single site or not
-      # if it is a site
-      if(length(sorted.unique.lons) == 1 & length(sorted.unique.lats) == 1){
-        extent.temp <- c(sorted.unique.lons[1], sorted.unique.lats[1])
-        is.site <- TRUE
-        
-      }
-      else{
-        extent.temp =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
-                              sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
-                              sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
-                              sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
-        is.site <- FALSE
-      }
-      
       # Build the full object
+      year.range <- range(this.dt[,Year])
       vegobject.full <- new("VegObject",
                             id = var.string,
                             data = this.dt,
@@ -433,19 +412,19 @@ getVegObject <- function(run,
                             spatial.extent = new("SpatialExtent",
                                                  id = "FullDomain",
                                                  name = "Full simulation extent",
-                                                 extent =  extent.temp),
+                                                 extent =  getExtentFromDT(this.dt)),
                             temporal.extent = new("TemporalExtent",
                                                   id = "FullTS",
                                                   name = "Full simulation duration",
-                                                  start = sorted.unique.years[1],
-                                                  end = sorted.unique.years[length(sorted.unique.years)]),
-                            is.site = is.site,
+                                                  start = year.range[1],
+                                                  end = year.range[length(year.range)]),
+                            is.site = FALSE,
                             is.spatially.averaged = FALSE,
                             is.temporally.averaged = FALSE,
                             run = as(run, "VegRunInfo"))
       
+      # name and store
       names(vegobject.full) <- var.string
-      
       run <<- addToVegRun(vegobject.full, run)
       
     } # end if(store.full)
@@ -458,13 +437,14 @@ getVegObject <- function(run,
   if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
   
   
-  ### GET THE LONS, LATS AND YEAR AFTER CROPPING BUT BEFORE THEY ARE AVERAGED AWAY
+  ### GET THE SPATAIAL AND TEMPORAL EXTENTS BEFORE THEY MAY BE AVERAGED AWAY
   is.site <- FALSE
-  sorted.unique.lats = sorted.unique.lons = sorted.unique.years = NULL
-  if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))  }
-  if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
-  if("Year" %in% names(this.dt)) { sorted.unique.years <- sort(unique(this.dt[,Year]))}
-  if(length(sorted.unique.lons) == 1 & length(sorted.unique.lats) == 1) is.site <- TRUE
+  temp.extent <- getExtentFromDT(this.dt)
+  ordered.years = NULL
+  if("Year" %in% names(this.dt)) { 
+    ordered.years <- sort(unique(this.dt[,Year]))
+  }
+  
   
   
   ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
@@ -494,8 +474,8 @@ getVegObject <- function(run,
     temporal.extent<- new("TemporalExtent",
                           id = "FullTS",
                           name = "Full simulation duration",
-                          start = sorted.unique.years[1],
-                          end = sorted.unique.years[length(sorted.unique.years)]
+                          start = ordered.years[1],
+                          end = ordered.years[length(ordered.years)]
     )
     if(verbose) message(paste("No temporal extent specified, setting temporal extent to whole simulation duration (",  temporal.extent@start, "-", temporal.extent@end, ")", sep = ""))
   }
@@ -503,31 +483,16 @@ getVegObject <- function(run,
   # SPATIAL
   if(is.null(spatial.extent)) {
     
-    # If it is
-    if(is.site){
-      spatial.extent <- new("SpatialExtent",
-                            id = "Site",
-                            name = "Single site simulation",
-                            extent =  c(sorted.unique.lons[1], sorted.unique.lats[1]))
-      
-      if(verbose) message(paste("No spatial extent specified, but noting that this is a single site with coordinates = (",  sorted.unique.lons[1], ",", sorted.unique.lats[1], ")", sep = ""))
-      
-    }
-    else  {
-      spatial.extent <- new("SpatialExtent",
-                            id = "FullDomain",
-                            name = "Full simulation extent",
-                            extent =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
-                                             sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
-                                             sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
-                                             sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2)))
-      
-      if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
-      
-    }
+    spatial.extent <- new("SpatialExtent",
+                          id = "FullDomain",
+                          name = "Full simulation extent",
+                          extent =  temp.extent)
     
+    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
     
   }
+  
+  
   
   ### BUILD THE FINAL VEGOBJECT, STORE IT IF REQUESTED AND RETURN IT
   vegobject <- new("VegObject",
@@ -597,11 +562,11 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   else if(this.class == "data.table" | is.VegObject(input.data)){
     
     # first make a SpatialPointsDataFrame
-   
+    
     if(this.class == "data.table") {
       data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = grid.topology)
     }
-      
+    
     if(is.VegObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
     
     # now convert to raster
@@ -849,5 +814,41 @@ LondonCentre <- function(lon) {
   
 }
 
+#' Get the spatial extent from a data.table
+#' 
+#' Returns either a raster::extent (for a grid of points) or a numerical vector (for a single site) from a data.table 
+#' assuming column name "Lon" and "Lat" are present.
+#' 
+#' @param dt A data.table
+#' 
+#' @export
+#' @importFrom raster extent
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @return Either a raster::extent (for a grid of points) or a numerical vector (for a single site)
+getExtentFromDT <- function(dt){
+  
+  # Get an ordered list of lons and lats
+  if("Lat" %in% names(dt)) { ordered.lats <- sort(unique(dt[,Lat]))}
+  if("Lon" %in% names(dt)) { ordered.lons <- sort(unique(dt[,Lon]))}
+  
+  
+  # Now build the spatial extent depending on if it is a single site or not
+  # if it is a site
+  if(length(ordered.lons) == 1 & length(ordered.lats) == 1){
+    extent.temp <- c(ordered.lons[1], ordered.lats[1])
+  }
+  # else it is a 'proper' extent
+  else{
+    
+    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2), 
+                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2), 
+                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+  }
+  
+  return(extent.temp)
+  
+  
+}
 
 
