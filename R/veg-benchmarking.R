@@ -31,6 +31,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 #' @import data.table
+#' @importFrom stats lm coef
 #' @export
 benchmarkSpatial <- function(runs,
                              layer.name,
@@ -53,7 +54,7 @@ benchmarkSpatial <- function(runs,
   
   message(paste("*** Comparing runs to ", dataset@name, " ***"))
   
-  Correction = NULL
+  Correction = Run = Model = NULL
   
   # PREAMBLE - PREPARE CUTS AND HISTO PLOT RANGE (if not specificed)
   if(is.null(diff.cuts)) {
@@ -297,8 +298,8 @@ benchmarkSpatial <- function(runs,
     scatter.plot <- scatter.plot + geom_abline(intercept = 0, slope = 1, size = 1.5, colour = "red3")
     scatter.plot <- scatter.plot + geom_smooth(method = "lm", se = FALSE, size = 1.5, colour = "blue3")
     
-    lm.model <- lm(get(run@id) ~ get(dataset@id), as.data.frame(na.omit(data.dt)))
-    lm.eq <- paste("y = ", signif(coef(lm.model)[2], digits = 3), "*x + ",  signif(coef(lm.model)[1], digits = 3), ", R^2 =", signif(summary(lm.model)$r.squared, digits = 3), sep = "")
+    lm.model <- stats::lm(get(run@id) ~ get(dataset@id), as.data.frame(na.omit(data.dt)))
+    lm.eq <- paste("y = ", signif(stats::coef(lm.model)[2], digits = 3), "*x + ",  signif(stats::coef(lm.model)[1], digits = 3), ", R^2 =", signif(summary(lm.model)$r.squared, digits = 3), sep = "")
     scatter.plot <- scatter.plot + annotate("text", x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.50, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.975, label = lm.eq, colour = "blue3", size = 10, hjust = 0, parse = FALSE)
     
     
@@ -686,6 +687,8 @@ compareBiomes <- function(runs,
                           canvas.options = canvas.options,
                           ...){
   
+  Lon = Lat = NULL
+  
   ### HANDLE ARGUMENTS
   args1 <- list() # specify defaults here
   inargs <- list(...)
@@ -1061,6 +1064,6 @@ compareRuns <- function(runs,
 } # end function
 
 
-plotResidualsHisto <- function(data.obj) {
-  
-}
+# plotResidualsHisto <- function(data.obj) {
+#   
+# }

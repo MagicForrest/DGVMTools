@@ -93,21 +93,6 @@ is.SpatialComparison <- function(input) {
   return(FALSE)
 }
 
-#' Check if an object is a \code{SpatialComparison}.   
-#'
-#' Returns TRUE if an object is a \code{SpatialComparison}, and FALSE otherwise 
-#' 
-#' @param input Any R object to be checked
-#' @return logical
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @export
-is.SpatialComparison <- function(input) {
-  class.def <- class(input)
-  if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "SpatialComparison" && attr(class.def, "package")=="DGVMTools")
-      return(TRUE)
-  return(FALSE)
-}
 
 
 ## check if two classes are comparable

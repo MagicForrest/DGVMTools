@@ -16,9 +16,13 @@ This class stores the rasters (model, data, difference and precentage difference
 
 \item{\code{P.cor}}{The Pearsons product moment correlation between the model and the the data,}
 
-\item{\code{RMSE}}{The Root Mean Squared Error between the model and the the data}
+\item{\code{ME}}{The Mean Error (mean of residuals) between the model and the data}
 
-\item{\code{mean.diff}}{The difference between the model and the the data (all gridcells)}
+\item{\code{NME}}{The Normalised Mean Error (mean of residuals after the residuals have been divided the value of the data point) between the model and the data}
+
+\item{\code{NMSE}}{The Normalised Square Mean Error (mean of the square of the residuals after the residuals have been divided the value of the data point) between the model and the data}
+
+\item{\code{RMSE}}{The Root Mean Squared Error between the model and the the data}
 
 \item{\code{sd.diff}}{The standard deviation of the difference between the model and the the data (all gridcells)}
 

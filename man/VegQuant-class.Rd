@@ -25,6 +25,8 @@ Note that the used will probably need to define their own, and modify these for 
 \item{\code{cuts}}{A numerical sequence defining the plot range and colour breakpoint when plotting the quantity}
 
 \item{\code{aggregate.method}}{A character string defining the default method for how to aggregate the quantity, either "sum" or "average"}
+
+\item{\code{model}}{Either a the string "Standard" to denotethat this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this VegQuantity is applicable.}
 }}
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

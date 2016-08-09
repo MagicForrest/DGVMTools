@@ -267,6 +267,7 @@ setClass("VegRun",
 #' @slot colours A fucntion that retutns a colour scale suited for plotting this quantity.
 #' @slot cuts A numerical sequence defining the plot range and colour breakpoint when plotting the quantity
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
+#' @slot model Either a the string "Standard" to denotethat this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this VegQuantity is applicable.
 #' @exportClass VegQuant
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("VegQuant", 
@@ -475,8 +476,10 @@ setClass("TemporalDataset",
 #' @slot id A unique character string to identify this particular raster compariosn.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot R.squ The R squared between the model and the data
 #' @slot P.cor The Pearsons product moment correlation between the model and the the data,
+#' @slot ME The Mean Error (mean of residuals) between the model and the data
+#' @slot NME The Normalised Mean Error (mean of residuals after the residuals have been divided the value of the data point) between the model and the data
+#' @slot NMSE The Normalised Square Mean Error (mean of the square of the residuals after the residuals have been divided the value of the data point) between the model and the data
 #' @slot RMSE The Root Mean Squared Error between the model and the the data
-#' @slot mean.diff The difference between the model and the the data (all gridcells)
 #' @slot sd.diff The standard deviation of the difference between the model and the the data (all gridcells)
 #' @slot Kappa The overall Cohen's Kappa obtained when comparing categorical variables.
 #' @slot individual.Kappas The individual Cohen's Kappas for each category when comparing categorical data

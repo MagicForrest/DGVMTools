@@ -5,7 +5,8 @@
 \title{Spatial plot (map) with ggplot2}
 \usage{
 plotGGSpatial(input, column = "value", colors = NA, sym.col = FALSE,
-  wrap = 1, terr.bg = NA, long.title = TRUE, plot = TRUE, ...)
+  wrap = 1, terr.bg = NA, map.overlay = NA, long.title = TRUE,
+  plot = TRUE, ...)
 }
 \arguments{
 \item{input}{A VegSpatial or a list of VegSpatial objects.}
@@ -19,6 +20,8 @@ plotGGSpatial(input, column = "value", colors = NA, sym.col = FALSE,
 \item{wrap}{a single number of facet_wrap columns or a vector/list with the run, VegSpatial name, column and optionally ncol (number of columns), which is used to split the data in different panels. Only valid when a vector of column names or a list of VegSpatial was given as input. Otherwise it is ignored.}
 
 \item{terr.bg}{which colour should be used for missing terrestial pixels (e.g. Greenland)}
+
+\item{map.overlay}{if set to 'lowres' or 'highres' national borders are included (uses package maps). It can also be a data.frame as returned by \code{ggplot2::fortify}.}
 
 \item{long.title}{If the description (default) should be used as titles or the shorter id.}
 

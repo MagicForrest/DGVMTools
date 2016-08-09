@@ -9,9 +9,9 @@ getStandardVegQuant_LPJ(run, quant, verbose = FALSE)
 \arguments{
 \item{run}{A \code{VegRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.}
 
-\item{verbose}{A logical, set to true to give progress/debug information}
+\item{quant}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
 
-\item{var.string}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
+\item{verbose}{A logical, set to true to give progress/debug information}
 }
 \value{
 a data.table (with the correct tear offset and lon-lat offsets applied)

@@ -101,7 +101,7 @@ openLPJOutputFile <- function(run,
 #' \code{VegRun} object, it will return that to save time.
 #' 
 #' @param run A \code{VegRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
-#' @param var.string A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}

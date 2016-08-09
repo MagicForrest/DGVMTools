@@ -5,27 +5,17 @@
 \title{Check if an object is a \code{SpatialComparison}.}
 \usage{
 is.SpatialComparison(input)
-
-is.SpatialComparison(input)
 }
 \arguments{
-\item{input}{Any R object to be checked}
-
 \item{input}{Any R object to be checked}
 }
 \value{
 logical
-
-logical
 }
 \description{
 Returns TRUE if an object is a \code{SpatialComparison}, and FALSE otherwise
-
-Returns TRUE if an object is a \code{SpatialComparison}, and FALSE otherwise
 }
 \author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 
