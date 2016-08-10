@@ -60,7 +60,6 @@ getPFTs <- function(input, PFT.data){
 #'   \item{"zones"}{ expands all the different PFT climactic zones present as determined by the zone slots of the \code{PFTs} argument.  For example c("Temperature", "Boreal", "Tropical")}
 #'   \item{"leafforms"}{ expands all the different PFT leaf forms present as determined by the leafforms slot of the \code{PFTs} argument.  For example c("Needleleved", "Broadleaved")}
 #'   \item{"phenologies"}{ expands all the different PFT leaf forms present as determined by the phenology slot of the \code{PFTs} argument.  For example c("Evergreen", "Summergreen", "Raingreen", "GrassPhenology)}
-#'   \item{"all"}{ expands to c("pfts", "lifeforms", "leafforms", "zones", "phenologies"), and then these are further expanded.}
 #' }
 #' 
 #' 
@@ -112,12 +111,10 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   }
   
   if(tolower(type) == "pft") {
-    
-    # expand "all"
-    if("all" %in% tolower(layers)) layers <- c("pfts", "lifeforms", "leafforms", "zones", "phenologies")
+   
+ 
     
     # expands "pfts"
-    
     if("pft" %in% tolower(layers) || "pfts" %in% tolower(layers)) {
       for(PFT in PFTs) {
         layers <- append(layers, PFT@id)
@@ -223,7 +220,7 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   }
   
   if("NA" %in% layers) layers <- layers[-which(layers == "NA")]
-  if("all" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "all")]
+
   
   return(layers)
   
@@ -353,6 +350,7 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
 }
 
 
+
 ###################################################################################################
 ######### BIOME CLASSIFICATION
 #'
@@ -422,16 +420,16 @@ addBiomes <-function(input, scheme){
 #' 
 #' @param input The VegObject for which to aggregate layers.
 #' @param layers The new layers to produce
-#' @param method The method to use to aggregate the layers ie. "mean" or "sum".  However, the most sensible option is leave it unspecified and use the default (see below)
+#' @param method The method to use to aggregate the layers ie. "mean" or "sum".  However, it is often most sensibleto leave it unspecified and use the default (see below)
 #' @param PFT.data If calling the function on a data.table, it is neccessary to specify a PFT set here.  Normally this function will be called on  VegObject so it is not neccessary. 
 #'
 #' @details
-#' Whilst the \code{method} arguement can be specified for maximum flexibility, the recommended usage is not specify this arguement.
+#' Whilst the \code{method} argument can be specified for maximum flexibility, the recommended usage is not specify this argument.
 #' In this case, the function uses the default of the VegQuant object of the VegObject, which should be the sensible option.  
 #' For example, per-PFT variables (such as lai or cmass) should typically be summed, 
 #' but monthly variables (such as soil water content) should be average to calculate the seasonal means.
 #' 
-#' For convenience, both \code{layers}  will be expanded using \code{expandLayers}.
+#' For convenience, both \code{layers} will be expanded using \code{expandLayers}.
 #' This allows all lifeforms totals in a VegObject to be calculated using a simple call such as
 #' 
 #'  \code{veg.obj <- aggregateLayers(veg.obj, c("lifeforms"))}
@@ -457,7 +455,7 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
     suppressWarnings(dt <- input@data)
     PFT.data <- input@run@pft.set
     # also if no specfic method specified, pull it from the the VegObject
-    method <- input@quant@aggregate.method
+    if(is.null(method)) method <- input@quant@aggregate.method
   }
   # Else assume it is a data.table
   else{
@@ -471,13 +469,19 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
   }
   
   
+  
+  # auxiliary function to be apply'd
+  max.layer <- function(x){return(names(x)[which.max(x)])  }  
+  
+  
   ### SET UP THE AGGREGATE METHOD 
-  method <- match.arg(method, c("average", "mean", "sum", "total"))
+  method <- match.arg(method, c("average", "mean", "sum", "total", "max"))
   method <- switch(method,
                   mean = rowMeans,
                   average = rowMeans,
                   sum = rowSums,
-                  total = rowSums)
+                  total = rowSums,
+                  max = max.layer)
 
   
   ### GENERAL PREPARATION
@@ -486,11 +490,11 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
   
   # expands layers
   layers <- expandLayers(layers, dt, PFT.data)
-  
+  print(layers)
   # remove PFTs from layers since PFTs are already present as totals
   for(PFT in all.PFTs){ if(PFT@id %in% layers) layers <- layers[-which(layers == PFT@id)]}
   
-  
+  print(layers)
   
   ### FOR PER-PFT FILES
   for(layer in layers){
@@ -498,18 +502,31 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
     # build list of columns to combine for layer
     layer.cols <- c()
     for(PFT in all.PFTs){
-      if(PFT@lifeform == layer) {layer.cols <- append(layer.cols, PFT@id)}
-      if(PFT@zone == layer) {layer.cols <- append(layer.cols, PFT@id)}
-      if(PFT@leafform == layer) {layer.cols <- append(layer.cols, PFT@id)}
-      if(PFT@phenology == layer) {layer.cols <- append(layer.cols, PFT@id)}
+      if(tolower(PFT@lifeform) == tolower(layer)) {layer.cols <- append(layer.cols, PFT@id)}
+      if(tolower(PFT@zone) == tolower(layer)) {layer.cols <- append(layer.cols, PFT@id)}
+      if(tolower(PFT@leafform) == tolower(layer)) {layer.cols <- append(layer.cols, PFT@id)}
+      if(tolower(PFT@phenology) == tolower(layer)) {layer.cols <- append(layer.cols, PFT@id)}
       # Special case for Woody
-      if(layer == "Woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {layer.cols <- append(layer.cols, PFT@id)}
+      if(tolower(layer) == "woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {layer.cols <- append(layer.cols, PFT@id)}
       # Special case for Total
-      if(layer == "Total") {layer.cols <- append(layer.cols, PFT@id)}
+      if(tolower(layer) == "total" | tolower(layer) == "all") {layer.cols <- append(layer.cols, PFT@id)}
     }
     
     # now combine the relevant columns
-    if(!is.null(layer.cols)) suppressWarnings(dt[, eval(layer) := method(.SD), .SDcols = layer.cols])
+    
+    # if not requiring the maximum 
+    if(!identical(method, max.layer)) {
+      if(!is.null(layer.cols)) suppressWarnings(dt[, eval(layer) := method(.SD), .SDcols = layer.cols])
+    }
+    
+    # else
+    else{
+      print("woohoodilly")
+      #suppressWarnings(dt[, eval(paste0("Max", layer) ):= method(.SD), .SDcols = layer.cols])
+      suppressWarnings(dt[, eval(paste0("Max", layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
+      dt[Total < 0.2, eval(quote(paste0("Max", layer))) := "Barren"]
+      dt[, eval(quote(paste0("Max", layer))) := as.factor(get("Dominant"))]
+    }
     
   }
   
@@ -551,7 +568,7 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
 #' Note that if a layer doesn't exist it will be created if possible.
 #' 
 #' @param input The VegObject for which to calculate the new fractional layers
-#' @param layers The layers to be divided (will be calculated by \code{getVegTotals} if the don't exist)
+#' @param layers The layers to be divided ie. the numerators (will be calculated by \code{getVegTotals} if the don't exist)
 #' @param denominators The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")
 #'
 #' @details
