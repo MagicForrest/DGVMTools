@@ -41,7 +41,7 @@ getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resol
                          temporal.extent = new("TemporalExtent", id = "MODISPeriod", name = "MODIS Period", start = 2000, end = 2010),
                          data = dt,
                          quant = quant,
-                         spatial.extent = new("SpatialExtent", id = "TurkeyExtent", name = "Turkey 1km extent", extent = extentFromDT(dt)),
+                         spatial.extent = new("SpatialExtent", id = "TurkeyExtent", name = "Turkey 1km extent", extent = getExtentFromDT(dt)),
                          correction.layer =  "")
   
   

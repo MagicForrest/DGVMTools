@@ -26,7 +26,7 @@
 #' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation
 #' @param ... Arguments to be passed to plotVegMaps when making the spatial plots.  
 #' 
-#' @return No return, just makes plots.
+#' @return Returns a DataObject, and also makes plots (in the individual run@run.dir and in the summary.plot.dir argument).
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
@@ -41,7 +41,6 @@ benchmarkSpatial <- function(runs,
                              perc.diff.cuts = seq(-100,200,5),
                              spatial.extent = NULL,
                              showR2 = TRUE,
-                             layout.objs = NULL,
                              histo.plot.range = NULL, 
                              correction.dt = NULL,
                              summary.plot.dir = NULL,
@@ -67,21 +66,26 @@ benchmarkSpatial <- function(runs,
   ### HANDLE ARGUMENTS
   args1 <- list() # specify defaults here
   inargs <- list(...)
-  args1[names(inargs)] <- inargs
-  args1 <- c(args1, plot.options)
   
-  # COMBINE LAYOUT OBJ FROM DIFFERENT SOURCES
-  if(!is.null(layout.objs)){
-    
-    # check if there is a layout.objs in the plot.options
-    if("layout.objs" %in% names(args1)){
-      
-      layout.objs <- append(layout.objs, args1["layout.objs"])
-      args1[["layout.objs"]] <- NULL
-      
-    }
-    
-  }
+  print(inargs)
+  args1[names(inargs)] <- inargs
+  
+  print(args1)
+
+  
+  # COMBINE LAYOUT OBJECTS FROM DIFFERENT SOURCES
+  # if(!is.null(layout.objs)){
+  #   
+  #   # check if there is a layout.objs already provided to which any new ones must be added
+  #   if("layout.objs" %in% names(args1)){
+  #     
+  #     layout.objs <- append(layout.objs, args1["layout.objs"])
+  #     args1[["layout.objs"]] <- NULL
+  #     
+  #   }
+  #   
+  # }
+  
   
   # SET UP A SQUARE CANVAS FOR SCATTER AND HISTO PLOTS
   # set up up a square canvas
@@ -209,8 +213,32 @@ benchmarkSpatial <- function(runs,
     
     runs[[run@id]] <- addToVegRun(comparison.result, runs[[run@id]])
     
-    ##### DIFFERENCE MAPS
+   
     
+    # set up local arguments for plotting
+    local.args <- args1
+    
+    # get extent for displaying R^2
+    this.extent <- getExtentFromDT(data.dt)
+    if(!is.null(local.args[["plot.extent"]])) {
+      this.extent <- intersect(local.args[["plot.extent"]], this.extent)
+      warning("Reported R^2 value in benchmarkSpatial applies to the whole spatial extent, not the smaller extent you have plotted.  If you want the R^2 for this sub-region, crop the data *before* called the benchmarking routine.")
+    }
+    
+      # calculate R^2 position
+    stats.pos.x <- (this.extent@xmax-this.extent@xmin) * 0.1 + this.extent@xmin
+    stats.pos.y <- (this.extent@ymax-this.extent@ymin) * 0.1 + this.extent@ymin
+    
+    # make a layout.objects for the R^2
+    R2.val <- round(comparison.result@R.squ, 3)
+    if(is.null(local.args[["layout.objs"]])) {  
+      local.args[["layout.objs"]] <- list()
+    }
+    local.args[["layout.objs"]][[run@id]] <- list("sp.text", txt = bquote(R^2 ~ "=" ~ .(R2.val)), loc = c(stats.pos.x,stats.pos.y), which = 1, cex = 2)
+  
+    
+    
+    ##### DIFFERENCE MAPS
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Diff", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     print(
@@ -222,7 +250,7 @@ benchmarkSpatial <- function(runs,
                                   tag = "Corrected",
                                   maxpixels = 1000000,
                                   special = "diff"),
-                             args1)
+                             local.args)
       )
     )
     
@@ -243,7 +271,7 @@ benchmarkSpatial <- function(runs,
                                   tag = "Corrected",
                                   maxpixels = 1000000,
                                   plot.labels = c(run@description, dataset@name)),
-                             args1)
+                             local.args)
       )
     )
     
@@ -332,7 +360,7 @@ benchmarkSpatial <- function(runs,
     
     # add each model run to stacks and text lists
     counter <- 1
-    this.extent <- extentFromDT(data.dt)
+    this.extent <- getExtentFromDT(data.dt)
     if(!is.null(args1[["plot.extent"]])) {
       this.extent <- intersect(args1[["plot.extent"]], this.extent)
       warning("Reported R^2 value in benchmarkSpatial applies to the whole spatial extent, not the smaller extent you have plotted.  If you want the R^2 for this sub-region, crop the data *before* called the benchmarking routine.")
@@ -693,9 +721,7 @@ compareBiomes <- function(runs,
   args1 <- list() # specify defaults here
   inargs <- list(...)
   args1[names(inargs)] <- inargs
-  args1 <- c(args1, plot.options)
-  
-  
+ 
   
   # align the data to be on the same grid as the model using the nearest neqbour algorthim
   
@@ -742,9 +768,8 @@ compareBiomes <- function(runs,
     if(plot){
       do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste("Biomes", this.VegSpatial@id, scheme@id, tag, canvas.options[["type"]], sep = "."))), 
                                    canvas.options)) 
-      
-      print("single")
-      
+    
+
       print(
         do.call(plotVegMaps, c(
           list(data = this.VegSpatial,
@@ -783,8 +808,12 @@ compareBiomes <- function(runs,
   
   do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Biomes", scheme@id, tag, canvas.options[["type"]], sep = "."))), 
                                canvas.options)) 
+ 
   
-  print("all")
+  comparisons <- NA
+  if(show.stats){
+    comparisons <- list.of.comparisons
+  }
   
   print(
     do.call(plotVegMaps, c(list(data = data.dt, 
@@ -794,16 +823,16 @@ compareBiomes <- function(runs,
                                 biome.scheme = scheme, 
                                 plot.labels = labels,
                                 summary.title = paste("Comparison of", scheme@name, "biomes", sep = " "),
-                                kappa.list = ifelse(show.stats,list.of.comparisons, NA)),
+                                kappa.list = comparisons),
                            args1)
     )
   )
   
   dev.off()
-  
-  print("done")
-  
+ 
   biome.dataset@data <- data.dt
+  
+  rm(comparisons, list.of.comparisons)
   
   return(biome.dataset)
   
@@ -813,7 +842,7 @@ compareBiomes <- function(runs,
 #' Compare runs to each other
 #' 
 #' Given a list of runs and an id of a spatial VegObjects, compare the specified layers between all runs, and, 
-#' if a base line run is specified, also plot comaprisons relative to that
+#' if a base line run is specified, also plot comprisons relative to that
 #' 
 #' @param runs List of VegRun objects to be compared
 #' @param veg.spatial.id Character string holding the id of the VegObject to be compared

@@ -10,7 +10,7 @@ addToVegRun(object, run)
 \item{object}{Object to add to the \code{VegRun},   The parameters are the slots of a VegRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.}
 
-\item{run}{The \code{VegRun} object to which the object argument shold be added}
+\item{run}{The \code{VegRun} object to which the object argument should be added}
 }
 \value{
 A VegRun object the the object argument added

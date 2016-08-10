@@ -232,44 +232,6 @@ cropDGVM <- function(input, extent){
   
 }
 
-#' Extract the extent from a data.table
-#' 
-#' Returns an raster::extent object based on the "Lon" and "Lat" columns of the data.table
-#' 
-#' @param this.dt A data.table (which is assumed to have columns "Lon" and "Lat)
-#'
-#' Note that it guesses the gridcell spacing.
-#' 
-#' @return A raster::extent object
-#' 
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import raster data.table
-#' @export
-
-extentFromDT <- function(this.dt) {
-  
-  Lat = Lon = NULL
-  
-  # Unique Lons, Lats and Years to build the extent objects
-  sorted.unique.lats = sorted.unique.lons = NULL
-  if("Lat" %in% names(this.dt)) { sorted.unique.lats <- sort(unique(this.dt[,Lat]))}
-  if("Lon" %in% names(this.dt)) { sorted.unique.lons <- sort(unique(this.dt[,Lon]))}
-
-  # build the spatial extent depending on if it is a single site or not
-  # if it is a site
-  if(length(sorted.unique.lons) == 1 & length(sorted.unique.lats) == 1){
-    extent.temp <- c(sorted.unique.lons[1], sorted.unique.lats[1])
-  }
-  else{
-    extent.temp =  extent(sorted.unique.lons[1] - ((sorted.unique.lons[2] - sorted.unique.lons[1])/2), 
-                          sorted.unique.lons[length(sorted.unique.lons)] + ((sorted.unique.lons[length(sorted.unique.lons)] - sorted.unique.lons[length(sorted.unique.lons)-1])/2),
-                          sorted.unique.lats[1] - ((sorted.unique.lats[2] - sorted.unique.lats[1])/2), 
-                          sorted.unique.lats[length(sorted.unique.lats)] + ((sorted.unique.lats[length(sorted.unique.lats)] - sorted.unique.lats[length(sorted.unique.lats)-1])/2))
-  }
-  
-  return(extent.temp)
-  
-  }
 
 ##### RETRIEVES AN OBJECT FROM A LIST BASED ON THE 'id' SLOTS
 #

@@ -443,7 +443,7 @@ addBiomes <-function(input, scheme){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
   
-  Woody <- NULL
+  Woody = Total = TempTotal = NULL
   
   ### HANDLE CLASS OF INPUT OBJECT
   # Here allow the possibility to handle both VegObjects and data.tables directly (for internal calculations)

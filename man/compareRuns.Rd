@@ -48,7 +48,7 @@ see the documentation of that function for details.}
 }
 \description{
 Given a list of runs and an id of a spatial VegObjects, compare the specified layers between all runs, and, 
-if a base line run is specified, also plot comaprisons relative to that
+if a base line run is specified, also plot comprisons relative to that
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

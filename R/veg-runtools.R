@@ -30,9 +30,9 @@ setKeyDGVM <- function(dt){
 
 #' Define a VegRun object, setting up all the required metadata (only). 
 #' 
-#' This function is preferred to a simple "new("VegRunInfo")" and "new("VegRunInfo") initialisation because it does both intialisations in one step and also performs some extra check and preamble such as prepared the map overlays
+#' This function is preferred to a \code{new("VegRunInfo",...)} initialisation followed by  \code{new("VegRun",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
 #'
-#' Note that actual data from the run is not stored, only metadata. The data, stored as VegObjects and added to a VegRun object, are added built with later with other commands and added to \code{VegRun} command using \code{addToVegRun}
+#' Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as VegObjects and added to a VegRun object, are added built with later with other commands and added to \code{VegRun} command using \code{addToVegRun}
 #'
 #' @param ...  The parameters are the slots of a VegRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 #' compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.
@@ -76,7 +76,7 @@ defineVegRun <- function(...){
 #' 
 #' @param object Object to add to the \code{VegRun},   The parameters are the slots of a VegRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 #' compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.
-#' @param run The \code{VegRun} object to which the object argument shold be added
+#' @param run The \code{VegRun} object to which the object argument should be added
 #' @return A VegRun object the the object argument added
 #' @export
 #' @seealso VegRun, VegRunInfo 
@@ -300,7 +300,7 @@ getVegObject <- function(run,
     vegobject <- readRDS(file.name)
     
     # Update the run object, that might have (legitimately) changed compared to the id that was used when this veg object was created
-    # for example ti might be assigned a new id, or new map overlays or whatever
+    # for example it might be assigned a new id.
     vegobject@run <- run
     
     
@@ -827,6 +827,8 @@ LondonCentre <- function(lon) {
 #' @return Either a raster::extent (for a grid of points) or a numerical vector (for a single site)
 getExtentFromDT <- function(dt){
   
+  Lon = Lat = NULL
+  
   # Get an ordered list of lons and lats
   if("Lat" %in% names(dt)) { ordered.lats <- sort(unique(dt[,Lat]))}
   if("Lon" %in% names(dt)) { ordered.lons <- sort(unique(dt[,Lon]))}
@@ -851,10 +853,27 @@ getExtentFromDT <- function(dt){
   
 }
 
+
+#' Average VegObjects provided as a list
+#' 
+#' Useful for averaging model ensembles, replicate simulations etc.  Fails with an error message if the supplied VegObjects don't have the same fields
+#' 
+#' @param list.of.vegobjects The VegObjects that you want to average, stored in a list.
+#' @param run Either a VegRun object which provides the metadata about the newly created "run" (representing, say, the ensemble mean) or \code{NULL}, 
+#' in which case the function just returns a data.table with the average values.
+#'  
+#' The function currently does no checks that the spatial extent, temporal extent and VegQuant are consistent between runs.  The resulting VegObject simple takes these things
+#' from the first object from list.of.vegruns.  It is therefore up to the user not do anything silly and average quantites, or spatial or temporal extents that don't makes sense.
+#'          
+#' @export
+#' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @return Either a VegObject (if a VegRun has been supplied to provide the necessary meta-data), or a data.table (if no meta-data has been supplies in the form of a VegRun)
+#' 
 averageVegObjects <- function(list.of.vegobjects, run = NULL) {
   
   
-  # make lists of what is to be processed, and check that the headers are the same (if not fail!)
+  # make lists of what is to be processed, and check that the columns are the same (if not fail!)
   list.of.dts <- list()
   for(object in list.of.vegobjects){
     list.of.dts[[paste(object@run@id, object@id, sep = ".")]] <- object@data
@@ -887,9 +906,9 @@ averageVegObjects <- function(list.of.vegobjects, run = NULL) {
   # else, if a run was provided, make a VegObject and return that
   else {
     
-    # check that the VegObjects we just averaged have the same spatial and temporal properties 
+    #  MF TODO: check that the VegObjects we just averaged have the same spatial and temporal properties 
     # if they don't, drop an error message
-    # MF TODO
+
     
     # construct a new VegObject for the average data that we have just calculated based on the first on in the list
     # but put in the new run and data

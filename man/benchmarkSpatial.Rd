@@ -6,9 +6,9 @@
 \usage{
 benchmarkSpatial(runs, layer.name, dataset, tag = NULL, diff.cuts = NULL,
   perc.diff.cuts = seq(-100, 200, 5), spatial.extent = NULL,
-  showR2 = TRUE, layout.objs = NULL, histo.plot.range = NULL,
-  correction.dt = NULL, summary.plot.dir = NULL, canvas.options = list(dpi
-  = 72, type = "png", width = 1800, height = 1000, bg = "transparent"), ...)
+  showR2 = TRUE, histo.plot.range = NULL, correction.dt = NULL,
+  summary.plot.dir = NULL, canvas.options = list(dpi = 72, type = "png",
+  width = 1800, height = 1000, bg = "transparent"), ...)
 }
 \arguments{
 \item{runs}{A list of VegRun objects (each with the RasterComparison object already created)}
@@ -31,9 +31,6 @@ this extent}
 
 \item{showR2}{A logical, if TRUE, put the R squared values on the plots.}
 
-\item{layout.objs}{A list of layout objects (see the \code{sp} package) for putting on the spatial plots.  For example,
-continent outlines}
-
 \item{histo.plot.range}{A two-value numeric vector defining the range for the histo plots}
 
 \item{correction.dt}{A data.table with columns "Lon", "Lat" and "Correction" to apply a multiplicative correction to the model data before performing the benchmark 
@@ -44,9 +41,12 @@ to account for (for example) land cover.  NA's can be used to completely mask ou
 \item{canvas.options}{A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation}
 
 \item{...}{Arguments to be passed to plotVegMaps when making the spatial plots.}
+
+\item{layout.objs}{A list of layout objects (see the \code{sp} package) for putting on the spatial plots.  For example,
+continent outlines}
 }
 \value{
-No return, just makes plots.
+Returns a DataObject, and also makes plots (in the individual run@run.dir and in the summary.plot.dir argument).
 }
 \description{
 To use this function it is *required* that \code{compareRunToSpatialDataset()} has been performed on each of the runs with 

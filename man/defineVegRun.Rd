@@ -14,10 +14,10 @@ compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which a
 A VegRun object, with metadata defined by empty data slots.s
 }
 \description{
-This function is preferred to a simple "new("VegRunInfo")" and "new("VegRunInfo") initialisation because it does both intialisations in one step and also performs some extra check and preamble such as prepared the map overlays
+This function is preferred to a \code{new("VegRunInfo",...)} initialisation followed by  \code{new("VegRun",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
 }
 \details{
-Note that actual data from the run is not stored, only metadata. The data, stored as VegObjects and added to a VegRun object, are added built with later with other commands and added to \code{VegRun} command using \code{addToVegRun}
+Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as VegObjects and added to a VegRun object, are added built with later with other commands and added to \code{VegRun} command using \code{addToVegRun}
 }
 \seealso{
 VegRun, VegRunInfo

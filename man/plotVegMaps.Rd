@@ -80,7 +80,7 @@ only used if argument "special" = "biomes")}
 \item{kappa.position}{A numeric vector with two elements to define the position (in Lon-Lat) of the overall 
 Kappa score on the plot (only used if argument "special" = "biomes")}
 
-\item{...}{Extra arguments to be be passed to \code{spplot} and therefor also to \code{lattice::levelplot}.
+\item{...}{Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.
 
 This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
 in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
@@ -92,11 +92,11 @@ The function works best for \code{VegObjects} (which contain a lot of useful met
 Returns a plot object (from spplot)
 }
 \description{
-The primary use for this function in to plot a map from a \code{VegObject}, although plotting a Raster* is also useful.
+This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{VegObject}, although plotting a Raster* is also useful.
 It has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults,
-so that in the case of plotting a \code{VegObject} all you *need* to supply is the data itself, everything else is eitehr set to a sensible default,
-or provided by the \code{VegObject} itself.  Note that the default behaviour is to write a .png to the run directory of the \code{VegObject} or,
-for other data types, the specified plot.dir (defaulting to the current working directory in no plot.dir is supplied).
+so that in the case of plotting a \code{VegObject} all you *need* to supply is the data itself, everything else is either set to a sensible default,
+or provided by the \code{VegObject} itself.  It is basically a very complex wrapper for spplot, and can plot things like biomes, dominant PFTs, months of maximum values, 
+burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

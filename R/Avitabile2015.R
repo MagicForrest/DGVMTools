@@ -50,7 +50,7 @@ getAvitabile2015 <- function(location = "/data/forrest/Biomass/Avitabile2015/", 
                          temporal.extent = new("TemporalExtent", name = "Avitabile Period", start = 2000, end = 2010),
                          data = Avitabile.dt,
                          quant = lookupVegQuant("vegC_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "AvitabileExtent", name = "Avitabile extent", extent = extentFromDT(Avitabile.dt)),
+                         spatial.extent = new("SpatialExtent", id = "AvitabileExtent", name = "Avitabile extent", extent = getExtentFromDT(Avitabile.dt)),
                          correction.layer =  "")
   
   

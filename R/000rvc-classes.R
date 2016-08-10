@@ -58,7 +58,7 @@ setClass("SpatialExtent",
 #' @slot contains Holds the names of the other periods included in this period.  For example for Jan just contains "Jan", but DJF it contains c("Dec","Jan,"Feb)
 #' @slot days Number of days in this time period during a normal (non-leap) year
 #' @slot days.leap Number of days on this period during a leap year
-#' @slot A colour (as a character string) for this particular period
+#' @slot col A colour (as a character string) for this particular period
 #' 
 #' @details 
 #' Since these are for the most part standard (ie. people commonly need the months, the seasons (DJF, MAM, JJA, SON) and annual) these are defined in simple list that might be commonly used and can be looped through.  These are:
