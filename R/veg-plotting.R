@@ -148,7 +148,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
   if(is.VegObject(data)){
-
+    
     if(data@is.temporally.averaged){
       run <- data@run
       run.id <- run@id
@@ -164,7 +164,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   else{
     if(is.null(quant)) {
       
-       quant <- new("VegQuant",
+      quant <- new("VegQuant",
                    id = "generic",
                    type = "unknown",
                    name = "Generic",
@@ -172,7 +172,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                    colours = fields::tim.colors, 
                    cuts = seq(0,1,0.05),
                    model = "none")
-      } 
+    } 
     
     if(!is.null(run)) run.id <- run@id
     else run.id <- NULL
@@ -181,9 +181,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   ### CHECK FOR SPECIAL VARIABLES FOR NICER PLOTTING
   if(special == "none" | is.null(special)){
     
-  
+    
     if(quant@id == "burntfraction") special <- "burnt.fraction"
-
+    
     
   }
   
@@ -194,7 +194,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else { plot.dir = "." }
   }
   
- 
+  
   ### COLORKEY - standard, updated by specials below
   if(!is.null(quant)) colours <- quant@colours
   else colours <- fields::tim.colors
@@ -323,7 +323,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # SET THE INTERVALS (using either these sensible options or the overrides)
     quant@cuts <- c(0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1)
     quant@colours <-  colorRampPalette(rev(c("red4", "red","orange","yellow", "palegreen2", "cyan", "dodgerblue2", "blue", "midnightblue")))
-
+    
     # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
     if(!is.null(override.cols)) {quant@colours <- override.cols}
     if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
@@ -341,7 +341,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     colorkey.list[["at"]] <- 0:(length(quant@cuts)-1)
     colorkey.list[["col"]] <- quant@colours
     quant@cuts = 0:(length(quant@cuts)-1)
-
+    
   }
   
   #### PLOT BURNT FRACTION
@@ -408,12 +408,12 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       }
       # first check if they are on identical grids, in nor resample with nearest neighbour algorithm
       if(!compareRaster(biome.data, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
-          biome.data <- resample(biome.data, data.toplot, method = "ngb")
+        biome.data <- resample(biome.data, data.toplot, method = "ngb")
       }
-
+      
       biome.data <- crop(biome.data, data.toplot)
       data.toplot <- mask(data.toplot, biome.data)  
-    
+      
       # add the PNV raster layer and its title
       data.toplot <- addLayer(data.toplot, biome.data) 
       layers <- names(data.toplot)
@@ -450,6 +450,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   else if(special == "dominant"){
     
     
+    quant.id <- quant@id
+    
     # Get Raster Attribute Table and then convert raster back to simple integers instead of factors 
     # because currently (May 2016) raster package doesn't handle factor rasters very well
     RAT <- data.toplot@data@attributes[[1]]
@@ -459,41 +461,87 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     col.list <- c()
     label.list <- c()
     
-    # for each row of the RAT
-    for(row.index in 1:NROW(RAT)){
+    if(tolower(quant@type) == "pft") {
       
-      # get the row
-      row <- RAT[row.index,]
-      
-      # special case if barren
-      if(as.character(row$levels == "Barren")) {
-        col.list <- append(col.list, "gray75")
-        label.list <- append(label.list, "Barren")
-      }
-      
-      # else (assuming others rows are PFTs)
-      else{
+      # for each row of the RAT
+      for(row.index in 1:NROW(RAT)){
         
-        # get the PFT data, append the colour and the id/long name (as appropriate)
-        PFT <- byIDfromList(as.character(row$levels), PFT.set)
-        col.list <- append(col.list, PFT@colour)
-        if(useLongnames) label.list <- append(label.list, PFT@name)
-        else  label.list <- append(label.list, PFT@id)
+        # get the row
+        row <- RAT[row.index,]
         
-      }
+        # special case if barren
+        if(as.character(row$levels == "Barren")) {
+          col.list <- append(col.list, "gray75")
+          label.list <- append(label.list, "Barren")
+        }
+        
+        # else (assuming others rows are PFTs)
+        else{
+          
+          # get the PFT data, append the colour and the id/long name (as appropriate)
+          PFT <- byIDfromList(as.character(row$levels), PFT.set)
+          col.list <- append(col.list, PFT@colour)
+          if(useLongnames) label.list <- append(label.list, PFT@name)
+          else  label.list <- append(label.list, PFT@id)
+          
+        }
+        
+      } # for each row in RAT
       
-    }
+      quant <- new("VegQuant",
+                   id = "Dominant",
+                   name = "Dominant PFT",
+                   type = "DominantPFTs",
+                   units = "categorical",
+                   colours = colorRampPalette(col.list),
+                   cuts = 0:length(col.list),
+                   aggregate.method = "categorical"
+      )
+      
+    } # if per PFT
+    
+    else if(tolower(quant@type) == "monthly") {
+      
+      # for each row of the RAT
+      for(row.index in 1:NROW(RAT)){
+        
+        # get the row
+        row <- RAT[row.index,]
+        
+        # special case if none
+        if(as.character(row$levels == "None")) {
+          col.list <- append(col.list, "gray75")
+          label.list <- append(label.list, "None")
+        }
+        
+        # else (assuming others rows are months)
+        else{
+          
+          # get the PFT data, append the colour and the id/long name (as appropriate)
+          month <- byIDfromList(as.character(row$levels), months)
+          col.list <- append(col.list, month@col)
+          if(useLongnames) label.list <- append(label.list, month@name)
+          else  label.list <- append(label.list, month@id)
+          
+        }
+        
+        quant <- new("VegQuant",
+                     id = "Dominant",
+                     name = paste("Dominant Month by", quant.id, sep = " "),
+                     type = "DominantMonth",
+                     units = "categorical",
+                     colours = colorRampPalette(col.list),
+                     cuts = 0:length(col.list),
+                     aggregate.method = "categorical"
+        )
+        
+        
+        
+      } # for each row in RAT
+      
+    } # if monthly
     
     
-    quant <- new("VegQuant",
-                 id = "Domiant",
-                 name = "Dominant PFTs",
-                 type = "DominantPFTs",
-                 units = "categorical",
-                 colours = colorRampPalette(col.list),
-                 cuts = 0:length(col.list),
-                 aggregate.method = "categorical"
-    )
     
     # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
     colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
@@ -556,16 +604,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   ############# MAKE THE PLOTS ########################################################
   #####################################################################################
   
-  ### CHECK SUMMARY/INDIVIDUAL
-  # If only one layer has been selected, don't plot as summary, plot it as individual, regardless of settings
-  multi.panel <- TRUE
-  if(nlayers(data.toplot) == 1){
-    multi.panel <- FALSE
-  }
-  
-  
   # PLOT MAIN TITLE
-  if(is.null(title)) title <- makePlotTitle(paste(quant@name, "Summary", sep = " "), run, period)
+  if(is.null(title)) title <- makePlotTitle(paste(quant@name, sep = " "), run, period)
   
   # PANEL LABELS - note expand longnames here if requested 
   if(is.null(plot.labels)) {
@@ -582,7 +622,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
   }
   else plot.labels.here <- plot.labels
- 
+  
   return(spplot(data.toplot,
                 layers,
                 par.settings = list(panel.background=list(col=plot.bg.col)),

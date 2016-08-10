@@ -53,6 +53,8 @@ However other periods can be defined for specific growing seasons etc.
 \item{\code{days}}{Number of days in this time period during a normal (non-leap) year}
 
 \item{\code{days.leap}}{Number of days on this period during a leap year}
+
+\item{\code{A}}{colour (as a character string) for this particular period}
 }}
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

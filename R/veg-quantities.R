@@ -239,7 +239,7 @@ veg.quantities <- list(
   
   new("VegQuant",
       id = "mnpp",
-      name = "Month NPP",
+      name = "Monthly NPP",
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,

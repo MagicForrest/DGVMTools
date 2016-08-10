@@ -11,7 +11,7 @@ aggregateLayers(input, layers, method = NULL, PFT.data = NULL)
 
 \item{layers}{The new layers to produce}
 
-\item{method}{The method to use to aggregate the layers ie. "mean" or "sum".  However, the most sensible option is leave it unspecified and use the default (see below)}
+\item{method}{The method to use to aggregate the layers ie. "mean" or "sum".  However, it is often most sensible to leave it unspecified and use the default (see below)}
 
 \item{PFT.data}{If calling the function on a data.table, it is neccessary to specify a PFT set here.  Normally this function will be called on  VegObject so it is not neccessary.}
 }
@@ -20,15 +20,15 @@ A VegObject (or data.table) with the new layers added
 }
 \description{
 This is very useful and important function.  It aggregates different layers 
-of a VegObject according the the desired method (or a sensible default)
+of a VegObject according the the desired method (or a sensible default).  Please note some special features of the arguments, designed for convenience, which are described below.
 }
 \details{
-Whilst the \code{method} arguement can be specified for maximum flexibility, the recommended usage is not specify this arguement.
+Whilst the \code{method} argument can be specified for maximum flexibility, the recommended usage is not specify this argument.
 In this case, the function uses the default of the VegQuant object of the VegObject, which should be the sensible option.  
 For example, per-PFT variables (such as lai or cmass) should typically be summed, 
 but monthly variables (such as soil water content) should be average to calculate the seasonal means.
 
-For convenience, both \code{layers}  will be expanded using \code{expandLayers}.
+For convenience, both \code{layers} will be expanded using \code{expandLayers}.
 This allows all lifeforms totals in a VegObject to be calculated using a simple call such as
 
  \code{veg.obj <- aggregateLayers(veg.obj, c("lifeforms"))}

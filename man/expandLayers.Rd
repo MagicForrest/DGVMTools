@@ -14,7 +14,7 @@ expandLayers(layers, input.data, PFT.set = NULL, type = "unknown",
 
 \item{PFT.set}{List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{VegObject}).}
 
-\item{type}{Character string irdentifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{VegObjects} which supply this data themselves.
+\item{type}{Character string identifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{VegObjects} which supply this data themselves.
 The function attempts to determine this argument if it is not provided.}
 
 \item{include.woody}{If TRUE and "lifeform" is included in the layer list "Woody" is also returned}
@@ -24,7 +24,7 @@ A list of layers
 }
 \description{
 Expands characters strings with particular meaning (eg. "lifefoms", "pfts", "seasons", etc...).  
-This allows the user to simply specify "lifeforms" to a plotting command instead of c("Tree","Grass","Shrub") when plotting or processing.
+This allows the user to simply specify, for example, "lifeforms" to a plotting command instead of c("Tree","Grass","Shrub") when plotting or processing.
 }
 \details{
 Supported short-hand strings are:
@@ -35,7 +35,6 @@ Supported short-hand strings are:
   \item{"zones"}{ expands all the different PFT climactic zones present as determined by the zone slots of the \code{PFTs} argument.  For example c("Temperature", "Boreal", "Tropical")}
   \item{"leafforms"}{ expands all the different PFT leaf forms present as determined by the leafforms slot of the \code{PFTs} argument.  For example c("Needleleved", "Broadleaved")}
   \item{"phenologies"}{ expands all the different PFT leaf forms present as determined by the phenology slot of the \code{PFTs} argument.  For example c("Evergreen", "Summergreen", "Raingreen", "GrassPhenology)}
-  \item{"all"}{ expands to c("pfts", "lifeforms", "leafforms", "zones", "phenologies"), and then these are further expanded.}
 }
 }
 \author{

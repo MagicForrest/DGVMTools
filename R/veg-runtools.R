@@ -424,7 +424,7 @@ getVegObject <- function(run,
                             run = as(run, "VegRunInfo"))
       
       # name and store
-      names(vegobject.full) <- var.string
+      #names(vegobject.full) <- var.string
       run <<- addToVegRun(vegobject.full, run)
       
     } # end if(store.full)
@@ -851,4 +851,54 @@ getExtentFromDT <- function(dt){
   
 }
 
-
+averageVegObjects <- function(list.of.vegobjects, run = NULL) {
+  
+  
+  # make lists of what is to be processed, and check that the headers are the same (if not fail!)
+  list.of.dts <- list()
+  for(object in list.of.vegobjects){
+    list.of.dts[[paste(object@run@id, object@id, sep = ".")]] <- object@data
+  }
+  for(this.dt in list.of.dts) {
+    if(!identical(names(this.dt), names(list.of.dts[[1]]))) stop("You are trying to average veg objects with different layers, this won't work!")
+  }
+  
+  
+  # check if Lon, Lat and Year are present and so should be averaged over
+  by.list <- c()
+  if("Lat" %in% names(list.of.dts[[1]])) by.list <- append(by.list, "Lat")
+  if("Lon" %in% names(list.of.dts[[1]])) by.list <- append(by.list, "Lon")
+  if("Year" %in% names(list.of.dts[[1]])) by.list <- append(by.list, "Year")
+  
+  
+  # do the averaging to make the new data.table and tidy up
+  full.dt <- rbindlist(l=list.of.dts)
+  setKeyDGVM(full.dt)
+  output.dt <- full.dt[,lapply(.SD, mean), keyby=by.list]
+  rm(full.dt, list.of.dts)
+  gc()
+  
+  
+  # if no run is supplied then cannot construct a full VegObject, therefore just return the data.table
+  if(is.null(run)) {
+    return(output.dt)
+  }
+  
+  # else, if a run was provided, make a VegObject and return that
+  else {
+    
+    # check that the VegObjects we just averaged have the same spatial and temporal properties 
+    # if they don't, drop an error message
+    # MF TODO
+    
+    # construct a new VegObject for the average data that we have just calculated based on the first on in the list
+    # but put in the new run and data
+    new.VegObject <- list.of.vegobjects[[1]]
+    new.VegObject@data <- output.dt
+    new.VegObject@run <- run
+    
+    
+    return(new.VegObject)
+  }
+  
+}

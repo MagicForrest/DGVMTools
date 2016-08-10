@@ -9,7 +9,7 @@ divideLayers(input, layers, denominators = list("Total"))
 \arguments{
 \item{input}{The VegObject for which to calculate the new fractional layers}
 
-\item{layers}{The layers to be divided (will be calculated by \code{getVegTotals} if the don't exist)}
+\item{layers}{The layers to be divided ie. the numerators (will be calculated by \code{getVegTotals} if the don't exist)}
 
 \item{denominators}{The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")}
 }

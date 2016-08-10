@@ -25,7 +25,7 @@ sep.char = ""
 #' @import data.table raster
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 getPFTs <- function(input, PFT.data){
- 
+  
   # Allow for rasters, Veg Objects and data.tables
   input.class <- class(input)[1]
   if(is.VegObject(input)) suppressWarnings(input.names <- names(input@data))
@@ -50,7 +50,7 @@ getPFTs <- function(input, PFT.data){
 #' Expand plotting/processing layers from convenient short hand codes.
 #' 
 #' Expands characters strings with particular meaning (eg. "lifefoms", "pfts", "seasons", etc...).  
-#' This allows the user to simply specify "lifeforms" to a plotting command instead of c("Tree","Grass","Shrub") when plotting or processing.
+#' This allows the user to simply specify, for example, "lifeforms" to a plotting command instead of c("Tree","Grass","Shrub") when plotting or processing.
 #'
 #' @details Supported short-hand strings are:
 #' \itemize{
@@ -66,7 +66,7 @@ getPFTs <- function(input, PFT.data){
 #' @param layers Character vector of layers to expand
 #' @param input.data The data to which the layers will be applied, may be a \code{VegObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame. 
 #' @param PFT.set List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{VegObject}).
-#' @param type Character string irdentifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{VegObjects} which supply this data themselves.
+#' @param type Character string identifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{VegObjects} which supply this data themselves.
 #' The function attempts to determine this argument if it is not provided.  
 #' @param include.woody If TRUE and "lifeform" is included in the layer list "Woody" is also returned
 #' @return A list of layers
@@ -111,8 +111,8 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   }
   
   if(tolower(type) == "pft") {
-   
- 
+    
+    
     
     # expands "pfts"
     if("pft" %in% tolower(layers) || "pfts" %in% tolower(layers)) {
@@ -220,7 +220,7 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   }
   
   if("NA" %in% layers) layers <- layers[-which(layers == "NA")]
-
+  
   
   return(layers)
   
@@ -370,11 +370,11 @@ addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FAL
 addBiomes <-function(input, scheme){
   
   message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
-
+  
   
   # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
   if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
-
+  
   # If GDD5 required for classification
   if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
     # get gdd5
@@ -388,15 +388,15 @@ addBiomes <-function(input, scheme){
   
   # Get the dominant tree and dominant woody PFTs
   input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
-
+  
   # Get the totals required
   input <-aggregateLayers(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
-
+  
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
   input <- divideLayers(input, layers = scheme@fraction.of.woody, denominators = list("Woody"))
-
+  
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
   
@@ -416,11 +416,11 @@ addBiomes <-function(input, scheme){
 #' Combine layers of a VegObject (or a data.table)
 #' 
 #' This is very useful and important function.  It aggregates different layers 
-#' of a VegObject according the the desired method (or a sensible default)
+#' of a VegObject according the the desired method (or a sensible default).  Please note some special features of the arguments, designed for convenience, which are described below.
 #' 
 #' @param input The VegObject for which to aggregate layers.
 #' @param layers The new layers to produce
-#' @param method The method to use to aggregate the layers ie. "mean" or "sum".  However, it is often most sensibleto leave it unspecified and use the default (see below)
+#' @param method The method to use to aggregate the layers ie. "mean" or "sum".  However, it is often most sensible to leave it unspecified and use the default (see below)
 #' @param PFT.data If calling the function on a data.table, it is neccessary to specify a PFT set here.  Normally this function will be called on  VegObject so it is not neccessary. 
 #'
 #' @details
@@ -447,7 +447,6 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
   
   ### HANDLE CLASS OF INPUT OBJECT
   # Here allow the possibility to handle both VegObjects and data.tables directly (for internal calculations)
-  # MF: Maybe also handle rasters one day?
   
   # if it is a VegObject 
   if(is.VegObject(input)) {
@@ -459,6 +458,9 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
   }
   # Else assume it is a data.table
   else{
+    print("INFO - using aggregateLayers on a data.table")
+    warning("INFO - using aggregateLayers on a data.table")
+    
     suppressWarnings(dt <- input)
     # if a data.table has been supplied but not method, use sums, but issue a warning
     if(is.null(method)) {
@@ -468,81 +470,137 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
     }
   }
   
-  
-  
-  # auxiliary function to be apply'd
-  max.layer <- function(x){return(names(x)[which.max(x)])  }  
+  # auxiliary function to be apply'd in the case of max and min
+  max.layer <- function(x){return(names(x)[which.max(x)])}  
+  min.layer <- function(x){return(names(x)[which.min(x)])}
   
   
   ### SET UP THE AGGREGATE METHOD 
-  method <- match.arg(method, c("average", "mean", "sum", "total", "max"))
+  method <- match.arg(method, c("average", "mean", "sum", "total", "max", "min"))
   method <- switch(method,
-                  mean = rowMeans,
-                  average = rowMeans,
-                  sum = rowSums,
-                  total = rowSums,
-                  max = max.layer)
-
+                   mean = rowMeans,
+                   average = rowMeans,
+                   sum = rowSums,
+                   total = rowSums,
+                   max = max.layer,
+                   min = min.layer)
   
-  ### GENERAL PREPARATION
-  # get PFTs present
+  
+  # GET PFTs PRESENT
   all.PFTs <- getPFTs(dt, PFT.data)
   
-  # expands layers
+  ### EXPAND LAYERS
+  
+  
+  # for special case of methods "max" and "min", do not expand "months" and "PFTs" because in these cases we want to provide one layer with the min/max
+  # of all months/PFT, not seperate layers for each month/PFTs
+  month.present <- FALSE
+  PFT.present <- FALSE
+  if("Month" %in% layers) {
+    layers <- layers[-which(layers == "Month")]
+    month.present <- TRUE
+  }
+  if("PFT" %in% layers) {
+    layers <- layers[-which(layers == "PFT")]
+    pft.present <- TRUE
+  }
+  
+  # expands layer
   layers <- expandLayers(layers, dt, PFT.data)
-  print(layers)
-  # remove PFTs from layers since PFTs are already present as totals
+  
+  # remove PFTs from layers since a layer for a PFT is already the sum/avg/min/max for that particular PFT
   for(PFT in all.PFTs){ if(PFT@id %in% layers) layers <- layers[-which(layers == PFT@id)]}
   
-  print(layers)
+  # add back in "Month" and "PFT
+  if(month.present) layers <- append(layers, "Month")
+  if(PFT.present) layers <- append(layers, "PFT")
+  
+  # DEFINE STRING FOR MIN/MAX
+  if(identical(method, max.layer)) method.string <- "Max"
+  if(identical(method, min.layer)) method.string <- "Min"
+  
   
   ### FOR PER-PFT FILES
-  for(layer in layers){
+  for(this.layer in layers){
     
-    # build list of columns to combine for layer
-    layer.cols <- c()
-    for(PFT in all.PFTs){
-      if(tolower(PFT@lifeform) == tolower(layer)) {layer.cols <- append(layer.cols, PFT@id)}
-      if(tolower(PFT@zone) == tolower(layer)) {layer.cols <- append(layer.cols, PFT@id)}
-      if(tolower(PFT@leafform) == tolower(layer)) {layer.cols <- append(layer.cols, PFT@id)}
-      if(tolower(PFT@phenology) == tolower(layer)) {layer.cols <- append(layer.cols, PFT@id)}
-      # Special case for Woody
-      if(tolower(layer) == "woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {layer.cols <- append(layer.cols, PFT@id)}
-      # Special case for Total
-      if(tolower(layer) == "total" | tolower(layer) == "all") {layer.cols <- append(layer.cols, PFT@id)}
-    }
+    if(this.layer != "Month") {
+      
+      # build list of columns to combine for layer
+      layer.cols <- c()
+      for(PFT in all.PFTs){
+        if(PFT@lifeform == this.layer) {layer.cols <- append(layer.cols, PFT@id)}
+        if(PFT@zone == this.layer) {layer.cols <- append(layer.cols, PFT@id)}
+        if(PFT@leafform == this.layer) {layer.cols <- append(layer.cols, PFT@id)}
+        if(PFT@phenology == this.layer) {layer.cols <- append(layer.cols, PFT@id)}
+        # Special case for Woody
+        if(this.layer == "Woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {layer.cols <- append(layer.cols, PFT@id)}
+        # Special case for Total and PFT
+        if(this.layer == "Total" | this.layer == "PFT") {layer.cols <- append(layer.cols, PFT@id)}
+      }
+      
+      # now combine the relevant columns
+      
+      # if not requiring the maximum or minimum
+      if(!identical(method, max.layer) & !identical(method, min.layer)) {
+        if(!is.null(layer.cols)) suppressWarnings(dt[, eval(this.layer) := method(.SD), .SDcols = layer.cols])
+      }
+      
+      # else
+      else{
+        # MF TODO: make this faster/nicer?
+        #suppressWarnings(dt[, eval(paste0(method.stringprint, layer) ):= method(.SD), .SDcols = layer.cols])
+        suppressWarnings(dt[, eval(paste0(method.string, this.layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
+        dt[Total < 0.2, eval(quote(paste0(method.string, this.layer))) := "Barren"]
+        dt[, eval(quote(paste0(method.string, this.layer))) := as.factor(get("Dominant"))]
+      }
+      
+    } # if not month
     
-    # now combine the relevant columns
-    
-    # if not requiring the maximum 
-    if(!identical(method, max.layer)) {
-      if(!is.null(layer.cols)) suppressWarnings(dt[, eval(layer) := method(.SD), .SDcols = layer.cols])
-    }
-    
-    # else
-    else{
-      print("woohoodilly")
-      #suppressWarnings(dt[, eval(paste0("Max", layer) ):= method(.SD), .SDcols = layer.cols])
-      suppressWarnings(dt[, eval(paste0("Max", layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
-      dt[Total < 0.2, eval(quote(paste0("Max", layer))) := "Barren"]
-      dt[, eval(quote(paste0("Max", layer))) := as.factor(get("Dominant"))]
-    }
-    
-  }
+  } # for each layer
   
   
   
   ### FOR MONTHLY FILES
   # Loop through all layers to pick out the seasons/annual and make them 
   for(layer in layers){
-    for(period in all.periods){
-      if(layer == period@id){
-        total.str <- quote(paste(layer, sep = ""))
-        suppressWarnings(dt[, eval(total.str) := method(.SD), .SDcols = period@contains])
+    
+    # special case to get min/max of all months
+    if(layer == "Month" & (identical(method, max.layer) | identical(method, min.layer))) {
+      
+      # make a vector of all months
+      layer.cols <- c()
+      for(month in months){
+        layer.cols <- append(layer.cols, month@id)
+      }
+      
+      # now calculate the maximum month
+      suppressWarnings(dt[, eval(paste0(method.string, layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
+      
+      # Now, calculate annual total, if this is zero, set it to max or min to "None"
+      suppressWarnings(dt[, TempTotal := sum(.SD), .SDcols = layer.cols])
+      dt[TempTotal == 0.0, eval(quote(paste0(method.string, this.layer))) := "None"]
+      
+      # set the variable to factors in a sensible order (consecutive months) for plotting nicely
+      factor.order <- c()
+      for(month in months) {factor.order<- append(factor.order, month@id)}
+      
+      dt[, eval(quote(paste0(method.string, this.layer))) := factor(get(paste0(method.string, this.layer)), levels = factor.order)]
+      dt[,TempTotal := NULL]
+      
+
+    }
+    
+    # for other layers
+    else {
+      for(period in all.periods){
+        if(layer == period@id){
+          total.str <- quote(paste(layer, sep = ""))
+          suppressWarnings(dt[, eval(total.str) := method(.SD), .SDcols = period@contains])
+        }
       }
     }
   } 
-
+  
   if(is.VegObject(input)) {
     input@data <- dt
     return(input)
@@ -552,7 +610,7 @@ aggregateLayers <- function(input, layers, method = NULL, PFT.data = NULL){
   }
   
   
- 
+  
   
 }
 
