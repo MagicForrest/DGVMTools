@@ -2,7 +2,7 @@
 % Please edit documentation in R/veg-benchmarking.R
 \name{benchmarkSpatial}
 \alias{benchmarkSpatial}
-\title{Benchmark VegRuns against a spatial dataset}
+\title{Benchmark ModelRuns against a spatial dataset}
 \usage{
 benchmarkSpatial(runs, layer.name, dataset, tag = NULL, diff.cuts = NULL,
   perc.diff.cuts = seq(-100, 200, 5), spatial.extent = NULL,
@@ -11,7 +11,7 @@ benchmarkSpatial(runs, layer.name, dataset, tag = NULL, diff.cuts = NULL,
   width = 1800, height = 1000, bg = "transparent"), ...)
 }
 \arguments{
-\item{runs}{A list of VegRun objects (each with the RasterComparison object already created)}
+\item{runs}{A list of ModelRun objects (each with the RasterComparison object already created)}
 
 \item{layer.name}{Layer in the vegetation model output to compare to the data}
 
@@ -21,7 +21,7 @@ benchmarkSpatial(runs, layer.name, dataset, tag = NULL, diff.cuts = NULL,
 for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.}
 
 \item{diff.cuts}{Numeric vector of cuts for plotting the absolute difference.  If not specified it is derived as the maximum
-possible range based on the VegQuant object in the dataset.}
+possible range based on the Quantity object in the dataset.}
 
 \item{perc.diff.cuts}{Numerice vector of cuts for plotting the percentage differences.  If not specified defaults to -100\% to +200\%
 in 5\% intervals.}
@@ -40,7 +40,7 @@ to account for (for example) land cover.  NA's can be used to completely mask ou
 
 \item{canvas.options}{A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation}
 
-\item{...}{Arguments to be passed to plotVegMaps when making the spatial plots.}
+\item{...}{Arguments to be passed to plotLayer when making the spatial plots.}
 
 \item{layout.objs}{A list of layout objects (see the \code{sp} package) for putting on the spatial plots.  For example,
 continent outlines}

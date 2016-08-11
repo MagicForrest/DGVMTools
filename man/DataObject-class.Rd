@@ -9,7 +9,7 @@ A key class of the package.  A \code{DataObject} stores the data and metadata fo
 For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
 }
 \details{
-Generally these are not created directly by the user, but rather by functions like \code{getVegObject}.
+Generally these are not created directly by the user, but rather by functions like \code{getModelObject}.
 }
 \section{Slots}{
 
@@ -20,7 +20,7 @@ Generally these are not created directly by the user, but rather by functions li
 
 \item{\code{data}}{A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.}
 
-\item{\code{quant}}{A VegQuant object to define what output this DataObject contains}
+\item{\code{quant}}{A Quantity object to define what output this DataObject contains}
 
 \item{\code{spatial.extent}}{A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.}
 

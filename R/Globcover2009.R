@@ -55,7 +55,7 @@ readGlobcover2009 <- function(location){
                        name = "Globcover2009 Spatial Dataset",
                        temporal.extent = new("TemporalExtent", id = "Globcover2009", name = "Globcover2009", start = 2009, end = 2009),
                        data = full.original.data,
-                       veg.quant = lookupVegQuant("landCoverClass_std", "Standard"),
+                       veg.quant = lookupQuantity("landCoverClass_std", "Standard"),
                        units = "categorical",
                        correction.raster = raster()
                        )

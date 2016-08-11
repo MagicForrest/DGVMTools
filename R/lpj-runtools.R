@@ -9,11 +9,11 @@
 #' Open an LPJ-GUESS .out file
 #'
 #' \code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity 
-#' from the run (eg. "lai", to read the file "lai.out") and  \code{VegRun} object which defines where the run is on disk and the offsets to apply
+#' from the run (eg. "lai", to read the file "lai.out") and  \code{ModelRun} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \code{VegRun} containing the meta-data about the LPJ-GUESS run
+#' @param run A \code{ModelRun} containing the meta-data about the LPJ-GUESS run
 #' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
@@ -98,9 +98,9 @@ openLPJOutputFile <- function(run,
 #' 
 #' 
 #' output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
-#' \code{VegRun} object, it will return that to save time.
+#' \code{ModelRun} object, it will return that to save time.
 #' 
-#' @param run A \code{VegRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
+#' @param run A \code{ModelRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
@@ -108,20 +108,20 @@ openLPJOutputFile <- function(run,
 #' @import data.table
 #' @export
 
-getStandardVegQuant_LPJ <- function(run, quant, verbose = FALSE) {
+getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   
   
   # columns not to be modified for unit conversions etc.
   unmod.cols <- c("Lon", "Lat", "Year", "Day")
   
-  # Check that this really is a standard VegQuant and therefore should have behaviour defined here
+  # Check that this really is a standard Quantity and therefore should have behaviour defined here
   if(!"Standard" %in% quant@model) {
-        stop()(paste("getStandardVegQuant_LPJ called for a non-standard VegQuant (", quant@id, ")", sep = ""))
+        stop()(paste("getStandardQuantity_LPJ called for a non-standard Quantity (", quant@id, ")", sep = ""))
   }
   
   
   
-  #### Here is the code to define each and every Standard VegQuant for LPJ-GUESS output
+  #### Here is the code to define each and every Standard Quantity for LPJ-GUESS output
   
   # vegcover_std
   if(quant@id == "vegcover_std") {
@@ -166,7 +166,7 @@ getStandardVegQuant_LPJ <- function(run, quant, verbose = FALSE) {
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     this.dt <- openLPJOutputFile(run, "mgpp", verbose = TRUE)
-    this.dt <- aggregateLayers(this.dt, "Annual")
+    this.dt <- newLayer(this.dt, "Annual")
 
     return(this.dt)
     

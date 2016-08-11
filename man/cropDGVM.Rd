@@ -2,20 +2,20 @@
 % Please edit documentation in R/000rvc-tools.R
 \name{cropDGVM}
 \alias{cropDGVM}
-\title{Crop VegObjects (or data.tables, or Raster* objects)}
+\title{Crop ModelObjects (or data.tables, or Raster* objects)}
 \usage{
 cropDGVM(input, extent)
 }
 \arguments{
-\item{input}{The VegObject, data.table or Raster* object to be cropped}
+\item{input}{The ModelObject, data.table or Raster* object to be cropped}
 
 \item{extent}{The spatial extent to be be cropped to, defined as a SpatialExtent or raster::extent}
 }
 \value{
-A VegObject, data.table or Raster* object cropped to the desired extent.
+A ModelObject, data.table or Raster* object cropped to the desired extent.
 }
 \description{
-A more flexible version of raster::crop() which also take VegObjects and data.tables for cropping, 
+A more flexible version of raster::crop() which also take ModelObjects and data.tables for cropping, 
 and can use a SpatialExtent object to define the domain.  SHOULD BE DEFINED AS A METHOD EXTENDING raster::crop()!
 }
 \author{

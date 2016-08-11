@@ -7,10 +7,10 @@
 combineShadeTolerance(input)
 }
 \arguments{
-\item{input}{The VegObject which is to have the shade tolerance classes combined.}
+\item{input}{The ModelObject which is to have the shade tolerance classes combined.}
 }
 \value{
-A VegObject with the data for the shade-intolerant PFTs set to zero but their values added to the shade-tolerant versions
+A ModelObject with the data for the shade-intolerant PFTs set to zero but their values added to the shade-tolerant versions
 }
 \description{
 The effects of this depend on the shade-tolerant cousin PFTs being defined in the PFT list.

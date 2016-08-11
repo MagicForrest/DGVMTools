@@ -3,14 +3,14 @@
 \docType{methods}
 \name{is.equal}
 \alias{is.equal}
+\alias{is.equal,Quantity,Quantity-method}
 \alias{is.equal,SpatialExtent,SpatialExtent-method}
 \alias{is.equal,TemporalExtent,TemporalExtent-method}
-\alias{is.equal,VegQuant,VegQuant-method}
 \title{Checks two DGVMTools metadata objects for equality}
 \usage{
 is.equal(a, b)
 
-\S4method{is.equal}{VegQuant,VegQuant}(a, b)
+\S4method{is.equal}{Quantity,Quantity}(a, b)
 
 \S4method{is.equal}{TemporalExtent,TemporalExtent}(a, b)
 
@@ -29,7 +29,7 @@ checks if two objects have the same quantity, spatial or temporal extent
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{a = VegQuant,b = VegQuant}: Checks two VegQuant objects for equality
+\item \code{a = Quantity,b = Quantity}: Checks two Quantity objects for equality
 
 \item \code{a = TemporalExtent,b = TemporalExtent}: Checks two TemoralExtent objects for equality
 

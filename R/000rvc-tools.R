@@ -5,9 +5,9 @@
 ### Need a new way to handle this stuff with file paths etc
 
 
-#' Check is an object is a \code{VegObject}.   
+#' Check is an object is a \code{ModelObject}.   
 #'
-#' Returns TRUE if an object is a \code{VegObject}, and FALSE otherwise 
+#' Returns TRUE if an object is a \code{ModelObject}, and FALSE otherwise 
 #' 
 #' @param input Any R object to bec checked
 #' @param spatial check if input is a spatial object
@@ -17,10 +17,10 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 
-is.VegObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
+is.ModelObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package"))) {
-    if (class.def[1] == "VegObject" && attr(class.def, "package")=="DGVMTools") {
+    if (class.def[1] == "ModelObject" && attr(class.def, "package")=="DGVMTools") {
       ## JS: check more carefully if this if structure makes sense
       if (spatial && !temporal && !site) {
         if (!input@is.site && !input@is.spatially.averaged)
@@ -43,35 +43,35 @@ is.VegObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
 
 
 
-#' Check is an object is a \code{VegRun}.   
+#' Check is an object is a \code{ModelRun}.   
 #'
-#' Returns TRUE if an object is a \code{VegRun}, and FALSE otherwise 
+#' Returns TRUE if an object is a \code{ModelRun}, and FALSE otherwise 
 #' 
 #' @param input Any R object to be checked
 #' @return logical
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
-is.VegRun <- function(input) {
+is.ModelRun <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "VegRun" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "ModelRun" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
 
 
-#' Check is an object is a \code{VegQuant}.   
+#' Check is an object is a \code{Quantity}.   
 #'
-#' Returns TRUE if an object is a \code{VegQuant}, and FALSE otherwise 
+#' Returns TRUE if an object is a \code{Quantity}, and FALSE otherwise 
 #' 
 #' @param input Any R object to be checked
 #' @return logical
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
-is.VegQuant <- function(input) {
+is.Quantity <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "VegQuant" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "Quantity" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
@@ -109,8 +109,8 @@ is.SpatialComparison <- function(input) {
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 setGeneric("is.equal", function(a, b) standardGeneric("is.equal"))
 
-#' @describeIn is.equal Checks two VegQuant objects for equality
-setMethod("is.equal", signature("VegQuant", "VegQuant"), function(a, b) {
+#' @describeIn is.equal Checks two Quantity objects for equality
+setMethod("is.equal", signature("Quantity", "Quantity"), function(a, b) {
   if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)
     return(TRUE)
   return(FALSE)
@@ -134,7 +134,7 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
   return(FALSE)
 })
 
-## print an experimental summary of the class VegRun.
+## print an experimental summary of the class ModelRun.
 ##
 ## Don't know, which were the really important information to return,
 ## therfore this is just a template.
@@ -157,7 +157,7 @@ setGeneric("summary", function(object,...) standardGeneric("summary"))
 
 #' @rdname Summary-methods
 #' @aliases summary
-setMethod("summary", signature("VegRun"), function(object, ...) {
+setMethod("summary", signature("ModelRun"), function(object, ...) {
   ret <- list(id=object@id, description=object@description, model=object@model)
   
   spatial=NULL
@@ -195,15 +195,15 @@ setMethod("summary", signature("VegRun"), function(object, ...) {
 })
 
 
-#' Crop VegObjects (or data.tables, or Raster* objects)
+#' Crop ModelObjects (or data.tables, or Raster* objects)
 #' 
-#' A more flexible version of raster::crop() which also take VegObjects and data.tables for cropping, 
+#' A more flexible version of raster::crop() which also take ModelObjects and data.tables for cropping, 
 #' and can use a SpatialExtent object to define the domain.  SHOULD BE DEFINED AS A METHOD EXTENDING raster::crop()!
 #' 
-#' @param input The VegObject, data.table or Raster* object to be cropped
+#' @param input The ModelObject, data.table or Raster* object to be cropped
 #' @param extent The spatial extent to be be cropped to, defined as a SpatialExtent or raster::extent
 #' 
-#' @return A VegObject, data.table or Raster* object cropped to the desired extent.
+#' @return A ModelObject, data.table or Raster* object cropped to the desired extent.
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster data.table
@@ -238,7 +238,7 @@ cropDGVM <- function(input, extent){
 #' Retrieves an object from a list based on it's \code{id} slot
 #' 
 #' Looks through a list of arbitary object until it finds one which has a slot called "id" whose value matches the imput argument.
-#' The idea is that you can use this fucntion to pull a particular PFT from a list of PFT objects, or a a particular run from a list of VegRun objects etc.
+#' The idea is that you can use this fucntion to pull a particular PFT from a list of PFT objects, or a a particular run from a list of ModelRun objects etc.
 #' 
 #' @param id The id sought (must be string)
 #' @param list The list to be scanned (must be a list)

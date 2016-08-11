@@ -8,7 +8,7 @@ promoteToRaster(input.data, layers = "all", tolerance = 1e-07,
   grid.topology = NULL)
 }
 \arguments{
-\item{input.data}{data.table, VegObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he}
+\item{input.data}{data.table, ModelObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he}
 
 \item{layers}{The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.}
 
@@ -20,9 +20,9 @@ promoteToRaster(input.data, layers = "all", tolerance = 1e-07,
 A RasterLayer (or RasterBrick)
 }
 \description{
-Converts a data.table, VegObject or an Spatial*-object to Raster object, also subsetting the requested layers.  
+Converts a data.table, ModelObject or an Spatial*-object to Raster object, also subsetting the requested layers.  
 It can also handle a RasterLayber/Stack/Brick, in which case the only processing done is the subsetting since the data is already in Raster form.
-This is generally called in the \code{plotVegMaps} function (or potentially before any use of the raster::spplot and raster::plot functions),
+This is generally called in the \code{plotLayer} function (or potentially before any use of the raster::spplot and raster::plot functions),
 but can be useful in and of itself.
 }
 \author{

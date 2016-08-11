@@ -114,11 +114,11 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   }
   return(x)
 }
-#' addArea: Adds the gridcell area to a spatial VegObject or data.table/data.frame
+#' addArea: Adds the gridcell area to a spatial ModelObject or data.table/data.frame
 #' 
-#' Adds the gridcell area to a spatial VegObject or data.table/data.frame
+#' Adds the gridcell area to a spatial ModelObject or data.table/data.frame
 #' 
-#' @param input a spatial VegObject or a data.frame/data.table with at least the columns Lon and Lat.
+#' @param input a spatial ModelObject or a data.frame/data.table with at least the columns Lon and Lat.
 #' @param unit area unit. Default m^2, if something else is spefified udunits2 must be installed. If udunits2 is not installed this option is ignored.
 #' @param ellipse If the eath should be assumed to be a ellipsoid instead of a sphere.
 #' @param verbose print some information.
@@ -141,9 +141,9 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
       message("Input is a data.table or data.frame.")
     lon <- extract.seq(input$Lon)
     lat <- extract.seq(input$Lat)
-  } else if (is.VegObject(input, spatial=TRUE)) {
+  } else if (is.ModelObject(input, spatial=TRUE)) {
     if (verbose)
-      message("Input is a spatial VegObject.")
+      message("Input is a spatial ModelObject.")
     lon <- extract.seq(input@data$Lon)
     lat <- extract.seq(input@data$Lat)
   } else {
@@ -151,7 +151,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
   }
 
   area <- gridarea2d(lon, lat, ellipse=ellipse)
-  if (is.data.table(input) || is.VegObject(input)) {
+  if (is.data.table(input) || is.ModelObject(input)) {
     area <- as.data.table(area)
     if (is.data.table(input)) {
       setkey(area, Lon, Lat)
@@ -200,25 +200,25 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
 }
 
 ######################################################################
-### arithmetics with VegRun data slots ###############################
+### arithmetics with ModelRun data slots ###############################
 ######################################################################
-#' calcNewVegObj: Simple calculation of new VegObjects
+#' calcNewVegObj: Simple calculation of new ModelObjects
 #' 
-#' Simple calculation of new VegObjects by operation '+', '-', '*' or '/'
+#' Simple calculation of new ModelObjects by operation '+', '-', '*' or '/'
 #' 
 #' @param run the run the data should be taken from
-#' @param targets a list with elements 'x' and 'y' with components VegObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.
+#' @param targets a list with elements 'x' and 'y' with components ModelObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.
 #' @param operator which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/')
-#' @param quant new VegQuant definition to use, if NULL it will be guessed
+#' @param quant new Quantity definition to use, if NULL it will be guessed
 #' @param verbose print some messages
-#' @return hopefully a new VegObject
+#' @return hopefully a new ModelObject
 #' @export
 #' @import data.table
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, verbose=TRUE) {
   ## check if valid arguments are given
-  if (!is.VegRun(run))
-    stop("'run' is not a valid VegRun.")
+  if (!is.ModelRun(run))
+    stop("'run' is not a valid ModelRun.")
   
   if (is.null(targets))
     stop("Don't know what to do, if you are not telling me!")
@@ -246,10 +246,10 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
   x <- eval(parse(text=paste("run@objects", "[['", targets[['x']][1], "']]", sep="")))
   y <- eval(parse(text=paste("run@objects", "[['", targets[['y']][1], "']]", sep="")))
 
-  if (!is.VegObject(x))
-    stop(paste("target '", targets[['x']][1], "is not a VegObject!", sep=""))
-  if (!is.VegObject(y))
-    stop(paste("target '", targets[['y']][1], "is not a VegObject!", sep=""))
+  if (!is.ModelObject(x))
+    stop(paste("target '", targets[['x']][1], "is not a ModelObject!", sep=""))
+  if (!is.ModelObject(y))
+    stop(paste("target '", targets[['y']][1], "is not a ModelObject!", sep=""))
  
   if (x@is.temporally.averaged != y@is.temporally.averaged ||
       x@is.spatially.averaged != y@is.spatially.averaged ||
@@ -281,7 +281,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
   if (!is.equal(x.quant, y.quant) && (operator=="+" || operator=="-"))
     warning("Quantity definitions differ.")
 
-  if (!is.VegQuant(quant) ) {
+  if (!is.Quantity(quant) ) {
     quant <- x.quant
     quant@id = paste(targets[[1]][1], operator, targets[[2]][1], sep="")
     quant@name = quant@id
@@ -313,7 +313,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
     }
 
-    return(new("VegObject",
+    return(new("ModelObject",
                id = paste(targets[[1]][1], operator, targets[[2]][1], sep=""),
                data = new.dt,
                quant = quant,
@@ -322,7 +322,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
                is.site = x@is.site,
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
-               run = as(run, "VegRunInfo")))      
+               run = as(run, "ModelRunInfo")))      
 
   } else if (length(targets[[1]])==1 && length(targets[[2]])==2) {
     key.names <- key(x.dt)
@@ -338,7 +338,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
-    return(new("VegObject",
+    return(new("ModelObject",
                id = paste(targets[[1]][1], operator, targets[[2]][1], sep=""),
                data = new.dt,
                quant = quant,
@@ -347,7 +347,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
                is.site = x@is.site,
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
-               run = as(run, "VegRunInfo")))      
+               run = as(run, "ModelRunInfo")))      
 
   } else if (length(targets[[1]])==2 && length(targets[[2]])==1) {
     key.names <- key(y.dt)
@@ -363,7 +363,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
-    return(new("VegObject",
+    return(new("ModelObject",
                id = paste(targets[[1]][1], operator, targets[[2]][1], sep=""),
                data = new.dt,
                quant = quant,
@@ -372,7 +372,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
                is.site = x@is.site,
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
-               run = as(run, "VegRunInfo")))      
+               run = as(run, "ModelRunInfo")))      
   } else {
     key.names <- key(x.dt)
     val.names <- names(x.dt)
@@ -395,7 +395,7 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
-    return(new("VegObject",
+    return(new("ModelObject",
                id = paste(targets[[1]][1], operator, targets[[2]][1], sep=""),
                data = new.dt,
                quant = quant,
@@ -404,33 +404,33 @@ calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, ver
                is.site = x@is.site,
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
-               run = as(run, "VegRunInfo")))      
+               run = as(run, "ModelRunInfo")))      
   }
   stop("MISSING: Not implemented yet.")
 }
 
 #' calculate monthly PET, AET, WC, WD based on Thornthwaite
 #' 
-#' @param run the VegRun object, if desired (see 'as', below).
-#' @param T monthly temperature (degree Celcius )VegObject, data.table or data.frame
+#' @param run the ModelRun object, if desired (see 'as', below).
+#' @param T monthly temperature (degree Celcius )ModelObject, data.table or data.frame
 #' @param P monthly precipitation in mm. Needed for everything without PET.
 #' @param variable any of PET (potential evapotranspiration), AET (actual evapotranspiration), WC (water content), WD (water deficit)
-#' @param as desired output type 'data.table', 'data.frame', anything else will try to return a VegObject, which need 'run' to be defined.
+#' @param as desired output type 'data.table', 'data.frame', anything else will try to return a ModelObject, which need 'run' to be defined.
 #' @return the requested variable in the requested ('as') container
 #' @export
 #' @import data.table
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @references Bonan, G. (2002): Ecological Climatology. Chapter 5 (Hydrological Cycle), Cambridge University Press, 690p. (http://www.cgd.ucar.edu/tss/aboutus/staff/bonan/ecoclim/index-2002.htm)
-thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject") {
+thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="ModelObject") {
   AET.Jan=Annual=P.Jan=PET.Jan=WC.Dec=WC.Jan=WD.Jan=a=Lon=Lat=NULL
   dom <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
   names(dom) <- month.abb
   mid.month <- cumsum(dom) - dom/2
 
   ## make sure we do not overwrite the original data.table
-  if (is.VegObject(T)) {
+  if (is.ModelObject(T)) {
     if (T@is.spatially.averaged)
-      stop("Operation not possible for spatially averaged VegObject!")
+      stop("Operation not possible for spatially averaged ModelObject!")
 
     is.temporally.averaged <- T@is.temporally.averaged
     spatial.extent  <- T@spatial.extent
@@ -483,12 +483,12 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
     } else if (as=="data.frame") {
       return(as.data.frame(PET))
     } else {
-      quant <- new("VegQuant",
+      quant <- new("Quantity",
                    id="pet",
                    name="potential evapotranspiration (Thonthwaite)",
                    type="",
                    units="mm")
-      return(new('VegObject',
+      return(new('ModelObject',
                  id="pet",
                  data=PET,
                  quant = quant,
@@ -497,11 +497,11 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
                  is.site = FALSE,
                  is.temporally.averaged = is.temporally.averaged,
                  is.spatially.averaged = FALSE,
-                 run = as(run, "VegRunInfo")))
+                 run = as(run, "ModelRunInfo")))
     }
   }
 
-  if (is.VegObject(P)) {
+  if (is.ModelObject(P)) {
     P <- copy(P@data)
   } else if (is.data.table(P)) {
     P <- copy(P)
@@ -525,12 +525,12 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
     } else if (as=="data.frame") {
       return(as.data.frame(WD))
     } else {
-      quant <- new("VegQuant",
+      quant <- new("Quantity",
                    id="wd",
                    name="water deficit (Thonthwaite)",
                    type="",
                    units="mm")
-      return(new('VegObject',
+      return(new('ModelObject',
                  id="wd",
                  data=WD,
                  quant = quant,
@@ -539,7 +539,7 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
                  is.site = FALSE,
                  is.temporally.averaged = is.temporally.averaged,
                  is.spatially.averaged = FALSE,
-                 run = as(run, "VegRunInfo")))
+                 run = as(run, "ModelRunInfo")))
     }
   }
 
@@ -587,12 +587,12 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
     } else if (as=="data.frame") {
       return(as.data.frame(WC))
     } else {
-      quant <- new("VegQuant",
+      quant <- new("Quantity",
                    id="wc",
                    name="water content (Thonthwaite)",
                    type="",
                    units="mm")
-      return(new('VegObject',
+      return(new('ModelObject',
                  id="wc",
                  data=WC,
                  quant = quant,
@@ -601,7 +601,7 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
                  is.site = FALSE,
                  is.temporally.averaged = is.temporally.averaged,
                  is.spatially.averaged = FALSE,
-                 run = as(run, "VegRunInfo")))
+                 run = as(run, "ModelRunInfo")))
     }
   }
 
@@ -614,12 +614,12 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
     } else if (as=="data.frame") {
       return(as.data.frame(AET))
     } else {
-      quant <- new("VegQuant",
+      quant <- new("Quantity",
                    id="AET",
                    name="actual evapotranspiration (Thonthwaite)",
                    type="",
                    units="mm")
-      return(new('VegObject',
+      return(new('ModelObject',
                  id="aet",
                  data=AET,
                  quant = quant,
@@ -628,7 +628,7 @@ thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="VegObject
                  is.site = FALSE,
                  is.temporally.averaged = is.temporally.averaged,
                  is.spatially.averaged = FALSE,
-                 run = as(run, "VegRunInfo")))
+                 run = as(run, "ModelRunInfo")))
     }
   }
 }

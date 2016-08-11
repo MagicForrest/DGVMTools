@@ -31,7 +31,7 @@ getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collect
 
   setkey(dt, Lon, Lat)
 
-  quant <- lookupVegQuant("vegcover_std", "Standard")
+  quant <- lookupQuantity("vegcover_std", "Standard")
   
   dataset <- new("DataObject",
                          id = "MODISTreeCover",

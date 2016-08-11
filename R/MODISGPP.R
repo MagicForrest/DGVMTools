@@ -31,7 +31,7 @@ getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resol
 
   setkey(dt, Lon, Lat)
 
-  quant <- lookupVegQuant("aGPP_std", "Standard")
+  quant <- lookupQuantity("aGPP_std", "Standard")
   quant@cuts <- seq(0,3,0.1)
   
   

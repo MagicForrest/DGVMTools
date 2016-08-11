@@ -42,7 +42,7 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/Thurner2013/", reso
 
   setkey(Thurner.dt, Lon, Lat)
 
-  quant <- lookupVegQuant("vegC_std", "Standard")
+  quant <- lookupQuantity("vegC_std", "Standard")
   quant@cuts <- seq(0,25,1)
   
   Thurner.dataset <- new("DataObject",

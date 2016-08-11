@@ -1,13 +1,13 @@
 #!/usr/bin/Rscript
 
 
-#' Function to get an VegQuant based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties)
+#' Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties)
 #' 
 #' lalal
 #' 
-#' @param quant.id String holding the id of the \code{VegQuant} you want
+#' @param quant.id String holding the id of the \code{Quantity} you want
 #' @param model.str String holding the name of the model or "Standard"
-lookupVegQuant <- function(quant.id, model.str = "Standard"){
+lookupQuantity <- function(quant.id, model.str = "Standard"){
   
   for(quant in veg.quantities){
     
@@ -29,23 +29,23 @@ lookupVegQuant <- function(quant.id, model.str = "Standard"){
 
 
 
-#' Global scope list of all LPJ-GUESS (and SPITFIRE) quantities defined as \code{VegQuant} object 
+#' Global scope list of all LPJ-GUESS (and SPITFIRE) quantities defined as \code{Quantity} object 
 #' from the default LPJ-GUESS model config and a few extra.
 #'
 #' These quantities have sensible colour schemes, long names and cut ranges for standard global runs,
 #' but they will likely need to be modified and new ones aded for a specific analysis.
 #' Once the package is loaded this is just a standard R list so can be modified and extended as you wish.
 #' 
-#' @format A list of \code{VegQuant} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)
+#' @format A list of \code{Quantity} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @seealso \code{VegQuant}-class
+#' @seealso \code{Quantity}-class
 veg.quantities <- list(
   
   ######################################################################
   ########## STANDARD (CROSS-MODEL) QUANTITIES  ########################
   #####################################################################
   
-  new("VegQuant",
+  new("Quantity",
       id = "fraction",
       type = "unknown",
       name = "Fraction",
@@ -54,7 +54,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.05),
       model = "Standard"), 
  
-  new("VegQuant",
+  new("Quantity",
       id = "vegcover_std",
       type = "",
       name = "Areal Cover",
@@ -63,7 +63,7 @@ veg.quantities <- list(
       cuts = seq(0,100,5),
       model = "Standard"), 
   
-  new("VegQuant",
+  new("Quantity",
       id = "vegC_std",
       name = "Vegetation Carbon Mass",
       type = "PFT",
@@ -72,7 +72,7 @@ veg.quantities <- list(
       cuts = seq(0,40,1),
       model = c("Standard")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "LAI_std",
       name = "LAI",
       type = "PFT",
@@ -81,7 +81,7 @@ veg.quantities <- list(
       cuts = seq(0,7, 0.01),
       model = c("Standard")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mGPP_std",
       name = "Monthly GPP",
       type = "monthly",
@@ -90,7 +90,7 @@ veg.quantities <- list(
       cuts = seq(0, 0.4, 0.01),
       model = c("Standard")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "aGPP_std",
       name = "Annual GPP",
       type = "PFT",
@@ -111,7 +111,7 @@ veg.quantities <- list(
   ########## LPJ-GUESS QUANTITIES  #####################################
   ######################################################################  
   
-  new("VegQuant",
+  new("Quantity",
       id = "lai",
       name = "LAI",
       type = "PFT",
@@ -120,7 +120,7 @@ veg.quantities <- list(
       cuts = seq(0,7, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mlai",
       name = "Monthly LAI",
       type = "monthly",
@@ -129,7 +129,7 @@ veg.quantities <- list(
       cuts = seq(0,10, 0.2),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "fpc",
       name = "Foliar Projective Cover",
       type = "PFT",
@@ -138,7 +138,7 @@ veg.quantities <- list(
       cuts = seq(0,1.5, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfpc",
       name = "Monthly Foliar Projective Cover",
       type = "Monthly",
@@ -147,7 +147,7 @@ veg.quantities <- list(
       cuts = seq(0,1.5, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "vegcover",
       name = "Vegetation Cover",
       type = "",
@@ -156,7 +156,7 @@ veg.quantities <- list(
       cuts = seq(0,1.0, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "agpp",
       name = "Annual GPP",
       type = "PFT",
@@ -165,7 +165,7 @@ veg.quantities <- list(
       cuts = seq(0, 3, 0.05),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "cmass",
       name = "Vegetation Carbon Mass",
       type = "PFT",
@@ -174,7 +174,7 @@ veg.quantities <- list(
       cuts = seq(0,40,1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "clitter",
       name = "Litter Carbon Mass",
       type = "PFT",
@@ -183,7 +183,7 @@ veg.quantities <- list(
       cuts = seq(0,10,1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "agb",
       name = "Above Ground Biomass",
       type = "PFT",
@@ -192,7 +192,7 @@ veg.quantities <- list(
       cuts = seq(0,800,10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "cpool",
       name = "Carbon Pool",
       type = "pools",
@@ -201,7 +201,7 @@ veg.quantities <- list(
       cuts = seq(0,70,1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "litter_wood",
       name = "Wood Litter",
       type = "PFT",
@@ -210,7 +210,7 @@ veg.quantities <- list(
       cuts = seq(0,2,0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "litter_leaf",
       name = "Leaf Litter",
       type = "PFT",
@@ -219,7 +219,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.002),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "litter_repr",
       name = "Reproductive Litter",
       type = "PFT",
@@ -228,7 +228,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.05),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "fine_fuel",
       name = "Fine Fuel",
       type = "PFT",
@@ -237,7 +237,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.05),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mnpp",
       name = "Monthly NPP",
       type = "monthly",
@@ -246,7 +246,7 @@ veg.quantities <- list(
       cuts = seq(-0.1, 0.3, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mgpp",
       name = "Monthly GPP",
       type = "monthly",
@@ -255,7 +255,7 @@ veg.quantities <- list(
       cuts = seq(0, 0.4, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mnee",
       name = "Monthly NEE",
       type = "monthly",
@@ -264,7 +264,7 @@ veg.quantities <- list(
       cuts = seq(-0.1, 0.2, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mrh",
       name = "Monthly Heterotrophic Respiration",
       type = "monthly",
@@ -273,7 +273,7 @@ veg.quantities <- list(
       cuts = seq(0.0, 0.3, 0.005),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mra",
       name = "Monthly Autotrophic Respiration",
       type = "monthly",
@@ -282,7 +282,7 @@ veg.quantities <- list(
       cuts = seq(0.0, 0.3, 0.005),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "anpp",
       name = "Annual NPP",
       type = "PFT",
@@ -291,7 +291,7 @@ veg.quantities <- list(
       cuts = seq(-0.5, 2, 0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "cflux",
       name = "Carbon Flux",
       type = "flux",
@@ -300,7 +300,7 @@ veg.quantities <- list(
       cuts = seq(-3, 3, 0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "dens",
       name = "PFT Density",
       type = "PFT",
@@ -309,7 +309,7 @@ veg.quantities <- list(
       cuts = seq(0, 0.1, 0.002),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "speciesheights",
       name = "PFT Average Heights",
       type = "PFT",
@@ -318,7 +318,7 @@ veg.quantities <- list(
       cuts = seq(0, 40, 1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "maet",
       name = "Monthly Actual Evapotranspiration",
       type = "monthly",
@@ -327,7 +327,7 @@ veg.quantities <- list(
       cuts = seq(0, 200, 10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mpet",
       name = "Monthly Potential Evapotranspiration",
       type = "monthly",
@@ -336,7 +336,7 @@ veg.quantities <- list(
       cuts = seq(0, 300, 10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mevap",
       name = "Monthly Evaporation",
       type = "monthly",
@@ -345,7 +345,7 @@ veg.quantities <- list(
       cuts = seq(0, 100, 2),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mrunoff",
       name = "Monthly Runoff",
       type = "monthly",
@@ -354,7 +354,7 @@ veg.quantities <- list(
       cuts = seq(0, 500, 10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mintercep",
       name = "Monthly Interception",
       type = "monthly",
@@ -363,7 +363,7 @@ veg.quantities <- list(
       cuts = seq(0, 50, 1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mwcont_upper",
       name = "Monthly Upper Soil Layer WC",
       type = "monthly",
@@ -373,7 +373,7 @@ veg.quantities <- list(
       aggregate.method = "mean",
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mwcont_lower",
       name = "Monthly Lower Soil Layer",
       type = "monthly",
@@ -383,7 +383,7 @@ veg.quantities <- list(
       aggregate.method = "mean",
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "msnowpack",
       name = "Monthly Snow Pack",
       type = "monthly",
@@ -392,7 +392,7 @@ veg.quantities <- list(
       cuts = seq(0, 5, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "firert",
       name = "Fire Return Interval",
       type = "annual",
@@ -401,7 +401,7 @@ veg.quantities <- list(
       cuts = c(0,3,6,12,25,50,100,200,400,800,1000),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "fireseason",
       name = "Fire Season Length",
       type = "annual",
@@ -410,7 +410,7 @@ veg.quantities <- list(
       cuts = seq(0, 365, 5),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "firesl",
       name = "Fire Season Length",
       type = "annual",
@@ -419,7 +419,7 @@ veg.quantities <- list(
       cuts = seq(0, 365, 5),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "burntarea",
       name = "Annual Fraction Burned",
       type = "annual",
@@ -428,7 +428,7 @@ veg.quantities <- list(
       cuts = seq(0, 1.0, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "burntfraction",
       name = "Annual Fraction Burned",
       type = "annual",
@@ -437,7 +437,7 @@ veg.quantities <- list(
       cuts = seq(0, 1.0, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "tot_runoff",
       name = "Annual Total Runoff",
       type = "annual",
@@ -446,7 +446,7 @@ veg.quantities <- list(
       cuts = seq(0, 1000, 50),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "vmaxnlim",
       name = "Annual Nitrogen Limitation",
       type = "PFT",
@@ -455,7 +455,7 @@ veg.quantities <- list(
       cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "bioclim",
       name = "Bioclimatic Limit Variables",
       type = "irregular",
@@ -464,7 +464,7 @@ veg.quantities <- list(
       cuts = seq(-1, 3, 0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "gdd5",
       name = "Growing Degree Days (5deg C base)",
       type = "annual",
@@ -474,7 +474,7 @@ veg.quantities <- list(
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   
-  new("VegQuant",
+  new("Quantity",
       id = "aleafshed",
       name = "Number times leafs shed per year",
       type = "PFT",
@@ -489,7 +489,7 @@ veg.quantities <- list(
   ############################# LPJ-GUESS-SPITFIRE QUANTITIES #################################
   #############################################################################################
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfirefrac",
       name = "Monthly Burned Area Fraction",
       type = "monthly",
@@ -498,7 +498,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.05),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mtau_l",
       name = "Monthly Residence Time",
       type = "monthly",
@@ -507,7 +507,7 @@ veg.quantities <- list(
       cuts = seq(0,8,0.2),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "pyro_flux",
       name = "Pyrogenic Emmisions",
       type = "irregular",
@@ -515,7 +515,7 @@ veg.quantities <- list(
       colours = fields::tim.colors,
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfireintens",
       name = "Monthly Fire Intensity",
       type = "monthly",
@@ -524,7 +524,7 @@ veg.quantities <- list(
       cuts = seq(0, 5000, 50),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mlivegrass_fuel",
       name = "Mean Monthly Live Grass Fuel",
       type = "monthly",
@@ -533,7 +533,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "m1hr_fuel",
       name = "Mean Monthly 1hr Fuel",
       type = "monthly",
@@ -542,7 +542,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "m10hr_fuel",
       name = "Mean Monthly 10hr Fuel",
       type = "monthly",
@@ -551,7 +551,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "m100hr_fuel",
       name = "Mean Monthly 100hr Fuel",
       type = "monthly",
@@ -560,7 +560,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "m1000hr_fuel",
       name = "Mean Monthly 1000hr Fuel",
       type = "monthly",
@@ -569,7 +569,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mlivegrass_cc",
       name = "Mean Monthly Live Grass Combustion Completeness",
       type = "monthly",
@@ -578,7 +578,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "m1hr_cc",
       name = "Mean Monthly 1hr Combustion Completeness",
       type = "monthly",
@@ -587,7 +587,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "m10hr_cc",
       name = "Mean Monthly 10hr Combustion Completeness",
       type = "monthly",
@@ -596,7 +596,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id ="m100hr_cc",
       name = "Mean Monthly 100hr Combustion Completeness",
       type = "monthly",
@@ -605,7 +605,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "m1000hr_cc",
       name = "Mean Monthly 1000hr Combustion Completeness",
       type = "monthly",
@@ -614,7 +614,7 @@ veg.quantities <- list(
       cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "afdays",
       name = "Fire Days per Year",
       type = "annual",
@@ -623,7 +623,7 @@ veg.quantities <- list(
       cuts = seq(0, 366, 12),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mavenest",
       name = "Average Monthly Nesterov",
       type = "monthly",
@@ -632,7 +632,7 @@ veg.quantities <- list(
       cuts = seq(0, 100000, 5000),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mdlm_livegrass",
       name = "Monthly Litter Moisture of Live Grass",
       type = "monthly",
@@ -641,7 +641,7 @@ veg.quantities <- list(
       cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mdlm_deadfuel",
       name = "Monthly Litter Moisture of Dead Fuel",
       type = "monthly",
@@ -650,7 +650,7 @@ veg.quantities <- list(
       cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "meff_wind",
       name = "Monthly Effective Windspeed",
       type = "monthly",
@@ -659,7 +659,7 @@ veg.quantities <- list(
       cuts = seq(0, 100, 0.2),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mnfdi",
       name = "Monthly Nesterov Fire Danger Index",
       type = "monthly",
@@ -668,7 +668,7 @@ veg.quantities <- list(
       cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mFBD",
       name = "Monthly Fuel Bulk Density",
       type = "monthly",
@@ -677,7 +677,7 @@ veg.quantities <- list(
       cuts = seq(0, 30, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mSAV",
       name = "Monthly Surface Area to Volume Ratio",
       type = "monthly",
@@ -686,7 +686,7 @@ veg.quantities <- list(
       cuts = seq(25, 100, 5),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mMoE",
       name = "Monthly Moisture of Extinction",
       type = "monthly",
@@ -695,7 +695,7 @@ veg.quantities <- list(
       cuts = seq(0.2, 0.4, 0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mmcont",
       name = "Monthly Fuel Moisture Content",
       type = "monthly",
@@ -704,7 +704,7 @@ veg.quantities <- list(
       cuts = seq(0, 1, 0.05),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfire_durat",
       name = "Monthly Fire Duration",
       type = "monthly",
@@ -713,7 +713,7 @@ veg.quantities <- list(
       cuts = seq(0, 250, 5),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mscorch_height",
       name = "Monthly Scorch Height",
       type = "monthly",
@@ -722,7 +722,7 @@ veg.quantities <- list(
       cuts = seq(0, 30, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mros",
       name = "Monthly Rate of Spread",
       type = "monthly",
@@ -731,7 +731,7 @@ veg.quantities <- list(
       cuts = seq(0, 30, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfire_size",
       name = "Monthly Fire Size",
       type = "monthly",
@@ -740,7 +740,7 @@ veg.quantities <- list(
       cuts = seq(0, 100, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mhuman_ign",
       name = "Monthly average of human ignition rate",
       type = "monthly",
@@ -749,7 +749,7 @@ veg.quantities <- list(
       cuts = seq(0, 100, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mlightning_ign",
       name = "Monthly average of lightning ignition rate",
       type = "monthly",
@@ -758,7 +758,7 @@ veg.quantities <- list(
       cuts = seq(0, 5, 0.1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfireday_duration",
       name = "Monthly Fire Duration (Fire Days Only)",
       type = "monthly",
@@ -767,7 +767,7 @@ veg.quantities <- list(
       cuts = seq(0, 250, 5),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfireday_scorch_height",
       name = "Monthly Scorch Height (Fire Days Only)",
       type = "monthly",
@@ -776,7 +776,7 @@ veg.quantities <- list(
       cuts = seq(0, 30, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfireday_intensity",
       name = "Monthly Fire Intensity (Fire Days Only)",
       type = "monthly",
@@ -785,7 +785,7 @@ veg.quantities <- list(
       cuts = seq(0, 500000, 5000),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfireday_nesterov",
       name = "Monthly Nesterov (Fire Days Only)",
       type = "monthly",
@@ -794,7 +794,7 @@ veg.quantities <- list(
       cuts = seq(0, 5000000, 5000),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "mfireday_residence_time",
       name = "Monthly Residence Time (Fire Days Only)",
       type = "monthly",
@@ -803,7 +803,7 @@ veg.quantities <- list(
       cuts = seq(0, 10, 0.1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
       id = "allocation_fails",
       name = "Monthly Allocation Fails",
       type = "annual",
@@ -812,7 +812,7 @@ veg.quantities <- list(
       cuts = seq(0,31,1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
                            id = "allocation_iters",
                            name = "Monthly Iteration To Allocation Fire",
                            type = "annual",
@@ -821,7 +821,7 @@ veg.quantities <- list(
                            cuts = seq(0,20,1),
                            model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
                 id = "mfuel",
                 name = "Monthly Fuel",
                 type = "monthly",
@@ -831,7 +831,7 @@ veg.quantities <- list(
                 aggregate.method = "mean",
                 model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
                     id = "mfinefuel",
                     name = "Monthly Fine Fuel",
                     type = "monthly",
@@ -841,7 +841,7 @@ veg.quantities <- list(
                     aggregate.method = "mean",
                     model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
                     id = "mleaffuel",
                     name = "Monthly Leaf Fuel",
                     type = "monthly",
@@ -852,7 +852,7 @@ veg.quantities <- list(
                     model = c("LPJ-GUESS-SPITFIRE")),
   
   
-  new("VegQuant",
+  new("Quantity",
                     id = "mfiredays",
                     name = "Monthly sum of daily fire probabilites",
                     type = "monthly",
@@ -862,7 +862,7 @@ veg.quantities <- list(
                     aggregate.method = "sum",
                     model = c("LPJ-GUESS-SPITFIRE")),
   
-  new("VegQuant",
+  new("Quantity",
                          id = "mfiredaysfine",
                          name = "Monthly sum of daily fire probabilites (based on fine fuel threshold)",
                          type = "monthly",

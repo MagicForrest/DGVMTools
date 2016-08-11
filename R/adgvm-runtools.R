@@ -50,7 +50,7 @@
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}
 #' @import ncdf4
 #' @keywords internal
-#' @seealso \code{getVegQuantity_aDGVM_Scheme1}
+#' @seealso \code{getQuantity_aDGVM_Scheme1}
 convertYearlyScheme1 <- function( runid, fire, directory )
 {
 	fname <- paste(directory, "/pop_", runid, "_", fire, ".nc", sep="" )
@@ -138,7 +138,7 @@ convertYearlyScheme1 <- function( runid, fire, directory )
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}
 #' @import ncdf4
 #' @keywords internal
-#' @seealso \code{getVegQuantity_aDGVM_Scheme2}
+#' @seealso \code{getQuantity_aDGVM_Scheme2}
 #' 
 convertYearlyScheme2 <- function( runid, fire, directory )
 {
@@ -230,7 +230,7 @@ convertYearlyScheme2 <- function( runid, fire, directory )
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}
 #' @import ncdf4
 #' @keywords internal
-#' @seealso \code{getVegQuantity_aDGVM_Scheme1}
+#' @seealso \code{getQuantity_aDGVM_Scheme1}
 convertMonthlyScheme1 <- function( runid, fire, directory )
 {
 	fname <- paste( "~/", directory, "/pop_", runid, "_", fire, ".nc", sep="" )
@@ -311,14 +311,14 @@ convertMonthlyScheme1 <- function( runid, fire, directory )
 #' Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
 #' Simple scheme, classifies only as tree or grass based on only the pop file, doesn't open the trait file.
 #' 
-#' @param run A \code{VegRun}
+#' @param run A \code{ModelRun}
 #' @param period A \code{TemporalExtent} object to define the period over which to average.
 #' @param variable A character string specifying which variable to get, can be "lai" or "agb"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ncdf4
-#' @seealso \code{getVegQuantity_aDGVM_Scheme2}
-getVegQuantity_aDGVM_Scheme1 <- function(run, period, variable)
+#' @seealso \code{getQuantity_aDGVM_Scheme2}
+getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
 {
   fname <- file.path(run@run.dir, paste("pop_", run@id,".nc", sep=""))
 
@@ -382,14 +382,14 @@ getVegQuantity_aDGVM_Scheme1 <- function(run, period, variable)
 #' Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
 #' Classifies as evergreen tree, deciduous tree or grass based on the pop file and the trait file.
 #' 
-#' @param run A \code{VegRun}
+#' @param run A \code{ModelRun}
 #' @param period A \code{TemporalExtent} object to define the period over which to average.
 #' @param variable A character string specifying which variable to get, only "agb" currently supported
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ncdf4
-#' @seealso \code{getVegQuantity_aDGVM_Scheme1}
-getVegQuantity_aDGVM_Scheme2 <- function(run, period, variable)
+#' @seealso \code{getQuantity_aDGVM_Scheme1}
+getQuantity_aDGVM_Scheme2 <- function(run, period, variable)
 {
   fname <- file.path(run@run.dir, paste("trait_", run@id,".nc", sep=""))
   

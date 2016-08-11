@@ -7,7 +7,7 @@
 #' Sets keys on data.table in order Lon, Lat, Year (if present)
 #' 
 #' Keys should be set on all data.table object for sorts, joins, DGVMTool-defined operators etc.  
-#'  This function should be called on a data.table stored in a VegObject after it has been created,
+#'  This function should be called on a data.table stored in a ModelObject after it has been created,
 #'  including if it was created by avergaing another data.table because it seems as keys are not conserved.
 #'
 #' @param dt The data.table for which to set the key
@@ -28,22 +28,22 @@ setKeyDGVM <- function(dt){
 
 ######## DEFINE A VEGRUN OBJECT 
 
-#' Define a VegRun object, setting up all the required metadata (only). 
+#' Define a ModelRun object, setting up all the required metadata (only). 
 #' 
-#' This function is preferred to a \code{new("VegRunInfo",...)} initialisation followed by  \code{new("VegRun",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
+#' This function is preferred to a \code{new("ModelRunInfo",...)} initialisation followed by  \code{new("ModelRun",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
 #'
-#' Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as VegObjects and added to a VegRun object, are added built with later with other commands and added to \code{VegRun} command using \code{addToVegRun}
+#' Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as ModelObjects and added to a ModelRun object, are added built with later with other commands and added to \code{ModelRun} command using \code{addToModelRun}
 #'
-#' @param ...  The parameters are the slots of a VegRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
+#' @param ...  The parameters are the slots of a ModelRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 #' compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.
-#' @return A VegRun object, with metadata defined by empty data slots.s
+#' @return A ModelRun object, with metadata defined by empty data slots.s
 #' @export
-#' @seealso VegRun, VegRunInfo 
+#' @seealso ModelRun, ModelRunInfo 
 
-defineVegRun <- function(...){
+defineModelRun <- function(...){
   
-  # make a VegRunInfo object from the supplied meta data
-  info <- new("VegRunInfo", ...)
+  # make a ModelRunInfo object from the supplied meta data
+  info <- new("ModelRunInfo", ...)
   
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
   if(length(info@pft.set) == 0) info@pft.set <- NULL
@@ -60,8 +60,8 @@ defineVegRun <- function(...){
   if(length(info@landuseSimulated) == 0)  info@landuseSimulated <- FALSE
   
   
-  # return a VegRun object with empty data fields but meta data filled  
-  return(new("VegRun",
+  # return a ModelRun object with empty data fields but meta data filled  
+  return(new("ModelRun",
              info))
   
   
@@ -70,17 +70,17 @@ defineVegRun <- function(...){
 
 ############# ADD AN OBJECT TO A VEGRUN ######################################
 
-#' Add an object (either a \code{VegObject} or a  \code{SpatialComparison}) to a \code{VegRun} object to be use later.  
+#' Add an object (either a \code{ModelObject} or a  \code{SpatialComparison}) to a \code{ModelRun} object to be use later.  
 #' 
 #' Stores an object in its run for later calculations, plotting, comparisons.
 #' 
-#' @param object Object to add to the \code{VegRun},   The parameters are the slots of a VegRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
+#' @param object Object to add to the \code{ModelRun},   The parameters are the slots of a ModelRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 #' compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.
-#' @param run The \code{VegRun} object to which the object argument should be added
-#' @return A VegRun object the the object argument added
+#' @param run The \code{ModelRun} object to which the object argument should be added
+#' @return A ModelRun object the the object argument added
 #' @export
-#' @seealso VegRun, VegRunInfo 
-addToVegRun <- function(object, run){
+#' @seealso ModelRun, ModelRunInfo 
+addToModelRun <- function(object, run){
   
   # Add a BiomeComaprison or RasterComparison to the list in the benchmarks slot 
   if(is.SpatialComparison(object)) {
@@ -92,24 +92,24 @@ addToVegRun <- function(object, run){
     
   }
   
-  # Add a VegObject to the list in the objects slot 
-  else if(is.VegObject(object)) {
+  # Add a ModelObject to the list in the objects slot 
+  else if(is.ModelObject(object)) {
     
     # Check that run ids match, if not, stop becuase something is really wrong
     if(run@id != object@run@id){
-      stop(paste("Adding VegObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". If you are doing something funky, like averaging VegObjects from different runs to make a a VegRun represnting an ensmble mean, then make sure that the ids match. Otherwise you will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrong to you." , sep = ""))
+      stop(paste("Adding ModelObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". If you are doing something funky, like averaging ModelObjects from different runs to make a a ModelRun represnting an ensmble mean, then make sure that the ids match. Otherwise you will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrong to you." , sep = ""))
     }
     
-    veg.objects.list <- run@objects
-    veg.objects.list[[object@id]] <- object
-    run@objects <- veg.objects.list
-    rm(veg.objects.list)
+    model.objects.list <- run@objects
+    model.objects.list[[object@id]] <- object
+    run@objects <- model.objects.list
+    rm(model.objects.list)
     
   }
   
   else{
     
-    warning(paste("Cannot add object of class", class(object), "to a VegRun object", sep = " "))
+    warning(paste("Cannot add object of class", class(object), "to a ModelRun object", sep = " "))
     
   }
   
@@ -120,10 +120,10 @@ addToVegRun <- function(object, run){
 
 ############################## MAKE THE 'id' STRING FOR A VEGOBJECT
 #
-#' Make an ID string for a \code{VegObject}
+#' Make an ID string for a \code{ModelObject}
 #' 
 #' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-#' for use in the \code{id} slot of a \code{VegObject} and for filenames etc.
+#' for use in the \code{id} slot of a \code{ModelObject} and for filenames etc.
 #' 
 #' @param var.string Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"
 #' @param temporal.extent The temporal extent of this object if it has been cropped from the orginal duration, otherwise NULL
@@ -135,32 +135,32 @@ addToVegRun <- function(object, run){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 
-makeVegObjectID <- function(var.string, temporal.extent = NULL, spatial.extent = NULL, temporally.averaged = FALSE, spatially.averaged = FALSE){
+makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent = NULL, temporally.averaged = FALSE, spatially.averaged = FALSE){
   
   
-  vegobject.id <- var.string
-  if(spatially.averaged)  vegobject.id <- paste(vegobject.id, "SA", sep = ".")
-  if(!is.null(spatial.extent)) vegobject.id <- paste(vegobject.id, spatial.extent@id, sep = ".")
-  if(temporally.averaged)  vegobject.id <- paste(vegobject.id, "TA", sep = ".")
-  if(!is.null(temporal.extent)) vegobject.id <- paste(vegobject.id, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep =".")
+  model.object.id <- var.string
+  if(spatially.averaged)  model.object.id <- paste(model.object.id, "SA", sep = ".")
+  if(!is.null(spatial.extent)) model.object.id <- paste(model.object.id, spatial.extent@id, sep = ".")
+  if(temporally.averaged)  model.object.id <- paste(model.object.id, "TA", sep = ".")
+  if(!is.null(temporal.extent)) model.object.id <- paste(model.object.id, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep =".")
   
-  return(vegobject.id)
+  return(model.object.id)
   
 }
 
 ################################# GET TEMPORALLY-AVERAGED DATA #########################################
 
-#' Get a temporally-averaged \code{VegObject}
+#' Get a temporally-averaged \code{ModelObject}
 #' 
-#' Given a \code{VegRun} object, a \code{VegQuant} object and a \code{TemporalExtent} object, return an appropriate temporally-averaged \code{VegObject} oject for that run, quantity and time period over the whole simulation domain.
+#' Given a \code{ModelRun} object, a \code{Quantity} object and a \code{TemporalExtent} object, return an appropriate temporally-averaged \code{ModelObject} oject for that run, quantity and time period over the whole simulation domain.
 #' 
-#' @param run The \code{VegRun} object for which the temporally-averaged \code{VegObject} should be built (eg. "lai")
-#' @param var The quantity (either a \code{VegQuant} or a string containing its \code{id}) 
+#' @param run The \code{ModelRun} object for which the temporally-averaged \code{ModelObject} should be built (eg. "lai")
+#' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param period The time period (as a \code{TemporalExtent} over which the data is to be averaged)
-#' @param ... additional arguments passed to \code{getVegObject}, for example \code{rereadfile}, and \code{store.internally}.
-#' @return A temporally averaged\code{VegObject}  but with no-spatial averaging or cropping (ie. include complete original simulation domain). In other words, a map!
+#' @param ... additional arguments passed to \code{getModelObject}, for example \code{rereadfile}, and \code{store.internally}.
+#' @return A temporally averaged\code{ModelObject}  but with no-spatial averaging or cropping (ie. include complete original simulation domain). In other words, a map!
 #' @export
-#' @seealso \code{getVegObject}, \code{getVegTemporal}
+#' @seealso \code{getModelObject}, \code{getVegTemporal}
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #'  
 getVegSpatial <- function(run,
@@ -169,7 +169,7 @@ getVegSpatial <- function(run,
                           ...){
   
   return(
-    getVegObject(run, 
+    getModelObject(run, 
                  var, 
                  spatial.extent = NULL, 
                  spatially.average = FALSE,
@@ -185,17 +185,17 @@ getVegSpatial <- function(run,
 ################################# GET SPATIALLY-AVERAGED DATA #########################################
 
 
-#' Get a spatially-averaged \code{VegObject}
+#' Get a spatially-averaged \code{ModelObject}
 #' 
-#' Given a \code{VegRun} object, a \code{VegQuant} object and a \code{SpatialExtent} object, return an appropriate spatially-averaged \code{VegObject} oject for that run, quantity and time period over the whole simulation domain.
+#' Given a \code{ModelRun} object, a \code{Quantity} object and a \code{SpatialExtent} object, return an appropriate spatially-averaged \code{ModelObject} oject for that run, quantity and time period over the whole simulation domain.
 #' 
-#' @param run The \code{VegRun} object for which the spatially-averaged \code{VegObject} should be built (eg. "lai")
-#' @param var The quantity (either a \code{VegQuant} or a string containing its \code{id}) 
+#' @param run The \code{ModelRun} object for which the spatially-averaged \code{ModelObject} should be built (eg. "lai")
+#' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
-#' @param ... additional arguments passed to \code{getVegObject}, for example \code{rereadfile}, \code{area.weighted} and \code{store.internally}.
-#' @return A spatially averaged\code{VegObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
+#' @param ... additional arguments passed to \code{getModelObject}, for example \code{rereadfile}, \code{area.weighted} and \code{store.internally}.
+#' @return A spatially averaged\code{ModelObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
 #' @export
-#' @seealso \code{getVegObject}, \code{getVegspatial}
+#' @seealso \code{getModelObject}, \code{getVegspatial}
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 getVegTemporal <- function(run,
@@ -204,7 +204,7 @@ getVegTemporal <- function(run,
                            ...){
   
   return(
-    getVegObject(run, 
+    getModelObject(run, 
                  var, 
                  spatial.extent = spatial.extent, 
                  spatially.average = TRUE,
@@ -220,34 +220,34 @@ getVegTemporal <- function(run,
 
 ################################# GET VEGOBJECT - Does a lot! #########################################
 #
-#' Get a \code{VegObject}, optionally for spatial/temporal averaging/cropping 
+#' Get a \code{ModelObject}, optionally for spatial/temporal averaging/cropping 
 #' 
-#' Given a \code{VegRun} object a \code{VegQuant} object, return an appropriate spatially-averaged \code{VegObject} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
+#' Given a \code{ModelRun} object a \code{Quantity} object, return an appropriate spatially-averaged \code{ModelObject} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
 #' 
-#' Note that because there are two types of averaging available, the resulting \code{VegRun} obhect can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
+#' Note that because there are two types of averaging available, the resulting \code{ModelRun} obhect can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
 #' Also not that the data is stored internal as a data.table object, but this is mostly not important to the user.
 #'   
-#' @param run The \code{VegRun} object for which the spatially-averaged \code{VegObject} should be built (eg. "lai")
-#' @param var The quantity (either a \code{VegQuant} or a string containing its \code{id}) 
+#' @param run The \code{ModelRun} object for which the spatially-averaged \code{ModelObject} should be built (eg. "lai")
+#' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param temporal.extent The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)
 #' @param temporally.average Whether or not to temporally average (logical)
 #' @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
 #' @param spatially.average Whether or not to spatially average (logical)
-#' @param reread.file If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
+#' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param area.weighted If TRUE, perform weighting by gridcell area when doing spatial averaging
-#' @param write If TRUE, write the data of the \code{VegObject} to disk as text file.
-#' @param store.internally If TRUE store the resulting \code{VegObject} in the \code{VegRun} for using later
-#' @param store.full If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{VegObjects} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!
+#' @param write If TRUE, write the data of the \code{ModelObject} to disk as text file.
+#' @param store.internally If TRUE store the resulting \code{ModelObject} in the \code{ModelRun} for using later
+#' @param store.full If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{ModelObjects} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!
 #' @param adgvm.scheme In the case of analysing an aDGVM run, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.
 #' 
-#' @return A spatially averaged\code{VegObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
+#' @return A spatially averaged\code{ModelObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
 #' @export
 #' @import data.table raster
-#' @seealso \code{getVegObject}, \code{getVegspatial}
+#' @seealso \code{getModelObject}, \code{getVegspatial}
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-getVegObject <- function(run, 
+getModelObject <- function(run, 
                          var, 
                          temporal.extent = NULL, 
                          temporally.average = FALSE, 
@@ -255,7 +255,7 @@ getVegObject <- function(run,
                          spatially.average = FALSE,
                          area.weighted=TRUE,
                          write = FALSE, 
-                         reread.file = TRUE, 
+                         read.full = TRUE, 
                          verbose = TRUE, 
                          store.internally = FALSE,
                          store.full = FALSE,
@@ -267,7 +267,7 @@ getVegObject <- function(run,
   
   ### CONVERT STRING TO VEGQUANT
   if(class(var) == "character") {
-    quant <- lookupVegQuant(var, run@model)
+    quant <- lookupQuantity(var, run@model)
     var.string <- var
   }
   else {
@@ -276,47 +276,47 @@ getVegObject <- function(run,
   }
   
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
-  vegobject.id <- makeVegObjectID(var.string, temporal.extent, spatial.extent, temporally.average, spatially.average)
-  file.name <- file.path(run@run.dir, paste(vegobject.id, "DGVMData", sep = "."))
+  model.object.id <- makeModelObjectID(var.string, temporal.extent, spatial.extent, temporally.average, spatially.average)
+  file.name <- file.path(run@run.dir, paste(model.object.id, "DGVMData", sep = "."))
   
   
   
   ### CASE 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE VEGRUN IN MEMORY
-  if(vegobject.id %in% names(run@objects)){
+  if(model.object.id %in% names(run@objects)){
     
     # if it is present it in memory then can be returned directly
-    if(verbose) message(paste("Exact VegObject (with id = ", vegobject.id, ") already found in memory for this VegRun, so using that.", sep = ""))
-    return(run@objects[[vegobject.id]])
+    if(verbose) message(paste("Exact ModelObject (with id = ", model.object.id, ") already found in memory for this ModelRun, so using that.", sep = ""))
+    return(run@objects[[model.object.id]])
     
   }
   
   
   
   ### CASE 2 - USE THE PREAVERAGED/CROPPED VEGOBJECT FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
-  if(file.exists(paste(file.name)) & !reread.file){
+  if(file.exists(paste(file.name)) & !read.full){
     
     # get the object from disk
-    if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and reread.file not selected) so reading it from disk and using that.",  sep = " "))}
-    vegobject <- readRDS(file.name)
+    if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
+    model.object <- readRDS(file.name)
     
-    # Update the run object, that might have (legitimately) changed compared to the id that was used when this veg object was created
+    # Update the run object, that might have (legitimately) changed compared to the id that was used when this model.object was created
     # for example it might be assigned a new id.
-    vegobject@run <- run
+    model.object@run <- run
     
     
     # Check that the spatial extent matches before returning
     # Note that there are various cases to check here (the full spatial extent and specifically defined extents)
     
-    if(is.null(spatial.extent) & vegobject@spatial.extent@id == "FullDomain"
-       | identical(spatial.extent, vegobject@spatial.extent)){
-      if(store.internally) {run <<- addToVegRun(vegobject, run)}
-      return(vegobject)
+    if(is.null(spatial.extent) & model.object@spatial.extent@id == "FullDomain"
+       | identical(spatial.extent, model.object@spatial.extent)){
+      if(store.internally) {run <<- addToModelRun(model.object, run)}
+      return(model.object)
       
     }  
     
-    # Otherwise we must discard this VegObject and we need to re-average (and maybe also re-read) using the cases below 
+    # Otherwise we must discard this ModelObject and we need to re-average (and maybe also re-read) using the cases below 
     message(paste("Details of SpatialExtent",  spatial.extent@id, "didn't match.  So file on disk ignored and the original data is being re-read"))
-    rm(vegobject)
+    rm(model.object)
     gc()
     
   }
@@ -346,7 +346,7 @@ getVegObject <- function(run,
     
     ### !!! CALL MODEL SPECIFIC FUNTIONS HERE !!!
     
-    # If model is LPJ-GUESS(-SPITFIRE) and the required VegQuant is defined for LPJ-GUESS(-SPITFIRE)
+    # If model is LPJ-GUESS(-SPITFIRE) and the required Quantity is defined for LPJ-GUESS(-SPITFIRE)
     if((run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") & ("LPJ-GUESS" %in% quant@model  | "LPJ-GUESS-SPITFIRE" %in% quant@model)) {
       
       if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
@@ -356,11 +356,11 @@ getVegObject <- function(run,
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
     
-    # If model is aDGVM and the required VegQuant is defined for aDGVM
+    # If model is aDGVM and the required Quantity is defined for aDGVM
     else if(run@model == "aDGVM" & "aDGVM" %in% quant@model) {
       
-      if(adgvm.scheme == 1) this.dt <- data.table(getVegQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
-      if(adgvm.scheme == 2) this.dt <- data.table(getVegQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
+      if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
+      if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
       setKeyDGVM(this.dt)
       
     } # END IF aDGVM
@@ -370,7 +370,7 @@ getVegObject <- function(run,
       
       if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE"){
         
-        this.dt <- getStandardVegQuant_LPJ(run, quant, verbose = TRUE)
+        this.dt <- getStandardQuantity_LPJ(run, quant, verbose = TRUE)
       }
       
       else if(run@model == "aDGVM"){
@@ -387,7 +387,7 @@ getVegObject <- function(run,
     
     else {
       
-      stop(paste0("The VegQuant ", quant@id, " is defined for models ", paste(quant@models, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", run@model, ").  Please check this."))
+      stop(paste0("The Quantity ", quant@id, " is defined for models ", paste(quant@models, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", run@model, ").  Please check this."))
       
       
     }
@@ -405,7 +405,7 @@ getVegObject <- function(run,
       
       # Build the full object
       year.range <- range(this.dt[,Year])
-      vegobject.full <- new("VegObject",
+      model.object.full <- new("ModelObject",
                             id = var.string,
                             data = this.dt,
                             quant = quant,
@@ -421,11 +421,11 @@ getVegObject <- function(run,
                             is.site = FALSE,
                             is.spatially.averaged = FALSE,
                             is.temporally.averaged = FALSE,
-                            run = as(run, "VegRunInfo"))
+                            run = as(run, "ModelRunInfo"))
       
       # name and store
-      #names(vegobject.full) <- var.string
-      run <<- addToVegRun(vegobject.full, run)
+      #names(model.object.full) <- var.string
+      run <<- addToModelRun(model.object.full, run)
       
     } # end if(store.full)
     
@@ -495,8 +495,8 @@ getVegObject <- function(run,
   
   
   ### BUILD THE FINAL VEGOBJECT, STORE IT IF REQUESTED AND RETURN IT
-  vegobject <- new("VegObject",
-                   id = vegobject.id,
+  model.object <- new("ModelObject",
+                   id = model.object.id,
                    data = this.dt,
                    quant = quant,
                    spatial.extent = spatial.extent,
@@ -504,22 +504,22 @@ getVegObject <- function(run,
                    is.site = is.site,
                    is.spatially.averaged = spatially.average,
                    is.temporally.averaged = temporally.average,
-                   run = as(run, "VegRunInfo"))
+                   run = as(run, "ModelRunInfo"))
   
   
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMData object...")}
-    saveRDS(vegobject, file = file.name)
+    saveRDS(model.object, file = file.name)
     if(verbose) {message("...done.")}
   }
   
   ### ADD TO THE VEGRUN OBJECT IF REQUESTED
   if(store.internally) {
-    run <<- addToVegRun(vegobject, run)
+    run <<- addToModelRun(model.object, run)
   }
   
-  return(vegobject)
+  return(model.object)
   
 }
 
@@ -528,12 +528,12 @@ getVegObject <- function(run,
 #
 #' Prepares data as a raster object for plotting.
 #' 
-#' Converts a data.table, VegObject or an Spatial*-object to Raster object, also subsetting the requested layers.  
+#' Converts a data.table, ModelObject or an Spatial*-object to Raster object, also subsetting the requested layers.  
 #' It can also handle a RasterLayber/Stack/Brick, in which case the only processing done is the subsetting since the data is already in Raster form.
-#' This is generally called in the \code{plotVegMaps} function (or potentially before any use of the raster::spplot and raster::plot functions),
+#' This is generally called in the \code{plotLayer} function (or potentially before any use of the raster::spplot and raster::plot functions),
 #' but can be useful in and of itself.
 #'   
-#' @param input.data data.table, VegObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
+#' @param input.data data.table, ModelObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
 #' @param layers The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.
 #' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats,  when converting gridded table to a raster, in the case the the gridded data is not commatters for uneven
 #' @param grid.topology A character string defining the grid topology when going from a table to raster, used in a call to SpatialPixels 
@@ -546,8 +546,8 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   this.class = class(input.data)[1]
   
   ###  Define the layers we are pulling out
-  # for VegObject - note could define a methods "names" do cover this exception
-  if(is.VegObject(input.data) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
+  # for ModelObject - note could define a methods "names" do cover this exception
+  if(is.ModelObject(input.data) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
   # for data.table or rasters
   else if(is.null(layers) | layers[1] == "all") {layers = names(input.data)}
   
@@ -557,9 +557,9 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
     print("If error check here: promoteToRaster in veg-runtools.R")
     data.raster <- brick(input.data, layers)
   }
-  ### If data.table or VegObject (which contains a data.table) 
+  ### If data.table or ModelObject (which contains a data.table) 
   # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table" | is.VegObject(input.data)){
+  else if(this.class == "data.table" | is.ModelObject(input.data)){
     
     # first make a SpatialPointsDataFrame
     
@@ -567,7 +567,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
       data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = grid.topology)
     }
     
-    if(is.VegObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
+    if(is.ModelObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
     
     # now convert to raster
     if(length(layers) == 1){
@@ -854,32 +854,36 @@ getExtentFromDT <- function(dt){
 }
 
 
-#' Average VegObjects provided as a list
+#' Average ModelObjects provided as a list
 #' 
-#' Useful for averaging model ensembles, replicate simulations etc.  Fails with an error message if the supplied VegObjects don't have the same fields
+#' Useful for averaging model ensembles, replicate simulations etc.  
+#' Note that since you can supply the function, you don't actually need to average, you can also do, for example, \code{max}, \code{min}, \code{sd}, etc.  
+#' Fails with an error message if the supplied ModelObjects don't have the same fields
 #' 
-#' @param list.of.vegobjects The VegObjects that you want to average, stored in a list.
-#' @param run Either a VegRun object which provides the metadata about the newly created "run" (representing, say, the ensemble mean) or \code{NULL}, 
+#' @param list.of.model.objects The ModelObjects that you want to average, stored in a list.
+#' @param run Either a ModelRun object which provides the metadata about the newly created "run" (representing, say, the ensemble mean) or \code{NULL}, 
 #' in which case the function just returns a data.table with the average values.
+#' @param method The function which you want to use.  Is \code{mean} by default, but it can be anything that operates on a vector of numbers.  
+#' Useful options might be \code{max},  \code{min} and \code{sd}.  
 #'  
-#' The function currently does no checks that the spatial extent, temporal extent and VegQuant are consistent between runs.  The resulting VegObject simple takes these things
+#' The function currently does no checks that the spatial extent, temporal extent and Quantity are consistent between runs.  The resulting ModelObject simple takes these things
 #' from the first object from list.of.vegruns.  It is therefore up to the user not do anything silly and average quantites, or spatial or temporal extents that don't makes sense.
 #'          
 #' @export
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @return Either a VegObject (if a VegRun has been supplied to provide the necessary meta-data), or a data.table (if no meta-data has been supplies in the form of a VegRun)
+#' @return Either a ModelObject (if a ModelRun has been supplied to provide the necessary meta-data), or a data.table (if no meta-data has been supplies in the form of a ModelRun)
 #' 
-averageVegObjects <- function(list.of.vegobjects, run = NULL) {
+averageModelObjects <- function(list.of.model.objects, run = NULL, method = mean) {
   
   
   # make lists of what is to be processed, and check that the columns are the same (if not fail!)
   list.of.dts <- list()
-  for(object in list.of.vegobjects){
+  for(object in list.of.model.objects){
     list.of.dts[[paste(object@run@id, object@id, sep = ".")]] <- object@data
   }
   for(this.dt in list.of.dts) {
-    if(!identical(names(this.dt), names(list.of.dts[[1]]))) stop("You are trying to average veg objects with different layers, this won't work!")
+    if(!identical(names(this.dt), names(list.of.dts[[1]]))) stop("You are trying to average model.objects with different layers, this won't work!")
   }
   
   
@@ -893,31 +897,31 @@ averageVegObjects <- function(list.of.vegobjects, run = NULL) {
   # do the averaging to make the new data.table and tidy up
   full.dt <- rbindlist(l=list.of.dts)
   setKeyDGVM(full.dt)
-  output.dt <- full.dt[,lapply(.SD, mean), keyby=by.list]
+  output.dt <- full.dt[,lapply(.SD, method), keyby=by.list]
   rm(full.dt, list.of.dts)
   gc()
   
   
-  # if no run is supplied then cannot construct a full VegObject, therefore just return the data.table
+  # if no run is supplied then cannot construct a full ModelObject, therefore just return the data.table
   if(is.null(run)) {
     return(output.dt)
   }
   
-  # else, if a run was provided, make a VegObject and return that
+  # else, if a run was provided, make a ModelObject and return that
   else {
     
-    #  MF TODO: check that the VegObjects we just averaged have the same spatial and temporal properties 
+    #  MF TODO: check that the ModelObjects we just averaged have the same spatial and temporal properties 
     # if they don't, drop an error message
 
     
-    # construct a new VegObject for the average data that we have just calculated based on the first on in the list
+    # construct a new ModelObject for the average data that we have just calculated based on the first on in the list
     # but put in the new run and data
-    new.VegObject <- list.of.vegobjects[[1]]
-    new.VegObject@data <- output.dt
-    new.VegObject@run <- run
+    new.ModelObject <- list.of.model.objects[[1]]
+    new.ModelObject@data <- output.dt
+    new.ModelObject@run <- run
     
     
-    return(new.VegObject)
+    return(new.ModelObject)
   }
   
 }

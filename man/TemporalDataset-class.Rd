@@ -20,7 +20,7 @@ Gathers up the meta-data and data for one particular layer of temporal environme
 
 \item{\code{extent}}{A \code{SpatialExtent} object define the spatial region over which this time series data applies.}
 
-\item{\code{veg.quant}}{A \code{VegQuant} object to describe exactly what this dataset is}
+\item{\code{veg.quant}}{A \code{Quantity} object to describe exactly what this dataset is}
 
 \item{\code{units}}{A character string defining the units in which this data is measured.  Probably obselete because of the units slot in the veg.quant slot}
 }}

@@ -7,11 +7,10 @@
 getAnnualClimate(run = NA, file = NA, operation = "mean",
   temporal.extent = NA, spatial.extent = NA, full = FALSE,
   monthly = FALSE, data.name = NA, lon.name = NA, lat.name = NA,
-  time.name = NA, reread.file = FALSE, write = TRUE, verbose = TRUE,
-  ...)
+  time.name = NA, read.full = FALSE, write = TRUE, verbose = TRUE, ...)
 }
 \arguments{
-\item{run}{a VegRun object, if a VegSpatial object should be returned, otherwise NA}
+\item{run}{a ModelRun object, if a VegSpatial object should be returned, otherwise NA}
 
 \item{file}{path to the netCDF file}
 
@@ -33,7 +32,7 @@ getAnnualClimate(run = NA, file = NA, operation = "mean",
 
 \item{time.name}{Name of the time vector in the netcdf file, if NA it will be guessed}
 
-\item{reread.file}{Recalculate the desired values (default: FALSE)}
+\item{read.full}{Recalculate the desired values (default: FALSE)}
 
 \item{write}{write the calculated values for fture speedup (default: TRUE)}
 
@@ -42,7 +41,7 @@ getAnnualClimate(run = NA, file = NA, operation = "mean",
 \item{...}{further so far ignored parameters}
 }
 \value{
-data.table if no VegRun was given, otherwise a VegObject
+data.table if no ModelRun was given, otherwise a ModelObject
 }
 \description{
 Get Annual values of climate drivers from netCDF files, files must be CF-compliant

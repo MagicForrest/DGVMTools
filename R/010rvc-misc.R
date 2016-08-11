@@ -237,7 +237,7 @@ annual <- all.periods[17]
 
 #' Improved list of objects
 #' 
-#' Because rasters and \code{VegObject}s and so can be quite large, this function is useful for checking how large are the objects you have stored in memory.  
+#' Because rasters and \code{ModelObject}s and so can be quite large, this function is useful for checking how large are the objects you have stored in memory.  
 #'  
 #' @param pos ???
 #' @param pattern Character, to match only certain objects

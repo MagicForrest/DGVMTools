@@ -4,19 +4,19 @@
 \name{export-methods}
 \alias{as.Raster}
 \alias{as.Raster,DataObject-method}
-\alias{as.Raster,VegObject-method}
+\alias{as.Raster,ModelObject-method}
 \alias{as.data.frame.DataObject}
-\alias{as.data.frame.VegObject}
+\alias{as.data.frame.ModelObject}
 \alias{as.data.table.DataObject}
-\alias{as.data.table.VegObject}
+\alias{as.data.table.ModelObject}
 \alias{export-methods}
-\title{Coerce from VegObjects and DataObjects}
+\title{Coerce from ModelObjects and DataObjects}
 \usage{
-\method{as.data.frame}{VegObject}(x, row.names, optional, ...)
+\method{as.data.frame}{ModelObject}(x, row.names, optional, ...)
 
 \method{as.data.frame}{DataObject}(x, row.names, optional, ...)
 
-\method{as.data.table}{VegObject}(x, keep.rownames, ...)
+\method{as.data.table}{ModelObject}(x, keep.rownames, ...)
 
 \method{as.data.table}{DataObject}(x, keep.rownames, ...)
 
@@ -24,10 +24,10 @@ as.Raster(x)
 
 \S4method{as.Raster}{DataObject}(x)
 
-\S4method{as.Raster}{VegObject}(x)
+\S4method{as.Raster}{ModelObject}(x)
 }
 \arguments{
-\item{x}{A VegObject or a DataObject}
+\item{x}{A ModelObject or a DataObject}
 
 \item{row.names}{NULL or a character vector giving the row names for the data frame. Missing values are not allowed.}
 
@@ -40,7 +40,7 @@ basically with the meaning of data.frame(*, check.names = !optional).}
 \item{keep.rownames}{If ... is a matrix or data.frame, TRUE will retain the rownames of that object in a column named rn.}
 }
 \description{
-Functions to coerce VegObjects and DataObjects into other objects (data.frame, data.table, RasterBrick, SpatialPixelsDataFrame)
+Functions to coerce ModelObjects and DataObjects into other objects (data.frame, data.table, RasterBrick, SpatialPixelsDataFrame)
 }
 \details{
 Note that for coercing to a Raster* object (RasterLayer or RasterBrick) the function is called "as.Raster" (capital "R") to avoid conflict with  

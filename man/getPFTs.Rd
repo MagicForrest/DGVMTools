@@ -7,7 +7,7 @@
 getPFTs(input, PFT.data)
 }
 \arguments{
-\item{input}{The data from which to retrieve the PFTs present (data.table, VegObject, or Raster*-object)}
+\item{input}{The data from which to retrieve the PFTs present (data.table, ModelObject, or Raster*-object)}
 
 \item{PFT.data}{A list of PFTs which might be present (ie. a superset of those actually present)}
 }
@@ -15,7 +15,7 @@ getPFTs(input, PFT.data)
 A list of PFT object which are actually present
 }
 \description{
-Extract the PFTs present in some data, given the set of possible PFTs.  The data can be represented as a data.table, VegObject, or Raster*-object.  The 
+Extract the PFTs present in some data, given the set of possible PFTs.  The data can be represented as a data.table, ModelObject, or Raster*-object.  The 
 It does thsi based on the names of the layers/columns of the data
 }
 \author{

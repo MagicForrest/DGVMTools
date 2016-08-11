@@ -7,7 +7,7 @@
 addSeasonalityIndex(input = NULL, colname = "SI", verbose = TRUE)
 }
 \arguments{
-\item{input}{Input data (either data.frame, data.table or VegObject) with at least the month abbreviations as column names.}
+\item{input}{Input data (either data.frame, data.table or ModelObject) with at least the month abbreviations as column names.}
 
 \item{colname}{Name of the new created seasonality index column.}
 

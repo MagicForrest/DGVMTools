@@ -92,10 +92,10 @@ countCategoricalData <- function(original.data, output.raster, categories = NULL
 
 ############################## MAKE THE 'id' STRING FOR A DATASET 
 #
-#' Make an ID string for a \code{VegObject}
+#' Make an ID string for a \code{ModelObject}
 #' 
 #' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-#' for use in the \code{id} slot of a \code{VegObject} and for filenames etc.
+#' for use in the \code{id} slot of a \code{ModelObject} and for filenames etc.
 #' 
 #' @param data.string Character string to describe the dataset
 #' @param units Character string to describe the units in which the data are measured

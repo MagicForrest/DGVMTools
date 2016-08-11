@@ -2,7 +2,7 @@
 % Please edit documentation in R/rvc-plotting.R
 \name{makeOverlay}
 \alias{makeOverlay}
-\title{Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with (for example) plotVegMaps}
+\title{Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with (for example) plotLayer}
 \usage{
 makeOverlay(which, interior.lines = TRUE, lwd = 0.5, col = NULL)
 }
@@ -20,7 +20,7 @@ the name of one of the standard maps in fromt he map packages the packages direc
 a SpatialLines object
 }
 \description{
-Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with (for example) plotVegMaps
+Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with (for example) plotLayer
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}, Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

@@ -2,20 +2,20 @@
 % Please edit documentation in R/veg-processing.R
 \name{addBiomes}
 \alias{addBiomes}
-\title{Perform biome classification using this VegObject}
+\title{Perform biome classification using this ModelObject}
 \usage{
 addBiomes(input, scheme)
 }
 \arguments{
-\item{input}{The VegObject for which to calculate the biomes.}
+\item{input}{The ModelObject for which to calculate the biomes.}
 
 \item{scheme}{The biome scheme to use.}
 }
 \value{
-A VegObject with the biomes added
+A ModelObject with the biomes added
 }
 \description{
-This is very inflexible as it only allows the calcualtion of biomes with only one VegQuant.  This is not suitable for many biomes schemes, 
+This is very inflexible as it only allows the calcualtion of biomes with only one Quantity.  This is not suitable for many biomes schemes, 
 so this will need to be re-written
 }
 \author{

@@ -3,9 +3,9 @@
 \docType{data}
 \name{veg.quantities}
 \alias{veg.quantities}
-\title{Global scope list of all LPJ-GUESS (and SPITFIRE) quantities defined as \code{VegQuant} object 
+\title{Global scope list of all LPJ-GUESS (and SPITFIRE) quantities defined as \code{Quantity} object 
 from the default LPJ-GUESS model config and a few extra.}
-\format{A list of \code{VegQuant} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)}
+\format{A list of \code{Quantity} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)}
 \usage{
 veg.quantities
 }
@@ -18,7 +18,7 @@ Once the package is loaded this is just a standard R list so can be modified and
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \seealso{
-\code{VegQuant}-class
+\code{Quantity}-class
 }
 \keyword{datasets}
 

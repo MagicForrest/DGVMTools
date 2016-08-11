@@ -2,29 +2,29 @@
 % Please edit documentation in R/veg-runtools.R
 \name{getVegSpatial}
 \alias{getVegSpatial}
-\title{Get a temporally-averaged \code{VegObject}}
+\title{Get a temporally-averaged \code{ModelObject}}
 \usage{
 getVegSpatial(run, var, period, ...)
 }
 \arguments{
-\item{run}{The \code{VegRun} object for which the temporally-averaged \code{VegObject} should be built (eg. "lai")}
+\item{run}{The \code{ModelRun} object for which the temporally-averaged \code{ModelObject} should be built (eg. "lai")}
 
-\item{var}{The quantity (either a \code{VegQuant} or a string containing its \code{id})}
+\item{var}{The quantity (either a \code{Quantity} or a string containing its \code{id})}
 
 \item{period}{The time period (as a \code{TemporalExtent} over which the data is to be averaged)}
 
-\item{...}{additional arguments passed to \code{getVegObject}, for example \code{rereadfile}, and \code{store.internally}.}
+\item{...}{additional arguments passed to \code{getModelObject}, for example \code{rereadfile}, and \code{store.internally}.}
 }
 \value{
-A temporally averaged\code{VegObject}  but with no-spatial averaging or cropping (ie. include complete original simulation domain). In other words, a map!
+A temporally averaged\code{ModelObject}  but with no-spatial averaging or cropping (ie. include complete original simulation domain). In other words, a map!
 }
 \description{
-Given a \code{VegRun} object, a \code{VegQuant} object and a \code{TemporalExtent} object, return an appropriate temporally-averaged \code{VegObject} oject for that run, quantity and time period over the whole simulation domain.
+Given a \code{ModelRun} object, a \code{Quantity} object and a \code{TemporalExtent} object, return an appropriate temporally-averaged \code{ModelObject} oject for that run, quantity and time period over the whole simulation domain.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \seealso{
-\code{getVegObject}, \code{getVegTemporal}
+\code{getModelObject}, \code{getVegTemporal}
 }
 

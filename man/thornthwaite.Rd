@@ -5,18 +5,18 @@
 \title{calculate monthly PET, AET, WC, WD based on Thornthwaite}
 \usage{
 thornthwaite(run = NULL, T = NULL, P = NULL, variable = "PET",
-  as = "VegObject")
+  as = "ModelObject")
 }
 \arguments{
-\item{run}{the VegRun object, if desired (see 'as', below).}
+\item{run}{the ModelRun object, if desired (see 'as', below).}
 
-\item{T}{monthly temperature (degree Celcius )VegObject, data.table or data.frame}
+\item{T}{monthly temperature (degree Celcius )ModelObject, data.table or data.frame}
 
 \item{P}{monthly precipitation in mm. Needed for everything without PET.}
 
 \item{variable}{any of PET (potential evapotranspiration), AET (actual evapotranspiration), WC (water content), WD (water deficit)}
 
-\item{as}{desired output type 'data.table', 'data.frame', anything else will try to return a VegObject, which need 'run' to be defined.}
+\item{as}{desired output type 'data.table', 'data.frame', anything else will try to return a ModelObject, which need 'run' to be defined.}
 }
 \value{
 the requested variable in the requested ('as') container

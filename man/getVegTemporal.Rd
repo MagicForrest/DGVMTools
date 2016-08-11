@@ -2,29 +2,29 @@
 % Please edit documentation in R/veg-runtools.R
 \name{getVegTemporal}
 \alias{getVegTemporal}
-\title{Get a spatially-averaged \code{VegObject}}
+\title{Get a spatially-averaged \code{ModelObject}}
 \usage{
 getVegTemporal(run, var, spatial.extent = NULL, ...)
 }
 \arguments{
-\item{run}{The \code{VegRun} object for which the spatially-averaged \code{VegObject} should be built (eg. "lai")}
+\item{run}{The \code{ModelRun} object for which the spatially-averaged \code{ModelObject} should be built (eg. "lai")}
 
-\item{var}{The quantity (either a \code{VegQuant} or a string containing its \code{id})}
+\item{var}{The quantity (either a \code{Quantity} or a string containing its \code{id})}
 
 \item{spatial.extent}{The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)}
 
-\item{...}{additional arguments passed to \code{getVegObject}, for example \code{rereadfile}, \code{area.weighted} and \code{store.internally}.}
+\item{...}{additional arguments passed to \code{getModelObject}, for example \code{rereadfile}, \code{area.weighted} and \code{store.internally}.}
 }
 \value{
-A spatially averaged\code{VegObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
+A spatially averaged\code{ModelObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
 }
 \description{
-Given a \code{VegRun} object, a \code{VegQuant} object and a \code{SpatialExtent} object, return an appropriate spatially-averaged \code{VegObject} oject for that run, quantity and time period over the whole simulation domain.
+Given a \code{ModelRun} object, a \code{Quantity} object and a \code{SpatialExtent} object, return an appropriate spatially-averaged \code{ModelObject} oject for that run, quantity and time period over the whole simulation domain.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \seealso{
-\code{getVegObject}, \code{getVegspatial}
+\code{getModelObject}, \code{getVegspatial}
 }
 

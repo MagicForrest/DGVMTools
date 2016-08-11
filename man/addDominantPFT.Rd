@@ -7,7 +7,7 @@
 addDominantPFT(input, do.all = TRUE, do.tree = FALSE, do.woody = FALSE)
 }
 \arguments{
-\item{input}{The VegObject which is to have the shade tolerance classes combined.}
+\item{input}{The ModelObject which is to have the shade tolerance classes combined.}
 
 \item{do.all}{If TRUE calculate the dominant PFT out of all PFTs}
 
@@ -16,10 +16,10 @@ addDominantPFT(input, do.all = TRUE, do.tree = FALSE, do.woody = FALSE)
 \item{do.woody}{If TRUE calculate teh dominant PFT out of all woody PFTs}
 }
 \value{
-The VegObject with the dominant layers PFTs added
+The ModelObject with the dominant layers PFTs added
 }
 \description{
-Find the dominant PFT (for each point in space and/or time) and stored in the VegObject.  Can be of all PFTs, of all tree PFTs and/or of all woody PFTs 
+Find the dominant PFT (for each point in space and/or time) and stored in the ModelObject.  Can be of all PFTs, of all tree PFTs and/or of all woody PFTs 
 The resulting layers are called "Dominant", "DominantTree" and "DominantWoody" respectively.
 }
 \author{

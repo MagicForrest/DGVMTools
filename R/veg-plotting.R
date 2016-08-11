@@ -6,25 +6,25 @@
 ##########################################################################################################################################
 
 
-#' Plots a map from a temporally-averaged \code{VegObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.
+#' Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.
 #' 
-#' This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{VegObject}, although plotting a Raster* is also useful.
+#' This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{ModelObject}, although plotting a Raster* is also useful.
 #' It has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults,
-#' so that in the case of plotting a \code{VegObject} all you *need* to supply is the data itself, everything else is either set to a sensible default,
-#' or provided by the \code{VegObject} itself.  It is basically a very complex wrapper for spplot, and can plot things like biomes, dominant PFTs, months of maximum values, 
+#' so that in the case of plotting a \code{ModelObject} all you *need* to supply is the data itself, everything else is either set to a sensible default,
+#' or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can plot things like biomes, dominant PFTs, months of maximum values, 
 #' burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command. 
 #'
-#' @param data The data to plot. Can be a VegObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
+#' @param data The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
 #' @param period The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.   
-#' In the case of plotting a \code{VegRun} object this is taken automatically from he object, but this provides an override.
-#' @param quant A \code{VegQuantity} object describy the quantity to be plotted.  This provides an override \code{VegQuant} when plotting a \code{VegObject}
+#' In the case of plotting a \code{ModelRun} object this is taken automatically from he object, but this provides an override.
+#' @param quant A \code{Quantity} object describy the quantity to be plotted.  This provides an override \code{Quantity} when plotting a \code{ModelObject}
 #' and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.
-#' @param run A \code{VegRun} object from which to pull metadata.  Note that normally this information is stored in the \code{VegObject}. 
-#' @param PFT.set A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{VegObject}.
-#' @param plot.dir A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{VegObject}, but this provides an override.
-#' If not a \code{VegObject} and not specified, this defaults to the current directory
+#' @param run A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}. 
+#' @param PFT.set A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{ModelObject}.
+#' @param plot.dir A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{ModelObject}, but this provides an override.
+#' If not a \code{ModelObject} and not specified, this defaults to the current directory
 #' @param title A character string to override the deafualt title.
 #' @param tag A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
 #' for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.
@@ -60,7 +60,7 @@
 #' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
 #' However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
 #' 
-#' The function works best for \code{VegObjects} (which contain a lot of useful metadata).   
+#' The function works best for \code{ModelObjects} (which contain a lot of useful metadata).   
 #' 
 #' @return Returns a plot object (from spplot)
 #'  
@@ -70,7 +70,7 @@
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
-plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a VegObject
+plotLayer <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
                         layers = NULL,
                         expand.layers = TRUE,
                         quant = NULL, 
@@ -146,7 +146,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   ##### 2. DEFAULTS
   
   ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
-  if(is.VegObject(data)){
+  if(is.ModelObject(data)){
     
     if(data@is.temporally.averaged){
       run <- data@run
@@ -156,14 +156,14 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       if(is.null(quant)) quant <- data@quant
     } 
     else {
-      stop("plotVegMaps:: trying to spatially plot a VegObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
+      stop("plotLayer:: trying to spatially plot a ModelObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
     }
     
   }
   else{
     if(is.null(quant)) {
       
-      quant <- new("VegQuant",
+      quant <- new("Quantity",
                    id = "generic",
                    type = "unknown",
                    name = "Generic",
@@ -219,7 +219,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### EXPAND layerS
   if(is.null(layers)) {
-    if(is.VegObject(data)) layers <- names(data@data)
+    if(is.ModelObject(data)) layers <- names(data@data)
     else layers <- names(data)
   }
   if(expand.layers) {
@@ -347,7 +347,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   else if(special == "burnt.area"){
     
     
-    stop("plotVegMaps: special burnt.fraction or ba not impletemted yet")
+    stop("plotLayer: special burnt.fraction or ba not impletemted yet")
     
   }
   
@@ -379,8 +379,8 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   #### PLOT BIOMES
   else if(special == "biomes"){
     
-    # Build a VegQuant object with the appropriate colours and cuts 
-    quant <- new("VegQuant",
+    # Build a Quantity object with the appropriate colours and cuts 
+    quant <- new("Quantity",
                  id = biome.scheme@id,
                  name = biome.scheme@name,
                  type = "BiomeClassification",
@@ -486,7 +486,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         
       } # for each row in RAT
       
-      quant <- new("VegQuant",
+      quant <- new("Quantity",
                    id = "Dominant",
                    name = "Dominant PFT",
                    type = "DominantPFTs",
@@ -523,7 +523,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
           
         }
         
-        quant <- new("VegQuant",
+        quant <- new("Quantity",
                      id = "Dominant",
                      name = paste("Dominant Month by", quant.id, sep = " "),
                      type = "DominantMonth",
@@ -663,9 +663,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 #' #'  
 #' #' @param model Raster of the model
 #' #' @param data Raster of the data
-#' #' @param run The \code{VegRun} object for the run plotted (optional)
+#' #' @param run The \code{ModelRun} object for the run plotted (optional)
 #' #' @param data.name Character string for the data
-#' #' @param quant The quantity plotted (as \code{VegQuant} object)
+#' #' @param quant The quantity plotted (as \code{Quantity} object)
 #' #' @param plot.range A numerical vector with two elements defining the range to plot on the histogram.
 #' #' @param stat.results The \code{RasterComparion} object if it has already been calculated
 #' #'
@@ -738,9 +738,9 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 #' #'  
 #' #' @param model Raster of the model
 #' #' @param data Raster of the data
-#' #' @param run The \code{VegRun} object for the run plotted (optional)
+#' #' @param run The \code{ModelRun} object for the run plotted (optional)
 #' #' @param data.name Character string for the data
-#' #' @param quant The quantity plotted (as \code{VegQuant} object)
+#' #' @param quant The quantity plotted (as \code{Quantity} object)
 #' #' @param stat.results The \code{RasterComparion} object if it has already been calculated
 #' #'
 #' #' The plot is saved to the run directory of the run object
@@ -800,7 +800,7 @@ plotVegMaps <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 #' It will use a string to represent the quantity (obligatory), and optionally a period and an ID.
 #' 
 #' @param quantity.str Character string for the quantity plotted
-#' @param run The \code{VegRun} object for the run plotted (optional)
+#' @param run The \code{ModelRun} object for the run plotted (optional)
 #' @param period The time period plotted as \code{TemporalExtent} (optional)
 #' @return A character string for use as a plot title
 #'  

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rvc-gridarea.R
 \name{calcNewVegObj}
 \alias{calcNewVegObj}
-\title{calcNewVegObj: Simple calculation of new VegObjects}
+\title{calcNewVegObj: Simple calculation of new ModelObjects}
 \usage{
 calcNewVegObj(run = NULL, targets = NULL, operator = NULL, quant = NULL,
   verbose = TRUE)
@@ -10,19 +10,19 @@ calcNewVegObj(run = NULL, targets = NULL, operator = NULL, quant = NULL,
 \arguments{
 \item{run}{the run the data should be taken from}
 
-\item{targets}{a list with elements 'x' and 'y' with components VegObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.}
+\item{targets}{a list with elements 'x' and 'y' with components ModelObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.}
 
 \item{operator}{which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/')}
 
-\item{quant}{new VegQuant definition to use, if NULL it will be guessed}
+\item{quant}{new Quantity definition to use, if NULL it will be guessed}
 
 \item{verbose}{print some messages}
 }
 \value{
-hopefully a new VegObject
+hopefully a new ModelObject
 }
 \description{
-Simple calculation of new VegObjects by operation '+', '-', '*' or '/'
+Simple calculation of new ModelObjects by operation '+', '-', '*' or '/'
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

@@ -21,7 +21,7 @@ lsos(pos = 1, pattern, order.by = "Size", decreasing = TRUE,
 \item{orderby}{Character, can be "Type", "Size", "PrettySize", Rows" or "Columns"}
 }
 \description{
-Because rasters and \code{VegObject}s and so can be quite large, this function is useful for checking how large are the objects you have stored in memory.
+Because rasters and \code{ModelObject}s and so can be quite large, this function is useful for checking how large are the objects you have stored in memory.
 }
 \keyword{Credit:}
 \keyword{Taken}

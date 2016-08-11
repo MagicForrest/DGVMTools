@@ -4,12 +4,12 @@
 \name{Summary-methods}
 \alias{Summary-methods}
 \alias{summary}
-\alias{summary,VegRun-method}
+\alias{summary,ModelRun-method}
 \title{Summary methods}
 \usage{
 summary(object, ...)
 
-\S4method{summary}{VegRun}(object, ...)
+\S4method{summary}{ModelRun}(object, ...)
 }
 \arguments{
 \item{object}{a DGVMTools object}

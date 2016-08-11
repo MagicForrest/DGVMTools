@@ -1,17 +1,17 @@
 
 
-#' Benchmark VegRuns against a spatial dataset
+#' Benchmark ModelRuns against a spatial dataset
 #'
 #' To use this function it is *required* that \code{compareRunToSpatialDataset()} has been performed on each of the runs with 
 #' the dataset to which we are comparing.
 #' 
-#' @param runs A list of VegRun objects (each with the RasterComparison object already created)
+#' @param runs A list of ModelRun objects (each with the RasterComparison object already created)
 #' @param layer.name Layer in the vegetation model output to compare to the data
 #' @param dataset The spatial dataset to which we are comparing (represented as a SpatialDataset object)
 #' @param tag A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
 #' for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.
 #' @param diff.cuts Numeric vector of cuts for plotting the absolute difference.  If not specified it is derived as the maximum
-#' possible range based on the VegQuant object in the dataset.
+#' possible range based on the Quantity object in the dataset.
 #' @param perc.diff.cuts Numerice vector of cuts for plotting the percentage differences.  If not specified defaults to -100\% to +200\%
 #' in 5\% intervals.
 #' @param spatial.extent If specified (as a raster::Extent object), the spatial extent to plot.  Note that the statistics will *not* reflect
@@ -24,7 +24,7 @@
 #' to account for (for example) land cover.  NA's can be used to completely mask out areas from the comparison. 
 #' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs
 #' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation
-#' @param ... Arguments to be passed to plotVegMaps when making the spatial plots.  
+#' @param ... Arguments to be passed to plotLayer when making the spatial plots.  
 #' 
 #' @return Returns a DataObject, and also makes plots (in the individual run@run.dir and in the summary.plot.dir argument).
 #' 
@@ -66,14 +66,10 @@ benchmarkSpatial <- function(runs,
   ### HANDLE ARGUMENTS
   args1 <- list() # specify defaults here
   inargs <- list(...)
-  
-  print(inargs)
   args1[names(inargs)] <- inargs
   
-  print(args1)
 
-  
-  # COMBINE LAYOUT OBJECTS FROM DIFFERENT SOURCES
+  # COMBINE LAYOUT OBJECTS FROM DIFFERENT SOURCES - MF not necessary any more
   # if(!is.null(layout.objs)){
   #   
   #   # check if there is a layout.objs already provided to which any new ones must be added
@@ -124,18 +120,18 @@ benchmarkSpatial <- function(runs,
     run.fill.cols <- append(run.fill.cols, run@fill.col)
     run.line.cols <- append(run.line.cols, run@line.col)
     
-    # get the VegObject for the period 
-    model.vegobject <- getVegObject(run, 
+    # get the ModelObject for the period 
+    model.model.object <- getModelObject(run, 
                                     dataset@quant, 
                                     temporal.extent = dataset@temporal.extent,
                                     temporally.average = TRUE, 
                                     store.internally = TRUE, 
                                     write = TRUE, 
-                                    reread.file = FALSE)
+                                    read.full = FALSE)
     
     # get the layer 
-    if(!(layer.name %in% names(model.vegobject@data))) model.vegobject <- aggregateLayers(model.vegobject, layer.name, PFT.data = run@pft.set)
-    model.dt <- model.vegobject@data[, c("Lat", "Lon", layer.name), with=FALSE]
+    if(!(layer.name %in% names(model.model.object@data))) model.model.object <- newLayer(model.model.object, layer.name, PFT.data = run@pft.set)
+    model.dt <- model.model.object@data[, c("Lat", "Lon", layer.name), with=FALSE]
     
     # if required apply the correction
     if(!is.null(correction.dt)) {
@@ -211,7 +207,7 @@ benchmarkSpatial <- function(runs,
                              P.cor = P.cor, 
                              sd.diff = sd.diff)
     
-    runs[[run@id]] <- addToVegRun(comparison.result, runs[[run@id]])
+    runs[[run@id]] <- addToModelRun(comparison.result, runs[[run@id]])
     
    
     
@@ -242,7 +238,7 @@ benchmarkSpatial <- function(runs,
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Diff", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     print(
-      do.call(plotVegMaps, c(list(data = data.dt,
+      do.call(plotLayer, c(list(data = data.dt,
                                   layers = paste(run@id, "Error", sep = "_"),
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -262,7 +258,7 @@ benchmarkSpatial <- function(runs,
                                  canvas.options)) 
     
     print(
-      do.call(plotVegMaps, c(list(data = data.dt,
+      do.call(plotLayer, c(list(data = data.dt,
                                   layers = c(run@id, dataset@id),
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -399,7 +395,7 @@ benchmarkSpatial <- function(runs,
     
     # PLOT ABSOLUTE VALUES
     print(
-      do.call(plotVegMaps, c(list(data = data.dt,
+      do.call(plotLayer, c(list(data = data.dt,
                                   layers = abs.layers,
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -429,7 +425,7 @@ benchmarkSpatial <- function(runs,
                                  canvas.options)) 
     
     print(
-      do.call(plotVegMaps, c(list(data = data.dt,
+      do.call(plotLayer, c(list(data = data.dt,
                                   layers = diff.layers,
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -455,7 +451,7 @@ benchmarkSpatial <- function(runs,
     temp.dt <- temp.dt[,(perc.diff.layers) := lapply(.SD, function(x) x * 100 ), .SDcols = perc.diff.layers]
     
     print(
-      do.call(plotVegMaps, c(list(data = temp.dt,
+      do.call(plotLayer, c(list(data = temp.dt,
                                   layers = perc.diff.layers,
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -683,8 +679,8 @@ doKappa <- function(dt,
 #' Takes a run, a time period and a variable from which to calculate a modelled biome map, and biome scheme, 
 #' and compares the model to the data
 #' 
-#' @param runs List of VegRuns to be compared to the biome data
-#' @param variable The VegQuant (or name) of the variable from which the biomes are to be derived. This is not flexible enough, 
+#' @param runs List of ModelRuns to be compared to the biome data
+#' @param variable The Quantity (or name) of the variable from which the biomes are to be derived. This is not flexible enough, 
 #' and should be folded into the scheme.
 #' @param period The temporal extent over which the model output should be averaged for calculating the biomes
 #' @param scheme The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or SpatialDataset?) 
@@ -693,7 +689,7 @@ doKappa <- function(dt,
 #' @param plot Logical, if true make a biome plot.
 #' @param show.stats A logical, if TRUE, put the Kappa values on the plots.
 #' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs
-#' @param ... Additional parameters supplied to the plotVegMaps() plotting function.
+#' @param ... Additional parameters supplied to the plotLayer() plotting function.
 #' 
 #' @param tag A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
 #' For example "Corrected" or "EuropeOnly"
@@ -727,7 +723,7 @@ compareBiomes <- function(runs,
   
   # first rasterise the data and model
   biome.data.raster <- promoteToRaster(biome.dataset@data)
-  model.data.raster <- promoteToRaster(getVegSpatial(runs[[1]], variable, period, reread.file = FALSE))
+  model.data.raster <- promoteToRaster(getVegSpatial(runs[[1]], variable, period, read.full = FALSE))
   
   # 
   # first check if they are on identical grids
@@ -748,7 +744,7 @@ compareBiomes <- function(runs,
   for(run in runs) {
     
     # Prepare the veg. spatial object
-    this.VegSpatial <- getVegSpatial(run, variable, period, reread.file = FALSE)
+    this.VegSpatial <- getVegSpatial(run, variable, period, read.full = FALSE)
     
     #  calculate biomes from model output
     this.VegSpatial <- addBiomes(this.VegSpatial, scheme)
@@ -771,7 +767,7 @@ compareBiomes <- function(runs,
     
 
       print(
-        do.call(plotVegMaps, c(
+        do.call(plotLayer, c(
           list(data = this.VegSpatial,
                biome.scheme = scheme, 
                special = "biomes", 
@@ -816,7 +812,7 @@ compareBiomes <- function(runs,
   }
   
   print(
-    do.call(plotVegMaps, c(list(data = data.dt, 
+    do.call(plotLayer, c(list(data = data.dt, 
                                 layers = layers,
                                 summary.file.name = paste("Biomes", scheme@id, tag, sep = "."),
                                 special = "biomes", 
@@ -841,12 +837,12 @@ compareBiomes <- function(runs,
 
 #' Compare runs to each other
 #' 
-#' Given a list of runs and an id of a spatial VegObjects, compare the specified layers between all runs, and, 
+#' Given a list of runs and an id of a spatial ModelObjects, compare the specified layers between all runs, and, 
 #' if a base line run is specified, also plot comprisons relative to that
 #' 
-#' @param runs List of VegRun objects to be compared
-#' @param veg.spatial.id Character string holding the id of the VegObject to be compared
-#' @param layer The layer to be compared across all VegRuns
+#' @param runs List of ModelRun objects to be compared
+#' @param veg.spatial.id Character string holding the id of the ModelObject to be compared
+#' @param layer The layer to be compared across all ModelRuns
 #' @param expand.layer Logical, if TRUE expand the layer arguments use \code{expandLayers}
 #' @param base.run.id A character string to which (if specified) all the other runs are compared by plotting the difference 
 #' and percentage difference relative to this base run
@@ -856,13 +852,13 @@ compareBiomes <- function(runs,
 #' @param diff.cuts A numeric vector which (if specified), defines the cuts for the difference plot of each run compared to the base run
 #' @param plot.perc.diff Logical, if TRUE and a base.run.id supplied, plot the percentage difference of each run relative to the base run.
 #' @param perc.diff.cuts A numeric vector which (if specified), defines the cuts for the percentage difference plot of each run compared to the base run
-#' @param special A character string which, if specified, is used to give special plotting instructions to \code{plotVegMaps}, 
+#' @param special A character string which, if specified, is used to give special plotting instructions to \code{plotLayer}, 
 #' see the documentation of that function for details.
 #' @param single.page Logical, if TRUE, put all "sub-layers" on one plot instead of separate individual plots.
 #' @param tag A character string to identify this plot/analysis in comparison to others, eg. "SoilDepthTests" or "NewSLAForumalation"  
 #' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} documentation
 #' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs
-#' @param ... Further arguments passed to the \code{plotVegMaps} function.
+#' @param ... Further arguments passed to the \code{plotLayer} function.
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
@@ -897,7 +893,7 @@ compareRuns <- function(runs,
   original.layers <- layer
   for(run in runs){
     
-    # grab the VegObject that we want from the vegRun
+    # grab the ModelObject that we want from the vegRun
     temp.spatial <- byIDfromList(veg.spatial.id, run@objects)
     
     # expand the layer if necessary
@@ -924,7 +920,7 @@ compareRuns <- function(runs,
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", sub.layer, veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
-    print(plotVegMaps(comparison.dt,
+    print(plotLayer(comparison.dt,
                       layers = layers,
                       quant = run@objects[[veg.spatial.id]]@quant,
                       title = sub.layer,
@@ -942,7 +938,7 @@ compareRuns <- function(runs,
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
-    print(plotVegMaps(comparison.dt,
+    print(plotLayer(comparison.dt,
                       layers = all.layers,
                       quant = run@objects[[veg.spatial.id]]@quant,
                       title = paste(paste(original.layers, collapse= " ", sep = ""), run@objects[[veg.spatial.id]]@quant@name, sep = " "),
@@ -985,7 +981,7 @@ compareRuns <- function(runs,
             do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunDifference", sub.layer, veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                          canvas.options)) 
             
-            print(plotVegMaps(comparison.dt,
+            print(plotLayer(comparison.dt,
                               layers = this.diff.names,
                               quant = run@objects[[veg.spatial.id]]@quant,
                               special = "Diff",
@@ -1016,7 +1012,7 @@ compareRuns <- function(runs,
             do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunPercentageDifference", sub.layer, veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                          canvas.options)) 
             
-            print(plotVegMaps(comparison.dt,
+            print(plotLayer(comparison.dt,
                               layers = this.perc.diff.names,
                               quant = run@objects[[veg.spatial.id]]@quant,
                               special = "Perc.Diff",
@@ -1049,7 +1045,7 @@ compareRuns <- function(runs,
         do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunDifference", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                      canvas.options)) 
         
-        print(plotVegMaps(comparison.dt,
+        print(plotLayer(comparison.dt,
                           layers = all.diff.names,
                           quant = run@objects[[veg.spatial.id]]@quant,
                           special = "Diff",
@@ -1069,7 +1065,7 @@ compareRuns <- function(runs,
         do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunPercentageDifference", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                      canvas.options)) 
         
-        print(plotVegMaps(comparison.dt,
+        print(plotLayer(comparison.dt,
                           layers = all.perc.diff.names,
                           quant = run@objects[[veg.spatial.id]]@quant,
                           special = "Perc.Diff",

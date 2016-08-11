@@ -21,7 +21,7 @@ redundant.  Classifies as evergreen tree, deciduous tree or grass based on the p
 Simon Scheiter \email{simon.scheiter@senckenberg.de}
 }
 \seealso{
-\code{getVegQuantity_aDGVM_Scheme2}
+\code{getQuantity_aDGVM_Scheme2}
 }
 \keyword{internal}
 

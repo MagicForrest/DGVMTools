@@ -75,7 +75,7 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' 
 #' Get Annual values of climate drivers from netCDF files, files must be CF-compliant
 #' 
-#' @param run a VegRun object, if a VegSpatial object should be returned, otherwise NA
+#' @param run a ModelRun object, if a VegSpatial object should be returned, otherwise NA
 #' @param file path to the netCDF file
 #' @param operation Any of sum, mean, gdd5
 #' @param temporal.extent Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)
@@ -86,16 +86,16 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @param lon.name Name of the longitude vector in the netcdf file, if NA it will be guessed
 #' @param lat.name Name of the latitude vector in the netcdf file, if NA it will be guessed
 #' @param time.name Name of the time vector in the netcdf file, if NA it will be guessed
-#' @param reread.file Recalculate the desired values (default: FALSE)
+#' @param read.full Recalculate the desired values (default: FALSE)
 #' @param write write the calculated values for fture speedup (default: TRUE)
 #' @param verbose print some messages
 #' @param ... further so far ignored parameters
-#' @return data.table if no VegRun was given, otherwise a VegObject
+#' @return data.table if no ModelRun was given, otherwise a ModelObject
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import RNetCDF
 #' @export
 #' @examples message("See templates/Example.ggplot.R")
-getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, monthly=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, reread.file=FALSE, write=TRUE, verbose=TRUE, ...) {
+getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, monthly=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, read.full=FALSE, write=TRUE, verbose=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lon = Lat = Year = Month = Date = variable = value = NULL
   suppressWarnings(if (!is.na(temporal.extent)) {
@@ -285,7 +285,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
                   "_", max(year(start), period[1]), "-", min(year(end), period[2]),
                   "_", operation, ".Rtable", sep="")
   }
-  if (file.exists(fout) && !reread.file) {
+  if (file.exists(fout) && !read.full) {
     if (verbose)
       message(paste("Found '", fout, "'", sep=""))
     DT <- data.table(read.table(fout, header=TRUE, stringsAsFactors=FALSE))
@@ -408,7 +408,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
     DT <- data.table::dcast(DT, Lon + Lat + Year ~ Month, value.var=c("value"))
   }
 
-  if (is.VegRun(run)) {
+  if (is.ModelRun(run)) {
     start <- year(start)
     end <- year(end)
     temporal.extent <- new("TemporalExtent",
@@ -417,21 +417,21 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
                            start = max(start, period[1]), end = min(end, period[2]))
     if (operation=="GDD5") {
       id <- operation
-      quant <- new("VegQuant",
+      quant <- new("Quantity",
                    id=id,
                    name="Growing degree days",
                    type="",
                    units="\u00B0C days")
     } else {
       id <- paste(operation, ".", data.name)
-      quant <- new("VegQuant",
+      quant <- new("Quantity",
                    id=id,
                    name=att.get.nc(ncin, data.name, "long_name"),
                    type=operation,
                    units=att.get.nc(ncin, data.name, "units"))
     }
     if (full) {
-    return(new('VegObject',
+    return(new('ModelObject',
                id=id,
                data=DT,
                quant = quant,
@@ -440,9 +440,9 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
                is.site = FALSE,
                is.temporally.averaged = FALSE,
                is.spatially.averaged = FALSE,
-               run = as(run, "VegRunInfo")))
+               run = as(run, "ModelRunInfo")))
     } else {
-      return(new('VegObject',
+      return(new('ModelObject',
                  id=id,
                  data=DT,
                  quant = quant,
@@ -451,7 +451,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
                  is.site = FALSE,
                  is.temporally.averaged = TRUE,
                  is.spatially.averaged = FALSE,
-                 run = as(run, "VegRunInfo")))
+                 run = as(run, "ModelRunInfo")))
     }
   } else {
     return(DT)
@@ -494,7 +494,7 @@ seasonalityIndex <- function(x, wgt=c(31, 28.2425, 31, 30, 31, 30, 31, 31, 30, 3
 #' 
 #' Adds a column of the seasonality index based on Marhan (1970) to the input data
 #' 
-#' @param input Input data (either data.frame, data.table or VegObject) with at least the month abbreviations as column names.
+#' @param input Input data (either data.frame, data.table or ModelObject) with at least the month abbreviations as column names.
 #' @param colname Name of the new created seasonality index column.
 #' @param verbose print some information
 #' @return same type as input with the seasonality index as new data column
@@ -515,9 +515,9 @@ addSeasonalityIndex <- function(input=NULL, colname="SI", verbose=TRUE) {
       stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(input)), collapse="', '"), sep=""))
     eval(parse(text=paste("input$", colname, "=apply(input[, month.abb], 1, seasonalityIndex)", sep="")))
     return(input)
-  } else if (is.VegObject(input, spatial=TRUE)) {
+  } else if (is.ModelObject(input, spatial=TRUE)) {
     if (verbose)
-      message("Input is a spatial VegObject.")
+      message("Input is a spatial ModelObject.")
     if (length(setdiff(month.abb, colnames(input@data)))!=0)
       stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(input@data)), collapse="', '"), sep=""))
     eval(parse(text=paste("input@data[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))

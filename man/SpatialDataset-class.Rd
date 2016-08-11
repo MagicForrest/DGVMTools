@@ -18,7 +18,7 @@ Gathers up the meta-data and a raster layer for one particular layer of spatial 
 
 \item{\code{data}}{The actual data.  The slot type is currently "ANY" but perhaps it should be restricted to a \code{RasterLayer}.  That is what the benchmarking code certainly expects}
 
-\item{\code{veg.quant}}{A \code{VegQuant} object to describe exactly what this dataset is}
+\item{\code{veg.quant}}{A \code{Quantity} object to describe exactly what this dataset is}
 
 \item{\code{units}}{A character string defining the units in which this data is measured.  Probably obselete because of the units slot in the veg.quant slot}
 

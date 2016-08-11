@@ -11,7 +11,7 @@ makePlotTitle(quantity.str, run = NULL, period = NULL)
 \arguments{
 \item{quantity.str}{Character string for the quantity plotted}
 
-\item{run}{The \code{VegRun} object for the run plotted (optional)}
+\item{run}{The \code{ModelRun} object for the run plotted (optional)}
 
 \item{period}{The time period plotted as \code{TemporalExtent} (optional)}
 }
@@ -28,9 +28,9 @@ A character string for use as a plot title
 #'  
 #' @param model Raster of the model
 #' @param data Raster of the data
-#' @param run The \code{VegRun} object for the run plotted (optional)
+#' @param run The \code{ModelRun} object for the run plotted (optional)
 #' @param data.name Character string for the data
-#' @param quant The quantity plotted (as \code{VegQuant} object)
+#' @param quant The quantity plotted (as \code{Quantity} object)
 #' @param plot.range A numerical vector with two elements defining the range to plot on the histogram.
 #' @param stat.results The \code{RasterComparion} object if it has already been calculated
 #'
@@ -102,9 +102,9 @@ plotHistoComparison <- function(model,
 #'  
 #' @param model Raster of the model
 #' @param data Raster of the data
-#' @param run The \code{VegRun} object for the run plotted (optional)
+#' @param run The \code{ModelRun} object for the run plotted (optional)
 #' @param data.name Character string for the data
-#' @param quant The quantity plotted (as \code{VegQuant} object)
+#' @param quant The quantity plotted (as \code{Quantity} object)
 #' @param stat.results The \code{RasterComparion} object if it has already been calculated
 #'
 #' The plot is saved to the run directory of the run object

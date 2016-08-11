@@ -11,11 +11,11 @@ compareRuns(runs, veg.spatial.id, layer, expand.layer = TRUE,
   canvas.options = canvas.options, summary.plot.dir = NULL, ...)
 }
 \arguments{
-\item{runs}{List of VegRun objects to be compared}
+\item{runs}{List of ModelRun objects to be compared}
 
-\item{veg.spatial.id}{Character string holding the id of the VegObject to be compared}
+\item{veg.spatial.id}{Character string holding the id of the ModelObject to be compared}
 
-\item{layer}{The layer to be compared across all VegRuns}
+\item{layer}{The layer to be compared across all ModelRuns}
 
 \item{expand.layer}{Logical, if TRUE expand the layer arguments use \code{expandLayers}}
 
@@ -33,7 +33,7 @@ run on one figure}
 
 \item{perc.diff.cuts}{A numeric vector which (if specified), defines the cuts for the percentage difference plot of each run compared to the base run}
 
-\item{special}{A character string which, if specified, is used to give special plotting instructions to \code{plotVegMaps}, 
+\item{special}{A character string which, if specified, is used to give special plotting instructions to \code{plotLayer}, 
 see the documentation of that function for details.}
 
 \item{single.page}{Logical, if TRUE, put all "sub-layers" on one plot instead of separate individual plots.}
@@ -44,10 +44,10 @@ see the documentation of that function for details.}
 
 \item{summary.plot.dir}{A directory (full path as a character string) so save the plots which compare many runs}
 
-\item{...}{Further arguments passed to the \code{plotVegMaps} function.}
+\item{...}{Further arguments passed to the \code{plotLayer} function.}
 }
 \description{
-Given a list of runs and an id of a spatial VegObjects, compare the specified layers between all runs, and, 
+Given a list of runs and an id of a spatial ModelObjects, compare the specified layers between all runs, and, 
 if a base line run is specified, also plot comprisons relative to that
 }
 \author{

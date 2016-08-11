@@ -22,7 +22,7 @@ Classifies only as tree or grass based on only the pop file, doesn't open the tr
 Simon Scheiter \email{simon.scheiter@senckenberg.de}
 }
 \seealso{
-\code{getVegQuantity_aDGVM_Scheme1}
+\code{getQuantity_aDGVM_Scheme1}
 }
 \keyword{internal}
 

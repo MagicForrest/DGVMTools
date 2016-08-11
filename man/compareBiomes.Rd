@@ -9,9 +9,9 @@ compareBiomes(runs, variable, period, scheme, biome.dataset, plot = TRUE,
   canvas.options = canvas.options, ...)
 }
 \arguments{
-\item{runs}{List of VegRuns to be compared to the biome data}
+\item{runs}{List of ModelRuns to be compared to the biome data}
 
-\item{variable}{The VegQuant (or name) of the variable from which the biomes are to be derived. This is not flexible enough, 
+\item{variable}{The Quantity (or name) of the variable from which the biomes are to be derived. This is not flexible enough, 
 and should be folded into the scheme.}
 
 \item{period}{The temporal extent over which the model output should be averaged for calculating the biomes}
@@ -32,7 +32,7 @@ For example "Corrected" or "EuropeOnly"}
 
 \item{canvas.options}{A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} documentation}
 
-\item{...}{Additional parameters supplied to the plotVegMaps() plotting function.}
+\item{...}{Additional parameters supplied to the plotLayer() plotting function.}
 }
 \value{
 A Biome comparison object

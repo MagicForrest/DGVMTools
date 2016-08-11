@@ -119,19 +119,19 @@ setClass("PFT",
 )
 
 
-########### VegRunInfo - class to hold the metadata for an LPJ-GUESS run
+########### ModelRunInfo - class to hold the metadata for an LPJ-GUESS run
 
-#' Checks validity of a \code{VegRunInfo}.
+#' Checks validity of a \code{ModelRunInfo}.
 #' 
-#' Called internally as the validity slot of the \code{VegRunInfo}.  It checks that the essential slots are filled with sensible values ie a run.dir that
+#' Called internally as the validity slot of the \code{ModelRunInfo}.  It checks that the essential slots are filled with sensible values ie a run.dir that
 #' exists on the file system; a model type which is valid and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
 #' 
-#' @param object The \code{VegRunInfo} object to check for vailidity.
+#' @param object The \code{ModelRunInfo} object to check for vailidity.
 #' @return Empty string if the essential slots are fine, a string containing an error message if not.
 #'    
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-checkVegRun <- function(object){
+checkModelRun <- function(object){
   
   errors <- character()
   
@@ -139,7 +139,7 @@ checkVegRun <- function(object){
   support.veg.models <- c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")
   
   if (!length(object@model) > 0) {
-    msg <- "Error defining VegRun, you must define a model type!"
+    msg <- "Error defining ModelRun, you must define a model type!"
     errors <- c(errors, msg)
   }
   else if (!(object@model  %in% support.veg.models)) {
@@ -159,7 +159,7 @@ checkVegRun <- function(object){
     errors <- c(errors, msg)
   }
   
-  # Other things are set to sensible/empty defaults in defineVegRun()
+  # Other things are set to sensible/empty defaults in defineModelRun()
   
   if (length(errors) == 0) TRUE else errors
   
@@ -170,8 +170,8 @@ checkVegRun <- function(object){
 #' Class to hold the metadata for a vegetation model run
 #' 
 #' This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
-#' It is not primarily intended to be used by itself. Instead it is inherited by \code{VegRun} object (due to this inheritance the slots can be accessed directly)
-#' and included in a \code{VegObject} in the \code{run} slot (not inherited, so needs to be access be \code{@@run}).
+#' It is not primarily intended to be used by itself. Instead it is inherited by \code{ModelRun} object (due to this inheritance the slots can be accessed directly)
+#' and included in a \code{ModelObject} in the \code{run} slot (not inherited, so needs to be access be \code{@@run}).
 #' 
 #' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
@@ -188,9 +188,9 @@ checkVegRun <- function(object){
 #' @slot line.width A numeric to define the width of a line representing this model run
 #' @slot line.type A numeric to define the line style representing this model run
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
-#' @exportClass VegRunInfo
+#' @exportClass ModelRunInfo
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("VegRunInfo", 
+setClass("ModelRunInfo", 
          slots = c(id = "character",
                    model = "character",
                    pft.set = "list",
@@ -207,24 +207,24 @@ setClass("VegRunInfo",
                    line.type = "numeric", # not commonly needed, only for more complex run comparisons
                    landuseSimulated = "logical"
          ),
-         validity = checkVegRun
+         validity = checkModelRun
          
 )
 
 
 #' An S4 class to contain metadata and, optionally, data and benchmarks for a single vegetation run
 #' 
-#' A \code{VegRun} object contains the metadata concerning the an inherited \code{VegRunInfo} object
-#'  and the actual model data run as \code{VegObjects} in a list in slot \code{objects} and comparisions to datasets 
+#' A \code{ModelRun} object contains the metadata concerning the an inherited \code{ModelRunInfo} object
+#'  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
 #'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-#' Such objects can be built by calls to \code{getVegObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToSpatialDataset()}
-#'  and \code{compareBiomes()}, and saved to the \code{VegRun} using \code{addToVegRun()}. 
+#' Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToSpatialDataset()}
+#'  and \code{compareBiomes()}, and saved to the \code{ModelRun} using \code{addToModelRun()}. 
 #'  
 #' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
 #' 
-#' @slot objects List of \code{VegObjects} saved in this run
+#' @slot objects List of \code{ModelObjects} saved in this run
 #' @slot benchmarks List of benchmarks (\code{BiomeComparisons} and \code{RasterComparisons}) performed and saved for this run.
-#' The following slots are inherited from \code{VegRunInfo}.
+#' The following slots are inherited from \code{ModelRunInfo}.
 #' @slot id A unique character string to identify this particular model run.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
@@ -240,16 +240,16 @@ setClass("VegRunInfo",
 #' @slot line.width A numeric to define the width of a line representing this model run
 #' @slot line.type A numeric to define the line style representing this model run
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
-#' @exportClass VegRun
+#' @exportClass ModelRun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("VegRun", 
+setClass("ModelRun", 
          slots = c(objects = "list",
                    benchmarks = "list"
          ),
          prototype = c(objects = list(),
                        benchmarks = list()
          ),
-         contains = "VegRunInfo"
+         contains = "ModelRunInfo"
          
 )
 
@@ -269,10 +269,10 @@ setClass("VegRun",
 #' @slot colours A fucntion that retutns a colour scale suited for plotting this quantity.
 #' @slot cuts A numerical sequence defining the plot range and colour breakpoint when plotting the quantity
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
-#' @slot model Either a the string "Standard" to denotethat this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this VegQuantity is applicable.
-#' @exportClass VegQuant
+#' @slot model Either a the string "Standard" to denotethat this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
+#' @exportClass Quantity
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("VegQuant", 
+setClass("Quantity", 
          slots = c(id = "character",
                    name = "character",
                    type = "character",
@@ -299,32 +299,32 @@ setClass("VegQuant",
 
 #' Contains one aspect of the model output, eg. LAI
 #' 
-#' A key class of the package.  A \code{VegObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
+#' A key class of the package.  A \code{ModelObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
 #' For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
 #' 
-#' Generally these are not created directly by the user, but rather by functions like \code{getVegObject}.
+#' Generally these are not created directly by the user, but rather by functions like \code{getModelObject}.
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A VegQuant object to define what output this VegObject contains
-#' @slot spatial.extent A SpatialExtent object which describes the area covered by this VegObject.  Particularly useful if the data has been spatially averaged.
-#' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this VegObject.  Particularly useful if the data has been temporally averaged.
-#' @slot is.site Set to TRUE is this VegObject describes a single site
-#' @slot is.spatially.averaged Set to TRUE is this VegObject has been spatially averaged
-#' @slot is.temporally.averaged Set to TRUE is this VegObject has been temporally averaged
-#' @slot run A VegRunInfo object which contains the metadata about the run which this VegObject belongs too.
-#' @exportClass VegObject
+#' @slot quant A Quantity object to define what output this ModelObject contains
+#' @slot spatial.extent A SpatialExtent object which describes the area covered by this ModelObject.  Particularly useful if the data has been spatially averaged.
+#' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
+#' @slot is.site Set to TRUE is this ModelObject describes a single site
+#' @slot is.spatially.averaged Set to TRUE is this ModelObject has been spatially averaged
+#' @slot is.temporally.averaged Set to TRUE is this ModelObject has been temporally averaged
+#' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.
+#' @exportClass ModelObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("VegObject", 
+setClass("ModelObject", 
          slots = c(id = "character",
                    data = "data.table",
-                   quant = "VegQuant",
+                   quant = "Quantity",
                    spatial.extent = "SpatialExtent",
                    temporal.extent = "TemporalExtent",
                    is.site = "logical",
                    is.spatially.averaged = "logical",
                    is.temporally.averaged = "logical",
-                   run = "VegRunInfo"
+                   run = "ModelRunInfo"
                    
          )
          
@@ -388,12 +388,12 @@ setClass("VegObject",
 #' A key class of the package.  A \code{DataObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
 #' For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
 #' 
-#' Generally these are not created directly by the user, but rather by functions like \code{getVegObject}.
+#' Generally these are not created directly by the user, but rather by functions like \code{getModelObject}.
 #' 
 #' @slot id A unique character string to identify this particular DataObject.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string to more fully describe this DataObject
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A VegQuant object to define what output this DataObject contains
+#' @slot quant A Quantity object to define what output this DataObject contains
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.
 #' @slot correction.layer A character string defining a multiplicative corection layer that can be used for the data set
@@ -403,7 +403,7 @@ setClass("DataObject",
          slots = c(id = "character",
                    name = "character",
                    data = "data.table",
-                   quant = "VegQuant",
+                   quant = "Quantity",
                    spatial.extent = "SpatialExtent",
                    temporal.extent = "TemporalExtent",
                    correction.layer =  "character"
@@ -423,7 +423,7 @@ setClass("DataObject",
 #' @slot name A character string to provide a fuller description of this dataset
 #' @slot temporal.extent A \code{TemporalExtent} oject to describe when this environmental data was measured.
 #' @slot data The actual data.  The slot type is currently "ANY" but perhaps it should be restricted to a \code{RasterLayer}.  That is what the benchmarking code certainly expects
-#' @slot veg.quant A \code{VegQuant} object to describe exactly what this dataset is
+#' @slot veg.quant A \code{Quantity} object to describe exactly what this dataset is
 #' @slot units A character string defining the units in which this data is measured.  Probably obselete because of the units slot in the veg.quant slot
 #' @slot correction.raster A \code{RasterLayer} to apply multiplicatively to correct model data before comparing to this dataset.  For example a land-use correction.
 #' 
@@ -435,7 +435,7 @@ setClass("SpatialDataset",
                    name = "character",
                    temporal.extent = "TemporalExtent",
                    data = "ANY",
-                   veg.quant = "VegQuant",
+                   veg.quant = "Quantity",
                    units = "character",
                    correction.raster = "RasterLayer"
          )
@@ -453,7 +453,7 @@ setClass("SpatialDataset",
 #' @slot temporal.extent A \code{TemporalExtent} object to describe the length of the data times series
 #' @slot data The actual data.  The slot type is currently "ANY" but perhaps it should be restricted to a \code{RasterLayer}.  That is what the benchmarking code certainly expects
 #' @slot extent A \code{SpatialExtent} object define the spatial region over which this time series data applies.
-#' @slot veg.quant A \code{VegQuant} object to describe exactly what this dataset is
+#' @slot veg.quant A \code{Quantity} object to describe exactly what this dataset is
 #' @slot units A character string defining the units in which this data is measured.  Probably obselete because of the units slot in the veg.quant slot
 #' 
 #' @exportClass TemporalDataset
@@ -465,7 +465,7 @@ setClass("TemporalDataset",
                    temporal.extent = "TemporalExtent",
                    data = "ANY",
                    extent = "SpatialExtent",
-                   veg.quant = "VegQuant",
+                   veg.quant = "Quantity",
                    units = "character"
          )
 )

@@ -1,14 +1,14 @@
-# Methods to coerce VegObjects and DataObjects to other R objects
+# Methods to coerce ModelObjects and DataObjects to other R objects
 
-#' Coerce from VegObjects and DataObjects
+#' Coerce from ModelObjects and DataObjects
 #' 
-#' Functions to coerce VegObjects and DataObjects into other objects (data.frame, data.table, RasterBrick, SpatialPixelsDataFrame)
+#' Functions to coerce ModelObjects and DataObjects into other objects (data.frame, data.table, RasterBrick, SpatialPixelsDataFrame)
 #' 
 #' Note that for coercing to a Raster* object (RasterLayer or RasterBrick) the function is called "as.Raster" (capital "R") to avoid conflict with  
 #' another function in the raster package called "as.raster"
 #'
 #'
-#' @param x A VegObject or a DataObject
+#' @param x A ModelObject or a DataObject
 #' @param keep.rownames	If ... is a matrix or data.frame, TRUE will retain the rownames of that object in a column named rn.
 #' @param row.names NULL or a character vector giving the row names for the data frame. Missing values are not allowed.
 #' @param optional logical. If TRUE, setting row names and converting column names (to syntactic names: see make.names) is optional. 
@@ -30,13 +30,13 @@ NULL
 
 #' @name export-methods
 #' @export
-setAs("VegObject", "data.frame", function(from) as.data.frame(from@data))
+setAs("ModelObject", "data.frame", function(from) as.data.frame(from@data))
 
 
 #' @rdname export-methods
-#' @method as.data.frame VegObject
+#' @method as.data.frame ModelObject
 #' @export
-as.data.frame.VegObject = function(x, row.names, optional, ...) as(x, "data.frame") 
+as.data.frame.ModelObject = function(x, row.names, optional, ...) as(x, "data.frame") 
 
 
 #' @name export-methods
@@ -55,11 +55,11 @@ as.data.frame.DataObject = function(x, row.names, optional, ...) as(x, "data.fra
 
 #' @name export-methods
 #' @export
-setAs("VegObject", "data.table", function(from) from@data)
+setAs("ModelObject", "data.table", function(from) from@data)
 
 #' @rdname export-methods
 #' @export
-as.data.table.VegObject = function(x, keep.rownames, ...) as(x, "data.table") 
+as.data.table.ModelObject = function(x, keep.rownames, ...) as(x, "data.table") 
 
 #' @name export-methods
 #' @export
@@ -77,7 +77,7 @@ as.data.table.DataObject = function(x, keep.rownames, ...) as(x, "data.table")
 
 #' @name export-methods
 #' @export
-setAs("VegObject", "Raster", function(from) promoteToRaster(from@data))
+setAs("ModelObject", "Raster", function(from) promoteToRaster(from@data))
 
 #' @name export-methods
 #' @export
@@ -101,7 +101,7 @@ setMethod("as.Raster", signature("DataObject"), function(x)  promoteToRaster(x@d
 #' @rdname export-methods
 #' @export
 #' @exportMethod as.Raster
-setMethod("as.Raster", signature("VegObject"),   function(x) promoteToRaster(x@data))
+setMethod("as.Raster", signature("ModelObject"),   function(x) promoteToRaster(x@data))
 
 
 
@@ -116,11 +116,11 @@ setMethod("as.Raster", signature("VegObject"),   function(x) promoteToRaster(x@d
 # # SpatialPixelsDataFrame
 # 
 # 
-# setAs("VegObject", "SpatialPixelsDataFrame", function(from) makeSPDFfromDT(from@data))
+# setAs("ModelObject", "SpatialPixelsDataFrame", function(from) makeSPDFfromDT(from@data))
 # 
 # #as.SpatialPixelsDataFrame() <- function (x, ...) {
 # #  UseMethod("as.SpatialPixelsDataFrame", x)
 # #}
 # 
 # 
-# as.SpatialPixelsDataFrame.VegObject = function(x) as(x, "SpatialPixelsDataFrame") 
+# as.SpatialPixelsDataFrame.ModelObject = function(x) as(x, "SpatialPixelsDataFrame") 
