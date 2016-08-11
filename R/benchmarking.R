@@ -17,8 +17,6 @@
 #' @param spatial.extent If specified (as a raster::Extent object), the spatial extent to plot.  Note that the statistics will *not* reflect
 #'this extent
 #' @param showR2 A logical, if TRUE, put the R squared values on the plots.
-#' @param layout.objs A list of layout objects (see the \code{sp} package) for putting on the spatial plots.  For example,
-#' continent outlines
 #' @param histo.plot.range A two-value numeric vector defining the range for the histo plots
 #' @param correction.dt A data.table with columns "Lon", "Lat" and "Correction" to apply a multiplicative correction to the model data before performing the benchmark 
 #' to account for (for example) land cover.  NA's can be used to completely mask out areas from the comparison. 

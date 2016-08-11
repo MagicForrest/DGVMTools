@@ -538,6 +538,7 @@ setClass("SpatialComparison",
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
 #' @slot combineShadeTolerance If TRUE, call combineShadeTolerance before doing the biome classification
 #' @slot totals.needed List of vegetation totals needed to calculate biomes, for example c("Tree", "Grass")
+#' @slot max.needed List of maximum values needed to calculate biomes, for example c("PFT", "Tree")
 #' @slot fraction.of.total List of vegetation fraction of totals needed to calculate biomes
 #' @slot fraction.of.tree List of vegetation fraction of tree total needed to calculate biomes
 #' @slot fraction.of.woody List of vegetation fraction of woody total needed to calculate biomes
