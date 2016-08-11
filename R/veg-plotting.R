@@ -425,7 +425,7 @@ plotLayer <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or 
     }
     
     # KAPPA
-    if(!is.na(kappa.list)){
+    if(!is.na(kappa.list)[[1]]){
     
       # if only one model run put individual Kappas into biome legend
       if(nlayers(data.toplot)-1 == 1) colorkey.list[["labels"]][["labels"]] <- paste0(colorkey.list[["labels"]][["labels"]], " (", rev(round(kappa.list[[1]]@individual.Kappas,2)), ")", sep = "")

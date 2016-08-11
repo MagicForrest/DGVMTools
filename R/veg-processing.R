@@ -275,79 +275,6 @@ combineShadeTolerance <- function(input){
   
 }
 
-###################################################################################
-##### FIND THE DOMINANT PFT (OF TOTAL AND/OR TREE AND/OR WOODY)
-##### Notes: Could make this nicer using a list of inputs ("Total", "Tree", "Woody") that can be looped over
-##### TODO   Low priority
-#'
-#' Find dominant PFT
-#' 
-#' Find the dominant PFT (for each point in space and/or time) and stored in the ModelObject.  Can be of all PFTs, of all tree PFTs and/or of all woody PFTs 
-#' The resulting layers are called "Dominant", "DominantTree" and "DominantWoody" respectively.
-#' 
-#' @param input The ModelObject which is to have the shade tolerance classes combined.
-#' @param do.all If TRUE calculate the dominant PFT out of all PFTs
-#' @param do.tree If TRUE calculate the dominant PFT out of all tree PFTs
-#' @param do.woody If TRUE calculate teh dominant PFT out of all woody PFTs
-#' @return The ModelObject with the dominant layers PFTs added
-#' @export
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-addDominantPFT <- function(input, do.all = TRUE, do.tree = FALSE, do.woody = FALSE){
-  
-  # To avoid NOTES when checking
-  Total = Dominant = NULL
-  
-  # We get a warning about a shallow copy here, suppress it
-  suppressWarnings(dt <- input@data)
-  PFT.data <- input@run@pft.set
-  
-  # auxiliary function to be apply'd
-  domPFT <- function(x){return(names(x)[which.max(x)])  }  
-  
-  # get colnames of PFTs
-  PFTs.present <- list()
-  tree.PFTs.present <- list()
-  woody.PFTs.present <- list()
-  for(colname in names(dt)){
-    for(PFT in PFT.data){
-      if(PFT@id == colname) {
-        if(do.all) {PFTs.present <- append(PFTs.present, colname)}
-        if(do.tree && tolower(PFT@lifeform) == "tree") {tree.PFTs.present <- append(tree.PFTs.present, colname)}
-        if(do.woody && (tolower(PFT@lifeform) == "tree" || tolower(PFT@lifeform) == "shrub")) {woody.PFTs.present <- append(woody.PFTs.present, colname)}
-      }
-    }
-  }
-  
-  
-  if(do.all) {
-    PFTs.present <- unlist(PFTs.present)
-    PFTs.present <- PFTs.present[-which(PFTs.present == "Total")]
-    suppressWarnings(dt[, Dominant := apply(dt[,PFTs.present,with=FALSE],FUN=domPFT,MARGIN=1)])
-    dt[Total < 0.2, eval(quote(paste("Dominant"))) := "Barren"]
-    dt[, eval(quote(paste("Dominant"))) := as.factor(get("Dominant"))]
-    
-  }
-  
-  if(do.tree) {
-    tree.PFTs.present <- unlist(tree.PFTs.present)
-    suppressWarnings(dt[, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := apply(dt[,tree.PFTs.present,with=FALSE],FUN=domPFT,MARGIN=1)])
-    dt[Total < 0.2, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := "Barren"]
-    dt[, eval(quote(paste("Dominant", "Tree", sep = sep.char))) := as.factor(get(paste("Dominant", "Tree", sep = sep.char)))]
-  }
-  
-  if(do.woody) {
-    woody.PFTs.present <- unlist(woody.PFTs.present)
-    suppressWarnings(dt[, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := apply(dt[,woody.PFTs.present,with=FALSE],FUN=domPFT,MARGIN=1)])
-    dt[Total < 0.2, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := "Barren"]
-    dt[, eval(quote(paste("Dominant", "Woody", sep = sep.char))) := as.factor(get(paste("Dominant", "Woody", sep = sep.char)))]
-    
-    
-  }
-  
-  input@data <- dt
-  return(input)
-  
-}
 
 
 
@@ -387,7 +314,7 @@ addBiomes <-function(input, scheme){
   }
   
   # Get the dominant tree and dominant woody PFTs
-  input <- addDominantPFT(input, do.all = TRUE, do.tree = TRUE, do.woody = TRUE)
+  input <- newLayer(input, layers = scheme@max.needed, method = "max")
   
   # Get the totals required
   input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
@@ -551,7 +478,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
         #suppressWarnings(dt[, eval(paste0(method.stringprint, layer) ):= method(.SD), .SDcols = layer.cols])
         suppressWarnings(dt[, eval(paste0(method.string, this.layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
         dt[Total < 0.2, eval(quote(paste0(method.string, this.layer))) := "Barren"]
-        dt[, eval(quote(paste0(method.string, this.layer))) := as.factor(get("Dominant"))]
+        dt[, eval(quote(paste0(method.string, this.layer))) := as.factor(get(paste0(method.string, this.layer)))]
       }
       
     } # if not month

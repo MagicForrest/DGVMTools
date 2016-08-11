@@ -24,25 +24,25 @@
 Smith2014BiomeRules <- function(lai){
   
   # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['DominantTree']] == "TrBE") {return(1)}
+  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['MaxTree']] == "TrBE") {return(1)}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(2)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(2)}
   
   # BIOME 3 - Tropical Seasonal Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['DominantTree']] == "TrBE" | lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(3)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['MaxTree']] == "TrBE" | lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(3)}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return(4)}
   
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['DominantTree']] == "BNS") {return(5)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 &  as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['MaxTree']] == "BNS") {return(5)}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['DominantTree']] == "TeBE") {return(6)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return(6)}
   
   # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['DominantTree']] == "TeBS") {return(7)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBS") {return(7)}
   
   # BIOME 8 - Temperate/Boreal Mixed Forest
   else if(as.numeric(lai[['Tree']]) > 2.5) {return(8) }
@@ -98,6 +98,7 @@ Smith2014.scheme <- new("BiomeScheme",
                         substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
                         rules = Smith2014BiomeRules,
                         totals.needed = c("lifeforms", "zones"),
+                        max.needed = "Tree",
                         fraction.of.total = c("Grass"),
                         fraction.of.tree = c("pft", "zones"),
                         fraction.of.woody = c("NA"),
@@ -167,7 +168,7 @@ Hickler2012Rules <- function(lai){
   if(as.numeric(lai[['Total']] < 0.2)){
     
     # BIOME 1 - Arctic/alpine desert
-    if(as.numeric(lai[['GDD5']]) < 1200 & (lai[['Dominant']] == "BES" | lai[['Dominant']] == "C3_gr" | lai[['Dominant']] == "Barren")) {return(1)}
+    if(as.numeric(lai[['GDD5']]) < 1200 & (lai[['MaxPFT']] == "BES" | lai[['MaxPFT']] == "C3_gr" | lai[['MaxPFT']] == "Barren")) {return(1)}
     # BIOME 13 - Desert
     else if (as.numeric(lai[['GDD5']]) > 1200) {return(13)}
     
@@ -181,7 +182,7 @@ Hickler2012Rules <- function(lai){
     if(as.numeric(lai[['Tree']]) > 2.0){
       
       # BIOME 6 - Temperate beech and mixed beech forest
-      if(lai[['DominantTree']] == "Fag_syl") {return(6)}
+      if(lai[['MaxTree']] == "Fag_syl") {return(6)}
       # BIOME 7 - Temperate mixed broad-leaved forest
       else {return(7)}
       
@@ -233,7 +234,7 @@ Hickler2012Rules <- function(lai){
     else if(as.numeric(lai[['Boreal']]) > Mediterranean.Total & as.numeric(lai[['Boreal']]) <= as.numeric(lai[['Temperate']])){
       
       # BIOME 6 - Temperate beech and mixed beech forest
-      if(lai[['DominantTree']] == "Fag_syl") {return(6)}
+      if(lai[['MaxTree']] == "Fag_syl") {return(6)}
       # BIOME 7 - Temperate mixed broad-leaved forest
       else {return(7)}
       
@@ -252,7 +253,7 @@ Hickler2012Rules <- function(lai){
   if(as.numeric(lai[['Woody']]) > 0.5 & as.numeric(lai[['Grass']]) > 0.5 & as.numeric(lai[['GDD5']]) > 1200) {return(11)}
   
   # BIOME 2 - Arctic/Alpine Tundra
-  if(as.numeric(lai[['Tree']]) <= 0.5 & as.numeric(lai[['GDD5']]) < 1200 & (lai[['Dominant']] == "BES" | lai[['Dominant']] == "C3_gr")) {return(2)}
+  if(as.numeric(lai[['Tree']]) <= 0.5 & as.numeric(lai[['GDD5']]) < 1200 & (lai[['MaxPFT']] == "BES" | lai[['MaxPFT']] == "C3_gr")) {return(2)}
   
   # BIOME 12 - Steppe
   if(as.numeric(lai[['Total']]) > 0.2 & as.numeric(lai[['GDD5']]) > 1200) {return(12)}
@@ -284,6 +285,7 @@ Hickler2012.scheme <- new("BiomeScheme",
                           rules = Hickler2012Rules,
                           combineShadeTolerance = FALSE,
                           totals.needed = c("Tree", "Woody", "Grass"),
+                          max.needed = c("PFT"),
                           fraction.of.total = c("NA"),
                           fraction.of.tree = c("NA"),
                           fraction.of.woody = c("Temperate", "Boreal", "Mediterranean", "Supra-mediterranean"),
@@ -338,25 +340,25 @@ Hickler2012.scheme <- new("BiomeScheme",
 Forrest2015MegaBiomeRules <- function(lai){
   
   # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['DominantTree']] == "TrBE") {return(1)}
+  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['MaxTree']] == "TrBE") {return(1)}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(5)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(5)}
   
   # BIOME 3 - Tropical Seasonal Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['DominantTree']] == "TrBE" | lai[['DominantTree']] == "TrBR" | lai[['DominantTree']] == "TrTBR")) {return(1)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['MaxTree']] == "TrBE" | lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(1)}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(4)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return(4)}
   
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['DominantTree']] == "BNS") {return(4)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['MaxTree']] == "BNS") {return(4)}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['DominantTree']] == "TeBE") {return(2)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return(2)}
   
   # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['DominantTree']] == "TeBS") {return(3)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBS") {return(3)}
   
   # BIOME 8 - Temperate/Boreal Mixed Forest
   else if(as.numeric(lai[['Tree']]) > 2.5) {return(3) }
@@ -414,6 +416,7 @@ Forrest2015.scheme <- new("BiomeScheme",
                         substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
                         rules = Forrest2015MegaBiomeRules,
                         totals.needed = c("lifeforms", "zones"),
+                        max.needed = "Tree",
                         fraction.of.total = c("Grass"),
                         fraction.of.tree = c("pft", "zones"),
                         fraction.of.woody = c("NA"),
@@ -465,13 +468,13 @@ MeditBiomeRules <- function(lai){
   # BIOME 5 - Cold Montane forest
   else if(as.numeric(lai[['Woody']]) > 1.0 && as.numeric(lai[['BorealFractionOfTree']]) > 0.5) {return(5)}
   # BIOME 2 - Needle-leaved evergreen forest
-  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['DominantWoody']] == "TeNE") {return(2)}
+  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return(2)}
   # BIOME 3 - Mediterranean woodland/scrub
-  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['DominantWoody']] == "TeBE") {return(3)}
+  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeBE") {return(3)}
   # BIOME 6 - Pre-steppe deciduous woodlands
-  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > 0.5 && lai[['DominantWoody']] == "TeBS") {return(6)}
+  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}
   # BIOME 8 - Shrublands/Shrub Steppe
-  else if((as.numeric(lai[['Woody']]) > 1.0 && (lai[['DominantWoody']] == "MeES" || lai[['DominantWoody']] == "MeRS" ))  
+  else if((as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS" ))  
           || as.numeric(lai[['Woody']]) > as.numeric(lai[['Grass']])) {return(8)}
   # BIOME 7 - Grass Steppe  
   else if(as.numeric(lai[['Grass']]) > 1.0 & as.numeric(lai[['Woody']] < 1.0)) {return(7)}
@@ -498,6 +501,7 @@ MeditBiomes.scheme <- new("BiomeScheme",
                           substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
                           rules = MeditBiomeRules,
                           totals.needed = c("lifeforms", "zones"),
+                          max.needed = "Woody",
                           fraction.of.total = c("Grass"),
                           fraction.of.tree = c("Boreal", "Summergreen"),
                           fraction.of.woody = c("NA"),
@@ -540,22 +544,22 @@ MeditBiomes.scheme <- new("BiomeScheme",
 MegaBiomeRules_dev <- function(lai){
   
   # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 &  lai[['DominantTree']] == "TrBE") {return(1)}
+  if(as.numeric(lai[['Tree']]) > 2.5 &  lai[['MaxTree']] == "TrBE") {return(1)}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & lai[['DominantTree']] == "TrBR") {return(2)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & lai[['MaxTree']] == "TrBR") {return(2)}
   
   # BIOME 3 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  (lai[['DominantTree']] == "BNE" | lai[['DominantTree']] == "IBS" | lai[['DominantTree']] == "BIBS")) {return(3)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 &  (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return(3)}
   
   # BIOME 4 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  lai[['DominantTree']] == "BNS") {return(4)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 &  lai[['MaxTree']] == "BNS") {return(4)}
   
   # BIOME 5 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (lai[['DominantTree']] == "TeBE" | lai[['DominantTree']] == "TeNE")) {return(5)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (lai[['MaxTree']] == "TeBE" | lai[['MaxTree']] == "TeNE")) {return(5)}
   
   # BIOME 6 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  lai[['DominantTree']] == "TeBS") {return(6)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  lai[['MaxTree']] == "TeBS") {return(6)}
   
   # BIOME 10 - Arctic/alpine Tundra
   else if(as.numeric(lai[['Tree']]) < 0.1 & as.numeric(lai[['Total']]) > 0.5 & (as.numeric(lai[['Lat']]) >= 54 | as.numeric(lai[['GDD5']]) < 400)) {return(10)}
@@ -602,6 +606,7 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
                          substitution = data.frame(id=1:18, v=c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,8,12,13,10)),
                          rules = MegaBiomeRules_dev,
                          combineShadeTolerance = TRUE,
+                         max.needed = "Tree",
                          fraction.of.total = c("NA"),
                          fraction.of.tree = c("NA"),
                          fraction.of.woody = c("Temperate", "Boreal", "Mediterranean"),
@@ -713,6 +718,7 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                             substitution = data.frame(id=1:18, v=1:18),
                             rules = FPCMegaBiomeRules,
                             totals.needed = c("lifeforms", "zones"),
+                            max.needed = c("NA"),
                             combineShadeTolerance = TRUE,
                             fraction.of.total = c("NA"),
                             fraction.of.tree = c("NA"),
