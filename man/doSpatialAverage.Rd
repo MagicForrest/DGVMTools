@@ -4,14 +4,14 @@
 \alias{doSpatialAverage}
 \title{Spatially average a data.table}
 \usage{
-doSpatialAverage(input.dt, verbose = FALSE, area.weighted = TRUE)
+doSpatialAverage(input.obj, verbose = FALSE, area.weighted = TRUE)
 }
 \arguments{
-\item{input.dt}{data.table}
-
 \item{verbose}{If TRUE give some progress update about the averaging.}
 
 \item{area.weighted}{If TRUE area-weight the gridcells}
+
+\item{input.dt}{data.table}
 }
 \value{
 A data.table

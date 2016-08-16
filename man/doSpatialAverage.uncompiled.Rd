@@ -2,22 +2,23 @@
 % Please edit documentation in R/model-tools.R
 \name{doSpatialAverage.uncompiled}
 \alias{doSpatialAverage.uncompiled}
-\title{Spatially average a data.table}
+\title{Spatially average a ModelObject, DataObject or data.table}
 \usage{
-doSpatialAverage.uncompiled(input.dt, verbose = FALSE, area.weighted = TRUE)
+doSpatialAverage.uncompiled(input.obj, verbose = FALSE,
+  area.weighted = TRUE)
 }
 \arguments{
-\item{input.dt}{data.table}
-
 \item{verbose}{If TRUE give some progress update about the averaging.}
 
 \item{area.weighted}{If TRUE area-weight the gridcells}
+
+\item{input.dt}{data.table}
 }
 \value{
 A data.table
 }
 \description{
-Spatially average all gridcells (identified by "Lat" and "Lon" columns) of a data.table object. 
+Spatially average all gridcells of a ModelObject, DataObject or data.table (assuming the data.table has columns "Lon" and "Lat"). 
 Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)
 }
 \author{

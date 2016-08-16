@@ -29,7 +29,7 @@ in 5\% intervals.}
 \item{spatial.extent}{If specified (as a raster::Extent object), the spatial extent to plot.  Note that the statistics will *not* reflect
 this extent}
 
-\item{showR2}{A logical, if TRUE, put the R squared values on the plots.}
+\item{showR2}{A logical, if TRUE, put the R2.effared values on the plots.}
 
 \item{histo.plot.range}{A two-value numeric vector defining the range for the histo plots}
 

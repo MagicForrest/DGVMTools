@@ -12,15 +12,26 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 
-getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collection5", resolution = "original") {
+getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collection5", resolution = "original", start = 2000, end = 2015, average = TRUE, layer = "treecover") {
 
   Lon = Lat = NULL
     
   if(resolution == "original"){
     
   }
+  if(resolution == "HD"){
+    raster <- brick("/home/forrest/Data/TreeCover/MOD44B/v051/processed/MOD44B.2000-2015.HD.nc", varname = layer)
+    if(start != 2000 | end != 2015) raster <- subset(raster, (start-1999):(end-1999))
+    if(average) raster <- calc(raster, mean)
+    t.extent <- new("TemporalExtent", id = "MODISPeriod", name = "MODIS Period", start = start, end = end)
+    s.extent.id <- "Global"
+    s.extent.name <- "Global"
+  }
   else if(resolution == "1km-Turkey"){
     raster <- trim(rotate(raster(file.path(location, "processed/MODISTreeCover.2000-2010.1km-Turkey.nc"))))
+    t.extent <- new("TemporalExtent", id = "MODISPeriod", name = "MODIS Period", start = 2000, end = 2010)
+    s.extent.id = "TurkeyExtent"
+    s.extent.name = "Turkey 1km extent"
   }
   
   
@@ -36,10 +47,10 @@ getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collect
   dataset <- new("DataObject",
                          id = "MODISTreeCover",
                          name = "MODIS MOD44B Tree",
-                         temporal.extent = new("TemporalExtent", id = "MODISPeriod", name = "MODIS Period", start = 2000, end = 2010),
+                         temporal.extent = t.extent,
                          data = dt,
                          quant = quant,
-                         spatial.extent = new("SpatialExtent", id = "TurkeyExtent", name = "Turkey 1km extent", extent = getExtentFromDT(dt)),
+                         spatial.extent = new("SpatialExtent",  id  = s.extent.id, name = s.extent.name, extent = getExtentFromDT(dt)),
                          correction.layer =  "")
   
   

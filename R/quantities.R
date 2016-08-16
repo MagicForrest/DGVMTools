@@ -194,7 +194,7 @@ veg.quantities <- list(
   
   new("Quantity",
       id = "cpool",
-      name = "Carbon Pool",
+      name = "Carbon",
       type = "pools",
       units = "kgC/m^2",
       colours = fields::tim.colors,
@@ -239,7 +239,7 @@ veg.quantities <- list(
   
   new("Quantity",
       id = "mnpp",
-      name = "Monthly NPP",
+      name = "NPP",
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
@@ -248,7 +248,7 @@ veg.quantities <- list(
   
   new("Quantity",
       id = "mgpp",
-      name = "Monthly GPP",
+      name = "GPP",
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
@@ -439,7 +439,7 @@ veg.quantities <- list(
   
   new("Quantity",
       id = "tot_runoff",
-      name = "Annual Total Runoff",
+      name = "Runoff",
       type = "annual",
       units = "mm/year",
       colours = fields::tim.colors,

@@ -180,7 +180,9 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
   }
 
   if (is.data.table(input)) {
-    input <- area[input]
+    setKeyDGVM(area)
+    setKeyDGVM(input)
+    input <- merge(area, input, all =FALSE)
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "' to data.table.", sep=""))
     return(input)

@@ -26,7 +26,7 @@ setKeyDGVM <- function(dt){
 }
 
 
-######## DEFINE A VEGRUN OBJECT 
+######## DEFINE A MODELRUN OBJECT 
 
 #' Define a ModelRun object, setting up all the required metadata (only). 
 #' 
@@ -68,14 +68,13 @@ defineModelRun <- function(...){
 }
 
 
-############# ADD AN OBJECT TO A VEGRUN ######################################
+############# ADD AN OBJECT TO A MODELRUN ######################################
 
 #' Add an object (either a \code{ModelObject} or a  \code{SpatialComparison}) to a \code{ModelRun} object to be use later.  
 #' 
 #' Stores an object in its run for later calculations, plotting, comparisons.
 #' 
-#' @param object Object to add to the \code{ModelRun},   The parameters are the slots of a ModelRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
-#' compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.
+#' @param object Object to add to the \code{ModelRun}.
 #' @param run The \code{ModelRun} object to which the object argument should be added
 #' @return A ModelRun object the the object argument added
 #' @export
@@ -116,6 +115,43 @@ addToModelRun <- function(object, run){
   return(run)
   
 }
+
+
+############# REMOVE AN OBJECT FROM A MODELRUN ######################################
+
+#' Remove an object (either a \code{ModelObject} from a \code{ModelRun} object to reclaim memory.  
+#' 
+#' Processing a lot of different files and storing the full output internally (in the ModelRun) may use too much memory. You can get around this by not storing them internally, 
+#' but if you need to do this, for example because you want to average many spatial or temporal extents from one output file, this function lets you remove ModelObject to free the space again.  
+#' 
+#' @param object.id The id of the object to remove  to the \code{ModelRun},   
+#' @param run The \code{ModelRun} object to which the object argument should be added
+#' @return A ModelRun with the object removed
+#' @export
+#' @seealso ModelRun, ModelRunInfo 
+removeFromModelRun <- function(object.id, run){
+  
+ 
+    if(object.id %in% names(run@objects)) {
+      print( names(run@objects))
+      
+      model.objects.list <- run@objects
+      model.objects.list[[object.id]] <- NULL
+      run@objects <- model.objects.list
+      rm(model.objects.list)
+      gc()
+      
+    }
+    
+    else{
+      warning(paste("Can't remove ModelObject with id ", object.id, " from run ", run@id, " because I can't find it in the run!"))
+    }
+    
+ 
+  return(run)
+  
+}
+
 
 
 ############################## MAKE THE 'id' STRING FOR A VEGOBJECT
@@ -170,12 +206,12 @@ getVegSpatial <- function(run,
   
   return(
     getModelObject(run, 
-                 var, 
-                 spatial.extent = NULL, 
-                 spatially.average = FALSE,
-                 temporal.extent = period, 
-                 temporally.average = TRUE, 
-                 ...)
+                   var, 
+                   spatial.extent = NULL, 
+                   spatially.average = FALSE,
+                   temporal.extent = period, 
+                   temporally.average = TRUE, 
+                   ...)
   )
   
   
@@ -205,12 +241,12 @@ getVegTemporal <- function(run,
   
   return(
     getModelObject(run, 
-                 var, 
-                 spatial.extent = spatial.extent, 
-                 spatially.average = TRUE,
-                 temporal.extent = NULL, 
-                 temporally.average = FALSE, 
-                 ...)
+                   var, 
+                   spatial.extent = spatial.extent, 
+                   spatially.average = TRUE,
+                   temporal.extent = NULL, 
+                   temporally.average = FALSE, 
+                   ...)
   )
   
   
@@ -248,18 +284,18 @@ getVegTemporal <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 getModelObject <- function(run, 
-                         var, 
-                         temporal.extent = NULL, 
-                         temporally.average = FALSE, 
-                         spatial.extent = NULL, 
-                         spatially.average = FALSE,
-                         area.weighted=TRUE,
-                         write = FALSE, 
-                         read.full = TRUE, 
-                         verbose = TRUE, 
-                         store.internally = FALSE,
-                         store.full = FALSE,
-                         adgvm.scheme = 1){
+                           var, 
+                           temporal.extent = NULL, 
+                           temporally.average = FALSE, 
+                           spatial.extent = NULL, 
+                           spatially.average = FALSE,
+                           area.weighted=TRUE,
+                           write = FALSE, 
+                           read.full = TRUE, 
+                           verbose = TRUE, 
+                           store.internally = FALSE,
+                           store.full = FALSE,
+                           adgvm.scheme = 1){
   
   # To avoid annoying NOTES when R CMD CHECK-ing
   Lon = Lat = Year = NULL  
@@ -281,7 +317,7 @@ getModelObject <- function(run,
   
   
   
-  ### CASE 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE VEGRUN IN MEMORY
+  ### CASE 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE MODELRUN IN MEMORY
   if(model.object.id %in% names(run@objects)){
     
     # if it is present it in memory then can be returned directly
@@ -406,22 +442,22 @@ getModelObject <- function(run,
       # Build the full object
       year.range <- range(this.dt[,Year])
       model.object.full <- new("ModelObject",
-                            id = var.string,
-                            data = this.dt,
-                            quant = quant,
-                            spatial.extent = new("SpatialExtent",
-                                                 id = "FullDomain",
-                                                 name = "Full simulation extent",
-                                                 extent =  getExtentFromDT(this.dt)),
-                            temporal.extent = new("TemporalExtent",
-                                                  id = "FullTS",
-                                                  name = "Full simulation duration",
-                                                  start = year.range[1],
-                                                  end = year.range[length(year.range)]),
-                            is.site = FALSE,
-                            is.spatially.averaged = FALSE,
-                            is.temporally.averaged = FALSE,
-                            run = as(run, "ModelRunInfo"))
+                               id = var.string,
+                               data = this.dt,
+                               quant = quant,
+                               spatial.extent = new("SpatialExtent",
+                                                    id = "FullDomain",
+                                                    name = "Full simulation extent",
+                                                    extent =  getExtentFromDT(this.dt)),
+                               temporal.extent = new("TemporalExtent",
+                                                     id = "FullTS",
+                                                     name = "Full simulation duration",
+                                                     start = year.range[1],
+                                                     end = year.range[length(year.range)]),
+                               is.site = FALSE,
+                               is.spatially.averaged = FALSE,
+                               is.temporally.averaged = FALSE,
+                               run = as(run, "ModelRunInfo"))
       
       # name and store
       #names(model.object.full) <- var.string
@@ -496,15 +532,15 @@ getModelObject <- function(run,
   
   ### BUILD THE FINAL VEGOBJECT, STORE IT IF REQUESTED AND RETURN IT
   model.object <- new("ModelObject",
-                   id = model.object.id,
-                   data = this.dt,
-                   quant = quant,
-                   spatial.extent = spatial.extent,
-                   temporal.extent = temporal.extent,
-                   is.site = is.site,
-                   is.spatially.averaged = spatially.average,
-                   is.temporally.averaged = temporally.average,
-                   run = as(run, "ModelRunInfo"))
+                      id = model.object.id,
+                      data = this.dt,
+                      quant = quant,
+                      spatial.extent = spatial.extent,
+                      temporal.extent = temporal.extent,
+                      is.site = is.site,
+                      is.spatially.averaged = spatially.average,
+                      is.temporally.averaged = temporally.average,
+                      run = as(run, "ModelRunInfo"))
   
   
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
@@ -514,7 +550,7 @@ getModelObject <- function(run,
     if(verbose) {message("...done.")}
   }
   
-  ### ADD TO THE VEGRUN OBJECT IF REQUESTED
+  ### ADD TO THE MODELRUN OBJECT IF REQUESTED
   if(store.internally) {
     run <<- addToModelRun(model.object, run)
   }
@@ -725,11 +761,11 @@ doTemporalAverage <- cmpfun(doTemporalAverage.uncompiled)
 }
 
 
-######################### SPATIALLY AVERAGE A DATA.TABLE  ##############################
+######################### SPATIALLY AVERAGE ##############################
 #
-#' Spatially average a data.table
+#' Spatially average a ModelObject, DataObject or data.table 
 #' 
-#' Spatially average all gridcells (identified by "Lat" and "Lon" columns) of a data.table object. 
+#' Spatially average all gridcells of a ModelObject, DataObject or data.table (assuming the data.table has columns "Lon" and "Lat"). 
 #' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
 #'
 #'
@@ -740,7 +776,7 @@ doTemporalAverage <- cmpfun(doTemporalAverage.uncompiled)
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-doSpatialAverage.uncompiled <- function(input.dt,
+doSpatialAverage.uncompiled <- function(input.obj,
                                         verbose = FALSE,
                                         area.weighted=TRUE){
   
@@ -748,16 +784,24 @@ doSpatialAverage.uncompiled <- function(input.dt,
   # Possible can solve this by replace the subset function
   Year = Lat = Lon = NULL
   
+  # sort out the input object class
+  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {input.dt <- input.obj@data}
+  else if(is.data.table(input.obj)) {input.dt <- input.obj}
+  
+  
+  
   # Do the averaging
   if (area.weighted) {
-    if (!any(colnames(input.dt)=="area"))
-      if (verbose)
-        message("Add column area.")
-    input.dt <- addArea(input.dt, verbose=verbose)
+    if (!any(colnames(input.dt)=="area")) {
+      if (verbose) message("Add column area.")
+      input.dt <- addArea(input.dt, verbose=verbose)
+    }
     if(verbose) message(paste("Spatially averaging (area weighted) whole domain...", sep = ""))
     # check to see if Year is still a clomun name (it might have been averaged away)
     if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area), by=list(Year)]
-    else output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area)]
+    else {
+      output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area)]
+    }
     
     output.dt[,area:=NULL]
   } else {
@@ -779,7 +823,14 @@ doSpatialAverage.uncompiled <- function(input.dt,
   
   # Set keys and return the averaged table
   setKeyDGVM(output.dt)
-  return(output.dt)
+  
+  # sort out the input object class
+  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
+    input.obj@data <- output.dt
+    input.obj@is.spatially.averaged <- TRUE
+    return(input.obj)
+  }
+  else if(is.data.table(input.obj)) {return(output.dt)}
   
 }
 
@@ -912,13 +963,13 @@ averageModelObjects <- function(list.of.model.objects, run = NULL, method = mean
     
     #  MF TODO: check that the ModelObjects we just averaged have the same spatial and temporal properties 
     # if they don't, drop an error message
-
+    
     
     # construct a new ModelObject for the average data that we have just calculated based on the first on in the list
     # but put in the new run and data
     new.ModelObject <- list.of.model.objects[[1]]
     new.ModelObject@data <- output.dt
-    new.ModelObject@run <- run
+    new.ModelObject@run <- as(run, "ModelRunInfo")
     
     
     return(new.ModelObject)

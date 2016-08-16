@@ -476,7 +476,8 @@ setClass("TemporalDataset",
 #' This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToSpatialDataset}
 #' 
 #' @slot id A unique character string to identify this particular raster compariosn.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot R.squ The R squared between the model and the data
+#' @slot R2 The R^2 between the model and the data
+#' @slot R2.eff The model efficiency of the model compared to the data
 #' @slot P.cor The Pearsons product moment correlation between the model and the the data,
 #' @slot ME The Mean Error (mean of residuals) between the model and the data
 #' @slot NME The Normalised Mean Error (mean of residuals after the residuals have been divided the value of the data point) between the model and the data
@@ -490,7 +491,8 @@ setClass("TemporalDataset",
 #' 
 setClass("SpatialComparison",
          slots = c(id = "character",
-                   R.squ = "numeric", 
+                   R2 = "numeric", 
+                   R2.eff = "numeric",
                    P.cor = "numeric",
                    ME = "numeric", 
                    NME = "numeric",
@@ -501,7 +503,8 @@ setClass("SpatialComparison",
                    individual.Kappas = "numeric"  
          ),
          prototype = c(id = "-",
-                       R.squ = NA, 
+                       R2 = NA,
+                       R2.eff = NA, 
                        P.cor = NA,
                        ME = NA, 
                        NME = NA,

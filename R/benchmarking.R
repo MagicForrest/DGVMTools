@@ -16,7 +16,7 @@
 #' in 5\% intervals.
 #' @param spatial.extent If specified (as a raster::Extent object), the spatial extent to plot.  Note that the statistics will *not* reflect
 #'this extent
-#' @param showR2 A logical, if TRUE, put the R squared values on the plots.
+#' @param showR2 A logical, if TRUE, put the R2.effared values on the plots.
 #' @param histo.plot.range A two-value numeric vector defining the range for the histo plots
 #' @param correction.dt A data.table with columns "Lon", "Lat" and "Correction" to apply a multiplicative correction to the model data before performing the benchmark 
 #' to account for (for example) land cover.  NA's can be used to completely mask out areas from the comparison. 
@@ -66,7 +66,7 @@ benchmarkSpatial <- function(runs,
   inargs <- list(...)
   args1[names(inargs)] <- inargs
   
-
+  
   # COMBINE LAYOUT OBJECTS FROM DIFFERENT SOURCES - MF not necessary any more
   # if(!is.null(layout.objs)){
   #   
@@ -93,6 +93,8 @@ benchmarkSpatial <- function(runs,
   canvas.options.square.scaled$width <- height.width
   canvas.options.square.scaled$height <- height.width
   
+  # CALCULATE THE BOOTSTRAP MEAN FOR T
+  
   
   
   # FIRST BENCHMARK EACH RUN SEPARATELY
@@ -110,6 +112,7 @@ benchmarkSpatial <- function(runs,
   run.fill.cols <- c()
   run.line.cols <- c()
   
+  first.time <- TRUE
   for(run in runs){
     
     # make the id_to_description
@@ -119,17 +122,19 @@ benchmarkSpatial <- function(runs,
     run.line.cols <- append(run.line.cols, run@line.col)
     
     # get the ModelObject for the period 
-    model.model.object <- getModelObject(run, 
-                                    dataset@quant, 
-                                    temporal.extent = dataset@temporal.extent,
-                                    temporally.average = TRUE, 
-                                    store.internally = TRUE, 
-                                    write = TRUE, 
-                                    read.full = FALSE)
+    model.object <- getModelObject(run, 
+                                   dataset@quant, 
+                                   temporal.extent = dataset@temporal.extent,
+                                   temporally.average = TRUE, 
+                                   store.internally = TRUE, 
+                                   write = TRUE, 
+                                   read.full = FALSE)
     
     # get the layer 
-    if(!(layer.name %in% names(model.model.object@data))) model.model.object <- newLayer(model.model.object, layer.name, PFT.data = run@pft.set)
-    model.dt <- model.model.object@data[, c("Lat", "Lon", layer.name), with=FALSE]
+    if(!(layer.name %in% names(model.object@data))) model.object <- newLayer(model.object, layer.name, PFT.data = run@pft.set)
+    model.dt <- model.object@data[, c("Lat", "Lon", layer.name), with=FALSE]
+    rm(model.object)
+    gc()
     
     # if required apply the correction
     if(!is.null(correction.dt)) {
@@ -154,6 +159,66 @@ benchmarkSpatial <- function(runs,
     # add the model output (keeping only points where there are data) and and rename the colum with the run id
     data.dt <- merge(x = round(data.dt, 3), y = round(model.dt, 3), all = FALSE)
     data.dt <- na.omit(data.dt)
+    
+    calcNME <- function(data.vector, model.vector) {
+      
+      return( sum(abs(data.vector - model.vector), na.rm=TRUE) / sum(abs(data.vector - mean(data.vector)), na.rm=TRUE)) 
+      
+    }
+    
+    calcNashSutcliffe <- function(data.vector, model.vector) {
+      
+      return( 1 -  (sum((data.vector - model.vector)^2, na.rm=TRUE) / length(data.vector)) / var(data.vector) )
+      
+    }
+    
+    calcR2 <- function(data.vector, model.vector) {
+      
+      return( sum( (model.vector - mean(model.vector)) * (data.vector - mean(data.vector)) )^2 / (sum( (model.vector - mean(model.vector))^2 ) * sum( (data.vector - mean(data.vector)) ^2)) )
+      
+    }
+    
+    
+    
+    # if first time comparing to this dataset, calculate the bootstrap mean
+    if(first.time){
+      
+      first.time <- FALSE
+      
+      # get the data as a dt
+      
+      data.vector <- data.dt[[dataset@id]]
+      
+      
+      NME.boot.strap.scores <- c()
+      R2.boot.strap.scores <- c()
+      R2.eff.boot.strap.scores <- c()
+      for(iter in 1:1000){
+        
+        fake.data <- sample(data.vector, length(data.vector), replace = TRUE)
+    
+        NME <- calcNME(data.vector, fake.data)
+        NME.boot.strap.scores <- append(NME.boot.strap.scores, NME)
+        
+        R2 <- calcR2(data.vector, fake.data)
+        R2.boot.strap.scores <- append(R2.boot.strap.scores, R2)
+        
+        R2.eff <- calcNashSutcliffe(data.vector, fake.data)
+        R2.eff.boot.strap.scores <- append(R2.eff.boot.strap.scores, R2.eff)
+    
+      }
+      
+    }
+    
+    print(paste("Bootstrap R2 mean = ", mean(R2.boot.strap.scores)))
+    print(paste("Bootstrap R2 sd = ", sd(R2.boot.strap.scores)))
+    print(paste("Bootstrap R2.eff mean = ", mean(R2.eff.boot.strap.scores)))
+    print(paste("Bootstrap R2.eff sd = ", sd(R2.eff.boot.strap.scores)))
+    print(paste("Bootstrap NME mean = ", mean(NME.boot.strap.scores)))
+    print(paste("Bootstrap NME sd = ", sd(NME.boot.strap.scores)))
+    
+    
+    
     
     # calculate the difference and percentage difference
     error.string <- paste(run@id, "Error", sep = "_")
@@ -182,17 +247,29 @@ benchmarkSpatial <- function(runs,
     
     
     # ME and NME 
-    ME <- mean(abs(difference.vector), na.rm=TRUE)
-    NME <- ME / mean(abs(data.vector - mean(data.vector)))
+    ME <- sum(abs(data.vector - model.vector))
+    NME <- calcNME(data.vector, model.vector)
     
     # MSE, RMSE, NMSE
-    MSE <- mean(difference.vector^2, na.rm=TRUE)
-    NMSE <- MSE/var.observed
+    
+    MSE <- sum(difference.vector^2, na.rm=TRUE)
+    NMSE <- MSE/ sum((data.vector - mean(data.vector))^2)
     RMSE <- MSE^0.5
     
     
+    # R2 - coefficient of variation
+    # R2 = (sum(model - mean.model) * (meas - mean.meas))^2 / (sum(model -mean.model)^2 * sum(meas - mean.meas)^2)
+    R2 <- calcR2(data.vector, model.vector)
     
-    R.squ <- 1 - (MSE/var.observed)
+    # R2eff - model efficiency
+    R2.eff <- calcNashSutcliffe(data.vector, model.vector)
+    
+    
+    print(paste0("R2 = ", R2))
+    print(paste0("R2.eff = ", R2.eff))
+    print(paste0("NME = ", NME))
+    
+    # Pearson product moment correlation coefficient
     P.cor <- cor(data.vector, model.vector, method = "pearson")
     
     comparison.result <- new("SpatialComparison",
@@ -201,16 +278,18 @@ benchmarkSpatial <- function(runs,
                              NME = NME,
                              RMSE = RMSE, 
                              NMSE = NMSE,
-                             R.squ = R.squ, 
+                             R2 = R2,
+                             R2.eff = R2.eff, 
                              P.cor = P.cor, 
                              sd.diff = sd.diff)
     
     runs[[run@id]] <- addToModelRun(comparison.result, runs[[run@id]])
     
-   
+    
     
     # set up local arguments for plotting
     local.args <- args1
+    
     
     # get extent for displaying R^2
     this.extent <- getExtentFromDT(data.dt)
@@ -219,32 +298,38 @@ benchmarkSpatial <- function(runs,
       warning("Reported R^2 value in benchmarkSpatial applies to the whole spatial extent, not the smaller extent you have plotted.  If you want the R^2 for this sub-region, crop the data *before* called the benchmarking routine.")
     }
     
-      # calculate R^2 position
-    stats.pos.x <- (this.extent@xmax-this.extent@xmin) * 0.1 + this.extent@xmin
+    # calculate R^2 position
+    stats.pos.x <- (this.extent@xmax-this.extent@xmin) * 0.2+ this.extent@xmin
     stats.pos.y <- (this.extent@ymax-this.extent@ymin) * 0.1 + this.extent@ymin
     
     # make a layout.objects for the R^2
-    R2.val <- round(comparison.result@R.squ, 3)
+    R2.eff.val <- round(comparison.result@R2.eff, 3)
+    R2.val <- round(comparison.result@R2, 3)
+    NME.val <- round(comparison.result@NME, 3)
     if(is.null(local.args[["layout.objs"]])) {  
       local.args[["layout.objs"]] <- list()
     }
-    local.args[["layout.objs"]][[run@id]] <- list("sp.text", txt = bquote(R^2 ~ "=" ~ .(R2.val)), loc = c(stats.pos.x,stats.pos.y), which = 1, cex = 2)
-  
+    
     
     
     ##### DIFFERENCE MAPS
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Diff", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
+    
+    local.args[["layout.objs"]][[run@id]] <- list("sp.text", txt = bquote(R^2 ~ "=" ~ .(R2.val) *  "," ~ R[eff]^2 ~ "=" ~ .(R2.eff.val) * "," ~ NME ~ "=" ~ .(NME.val)), loc = c(stats.pos.x,stats.pos.y), which = 1, cex = 2)
+    
+    
+    
     print(
       do.call(plotLayer, c(list(data = data.dt,
-                                  layers = paste(run@id, "Error", sep = "_"),
-                                  quant = dataset@quant, 
-                                  period = dataset@temporal.extent, 
-                                  run = run,
-                                  tag = "Corrected",
-                                  maxpixels = 1000000,
-                                  special = "diff"),
-                             local.args)
+                                layers = paste(run@id, "Error", sep = "_"),
+                                quant = dataset@quant, 
+                                period = dataset@temporal.extent, 
+                                run = run,
+                                tag = "Corrected",
+                                maxpixels = 1000000,
+                                special = "diff"),
+                           local.args)
       )
     )
     
@@ -257,15 +342,15 @@ benchmarkSpatial <- function(runs,
     
     print(
       do.call(plotLayer, c(list(data = data.dt,
-                                  layers = c(run@id, dataset@id),
-                                  quant = dataset@quant, 
-                                  period = dataset@temporal.extent, 
-                                  run = run,
-                                  summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
-                                  tag = "Corrected",
-                                  maxpixels = 1000000,
-                                  plot.labels = c(run@description, dataset@name)),
-                             local.args)
+                                layers = c(run@id, dataset@id),
+                                quant = dataset@quant, 
+                                period = dataset@temporal.extent, 
+                                run = run,
+                                summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
+                                tag = "Corrected",
+                                maxpixels = 1000000,
+                                plot.labels = c(run@description, dataset@name)),
+                           local.args)
       )
     )
     
@@ -326,7 +411,7 @@ benchmarkSpatial <- function(runs,
     
     
     # add text
-    label.text <- paste("NME = ", signif(NME, 3), "\nNMSE = ", signif(NMSE, 3), "\nRMSE = ", signif(RMSE, 3), "\nR^2 = ", signif(R.squ, 3), "\nPearman Corr. = ", signif(P.cor, 3), sep = "")
+    label.text <- paste("NME = ", signif(NME, 3), "\nNMSE = ", signif(NMSE, 3), "\nRMSE = ", signif(RMSE, 3), "\nR^2 = ", signif(R2, 3), "\nR^2_eff = ", signif(R2.eff, 3), "\nPearman Corr. = ", signif(P.cor, 3), sep = "")
     scatter.plot <- scatter.plot + annotate("text", x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.05, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.9, label = label.text, colour = "red3", size = 10, hjust = 0)
     
     print(scatter.plot)
@@ -371,7 +456,7 @@ benchmarkSpatial <- function(runs,
       # retrieve the comparison object for the R^2 values
       counter <- counter + 1
       comparison.obj <- run@benchmarks[[paste(run@id, dataset@id, sep = ".")]]
-      R2.val <- round(comparison.obj@R.squ, 3)
+      R2.val <- round(comparison.obj@R2.eff, 3)
       args1[["layout.objs"]][[run@id]] <- list("sp.text", txt = bquote(R^2 ~ "=" ~ .(R2.val)), loc = c(stats.pos.x,stats.pos.y), which = counter, cex = 2)
       
       rm(comparison.obj)
@@ -394,12 +479,12 @@ benchmarkSpatial <- function(runs,
     # PLOT ABSOLUTE VALUES
     print(
       do.call(plotLayer, c(list(data = data.dt,
-                                  layers = abs.layers,
-                                  quant = dataset@quant, 
-                                  period = dataset@temporal.extent, 
-                                  tag = "Corrected",               
-                                  plot.labels = plot.titles),
-                             args1)
+                                layers = abs.layers,
+                                quant = dataset@quant, 
+                                period = dataset@temporal.extent, 
+                                tag = "Corrected",               
+                                plot.labels = plot.titles),
+                           args1)
       )
     )
     
@@ -424,15 +509,15 @@ benchmarkSpatial <- function(runs,
     
     print(
       do.call(plotLayer, c(list(data = data.dt,
-                                  layers = diff.layers,
-                                  quant = dataset@quant, 
-                                  period = dataset@temporal.extent, 
-                                  title = paste("Simulated - ", dataset@id, " (", dataset@quant@units, ")", sep = ""),
-                                  special = "difference",               
-                                  plot.labels = plot.titles,
-                                  override.cuts = diff.cuts,
-                                  text.multiplier = 1.0),
-                             args1)
+                                layers = diff.layers,
+                                quant = dataset@quant, 
+                                period = dataset@temporal.extent, 
+                                title = paste("Simulated - ", dataset@id, " (", dataset@quant@units, ")", sep = ""),
+                                special = "difference",               
+                                plot.labels = plot.titles,
+                                override.cuts = diff.cuts,
+                                text.multiplier = 1.0),
+                           args1)
       )
     )
     dev.off()
@@ -450,15 +535,15 @@ benchmarkSpatial <- function(runs,
     
     print(
       do.call(plotLayer, c(list(data = temp.dt,
-                                  layers = perc.diff.layers,
-                                  quant = dataset@quant, 
-                                  period = dataset@temporal.extent, 
-                                  title = paste("Simulated - ", dataset@id, "(percentage difference)"),
-                                  special = "percentage.difference",               
-                                  plot.labels = plot.titles,
-                                  override.cuts = perc.diff.cuts,
-                                  text.multiplier = 1.0),
-                             args1)
+                                layers = perc.diff.layers,
+                                quant = dataset@quant, 
+                                period = dataset@temporal.extent, 
+                                title = paste("Simulated - ", dataset@id, "(percentage difference)"),
+                                special = "percentage.difference",               
+                                plot.labels = plot.titles,
+                                override.cuts = perc.diff.cuts,
+                                text.multiplier = 1.0),
+                           args1)
       )
     )
     
@@ -479,7 +564,7 @@ benchmarkSpatial <- function(runs,
     
     # select all the layers that we want
     temp.dt <- na.omit(data.dt[, abs.layers, with = FALSE])
-   
+    
     
     temp.dt <- melt.data.table(temp.dt, id.vars = dataset@id)
     setnames(temp.dt, c(dataset@id, "Run", "Model"))
@@ -530,11 +615,11 @@ benchmarkSpatial <- function(runs,
     
     histo.plot <- ggplot(as.data.frame(temp.dt), aes(x = Model, colour = Run)) 
     
-   
+    
     histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run), binwidth = abs(diff.cuts[2] - diff.cuts[1]), position="identity")
     histo.plot <- histo.plot + scale_colour_manual(labels = run.descriptions, values = run.line.cols) + scale_fill_manual(labels = run.descriptions, values = run.fill.cols)
     histo.plot <- histo.plot + guides(colour = guide_legend(keywidth = 5, keyheight = 3), fill = guide_legend())
-
+    
     histo.plot <- histo.plot + ggtitle(paste("Residuals: Simulations - ", dataset@name, dataset@quant@name, sep = " ")) + theme(plot.title = element_text(lineheight=.8, face="bold"))
     histo.plot <- histo.plot + theme(text = element_text(size=30))
     histo.plot <- histo.plot + xlab(paste("Residuals: Simulations -", dataset@name, dataset@quant@name, paste0("(",dataset@quant@units,")"), sep = " "))   
@@ -715,7 +800,7 @@ compareBiomes <- function(runs,
   args1 <- list() # specify defaults here
   inargs <- list(...)
   args1[names(inargs)] <- inargs
- 
+  
   
   # align the data to be on the same grid as the model using the nearest neqbour algorthim
   
@@ -762,8 +847,8 @@ compareBiomes <- function(runs,
     if(plot){
       do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste("Biomes", this.VegSpatial@id, scheme@id, tag, canvas.options[["type"]], sep = "."))), 
                                    canvas.options)) 
-    
-
+      
+      
       print(
         do.call(plotLayer, c(
           list(data = this.VegSpatial,
@@ -802,7 +887,7 @@ compareBiomes <- function(runs,
   
   do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Biomes", scheme@id, tag, canvas.options[["type"]], sep = "."))), 
                                canvas.options)) 
- 
+  
   
   comparisons <- NA
   if(show.stats){
@@ -811,19 +896,19 @@ compareBiomes <- function(runs,
   
   print(
     do.call(plotLayer, c(list(data = data.dt, 
-                                layers = layers,
-                                summary.file.name = paste("Biomes", scheme@id, tag, sep = "."),
-                                special = "biomes", 
-                                biome.scheme = scheme, 
-                                plot.labels = labels,
-                                summary.title = paste("Comparison of", scheme@name, "biomes", sep = " "),
-                                kappa.list = comparisons),
-                           args1)
+                              layers = layers,
+                              summary.file.name = paste("Biomes", scheme@id, tag, sep = "."),
+                              special = "biomes", 
+                              biome.scheme = scheme, 
+                              plot.labels = labels,
+                              summary.title = paste("Comparison of", scheme@name, "biomes", sep = " "),
+                              kappa.list = comparisons),
+                         args1)
     )
   )
   
   dev.off()
- 
+  
   biome.dataset@data <- data.dt
   
   rm(comparisons, list.of.comparisons)
@@ -919,13 +1004,13 @@ compareRuns <- function(runs,
                                  canvas.options)) 
     
     print(plotLayer(comparison.dt,
-                      layers = layers,
-                      quant = run@objects[[veg.spatial.id]]@quant,
-                      title = sub.layer,
-                      tag = paste(tag, "RunComparison", sub.layer, sep = "."),
-                      special = special,
-                      override.cuts = abs.value.cuts,
-                      ...)
+                    layers = layers,
+                    quant = run@objects[[veg.spatial.id]]@quant,
+                    title = sub.layer,
+                    tag = paste(tag, "RunComparison", sub.layer, sep = "."),
+                    special = special,
+                    override.cuts = abs.value.cuts,
+                    ...)
     )
     
     dev.off()
@@ -937,13 +1022,13 @@ compareRuns <- function(runs,
                                  canvas.options)) 
     
     print(plotLayer(comparison.dt,
-                      layers = all.layers,
-                      quant = run@objects[[veg.spatial.id]]@quant,
-                      title = paste(paste(original.layers, collapse= " ", sep = ""), run@objects[[veg.spatial.id]]@quant@name, sep = " "),
-                      tag = paste(tag, "RunComparison", sub.layer, sep = "."),
-                      special = special,
-                      override.cuts = abs.value.cuts,
-                      ...)
+                    layers = all.layers,
+                    quant = run@objects[[veg.spatial.id]]@quant,
+                    title = paste(paste(original.layers, collapse= " ", sep = ""), run@objects[[veg.spatial.id]]@quant@name, sep = " "),
+                    tag = paste(tag, "RunComparison", sub.layer, sep = "."),
+                    special = special,
+                    override.cuts = abs.value.cuts,
+                    ...)
     )
     
     dev.off()
@@ -980,14 +1065,14 @@ compareRuns <- function(runs,
                                          canvas.options)) 
             
             print(plotLayer(comparison.dt,
-                              layers = this.diff.names,
-                              quant = run@objects[[veg.spatial.id]]@quant,
-                              special = "Diff",
-                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
-                              plot.labels = this.diff.titles,
-                              override.cuts = diff.cuts,
-                              tag = tag,
-                              ...)
+                            layers = this.diff.names,
+                            quant = run@objects[[veg.spatial.id]]@quant,
+                            special = "Diff",
+                            title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
+                            plot.labels = this.diff.titles,
+                            override.cuts = diff.cuts,
+                            tag = tag,
+                            ...)
             )
             
             dev.off()
@@ -1011,16 +1096,16 @@ compareRuns <- function(runs,
                                          canvas.options)) 
             
             print(plotLayer(comparison.dt,
-                              layers = this.perc.diff.names,
-                              quant = run@objects[[veg.spatial.id]]@quant,
-                              special = "Perc.Diff",
-                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
-                              limit = TRUE,
-                              limits = c(-100,200),
-                              plot.labels = this.perc.diff.titles,
-                              override.cuts = perc.diff.cuts,
-                              tag = tag,
-                              ...)
+                            layers = this.perc.diff.names,
+                            quant = run@objects[[veg.spatial.id]]@quant,
+                            special = "Perc.Diff",
+                            title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
+                            limit = TRUE,
+                            limits = c(-100,200),
+                            plot.labels = this.perc.diff.titles,
+                            override.cuts = perc.diff.cuts,
+                            tag = tag,
+                            ...)
             )
             
             dev.off()
@@ -1044,14 +1129,14 @@ compareRuns <- function(runs,
                                      canvas.options)) 
         
         print(plotLayer(comparison.dt,
-                          layers = all.diff.names,
-                          quant = run@objects[[veg.spatial.id]]@quant,
-                          special = "Diff",
-                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
-                          plot.labels = all.diff.titles,
-                          override.cuts = diff.cuts,
-                          tag = tag,
-                          ...)
+                        layers = all.diff.names,
+                        quant = run@objects[[veg.spatial.id]]@quant,
+                        special = "Diff",
+                        title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
+                        plot.labels = all.diff.titles,
+                        override.cuts = diff.cuts,
+                        tag = tag,
+                        ...)
         )
         
         dev.off()
@@ -1064,16 +1149,16 @@ compareRuns <- function(runs,
                                      canvas.options)) 
         
         print(plotLayer(comparison.dt,
-                          layers = all.perc.diff.names,
-                          quant = run@objects[[veg.spatial.id]]@quant,
-                          special = "Perc.Diff",
-                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
-                          limit = TRUE,
-                          limits = c(-100,200),
-                          plot.labels = all.perc.diff.titles,
-                          override.cuts = perc.diff.cuts,
-                          tag = tag,
-                          ...)
+                        layers = all.perc.diff.names,
+                        quant = run@objects[[veg.spatial.id]]@quant,
+                        special = "Perc.Diff",
+                        title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
+                        limit = TRUE,
+                        limits = c(-100,200),
+                        plot.labels = all.perc.diff.titles,
+                        override.cuts = perc.diff.cuts,
+                        tag = tag,
+                        ...)
         )
         
         dev.off()

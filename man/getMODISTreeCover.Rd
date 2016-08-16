@@ -5,7 +5,8 @@
 \title{Read MODIS TreeCover map}
 \usage{
 getMODISTreeCover(location = "/data/forrest/TreeCover/MOD44B/Collection5",
-  resolution = "original")
+  resolution = "original", start = 2000, end = 2015, average = TRUE,
+  layer = "treecover")
 }
 \arguments{
 \item{location}{A character string specifying the the location of the original data files}

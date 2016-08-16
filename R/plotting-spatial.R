@@ -765,7 +765,7 @@ plotLayer <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or 
 #'   
 #'   plot(model, data, col = rgb(0.1,0.1,0.1,0.1), pch = 20, xlab = paste(run@description, " ", quant@name, " (", quant@units, ")", sep = ""), ylab = paste(data.name, " ", quant@name, " (", quant@units, ")", sep =""), ylim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), xlim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), main = paste("Scatter vs. ", data.name, sep = ""), maxpixels = 100000000, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 4)
 #'   abline(0, 1, col = "red")
-#'   legend('topleft', c(paste("RMSE:", round(stat.results@RMSE, 2), sep = " "), paste("R^2:", round(stat.results@R.squ, 2), sep = " "), paste("Pearsons:", round(stat.results@P.cor, 2), sep = " ")), text.col = c("red", "blue", "green"), cex = 3, bty = "n")
+#'   legend('topleft', c(paste("RMSE:", round(stat.results@RMSE, 2), sep = " "), paste("R^2:", round(stat.results@R2.eff, 2), sep = " "), paste("Pearsons:", round(stat.results@P.cor, 2), sep = " ")), text.col = c("red", "blue", "green"), cex = 3, bty = "n")
 #'   dev.off()
 #'   
 #' }

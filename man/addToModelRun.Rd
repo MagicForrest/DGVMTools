@@ -7,8 +7,7 @@
 addToModelRun(object, run)
 }
 \arguments{
-\item{object}{Object to add to the \code{ModelRun},   The parameters are the slots of a ModelRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
-compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.}
+\item{object}{Object to add to the \code{ModelRun}.}
 
 \item{run}{The \code{ModelRun} object to which the object argument should be added}
 }

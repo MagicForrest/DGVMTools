@@ -12,7 +12,9 @@ This class stores the rasters (model, data, difference and precentage difference
 \describe{
 \item{\code{id}}{A unique character string to identify this particular raster compariosn.  Recommended to be alphanumeric because it is used to construct file names.}
 
-\item{\code{R.squ}}{The R squared between the model and the data}
+\item{\code{R2}}{The R^2 between the model and the data}
+
+\item{\code{R2.eff}}{The model efficiency of the model compared to the data}
 
 \item{\code{P.cor}}{The Pearsons product moment correlation between the model and the the data,}
 

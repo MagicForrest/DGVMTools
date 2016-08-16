@@ -1,6 +1,42 @@
 #!/usr/bin/Rscript
 
 
+#' Check is an object is a \code{DataObject}.   
+#'
+#' Returns TRUE if an object is a \code{DataObject}, and FALSE otherwise 
+#' 
+#' @param input Any R object to bec checked
+#' @param spatial check if input is a spatial object
+#' @param temporal check if input is a temporal object
+#' @param site check if input is a site object
+#' @return logical
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
+
+is.DataObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package"))) {
+    if (class.def[1] == "DataObject" && attr(class.def, "package")=="DGVMTools") {
+      ## JS: check more carefully if this if structure makes sense
+      if (spatial && !temporal && !site) {
+        if (!input@is.site && !input@is.spatially.averaged)
+          return(TRUE)
+      } else if (!spatial && temporal) {
+        if (!input@is.temporally.averaged)
+          return(TRUE)
+      } else if (site) {
+        if (input@is.site)
+          return(TRUE)
+      } else if (!spatial && !temporal && !site) {
+        return(TRUE)
+      } else {
+        return(FALSE)
+      }
+    }
+  }
+  return(FALSE)
+}
+
 #' Check is an object is a \code{ModelObject}.   
 #'
 #' Returns TRUE if an object is a \code{ModelObject}, and FALSE otherwise 
