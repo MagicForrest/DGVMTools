@@ -12,7 +12,15 @@ getMODISTreeCover(location = "/data/forrest/TreeCover/MOD44B/Collection5",
 \item{location}{A character string specifying the the location of the original data files}
 
 \item{resolution}{A character string specifying the resolution, currently supported
-are "1km-Turkey"
+are "1km-Turkey" and "HD"}
+
+\item{start}{First year of data to read (only for "HD" not for "1km-Turkey" which is fixed between 2000 and 2010). Data starts in 2000.}
+
+\item{end}{Last year of data to read (only for "HD" not for "1km-Turkey" which is fixed between 2000 and 2010). Data ends in 2015}
+
+\item{average}{If true, temporally average the years}
+
+\item{layer}{Which layer do you want? Either "treecover", "bare" or "other" (Only for "HD", "other" means low vegetation < 5m)
 
 Should be moved to DGVMDatasets, not distributed with DGVMTools}
 }

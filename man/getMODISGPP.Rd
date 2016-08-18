@@ -5,7 +5,7 @@
 \title{Read MODIS GPP map}
 \usage{
 getMODISGPP(location = "/data/forrest/Productivity/MODIS/V55",
-  resolution = "original")
+  resolution = "original", average = TRUE)
 }
 \arguments{
 \item{location}{A character string specifying the the location of the original data files}

@@ -245,21 +245,102 @@ cropDGVM <- function(input, extent){
   
   Lat = Lon = NULL
   
-  input.class <- class(input)[1]
-  extent.class <- class(extent)[1]
+  print(extent)
   
+  # determine the class of the object to which we are cropping
+  extent.class <- class(extent)[1]
   if(extent.class == "Extent") {
     this.extent <- extent
   }
   else if(extent.class == "SpatialExtent"){
     this.extent <- extent@extent
+    extent.class <- class(this.extent)[1] 
   }
   
-  if(input.class == "RasterBrick" | input.class == "RasterStack" | input.class == "RasterLayer"){
-    return(crop(input, this.extent))    
+  
+  
+  
+  # determine the class of the object to be cropped
+  input.class <- class(input)[1]
+  
+  # Do cropping depending on first the class of extent 'extent' 
+  
+  # CASE 1.X - target extent is a raster::Extent
+  if(extent.class == "Extent") {
+    
+    # CASE 1.1 - object to be cropped is a raster - just use raster::crop
+    if(input.class == "RasterBrick" | input.class == "RasterStack" | input.class == "RasterLayer"){
+      return(raster::crop(input, this.extent))    
+    }
+    # CASE 1.2 - object to be cropped is a data.table - select on Lon and Lat
+    else if(input.class == "data.table"){
+      return(input[Lat < this.extent@ymax & Lat > this.extent@ymin & Lon < this.extent@xmax & Lon > this.extent@xmin,])
+    }
+    # CASE 1.3 - object to be cropped is a ModelObject or DataObject - pull out the data.table and select on Lon and Lat
+    else if(input.class == "ModelObject" | input.class == "DataObject"){
+      dt <- input@data
+      dt[Lat < this.extent@ymax & Lat > this.extent@ymin & Lon < this.extent@xmax & Lon > this.extent@xmin,]
+      input@data <- dt
+      input@spatial.extent <- extent
+      return(input)
+    }
+    
   }
-  else if(input.class == "data.table"){
-    return(input[Lat < this.extent@ymax & Lat > this.extent@ymin & Lon < this.extent@xmax & Lon > this.extent@xmin,])
+  
+  # CASE 2.X - target extent is a data.table
+  else if(extent.class == "data.table") {
+    
+    # CASE 2.1 - object to be cropped is a raster - just use raster::crop
+    if(input.class == "RasterBrick" | input.class == "RasterStack" | input.class == "RasterLayer"){
+      
+      stop("cropDGVM: Cropping a Raster* object to an extent defined by a data.table is not yet defined")
+      
+    }
+    # CASE 2.2 - object to be cropped is a data.table - select on Lon and Lat by merging
+    else if(input.class == "data.table"){
+      
+      # first remove any lines with NA (since the are probably not part of the extent) and pull out just the "Lon" and "Lat" columns
+      this.extent <- na.omit(this.extent)[,c("Lon", "Lat")]
+      
+      # now merge the data.tables on Lon and Lat, requiring that all Lons and Lats in the new extent are included and return
+      return(merge(input, this.extent, by=c("Lon","Lat"), all.x = FALSE, all.y = TRUE))
+      
+    }
+    # CASE 2.3 - object to be cropped is a ModelObject or DataObject - select on Lon and Lat by merging
+    else if(input.class == "ModelObject" | input.class == "DataObject"){
+
+      # first remove any lines with NA (since the are probably not part of the extent) and pull out just the "Lon" and "Lat" columns
+      this.extent <- na.omit(this.extent)[,c("Lon", "Lat"),with=FALSE]
+      
+      # now pull out the data.table merge the data.tables on Lon and Lat, requiring that all Lons and Lats in the new extent are included and return
+      dt <- input@data
+      #round only Lon and Lat fields to maintain precision of the data
+      dt[, Lon := round(Lon, 4)]
+      dt[, Lat := round(Lat, 4)]
+      dt <- merge(dt, round(this.extent,4), by=c("Lon","Lat"), all.x = FALSE, all.y = TRUE)
+
+      # put in new data.table to original object, update meta-data and return
+      input@data <- dt
+      input@spatial.extent <- extent
+      input@id <- makeModelObjectID(input@quant@id, temporal.extent = input@temporal.extent, spatial.extent = extent, temporally.averaged = input@is.temporally.averaged, spatially.averaged = input@is.spatially.averaged)
+
+      return(input)
+    }
+    
+  }
+  
+  # CASE 3.X - target extent is a site
+  else if(extent.class == "numeric" & length(input == 2)) {
+    
+    stop("cropDGVM: Cropping any object to sites not yet implemented  ")
+  
+  }
+  
+  # CASE 3.X - target extent is a site
+  else {
+    
+    stop(paste("cropDGVM: Cropping any object to extent defined by object type", extent.class, "with length =", length(extent), "is not defined", sep = " "))
+    
   }
   
 }
@@ -480,11 +561,11 @@ subsetGridlist <- function(gridlist.file, subset.extent, file.name = NULL, heade
   gridlist$Lat <- gridlist$Lat + offset[2]
   
   gridlist<-gridlist[gridlist$Lon<=subset.extent@xmax 
-                       & gridlist$Lon>=subset.extent@xmin 
-                       & gridlist$Lat<=subset.extent@ymax 
-                       & gridlist$Lat>=subset.extent@ymin]
+                     & gridlist$Lon>=subset.extent@xmin 
+                     & gridlist$Lat<=subset.extent@ymax 
+                     & gridlist$Lat>=subset.extent@ymin]
   
- 
+  
   gridlist$Lon <- gridlist$Lon - offset[1]
   gridlist$Lat <- gridlist$Lat - offset[2]
   
@@ -703,7 +784,7 @@ annual <- all.periods[17]
 #' Credit: Taken from: http://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session
 
 lsos <- function (pos = 1, pattern, order.by = "Size",
-                         decreasing=TRUE, head=TRUE, n=10) {
+                  decreasing=TRUE, head=TRUE, n=10) {
   napply <- function(names, fn) sapply(names, function(x)
     fn(get(x, pos = pos)))
   names <- ls(pos = pos, pattern = pattern)
@@ -761,7 +842,7 @@ lsos <- function (pos = 1, pattern, order.by = "Size",
 #' @param n Number of colour shades required
 #' @name veg.palettes
 NULL
- 
+
 #' @rdname veg.palettes
 veg.palette <- colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black"))
 

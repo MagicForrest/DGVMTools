@@ -23,8 +23,6 @@
 #' and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.
 #' @param run A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}. 
 #' @param PFT.set A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{ModelObject}.
-#' @param plot.dir A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{ModelObject}, but this provides an override.
-#' If not a \code{ModelObject} and not specified, this defaults to the current directory
 #' @param title A character string to override the deafualt title.
 #' @param tag A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
 #' for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.
@@ -77,7 +75,6 @@ plotLayer <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or 
                         period = NULL, 
                         run = NULL, 
                         PFT.set = global.PFTs,
-                        plot.dir = NULL, 
                         title = NULL,
                         tag = NULL,
                         layout.objs = NULL, 
@@ -184,13 +181,6 @@ plotLayer <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or 
     if(quant@id == "burntfraction") special <- "burnt.fraction"
     
     
-  }
-  
-  
-  ### DIRECTORY TO SAVE PLOTS
-  if(is.null(plot.dir)){
-    if(!is.null(run)){ plot.dir <- run@run.dir} 
-    else { plot.dir = "." }
   }
   
   

@@ -23,8 +23,7 @@ correct.map.offset <- function(spl) {
 ######################### MAKES A MAP OVERLAY - A SPATAIL LINES OF CONTINENTS OR COUNTY OUTLINES FOR PLOTTING   #####################################################################
 #' Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with (for example) plotLayer
 #' 
-#' @param which A string specifiying either: "hires" or "lowres" for a full global overlay  (these corresponds to the 'world' and 'worldHires' maps from the mapdata package); 
-#' the name of one of the standard maps in fromt he map packages the packages directly (see packages maps and mapdata for documentation) or a special (eg paleo maps or other particular cases, currently undefined).
+#' @param which A string specifiying the name of one of the standard maps in from the map packages the packages directly (see packages maps and mapdata for documentation) or a special (eg paleo maps or other particular cases, currently undefined).
 #' @param interior.lines A boolean specifying whether on not to plot the interior lines (countires or provences or other administraive regions) if available
 #' @param lwd Width to plot the lines
 #' @param col Colour to plot the lines

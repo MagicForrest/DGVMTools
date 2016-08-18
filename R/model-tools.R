@@ -131,23 +131,22 @@ addToModelRun <- function(object, run){
 #' @seealso ModelRun, ModelRunInfo 
 removeFromModelRun <- function(object.id, run){
   
- 
-    if(object.id %in% names(run@objects)) {
-      print( names(run@objects))
-      
-      model.objects.list <- run@objects
-      model.objects.list[[object.id]] <- NULL
-      run@objects <- model.objects.list
-      rm(model.objects.list)
-      gc()
-      
-    }
+  
+  if(object.id %in% names(run@objects)) {
     
-    else{
-      warning(paste("Can't remove ModelObject with id ", object.id, " from run ", run@id, " because I can't find it in the run!"))
-    }
+    model.objects.list <- run@objects
+    model.objects.list[[object.id]] <- NULL
+    run@objects <- model.objects.list
+    rm(model.objects.list)
+    gc()
     
- 
+  }
+  
+  else{
+    warning(paste("Can't remove ModelObject with id ", object.id, " from run ", run@id, " because I can't find it in the run!"))
+  }
+  
+  
   return(run)
   
 }
@@ -769,7 +768,7 @@ doTemporalAverage <- cmpfun(doTemporalAverage.uncompiled)
 #' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
 #'
 #'
-#' @param input.dt data.table  
+#' @param A ModelObject, DataObject or data.table to be averaged  
 #' @param area.weighted If TRUE area-weight the gridcells
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A data.table
@@ -828,23 +827,26 @@ doSpatialAverage.uncompiled <- function(input.obj,
   if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
     input.obj@data <- output.dt
     input.obj@is.spatially.averaged <- TRUE
+    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent, spatial.extent = input.obj@spatial.extent, temporally.averaged = input.obj@is.temporally.averaged, spatially.averaged = TRUE)
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}
   
 }
 
-#' Spatially average a data.table
+######################### SPATIALLY AVERAGE ##############################
+#
+#' Spatially average a ModelObject, DataObject or data.table 
 #' 
-#' Spatially average all gridcells (identified by "Lat" and "Lon" columns) of a data.table object. 
+#' Spatially average all gridcells of a ModelObject, DataObject or data.table (assuming the data.table has columns "Lon" and "Lat"). 
 #' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
 #'
 #'
-#' @param input.dt data.table  
+#' @param input.obj A ModelObject, DataObject or data.table to be averaged 
 #' @param area.weighted If TRUE area-weight the gridcells
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A data.table
-#' @export
+#' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 doSpatialAverage <- cmpfun(doSpatialAverage.uncompiled)
@@ -917,6 +919,7 @@ getExtentFromDT <- function(dt){
 #' @param method The function which you want to use.  Is \code{mean} by default, but it can be anything that operates on a vector of numbers.  
 #' Useful options might be \code{max},  \code{min} and \code{sd}.  
 #'  
+#'@details  
 #' The function currently does no checks that the spatial extent, temporal extent and Quantity are consistent between runs.  The resulting ModelObject simple takes these things
 #' from the first object from list.of.vegruns.  It is therefore up to the user not do anything silly and average quantites, or spatial or temporal extents that don't makes sense.
 #'          

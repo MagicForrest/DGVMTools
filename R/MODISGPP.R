@@ -12,7 +12,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 
-getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resolution = "original") {
+getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resolution = "original", average = TRUE) {
 
   Lon = Lat = NULL
     
@@ -20,12 +20,23 @@ getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resol
     
   }
   else if(resolution == "1km-Turkey"){
-    raster <- trim(rotate(raster(file.path(location, "processed/MODISGPP.2000-2010.1km-Turkey.nc"))))
+    if(average) raster <- trim(rotate(raster(file.path(location, "processed/MODISGPP.TA.2000-2010.1km-Turkey.nc"))))
+    else raster <- trim(rotate(brick(file.path(location, "processed/MODISGPP.2000-2010.1km-Turkey.nc"))))
+    print(raster)
   }
   
   
   dt <- data.table(as.data.frame(raster,xy = TRUE))
-  setnames(dt, c("Lon", "Lat", "MODISGPP"))
+  if(average) {
+    setnames(dt, c("Lon", "Lat", "MODISGPP"))
+  }
+  else {
+    setnames(dt, c("Lon", "Lat", paste(2000:2010)))
+    dt <- melt(dt, id=c("Lon","Lat")) 
+    setnames(dt, c("Lon", "Lat", "Year", "MODISGPP"))
+    dt[,Year:= as.numeric(as.character(Year))]
+    print(str(dt))
+  }
   dt[,Lon:= round(Lon, 3)]
   dt[,Lat:= round(Lat, 3)]
 

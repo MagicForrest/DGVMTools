@@ -13,10 +13,7 @@ averageModelObjects(list.of.model.objects, run = NULL, method = mean)
 in which case the function just returns a data.table with the average values.}
 
 \item{method}{The function which you want to use.  Is \code{mean} by default, but it can be anything that operates on a vector of numbers.
-Useful options might be \code{max},  \code{min} and \code{sd}.  
- 
-The function currently does no checks that the spatial extent, temporal extent and Quantity are consistent between runs.  The resulting ModelObject simple takes these things
-from the first object from list.of.vegruns.  It is therefore up to the user not do anything silly and average quantites, or spatial or temporal extents that don't makes sense.}
+Useful options might be \code{max},  \code{min} and \code{sd}.}
 }
 \value{
 Either a ModelObject (if a ModelRun has been supplied to provide the necessary meta-data), or a data.table (if no meta-data has been supplies in the form of a ModelRun)
@@ -25,6 +22,10 @@ Either a ModelObject (if a ModelRun has been supplied to provide the necessary m
 Useful for averaging model ensembles, replicate simulations etc.  
 Note that since you can supply the function, you don't actually need to average, you can also do, for example, \code{max}, \code{min}, \code{sd}, etc.  
 Fails with an error message if the supplied ModelObjects don't have the same fields
+}
+\details{
+The function currently does no checks that the spatial extent, temporal extent and Quantity are consistent between runs.  The resulting ModelObject simple takes these things
+from the first object from list.of.vegruns.  It is therefore up to the user not do anything silly and average quantites, or spatial or temporal extents that don't makes sense.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

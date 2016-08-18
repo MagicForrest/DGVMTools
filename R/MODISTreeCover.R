@@ -4,7 +4,11 @@
 #'  
 #' @param location A character string specifying the the location of the original data files
 #' @param resolution A character string specifying the resolution, currently supported
-#' are "1km-Turkey"
+#' are "1km-Turkey" and "HD"
+#' @param start First year of data to read (only for "HD" not for "1km-Turkey" which is fixed between 2000 and 2010). Data starts in 2000.
+#' @param end Last year of data to read (only for "HD" not for "1km-Turkey" which is fixed between 2000 and 2010). Data ends in 2015
+#' @param average If true, temporally average the years
+#' @param layer Which layer do you want? Either "treecover", "bare" or "other" (Only for "HD", "other" means low vegetation < 5m)
 #' 
 #' Should be moved to DGVMDatasets, not distributed with DGVMTools
 #' 

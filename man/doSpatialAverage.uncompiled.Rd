@@ -12,7 +12,7 @@ doSpatialAverage.uncompiled(input.obj, verbose = FALSE,
 
 \item{area.weighted}{If TRUE area-weight the gridcells}
 
-\item{input.dt}{data.table}
+\item{A}{ModelObject, DataObject or data.table to be averaged}
 }
 \value{
 A data.table

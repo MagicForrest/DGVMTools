@@ -168,7 +168,7 @@ benchmarkSpatial <- function(runs,
     
     calcNashSutcliffe <- function(data.vector, model.vector) {
       
-      return( 1 -  (sum((data.vector - model.vector)^2, na.rm=TRUE) / length(data.vector)) / var(data.vector) )
+      return( 1 -  (sum((data.vector - model.vector)^2, na.rm=TRUE) / length(data.vector)) / stats::var(data.vector) )
       
     }
     
