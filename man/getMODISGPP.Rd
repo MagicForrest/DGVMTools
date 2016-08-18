@@ -11,7 +11,9 @@ getMODISGPP(location = "/data/forrest/Productivity/MODIS/V55",
 \item{location}{A character string specifying the the location of the original data files}
 
 \item{resolution}{A character string specifying the resolution, currently supported
-are "1km-Turkey"
+are "1km-Turkey"}
+
+\item{average}{Logical, if true return average of all years, if false return all years
 
 Should be moved to DGVMDatasets, not distributed with DGVMTools}
 }

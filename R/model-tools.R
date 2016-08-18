@@ -565,7 +565,7 @@ getModelObject <- function(run,
 #' 
 #' Converts a data.table, ModelObject or an Spatial*-object to Raster object, also subsetting the requested layers.  
 #' It can also handle a RasterLayber/Stack/Brick, in which case the only processing done is the subsetting since the data is already in Raster form.
-#' This is generally called in the \code{plotLayer} function (or potentially before any use of the raster::spplot and raster::plot functions),
+#' This is generally called in the \code{plotSpatial} function (or potentially before any use of the raster::spplot and raster::plot functions),
 #' but can be useful in and of itself.
 #'   
 #' @param input.data data.table, ModelObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 

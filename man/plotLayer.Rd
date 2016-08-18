@@ -5,8 +5,8 @@
 \title{Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.}
 \usage{
 plotLayer(data, layers = NULL, expand.layers = TRUE, quant = NULL,
-  period = NULL, run = NULL, PFT.set = global.PFTs, plot.dir = NULL,
-  title = NULL, tag = NULL, layout.objs = NULL, plot.labels = NULL,
+  period = NULL, run = NULL, PFT.set = global.PFTs, title = NULL,
+  tag = NULL, layout.objs = NULL, plot.labels = NULL,
   plot.bg.col = "transparent", useLongnames = FALSE, text.multiplier = 1,
   plot.extent = NULL, limit = FALSE, limits = NULL,
   override.cols = NULL, override.cuts = NULL, special = "none",
@@ -29,9 +29,6 @@ In the case of plotting a \code{ModelRun} object this is taken automatically fro
 \item{run}{A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}.}
 
 \item{PFT.set}{A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{ModelObject}.}
-
-\item{plot.dir}{A character string given the location for the plot to be saved. Usually the \code{run.dir} of the \code{ModelObject}, but this provides an override.
-If not a \code{ModelObject} and not specified, this defaults to the current directory}
 
 \item{title}{A character string to override the deafualt title.}
 

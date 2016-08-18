@@ -22,7 +22,7 @@
 #' to account for (for example) land cover.  NA's can be used to completely mask out areas from the comparison. 
 #' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs
 #' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation
-#' @param ... Arguments to be passed to plotLayer when making the spatial plots.  
+#' @param ... Arguments to be passed to plotSpatial when making the spatial plots.  
 #' 
 #' @return Returns a DataObject, and also makes plots (in the individual run@run.dir and in the summary.plot.dir argument).
 #' 
@@ -321,7 +321,7 @@ benchmarkSpatial <- function(runs,
     
     
     print(
-      do.call(plotLayer, c(list(data = data.dt,
+      do.call(plotSpatial, c(list(data = data.dt,
                                 layers = paste(run@id, "Error", sep = "_"),
                                 quant = dataset@quant, 
                                 period = dataset@temporal.extent, 
@@ -341,7 +341,7 @@ benchmarkSpatial <- function(runs,
                                  canvas.options)) 
     
     print(
-      do.call(plotLayer, c(list(data = data.dt,
+      do.call(plotSpatial, c(list(data = data.dt,
                                 layers = c(run@id, dataset@id),
                                 quant = dataset@quant, 
                                 period = dataset@temporal.extent, 
@@ -478,7 +478,7 @@ benchmarkSpatial <- function(runs,
     
     # PLOT ABSOLUTE VALUES
     print(
-      do.call(plotLayer, c(list(data = data.dt,
+      do.call(plotSpatial, c(list(data = data.dt,
                                 layers = abs.layers,
                                 quant = dataset@quant, 
                                 period = dataset@temporal.extent, 
@@ -508,7 +508,7 @@ benchmarkSpatial <- function(runs,
                                  canvas.options)) 
     
     print(
-      do.call(plotLayer, c(list(data = data.dt,
+      do.call(plotSpatial, c(list(data = data.dt,
                                 layers = diff.layers,
                                 quant = dataset@quant, 
                                 period = dataset@temporal.extent, 
@@ -534,7 +534,7 @@ benchmarkSpatial <- function(runs,
     temp.dt <- temp.dt[,(perc.diff.layers) := lapply(.SD, function(x) x * 100 ), .SDcols = perc.diff.layers]
     
     print(
-      do.call(plotLayer, c(list(data = temp.dt,
+      do.call(plotSpatial, c(list(data = temp.dt,
                                 layers = perc.diff.layers,
                                 quant = dataset@quant, 
                                 period = dataset@temporal.extent, 
@@ -772,7 +772,7 @@ doKappa <- function(dt,
 #' @param plot Logical, if true make a biome plot.
 #' @param show.stats A logical, if TRUE, put the Kappa values on the plots.
 #' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs
-#' @param ... Additional parameters supplied to the plotLayer() plotting function.
+#' @param ... Additional parameters supplied to the plotSpatial() plotting function.
 #' 
 #' @param tag A character string (no spaces) used in labels and titles to differentiate these plots from similar ones.
 #' For example "Corrected" or "EuropeOnly"
@@ -850,7 +850,7 @@ compareBiomes <- function(runs,
       
       
       print(
-        do.call(plotLayer, c(
+        do.call(plotSpatial, c(
           list(data = this.VegSpatial,
                biome.scheme = scheme, 
                special = "biomes", 
@@ -895,7 +895,7 @@ compareBiomes <- function(runs,
   }
   
   print(
-    do.call(plotLayer, c(list(data = data.dt, 
+    do.call(plotSpatial, c(list(data = data.dt, 
                               layers = layers,
                               summary.file.name = paste("Biomes", scheme@id, tag, sep = "."),
                               special = "biomes", 
@@ -935,13 +935,13 @@ compareBiomes <- function(runs,
 #' @param diff.cuts A numeric vector which (if specified), defines the cuts for the difference plot of each run compared to the base run
 #' @param plot.perc.diff Logical, if TRUE and a base.run.id supplied, plot the percentage difference of each run relative to the base run.
 #' @param perc.diff.cuts A numeric vector which (if specified), defines the cuts for the percentage difference plot of each run compared to the base run
-#' @param special A character string which, if specified, is used to give special plotting instructions to \code{plotLayer}, 
+#' @param special A character string which, if specified, is used to give special plotting instructions to \code{plotSpatial}, 
 #' see the documentation of that function for details.
 #' @param single.page Logical, if TRUE, put all "sub-layers" on one plot instead of separate individual plots.
 #' @param tag A character string to identify this plot/analysis in comparison to others, eg. "SoilDepthTests" or "NewSLAForumalation"  
 #' @param canvas.options A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} documentation
 #' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs
-#' @param ... Further arguments passed to the \code{plotLayer} function.
+#' @param ... Further arguments passed to the \code{plotSpatial} function.
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
@@ -1003,7 +1003,7 @@ compareRuns <- function(runs,
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", sub.layer, veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
-    print(plotLayer(comparison.dt,
+    print(plotSpatial(comparison.dt,
                     layers = layers,
                     quant = run@objects[[veg.spatial.id]]@quant,
                     title = sub.layer,
@@ -1021,7 +1021,7 @@ compareRuns <- function(runs,
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
-    print(plotLayer(comparison.dt,
+    print(plotSpatial(comparison.dt,
                     layers = all.layers,
                     quant = run@objects[[veg.spatial.id]]@quant,
                     title = paste(paste(original.layers, collapse= " ", sep = ""), run@objects[[veg.spatial.id]]@quant@name, sep = " "),
@@ -1064,7 +1064,7 @@ compareRuns <- function(runs,
             do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunDifference", sub.layer, veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                          canvas.options)) 
             
-            print(plotLayer(comparison.dt,
+            print(plotSpatial(comparison.dt,
                             layers = this.diff.names,
                             quant = run@objects[[veg.spatial.id]]@quant,
                             special = "Diff",
@@ -1095,7 +1095,7 @@ compareRuns <- function(runs,
             do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunPercentageDifference", sub.layer, veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                          canvas.options)) 
             
-            print(plotLayer(comparison.dt,
+            print(plotSpatial(comparison.dt,
                             layers = this.perc.diff.names,
                             quant = run@objects[[veg.spatial.id]]@quant,
                             special = "Perc.Diff",
@@ -1128,7 +1128,7 @@ compareRuns <- function(runs,
         do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunDifference", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                      canvas.options)) 
         
-        print(plotLayer(comparison.dt,
+        print(plotSpatial(comparison.dt,
                         layers = all.diff.names,
                         quant = run@objects[[veg.spatial.id]]@quant,
                         special = "Diff",
@@ -1148,7 +1148,7 @@ compareRuns <- function(runs,
         do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunPercentageDifference", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                      canvas.options)) 
         
-        print(plotLayer(comparison.dt,
+        print(plotSpatial(comparison.dt,
                         layers = all.perc.diff.names,
                         quant = run@objects[[veg.spatial.id]]@quant,
                         special = "Perc.Diff",

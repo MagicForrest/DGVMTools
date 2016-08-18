@@ -7,8 +7,7 @@
 makeOverlay(which, interior.lines = TRUE, lwd = 0.5, col = NULL)
 }
 \arguments{
-\item{which}{A string specifiying either: "hires" or "lowres" for a full global overlay  (these corresponds to the 'world' and 'worldHires' maps from the mapdata package); 
-the name of one of the standard maps in fromt he map packages the packages directly (see packages maps and mapdata for documentation) or a special (eg paleo maps or other particular cases, currently undefined).}
+\item{which}{A string specifiying the name of one of the standard maps in from the map packages the packages directly (see packages maps and mapdata for documentation) or a special (eg paleo maps or other particular cases, currently undefined).}
 
 \item{interior.lines}{A boolean specifying whether on not to plot the interior lines (countires or provences or other administraive regions) if available}
 

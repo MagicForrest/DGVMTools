@@ -68,7 +68,7 @@
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
-plotLayer <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
+plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
                         layers = NULL,
                         expand.layers = TRUE,
                         quant = NULL, 
@@ -153,7 +153,7 @@ plotLayer <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or 
       if(is.null(quant)) quant <- data@quant
     } 
     else {
-      stop("plotLayer:: trying to spatially plot a ModelObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
+      stop("plotSpatial:: trying to spatially plot a ModelObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
     }
     
   }
@@ -337,7 +337,7 @@ plotLayer <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or 
   else if(special == "burnt.area"){
     
     
-    stop("plotLayer: special burnt.fraction or ba not impletemted yet")
+    stop("plotSpatial: special burnt.fraction or ba not impletemted yet")
     
   }
   

@@ -5,6 +5,7 @@
 #' @param location A character string specifying the the location of the original data files
 #' @param resolution A character string specifying the resolution, currently supported
 #' are "1km-Turkey"
+#' @param average Logical, if true return average of all years, if false return all years
 #' 
 #' Should be moved to DGVMDatasets, not distributed with DGVMTools
 #' 
@@ -14,7 +15,7 @@
 
 getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resolution = "original", average = TRUE) {
 
-  Lon = Lat = NULL
+  Lon = Lat = Year = NULL
     
   if(resolution == "original"){
     
@@ -35,7 +36,6 @@ getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resol
     dt <- melt(dt, id=c("Lon","Lat")) 
     setnames(dt, c("Lon", "Lat", "Year", "MODISGPP"))
     dt[,Year:= as.numeric(as.character(Year))]
-    print(str(dt))
   }
   dt[,Lon:= round(Lon, 3)]
   dt[,Lat:= round(Lat, 3)]
