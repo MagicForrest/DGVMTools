@@ -24,8 +24,6 @@
 #' @param run A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}. 
 #' @param PFT.set A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{ModelObject}.
 #' @param title A character string to override the deafualt title.
-#' @param tag A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
-#' for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.
 #' @param layout.objs List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
 #' so see the there for how to build them.
 #' @param plot.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
@@ -76,7 +74,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         run = NULL, 
                         PFT.set = global.PFTs,
                         title = NULL,
-                        tag = NULL,
                         layout.objs = NULL, 
                         plot.labels =  NULL,
                         plot.bg.col =  "transparent",
