@@ -25,7 +25,7 @@ are "1km-Turkey" and "HD"}
 Should be moved to DGVMDatasets, not distributed with DGVMTools}
 }
 \value{
-A \code{SpatialDataset} object.
+A \code{DataObject} object.
 }
 \description{
 Blah

@@ -33,7 +33,7 @@ run on one figure}
 
 \item{perc.diff.cuts}{A numeric vector which (if specified), defines the cuts for the percentage difference plot of each run compared to the base run}
 
-\item{special}{A character string which, if specified, is used to give special plotting instructions to \code{plotLayer}, 
+\item{special}{A character string which, if specified, is used to give special plotting instructions to \code{plotSpatial}, 
 see the documentation of that function for details.}
 
 \item{single.page}{Logical, if TRUE, put all "sub-layers" on one plot instead of separate individual plots.}
@@ -44,7 +44,7 @@ see the documentation of that function for details.}
 
 \item{summary.plot.dir}{A directory (full path as a character string) so save the plots which compare many runs}
 
-\item{...}{Further arguments passed to the \code{plotLayer} function.}
+\item{...}{Further arguments passed to the \code{plotSpatial} function.}
 }
 \description{
 Given a list of runs and an id of a spatial ModelObjects, compare the specified layers between all runs, and, 

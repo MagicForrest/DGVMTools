@@ -217,7 +217,7 @@ setClass("ModelRunInfo",
 #' A \code{ModelRun} object contains the metadata concerning the an inherited \code{ModelRunInfo} object
 #'  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
 #'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-#' Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToSpatialDataset()}
+#' Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToDataObject()}
 #'  and \code{compareBiomes()}, and saved to the \code{ModelRun} using \code{addToModelRun()}. 
 #'  
 #' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
@@ -385,10 +385,10 @@ setClass("ModelObject",
 
 #' Contains one dataset (ie. measured, not model-generated).
 #' 
-#' A key class of the package.  A \code{DataObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
-#' For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
+#' A key class of the package.  A \code{DataObject} stores the data and metadata for one dataset (temporal or spatial).
+#' For example 
 #' 
-#' Generally these are not created directly by the user, but rather by functions like \code{getModelObject}.
+#' Generally these are not created directly by the user, but rather by functions like \code{getMODISTreecover} or \code{getSaatchi2011} or so, but the use can create them directly if desired.
 #' 
 #' @slot id A unique character string to identify this particular DataObject.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string to more fully describe this DataObject
@@ -413,67 +413,9 @@ setClass("DataObject",
 
 
 
-########## SPATIAL DATASET CLASS
-
-#' Class to hold the data and metadata about spatial dataset
-#' 
-#' Gathers up the meta-data and a raster layer for one particular layer of spatial environmental data.  Not intended for model output, rather for a dataset like a above ground biomass, or MODIS tree cover.
-#' 
-#' @slot id A unique character string to identify this particular spatial dataset.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot name A character string to provide a fuller description of this dataset
-#' @slot temporal.extent A \code{TemporalExtent} oject to describe when this environmental data was measured.
-#' @slot data The actual data.  The slot type is currently "ANY" but perhaps it should be restricted to a \code{RasterLayer}.  That is what the benchmarking code certainly expects
-#' @slot veg.quant A \code{Quantity} object to describe exactly what this dataset is
-#' @slot units A character string defining the units in which this data is measured.  Probably obselete because of the units slot in the veg.quant slot
-#' @slot correction.raster A \code{RasterLayer} to apply multiplicatively to correct model data before comparing to this dataset.  For example a land-use correction.
-#' 
-#' @exportClass SpatialDataset
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' 
-setClass("SpatialDataset",
-         slots = c(id = "character",
-                   name = "character",
-                   temporal.extent = "TemporalExtent",
-                   data = "ANY",
-                   veg.quant = "Quantity",
-                   units = "character",
-                   correction.raster = "RasterLayer"
-         )
-)
-
-
-########## TEMPORAL DATASET CLASS
-
-#' Class to hold the data and metadata about temporal dataset
-#' 
-#' Gathers up the meta-data and data for one particular layer of temporal environmental data, for eample a burnt area times series a flux tower measurement.  Not intended for model output, rather for a dataset like a above ground biomass, or MODIS tree cover.
-#' 
-#' @slot id A unique character string to identify this particular spatial dataset.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot name A character string to provide a fuller description of this dataset
-#' @slot temporal.extent A \code{TemporalExtent} object to describe the length of the data times series
-#' @slot data The actual data.  The slot type is currently "ANY" but perhaps it should be restricted to a \code{RasterLayer}.  That is what the benchmarking code certainly expects
-#' @slot extent A \code{SpatialExtent} object define the spatial region over which this time series data applies.
-#' @slot veg.quant A \code{Quantity} object to describe exactly what this dataset is
-#' @slot units A character string defining the units in which this data is measured.  Probably obselete because of the units slot in the veg.quant slot
-#' 
-#' @exportClass TemporalDataset
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' 
-setClass("TemporalDataset",
-         slots = c(id = "character",
-                   name = "character",
-                   temporal.extent = "TemporalExtent",
-                   data = "ANY",
-                   extent = "SpatialExtent",
-                   veg.quant = "Quantity",
-                   units = "character"
-         )
-)
-
-
 #' Result of comparing a model raster to a data raster
 #' 
-#' This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToSpatialDataset}
+#' This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToDataObject}
 #' 
 #' @slot id A unique character string to identify this particular raster compariosn.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot R2 The R^2 between the model and the data

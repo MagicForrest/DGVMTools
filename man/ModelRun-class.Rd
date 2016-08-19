@@ -8,7 +8,7 @@
 A \code{ModelRun} object contains the metadata concerning the an inherited \code{ModelRunInfo} object
  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToSpatialDataset()}
+Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToDataObject()}
  and \code{compareBiomes()}, and saved to the \code{ModelRun} using \code{addToModelRun()}. 
  
 Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}

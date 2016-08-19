@@ -15,7 +15,7 @@ benchmarkSpatial(runs, layer.name, dataset, tag = NULL, diff.cuts = NULL,
 
 \item{layer.name}{Layer in the vegetation model output to compare to the data}
 
-\item{dataset}{The spatial dataset to which we are comparing (represented as a SpatialDataset object)}
+\item{dataset}{The spatial dataset to which we are comparing (represented as a DataObject object)}
 
 \item{tag}{A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
 for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.}
@@ -29,7 +29,7 @@ in 5\% intervals.}
 \item{spatial.extent}{If specified (as a raster::Extent object), the spatial extent to plot.  Note that the statistics will *not* reflect
 this extent}
 
-\item{showR2}{A logical, if TRUE, put the R2.effared values on the plots.}
+\item{showR2}{A logical, if TRUE, put the R2.eff values on the plots.}
 
 \item{histo.plot.range}{A two-value numeric vector defining the range for the histo plots}
 
@@ -40,14 +40,15 @@ to account for (for example) land cover.  NA's can be used to completely mask ou
 
 \item{canvas.options}{A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} dicumentation}
 
-\item{...}{Arguments to be passed to plotLayer when making the spatial plots.}
+\item{...}{Arguments to be passed to plotSpatial when making the spatial plots.}
 }
 \value{
 Returns a DataObject, and also makes plots (in the individual run@run.dir and in the summary.plot.dir argument).
 }
 \description{
-To use this function it is *required* that \code{compareRunToSpatialDataset()} has been performed on each of the runs with 
-the dataset to which we are comparing.
+Take a list of model runs and compares each run to a DataObject (which should obviously have spatial dimensions).  
+Comparsion plots to each individual run are saved in the directory for that particular run, and overall plots (simultaneously showing all the runs 
+next to the data) are saved in the \code{summary.plor.dir} argument.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

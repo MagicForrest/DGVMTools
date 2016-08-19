@@ -30,13 +30,13 @@ processGlobcover2009 <- function(location = "/data/forrest/LandUseLandCover/Glob
 
 #' Read the original Globcover2009 data
 #' 
-#' This function simply returns the original data, but packaged into a SpatialDataset object with metadata.  This data is at 300m and is categorical so processing it to more manageable resolutions is non-trivial and time consuming.  
+#' This function simply returns the original data, but packaged into a DataObject object with metadata.  This data is at 300m and is categorical so processing it to more manageable resolutions is non-trivial and time consuming.  
 #' Therefore, this function does not do this it just returns the original data (still stored on disk, not in memory).  If you want to process by 
 #' by aggregeting to fractions of a larger, more workable resolution, please see \code{processGlobcover2009}
 #' 
 #' @param location Character string specifying the directory in which the original data is stored
 #'  
-#' @return SpatialDataset object
+#' @return DataObject object
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
@@ -50,7 +50,7 @@ readGlobcover2009 <- function(location){
   file.name <- "GLOBCOVER_L4_200901_200912_V2.3.tif"
   full.original.data <- raster(file.path(location, file.name))
   
-  Globcover2009 <- new("SpatialDataset",
+  Globcover2009 <- new("DataObject",
                        id = "Globcover2009",
                        name = "Globcover2009 Spatial Dataset",
                        temporal.extent = new("TemporalExtent", id = "Globcover2009", name = "Globcover2009", start = 2009, end = 2009),

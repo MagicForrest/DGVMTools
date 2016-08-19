@@ -10,10 +10,10 @@ readGlobcover2009(location)
 \item{location}{Character string specifying the directory in which the original data is stored}
 }
 \value{
-SpatialDataset object
+DataObject object
 }
 \description{
-This function simply returns the original data, but packaged into a SpatialDataset object with metadata.  This data is at 300m and is categorical so processing it to more manageable resolutions is non-trivial and time consuming.  
+This function simply returns the original data, but packaged into a DataObject object with metadata.  This data is at 300m and is categorical so processing it to more manageable resolutions is non-trivial and time consuming.  
 Therefore, this function does not do this it just returns the original data (still stored on disk, not in memory).  If you want to process by 
 by aggregeting to fractions of a larger, more workable resolution, please see \code{processGlobcover2009}
 }

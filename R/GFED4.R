@@ -245,7 +245,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       
       #GFED4.data.cropped.timeseries.xts <- xts(GFED4.data.cropped.timeseries , order.by = seq(as.Date(paste(temporal.extent@start, "07-01", sep = "-")), as.Date(paste(temporal.extent@end, "07-01", sep = "-")), by="years"))
       
-      list.of.datasets[[extent@id]] <- new("TemporalDataset",
+      list.of.datasets[[extent@id]] <- new("DataObject",
                                            id = "GFED4",
                                            name = "GFED4 Burnt Area",
                                            temporal.extent = temporal.extent,
@@ -258,7 +258,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
     } # if not spatially aggregating
     else {
       
-      list.of.datasets[[extent@id]] <- new("SpatialDataset",
+      list.of.datasets[[extent@id]] <- new("DataObject",
                                            id = "GFED4",
                                            name = "GFED4 Burnt Area",
                                            temporal.extent = temporal.extent,

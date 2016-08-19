@@ -15,7 +15,7 @@ doesn't mean we specifically recommend it's use.  It is included here as an exam
 to the user.}
 }
 \value{
-A \code{SpatialDataset} object.
+A \code{DataObject} object.
 }
 \description{
 An example dataset of distribution total biomass across the tropics.  

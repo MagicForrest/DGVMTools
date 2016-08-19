@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting-helper.R
 \name{makeOverlay}
 \alias{makeOverlay}
-\title{Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with (for example) plotLayer}
+\title{Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with (for example) plotSpatial}
 \usage{
 makeOverlay(which, interior.lines = TRUE, lwd = 0.5, col = NULL)
 }
@@ -19,7 +19,7 @@ makeOverlay(which, interior.lines = TRUE, lwd = 0.5, col = NULL)
 a SpatialLines object
 }
 \description{
-Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with (for example) plotLayer
+Returns a SpatialLines object (of, for example, country or continent outlines) for overlaying on an spplot with (for example) plotSpatial
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}, Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

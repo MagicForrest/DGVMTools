@@ -313,6 +313,7 @@ getModelObject <- function(run,
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
   model.object.id <- makeModelObjectID(var.string, temporal.extent, spatial.extent, temporally.average, spatially.average)
   file.name <- file.path(run@run.dir, paste(model.object.id, "DGVMData", sep = "."))
+  if(verbose) message(paste("Seeking ModelObject with id = ", model.object.id, sep = ""))
   
   
   

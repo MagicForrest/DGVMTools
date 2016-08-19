@@ -180,7 +180,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
 #' This dataset has been used in various publications, but just because we include it here 
 #' doesn't mean we specifically recommend it's use.  It is included here as an example, judgement of the scientific merit is left 
 #' to the user.
-#' @return A \code{SpatialDataset} object.  
+#' @return A \code{DataObject} object.  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 getSaatchi2011 <- function(resolution = "HD"){

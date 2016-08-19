@@ -5,7 +5,7 @@
 \alias{SpatialComparison-class}
 \title{Result of comparing a model raster to a data raster}
 \description{
-This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToSpatialDataset}
+This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToDataObject}
 }
 \section{Slots}{
 

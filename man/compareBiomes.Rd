@@ -16,10 +16,10 @@ and should be folded into the scheme.}
 
 \item{period}{The temporal extent over which the model output should be averaged for calculating the biomes}
 
-\item{scheme}{The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or SpatialDataset?) 
+\item{scheme}{The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or DataObject?) 
 containing the data}
 
-\item{biome.dataset}{The biomes to which you wish to comapre, as a SpatialDataset.}
+\item{biome.dataset}{The biomes to which you wish to comapre, as a DataObject.}
 
 \item{plot}{Logical, if true make a biome plot.}
 
@@ -32,7 +32,7 @@ For example "Corrected" or "EuropeOnly"}
 
 \item{canvas.options}{A list of options (to be given to the \code{Cairo}) function to define the canvas. See the \code{Cairo} documentation}
 
-\item{...}{Additional parameters supplied to the plotLayer() plotting function.}
+\item{...}{Additional parameters supplied to the plotSpatial() plotting function.}
 }
 \value{
 A Biome comparison object

@@ -46,7 +46,7 @@
 #' @param maxpixels Maximum number of pixels to plot (see \code{raster} version of \code{spplot})
 #' @param biome.scheme A biome scheme of type BiomeScheme.  This control the defines the biomes types, names, colours for 
 #' plotting etc (only used if argument "special" = "biomes")
-#' @param biome.data A biome dataset, as a Raster or a SpatialDataset (can be left NULL to plot no data, 
+#' @param biome.data A biome dataset, as a Raster or a DataObject (can be left NULL to plot no data, 
 #' only used if argument "special" = "biomes")
 #' @param kappa.list A list of Kappa scores (to be coded in a more friendly style, 
 #' only used if argument "special" = "biomes")

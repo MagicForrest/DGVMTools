@@ -16,7 +16,7 @@ are "HD" and "T63" and "original"
 Should be moved to DGVMDatasets, not distributed with DGVMTools}
 }
 \value{
-A \code{SpatialDataset} object.
+A \code{DataObject} object.
 }
 \description{
 Total biomass across the nothern temperate and boreal zones.

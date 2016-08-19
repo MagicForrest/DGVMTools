@@ -5,11 +5,11 @@
 \alias{DataObject-class}
 \title{Contains one dataset (ie. measured, not model-generated).}
 \description{
-A key class of the package.  A \code{DataObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
-For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
+A key class of the package.  A \code{DataObject} stores the data and metadata for one dataset (temporal or spatial).
+For example
 }
 \details{
-Generally these are not created directly by the user, but rather by functions like \code{getModelObject}.
+Generally these are not created directly by the user, but rather by functions like \code{getMODISTreecover} or \code{getSaatchi2011} or so, but the use can create them directly if desired.
 }
 \section{Slots}{
 

@@ -2,12 +2,13 @@
 
 #' Benchmark ModelRuns against a spatial dataset
 #'
-#' To use this function it is *required* that \code{compareRunToSpatialDataset()} has been performed on each of the runs with 
-#' the dataset to which we are comparing.
+#' Take a list of model runs and compares each run to a DataObject (which should obviously have spatial dimensions).  
+#' Comparsion plots to each individual run are saved in the directory for that particular run, and overall plots (simultaneously showing all the runs 
+#' next to the data) are saved in the \code{summary.plor.dir} argument.
 #' 
 #' @param runs A list of ModelRun objects (each with the RasterComparison object already created)
 #' @param layer.name Layer in the vegetation model output to compare to the data
-#' @param dataset The spatial dataset to which we are comparing (represented as a SpatialDataset object)
+#' @param dataset The spatial dataset to which we are comparing (represented as a DataObject object)
 #' @param tag A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
 #' for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.
 #' @param diff.cuts Numeric vector of cuts for plotting the absolute difference.  If not specified it is derived as the maximum
@@ -16,7 +17,7 @@
 #' in 5\% intervals.
 #' @param spatial.extent If specified (as a raster::Extent object), the spatial extent to plot.  Note that the statistics will *not* reflect
 #'this extent
-#' @param showR2 A logical, if TRUE, put the R2.effared values on the plots.
+#' @param showR2 A logical, if TRUE, put the R2.eff values on the plots.
 #' @param histo.plot.range A two-value numeric vector defining the range for the histo plots
 #' @param correction.dt A data.table with columns "Lon", "Lat" and "Correction" to apply a multiplicative correction to the model data before performing the benchmark 
 #' to account for (for example) land cover.  NA's can be used to completely mask out areas from the comparison. 
@@ -766,9 +767,9 @@ doKappa <- function(dt,
 #' @param variable The Quantity (or name) of the variable from which the biomes are to be derived. This is not flexible enough, 
 #' and should be folded into the scheme.
 #' @param period The temporal extent over which the model output should be averaged for calculating the biomes
-#' @param scheme The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or SpatialDataset?) 
+#' @param scheme The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or DataObject?) 
 #' containing the data
-#' @param biome.dataset The biomes to which you wish to comapre, as a SpatialDataset.
+#' @param biome.dataset The biomes to which you wish to comapre, as a DataObject.
 #' @param plot Logical, if true make a biome plot.
 #' @param show.stats A logical, if TRUE, put the Kappa values on the plots.
 #' @param summary.plot.dir A directory (full path as a character string) so save the plots which compare many runs

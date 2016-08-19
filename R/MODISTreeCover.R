@@ -12,7 +12,7 @@
 #' 
 #' Should be moved to DGVMDatasets, not distributed with DGVMTools
 #' 
-#' @return A \code{SpatialDataset} object.  
+#' @return A \code{DataObject} object.  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 
