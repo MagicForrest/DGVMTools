@@ -6,12 +6,12 @@
 \usage{
 plotSpatial(data, layers = NULL, expand.layers = TRUE, quant = NULL,
   period = NULL, run = NULL, PFT.set = global.PFTs, title = NULL,
-  tag = NULL, layout.objs = NULL, plot.labels = NULL,
-  plot.bg.col = "transparent", useLongnames = FALSE, text.multiplier = 1,
-  plot.extent = NULL, limit = FALSE, limits = NULL,
-  override.cols = NULL, override.cuts = NULL, special = "none",
-  maxpixels = 1e+06, biome.scheme = Smith2014.scheme, biome.data = NULL,
-  kappa.list = NA, kappa.position = NULL, ...)
+  layout.objs = NULL, plot.labels = NULL, plot.bg.col = "transparent",
+  useLongnames = FALSE, text.multiplier = 1, plot.extent = NULL,
+  limit = FALSE, limits = NULL, override.cols = NULL,
+  override.cuts = NULL, special = "none", maxpixels = 1e+06,
+  biome.scheme = Smith2014.scheme, biome.data = NULL, kappa.list = NA,
+  kappa.position = NULL, ...)
 }
 \arguments{
 \item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
@@ -31,9 +31,6 @@ In the case of plotting a \code{ModelRun} object this is taken automatically fro
 \item{PFT.set}{A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{ModelObject}.}
 
 \item{title}{A character string to override the deafualt title.}
-
-\item{tag}{A string with which to tag the resulting plots to specify the analysis (to differentiate them from other plots),
-for example "ForcingDatasetComparison" or "SoilDepths.  Or whatever you want.}
 
 \item{layout.objs}{List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
 so see the there for how to build them.}
@@ -77,13 +74,7 @@ only used if argument "special" = "biomes")}
 \item{kappa.position}{A numeric vector with two elements to define the position (in Lon-Lat) of the overall 
 Kappa score on the plot (only used if argument "special" = "biomes")}
 
-\item{...}{Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.
-
-This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
-in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
-However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
-
-The function works best for \code{ModelObjects} (which contain a lot of useful metadata).}
+\item{...}{Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.}
 }
 \value{
 Returns a plot object (from spplot)
@@ -94,6 +85,13 @@ It has a really large amount of parameters for a huge amount of flexibility.  Ho
 so that in the case of plotting a \code{ModelObject} all you *need* to supply is the data itself, everything else is either set to a sensible default,
 or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can plot things like biomes, dominant PFTs, months of maximum values, 
 burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command.
+}
+\details{
+This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
+in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
+However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
+
+The function works best for \code{ModelObjects} (which contain a lot of useful metadata).
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

@@ -14,7 +14,7 @@ import(maps,
 
 importFrom("fields", "tim.colors")
 importFrom("compiler", "cmpfun")
-importFrom("Cairo", "Cairo", "CairoPNG")
+importFrom("Cairo", "Cairo")
 importFrom("grid", "unit")
 importFrom("RColorBrewer", "brewer.pal")
 importFrom("grDevices", "col2rgb", "colorRampPalette", "dev.off", "rgb")

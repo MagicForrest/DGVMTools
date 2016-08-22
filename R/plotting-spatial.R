@@ -52,7 +52,7 @@
 #' Kappa score on the plot (only used if argument "special" = "biomes") 
 #' @param ... Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.
 #' 
-#' This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
+#' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
 #' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
 #' However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
 #' 
