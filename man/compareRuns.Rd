@@ -15,9 +15,10 @@ compareRuns(runs, veg.spatial.id, layer, expand.layer = TRUE,
 
 \item{veg.spatial.id}{Character string holding the id of the ModelObject to be compared}
 
-\item{layer}{The layer to be compared across all ModelRuns}
+\item{layer}{The (single) layer to be compared across all ModelRuns}
 
-\item{expand.layer}{Logical, if TRUE expand the layer arguments use \code{expandLayers}}
+\item{expand.layer}{Logical, if TRUE expand the layer arguments use \code{expandLayers} and so actually the function will compare many layers.
+For example, if the layer is "seasons" and expand.layer is TRUE, the DJF, MAM, JJA and SON will all be analysed.}
 
 \item{base.run.id}{A character string to which (if specified) all the other runs are compared by plotting the difference 
 and percentage difference relative to this base run}
@@ -48,7 +49,7 @@ see the documentation of that function for details.}
 }
 \description{
 Given a list of runs and an id of a spatial ModelObjects, compare the specified layers between all runs, and, 
-if a base line run is specified, also plot comprisons relative to that
+if a base line run is specified, also plot comparisons relative to that
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

@@ -6,9 +6,9 @@
 \usage{
 benchmarkSpatial(runs, layer.name, dataset, tag = NULL, diff.cuts = NULL,
   perc.diff.cuts = seq(-100, 200, 5), spatial.extent = NULL,
-  showR2 = TRUE, histo.plot.range = NULL, correction.dt = NULL,
-  summary.plot.dir = NULL, canvas.options = list(dpi = 72, type = "png",
-  width = 1800, height = 1000, bg = "transparent"), ...)
+  showR2 = TRUE, showFitLine = TRUE, histo.plot.range = NULL,
+  correction.dt = NULL, summary.plot.dir = NULL, canvas.options = list(dpi
+  = 72, type = "png", width = 1800, height = 1000, bg = "transparent"), ...)
 }
 \arguments{
 \item{runs}{A list of ModelRun objects (each with the RasterComparison object already created)}
@@ -30,6 +30,8 @@ in 5\% intervals.}
 this extent}
 
 \item{showR2}{A logical, if TRUE, put the R2.eff values on the plots.}
+
+\item{showFitLine}{A logical, if TRUE, put the a linear fit line on the scatter plots}
 
 \item{histo.plot.range}{A two-value numeric vector defining the range for the histo plots}
 

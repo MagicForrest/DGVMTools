@@ -96,7 +96,7 @@ addToModelRun <- function(object, run){
     
     # Check that run ids match, if not, stop becuase something is really wrong
     if(run@id != object@run@id){
-      stop(paste("Adding ModelObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". If you are doing something funky, like averaging ModelObjects from different runs to make a a ModelRun represnting an ensmble mean, then make sure that the ids match. Otherwise you will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrong to you." , sep = ""))
+      stop(paste("Adding ModelObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". If you are doing something funky, like averaging ModelObjects from different runs to make a a ModelRun representing an ensemble mean, then make sure that the ids match. Otherwise you will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrong to you." , sep = ""))
     }
     
     model.objects.list <- run@objects

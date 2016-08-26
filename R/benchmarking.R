@@ -18,6 +18,7 @@
 #' @param spatial.extent If specified (as a raster::Extent object), the spatial extent to plot.  Note that the statistics will *not* reflect
 #'this extent
 #' @param showR2 A logical, if TRUE, put the R2.eff values on the plots.
+#' @param showFitLine A logical, if TRUE, put the a linear fit line on the scatter plots
 #' @param histo.plot.range A two-value numeric vector defining the range for the histo plots
 #' @param correction.dt A data.table with columns "Lon", "Lat" and "Correction" to apply a multiplicative correction to the model data before performing the benchmark 
 #' to account for (for example) land cover.  NA's can be used to completely mask out areas from the comparison. 
@@ -40,6 +41,7 @@ benchmarkSpatial <- function(runs,
                              perc.diff.cuts = seq(-100,200,5),
                              spatial.extent = NULL,
                              showR2 = TRUE,
+                             showFitLine = TRUE,
                              histo.plot.range = NULL, 
                              correction.dt = NULL,
                              summary.plot.dir = NULL,
@@ -68,52 +70,37 @@ benchmarkSpatial <- function(runs,
   args1[names(inargs)] <- inargs
   
   
-  # COMBINE LAYOUT OBJECTS FROM DIFFERENT SOURCES - MF not necessary any more
-  # if(!is.null(layout.objs)){
-  #   
-  #   # check if there is a layout.objs already provided to which any new ones must be added
-  #   if("layout.objs" %in% names(args1)){
-  #     
-  #     layout.objs <- append(layout.objs, args1["layout.objs"])
-  #     args1[["layout.objs"]] <- NULL
-  #     
-  #   }
-  #   
-  # }
-  
-  
   # SET UP A SQUARE CANVAS FOR SCATTER AND HISTO PLOTS
   # set up up a square canvas
   canvas.options.square <- canvas.options
   height.width = min(canvas.options$width, canvas.options$height)
   canvas.options.square$width <- height.width
   canvas.options.square$height <- height.width
+  # wide
+  canvas.options.wide <- canvas.options.square
+  canvas.options.wide$width <-  canvas.options.wide$width * 1.5
   # set up up a square canvas, with 500 pixels per plot
   canvas.options.square.scaled <- canvas.options
   height.width = ceiling(length(runs)^0.5) * 500
   canvas.options.square.scaled$width <- height.width
   canvas.options.square.scaled$height <- height.width
   
-  # CALCULATE THE BOOTSTRAP MEAN FOR T
   
   
   
-  # FIRST BENCHMARK EACH RUN SEPARATELY
-  # but save the comparisons in a list
-  comparison.objects.list <- list()
+  ######## FIRST BENCHMARK EACH RUN SEPARATELY
   
   # make a new data.table to store the data and the comparison layers 
   data.dt <- dataset@data
   
   # list of stuff for the multi-panel plots
-  scatter.label.vector <- c()
-  equation.label.vector <- c()
   run.ids <- c()
   run.descriptions <- c()
   run.fill.cols <- c()
   run.line.cols <- c()
   
-  first.time <- TRUE
+  
+  do.bootstrap <- TRUE
   for(run in runs){
     
     # make the id_to_description
@@ -152,42 +139,33 @@ benchmarkSpatial <- function(runs,
     
     # else just change the name of the column to the run ID 
     else{
-      
       setnames(model.dt, ncol(model.dt), run@id)
-      
     }
     
-    # add the model output (keeping only points where there are data) and and rename the colum with the run id
+    # add the model output (keeping only points where there are data) and and rename the column with the run id
     data.dt <- merge(x = round(data.dt, 3), y = round(model.dt, 3), all = FALSE)
     data.dt <- na.omit(data.dt)
     
     calcNME <- function(data.vector, model.vector) {
-      
       return( sum(abs(data.vector - model.vector), na.rm=TRUE) / sum(abs(data.vector - mean(data.vector)), na.rm=TRUE)) 
-      
     }
     
     calcNashSutcliffe <- function(data.vector, model.vector) {
-      
       return( 1 -  (sum((data.vector - model.vector)^2, na.rm=TRUE) / length(data.vector)) / stats::var(data.vector) )
-      
     }
     
     calcR2 <- function(data.vector, model.vector) {
-      
       return( sum( (model.vector - mean(model.vector)) * (data.vector - mean(data.vector)) )^2 / (sum( (model.vector - mean(model.vector))^2 ) * sum( (data.vector - mean(data.vector)) ^2)) )
-      
     }
     
     
     
     # if first time comparing to this dataset, calculate the bootstrap mean
-    if(first.time){
+    if(do.bootstrap){
       
-      first.time <- FALSE
+      do.bootstrap <- FALSE
       
       # get the data as a dt
-      
       data.vector <- data.dt[[dataset@id]]
       
       
@@ -197,7 +175,7 @@ benchmarkSpatial <- function(runs,
       for(iter in 1:1000){
         
         fake.data <- sample(data.vector, length(data.vector), replace = TRUE)
-    
+        
         NME <- calcNME(data.vector, fake.data)
         NME.boot.strap.scores <- append(NME.boot.strap.scores, NME)
         
@@ -206,7 +184,7 @@ benchmarkSpatial <- function(runs,
         
         R2.eff <- calcNashSutcliffe(data.vector, fake.data)
         R2.eff.boot.strap.scores <- append(R2.eff.boot.strap.scores, R2.eff)
-    
+        
       }
       
     }
@@ -252,14 +230,12 @@ benchmarkSpatial <- function(runs,
     NME <- calcNME(data.vector, model.vector)
     
     # MSE, RMSE, NMSE
-    
-    MSE <- sum(difference.vector^2, na.rm=TRUE)
-    NMSE <- MSE/ sum((data.vector - mean(data.vector))^2)
+    MSE <- mean(difference.vector^2, na.rm=TRUE)
+    NMSE <- MSE / mean((data.vector - mean(data.vector))^2)
     RMSE <- MSE^0.5
     
     
-    # R2 - coefficient of variation
-    # R2 = (sum(model - mean.model) * (meas - mean.meas))^2 / (sum(model -mean.model)^2 * sum(meas - mean.meas)^2)
+    # R2 - coefficient of determination
     R2 <- calcR2(data.vector, model.vector)
     
     # R2eff - model efficiency
@@ -284,9 +260,13 @@ benchmarkSpatial <- function(runs,
                              P.cor = P.cor, 
                              sd.diff = sd.diff)
     
-    runs[[run@id]] <- addToModelRun(comparison.result, runs[[run@id]])
+    # save this comparison for later
+    comparisons <- dataset@comparisons
+    comparisons[[run@id]] <- comparison.result
+    dataset@comparisons <- comparisons
+    rm(comparisons)
     
-    
+ 
     
     # set up local arguments for plotting
     local.args <- args1
@@ -323,14 +303,14 @@ benchmarkSpatial <- function(runs,
     
     print(
       do.call(plotSpatial, c(list(data = data.dt,
-                                layers = paste(run@id, "Error", sep = "_"),
-                                quant = dataset@quant, 
-                                period = dataset@temporal.extent, 
-                                run = run,
-                                tag = "Corrected",
-                                maxpixels = 1000000,
-                                special = "diff"),
-                           local.args)
+                                  layers = paste(run@id, "Error", sep = "_"),
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  run = run,
+                                  tag = "Corrected",
+                                  maxpixels = 1000000,
+                                  special = "diff"),
+                             local.args)
       )
     )
     
@@ -343,52 +323,40 @@ benchmarkSpatial <- function(runs,
     
     print(
       do.call(plotSpatial, c(list(data = data.dt,
-                                layers = c(run@id, dataset@id),
-                                quant = dataset@quant, 
-                                period = dataset@temporal.extent, 
-                                run = run,
-                                summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
-                                tag = "Corrected",
-                                maxpixels = 1000000,
-                                plot.labels = c(run@description, dataset@name)),
-                           local.args)
+                                  layers = c(run@id, dataset@id),
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  run = run,
+                                  summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
+                                  tag = "Corrected",
+                                  maxpixels = 1000000,
+                                  plot.labels = c(run@description, dataset@name)),
+                             local.args)
       )
     )
     
     dev.off()
     
-    ##### HISTOS
     
-    # absolute difference
+    
+    # MAKE TEMPORARY DATAOBJECT FOR SCATTERS AND RESIDUAL PLOTS
+    temp.data.obj <- dataset
+    temp.data.obj@data <- data.dt[, c(dataset@id, run@id, paste(run@id, "Error", sep = "_"), paste(run@id, "NormError", sep = "_")),with=FALSE]
+    
+    
+    
+    ##### RESIDUAL HISTO
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "ResidualsHisto", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options.square)) 
     
-    histo.plot <- ggplot(as.data.frame(na.omit(data.dt)), aes_string(x=paste(run@id, "Error", sep = "_"))) + geom_histogram(colour = "darkgreen", fill = "white", binwidth = abs(diff.cuts[2] - diff.cuts[1]))
-    histo.plot <- histo.plot + ggtitle(paste("Residuals: ",  paste(run@model,run@description,sep = " "), "-", paste(dataset@name, sep = " "))) + theme(plot.title = element_text(lineheight=.8, face="bold"))
-    histo.plot <- histo.plot + theme(text = element_text(size=30))
-    histo.plot <- histo.plot +  xlab(paste("Residuals: ", paste(run@model,run@description,sep = " "), "-", dataset@name, sep = ""))   +   ylab("# gridcells")     
-    histo.plot <- histo.plot + geom_vline(xintercept = 0, size = 2, colour = "red3")
-    
-    print(histo.plot)
-    
-    dev.off()
-    
-    
-    # normalised
-    do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "NormalisedResidualsHisto", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
-                                 canvas.options.square)) 
-    
-    histo.plot <- ggplot(as.data.frame(na.omit(data.dt)), aes_string(x=paste(run@id, "NormError", sep = "_"))) + geom_histogram(colour = "darkgreen", fill = "white", binwidth = 0.05)
-    histo.plot <- histo.plot + ggtitle(paste("Normalised Residuals: ",  paste(run@model,run@description,sep = " "), "-", paste(dataset@name, sep = " "))) + theme(plot.title = element_text(lineheight=.8, face="bold"))
-    histo.plot <- histo.plot + theme(text = element_text(size=30))
-    histo.plot <- histo.plot +  xlab(paste("Normalised Residuals: ", paste(run@model,run@description,sep = " "), "-", dataset@name, sep = ""))   +   ylab("# gridcells")     
-    histo.plot <- histo.plot + geom_vline(xintercept = 0, size = 1, colour = "red3")
-    histo.plot <- histo.plot + xlim(-10, 10)
-    
-    print(histo.plot)
+    print(plotResidualsHisto(temp.data.obj, 
+                             cols = "darkgreen", 
+                             fills = "white", 
+                             title = paste("Residuals: ",  paste(run@model,run@description,sep = " "), "-", paste(dataset@name, sep = " ")),
+                             bins = diff.cuts,
+                             limit = FALSE))
     
     dev.off()
-    
     
     
     
@@ -397,36 +365,24 @@ benchmarkSpatial <- function(runs,
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Scatter", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options.square)) 
     
-    
-    scatter.plot <- ggplot(as.data.frame(na.omit(data.dt)), aes_string(x=dataset@id, y=run@id)) +  geom_point(size=3, alpha = 0.05)
-    scatter.plot <- scatter.plot + theme(text = element_text(size=25))
-    scatter.plot <- scatter.plot + ggtitle(paste(paste(run@description,sep = " "), "vs.", paste(dataset@name, sep = " "))) + theme(plot.title = element_text(lineheight=.8, face="bold"))
-    scatter.plot <- scatter.plot +  xlab(paste(dataset@name, dataset@quant@name, paste0("(", dataset@quant@units, ")"), sep = " "))   +   ylab(paste(run@description, dataset@quant@name, paste0("(", dataset@quant@units, ")"), sep = " "))     
-    scatter.plot <- scatter.plot +  coord_cartesian(xlim = c(dataset@quant@cuts[1], dataset@quant@cuts[length(dataset@quant@cuts)]), ylim = c(dataset@quant@cuts[1], dataset@quant@cuts[length(dataset@quant@cuts)])) 
-    scatter.plot <- scatter.plot + geom_abline(intercept = 0, slope = 1, size = 1.5, colour = "red3")
-    scatter.plot <- scatter.plot + geom_smooth(method = "lm", se = FALSE, size = 1.5, colour = "blue3")
-    
-    lm.model <- stats::lm(get(run@id) ~ get(dataset@id), as.data.frame(na.omit(data.dt)))
-    lm.eq <- paste("y = ", signif(stats::coef(lm.model)[2], digits = 3), "*x + ",  signif(stats::coef(lm.model)[1], digits = 3), ", R^2 =", signif(summary(lm.model)$r.squared, digits = 3), sep = "")
-    scatter.plot <- scatter.plot + annotate("text", x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.50, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.975, label = lm.eq, colour = "blue3", size = 10, hjust = 0, parse = FALSE)
-    
-    
-    # add text
-    label.text <- paste("NME = ", signif(NME, 3), "\nNMSE = ", signif(NMSE, 3), "\nRMSE = ", signif(RMSE, 3), "\nR^2 = ", signif(R2, 3), "\nR^2_eff = ", signif(R2.eff, 3), "\nPearman Corr. = ", signif(P.cor, 3), sep = "")
-    scatter.plot <- scatter.plot + annotate("text", x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.05, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.9, label = label.text, colour = "red3", size = 10, hjust = 0)
-    
-    print(scatter.plot)
+    print(plotScatterComparison(temp.data.obj,
+                                labels = run@description,
+                                facet = FALSE,
+                                text.size = 10))
     
     dev.off()
     
-    # store text labels for multipanel plot
-    scatter.label.vector <- append(scatter.label.vector, label.text)
-    equation.label.vector <- append(equation.label.vector, lm.eq)
     
     
-  }
+  } # for each run
   
-  ### NOW COMPARE EACH RUN TO THE BENCHMARK SIMULTANEOUSLY
+  
+  ### NOW THAT ALL RUNS HAVE BEEN PROCESSED UPDATE THE DATAOBJECT
+  dataset@data <- data.dt
+  
+  
+  
+  ### NOW COMPARE EACH RUN TO THE BENCHMARK SIMULTANEOUSLY (USING THE COMPLETED DATAOBJECT)
   
   if(!is.null(summary.plot.dir)) {
     
@@ -456,15 +412,14 @@ benchmarkSpatial <- function(runs,
       
       # retrieve the comparison object for the R^2 values
       counter <- counter + 1
-      comparison.obj <- run@benchmarks[[paste(run@id, dataset@id, sep = ".")]]
-      R2.val <- round(comparison.obj@R2.eff, 3)
-      args1[["layout.objs"]][[run@id]] <- list("sp.text", txt = bquote(R^2 ~ "=" ~ .(R2.val)), loc = c(stats.pos.x,stats.pos.y), which = counter, cex = 2)
+      comparison.obj <- byIDfromList(paste(run@id, dataset@id, sep = "."), dataset@comparisons)
+      NME.val <- round(comparison.obj@NME, 3)
+      args1[["layout.objs"]][[run@id]] <- list("sp.text", txt = bquote(NME ~ "=" ~ .(NME.val)), loc = c(stats.pos.x,stats.pos.y), which = counter, cex = 2)
       
       rm(comparison.obj)
       
       # add the text to the text lists
       plot.titles <- append(plot.titles, run@description)
-      
       
     }
     
@@ -480,19 +435,19 @@ benchmarkSpatial <- function(runs,
     # PLOT ABSOLUTE VALUES
     print(
       do.call(plotSpatial, c(list(data = data.dt,
-                                layers = abs.layers,
-                                quant = dataset@quant, 
-                                period = dataset@temporal.extent, 
-                                tag = "Corrected",               
-                                plot.labels = plot.titles),
-                           args1)
+                                  layers = abs.layers,
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  tag = "Corrected",               
+                                  plot.labels = plot.titles),
+                             args1)
       )
     )
     
     dev.off()
     
     
-    # PLOT ABSOLUTE DIFFERENCE
+    ##### PLOT ABSOLUTE DIFFERENCE
     
     # first remove the data from the plot title list and also decrease the plot number for the R-sqauareds 
     plot.titles <- plot.titles[-1]
@@ -510,15 +465,15 @@ benchmarkSpatial <- function(runs,
     
     print(
       do.call(plotSpatial, c(list(data = data.dt,
-                                layers = diff.layers,
-                                quant = dataset@quant, 
-                                period = dataset@temporal.extent, 
-                                title = paste("Simulated - ", dataset@id, " (", dataset@quant@units, ")", sep = ""),
-                                special = "difference",               
-                                plot.labels = plot.titles,
-                                override.cuts = diff.cuts,
-                                text.multiplier = 1.0),
-                           args1)
+                                  layers = diff.layers,
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  title = paste("Simulated - ", dataset@id, " (", dataset@quant@units, ")", sep = ""),
+                                  special = "difference",               
+                                  plot.labels = plot.titles,
+                                  override.cuts = diff.cuts,
+                                  text.multiplier = 1.0),
+                             args1)
       )
     )
     dev.off()
@@ -526,7 +481,7 @@ benchmarkSpatial <- function(runs,
     
     
     
-    # PLOT PERCENTAGE DIFFERENCE
+    ##### PLOT PERCENTAGE DIFFERENCE
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("PercentageDifference", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
@@ -536,15 +491,15 @@ benchmarkSpatial <- function(runs,
     
     print(
       do.call(plotSpatial, c(list(data = temp.dt,
-                                layers = perc.diff.layers,
-                                quant = dataset@quant, 
-                                period = dataset@temporal.extent, 
-                                title = paste("Simulated - ", dataset@id, "(percentage difference)"),
-                                special = "percentage.difference",               
-                                plot.labels = plot.titles,
-                                override.cuts = perc.diff.cuts,
-                                text.multiplier = 1.0),
-                           args1)
+                                  layers = perc.diff.layers,
+                                  quant = dataset@quant, 
+                                  period = dataset@temporal.extent, 
+                                  title = paste("Simulated - ", dataset@id, "(percentage difference)"),
+                                  special = "percentage.difference",               
+                                  plot.labels = plot.titles,
+                                  override.cuts = perc.diff.cuts,
+                                  text.multiplier = 1.0),
+                             args1)
       )
     )
     
@@ -552,101 +507,40 @@ benchmarkSpatial <- function(runs,
     
     dev.off()
     
-    ##################################################################################################
-    ##### PLOT ALL SCATTERS ON ONE CANVAS AND ALL HISTOS ON TOP OF EACH OTHER
     
     
-    # Make labeller for facet_wrap
-    run.labeller <- run.descriptions
-    names(run.labeller) <- run.ids
-    
-    # MULTI-PANEL SCATTER
-    
-    
-    # select all the layers that we want
-    temp.dt <- na.omit(data.dt[, abs.layers, with = FALSE])
-    
-    
-    temp.dt <- melt.data.table(temp.dt, id.vars = dataset@id)
-    setnames(temp.dt, c(dataset@id, "Run", "Model"))
-    
-    scatter.label.df <- data.frame(label = scatter.label.vector, Run = abs.layers[2:length(abs.layers)] )
-    equation.label.df <- data.frame(label = equation.label.vector, Run = abs.layers[2:length(abs.layers)] )
-    
-    
+    ##### PLOT ALL SCATTERS ON ONE CANVAS 
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Scatters", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options.square.scaled)) 
     
-    scatter.plot <- ggplot(as.data.frame(na.omit(temp.dt)), aes_string(x=dataset@id, y="Model")) +  geom_point(size=3, alpha = 0.05)
-    scatter.plot <- scatter.plot + facet_wrap(~ Run, labeller = as_labeller(run.labeller))
-    scatter.plot <- scatter.plot + theme(text = element_text(size=25))
-    scatter.plot <- scatter.plot + ggtitle(paste("All Simulations vs.", paste(dataset@name, sep = " "))) + theme(plot.title = element_text(lineheight=.8, face="bold"))
-    scatter.plot <- scatter.plot +  xlab(paste(dataset@name, layer.name, dataset@quant@name ,sep = " "))   +   ylab(paste("Simulated", dataset@quant@name, sep = " "))     
-    scatter.plot <- scatter.plot +  coord_cartesian(xlim = c(dataset@quant@cuts[1], dataset@quant@cuts[length(dataset@quant@cuts)]), ylim = c(dataset@quant@cuts[1], dataset@quant@cuts[length(dataset@quant@cuts)])) 
-    scatter.plot <- scatter.plot + geom_abline(intercept = 0, slope = 1, size= 1, colour = "red3")
-    scatter.plot <- scatter.plot + geom_smooth(method = "lm", se = FALSE, size = 1, colour = "blue3")
-    scatter.plot <- scatter.plot + geom_text(x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.25, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.85, aes(label = label), data = scatter.label.df, size = 6, colour = "red3")
-    scatter.plot <- scatter.plot + geom_text(x = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.75, y = (dataset@quant@cuts[length(dataset@quant@cuts)] - dataset@quant@cuts[1]) * 0.95, aes(label = label), data = equation.label.df, size = 6, colour = "blue3")
-    print(scatter.plot)
-    
+    print(plotScatterComparison(dataset,
+                                labels = run.descriptions))
     
     dev.off()
     
-    rm(temp.dt)
     
     
-    # OVERLAY HISTOS
-    
-    # select all the layers that we want
-    temp.dt <- na.omit(data.dt[, append(diff.layers,dataset@id) , with = FALSE])
-    temp.dt <- melt.data.table(temp.dt, id.vars = dataset@id)
-    setnames(temp.dt, c(dataset@id, "Run", "Model"))
-    for(run in runs) {
-      
-      
-      
-    }
-    
-    
-    
+    ##### PLOT ALL RESIDUAL HISTOS
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("ResidualHistos", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
-                                 canvas.options.square)) 
+                                 canvas.options.wide)) 
     
-    
-    
-    histo.plot <- ggplot(as.data.frame(temp.dt), aes(x = Model, colour = Run)) 
-    
-    
-    histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run), binwidth = abs(diff.cuts[2] - diff.cuts[1]), position="identity")
-    histo.plot <- histo.plot + scale_colour_manual(labels = run.descriptions, values = run.line.cols) + scale_fill_manual(labels = run.descriptions, values = run.fill.cols)
-    histo.plot <- histo.plot + guides(colour = guide_legend(keywidth = 5, keyheight = 3), fill = guide_legend())
-    
-    histo.plot <- histo.plot + ggtitle(paste("Residuals: Simulations - ", dataset@name, dataset@quant@name, sep = " ")) + theme(plot.title = element_text(lineheight=.8, face="bold"))
-    histo.plot <- histo.plot + theme(text = element_text(size=30))
-    histo.plot <- histo.plot + xlab(paste("Residuals: Simulations -", dataset@name, dataset@quant@name, paste0("(",dataset@quant@units,")"), sep = " "))   
-    histo.plot <- histo.plot + ylab("# gridcells")     
-    histo.plot <- histo.plot + geom_vline(xintercept = 0, size = 1, colour = "black")
-    histo.plot <- histo.plot + xlim(diff.cuts[1], diff.cuts[length(diff.cuts)])
-    #histo.plot <- histo.plot + facet_grid( Run ~ ., labeller = as_labeller(run.labeller))
-    
-    
-    print(histo.plot)
-    
+    print(plotResidualsHisto(dataset, 
+                             cols = run.line.cols, 
+                             fills = run.fill.cols, 
+                             labels = run.descriptions,
+                             reverse = TRUE, 
+                             bins = diff.cuts))
     
     dev.off()
     
-    rm(temp.dt)
     
-    
-    # Clear up
+    #####  CLEAR UP
     rm(plot.titles, abs.layers, diff.layers, perc.diff.layers)
     gc()
     
     
   }
   
-  
-  dataset@data <- data.dt
   
   return(dataset)
   
@@ -807,7 +701,7 @@ compareBiomes <- function(runs,
   
   # first rasterise the data and model
   biome.data.raster <- promoteToRaster(biome.dataset@data)
-  model.data.raster <- promoteToRaster(getVegSpatial(runs[[1]], variable, period, read.full = FALSE))
+  model.data.raster <- promoteToRaster(getVegSpatial(runs[[1]], variable, period, read.full = FALSE, write = TRUE))
   
   # 
   # first check if they are on identical grids
@@ -828,7 +722,7 @@ compareBiomes <- function(runs,
   for(run in runs) {
     
     # Prepare the veg. spatial object
-    this.VegSpatial <- getVegSpatial(run, variable, period, read.full = FALSE)
+    this.VegSpatial <- getVegSpatial(run, variable, period, read.full = FALSE, write = TRUE)
     
     #  calculate biomes from model output
     this.VegSpatial <- addBiomes(this.VegSpatial, scheme)
@@ -897,14 +791,14 @@ compareBiomes <- function(runs,
   
   print(
     do.call(plotSpatial, c(list(data = data.dt, 
-                              layers = layers,
-                              summary.file.name = paste("Biomes", scheme@id, tag, sep = "."),
-                              special = "biomes", 
-                              biome.scheme = scheme, 
-                              plot.labels = labels,
-                              summary.title = paste("Comparison of", scheme@name, "biomes", sep = " "),
-                              kappa.list = comparisons),
-                         args1)
+                                layers = layers,
+                                summary.file.name = paste("Biomes", scheme@id, tag, sep = "."),
+                                special = "biomes", 
+                                biome.scheme = scheme, 
+                                plot.labels = labels,
+                                summary.title = paste("Comparison of", scheme@name, "biomes", sep = " "),
+                                kappa.list = comparisons),
+                           args1)
     )
   )
   
@@ -922,12 +816,13 @@ compareBiomes <- function(runs,
 #' Compare runs to each other
 #' 
 #' Given a list of runs and an id of a spatial ModelObjects, compare the specified layers between all runs, and, 
-#' if a base line run is specified, also plot comprisons relative to that
+#' if a base line run is specified, also plot comparisons relative to that
 #' 
 #' @param runs List of ModelRun objects to be compared
 #' @param veg.spatial.id Character string holding the id of the ModelObject to be compared
-#' @param layer The layer to be compared across all ModelRuns
-#' @param expand.layer Logical, if TRUE expand the layer arguments use \code{expandLayers}
+#' @param layer The (single) layer to be compared across all ModelRuns
+#' @param expand.layer Logical, if TRUE expand the layer arguments use \code{expandLayers} and so actually the function will compare many layers.  
+#' For example, if the layer is "seasons" and expand.layer is TRUE, the DJF, MAM, JJA and SON will all be analysed.
 #' @param base.run.id A character string to which (if specified) all the other runs are compared by plotting the difference 
 #' and percentage difference relative to this base run
 #' @param abs.value.cuts A numeric vector which (if specified), defines the cuts for the plot of the absolute values of each 
@@ -973,18 +868,23 @@ compareRuns <- function(runs,
   comparison.dt <- data.table("Lon" = numeric(0), "Lat" = numeric(0))
   setkey(comparison.dt, Lon, Lat)
   
-  # for each run
-  original.layers <- layer
+  ###########################################################################
+  ###### PLOT RUNS BESIDE EACH OTHER ########################################
+  ###########################################################################
+  
+  # for each run get the layer that we wanr
+  original.layer <- layer
   for(run in runs){
     
-    # grab the ModelObject that we want from the vegRun
+    # grab the ModelObject that we want from the ModelRun
     temp.spatial <- byIDfromList(veg.spatial.id, run@objects)
     
     # expand the layer if necessary
     if(expand.layer){layer <- expandLayers(layers = layer, input.data = temp.spatial, PFT.set = run@pft.set) }
     
     # Extract the columns that we need and add them to the data.table and set the names appropriately
-    comparison.dt <- comparison.dt[temp.spatial@data[,c("Lon","Lat",layer),with=FALSE]]
+    comparison.dt <- merge(comparison.dt, temp.spatial@data[,c("Lon","Lat",layer),with=FALSE], by = c("Lon", "Lat"), all = TRUE)
+    
     setnames(comparison.dt, c(names(comparison.dt)[1:(length(names(comparison.dt))-length(layer))], paste(run@id, layer, sep = "_")))
     
     rm(temp.spatial)
@@ -992,7 +892,7 @@ compareRuns <- function(runs,
   }
   
   
-  # now plot the absolute values for each layer run on the same plot (one plot per layer)
+  # ABSOLUTE VALUES FOR EACH LAYER, SIDE-BY-SIDE (one plot per layer)
   all.layers <- c()
   for(sub.layer in layer) {
     layers <- c()
@@ -1005,36 +905,41 @@ compareRuns <- function(runs,
                                  canvas.options)) 
     
     print(plotSpatial(comparison.dt,
-                    layers = layers,
-                    quant = run@objects[[veg.spatial.id]]@quant,
-                    title = sub.layer,
-                    tag = paste(tag, "RunComparison", sub.layer, sep = "."),
-                    special = special,
-                    override.cuts = abs.value.cuts,
-                    ...)
+                      layers = layers,
+                      quant = run@objects[[veg.spatial.id]]@quant,
+                      title = sub.layer,
+                      tag = paste(tag, "RunComparison", sub.layer, sep = "."),
+                      special = special,
+                      override.cuts = abs.value.cuts,
+                      ...)
     )
     
     dev.off()
   }
   
+  # IF SELECTED PLOT ALL LAYERS FOR ALL RUNS ON A SINGLE PAGE
   if(single.page){
     
-    do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
+    do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", paste(original.layer, collapse= ".", sep = ""), veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
     print(plotSpatial(comparison.dt,
-                    layers = all.layers,
-                    quant = run@objects[[veg.spatial.id]]@quant,
-                    title = paste(paste(original.layers, collapse= " ", sep = ""), run@objects[[veg.spatial.id]]@quant@name, sep = " "),
-                    tag = paste(tag, "RunComparison", sub.layer, sep = "."),
-                    special = special,
-                    override.cuts = abs.value.cuts,
-                    ...)
+                      layers = all.layers,
+                      quant = run@objects[[veg.spatial.id]]@quant,
+                      title = paste(paste(original.layer, collapse= " ", sep = ""), run@objects[[veg.spatial.id]]@quant@name, sep = " "),
+                      tag = paste(tag, "RunComparison", sub.layer, sep = "."),
+                      special = special,
+                      override.cuts = abs.value.cuts,
+                      ...)
     )
     
     dev.off()
     
   }
+  
+  ####################################################################################
+  ########### PLOT DIFFERENCES TO A BASE RUN ########################################
+  ####################################################################################
   
   # if a base.run is supplied, plot the the difference between each run and it
   if(!is.null(base.run.id)){
@@ -1066,14 +971,14 @@ compareRuns <- function(runs,
                                          canvas.options)) 
             
             print(plotSpatial(comparison.dt,
-                            layers = this.diff.names,
-                            quant = run@objects[[veg.spatial.id]]@quant,
-                            special = "Diff",
-                            title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
-                            plot.labels = this.diff.titles,
-                            override.cuts = diff.cuts,
-                            tag = tag,
-                            ...)
+                              layers = this.diff.names,
+                              quant = run@objects[[veg.spatial.id]]@quant,
+                              special = "Diff",
+                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
+                              plot.labels = this.diff.titles,
+                              override.cuts = diff.cuts,
+                              tag = tag,
+                              ...)
             )
             
             dev.off()
@@ -1097,16 +1002,16 @@ compareRuns <- function(runs,
                                          canvas.options)) 
             
             print(plotSpatial(comparison.dt,
-                            layers = this.perc.diff.names,
-                            quant = run@objects[[veg.spatial.id]]@quant,
-                            special = "Perc.Diff",
-                            title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
-                            limit = TRUE,
-                            limits = c(-100,200),
-                            plot.labels = this.perc.diff.titles,
-                            override.cuts = perc.diff.cuts,
-                            tag = tag,
-                            ...)
+                              layers = this.perc.diff.names,
+                              quant = run@objects[[veg.spatial.id]]@quant,
+                              special = "Perc.Diff",
+                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
+                              limit = TRUE,
+                              limits = c(-100,200),
+                              plot.labels = this.perc.diff.titles,
+                              override.cuts = perc.diff.cuts,
+                              tag = tag,
+                              ...)
             )
             
             dev.off()
@@ -1126,18 +1031,18 @@ compareRuns <- function(runs,
       # plot the difference
       if(plot.diff){
         
-        do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunDifference", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
+        do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunDifference", paste(original.layer, collapse= ".", sep = ""), veg.spatial.id, tag, paste("All", base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                      canvas.options)) 
         
         print(plotSpatial(comparison.dt,
-                        layers = all.diff.names,
-                        quant = run@objects[[veg.spatial.id]]@quant,
-                        special = "Diff",
-                        title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
-                        plot.labels = all.diff.titles,
-                        override.cuts = diff.cuts,
-                        tag = tag,
-                        ...)
+                          layers = all.diff.names,
+                          quant = run@objects[[veg.spatial.id]]@quant,
+                          special = "Diff",
+                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), "All", "-", byIDfromList(base.run.id, runs)@description, sep = " "),
+                          plot.labels = all.diff.titles,
+                          override.cuts = diff.cuts,
+                          tag = tag,
+                          ...)
         )
         
         dev.off()
@@ -1146,20 +1051,20 @@ compareRuns <- function(runs,
       
       if(plot.perc.diff){
         
-        do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunPercentageDifference", paste(original.layers, collapse= ".", sep = ""), veg.spatial.id, tag, paste(run@id, base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
+        do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunPercentageDifference", paste(original.layer, collapse= ".", sep = ""), veg.spatial.id, tag, paste("All", base.run.id, sep = "-"), canvas.options[["type"]], sep = "."))), 
                                      canvas.options)) 
         
         print(plotSpatial(comparison.dt,
-                        layers = all.perc.diff.names,
-                        quant = run@objects[[veg.spatial.id]]@quant,
-                        special = "Perc.Diff",
-                        title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
-                        limit = TRUE,
-                        limits = c(-100,200),
-                        plot.labels = all.perc.diff.titles,
-                        override.cuts = perc.diff.cuts,
-                        tag = tag,
-                        ...)
+                          layers = all.perc.diff.names,
+                          quant = run@objects[[veg.spatial.id]]@quant,
+                          special = "Perc.Diff",
+                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), "All", "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
+                          limit = TRUE,
+                          limits = c(-100,200),
+                          plot.labels = all.perc.diff.titles,
+                          override.cuts = perc.diff.cuts,
+                          tag = tag,
+                          ...)
         )
         
         dev.off()
@@ -1173,6 +1078,277 @@ compareRuns <- function(runs,
 } # end function
 
 
-# plotResidualsHisto <- function(data.obj) {
-#   
-# }
+
+#' Plot the residuals from a DataObject as histogram
+#' 
+#' Function will overlay histograms if more than one ModelRun has been compared to the the DataObject.  
+#' Line colours, line types and fill colours can all be specified but have sensible defaults. 
+#' 
+#' @param data.obj The DataObject for which to plot the residuals
+#' @param cols types fills Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.
+#' @param types Vector of line types. Can be left empty but if defined it must have one entry for each set of residuals you are plotting.
+#' @param labels Vector of character for label the histos. Can be left empty (defaults to the run id) but if defined it must have one entry for each set of residuals you are plotting.
+#' @param title Character for plot title (optional)
+#' @param xlab Character for x-axis label (optional)
+#' @param ylab Character for y-axis label (optional)
+#' @param alpha Numerical value [0,1] to specify opacity of histo fill colours (optional)
+#' @param reverse Logical if TRUE reverse the layering of the histograms (optional, default = FALSE)
+#' @param bins Numerical vector (evenly spaced) defining the histogram bins (optional)
+#' @param limit Logical if TRUE (and argument bins provided) limit x-axis to the bins given.  If FALSE (and argument bins provided) then bins defines the bin width, but the plot is not limited
+#' 
+#' @details
+#' This function should be called after a call to \code{benckmarkSpatial} for a DataObject.  It plots the residuals for each model run to which it was compared.  
+#' It is called automatically by \code{benckmarkSpatial}, but can be called again for better flexibility.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import ggplot2
+#' @export
+#' @return A ggplot2 plot.
+
+
+
+plotResidualsHisto <- function(data.obj, 
+                               cols = NULL, 
+                               fills = NULL, 
+                               types = NULL,
+                               labels = NULL,
+                               title = NULL,
+                               xlab = NULL,
+                               ylab = NULL,
+                               alpha = NULL, 
+                               reverse = FALSE, 
+                               bins = NULL,
+                               limit = TRUE) {
+  
+  Run = Model = NULL
+  
+  # checks
+  if(!is.DataObject(data.obj)) {
+    warning("plotResidualsHists(): can't plot residuals because this is not a DataObject")
+    return(NULL)
+  }
+  
+  # get the data.table, select the residual layers (all the ones with names ending "_Error") from the incoming DataObject and remove NAs
+  diff.layers <- names(data.obj@data)[grep("_Error", names(data.obj@data))]
+  if(is.null(diff.layers)) {
+    warning("plotResidualsHists(): no residuals found! Did you already compare this DataObject to a ModelRun?")
+    return(NULL)
+  }
+  temp.dt <- na.omit(data.obj@data[, append(data.obj@id, diff.layers) , with = FALSE])
+  
+  
+  # if there are no labels supplied, strip the "_Error" from the names and use that  
+  if(is.null(labels)) {
+    labels <- gsub("_Error", "", diff.layers)
+    names(temp.dt) <- append(names(temp.dt)[1:(length(names(temp.dt))-length(labels))], labels)
+  }
+  
+  
+  # if cols, fills or types no spcified, set to some defaults
+  if(is.null(fills)) { fills <- rep("transparent", length(diff.layers)) }
+  if(is.null(cols)) { cols <- tim.colors(length(diff.layers)) }
+  if(is.null(types)) { types <- rep(1, length(diff.layers)) }
+  
+  
+  # also set sensible default axis and main titles
+  if(is.null(title)) title <- paste("Residuals vs", data.obj@name, data.obj@quant@name, sep = " ")
+  if(is.null(ylab)) ylab <-"# gridcells"
+  if(is.null(xlab)) xlab<- paste("Residuals vs", data.obj@name, data.obj@quant@name, paste0("(",data.obj@quant@units,")"), sep = " ")
+  
+  
+  # melt the data.table and set new names
+  temp.dt <- melt.data.table(temp.dt, id.vars = data.obj@id)
+  setnames(temp.dt, c(data.obj@id, "Run", "Model"))
+  
+  
+  # deal with reverse for plotting histos in opposite order
+  if(reverse) {
+    temp.dt[,Run := factor(Run, ordered = TRUE)]
+    temp.dt[,Run := factor(Run, levels=rev(levels(Run)))]
+    if(!is.null(cols)) cols <- rev(cols)
+    if(!is.null(fills)) fills <- rev(fills)
+    labels <- rev(labels)
+  }
+  
+  
+  # make the plot and set the xlim (using cuts if provided)
+  # also note special handling of alpha becuase if alpha is specified, "transparent" seems to become "white" with the alpha transparency level, this can be annoying
+  histo.plot <- ggplot(as.data.frame(temp.dt), aes(x = Model, colour = Run)) 
+  if(!is.null(bins)) {
+    if(!is.null(alpha)) histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run, linetype = Run), binwidth = abs(bins[2] - bins[1]), position="identity", alpha = alpha)
+    else histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run, linetype = Run), binwidth = abs(bins[2] - bins[1]), position="identity")
+    if(limit) histo.plot <- histo.plot + xlim(bins[1], bins[length(bins)])
+  } 
+  else {
+    if(!is.null(alpha))  histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run, linetype = Run), position="identity", alpha = alpha)
+    else histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run, linetype = Run), position="identity")
+  }
+  
+  
+  # cols, fills and types
+  histo.plot <- histo.plot + scale_colour_manual(NULL, labels = labels, values = cols)
+  histo.plot <- histo.plot + scale_fill_manual(NULL, labels = labels, values = fills)
+  histo.plot <- histo.plot + scale_linetype_manual(NULL, labels = labels, values = types)
+  histo.plot <- histo.plot + guides(colour = guide_legend(keywidth = 5, keyheight = 3, reverse=reverse), 
+                                    fill = guide_legend(keywidth = 5, keyheight = 3, reverse=reverse),
+                                    linetype = guide_legend(keywidth = 5, keyheight = 3, reverse=reverse))
+  
+  
+  # Standard titles, labels etc...
+  histo.plot <- histo.plot + ggtitle(title) + theme(plot.title = element_text(lineheight=.8, face="bold"))
+  histo.plot <- histo.plot + xlab(xlab)   
+  histo.plot <- histo.plot + ylab(ylab)   
+  histo.plot <- histo.plot + theme(text = element_text(size=30), legend.position=c(0.8,0.85))
+  histo.plot <- histo.plot + geom_vline(xintercept = 0, size = 1, colour = "black")
+  
+  
+  # consider implementing automatic faceting
+  #histo.plot <- histo.plot + facet_grid( Run ~ ., labeller = as_labeller(labeller))
+  
+  return(histo.plot)
+  
+}
+
+
+
+
+
+
+
+
+plotScatterComparison <- function(data.obj, 
+                                  showFitLine = TRUE,
+                                  showStats = TRUE,
+                                  facet = TRUE,
+                                  labels = NULL,
+                                  alpha = 0.05,
+                                  text.size = 6){
+  
+  Run = Model = NULL
+  
+  # checks
+  if(!is.DataObject(data.obj)) {
+    warning("plotResidualsHists(): can't plot residuals because this is not a data object")
+    return(NULL)
+  }
+  
+  
+  # get the data.table, select the absolute layers (ie not the ones with names ending "_Error", "_NormError", or "Lon"/"Lat"/"Year") from the incoming DataObject and remove NAs
+  abs.layers <- names(data.obj@data)
+  abs.layers <- abs.layers[-grep("_Error", abs.layers)]
+  abs.layers <- abs.layers[-grep("_NormError", abs.layers)]
+  if("Lon" %in% abs.layers) abs.layers <- abs.layers[-grep("Lon", abs.layers)]
+  if("Lat" %in% abs.layers) abs.layers <- abs.layers[-grep("Lat", abs.layers)]
+  if("Year" %in% abs.layers) abs.layers <- abs.layers[-grep("Year", abs.layers)]
+  
+  
+  if(length(abs.layers) == 0) {
+    warning("plotScatterComparison: no model data found! Did you already compare this DataObject to a ModelRun using benchmarkSpatial()?")
+    #return(NULL)
+  }
+  
+  temp.dt <- na.omit(data.obj@data[, abs.layers , with = FALSE])
+  temp.dt <- melt.data.table(temp.dt, id.vars = data.obj@id)
+  setnames(temp.dt, c(data.obj@id, "Run", "Model"))
+  
+  # Make labels and labeller for facet_wrap
+  run.ids <- abs.layers[-grep(data.obj@id, abs.layers)]
+  if(is.null(labels)) labels = run.ids
+  run.labeller <- labels
+  names(run.labeller) <- run.ids
+  
+  
+  scatter.plot <- ggplot(as.data.frame(na.omit(temp.dt)), aes_string(x=data.obj@id, y="Model")) +  geom_point(size=3, alpha =alpha)
+  if(facet) scatter.plot <- scatter.plot + facet_wrap(~ Run, labeller = as_labeller(run.labeller))
+  scatter.plot <- scatter.plot + theme(text = element_text(size=25))
+  scatter.plot <- scatter.plot + ggtitle(paste("All Simulations vs.", paste(data.obj@name, sep = " "))) + theme(plot.title = element_text(lineheight=.8, face="bold"))
+  scatter.plot <- scatter.plot +  xlab(paste(data.obj@name, data.obj@quant@name ,sep = " "))   +   ylab(paste("Simulated", data.obj@quant@name, sep = " "))     
+  scatter.plot <- scatter.plot +  coord_cartesian(xlim = c(data.obj@quant@cuts[1], data.obj@quant@cuts[length(data.obj@quant@cuts)]), ylim = c(data.obj@quant@cuts[1], data.obj@quant@cuts[length(data.obj@quant@cuts)])) 
+  scatter.plot <- scatter.plot + geom_abline(intercept = 0, slope = 1, size= 1, colour = "red3")
+  
+  # show the fit line and equation
+  if(showFitLine) {
+    
+    scatter.plot <- scatter.plot + geom_smooth(method = "lm", se = FALSE, size = 1, colour = "blue3")
+    
+    # now make the equations, and same them in a data.frame formatted for the geom_text call
+    text.vector <- c()
+    
+    for(run.id in run.ids){
+      
+      # subset 
+      temp.temp.dt <- temp.dt
+      setkey(temp.temp.dt,Run)
+      temp.temp.dt <- temp.temp.dt[paste(run.id)]
+      temp.df <- as.data.frame(temp.temp.dt[, "Run" := NULL, with = FALSE])
+      names(temp.df) <- c("x", "y")
+      text.vector <- append(text.vector, lm_eqn(temp.df))
+      rm(temp.df, temp.temp.dt)
+      
+    }
+    
+    text.df <- data.frame(Run = run.ids, label = text.vector)
+    scatter.plot <- scatter.plot + geom_text(data=text.df, 
+                                             aes(x = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.10, 
+                                                 y = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.95, 
+                                                 label=label), 
+                                             parse = TRUE, 
+                                             inherit.aes=FALSE, 
+                                             size = text.size, 
+                                             colour = "blue3",
+                                             hjust = 0)
+    
+  }
+  
+  
+  # show the stats
+  if(showStats) {
+    
+    # now make the equations, and same them in a data.frame formatted for the geom_text call
+    text.vector <- c()
+    
+    for(run.id in run.ids){
+      
+      comparison.obj <- byIDfromList(paste(run.id, data.obj@id, sep = "."), data.obj@comparisons)
+      
+      text.vector  <- append(text.vector,
+                             paste("NME = ", signif(comparison.obj@NME, 3), 
+                                   "\nNMSE = ", signif(comparison.obj@NMSE, 3), 
+                                   "\nRMSE = ", signif(comparison.obj@RMSE, 3), 
+                                   "\nR^2 = ", signif(comparison.obj@R2, 3), 
+                                   "\nR^2_eff = ", signif(comparison.obj@R2.eff, 3), 
+                                   "\nPearman Corr. = ", signif(comparison.obj@P.cor, 3), sep = "")
+                             
+      )
+      
+    }
+    
+    text.df <- data.frame(Run = run.ids, label = text.vector)
+    scatter.plot <- scatter.plot + geom_text(data=text.df, 
+                                             aes(x = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.75, 
+                                                 y = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.1, 
+                                                 label=label), 
+                                             parse = FALSE, 
+                                             inherit.aes=FALSE, 
+                                             size = text.size, 
+                                             colour = "red3",
+                                             hjust = 0)
+    
+  }
+  
+  
+  
+  return(scatter.plot)
+  
+}
+
+
+
+lm_eqn <- function(df) {
+  m = lm(y ~ x, df);
+  eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+                   list(a = format(coef(m)[1], digits = 2), 
+                        b = format(coef(m)[2], digits = 2), 
+                        r2 = format(summary(m)$r.squared, digits = 3)))
+  as.character(as.expression(eq));                 
+}

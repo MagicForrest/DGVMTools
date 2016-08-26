@@ -96,7 +96,7 @@ veg.quantities <- list(
       type = "PFT",
       units = "kgC/m^2/year",
       colours = fields::tim.colors,
-      cuts = seq(0, 3, 0.05),
+      cuts = seq(0, 3, 0.025),
       model = c("Standard")),
   
   

@@ -406,7 +406,8 @@ setClass("DataObject",
                    quant = "Quantity",
                    spatial.extent = "SpatialExtent",
                    temporal.extent = "TemporalExtent",
-                   correction.layer =  "character"
+                   correction.layer =  "character",
+                   comparisons = "list"
          )
          
 )
