@@ -41,7 +41,7 @@ A ggplot
 Makes a line plot graphing the temporal evolution of data (using ggplot2).  Full functionality not implemented, or even defined...
 }
 \details{
-This function is WORK IN PROGRESS!!  For questions about functionality or feature request contact the author
+This function is WORK IN PROGRESS!!  For questions about functionality or feature requests contact the author
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

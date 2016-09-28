@@ -99,7 +99,14 @@ veg.quantities <- list(
       cuts = seq(0, 3, 0.025),
       model = c("Standard")),
   
-  
+  new("Quantity",
+      id = "canopyheight_std",
+      name = "Canopy Height",
+      type = "-",
+      units = "m",
+      colours = fields::tim.colors,
+      cuts = seq(0, 60, 2),
+      model = c("Standard")),
   
   
   

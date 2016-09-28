@@ -14,9 +14,9 @@
 #' @import raster
 
 getAvitabile2015 <- function(location = "/data/forrest/Biomass/Avitabile2015/", resolution = "HD") {
-
+  
   Lon = Lat = NULL
-    
+  
   if(resolution == "original"){
     
     # read the original data
@@ -41,21 +41,20 @@ getAvitabile2015 <- function(location = "/data/forrest/Biomass/Avitabile2015/", 
   Avitabile.dt <- na.omit(Avitabile.dt)
   setnames(Avitabile.dt, c("Lon", "Lat", "Avitabile2015"))
   setkey(Avitabile.dt, Lon, Lat)
-
+  
   
   
   Avitabile.dataset <- new("DataObject",
-                         id = "Avitabile2015",
-                         name = "Avitabile et al. 2015 Biomass",
-                         temporal.extent = new("TemporalExtent", name = "Avitabile Period", start = 2000, end = 2010),
-                         data = Avitabile.dt,
-                         quant = lookupQuantity("vegC_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "AvitabileExtent", name = "Avitabile extent", extent = getExtentFromDT(Avitabile.dt)),
-                         correction.layer =  "")
+                           id = "Avitabile2015",
+                           name = "Avitabile et al. 2015 Biomass",
+                           temporal.extent = new("TemporalExtent", name = "Avitabile Period", start = 2000, end = 2010),
+                           data = Avitabile.dt,
+                           quant = lookupQuantity("vegC_std", "Standard"),
+                           spatial.extent = new("SpatialExtent", id = "AvitabileExtent", name = "Avitabile extent", extent = getExtentFromDT(Avitabile.dt)),
+                           correction.layer =  "")
   
   
   
   return(Avitabile.dataset)
   
 }
-
