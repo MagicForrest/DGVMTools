@@ -217,6 +217,9 @@ benchmarkSpatial <- function(runs,
     model.vector <- comparison.dt[[run@id]]
     
     
+    print(length(difference.vector))
+    print(length(model.vector))
+    
     # calculated mean, SD, MSE, RMSE, R^2, Pearson correlation etc
     
     # standard deviation and variance of the data
@@ -339,7 +342,7 @@ benchmarkSpatial <- function(runs,
     
     
     
-    # MAKE TEMPORARY DATAOBJECT FOR SCATTERS AND RESIDUAL PLOTS
+    ###### MAKE TEMPORARY DATAOBJECT (WITH DATA FOR ONLY THIS RUN) FOR SCATTERS AND RESIDUAL PLOTS
     temp.data.obj <- dataset
     temp.data.obj@data <- data.dt[, c(dataset@id, run@id, paste(run@id, "Error", sep = "_"), paste(run@id, "NormError", sep = "_")),with=FALSE]
     
@@ -367,7 +370,6 @@ benchmarkSpatial <- function(runs,
     
     print(plotScatterComparison(temp.data.obj,
                                 labels = run@description,
-                                facet = FALSE,
                                 text.size = 10))
     
     dev.off()
@@ -1085,8 +1087,7 @@ compareRuns <- function(runs,
 #' Line colours, line types and fill colours can all be specified but have sensible defaults. 
 #' 
 #' @param data.obj The DataObject for which to plot the residuals
-#' @param cols types fills Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.
-#' @param types Vector of line types. Can be left empty but if defined it must have one entry for each set of residuals you are plotting.
+#' @param cols,types,fills Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.
 #' @param labels Vector of character for label the histos. Can be left empty (defaults to the run id) but if defined it must have one entry for each set of residuals you are plotting.
 #' @param title Character for plot title (optional)
 #' @param xlab Character for x-axis label (optional)
@@ -1104,8 +1105,6 @@ compareRuns <- function(runs,
 #' @import ggplot2
 #' @export
 #' @return A ggplot2 plot.
-
-
 
 plotResidualsHisto <- function(data.obj, 
                                cols = NULL, 
@@ -1213,13 +1212,31 @@ plotResidualsHisto <- function(data.obj,
 
 
 
-
+#' Plot scatter of model vs data
+#' 
+#' Function will makes multiple scatter plots on one page if more than one ModelRun has been compared to the the DataObject.  
+#' 
+#' @param data.obj The DataObject for which to plot the residuals
+#' @param showFitLine Boolean, if TRUE shows a linear fit and the fit equation
+#' @param showStats Boolean, if TRUE show some stats do quantify how well the model fits the data
+#' @param labels Character vector of labels (one for each run).  If not provided uses the run ids
+#' @param alpha Numeric for the transparency of tre points (range (0,1], default = 0.05))
+#' @param text.size Numeric to scale the text size on the plot (default = 6)
+#' 
+#' 
+#' @details
+#' This function should be called after a call to \code{benckmarkSpatial} for a DataObject.  It plots the scatters for each model run to which it was compared .  
+#' It is called automatically by \code{benckmarkSpatial}, but can be called again for better flexibility.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import ggplot2
+#' @export
+#' @return A ggplot2 plot.
 
 
 plotScatterComparison <- function(data.obj, 
                                   showFitLine = TRUE,
                                   showStats = TRUE,
-                                  facet = TRUE,
                                   labels = NULL,
                                   alpha = 0.05,
                                   text.size = 6){
@@ -1246,6 +1263,10 @@ plotScatterComparison <- function(data.obj,
     warning("plotScatterComparison: no model data found! Did you already compare this DataObject to a ModelRun using benchmarkSpatial()?")
     #return(NULL)
   }
+  
+  facet <- TRUE
+  if(length(abs.layers) == 1) { facet <- FALSE }
+  
   
   temp.dt <- na.omit(data.obj@data[, abs.layers , with = FALSE])
   temp.dt <- melt.data.table(temp.dt, id.vars = data.obj@id)
@@ -1282,7 +1303,7 @@ plotScatterComparison <- function(data.obj,
       temp.temp.dt <- temp.temp.dt[paste(run.id)]
       temp.df <- as.data.frame(temp.temp.dt[, "Run" := NULL, with = FALSE])
       names(temp.df) <- c("x", "y")
-      text.vector <- append(text.vector, lm_eqn(temp.df))
+      text.vector <- append(text.vector, lm_eqn(lm(y ~ x, temp.df)))
       rm(temp.df, temp.temp.dt)
       
     }
@@ -1343,12 +1364,24 @@ plotScatterComparison <- function(data.obj,
 }
 
 
+#' Make linear fit equation string
+#' 
+#' Makes a string (form: y = ax + b, r^2 = r^2) for putting on plots from a linear model (lm)
+#' 
+#' @param linear.model An object of class lm, should have been made with a simple \code{y ~ x} formula
+#' 
+#' @details
+#' Make sure the model is \code{y ~ x} or this function doesn't really make sense 
+#'
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @internal
+#' @return A character string
 
-lm_eqn <- function(df) {
-  m = lm(y ~ x, df);
+lm_eqn <- function(linear.model) {
   eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
-                   list(a = format(coef(m)[1], digits = 2), 
-                        b = format(coef(m)[2], digits = 2), 
-                        r2 = format(summary(m)$r.squared, digits = 3)))
+                   list(a = format(coef(linear.model)[1], digits = 2), 
+                        b = format(coef(linear.model)[2], digits = 2), 
+                        r2 = format(summary(linear.model)$r.squared, digits = 3)))
   as.character(as.expression(eq));                 
 }

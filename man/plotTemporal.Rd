@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting-temporal.R
 \name{plotTemporal}
 \alias{plotTemporal}
-\title{cheese}
+\title{Plot temporal data}
 \usage{
 plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
   title = NULL, quant = NULL, cols = NULL, types = NULL,
@@ -10,11 +10,40 @@ plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
   x.lim = NULL, wrap = NULL, wrap.scales = "fixed")
 }
 \arguments{
-\item{input.data}{The data to be plotted, either as a ModelObject, DataObject or a data.table.
-If it is a data.table (this is the way to compare runs or runs and data) then it must have been "pre-melted" 
-so that the run/data identified are values in a column (name can specified using the "by" argument).}
+\item{input.data}{The data to be plotted, either as a ModelObject, DataObject or a data.table.}
+
+\item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
+
+\item{expand.layers}{A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.}
+
+\item{title}{Main plot title (character string)}
+
+\item{quant}{A Quantity object to provide meta-data about how to make this plot}
+
+\item{cols, types}{Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
+the same length as the labels arguments}
+
+\item{labels}{A list of character strings which are used as the labels fro the lines.  Must have the same length as the layers argument (after expansion if necessary)}
+
+\item{x.label, y.label}{Character strings for the x and y axes (optional)}
+
+\item{x.lim, y.lim}{Limits for the x and y axes (each a two-element numeric, optional)}
+
+\item{wrap}{Character string. If specified, split the data (ie melt) the data by the column specified in the argument, and then split the plot into ribbons accordingly.}
+
+\item{wrap.scales}{Character string.  If wrapping (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales
+on both scales/x only/y only on each ribbon}
+}
+\value{
+A ggplot
 }
 \description{
-biscuits
+Makes a line plot graphing the temporal evolution of data (using ggplot2).  Full functionality not implemented, or even defined...
+}
+\details{
+This function is WORK IN PROGRESS!!  For questions about functionality or feature request contact the author
+}
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 

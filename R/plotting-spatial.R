@@ -155,6 +155,10 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
   }
   else{
+    
+    print("ATTENTION:  plotSpatial() NOT running on a ModelObject")
+    warning("ATTENTION:  plotSpatial() NOT running on a ModelObject")
+    
     if(is.null(quant)) {
       
       quant <- new("Quantity",

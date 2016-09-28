@@ -397,6 +397,7 @@ setClass("ModelObject",
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.
 #' @slot correction.layer A character string defining a multiplicative corection layer that can be used for the data set
+#' @slot comparisons A list of SpatialComparison objects, one for each ModelObject which has been compared to this DataObject
 #' @exportClass DataObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("DataObject", 

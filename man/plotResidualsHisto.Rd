@@ -11,9 +11,7 @@ plotResidualsHisto(data.obj, cols = NULL, fills = NULL, types = NULL,
 \arguments{
 \item{data.obj}{The DataObject for which to plot the residuals}
 
-\item{cols}{types fills Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.}
-
-\item{types}{Vector of line types. Can be left empty but if defined it must have one entry for each set of residuals you are plotting.}
+\item{cols, types, fills}{Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.}
 
 \item{labels}{Vector of character for label the histos. Can be left empty (defaults to the run id) but if defined it must have one entry for each set of residuals you are plotting.}
 
