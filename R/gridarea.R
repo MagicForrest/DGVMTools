@@ -204,7 +204,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
 ######################################################################
 ### arithmetics with ModelRun data slots ###############################
 ######################################################################
-#' calcNewVegObj: Simple calculation of new ModelObjects
+#' calcNewModelObj: Simple calculation of new ModelObjects
 #' 
 #' Simple calculation of new ModelObjects by operation '+', '-', '*' or '/'
 #' 
@@ -217,7 +217,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
 #' @export
 #' @import data.table
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-calcNewVegObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, verbose=TRUE) {
+calcNewModelObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, verbose=TRUE) {
   ## check if valid arguments are given
   if (!is.ModelRun(run))
     stop("'run' is not a valid ModelRun.")

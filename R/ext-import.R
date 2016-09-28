@@ -79,7 +79,7 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @param file path to the netCDF file
 #' @param operation Any of sum, mean, gdd5
 #' @param temporal.extent Either a TemporalExtent object, a vector of years (min/max are choosen) or 'NA' (whole netCDF timespan is used)
-#' @param spatial.extent Either a SpatialExtent object of a raster extent
+#' @param spatial.extent Either a SpatialExtent object or a raster extent
 #' @param full should the full dataset be returned or an multiannual average (default).
 #' @param monthly logical, if monthly instead of annual values should be returned
 #' @param data.name Name of the data field in the netcdf file, if NA it will be guessed
@@ -95,7 +95,8 @@ import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="b
 #' @import RNetCDF
 #' @export
 #' @examples message("See templates/Example.ggplot.R")
-getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, monthly=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, read.full=FALSE, write=TRUE, verbose=TRUE, ...) {
+## TODO: extract file path to netcdf file from ins file or other model setup
+getClimateDriver <- function(run=NA, file=NA, operation="mean", temporal.extent=NA, spatial.extent=NA, full=FALSE, monthly=FALSE, data.name=NA, lon.name=NA, lat.name=NA, time.name=NA, read.full=FALSE, write=TRUE, verbose=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lon = Lat = Year = Month = Date = variable = value = NULL
   suppressWarnings(if (!is.na(temporal.extent)) {
@@ -219,16 +220,21 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
   if (verbose)
     message(paste("NetCDF spatial extent: Lon: ", min(lon), "-", max(lon), "; Lat:", min(lat), "-", max(lat)))
 
-  if (!is.na(spatial.extent) && class(spatial.extent)=="Spatial.Extent" && names(class(spatial.extent))=="DGVMTools") {
+  if (class(spatial.extent) == "SpatialExtent" && attr(class(spatial.extent), "package") == "DGVMTools") {
     extent <- spatial.extent@extent
-  } else if (!is.na(spatial.extent) && class(spatial.extent)=="Extent") {
+  } else if (class(spatial.extent)=="Extent") {
     extent <- spatial.extent
     spatial.extent <- new("SpatialExtent",
                           id="Undefined",
                           name="Undefined",
                           extent=extent)
-    warning("Using 'Undefined' as id/name for spatial.extent")
+    warning("Using 'Undefined' as id/name for spatial.extent, setting write=FALSE")
+    message("Using 'Undefined' as id/name for spatial.extent, setting write=FALSE")
+    write <- FALSE
   } else {
+    spatial.extent <- NULL
+  }
+  if (!is.object(spatial.extent)) {
     ## calculate the resolution of the outer most gridcells (west/south negative; east/north positive)
     xres <- c(sort(unique(lon))[1] - sort(unique(lon))[2],
               sort(unique(lon))[length(unique(lon))] - sort(unique(lon))[length(unique(lon))-1])
@@ -275,14 +281,17 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
   if (full) {
     fout <- paste(tools::file_path_sans_ext(file),
                   "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                  "_", spatial.extent@id,
                   "_", operation, "_full.Rtable", sep="")
   } else if (monthly) {
     fout <- paste(tools::file_path_sans_ext(file),
                   "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                  "_", spatial.extent@id,
                   "_", operation, "_monthly.Rtable", sep="")
   } else {
     fout <- paste(tools::file_path_sans_ext(file),
                   "_", max(year(start), period[1]), "-", min(year(end), period[2]),
+                  "_", spatial.extent@id,
                   "_", operation, ".Rtable", sep="")
   }
   if (file.exists(fout) && !read.full) {
@@ -388,7 +397,7 @@ getAnnualClimate <- function(run=NA, file=NA, operation="mean", temporal.extent=
       write.table(DT, file=fout, row.names=FALSE, col.names=TRUE)
     }
   }
-  
+
   DT <- DT[Lon>extent@xmin & Lon<extent@xmax & Lat>extent@ymin & Lat<extent@ymax,,]
 
   if (!full) {
