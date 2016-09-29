@@ -117,6 +117,15 @@ setClass("PFT",
                    combine = "character"
          )
 )
+#' Supported Veg Models
+#' 
+#' List of supported vegetatiopn models
+#'  
+#' @format A list of character strings for each of the supported vegetation models
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @internal
+support.veg.models <- c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")
+
 
 
 ########### ModelRunInfo - class to hold the metadata for an LPJ-GUESS run
@@ -136,8 +145,7 @@ checkModelRun <- function(object){
   errors <- character()
   
   # Check model types is supported
-  support.veg.models <- c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")
-  
+  print(support.veg.models)
   if (!length(object@model) > 0) {
     msg <- "Error defining ModelRun, you must define a model type!"
     errors <- c(errors, msg)
