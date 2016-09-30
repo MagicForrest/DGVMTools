@@ -108,8 +108,36 @@ veg.quantities <- list(
       cuts = seq(0, 60, 2),
       model = c("Standard")),
   
+  ######################################################################
+  ########## FIREMIP QUANTITIES  ######################################
+  ######################################################################  
   
+  new("Quantity",
+      id = "landCoverFrac",
+      type = "",
+      name = "Areal Cover",
+      units = "%",
+      colours = veg.palette, 
+      cuts = seq(0,1,0.05),
+      model = "FireMIP"), 
   
+  new("Quantity",
+      id = "lai",
+      type = "",
+      name = "Leaf Area Index",
+      units = "-",
+      colours = veg.palette, 
+      cuts = seq(0,10,0.5),
+      model = "FireMIP"), 
+  
+  new("Quantity",
+      id = "theightpft",
+      type = "",
+      name = "Tree Height",
+      units = "m",
+      colours = veg.palette, 
+      cuts = seq(0,100,1),
+      model = "FireMIP"), 
   
   
   
