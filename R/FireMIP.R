@@ -12,7 +12,7 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
   if(quantity@id == "landCoverFrac" ||
      quantity@id == "lai"           ||
      quantity@id == "theightpft") {
-   
+    
     # make the string (note special cases)
     file.string <- file.path(run@run.dir, paste0(run@id, "_", quantity@id, ".nc"))
     if(model.string == "Inferno" && quantity@id == "landCoverFrac") { file.string <- file.path(run@run.dir, paste0(run@id, "_", "LandCoverFrac", ".nc")) }
@@ -21,7 +21,7 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
     # open the netCDF file (not ORCHIDEE! - those are single files, need to open them one by one)
     if(model.string != "ORCHIDEE") this.nc <- nc_open(file.string, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
     
-
+    
     # get the dimensions (depends on model type) and the ordering type
     africa.centre <- FALSE
     remove.total <- FALSE
@@ -36,7 +36,7 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
       if(quantity@id != "theightpft") remove.total <- TRUE
     }
     else if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-BLAZE") {
-      this.pfts <- c("C3G_pas", "C4G_pas", "BNE", "BINE", "BNS", "TeBS", "IBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "TeSW", "TeSWirr", "TeWW", "TeWWirr", "TeCo", "TeCOirr")
+      this.pfts <- c("C3G_pas", "C4G_pas", "BNE", "BINE", "BNS", "TeBS", "IBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "TeSW", "TeSWirr", "TeWW", "TeWWirr", "TeCo", "TeCoirr")
       this.lat <- ncvar_get(this.nc,"lat",verbose=verbose)
       this.lon <- ncvar_get(this.nc,"lon",verbose=verbose)
       if(quantity@id == "landCoverFrac") this.time <- 1700:2013
@@ -73,7 +73,7 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
       requires.averaging <- TRUE
     }
     else if(model.string == "JSBACH") {
-      this.pfts <- c("TrE", "TrD", "ExtE", "ExtD", "Rg_Shb", "De_Sh", "C3G", "C4G", "C3G_pas", "C4G_pas", "Crop")
+      this.pfts <- c("TrE", "TrD", "ExtE", "ExtD", "Rg_Shb", "De_Shb", "C3G", "C4G", "C3G_pas", "C4G_pas", "Crop")
       this.lat <- ncvar_get(this.nc,"latitude",verbose=verbose)
       this.lon <- ncvar_get(this.nc,"longitude",verbose=verbose)
       if(quantity@id == "landCoverFrac") this.time <- 1700:2013
@@ -98,13 +98,13 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
       
       # check it is sensible
       if(class(index.range) != "integer" || length(index.range) != 2 || index.range[1] > index.range[2]){
-         stop(paste("Invalid index.range in openFireMIPOutputFile(), = ", index.range))
+        stop(paste("Invalid index.range in openFireMIPOutputFile(), = ", index.range))
       }
       
       # get start and end
       start.index <- index.range[1]
       n.years <- index.range[2] - index.range[1] + 1
-    
+      
     }
     # if no range specified, then get the lot
     else {
@@ -114,7 +114,7 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
       first.year <- this.time[1]
       last.year <- this.time[length(this.time)]
     }
-      
+    
     # What we do now depend on how we want the output to be returned
     
     # Assuming long data.table, ie.
@@ -125,10 +125,10 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
     t1 <- Sys.time()
     full.dt <- data.table()
     for(counter in 0:(n.years-1)) {
-     
+      
       # get one year - depends on the structure of each model
       if(model.string == "LPJ-GUESS-SPITFIRE" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-BLAZE") {
-          this.slice <- ncvar_get(this.nc, start = c(1,1,1, counter+start.index), count = c(-1,-1,-1, 1))
+        this.slice <- ncvar_get(this.nc, start = c(1,1,1, counter+start.index), count = c(-1,-1,-1, 1))
       }
       else if(model.string == "CLM") {
         this.slice <- ncvar_get(this.nc, start = c(counter+start.index,1,1,1), count = c(1,-1,-1, -1))
@@ -177,7 +177,7 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
       
       # add it on to the full data.table
       full.dt <- rbind(full.dt, this.slice.dt)
-
+      
     }
     t2 <- Sys.time()
     print(t2-t1)
@@ -186,12 +186,208 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
     if(africa.centre) full.dt[,Lon := LondonCentre(Lon)]
     if(remove.total) full.dt[, Total := NULL]
     
-   
+    
     return(full.dt)
+    
+  }
+  
+}
+
+toFireMIPPFTs <- function(input.data) {
+  
+  
+  # get the name of the model
+  model.string <- gsub("-FireMIP", "", input.data@run@model)
+  print(model.string)
+  
+  # retrieve the data.table
+  dt <- input.data@data
+  
+  ### FIRST DEFINE THE FIREMIP PFTS
+  FireMIP.PFTs <- list("Evergreen Broadleafed Tree" = "BE",
+                       "Summergreen Broadleafed Tree" = "BS",
+                       "Raingreen Broadleafed" = "BR",
+                       "Evergreen Needleleafed" = "NE",
+                       "Summergreen Needleafed" = "NS",
+                       "C3 Grass" = "C3G",
+                       "C4 Grass" ="C4G",
+                       "Shrub" = "Shb",
+                       "Agricultural" = "Agr")
+  
+  
+  ### NOW DEFINE THE MAPPING FOR EACH MODEL
+  
+  # LPJ-GUESS-SPITFIRE
+  if(model.string == "LPJ-GUESS-SPITFIRE") {
+    classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
+    classify.df <- rbind(classify.df, c("BINE", "NE"))
+    classify.df <- rbind(classify.df, c("BNS", "NS"))
+    classify.df <- rbind(classify.df, c("BIBS", "BS"))
+    classify.df <- rbind(classify.df, c("TeNE", "NE"))
+    classify.df <- rbind(classify.df, c("TeBS", "BS"))
+    classify.df <- rbind(classify.df, c("TeIBS", "BS"))
+    classify.df <- rbind(classify.df, c("TeBE", "BE"))
+    classify.df <- rbind(classify.df, c("TrBE", "BE"))
+    classify.df <- rbind(classify.df, c("TrIBE", "BE"))
+    classify.df <- rbind(classify.df, c("TrBR", "BR"))
+    classify.df <- rbind(classify.df, c("C3G", "C3G"))
+    classify.df <- rbind(classify.df, c("C4G", "C4G"))
+    
+  }
+  
+  # LPJ-GUESS-SPITFIRE
+  if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-BLAZE" ) {
+    
+    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE
+    classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
+    classify.df <- rbind(classify.df, c("BINE", "NE"))
+    classify.df <- rbind(classify.df, c("BNS", "NS"))
+    classify.df <- rbind(classify.df, c("TeBS", "BS"))
+    classify.df <- rbind(classify.df, c("IBS", "BS"))
+    classify.df <- rbind(classify.df, c("TeBE", "BE"))
+    classify.df <- rbind(classify.df, c("TrBE", "BE"))
+    classify.df <- rbind(classify.df, c("TrIBE", "BE"))
+    classify.df <- rbind(classify.df, c("TrBR", "BR"))
+    classify.df <- rbind(classify.df, c("C3G", "C3G"))
+    classify.df <- rbind(classify.df, c("C4G", "C4G"))
+    
+    # agricultural
+    classify.df <- rbind(classify.df, c("C3G_pas", "Agr"))
+    classify.df <- rbind(classify.df, c("C4G_pas", "Agr"))
+    classify.df <- rbind(classify.df, c("TeSW", "Agr"))
+    classify.df <- rbind(classify.df, c("TeSWirr", "Agr"))
+    classify.df <- rbind(classify.df, c("TeWW", "Agr"))
+    classify.df <- rbind(classify.df, c("TeWWirr", "Agr"))
+    classify.df <- rbind(classify.df, c("TeCo", "Agr"))
+    classify.df <- rbind(classify.df, c("TeCoirr", "Agr"))
 
   }
   
+  # CLM
+  if(model.string == "CLM") {
+    
+    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE
+    classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
+    classify.df <- rbind(classify.df, c("TeNE", "NE"))
+    classify.df <- rbind(classify.df, c("BNS", "NS"))
+    classify.df <- rbind(classify.df, c("TrBE", "BE"))
+    classify.df <- rbind(classify.df, c("TeBE", "BE"))
+    classify.df <- rbind(classify.df, c("TrBR", "BR"))
+    classify.df <- rbind(classify.df, c("TeBS", "BS"))
+    classify.df <- rbind(classify.df, c("BBS", "BS"))
+    classify.df <- rbind(classify.df, c("C3G", "C3G"))
+    classify.df <- rbind(classify.df, c("C3G_arc", "C3G"))
+    classify.df <- rbind(classify.df, c("C4G", "C4G"))
+    
+    # shrubs
+    classify.df <- rbind(classify.df, c("BE_Shb", "Shb"))
+    classify.df <- rbind(classify.df, c("TeBS_Shb", "Shb"))
+    classify.df <- rbind(classify.df, c("BBS_Shb", "Shb"))
+    
+    
+    # agricultural
+    classify.df <- rbind(classify.df, c("Crop1", "Agr"))
+    classify.df <- rbind(classify.df, c("Crop2", "Agr"))
+   
+  }
   
+  # Inferno
+  if(model.string == "Inferno") {
+    
+    # natural PFTs
+    classify.df <-  data.frame(original = c("NE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
+    classify.df <- rbind(classify.df, c("ND", "NS"))
+    classify.df <- rbind(classify.df, c("TrBE", "BE"))
+    classify.df <- rbind(classify.df, c("TeBE", "BE"))
+    classify.df <- rbind(classify.df, c("BD", "BS"))
+    classify.df <- rbind(classify.df, c("C3G", "C3G"))
+    classify.df <- rbind(classify.df, c("C4G", "C4G"))
+
+    # shrubs
+    classify.df <- rbind(classify.df, c("Ev_Shb", "Shb"))
+    classify.df <- rbind(classify.df, c("De_Shb", "Shb"))
+    
+  }
+  
+  # JSBACH
+  if(model.string == "JSBACH") {
+    
+    # natural PFTs
+    classify.df <-  data.frame(original = c("TrE"), FireMIP = c("BE"), stringsAsFactors = FALSE) 
+    classify.df <- rbind(classify.df, c("TrD", "BR"))
+    classify.df <- rbind(classify.df, c("ExtE", "NE"))
+    classify.df <- rbind(classify.df, c("ExtD", "BS"))
+    classify.df <- rbind(classify.df, c("C3G", "C3G"))
+    classify.df <- rbind(classify.df, c("C4G", "C4G"))
+    
+    # shrubs
+    classify.df <- rbind(classify.df, c("Rg_Shb", "Shb"))
+    classify.df <- rbind(classify.df, c("De_Shb", "Shb"))
+    
+    # agriculture
+    classify.df <- rbind(classify.df, c("C3G_pas", "Agr"))
+    classify.df <- rbind(classify.df, c("C4G_pas", "Agr"))
+    classify.df <- rbind(classify.df, c("Crop", "Agr"))
+    
+    
+  }
+  
+  if(model.string == "ORCHIDEE") {
+    
+    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE
+    classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
+    classify.df <- rbind(classify.df, c("TeNE", "NE"))
+    classify.df <- rbind(classify.df, c("BNS", "NS"))
+    classify.df <- rbind(classify.df, c("TrBE", "BE"))
+    classify.df <- rbind(classify.df, c("TeBE", "BE"))
+    classify.df <- rbind(classify.df, c("TrBR", "BR"))
+    classify.df <- rbind(classify.df, c("TeBS", "BS"))
+    classify.df <- rbind(classify.df, c("BBS", "BS"))
+    classify.df <- rbind(classify.df, c("C3G", "C3G"))
+    classify.df <- rbind(classify.df, c("C4G", "C4G"))
+    
+    # agricultural
+    classify.df <- rbind(classify.df, c("C3_agr", "Agr"))
+    classify.df <- rbind(classify.df, c("C4_agr", "Agr"))
+    
+  }
+  
+  
+  
+  ### DO THE CLASSIFICATION
+  
+  # For each FireMIP PFT sum the contributing model PFTs
+  for(FireMIP.PFT in FireMIP.PFTs) {
+    
+    # get a list the corresponding model PFTs
+    model.PFTs <- classify.df$original[which(classify.df$FireMIP == FireMIP.PFT)]
+    
+    print(model.PFTs)
+    
+    # sum them 
+    if(length(model.PFTs) > 0)  dt <- dt[, paste("FireMIP", FireMIP.PFT, sep = ".") := rowSums(.SD), .SDcols = model.PFTs, with = FALSE]
+    else  dt <- dt[,  paste("FireMIP", FireMIP.PFT, sep = ".") := 0]
+    
+    # remove the PFTs we just summed
+    if(length(model.PFTs) > 0)  dt <- dt[, model.PFTs := NULL, with = FALSE]
+   
+      
+  }
+  
+  # Remove "Bare" etc.  if necessary
+  if("Bare" %in% names(dt)) dt <- dt[, "Bare" := NULL, with = FALSE]
+  if("Ice" %in% names(dt)) dt <- dt[, "Ice" := NULL, with = FALSE]
+  if("Water" %in% names(dt)) dt <- dt[, "Water" := NULL, with = FALSE]
+  if("Urban" %in% names(dt)) dt <- dt[, "Urban" := NULL, with = FALSE]
+  
+  ### SET THE NAMES
+  setnames(dt, gsub("FireMIP.", "",  names(dt)))
+  
+  
+  ### AND RETURN
+  input.data@data <- dt
+  rm(dt)
+  return(input.data)
   
   
 }
