@@ -779,8 +779,10 @@ compareBiomes <- function(runs,
     
   }
   
+  if(FALSE) {
   labels <- append(labels, biome.dataset@name)
   layers <- append(layers, biome.dataset@id)
+  }
   
   do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Biomes", scheme@id, tag, canvas.options[["type"]], sep = "."))), 
                                canvas.options)) 
