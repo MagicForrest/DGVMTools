@@ -182,10 +182,10 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
     t2 <- Sys.time()
     print(t2-t1)
     
-    # 
+    # Tidy stuff
     if(africa.centre) full.dt[,Lon := LondonCentre(Lon)]
     if(remove.total) full.dt[, Total := NULL]
-    
+    full.dt <- na.omit(full.dt)
     
     return(full.dt)
     
@@ -204,7 +204,7 @@ toFireMIPPFTs <- function(input.data) {
   dt <- input.data@data
   
   ### FIRST DEFINE THE FIREMIP PFTS
-  FireMIP.PFTs <- list("Evergreen Broadleafed Tree" = "BE",
+  FireMIP.PFTs <- c("Evergreen Broadleafed Tree" = "BE",
                        "Summergreen Broadleafed Tree" = "BS",
                        "Raingreen Broadleafed" = "BR",
                        "Evergreen Needleleafed" = "NE",
@@ -291,6 +291,27 @@ toFireMIPPFTs <- function(input.data) {
    
   }
   
+  
+  # CTEM
+  if(model.string == "CTEM") {
+    
+
+    # natural PFTs
+    classify.df <-  data.frame(original = c("NDL-EVG"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
+    classify.df <- rbind(classify.df, c("NDL-DCD", "NS"))
+    classify.df <- rbind(classify.df, c("BDL-EVG", "BE"))
+    classify.df <- rbind(classify.df, c("BDL-DCD-DRY", "BR"))
+    classify.df <- rbind(classify.df, c("BDL-DCD-COLD", "BS"))
+    classify.df <- rbind(classify.df, c("C3-GRASS", "C3G"))
+    classify.df <- rbind(classify.df, c("C4-GRASS", "C4G"))
+    
+    # agriculture
+    classify.df <- rbind(classify.df, c("C3-CROP", "Agr"))
+    classify.df <- rbind(classify.df, c("C4-CROP", "Agr"))
+    
+  }
+  
+  
   # Inferno
   if(model.string == "Inferno") {
     
@@ -362,8 +383,6 @@ toFireMIPPFTs <- function(input.data) {
     # get a list the corresponding model PFTs
     model.PFTs <- classify.df$original[which(classify.df$FireMIP == FireMIP.PFT)]
     
-    print(model.PFTs)
-    
     # sum them 
     if(length(model.PFTs) > 0)  dt <- dt[, paste("FireMIP", FireMIP.PFT, sep = ".") := rowSums(.SD), .SDcols = model.PFTs, with = FALSE]
     else  dt <- dt[,  paste("FireMIP", FireMIP.PFT, sep = ".") := 0]
@@ -371,7 +390,6 @@ toFireMIPPFTs <- function(input.data) {
     # remove the PFTs we just summed
     if(length(model.PFTs) > 0)  dt <- dt[, model.PFTs := NULL, with = FALSE]
    
-      
   }
   
   # Remove "Bare" etc.  if necessary
@@ -379,11 +397,23 @@ toFireMIPPFTs <- function(input.data) {
   if("Ice" %in% names(dt)) dt <- dt[, "Ice" := NULL, with = FALSE]
   if("Water" %in% names(dt)) dt <- dt[, "Water" := NULL, with = FALSE]
   if("Urban" %in% names(dt)) dt <- dt[, "Urban" := NULL, with = FALSE]
+
   
   ### SET THE NAMES
   setnames(dt, gsub("FireMIP.", "",  names(dt)))
   
+  ### RESCALE TO ACCOUNT FOR AGRICULTURE
+  rescale <- function(x) {
+    x <- x * (1/(1-x$Agr))
+  }
+  dt <- dt[, FireMIP.PFTs := rescale(.SD), .SDcols = FireMIP.PFTs, with = FALSE]
   
+  # important, remove any NAs that my have been introduced by scaling
+  dt <- na.omit(dt)
+  
+  # remove agriculture column 
+  if("Agr" %in% names(dt)) dt <- dt[, "Agr" := 0, with = FALSE]
+
   ### AND RETURN
   input.data@data <- dt
   rm(dt)
@@ -391,3 +421,127 @@ toFireMIPPFTs <- function(input.data) {
   
   
 }
+
+
+########################################################
+########### FireMIP Coarse PFTS ########################
+########################################################
+
+#' LPJ-GUESS(-SPITFIRE) Global PFTs
+#' 
+#' The list contain the standard LPJ-GUESS global PFTs and few more.  It includes some metadata 
+#' and a preferred plot colour.
+#' 
+#' @format A list of \code{PFT} objects that store meta-data for commonly used PFTs from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @seealso \code{PFT}-class
+FireMIP.PFTs <- list(
+  
+  # BOREAL TREES
+  
+  NE = new("PFT",
+            id = "NE",
+            name = "Needleleaved Evergreen Tree",
+            lifeform = "Tree",
+            leafform = "Needleleaved",
+            phenology = "Evergreen",
+            zone = "NA",
+            colour = "darkblue",
+            combine = "no"
+  ),
+  
+  NS = new("PFT",
+            id = "NS",
+            name = "Needleleaved Summergreen Tree",
+            lifeform = "Tree",
+            leafform = "Needleleaved",
+            phenology = "Summergreen",
+            zone = "NA",
+            colour = "cornflowerblue",
+            combine = "no"
+  ),
+  
+  BS = new("PFT",
+             id = "BS",
+             name = "Broadleaved Summergreen Tree",
+             lifeform = "Tree",
+             leafform = "Broadleaved",
+             phenology = "Summergreen",
+             zone = "NA",
+             colour = "cyan",
+             combine = "no"
+  ),
+  
+  BE = new("PFT",
+             id = "BE",
+             name = "Broadleaved Evergreen Tree",
+             lifeform = "Tree",
+             leafform = "Broadleaved",
+             phenology = "Evergreen",
+             zone = "NA",
+             colour = "darkgreen",
+             combine = "no"
+  ),
+  
+  
+  BR = new("PFT",
+              id = "BR",
+              name = "Broadleaved Raingreen Tree",
+              lifeform = "Tree",
+              leafform = "Broadleaved",
+              phenology = "Raingreen",
+              zone = "NA",
+              colour = "maroon",
+              combine = "no"
+  ),
+  
+  # GRASSES
+  
+  C3G = new("PFT",
+            id = "C3G",
+            name = "Boreal/Temperate Grass",
+            lifeform = "Grass",
+            leafform = "Broadleaved",
+            phenology = "GrassPhenology",
+            zone = "NA",
+            colour = "lightgoldenrod1",
+            combine = "no"
+  ),
+  
+  C4G = new("PFT",
+            id = "C4G",
+            name = "Tropical Grass",
+            lifeform = "Grass",
+            leafform = "Broadleaved",
+            phenology = "GrassPhenology",
+            zone = "NA",
+            colour = "sienna2",
+            combine = "no"
+  ),
+  
+  # SHRUBS
+  Shb = new("PFT",
+            id = "Shb",
+            name = "Shrub",
+            lifeform = "Shrub",
+            leafform = "NA",
+            phenology = "NA",
+            zone = "NA",
+            colour = "darkred",
+            combine = "no"
+  ),
+  
+  # Agrcultural
+  Agr = new("PFT",
+            id = "Agr",
+            name = "Agricultural",
+            lifeform = "Agricultural",
+            leafform = "NA",
+            phenology = "NA",
+            zone = "NA",
+            colour = "black",
+            combine = "no"
+  )
+  
+)
+

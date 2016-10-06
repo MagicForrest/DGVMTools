@@ -411,35 +411,35 @@ Forrest2015MegaBiomeRules <- function(lai){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
 Forrest2015.scheme <- new("BiomeScheme",
-                        id = "Forrest2015",
-                        name = "Forrest et al. 2015", 
-                        substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
-                        rules = Forrest2015MegaBiomeRules,
-                        totals.needed = c("lifeforms", "zones"),
-                        max.needed = "Tree",
-                        fraction.of.total = c("Grass"),
-                        fraction.of.tree = c("pft", "zones"),
-                        fraction.of.woody = c("NA"),
-                        combineShadeTolerance = TRUE,
-                        needGDD5 = FALSE,
-                        cols =  c("Tropical Forest" = "seagreen",                     
-                                  "Temperate Evergeen Forest"= "dodgerblue3", 
-                                  "Temperate Deciduous Forest "= "green3", 
-                                  "Boreal Forest" = "turquoise4",
-                                  "Savanna and Dry Woodlands" = "olivedrab2",
-                                  "Grasslands and Dry Shrublands" = "goldenrod2",
-                                  "Tundra" = "mediumpurple1",
-                                  "Desert" = "grey75"),
-                        strings =  c("Tropical Forest",                     
-                                     "Temperate Evergeen Forest", 
-                                     "Temperate Deciduous Forest", 
-                                     "Boreal Forest",
-                                     "Savanna and Dry Woodlands",
-                                     "Grasslands and Dry Shrublands",
-                                     "Tundra",
-                                     "Desert"),
-                        data.reference = "Haxeltime and Prentice 1996",
-                        published.reference = "Forrest et al 2015, Smith et al. 2014")
+                          id = "Forrest2015",
+                          name = "Forrest et al. 2015", 
+                          substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
+                          rules = Forrest2015MegaBiomeRules,
+                          totals.needed = c("lifeforms", "zones"),
+                          max.needed = "Tree",
+                          fraction.of.total = c("Grass"),
+                          fraction.of.tree = c("pft", "zones"),
+                          fraction.of.woody = c("NA"),
+                          combineShadeTolerance = TRUE,
+                          needGDD5 = FALSE,
+                          cols =  c("Tropical Forest" = "seagreen",                     
+                                    "Temperate Evergeen Forest"= "dodgerblue3", 
+                                    "Temperate Deciduous Forest "= "green3", 
+                                    "Boreal Forest" = "turquoise4",
+                                    "Savanna and Dry Woodlands" = "olivedrab2",
+                                    "Grasslands and Dry Shrublands" = "goldenrod2",
+                                    "Tundra" = "mediumpurple1",
+                                    "Desert" = "grey75"),
+                          strings =  c("Tropical Forest",                     
+                                       "Temperate Evergeen Forest", 
+                                       "Temperate Deciduous Forest", 
+                                       "Boreal Forest",
+                                       "Savanna and Dry Woodlands",
+                                       "Grasslands and Dry Shrublands",
+                                       "Tundra",
+                                       "Desert"),
+                          data.reference = "Haxeltime and Prentice 1996",
+                          published.reference = "Forrest et al 2015, Smith et al. 2014")
 
 
 
@@ -588,7 +588,7 @@ MegaBiomeRules_dev <- function(lai){
     print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
     return(NA)
   }
-    
+  
 }
 
 
@@ -601,44 +601,151 @@ MegaBiomeRules_dev <- function(lai){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
 Megabiomes_dev.scheme <- new("BiomeScheme",
-                         id = "Megabiomes",
-                         name = "Megabiomes", 
-                         substitution = data.frame(id=1:18, v=c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,8,12,13,10)),
-                         rules = MegaBiomeRules_dev,
-                         combineShadeTolerance = TRUE,
-                         max.needed = "Tree",
-                         fraction.of.total = c("NA"),
-                         fraction.of.tree = c("NA"),
-                         fraction.of.woody = c("Temperate", "Boreal", "Mediterranean"),
-                         needGDD5 = TRUE,
-                         cols = c("Tropical Rain Forest" = "seagreen",                     
-                                  "Tropical Deciduous Forest" = "orange3", 
-                                  "Boreal Evergreen Forest/Woodland" = "turquoise4",
-                                  "Boreal Deciduous Forest/Woodland"= "cyan",
-                                  "Temperate Evergreen Forest" = "dodgerblue3",
-                                  "Temperate Deciduous Forest" = "green3",
-                                  "Xeric Woodland/Shrubland" = "deeppink3",
-                                  "Moist Savanna" = "olivedrab2",
-                                  "Dry Savanna" = "goldenrod2",
-                                  "Arctic/Alpine Tundra" = "mediumpurple1",
-                                  "Tall Grassland" =  "gold",                     
-                                  "Arid Shrubland/Grassland"= "lightcyan",
-                                  "Desert" = "grey75"),
-                         strings = c("Tropical Rain Forest",                     
-                                     "Tropical Deciduous Forest", 
-                                     "Boreal Evergreen Forest/Woodland", 
-                                     "Boreal Deciduous Forest/Woodland",
-                                     "Temperate Evergreen Forest",
-                                     "Temperate Deciduous Forest",
-                                     "Xeric Woodland/Shrubland",
-                                     "Moist Savanna",
-                                     "Dry Savanna",
-                                     "Arctic/Alpine Tundra",
-                                     "Tall Grassland",
-                                     "Arid Shrubland/Grassland",
-                                     "Desert"),
-                         data.reference = "Haxeltime and Prentice 1996",
-                         published.reference = "-")
+                             id = "Megabiomes",
+                             name = "Megabiomes", 
+                             substitution = data.frame(id=1:18, v=c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,8,12,13,10)),
+                             rules = MegaBiomeRules_dev,
+                             combineShadeTolerance = TRUE,
+                             max.needed = "Tree",
+                             fraction.of.total = c("NA"),
+                             fraction.of.tree = c("NA"),
+                             fraction.of.woody = c("Temperate", "Boreal", "Mediterranean"),
+                             needGDD5 = TRUE,
+                             cols = c("Tropical Rain Forest" = "seagreen",                     
+                                      "Tropical Deciduous Forest" = "orange3", 
+                                      "Boreal Evergreen Forest/Woodland" = "turquoise4",
+                                      "Boreal Deciduous Forest/Woodland"= "cyan",
+                                      "Temperate Evergreen Forest" = "dodgerblue3",
+                                      "Temperate Deciduous Forest" = "green3",
+                                      "Xeric Woodland/Shrubland" = "deeppink3",
+                                      "Moist Savanna" = "olivedrab2",
+                                      "Dry Savanna" = "goldenrod2",
+                                      "Arctic/Alpine Tundra" = "mediumpurple1",
+                                      "Tall Grassland" =  "gold",                     
+                                      "Arid Shrubland/Grassland"= "lightcyan",
+                                      "Desert" = "grey75"),
+                             strings = c("Tropical Rain Forest",                     
+                                         "Tropical Deciduous Forest", 
+                                         "Boreal Evergreen Forest/Woodland", 
+                                         "Boreal Deciduous Forest/Woodland",
+                                         "Temperate Evergreen Forest",
+                                         "Temperate Deciduous Forest",
+                                         "Xeric Woodland/Shrubland",
+                                         "Moist Savanna",
+                                         "Dry Savanna",
+                                         "Arctic/Alpine Tundra",
+                                         "Tall Grassland",
+                                         "Arid Shrubland/Grassland",
+                                         "Desert"),
+                             data.reference = "Haxeltime and Prentice 1996",
+                             published.reference = "-")
+
+
+
+#################################################################################################################################
+########### FIREMIP BIOMES ##########################
+#################################################################################################################################
+
+#' Rules to classify FireMIP biomes from fractionalcover of PFTs
+#' 
+#' Unpublished but possibly useful in principle.  Simpler classes that Smith et al 2014,
+#' but more complex that Forrest et al 2015.  
+#' 
+#' @param lai Numerical vector of LAI values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-10)
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+FireMIPBiomeRules <- function(fpc){
+  
+  # BIOMES 1-5 - Forests
+  #if(as.numeric(fpc[['Tree']]) > 0.6 &  fpc[['Grass']] < 0.4) {
+  if(as.numeric(fpc[['Tree']]) > 0.6) {
+      
+    # BIOME 1 Needleleaved forest
+    if(as.numeric(fpc[['NeedleleavedFractionOfTree']]) > 0.5) { return(1) }
+    
+    # BIOME 2 Summergreen forest    
+    else if(as.numeric(fpc[['SummergreenFractionOfTree']]) > 0.5) { return(2) }
+    
+    # BIOME 3 Evergreen forest    
+    else if(as.numeric(fpc[['EvergreenFractionOfTree']]) > 0.5) { return(3) }
+    
+    # BIOME 4 Raingreen forest    
+    else if(as.numeric(fpc[['RaingreenFractionOfTree']]) > 0.5) { return(4) }
+    
+    # BIOME 5 Other forest
+    else { return(5) }
+    
+  }
+  
+  # BIOMES 6 and 7 - Grassy systems
+  else if(as.numeric(fpc[['Grass']]) > 0.4 ) {
+    
+    # BIOME 6 C4 grassy system
+    if(fpc[['MaxGrass']] == "C4G") { return(6) }
+    
+    # BIOME 6 C3 grassy system
+    else if(fpc[['MaxGrass']] == "C3G") { return(7) }
+    
+  }
+  
+  # BIOMES 8 - Shrublands
+  else if(as.numeric(fpc[['Shrub']]) > 0.4 ) { return(8) }
+  
+  
+  # BIOME 9 - Arid shrublands
+  else if(as.numeric(fpc[['Total']]) > 0.2 ) { return(9) }
+  
+  # BIOME 10 Barren/Unclassified 
+  else { return(10) }
+
+  
+}
+
+
+#' Meta-data describing an unpublished "mega biome" scheme for LPJ-GUESS output.
+#' 
+#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
+#' not the classication of the model output.
+#' 
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
+FireMIPBiomes.scheme <- new("BiomeScheme",
+                            id = "FireMIP",
+                            name = "FireMIP Biomes", 
+                            substitution = data.frame(id=1:18, v=c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,8,12,13,10)),
+                            rules = FireMIPBiomeRules,
+                            combineShadeTolerance = FALSE,
+                            max.needed = "Grass",
+                            fraction.of.total = c("Tree"),
+                            fraction.of.tree = c("Phenology", "Leafform"),
+                            fraction.of.woody = c("NA"),
+                            needGDD5 = FALSE,
+                            cols = c("Needleleafed Forest" = "darkblue",                     
+                                     "Summergreen Forest" = "darkgreen", 
+                                     "Evergreen Forest" = "orchid4",
+                                     "Raingreen Forest" = "lightsalmon4", 
+                                     "Other Forest" = "dodgerblue4",
+                                     "C4 Grassy System" = "orange",
+                                     "C3 Grassy System" = "lightgoldenrod",
+                                     "Shrubland" = "indianred3",
+                                     "Arid Shrublands" = "papayawhip",
+                                     "Other/Barren" = "gray75"),
+                            strings = c("Needleleafed Forest",                     
+                                        "Summergreen Forest", 
+                                        "Evergreen Forest",
+                                        "Raingreen Forest", 
+                                        "Other Forest",
+                                        "C4 Grassy System",
+                                        "C3 Grassy System",
+                                        "Shrubland",
+                                        "Arid Shublands",
+                                        "Other/Barren"),
+                            data.reference = "-",
+                            published.reference = "-")
+
 
 
 #################################################################################################################################
@@ -652,53 +759,53 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
 #' @param fpc Vector of FPC values
 #' @keywords internal
 FPCMegaBiomeRules <- function(fpc) {
- 
+  
   # 9 - Desert
   if (as.numeric(fpc[['Total']]) <= 0.2 &
       as.numeric(fpc[['GDD5']]) >= 1200) {return(9)}
-
+  
   # 10 - Arctic desert
   else if (as.numeric(fpc[['Total']]) <= 0.2 &
            as.numeric(fpc[['GDD5']]) < 1200) {return(10)}
-
+  
   # 1 - Tropical Forest
   else if (as.numeric(fpc[['Tree']]) > 0.6 &
            as.numeric(fpc[['Tropical']]) > as.numeric(fpc[['Temperate']]) &
            as.numeric(fpc[['Tropical']]) > as.numeric(fpc[['Boreal']])) {return(1)}
-
+  
   # 2 - Temperate Forest
   else if (as.numeric(fpc[['Tree']]) > 0.6 &
            as.numeric(fpc[['Temperate']]) > as.numeric(fpc[['Tropical']]) &
            as.numeric(fpc[['Temperate']]) > as.numeric(fpc[['Boreal']])) {return(2)}
-
+  
   # 3 - Boreal Forest
   else if (as.numeric(fpc[['Tree']]) > 0.2 &
            as.numeric(fpc[['Boreal']]) > as.numeric(fpc[['Temperate']]) &
            as.numeric(fpc[['Boreal']]) > as.numeric(fpc[['Tropical']])) {return(3)}
-
+  
   # 4 - Savannah
   else if (as.numeric(fpc[['Tree']]) > 0.1 &
            as.numeric(fpc[['Tree']]) <= 0.6 &
            as.numeric(fpc[['C4G']]) >= as.numeric(fpc[['C3G']])) {return(4)}
-
+  
   # 5 - Temperate woodland
   else if (as.numeric(fpc[['Tree']]) > 0.1 &
            as.numeric(fpc[['Tree']]) <= 0.6 &
            as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
            as.numeric(fpc[['GDD5']]) > 1800) {return(5)}
-
+  
   # 6 - Tropical grassland
   else if (as.numeric(fpc[['Tree']]) <= 0.1 &
            as.numeric(fpc[['C4G']]) >= as.numeric(fpc[['C3G']])) {return(6)}
-
+  
   # 7 - Temperate grassland
   else if (as.numeric(fpc[['Tree']]) <= 0.1 &
            as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
            as.numeric(fpc[['GDD5']]) > 1200) {return(7)}
-
+  
   # 8 - Tundra
   else if (as.numeric(fpc[['Tree']]) <= 0.2) {return(8)}
-
+  
   # REMAINDER
   else {
     print(paste("Oops, not classified: Location (", as.numeric(fpc[['Lon']]), ",", as.numeric(fpc[['Lat']]), ")" ))
@@ -729,25 +836,25 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                                      "Boreal forest" = "turquoise4",
                                      "Savannah" = "tan",
                                      "Woodland" = "tan2",
-#                                     "Taiga" = "tan4",
+                                     #                                     "Taiga" = "tan4",
                                      "C4-grassland" = "gold",
                                      "C3-grassland" = "yellow",
                                      "Tundra" = "seagreen2",
                                      "Desert" = "lightgrey",
                                      "Arctic desert" = "grey"),
-                         strings = c("Tropical forest",
-                                     "Temperate forest",
-                                     "Boreal forest",
-                                     "Savannah",
-                                     "Woodland",
-#                                     "Taiga",
-                                     "C4-grassland",
-                                     "C3-grassland",
-                                     "Tundra",
-                                     "Desert",
-                                     "Arctic desert"),
-                         data.reference = "-",
-                         published.reference = "-")
+                            strings = c("Tropical forest",
+                                        "Temperate forest",
+                                        "Boreal forest",
+                                        "Savannah",
+                                        "Woodland",
+                                        #                                     "Taiga",
+                                        "C4-grassland",
+                                        "C3-grassland",
+                                        "Tundra",
+                                        "Desert",
+                                        "Arctic desert"),
+                            data.reference = "-",
+                            published.reference = "-")
 
 #' Currently supported biome schemes
 #' 
@@ -776,4 +883,5 @@ supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
                              "Forrest2015" = Forrest2015.scheme,
                              "Megabiomes_dev" = Megabiomes_dev.scheme,
                              "FPCMegabiomes" = FPCMegabiomes.scheme,
-                             "MeditBiomes" = MeditBiomes.scheme)
+                             "MeditBiomes" = MeditBiomes.scheme, 
+                             "FireMIP" = FireMIPBiomes.scheme)

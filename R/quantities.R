@@ -119,7 +119,8 @@ veg.quantities <- list(
       units = "%",
       colours = veg.palette, 
       cuts = seq(0,1,0.05),
-      model = "FireMIP"), 
+      model = "FireMIP",
+      aggregate.method = "sum"), 
   
   new("Quantity",
       id = "lai",

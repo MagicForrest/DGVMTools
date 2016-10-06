@@ -312,13 +312,13 @@ addBiomes <-function(input, scheme){
     dt <- dt[dt.gdd5]
     input@data <- dt
   }
-  
+
   # Get the dominant tree and dominant woody PFTs
   input <- newLayer(input, layers = scheme@max.needed, method = "max")
-  
+
   # Get the totals required
-  input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
-  
+  input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
+
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
@@ -369,8 +369,8 @@ addBiomes <-function(input, scheme){
 #' @seealso expandslayers getVegFractions
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
-  
-  Woody = Total = TempTotal = NULL
+
+    Woody = Total = TempTotal = NULL
   
   ### HANDLE CLASS OF INPUT OBJECT
   # Here allow the possibility to handle both ModelObjects and data.tables directly (for internal calculations)
@@ -396,10 +396,23 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
       message("newLayer() has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
     }
   }
-  
+
   # auxiliary function to be apply'd in the case of max and min
-  max.layer <- function(x){return(names(x)[which.max(x)])}  
-  min.layer <- function(x){return(names(x)[which.min(x)])}
+  max.layer <- function(x){
+    the.max <- names(x)[which.max(x)]
+    if(length(the.max) == 0) {
+      the.max <- "Barren"
+    }
+    return(the.max)
+  }
+  
+  min.layer <- function(x){
+    the.min <- names(x)[which.min(x)]
+    if(length(the.min) == 0) {
+      the.min <- "Barren"
+    }
+    return(the.min)
+  }
   
   
   ### SET UP THE AGGREGATE METHOD 
@@ -417,7 +430,6 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   all.PFTs <- getPFTs(dt, PFT.data)
   
   ### EXPAND LAYERS
-  
   
   # for special case of methods "max" and "min", do not expand "months" and "PFTs" because in these cases we want to provide one layer with the min/max
   # of all months/PFT, not seperate layers for each month/PFTs
@@ -446,12 +458,11 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   if(identical(method, max.layer)) method.string <- "Max"
   if(identical(method, min.layer)) method.string <- "Min"
   
-  
   ### FOR PER-PFT FILES
   for(this.layer in layers){
     
     if(this.layer != "Month") {
-      
+
       # build list of columns to combine for layer
       layer.cols <- c()
       for(PFT in all.PFTs){
@@ -466,25 +477,26 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
       }
       
       # now combine the relevant columns
-      
+
       # if not requiring the maximum or minimum
       if(!identical(method, max.layer) & !identical(method, min.layer)) {
+
         if(!is.null(layer.cols)) suppressWarnings(dt[, eval(this.layer) := method(.SD), .SDcols = layer.cols])
+
       }
       
       # else
       else{
+
         # MF TODO: make this faster/nicer?
-        #suppressWarnings(dt[, eval(paste0(method.stringprint, layer) ):= method(.SD), .SDcols = layer.cols])
         suppressWarnings(dt[, eval(paste0(method.string, this.layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
-        dt[Total < 0.2, eval(quote(paste0(method.string, this.layer))) := "Barren"]
         dt[, eval(quote(paste0(method.string, this.layer))) := as.factor(get(paste0(method.string, this.layer)))]
+       
       }
       
     } # if not month
     
   } # for each layer
-  
   
   
   ### FOR MONTHLY FILES
@@ -555,6 +567,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
 #' @param input The ModelObject for which to calculate the new fractional layers
 #' @param layers The layers to be divided ie. the numerators (will be calculated by \code{getVegTotals} if the don't exist)
 #' @param denominators The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")
+#' parame
 #'
 #' @details
 #' Division is safe with respect to a zero denominator, the results of dividing by zero is, in this case, zero.
@@ -572,7 +585,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @seealso expandslayers getVegTotals
 
-divideLayers <- function(input, layers, denominators = list("Total")){
+divideLayers <- function(input, layers, denominators = list("Total"), aggregate.method = "sum"){
   
   # To avoid NOTES
   Total = NULL
@@ -586,7 +599,7 @@ divideLayers <- function(input, layers, denominators = list("Total")){
   denominators <- expandLayers(denominators, dt, PFT.data)
   for(denom in denominators) {
     if(!(denom %in% names(dt))) {
-      dt <- newLayer(dt, denom, method = sum, PFT.data = PFT.data)
+      dt <- newLayer(dt, denom, PFT.data = PFT.data, method = aggregate.method)
     }
   }
   
@@ -595,7 +608,7 @@ divideLayers <- function(input, layers, denominators = list("Total")){
   layers <- expandLayers(layers, dt, PFT.data)
   for(layer in layers) {
     if(!(layer %in% names(dt))) {
-      dt <- newLayer(dt, layer, PFT.data = PFT.data)
+      dt <- newLayer(dt, layer, PFT.data = PFT.data, method = aggregate.method)
     }
   }
   
