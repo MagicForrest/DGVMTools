@@ -853,6 +853,35 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 ## scatter ############################################################
 #######################################################################
 
+#' Create a various forms of scatterplots
+#' 
+#' Create a point cloud (scatterplot) or density plot with several metrics and line fits.
+#'
+#' @param x A ModelObject or a list of them.
+#' @param y A ModelObject, dataframe/data.table or raster.
+#' @param x.column Column name of x to use for the scatter.
+#' @param y.column Column name of y to use for the scatter.
+#' @param limit A data.frame with the possible columns min, max, xmin, xmax, ymin, ymax to exclude data from x and/or y. If a data.column 'inclusive' is present and TRUE, the given values will remain in the data.
+#' @param flip Should x and y be on the other axis. Default TRUE, means x is on the y-axis and y on the x-axis.
+#' @param density Use a ggplot density_2d function instead of a point cloud. Values: 'polygon', 'raster' and everything else than FALSE will result in 'hexagonal'.
+#' @param wrap.column A column name in x, which should be used for faceting.
+#' @param color.column A column name for coloring the points (NOT working currently).
+#' @param colors A data.frame for colors to use mandatory column names: XXX
+#' @param sym.col Should the colors be symmetrical (NOT working currently).
+#' @param alpha transparency value for points (ignored in density mode).
+#' @param lines Character vector of any of '1:1', 'lm' and/or 'gam'. Or a data.frame with the columns 'lines', 'color', 'type', 'width'.
+#' @param labels Character string of metrics to be added. Possible values 'rsq', 'rmse', 'me', 'eq'
+#' @param label.pos Position of the labels as character consiting 'top' or 'bottom' and 'left', 'center', 'right'
+#' @param equal.axis Should the x and y- axis be scaled equally.
+#' @param wrap number of column, when wrapping
+#' @param plot Should a ggplot-object be returned (default) or the data.table.
+#' @param verbose print some studip messages.
+#'
+#' @return a data.table or a ggplot2-object.
+#' @export
+#'
+#' @examples message("See templates/Example.ggplot.R")
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
                           flip=TRUE, density=FALSE, wrap.column=NULL,
                           color.column=NULL, colors="orange", sym.col=FALSE, alpha=0.1,
