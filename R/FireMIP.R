@@ -193,7 +193,7 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
   
 }
 
-toFireMIPPFTs <- function(input.data) {
+toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
   
   
   # get the name of the model
@@ -205,14 +205,14 @@ toFireMIPPFTs <- function(input.data) {
   
   ### FIRST DEFINE THE FIREMIP PFTS
   FireMIP.PFTs <- c("Evergreen Broadleafed Tree" = "BE",
-                       "Summergreen Broadleafed Tree" = "BS",
-                       "Raingreen Broadleafed" = "BR",
-                       "Evergreen Needleleafed" = "NE",
-                       "Summergreen Needleafed" = "NS",
-                       "C3 Grass" = "C3G",
-                       "C4 Grass" ="C4G",
-                       "Shrub" = "Shb",
-                       "Agricultural" = "Agr")
+                    "Summergreen Broadleafed Tree" = "BS",
+                    "Raingreen Broadleafed" = "BR",
+                    "Evergreen Needleleafed" = "NE",
+                    "Summergreen Needleafed" = "NS",
+                    "C3 Grass" = "C3G",
+                    "C4 Grass" ="C4G",
+                    "Shrub" = "Shb",
+                    "Agricultural" = "Agr")
   
   
   ### NOW DEFINE THE MAPPING FOR EACH MODEL
@@ -260,7 +260,7 @@ toFireMIPPFTs <- function(input.data) {
     classify.df <- rbind(classify.df, c("TeWWirr", "Agr"))
     classify.df <- rbind(classify.df, c("TeCo", "Agr"))
     classify.df <- rbind(classify.df, c("TeCoirr", "Agr"))
-
+    
   }
   
   # CLM
@@ -288,14 +288,14 @@ toFireMIPPFTs <- function(input.data) {
     # agricultural
     classify.df <- rbind(classify.df, c("Crop1", "Agr"))
     classify.df <- rbind(classify.df, c("Crop2", "Agr"))
-   
+    
   }
   
   
   # CTEM
   if(model.string == "CTEM") {
     
-
+    
     # natural PFTs
     classify.df <-  data.frame(original = c("NDL-EVG"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
     classify.df <- rbind(classify.df, c("NDL-DCD", "NS"))
@@ -323,7 +323,7 @@ toFireMIPPFTs <- function(input.data) {
     classify.df <- rbind(classify.df, c("BD", "BS"))
     classify.df <- rbind(classify.df, c("C3G", "C3G"))
     classify.df <- rbind(classify.df, c("C4G", "C4G"))
-
+    
     # shrubs
     classify.df <- rbind(classify.df, c("Ev_Shb", "Shb"))
     classify.df <- rbind(classify.df, c("De_Shb", "Shb"))
@@ -373,13 +373,13 @@ toFireMIPPFTs <- function(input.data) {
     
   }
   
-  
+
   
   ### DO THE CLASSIFICATION
   
   # For each FireMIP PFT sum the contributing model PFTs
   for(FireMIP.PFT in FireMIP.PFTs) {
-    
+   
     # get a list the corresponding model PFTs
     model.PFTs <- classify.df$original[which(classify.df$FireMIP == FireMIP.PFT)]
     
@@ -389,31 +389,35 @@ toFireMIPPFTs <- function(input.data) {
     
     # remove the PFTs we just summed
     if(length(model.PFTs) > 0)  dt <- dt[, model.PFTs := NULL, with = FALSE]
-   
+    
   }
-  
+
   # Remove "Bare" etc.  if necessary
   if("Bare" %in% names(dt)) dt <- dt[, "Bare" := NULL, with = FALSE]
   if("Ice" %in% names(dt)) dt <- dt[, "Ice" := NULL, with = FALSE]
   if("Water" %in% names(dt)) dt <- dt[, "Water" := NULL, with = FALSE]
   if("Urban" %in% names(dt)) dt <- dt[, "Urban" := NULL, with = FALSE]
-
+  
   
   ### SET THE NAMES
   setnames(dt, gsub("FireMIP.", "",  names(dt)))
   
   ### RESCALE TO ACCOUNT FOR AGRICULTURE
-  rescale <- function(x) {
-    x <- x * (1/(1-x$Agr))
+  if(remove.agriculture) {
+    rescale <- function(x) {
+      x <- x * (1/(1-x$Agr))
+    }
+    print(dt)
+    dt <- dt[, FireMIP.PFTs := rescale(.SD), .SDcols = FireMIP.PFTs, with = FALSE]
+    
+    # important, remove any NAs that my have been introduced by scaling
+    dt <- na.omit(dt)
+    
+    # remove agriculture column 
+    if("Agr" %in% names(dt)) dt <- dt[, "Agr" := 0, with = FALSE]
+    
   }
-  dt <- dt[, FireMIP.PFTs := rescale(.SD), .SDcols = FireMIP.PFTs, with = FALSE]
   
-  # important, remove any NAs that my have been introduced by scaling
-  dt <- na.omit(dt)
-  
-  # remove agriculture column 
-  if("Agr" %in% names(dt)) dt <- dt[, "Agr" := 0, with = FALSE]
-
   ### AND RETURN
   input.data@data <- dt
   rm(dt)
@@ -440,59 +444,59 @@ FireMIP.PFTs <- list(
   # BOREAL TREES
   
   NE = new("PFT",
-            id = "NE",
-            name = "Needleleaved Evergreen Tree",
-            lifeform = "Tree",
-            leafform = "Needleleaved",
-            phenology = "Evergreen",
-            zone = "NA",
-            colour = "darkblue",
-            combine = "no"
+           id = "NE",
+           name = "Needleleaved Evergreen Tree",
+           lifeform = "Tree",
+           leafform = "Needleleaved",
+           phenology = "Evergreen",
+           zone = "NA",
+           colour = "darkblue",
+           combine = "no"
   ),
   
   NS = new("PFT",
-            id = "NS",
-            name = "Needleleaved Summergreen Tree",
-            lifeform = "Tree",
-            leafform = "Needleleaved",
-            phenology = "Summergreen",
-            zone = "NA",
-            colour = "cornflowerblue",
-            combine = "no"
+           id = "NS",
+           name = "Needleleaved Summergreen Tree",
+           lifeform = "Tree",
+           leafform = "Needleleaved",
+           phenology = "Summergreen",
+           zone = "NA",
+           colour = "cornflowerblue",
+           combine = "no"
   ),
   
   BS = new("PFT",
-             id = "BS",
-             name = "Broadleaved Summergreen Tree",
-             lifeform = "Tree",
-             leafform = "Broadleaved",
-             phenology = "Summergreen",
-             zone = "NA",
-             colour = "cyan",
-             combine = "no"
+           id = "BS",
+           name = "Broadleaved Summergreen Tree",
+           lifeform = "Tree",
+           leafform = "Broadleaved",
+           phenology = "Summergreen",
+           zone = "NA",
+           colour = "cyan",
+           combine = "no"
   ),
   
   BE = new("PFT",
-             id = "BE",
-             name = "Broadleaved Evergreen Tree",
-             lifeform = "Tree",
-             leafform = "Broadleaved",
-             phenology = "Evergreen",
-             zone = "NA",
-             colour = "darkgreen",
-             combine = "no"
+           id = "BE",
+           name = "Broadleaved Evergreen Tree",
+           lifeform = "Tree",
+           leafform = "Broadleaved",
+           phenology = "Evergreen",
+           zone = "NA",
+           colour = "darkgreen",
+           combine = "no"
   ),
   
   
   BR = new("PFT",
-              id = "BR",
-              name = "Broadleaved Raingreen Tree",
-              lifeform = "Tree",
-              leafform = "Broadleaved",
-              phenology = "Raingreen",
-              zone = "NA",
-              colour = "maroon",
-              combine = "no"
+           id = "BR",
+           name = "Broadleaved Raingreen Tree",
+           lifeform = "Tree",
+           leafform = "Broadleaved",
+           phenology = "Raingreen",
+           zone = "NA",
+           colour = "maroon",
+           combine = "no"
   ),
   
   # GRASSES

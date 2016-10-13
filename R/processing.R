@@ -316,6 +316,10 @@ addBiomes <-function(input, scheme){
   # Get the dominant tree and dominant woody PFTs
   input <- newLayer(input, layers = scheme@max.needed, method = "max")
 
+  if(!"Grass" %in% names(input@data) ) {
+    input@data[, Grass := 0]
+  }
+
   # Get the totals required
   input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
 
@@ -441,7 +445,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   }
   if("PFT" %in% layers) {
     layers <- layers[-which(layers == "PFT")]
-    pft.present <- TRUE
+    PFT.present <- TRUE
   }
   
   # expands layer
@@ -460,7 +464,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   ### FOR PER-PFT FILES
   for(this.layer in layers){
-    
+
     if(this.layer != "Month") {
 
       # build list of columns to combine for layer
