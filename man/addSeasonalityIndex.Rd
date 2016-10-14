@@ -17,7 +17,7 @@ addSeasonalityIndex(input = NULL, colname = "SI", verbose = TRUE)
 same type as input with the seasonality index as new data column
 }
 \description{
-Adds a column of the seasonality index based on Marhan (1970) to the input data
+Adds a column of the seasonality index (\code{\link{seasonalityIndex}}) based on Marhan (1970) to the input data
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

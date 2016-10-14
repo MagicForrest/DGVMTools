@@ -10,11 +10,11 @@ thornthwaite(run = NULL, T = NULL, P = NULL, variable = "PET",
 \arguments{
 \item{run}{the ModelRun object, if desired (see 'as', below).}
 
-\item{T}{monthly temperature (degree Celcius )ModelObject, data.table or data.frame}
+\item{T}{monthly temperature (degree Celcius ) ModelObject, data.table or data.frame}
 
 \item{P}{monthly precipitation in mm. Needed for everything without PET.}
 
-\item{variable}{any of PET (potential evapotranspiration), AET (actual evapotranspiration), WC (water content), WD (water deficit)}
+\item{variable}{character variable any of 'PET' (potential evapotranspiration), 'AET' (actual evapotranspiration), 'WC' (water content), 'WD' (water deficit).}
 
 \item{as}{desired output type 'data.table', 'data.frame', anything else will try to return a ModelObject, which need 'run' to be defined.}
 }
@@ -28,6 +28,6 @@ calculate monthly PET, AET, WC, WD based on Thornthwaite
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
 \references{
-Bonan, G. (2002): Ecological Climatology. Chapter 5 (Hydrological Cycle), Cambridge University Press, 690p. (http://www.cgd.ucar.edu/tss/aboutus/staff/bonan/ecoclim/index-2002.htm)
+Bonan, G. (2002): Ecological Climatology. Chapter 5 (Hydrological Cycle), Cambridge University Press, 690p. \url{http://www.cgd.ucar.edu/tss/aboutus/staff/bonan/ecoclim/index-2002.htm}
 }
 

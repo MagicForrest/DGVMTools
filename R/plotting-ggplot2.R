@@ -176,7 +176,8 @@ dgvm.ggplot.theme <- function(x) {
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
 #' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @import raster sp maps ggplot2 data.table
+#' @importFrom raster raster projectRaster as.data.frame
+#' @import sp maps ggplot2 data.table
 #' @export
 plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, map.overlay=NA, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
@@ -879,6 +880,9 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #'
 #' @return a data.table or a ggplot2-object.
 #' @export
+#' @import data.table
+#' @importFrom raster isLonLat
+#' @importFrom stats complete.cases residuals
 #'
 #' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
@@ -890,7 +894,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
                           equal.axis=TRUE,
                           wrap=2,
                           plot=TRUE, verbose=TRUE) {
-
+  ..density.. = ..level.. = Lat = Lon = Year = sens = c.value = w.value = x.value = y.value = NULL
   spatial  <- FALSE
   temporal <- FALSE
 
@@ -987,13 +991,13 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     }
     DT <- y[DT]
 
-  } else if (is.raster(y)) {
+  } else if (isLonLat(y)) {
     if (!spatial) {
       stop("If 'y' is a raster, x must be spatially!")
     }
     stop("'y' as Raster not yet ready!")
   } else {
-    stop("'y' must be a ModelObject, a data.frame/data.table or a raster!")
+    stop("'y' must be a ModelObject, a data.frame/data.table or a raster in Lon/Lat projection!")
   }
 
   ## return data.table, if requested

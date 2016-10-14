@@ -2,7 +2,7 @@
 % Please edit documentation in R/gridarea.R
 \name{extract.seq}
 \alias{extract.seq}
-\title{extract.seq: Extract a regular sequence from unique values in a vector}
+\title{Extract a regular sequence from unique values in a vector}
 \usage{
 extract.seq(x, force.regular = FALSE, descending = FALSE)
 }
@@ -18,11 +18,6 @@ data.frame of gridcells with columns c("Lon", "Lat", "area")
 }
 \description{
 Returns, if possible, an regular spaced sorted vector vector. If more than half of the unique values have unequal distances, the sorted values are returned.
-}
-\examples{
-lon <- seq(- 179.75, 179.75, 0.5)
-lat <- seq(89.75,-89.75,-0.5) # equivalent to the above
-sum(gridarea2d(lat,lon)$area)*1.e-12
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

@@ -10,22 +10,22 @@ import.raster(file, scale = 1, nodata = NA, nodata.limit = "eq",
   mem.only = FALSE)
 }
 \arguments{
-\item{file}{path to the raster file}
+\item{file}{path to the raster file.}
 
-\item{scale}{scaling factor for the data}
+\item{scale}{scaling factor for the data.}
 
-\item{nodata}{value or threshold for invalid pixels}
+\item{nodata}{value or threshold for invalid pixels.}
 
-\item{nodata.limit}{Any of "eq", "lt", "le", "ge" or "gt"}
+\item{nodata.limit}{Any of "eq", "lt", "le", "ge" or "gt".}
 
-\item{method}{raster interpolation method}
+\item{method}{raster interpolation method.}
 
-\item{to}{target rater grid}
+\item{to}{target rater grid.}
 
-\item{mem.only}{should the rasterOptions be set for operation in memory only}
+\item{mem.only}{should the rasterOptions be set for operation in memory only.}
 }
 \value{
-data.frame with columns c("Lon", "Lat", "value")
+data.frame with columns c("Lon", "Lat", "value").
 }
 \description{
 Import external raster data and return them as data.frame

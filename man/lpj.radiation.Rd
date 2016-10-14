@@ -32,4 +32,7 @@ day of the year as done in function daylengthinsoleet
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
+\references{
+This code is based on the original LPJ-GUESS C++ source code (\href{http://iis4.nateko.lu.se/lpj-guess/}{LPJ-GUESS homepage}).
+}
 

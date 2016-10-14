@@ -2,16 +2,16 @@
 #' 
 #' Import external raster data and return them as data.frame
 #'
-#' @param file path to the raster file
-#' @param scale scaling factor for the data
-#' @param nodata value or threshold for invalid pixels
-#' @param nodata.limit Any of "eq", "lt", "le", "ge" or "gt"
-#' @param method raster interpolation method
-#' @param to target rater grid
-#' @param mem.only should the rasterOptions be set for operation in memory only
-#' @return data.frame with columns c("Lon", "Lat", "value")
+#' @param file path to the raster file.
+#' @param scale scaling factor for the data.
+#' @param nodata value or threshold for invalid pixels.
+#' @param nodata.limit Any of "eq", "lt", "le", "ge" or "gt".
+#' @param method raster interpolation method.
+#' @param to target rater grid.
+#' @param mem.only should the rasterOptions be set for operation in memory only.
+#' @return data.frame with columns c("Lon", "Lat", "value").
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @import raster
+#' @importFrom raster raster rasterOptions projectRaster
 #' @export
 import.raster <- function(file, scale=1, nodata=NA, nodata.limit="eq", method="bilinear", to=raster(nrows=360, ncols=720, xmn=-180, xmx=180, ymn=-90, ymx=90, crs=CRS("+proj=longlat +ellps=WGS84")), mem.only=FALSE) {
   ## !!! execution on large memory machine recommended !!!
@@ -473,11 +473,32 @@ getClimateDriver <- function(run=NA, file=NA, operation="mean", temporal.extent=
 #' 
 #' @param x values, e.g. monthly precipitation values
 #' @param wgt weight for the angle width of each value, e.g. days per month (default)
-#' @return the seasonality index following Markhan (1970)
+#' @param add.origin add 0 at the begin of both input vectors.
+#' @param variable what to return: 's' seasonality index, 'a' or 'di' for angle or direction between 0 and 2pi; 'day' or 'doy' angle as fraction between 0 and sum(wgt); 'both': index and angle; '^b.*day' index and prev. fraction.  
+#' @param debug return the all values as data.frame. 
+#' @return the seasonality index, by default (see 'variable' for other options) following Markhan (1970)
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
-#' @references Charles G. Markhan (1970) Seasonality of precipitation in the United States, Annals of the Association of American Geographers, 60:3, 593-597, DOI: 10.1111/j.1467-8306.1970.tb00743.x
-seasonalityIndex <- function(x, wgt=c(31, 28.2425, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)) {
+#' @examples 
+#' x <- matrix(c(c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31),
+#'               c(135, 97, 77, 49, 22, 4, 2, 1, 10, 18, 58, 127),
+#'               c(10, 18, 58, 127, 135, 97, 77, 49, 22, 4, 2, 1),
+#'               c(1, 10, 18, 58, 127, 135, 97, 77, 49, 22, 4, 2),
+#'               c(77, 49, 22, 4, 2, 1, 10, 18, 58, 127, 135, 97),
+#'               c(2, 4, 49, 135, 77, 22, 1, 10, 18, 127, 97, 58),
+#'               c(135, 77, 22, 1, 10, 18, 127, 97, 58, 2, 4, 49)),
+#'             nrow=12)
+#' titles <- c("circular", "early", "early/mid", "late/mid", "late", "dual 1", "dual 2")
+#' for (i in 1:ncol(x)) {
+#'   si <- seasonalityIndex(x[, i], variable="both")
+#'   z  <- seasonalityIndex(x[, i], debug=TRUE)
+#'   plot(cumsum(z$vx), cumsum(z$vy), type="b", lwd=3, main=titles[i], asp=1)
+#'   lines(c(0, sum(z$x) * si[1] * sin(Arg(sum(z$c))+pi/2)), c(0, sum(z$x) * si[1] * cos(Arg(sum(z$c))-pi/2)), lty="dashed", col="red", lwd=3)
+#'   print(paste0("Seasonality index (", titles[i], "): ", signif(si[1], 2)))
+#'   lines(c(0, sin(si[2]) * si[1] * sum(x[, i])), c(0, cos(si[2]) * si[1] * sum(x[, i])), lty="dotted", col="blue")
+#' }
+#' @references Charles G. Markhan (1970) Seasonality of precipitation in the United States, Annals of the Association of American Geographers, 60:3, 593-597, DOI: \href{http://dx.doi.org/10.1111/j.1467-8306.1970.tb00743.x}{10.1111/j.1467-8306.1970.tb00743.x}
+seasonalityIndex <- function(x, wgt=c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31), add.origin=TRUE, variable="strength", debug=FALSE) {
   if (!is.vector(x) || !is.vector(wgt))
     stop("Any of 'x'/'wgt' is not a vector")
   if (length(wgt)!=length(x)) {
@@ -485,23 +506,49 @@ seasonalityIndex <- function(x, wgt=c(31, 28.2425, 31, 30, 31, 30, 31, 31, 30, 3
     warning("Length of 'x' and 'wgt' differ. Assuming a regular wgt.")
     wgt <- rep(1, length(x))
   }
-  # calculate the wheighted angles based on wgt
-  cwgt <- cumsum(wgt) - wgt/2
-  cwgt <- append(cwgt, cwgt[length(cwgt)] + wgt[length(cwgt)]/2)
+  if (add.origin) {
+    x <- append(x, 0, after=0)
+    wgt <- append(wgt, 0, after=0)
+  }
+  ## calculate the wheighted angles based on wgt
+  cwgt <- cumsum(wgt)
   angle <- 2 * pi * cwgt / cwgt[length(cwgt)]
-
-  # calculate the x and y component of each vector
-  vx <- sin(angle[1:(length(angle)-1)]) * x
-  vy <- cos(angle[1:(length(angle)-1)]) * x
-
-  # calculate the "seasonality" by summing up the x and y components
-  # of the vectors and divivion by the total precipitation
-  seasonality = (sqrt(sum(vx)^2 + sum(vy)^2)) / sum(x)
-  return(seasonality)
+  
+  ## calculate the x and y component of each vector
+  vx <- sin(angle) * x
+  vy <- cos(angle) * x
+  
+  z <- complex(real=vx, imaginary=vy)
+  
+  if (debug)
+    return(data.frame(x=x, wgt=wgt, a=angle, vx=vx, vy=vy, c=z))
+  
+  si <- Mod(sum(z)) / sum(x)
+  ra <- Arg(sum(z))
+  ## 
+  ra <- ifelse(ra<pi/2, pi/2-ra, 2.5*pi-ra)
+  
+  ## calculate the "seasonality" by summing up the x and y components
+  ## of the vectors and divivion by the total precipitation
+  si <- sqrt(sum(vx)^2 + sum(vy)^2) / sum(x)
+  if (grepl("^day", tolower(variable)) || tolower(variable)=="doy" ) {
+    return(ra/(2*pi) * sum(wgt))
+  } else if (grepl("^di", tolower(variable)) || grepl("^a", tolower(variable))) {
+    return(ra)
+  } else if (grepl("^b", tolower(variable)) && (grepl("day", tolower(variable)) || grepl("doy", tolower(variable)))) {
+    return(c(si, ra/(2*pi)*sum(wgt)))
+  } else if (grepl("^b", tolower(variable))) {
+    return(c(si, ra))
+  } else {
+    return(si)
+  }
 }
+
+
+
 #' Adds a seasonality index column
 #' 
-#' Adds a column of the seasonality index based on Marhan (1970) to the input data
+#' Adds a column of the seasonality index (\code{\link{seasonalityIndex}}) based on Marhan (1970) to the input data
 #' 
 #' @param input Input data (either data.frame, data.table or ModelObject) with at least the month abbreviations as column names.
 #' @param colname Name of the new created seasonality index column.
@@ -515,21 +562,40 @@ addSeasonalityIndex <- function(input=NULL, colname="SI", verbose=TRUE) {
       message("Input is a data.table")
     if (length(setdiff(month.abb, colnames(input)))!=0)
       stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(data)), collapse="', '"), sep=""))
-    eval(parse(text=paste("input[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))
+    if (length(colname)==1) {
+      eval(parse(text=paste("input[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))
+      } else {
+      si.tmp <- apply(input[, month.abb], 1, seasonalityIndex, variable='bothAsdoy')
+      eval(parse(text=paste0("input$", colname[1], " = si[1, ]")))
+      eval(parse(text=paste0("input$", colname[2], " = si[2, ]")))
+    }
     return(input)
   } else if (is.data.frame(input)) {
     if (verbose)
       message("Input is a data.frame")
     if (length(setdiff(month.abb, colnames(input)))!=0)
       stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(input)), collapse="', '"), sep=""))
-    eval(parse(text=paste("input$", colname, "=apply(input[, month.abb], 1, seasonalityIndex)", sep="")))
+    if (length(colname)==1) {
+      eval(parse(text=paste("input$", colname, "=apply(input[, month.abb], 1, seasonalityIndex)", sep="")))
+    } else {
+      si.tmp <- apply(input[, month.abb], 1, seasonalityIndex, variable='bothAsdoy')
+      eval(parse(text=paste0("input$", colname[1], " = si[1, ]")))
+      eval(parse(text=paste0("input$", colname[2], " = si[2, ]")))
+    }
     return(input)
   } else if (is.ModelObject(input, spatial=TRUE)) {
     if (verbose)
       message("Input is a spatial ModelObject.")
     if (length(setdiff(month.abb, colnames(input@data)))!=0)
       stop(paste("No month column(s) in input data: '", paste(setdiff(month.abb, colnames(input@data)), collapse="', '"), sep=""))
-    eval(parse(text=paste("input@data[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))
+    if (length(colname)==1) {
+      eval(parse(text=paste("input@data[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))
+    } else {
+      si.tmp <- apply(input@data[, month.abb], 1, seasonalityIndex, variable='bothAsdoy')
+      eval(parse(text=paste0("input@data$", colname[1], " = si[1, ]")))
+      eval(parse(text=paste0("input@data$", colname[2], " = si[2, ]")))
+    }
+    #    eval(parse(text=paste("input@data[, ", colname, ":=apply(.SD, 1, seasonalityIndex), .SDcols=month.abb]", sep="")))
     return(input)
   } else {
     stop(paste("addSeasonalityIndex: Don't know what to to with class", class(input)))
@@ -548,6 +614,7 @@ addSeasonalityIndex <- function(input=NULL, colname="SI", verbose=TRUE) {
 #' @return daylength in hours as vector or matrix, depending on input shape
 #' @export
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @references This code is based on the original LPJ-GUESS C++ source code (\href{http://iis4.nateko.lu.se/lpj-guess/}{LPJ-GUESS homepage}).
 daylength <- function(lat, doy, leap=FALSE) {
   dom <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
   if (leap) dom[3] = 29
@@ -582,6 +649,7 @@ daylength <- function(lat, doy, leap=FALSE) {
 #' @return incoming solar radiation in W m^-2 as vector or matrix, depending on input shape
 #' @export
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @references This code is based on the original LPJ-GUESS C++ source code (\href{http://iis4.nateko.lu.se/lpj-guess/}{LPJ-GUESS homepage}).
 lpj.radiation <- function(lat, doy, rad.frac, albedo=0.17, cloudcover=FALSE, leap=FALSE) {
   dom <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
   if (leap) dom[3] = 29
