@@ -47,7 +47,7 @@ plotGGScatter(x, y, x.column = "value", y.column = "value", limit = NULL,
 
 \item{plot}{Should a ggplot-object be returned (default) or the data.table.}
 
-\item{verbose}{print some studip messages.}
+\item{verbose}{print some stupid messages.}
 }
 \value{
 a data.table or a ggplot2-object.
@@ -60,5 +60,8 @@ message("See templates/Example.ggplot.R")
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
+}
+\references{
+Mayer, D. G. and Butler, D. G.: Statistical validation, Ecological Modelling, 68(1-2), 21-32, \href{doi:10.1016/0304-3800(93)90105-2}{dx.doi.org/10.1016/0304-3800(93)90105-2}, 1993.
 }
 

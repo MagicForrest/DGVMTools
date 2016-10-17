@@ -857,6 +857,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' Create a various forms of scatterplots
 #' 
 #' Create a point cloud (scatterplot) or density plot with several metrics and line fits.
+#' 
 #'
 #' @param x A ModelObject or a list of them.
 #' @param y A ModelObject, dataframe/data.table or raster.
@@ -876,7 +877,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @param equal.axis Should the x and y- axis be scaled equally.
 #' @param wrap number of column, when wrapping
 #' @param plot Should a ggplot-object be returned (default) or the data.table.
-#' @param verbose print some studip messages.
+#' @param verbose print some stupid messages.
 #'
 #' @return a data.table or a ggplot2-object.
 #' @export
@@ -884,6 +885,9 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @importFrom raster isLonLat
 #' @importFrom stats complete.cases residuals
 #'
+#' @references Mayer, D. G. and Butler, D. G.: Statistical validation, Ecological Modelling, 68(1-2), 21-32, \href{doi:10.1016/0304-3800(93)90105-2}{dx.doi.org/10.1016/0304-3800(93)90105-2}, 1993.
+
+#' 
 #' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
@@ -1011,6 +1015,9 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     DT=DT[complete.cases(DT), ]    
   }
 
+  if (verbose)
+    print(str(DT))
+  
   if (!is.null(limit)) {
     if (is.data.frame(limit) || is.list(limit)) {
       if (!is.null(limit$inclusive)) {
@@ -1165,11 +1172,14 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
 
         if (grepl("^l", l) || grepl("^eq", l)) {
           label <- paste("y == ", signif(sum.lm$coefficients[2,1], 2), "* x +", signif(sum.lm$coefficients[1,1], 2))
+        } else if (tolower(l)=="mae") {
+          label <- paste("MAE == ", signif( sum(d$y.value - d$x.value) / nrow(d), 2))
         } else if (tolower(l)=="rmse") {
           label <- paste("RMSE == ", signif(mean(sqrt((residuals(lm.d))^2), na.rm=TRUE), 2))
         } else if (tolower(l)=="rsq") {
           ## eventually include the p-value sum.lm$coefficients[2,4]
           label <- paste("R^2 == ", signif(sum.lm$r.squared, 2))
+          
         } else if (tolower(l)=="me") {
           label <- paste("ME == ", signif(1 - sum((d$y-d$x)^2, na.rm=TRUE) / sum((d$y-mean(d$y))^2, na.rm=TRUE), 2))
         } else {
@@ -1182,7 +1192,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     
     ## calculate the label position
     if (grepl("right", label.pos)) {
-      xx <- max(DT$x.value) ## don't mess up with x from function arguments, which is still need later on
+      xx <- max(DT$x.value) ## don't mess up xx with x from function arguments, which is still need later on
       h <- 1
     } else if (grepl("left", label.pos)) {
       xx <- min(DT$x.value)
