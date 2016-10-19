@@ -37,7 +37,7 @@ plotGGScatter(x, y, x.column = "value", y.column = "value", limit = NULL,
 
 \item{lines}{Character vector of any of '1:1', 'lm' and/or 'gam'. Or a data.frame with the columns 'lines', 'color', 'type', 'width'.}
 
-\item{labels}{Character string of metrics to be added. Possible values 'rsq', 'rmse', 'me', 'eq'}
+\item{labels}{Character string of metrics to be added. Possible values 'mae', 'rmsd', 'nme', 'nmse', 'me', 'eq', 'rsq', 'rmse'}
 
 \item{label.pos}{Position of the labels as character consiting 'top' or 'bottom' and 'left', 'center', 'right'}
 
@@ -62,6 +62,7 @@ message("See templates/Example.ggplot.R")
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
 \references{
-Mayer, D. G. and Butler, D. G.: Statistical validation, Ecological Modelling, 68(1-2), 21-32, \href{doi:10.1016/0304-3800(93)90105-2}{dx.doi.org/10.1016/0304-3800(93)90105-2}, 1993.
+Mayer, D. G. and Butler, D. G.: Statistical validation, Ecological Modelling, 68(1-2), 21-32, \href{https://dx.doi.org/10.1016/0304-3800(93)90105-2}{doi:10.1016/0304-3800(93)90105-2}, 1993.
+Kelley, et al.: A comprehensive benchmarking system for evaluating global vegetation models, Biogeosciences, 10(5), 3313-3340, \href{https://dx.doi.org/10.5194/bg-10-3313-2013}{doi:10.5194/bg-10-3313-2013, 2013.}
 }
 

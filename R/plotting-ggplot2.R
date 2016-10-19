@@ -2,7 +2,7 @@
 ## ggplot2 themes for nicer plots #####################################
 #######################################################################
 
-.dgvm.spatial_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.dgvm.spatial_theme <- list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.background  = element_rect(fill="#cae1ff"),
                                  panel.border      = element_rect(fill=NA, linetype = "solid", colour = "black"),
@@ -20,7 +20,7 @@
                                  plot.title        = element_text(size=22),
                                  strip.background  = element_rect(fill=NA)))
 
-.dgvm.scatter_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.dgvm.scatter_theme <- list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.background  = element_blank(),
                                  panel.border      = element_blank(),
@@ -35,10 +35,10 @@
                                  legend.key        = element_blank(), #element_rect(colour = "black"),
                                  legend.key.width  = unit(0.08, "npc"),
                                  plot.background   = element_blank(),
-                                 plot.title        = element_text(size=22),
-                                 strip.background  = element_rect(fill=NA)))
+                                 plot.title        = element_text(size=22)))
+#                                 strip.background  = element_rect(fill=NA)))
 
-.dgvm.temporal_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.dgvm.temporal_theme <- list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                   panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                   panel.background  = element_blank(),
                                   panel.border      = element_blank(),
@@ -872,7 +872,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @param sym.col Should the colors be symmetrical (NOT working currently).
 #' @param alpha transparency value for points (ignored in density mode).
 #' @param lines Character vector of any of '1:1', 'lm' and/or 'gam'. Or a data.frame with the columns 'lines', 'color', 'type', 'width'.
-#' @param labels Character string of metrics to be added. Possible values 'rsq', 'rmse', 'me', 'eq'
+#' @param labels Character string of metrics to be added. Possible values 'mae', 'rmsd', 'nme', 'nmse', 'me', 'eq', 'rsq', 'rmse'
 #' @param label.pos Position of the labels as character consiting 'top' or 'bottom' and 'left', 'center', 'right'
 #' @param equal.axis Should the x and y- axis be scaled equally.
 #' @param wrap number of column, when wrapping
@@ -885,8 +885,8 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @importFrom raster isLonLat
 #' @importFrom stats complete.cases residuals
 #'
-#' @references Mayer, D. G. and Butler, D. G.: Statistical validation, Ecological Modelling, 68(1-2), 21-32, \href{doi:10.1016/0304-3800(93)90105-2}{dx.doi.org/10.1016/0304-3800(93)90105-2}, 1993.
-
+#' @references Mayer, D. G. and Butler, D. G.: Statistical validation, Ecological Modelling, 68(1-2), 21-32, \href{https://dx.doi.org/10.1016/0304-3800(93)90105-2}{doi:10.1016/0304-3800(93)90105-2}, 1993.
+#' Kelley, et al.: A comprehensive benchmarking system for evaluating global vegetation models, Biogeosciences, 10(5), 3313-3340, \href{https://dx.doi.org/10.5194/bg-10-3313-2013}{doi:10.5194/bg-10-3313-2013, 2013.}
 #' 
 #' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
@@ -1083,7 +1083,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     p <- ggplot(DT, aes(x=x.value, y=y.value))
     p <- p + geom_point(alpha=alpha, size=1.5, shape=16, col=colors)
   } else {
-    p <- ggplot(DT, aes(x=y.value, y=x.value, col=c.value))
+    p <- ggplot(DT, aes(x=x.value, y=y.value, col=c.value))
     p <- p + geom_point(alpha=alpha, size=1.5, shape=16)
   }
   p <- p + .dgvm.scatter_theme
@@ -1094,9 +1094,12 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     p <- p + xlab(x.column) + ylab(y.column)
   }
   
-  if (equal.axis)
-    p <- p + coord_equal(expand=FALSE)
-  
+  if (equal.axis && density=="hex") {
+    p <- p + coord_fixed()
+  } else if (equal.axis) {
+    p <- p + coord_fixed(expand=FALSE)
+  }
+
   ## not tested yet!
   if (is.data.frame(colors)) {
     warning("JS_DEBUG: Coloring not tested yet.")
@@ -1170,45 +1173,69 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
       lm.d <- lm(d$y.value ~ d$x.value)
       sum.lm <- summary(lm.d)
 
-        if (grepl("^l", l) || grepl("^eq", l)) {
-          label <- paste("y == ", signif(sum.lm$coefficients[2,1], 2), "* x +", signif(sum.lm$coefficients[1,1], 2))
-        } else if (tolower(l)=="mae") {
-          label <- paste("MAE == ", signif( sum(d$y.value - d$x.value) / nrow(d), 2))
-        } else if (tolower(l)=="rmse") {
-          label <- paste("RMSE == ", signif(mean(sqrt((residuals(lm.d))^2), na.rm=TRUE), 2))
-        } else if (tolower(l)=="rsq") {
-          ## eventually include the p-value sum.lm$coefficients[2,4]
-          label <- paste("R^2 == ", signif(sum.lm$r.squared, 2))
-          
-        } else if (tolower(l)=="me") {
-          label <- paste("ME == ", signif(1 - sum((d$y-d$x)^2, na.rm=TRUE) / sum((d$y-mean(d$y))^2, na.rm=TRUE), 2))
-        } else {
-          warning(paste0("Label '",l, "' not implemented!"))
-          message(paste0("Label '",l, "' not implemented!"))
-          next
-        }
+      ## mean absolute error
+      if (tolower(l)=="mae") {
+        label <- paste("MAE ==", signif( mean(d$y.value) - mean(d$x.value), 2))
+      ## root mean square deviation
+      } else if (tolower(l)=="rmsd") {
+        label <- paste("RMSD ==", signif(sqrt(mean((d$y.value - d$x.value)^2)), 2))
+      ## Model efficiency (Mayer & Butler, 1993)
+      } else if (tolower(l)=="me") {
+        label <- paste("ME ==", signif(1 - sum((d$y.value-d$x.value)^2, na.rm=TRUE) / sum((d$y.value-mean(d$y.value))^2, na.rm=TRUE), 2))
+      ## normalized mean error
+      } else if (tolower(l)=="nme") {
+        label <- paste("NME ==", signif(sum(abs(d$y.value - d$x.value)) / sum(abs(d$x.value - mean(d$x.value))), 2))
+      ## normalized mean squared error
+      } else if (tolower(l)=="nsme") {
+        label <- paste("NMSE ==", signif(sum((d$y.value - d$x.value)^2) / sum((d$x.value - mean(d$x.value))^2), 2))
+      ## 
+      ## linear model measures
+      ##
+      ## equation
+      } else if (grepl("eq", l)) {
+        label <- paste("y == ", signif(sum.lm$coefficients[2,1], 2), "* x +", signif(sum.lm$coefficients[1,1], 2))
+      ## root mean square error
+      } else if (tolower(l)=="rmse") {
+        label <- paste("RMSE ==", signif(mean(sqrt((residuals(lm.d))^2), na.rm=TRUE), 2))
+      ## R^2
+      } else if (tolower(l)=="rsq") {
+        ## eventually include the p-value sum.lm$coefficients[2,4]
+        label <- paste("R^2 ==", signif(sum.lm$r.squared, 2))
+      ## adj. R^2
+      } else if (tolower(l)=="adjrsq") {
+        ## eventually include the p-value sum.lm$coefficients[2,4]
+        label <- paste("adj.~R^2 ==", signif(sum.lm$adj.r.squared, 2))
+      } else {
+        warning(paste0("Label '",l, "' not implemented!"))
+        message(paste0("Label '",l, "' not implemented!"))
+        next
+      }
       return(label)
     }
-    
+
     ## calculate the label position
+    x.max = max(DT$x.value)
+    x.min = min(DT$x.value)
+    y.max = max(DT$y.value)
+    y.min = min(DT$y.value)
     if (grepl("right", label.pos)) {
-      xx <- max(DT$x.value) ## don't mess up xx with x from function arguments, which is still need later on
-      h <- 1
+      label.x <- x.max
+      label.hjust <- 1
     } else if (grepl("left", label.pos)) {
-      xx <- min(DT$x.value)
-      h <- 0
+      label.x <- x.min
+      label.hjust <- 0
     } else {
-      xx <- (max(DT$x.value) + min(DT$x.value)) / 2
-      h <- 0.5
+      label.x <- (x.max + x.min) / 2
+      label.hjust <- 0.5
     }
     if (grepl("top", label.pos)) {
-      y <- max(DT$y.value)
-      v <- 1
-      dy <- (min(DT$y.value) - max(DT$y.value)) / 12
+      label.y <- y.max
+      label.vjust <- 1
+      label.dy <- ((x.max-x.min)/(y.max-y.min)) * (y.min - y.max) / 12
     } else {
-      y <- min(DT$y.value)
-      v <- 0
-      dy <- (max(DT$y.value) - min(DT$y.value)) / 12
+      label.y <- y.min
+      label.vjust <- 0
+      label.dy <- ((x.max-x.min)/(y.max-y.min)) * (y.max - y.min) / 12
     }
     
     llabels <- list()
@@ -1241,11 +1268,15 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
           }
         }
       }
-      p <- p + annotate("text", x=xx, y=y+dy*(i-1), vjust=v, hjust=h, label=llabels[[labels[i]]], parse=TRUE)
-    }
+      p <- p + annotate("text", x=label.x, y=label.y+label.dy*(i-1),
+                        vjust=label.vjust, hjust=label.hjust, label=llabels[[labels[i]]], parse=TRUE)
 
-    if (verbose)
-      print(paste0(labels[i], ": ", paste(llabels[[labels[i]]], collapse=",\n\t")))
+      if (verbose) {
+        strout <- paste0(labels[i], ": ", paste(llabels[[labels[i]]], collapse=",\n\t"))
+        cat(strout)
+        cat("\n")
+      }
+    }
   }
   
   if (!is.null(wrap.column) && is.list(x)) {
