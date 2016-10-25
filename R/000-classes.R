@@ -124,7 +124,7 @@ setClass("PFT",
 #'  
 #' @format A list of character strings for each of the supported vegetation models
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @internal
+#' @keywords internal
 supported.models <- c("LPJ-GUESS", 
                       "LPJ-GUESS-SPITFIRE", 
                       "aDGVM", 

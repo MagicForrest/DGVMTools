@@ -1,6 +1,9 @@
 
 
-readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF", layer,  temporal.extent) {
+readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF", layer,  temporal.extent, verbose = FALSE) {
+  
+  
+  Lon = Lat =  NULL
   
   # Check input and set meta-data accordingly
   
@@ -65,10 +68,10 @@ readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF
   start.index <- 1
   end.index <- length(this.time)
   for(time in 1:length(this.time)) {
-    if(this.time[time] <= comparison.period@start) start.index <- time
+    if(this.time[time] <= temporal.extent@start) start.index <- time
   }
   for(time in (length(this.time)-1):0) {
-    if(this.time[time+1] > comparison.period@end) end.index <- time
+    if(this.time[time+1] > temporal.extent@end) end.index <- time
   }
   
   HYDE.slice <- ncvar_get(HYDE.nc, start = c(start.index,1,1), count = c((end.index-start.index+1),-1,-1))

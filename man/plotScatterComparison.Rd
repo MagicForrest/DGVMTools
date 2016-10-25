@@ -4,21 +4,31 @@
 \alias{plotScatterComparison}
 \title{Plot scatter of model vs data}
 \usage{
-plotScatterComparison(data.obj, showFitLine = TRUE, showStats = TRUE,
-  labels = NULL, alpha = 0.05, text.size = 6)
+plotScatterComparison(data.obj, run.ids = NULL, run.labels = NULL,
+  facet = NULL, facet.labels = NULL, showFitLine = TRUE,
+  showStats = TRUE, alpha = 0.05, text.size = 6)
 }
 \arguments{
-\item{data.obj}{The DataObject for which to plot the residuals}
+\item{data.obj}{The DataObject for which to plot the residual}
+
+\item{run.ids}{The character vector of run ids of the runs to scatter against the data (must be a vector, not a list).  Leave blank to compare all runs that have been previouslty compared to this dataset.}
+
+\item{run.labels}{A vector of more descriptive strings from each run (each the run@names)}
+
+\item{facet}{An optional string identifying an additional column by which to subdivide (facet) that data}
+
+\item{facet.labels}{An option vector of strings giving descriptive labels for facets, if provided it *must* be a named vector, 
+where each element has a name corresponding to the value in the facet column.}
 
 \item{showFitLine}{Boolean, if TRUE shows a linear fit and the fit equation}
 
 \item{showStats}{Boolean, if TRUE show some stats do quantify how well the model fits the data}
 
-\item{labels}{Character vector of labels (one for each run).  If not provided uses the run ids}
-
 \item{alpha}{Numeric for the transparency of tre points (range (0,1], default = 0.05))}
 
 \item{text.size}{Numeric to scale the text size on the plot (default = 6)}
+
+\item{labels}{Character vector of labels (one for each run).  If not provided uses the run ids}
 }
 \value{
 A ggplot2 plot.

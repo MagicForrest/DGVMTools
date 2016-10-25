@@ -464,18 +464,18 @@ MeditBiomeRules <- function(lai){
   
   
   # BIOME 4 - Deciduous forest
-  if(as.numeric(lai[['Woody']]) > 2.0 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  
+  if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
   # BIOME 5 - Cold Montane forest
-  else if(as.numeric(lai[['Woody']]) > 1.0 && as.numeric(lai[['BorealFractionOfTree']]) > 0.5) {return(5)}
-  # BIOME 2 - Needle-leaved evergreen forest
-  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return(2)}
-  # BIOME 3 - Mediterranean woodland/scrub
-  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeBE") {return(3)}
+  else if(as.numeric(lai[['Woody']]) > 1.5 && as.numeric(lai[['BorealFractionOfTree']]) > 0.5) {return(5)} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
-  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}
+  else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.5 && ( lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeNE" || lai[['MaxWoody']] == "TeBE")) {return(6)}
+  # BIOME 2 - Needle-leaved evergreen forest
+  else if(as.numeric(lai[['Woody']]) > 1.5 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
+  # BIOME 3 - Mediterranean woodland/scrub
+  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
   # BIOME 8 - Shrublands/Shrub Steppe
-  else if((as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS" ))  
-          || as.numeric(lai[['Woody']]) > as.numeric(lai[['Grass']])) {return(8)}
+  #else if((as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS" ))  || as.numeric(lai[['Woody']]) > as.numeric(lai[['Grass']])) {return(8)}
+  else if((as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS" ))) {return(8)}
   # BIOME 7 - Grass Steppe  
   else if(as.numeric(lai[['Grass']]) > 1.0 & as.numeric(lai[['Woody']] < 1.0)) {return(7)}
   # BIOME 1 - Remainder, Unclassified
@@ -651,55 +651,60 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
 #' Unpublished but possibly useful in principle.  Simpler classes that Smith et al 2014,
 #' but more complex that Forrest et al 2015.  
 #' 
-#' @param lai Numerical vector of LAI values for a particular location. 
+#' @param fpc Numerical vector of FPC values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
 #' 
 #' @return Biomes code (1-10)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 FireMIPBiomeRules <- function(fpc){
   
-  # BIOMES 1-5 - Forests
+  # BIOME 1 - croplands
+  if(as.numeric(fpc[['Crops']]) > 0.2) { return(1) }
+  
+  # BIOMES 2-6 - Forests
   #if(as.numeric(fpc[['Tree']]) > 0.6 &  fpc[['Grass']] < 0.4) {
   if(as.numeric(fpc[['Tree']]) > 0.6) {
-      
-    # BIOME 1 Needleleaved forest
-    if(as.numeric(fpc[['NeedleleavedFractionOfTree']]) > 0.5) { return(1) }
     
-    # BIOME 2 Summergreen forest    
-    else if(as.numeric(fpc[['SummergreenFractionOfTree']]) > 0.5) { return(2) }
+    # BIOME 2 Needleleaved forest
+    if(as.numeric(fpc[['NeedleleavedFractionOfTree']]) > 0.5) { return(2) }
     
-    # BIOME 3 Evergreen forest    
-    else if(as.numeric(fpc[['EvergreenFractionOfTree']]) > 0.5) { return(3) }
+    # BIOME 3 Summergreen forest    
+    else if(as.numeric(fpc[['SummergreenFractionOfTree']]) > 0.5) { return(3) }
     
-    # BIOME 4 Raingreen forest    
-    else if(as.numeric(fpc[['RaingreenFractionOfTree']]) > 0.5) { return(4) }
+    # BIOME 4 Evergreen forest    
+    else if(as.numeric(fpc[['EvergreenFractionOfTree']]) > 0.5) { return(4) }
     
-    # BIOME 5 Other forest
-    else { return(5) }
+    # BIOME 5 Raingreen forest    
+    else if(as.numeric(fpc[['RaingreenFractionOfTree']]) > 0.5) { return(5) }
+    
+    # BIOME 6 Other forest
+    else { return(6) }
     
   }
   
-  # BIOMES 6 and 7 - Grassy systems
+  # BIOMES 7 and 8 - Grassy systems
   else if(as.numeric(fpc[['Grass']]) > 0.4 ) {
     
-    # BIOME 6 C4 grassy system
-    if(fpc[['MaxGrass']] == "C4G") { return(6) }
+    # BIOME 7 C4 grassy system
+    if(fpc[['MaxGrass']] == "C4G") { return(7) }
     
-    # BIOME 6 C3 grassy system
-    else if(fpc[['MaxGrass']] == "C3G") { return(7) }
+    # BIOME 8 C3 grassy system
+    else if(fpc[['MaxGrass']] == "C3G") { return(8) }
     
   }
   
-  # BIOMES 8 - Shrublands
-  else if(as.numeric(fpc[['Shrub']]) > 0.4 ) { return(8) }
+  # BIOMES 9 - Shrublands
+  else if(as.numeric(fpc[['Shrub']]) > 0.4 ) { return(9) }
   
+  # BIOMES 9 - Shrublands - alternate because shrubs are not so well represented
+  else if(as.numeric(fpc[['Tree']]) > 0.2 &&  as.numeric(fpc[['Grass']]) < 0.2) { return(9) }
   
-  # BIOME 9 - Arid shrublands
-  else if(as.numeric(fpc[['Total']]) > 0.2 ) { return(9) }
+  # BIOME 10 - Sparse vegetation
+  else if(as.numeric(fpc[['Total']]) > 0.2 ) { return(10) }
   
-  # BIOME 10 Barren/Unclassified 
-  else { return(10) }
-
+  # BIOME 11 Barren/Unclassified 
+  else { return(11) }
+  
   
 }
 
@@ -723,7 +728,8 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                             fraction.of.tree = c("Phenology", "Leafform"),
                             fraction.of.woody = c("NA"),
                             needGDD5 = FALSE,
-                            cols = c("Needleleafed Forest" = "darkblue",                     
+                            cols = c("Croplands" = "White",
+                                     "Needleleafed Forest" = "darkblue",                     
                                      "Summergreen Forest" = "darkgreen", 
                                      "Evergreen Forest" = "orchid4",
                                      "Raingreen Forest" = "lightsalmon4", 
@@ -731,9 +737,10 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                      "C4 Grassy System" = "orange",
                                      "C3 Grassy System" = "lightgoldenrod",
                                      "Shrubland" = "indianred3",
-                                     "Arid Shrublands" = "papayawhip",
+                                     "Sparse Vegetation" = "papayawhip",
                                      "Other/Barren" = "gray75"),
-                            strings = c("Needleleafed Forest",                     
+                            strings = c("Croplands",
+                                        "Needleleafed Forest",                     
                                         "Summergreen Forest", 
                                         "Evergreen Forest",
                                         "Raingreen Forest", 
@@ -741,7 +748,7 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                         "C4 Grassy System",
                                         "C3 Grassy System",
                                         "Shrubland",
-                                        "Sparse Shublands/\nOther",
+                                        "Sparse Vegetation",
                                         "Barren"),
                             data.reference = "-",
                             published.reference = "-")

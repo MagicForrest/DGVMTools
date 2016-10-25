@@ -15,7 +15,7 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
     
   }
   
-  warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in veg.quantities, now searching only on the quant.id.  "))
+  warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in veg.quantities, now searching only on the quant.id."))
   
   for(quant in veg.quantities){
     
@@ -23,7 +23,7 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
     
   }
   
-  stop(paste0("Can find a quantity with id = ", quant@id, "and model = ", model.str, " in veg.quantities"))
+  stop(paste0("Can find a quantity with id = ", quant.id, " anywhere in veg.quantities"))
   
 }
 
@@ -140,7 +140,14 @@ veg.quantities <- list(
       cuts = seq(0,100,1),
       model = "FireMIP"), 
   
-  
+  new("Quantity",
+      id = "gpp",
+      type = "monthly",
+      name = "Gross Primary Productivity",
+      units = "-",
+      colours = veg.palette, 
+      cuts = seq(0,0.4,0.01),
+      model = "FireMIP"), 
   
   
   ######################################################################

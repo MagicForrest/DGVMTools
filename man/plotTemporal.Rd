@@ -46,4 +46,5 @@ This function is WORK IN PROGRESS!!  For questions about functionality or featur
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
+\keyword{internal}
 

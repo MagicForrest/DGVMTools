@@ -298,6 +298,7 @@ addBiomes <-function(input, scheme){
   
   message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
   
+  Grass = NULL
   
   # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
   if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
@@ -571,6 +572,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
 #' @param input The ModelObject for which to calculate the new fractional layers
 #' @param layers The layers to be divided ie. the numerators (will be calculated by \code{getVegTotals} if the don't exist)
 #' @param denominators The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")
+#' @param aggregate.method If the denominators need to be made, which method should be used to make them, "sum" or "mean", defaults to "sum".
 #' parame
 #'
 #' @details
@@ -636,3 +638,52 @@ divideLayers <- function(input, layers, denominators = list("Total"), aggregate.
 }
 
 
+#' Copy layers from one VegObject or ModelObject to another
+#' 
+#' This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one ModelObject/DataObject to another.  
+#' This is particularly useful for colouring or facetting a plot of one variable by another one say.  To give a more concrete example, one could use a biome classification 
+#' to split (facet) a data-vs-model scatter plot.
+#' 
+#' @param from The ModelObject/DataObject that the layers are to be copied from.
+#' @param to The ModelObject/DataObject that the layers are to be copied to.
+#' @param layer.names The layers to be copied from the "from" argument
+#' @param new.layer.names The new names that the layers should have in the 'to' object. Use this to avoid naming conflict whereby, for 
+#' example, if a layer "Total" is copied to an object which already has a "Total" layer then they layers will be names "Total.x" and "Total.y".  
+#' @param keep.all.to Boolean, if set to FALSE points in the 'to' object which don't have corresponding points in the 'from' object are removed.
+#' 
+#' 
+#' @description This function does not check the Lon, Lat and Year columns are identical.  Any points in the 'from' object which are not in the 'to' object are ignored, 
+#' and any points in the 'to' object which don't have corresponding points in the 'from' object are assigned NA, unless keep.all.to is set to FALSE .
+#'
+#' @return A ModelObject (or data.table) comprising the 'to' object with the new layers added
+#' @import data.table
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
+
+
+copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.to = TRUE) {
+  
+  
+  # first some pre-amble and checks
+  common.layers <- c()
+  from.dt <- from@data
+  for(dim in c("Lon", "Lat", "Year")) {
+    
+    if(dim %in% names(from@data) && dim %in% names(to@data)) { common.layers <- append(common.layers, dim)}         
+    else if(!(dim %in% names(from@data)) && (dim %in% names(to@data))) {
+      stop(paste0("In copyLayers: Can't copy layers because \""), dim ,"\" is present in the \"to\" argument but not the \"from\" argument") 
+    }
+    else if(dim %in% names(from@data) && !(dim %in% names(to@data))) {
+      stop(paste0("In copyLayers: Can't copy layers because \""), dim ,"\" is present in the \"from\" argument but not the \"to\" argument") 
+    }
+  }
+  
+  
+  layers.to.add.dt <- from@data[, append(common.layers, layer.names), with=FALSE]
+  if(!is.null(new.layer.names)) setnames(layers.to.add.dt, append(common.layers, new.layer.names))
+  Temp.dt <- merge(x = to@data, y = layers.to.add.dt, all.x = FALSE, all.y = keep.all.to)
+  to@data <- Temp.dt
+  return(to)
+  
+}

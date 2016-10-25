@@ -21,4 +21,5 @@ Make sure the model is \code{y ~ x} or this function doesn't really make sense
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
+\keyword{internal}
 
