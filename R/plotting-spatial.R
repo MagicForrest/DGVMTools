@@ -595,7 +595,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   # PLOT MAIN TITLE
   if(is.null(title)) {
-    if(length(layers == 1))  title <- makePlotTitle(paste(quant@name, sep = " "), layer = layers, run = run, period = period)
+    if(length(layers) == 1)  title <- makePlotTitle(paste(quant@name, sep = " "), layer = layers, run = run, period = period)
     else  title <- makePlotTitle(paste(quant@name, sep = " "), run = run, period = period)
   }
   

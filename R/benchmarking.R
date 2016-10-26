@@ -688,7 +688,11 @@ compareBiomes <- function(runs,
                           show.stats = TRUE,
                           summary.plot.dir = NULL,
                           tag = "",
-                          canvas.options = canvas.options,
+                          canvas.options = list(dpi = 72,
+                                                type = "png", 
+                                                width = 1800, 
+                                                height = 1000,
+                                                bg = "transparent"),
                           ...){
   
   Lon = Lat = NULL
