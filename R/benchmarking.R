@@ -269,7 +269,7 @@ benchmarkSpatial <- function(runs,
     dataset@comparisons <- comparisons
     rm(comparisons)
     
- 
+    
     
     # set up local arguments for plotting
     local.args <- args1
@@ -369,7 +369,7 @@ benchmarkSpatial <- function(runs,
                                  canvas.options.square)) 
     
     print(plotScatterComparison(temp.data.obj,
-                                labels = run@description,
+                                run.labels = run@description,
                                 text.size = 10))
     
     dev.off()
@@ -516,7 +516,7 @@ benchmarkSpatial <- function(runs,
                                  canvas.options.square.scaled)) 
     
     print(plotScatterComparison(dataset,
-                                labels = run.descriptions))
+                                run.labels = run.descriptions))
     
     dev.off()
     
@@ -1218,7 +1218,12 @@ plotResidualsHisto <- function(data.obj,
 #' 
 #' Function will makes multiple scatter plots on one page if more than one ModelRun has been compared to the the DataObject.  
 #' 
-#' @param data.obj The DataObject for which to plot the residuals
+#' @param data.obj The DataObject for which to plot the residual
+#' @param run.ids The character vector of run ids of the runs to scatter against the data (must be a vector, not a list).  Leave blank to compare all runs that have been previouslty compared to this dataset.
+#' @param run.labels A vector of more descriptive strings from each run (each the run@names)
+#' @param facet An optional string identifying an additional column by which to subdivide (facet) that data
+#' @param facet.labels An option vector of strings giving descriptive labels for facets, if provided it *must* be a named vector, 
+#' where each element has a name corresponding to the value in the facet column. 
 #' @param showFitLine Boolean, if TRUE shows a linear fit and the fit equation
 #' @param showStats Boolean, if TRUE show some stats do quantify how well the model fits the data
 #' @param labels Character vector of labels (one for each run).  If not provided uses the run ids
@@ -1237,13 +1242,16 @@ plotResidualsHisto <- function(data.obj,
 
 
 plotScatterComparison <- function(data.obj, 
+                                  run.ids = NULL,
+                                  run.labels = NULL,
+                                  facet = NULL,
+                                  facet.labels = NULL,
                                   showFitLine = TRUE,
                                   showStats = TRUE,
-                                  labels = NULL,
                                   alpha = 0.05,
                                   text.size = 6){
   
-  Run = Model = NULL
+  Run = Model = OtherFacet = NULL
   
   # checks
   if(!is.DataObject(data.obj)) {
@@ -1252,39 +1260,84 @@ plotScatterComparison <- function(data.obj,
   }
   
   
-  # get the data.table, select the absolute layers (ie not the ones with names ending "_Error", "_NormError", or "Lon"/"Lat"/"Year") from the incoming DataObject and remove NAs
-  abs.layers <- names(data.obj@data)
-  abs.layers <- abs.layers[-grep("_Error", abs.layers)]
-  abs.layers <- abs.layers[-grep("_NormError", abs.layers)]
-  if("Lon" %in% abs.layers) abs.layers <- abs.layers[-grep("Lon", abs.layers)]
-  if("Lat" %in% abs.layers) abs.layers <- abs.layers[-grep("Lat", abs.layers)]
-  if("Year" %in% abs.layers) abs.layers <- abs.layers[-grep("Year", abs.layers)]
+  # if no runs specified, get the data.table, select the absolute layers (ie not the ones with names ending "_Error", "_NormError", or "Lon"/"Lat"/"Year") from the incoming DataObject and remove NAs
+  if(is.null(run.ids)){
+    layers.for.plotting <- names(data.obj@data)
+    layers.for.plotting <- layers.for.plotting[-grep("_Error", layers.for.plotting)]
+    layers.for.plotting <- layers.for.plotting[-grep("_NormError", layers.for.plotting)]
+    if("Lon" %in% layers.for.plotting) layers.for.plotting <- layers.for.plotting[-grep("Lon", layers.for.plotting)]
+    if("Lat" %in% layers.for.plotting) layers.for.plotting <- layers.for.plotting[-grep("Lat", layers.for.plotting)]
+    if("Year" %in% layers.for.plotting) layers.for.plotting <- layers.for.plotting[-grep("Year", layers.for.plotting)]
+    # for making 
+    run.ids <- layers.for.plotting[-grep(data.obj@id, layers.for.plotting)] 
+  }
+  # else use the runs specified, but we also need to add the data column
+  else{
+    layers.for.plotting <- append(run.ids, data.obj@id)
+  }
   
-  
-  if(length(abs.layers) == 0) {
+  if(length(layers.for.plotting) == 0) {
     warning("plotScatterComparison: no model data found! Did you already compare this DataObject to a ModelRun using benchmarkSpatial()?")
     #return(NULL)
   }
   
-  facet <- TRUE
-  if(length(abs.layers) == 1) { facet <- FALSE }
+  # consider facetting
+  facet.run <- FALSE
+  facet.other <- FALSE
+  title.substring <- "Simulation"
+  # if there is more than one run present then facet by run (that means thet there must more than two columns at this stage)
+  if(length(layers.for.plotting) > 2)  { 
+    
+    facet.run <- TRUE
+    
+    # Make labeller 
+    if(is.null(run.labels)) run.labels = run.ids
+    names(run.labels) <- run.ids
+    
+    title.substring <- "Simulations"
+    
+  }
+  else {
+    if(!is.null(run.labels)) title.substring <- run.labels[1]
+    else title.substring <- "Simulation"
+  }
   
   
-  temp.dt <- na.omit(data.obj@data[, abs.layers , with = FALSE])
-  temp.dt <- melt.data.table(temp.dt, id.vars = data.obj@id)
-  setnames(temp.dt, c(data.obj@id, "Run", "Model"))
+  # if facet is not NULL, ignore the different runs and instead facet by the specified column
+  if(!is.null(facet))  {
+    
+    facet.other <- TRUE
+    
+    # Make labeller
+    if(is.null(facet.labels)) {
+      unique.facets <- sort(unique(data.obj@data[[facet]]))
+      facet.labels <- unique.facets
+      names(facet.labels) <- unique.facets
+    }
+    
+    # append the facet layer as we will need it for plotting
+    layers.for.plotting <- append(layers.for.plotting, facet)
+    # don't show the overall stats on each panel, that is silly
+    warning("In plotScatterComparison, not displaying statisics despite showStats = TRUE because the plot is to be facetted, and I don't have the stats for each facet.")
+    showStats = FALSE
+    
+  }
   
-  # Make labels and labeller for facet_wrap
-  run.ids <- abs.layers[-grep(data.obj@id, abs.layers)]
-  if(is.null(labels)) labels = run.ids
-  run.labeller <- labels
-  names(run.labeller) <- run.ids
+  temp.dt <- na.omit(data.obj@data[, layers.for.plotting, with = FALSE])
+  temp.dt <- melt.data.table(temp.dt, id.vars = c(data.obj@id, facet))
   
-  
+  if(!facet.other) setnames(temp.dt, c(data.obj@id, "Run", "Model"))
+  else setnames(temp.dt, c(data.obj@id, "OtherFacet", "Run", "Model"))
+  print(temp.dt)
+  print(na.omit(temp.dt))
   scatter.plot <- ggplot(as.data.frame(na.omit(temp.dt)), aes_string(x=data.obj@id, y="Model")) +  geom_point(size=3, alpha =alpha)
-  if(facet) scatter.plot <- scatter.plot + facet_wrap(~ Run, labeller = as_labeller(run.labeller))
+  
+  if( facet.run && !facet.other) { scatter.plot <- scatter.plot + facet_wrap(~ Run, labeller = as_labeller(run.labels)) }
+  if(!facet.run &&  facet.other) { scatter.plot <- scatter.plot + facet_wrap(~ OtherFacet, labeller = as_labeller(facet.labels))}
+  if(facet.other && facet.run)   { scatter.plot <- scatter.plot + facet_grid(OtherFacet ~ Run, labeller = labeller(.rows = as_labeller(facet.labels), .cols = as_labeller(run.labels))) }
+  
   scatter.plot <- scatter.plot + theme(text = element_text(size=25))
-  scatter.plot <- scatter.plot + ggtitle(paste("All Simulations vs.", paste(data.obj@name, sep = " "))) + theme(plot.title = element_text(lineheight=.8, face="bold"))
+  scatter.plot <- scatter.plot + ggtitle(paste(title.substring, "vs.", paste(data.obj@name, sep = " "))) + theme(plot.title = element_text(lineheight=.8, face="bold"))
   scatter.plot <- scatter.plot +  xlab(paste(data.obj@name, data.obj@quant@name ,sep = " "))   +   ylab(paste("Simulated", data.obj@quant@name, sep = " "))     
   scatter.plot <- scatter.plot +  coord_cartesian(xlim = c(data.obj@quant@cuts[1], data.obj@quant@cuts[length(data.obj@quant@cuts)]), ylim = c(data.obj@quant@cuts[1], data.obj@quant@cuts[length(data.obj@quant@cuts)])) 
   scatter.plot <- scatter.plot + geom_abline(intercept = 0, slope = 1, size= 1, colour = "red3")
@@ -1297,20 +1350,47 @@ plotScatterComparison <- function(data.obj,
     # now make the equations, and same them in a data.frame formatted for the geom_text call
     text.vector <- c()
     
+    runs.vector <- c()
+    other.vector <- c()
+    
     for(run.id in run.ids){
       
-      # subset 
-      temp.temp.dt <- temp.dt
-      setkey(temp.temp.dt,Run)
-      temp.temp.dt <- temp.temp.dt[paste(run.id)]
-      temp.df <- as.data.frame(temp.temp.dt[, "Run" := NULL, with = FALSE])
-      names(temp.df) <- c("x", "y")
-      text.vector <- append(text.vector, lm_eqn(lm(y ~ x, temp.df)))
-      rm(temp.df, temp.temp.dt)
+      
+      if(!facet.other) {
+        temp.temp.dt <- temp.dt
+        setkey(temp.temp.dt,Run)
+        temp.temp.dt <- temp.temp.dt[paste(run.id)]
+        temp.df <- as.data.frame(temp.temp.dt[, "Run" := NULL, with = FALSE])
+        names(temp.df) <- c("x", "y")
+        text.vector <- append(text.vector, lm_eqn(lm(y ~ x, temp.df)))
+        rm(temp.df, temp.temp.dt)
+        runs.vector <- append(runs.vector, run.id)
+      }
+      
+      else {
+        
+        for(sub.facet in sort(unique(data.obj@data[[facet]]))) {
+          
+          temp.temp.dt <- temp.dt
+          setkey(temp.temp.dt,Run)
+          temp.temp.dt <- temp.temp.dt[OtherFacet == sub.facet & Run == run.id]
+          temp.df <- as.data.frame(temp.temp.dt[, c("OtherFacet","Run") := NULL, with = FALSE])
+          names(temp.df) <- c("x", "y")
+          text.vector <- append(text.vector, lm_eqn(lm(y ~ x, temp.df)))
+          rm(temp.df, temp.temp.dt)
+          runs.vector <- append(runs.vector, run.id)
+          other.vector <- append(other.vector, sub.facet)
+          
+        }
+        
+        
+      }
       
     }
     
-    text.df <- data.frame(Run = run.ids, label = text.vector)
+    if(!facet.other) text.df <- data.frame(Run = runs.vector, label = text.vector)
+    else  text.df <- data.frame(Run = runs.vector, OtherFacet = other.vector, label = text.vector)
+    
     scatter.plot <- scatter.plot + geom_text(data=text.df, 
                                              aes(x = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.10, 
                                                  y = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.95, 
@@ -1323,9 +1403,9 @@ plotScatterComparison <- function(data.obj,
     
   }
   
-  
   # show the stats
   if(showStats) {
+    
     
     # now make the equations, and same them in a data.frame formatted for the geom_text call
     text.vector <- c()
@@ -1340,7 +1420,7 @@ plotScatterComparison <- function(data.obj,
                                    "\nRMSE = ", signif(comparison.obj@RMSE, 3), 
                                    "\nR^2 = ", signif(comparison.obj@R2, 3), 
                                    "\nR^2_eff = ", signif(comparison.obj@R2.eff, 3), 
-                                   "\nPearman Corr. = ", signif(comparison.obj@P.cor, 3), sep = "")
+                                   "\nPearson Corr. = ", signif(comparison.obj@P.cor, 3), sep = "")
                              
       )
       
@@ -1348,8 +1428,8 @@ plotScatterComparison <- function(data.obj,
     
     text.df <- data.frame(Run = run.ids, label = text.vector)
     scatter.plot <- scatter.plot + geom_text(data=text.df, 
-                                             aes(x = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.75, 
-                                                 y = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.1, 
+                                             aes(x = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.7, 
+                                                 y = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.2, 
                                                  label=label), 
                                              parse = FALSE, 
                                              inherit.aes=FALSE, 
@@ -1358,8 +1438,6 @@ plotScatterComparison <- function(data.obj,
                                              hjust = 0)
     
   }
-  
-  
   
   return(scatter.plot)
   
@@ -1377,7 +1455,7 @@ plotScatterComparison <- function(data.obj,
 #'
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @internal
+#' @keywords internal
 #' @return A character string
 
 lm_eqn <- function(linear.model) {

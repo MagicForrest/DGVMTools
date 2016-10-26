@@ -594,7 +594,10 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   #####################################################################################
   
   # PLOT MAIN TITLE
-  if(is.null(title)) title <- makePlotTitle(paste(quant@name, sep = " "), run, period)
+  if(is.null(title)) {
+    if(length(layers == 1))  title <- makePlotTitle(paste(quant@name, sep = " "), layer = layers, run = run, period = period)
+    else  title <- makePlotTitle(paste(quant@name, sep = " "), run = run, period = period)
+  }
   
   # PANEL LABELS - note expand longnames here if requested 
   if(is.null(plot.labels)) {
@@ -791,6 +794,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 #' It will use a string to represent the quantity (obligatory), and optionally a period and an ID.
 #' 
 #' @param quantity.str Character string for the quantity plotted
+#' @param layer The names of the layer (or another identifier)
 #' @param run The \code{ModelRun} object for the run plotted (optional)
 #' @param period The time period plotted as \code{TemporalExtent} (optional)
 #' @return A character string for use as a plot title
@@ -798,14 +802,14 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #'
 #' @export 
-makePlotTitle <- function(quantity.str, run = NULL, period = NULL){
+makePlotTitle <- function(quantity.str, layer = NULL, run = NULL, period = NULL){
   
-  
-  if(!is.null(period) & !is.null(run)) { return(paste(quantity.str,  ": ", run@description, " (", period@start, "-", period@end, ")", sep = ""))}
-  else if(is.null(period) & !is.null(run)) { return(paste(quantity.str,  ": ", run@description, sep = ""))}
-  else if(is.null(run) & !is.null(period)) { return(paste(quantity.str,  ": ", " (", period@start, "-", period@end, ")", sep = ""))}
-  else {return (quantity.str) }
-  
+  string <- quantity.str
+  if(!is.null(layer)) string <- paste(string, layer, sep = " ")
+  if(!is.null(run)) string <- paste(string, run@description, sep = " ")
+  if(!is.null(period)) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
+  return(string)
+ 
 }
 
 

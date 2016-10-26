@@ -7,13 +7,13 @@
 LondonCentre(lon)
 }
 \arguments{
-\item{lon}{A longitude value to transform data.table}
+\item{lon}{A vector longitude value to transform}
 }
 \value{
-The transformed longitude value
+The transformed longitude values
 }
 \description{
-Transform a longitude value to lie in the range (-180,180) instead of (0,36)
+Transform a vector of longitude values to lie in the range (-180,180) instead of (0,36)
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
