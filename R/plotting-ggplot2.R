@@ -182,9 +182,39 @@ dgvm.ggplot.theme <- function(x) {
 plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, map.overlay=NA, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lon = Lat = group = long = name = value = NULL
+  ## much simpler thant the following ModelObject
+  if (is.DataObject(input)) {
+    if (!is.na(column)) {
+      if (length(column)==1 && all(colnames(input@data) != column)) {
+        stop(paste("No column named '",column,"' present!", sep=""))
+      } else {
+        for (cn in column) {
+          if (all(colnames(input@data)!=cn))
+            stop(paste("No column named '", cn, "' present!", sep=""))
+        }
+      }
+    } else {
+      column <- colnames(input@data)[which(colnames(input@data) != "Lon" & colnames(input@data) != "Lat")]      
+    }
+    london.centre <- TRUE
+    if (max(input@data$Lon) > 180)
+      london.centre = FALSE
+
+    dt <- input@data[, c("Lon", "Lat", column), with = FALSE]
+    if (length(column)==1) {
+      setnames(dt, column, "value")
+    } else {
+      dt <- data.table::melt(dt, key(dt), column)
+      setnames(dt, "variable", "sens")
+      dt <- dt[, sens:=factor(sens, column)]
+      if (length(wrap)>1 || !is.numeric(wrap))
+        wrap <- ceiling(sqrt(length(column)))
+    }
+
+        
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
-  if (is.ModelObject(input, spatial=TRUE)) {
+  } else if (is.ModelObject(input, spatial=TRUE)) {
     if (is.na(column) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
     if (!is.na(column) && length(column)>1) {
@@ -426,6 +456,8 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 
   if (any(colnames(dt)=="sens")) {
     p <- eval(parse(text=paste("p + facet_wrap(~sens, ncol=",wrap,")", sep="")))
+  } else if (long.title && is.DataObject(input)) {
+    p <- p + labs(title=input@name)
   } else if (long.title) {
     p <- p + labs(title=input@run@description)
   }
