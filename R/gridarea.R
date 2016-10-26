@@ -2,7 +2,7 @@
 .EarthRadius.polar   <- 6356752.3142
 .EarthRadius.equator <- 6378137.0
 
-#' gridarea1d: grid cell area along a vector of latitudes
+#' grid cell area along a vector of latitudes
 #'
 #' Returns the area in square meters along a vetor of latitudes by equal longitude distance.
 #'
@@ -19,11 +19,10 @@
 #' FALSE (default, polar and equatorial radius are the same)
 #' @export
 #' @return vector of gridcell area is m^2
-#' @author Joerg Steinkamp <joergsteinkamp@yahoo.de>
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @examples
 #' dlon <- 0.5
 #' lat <- seq(-89.75,89.75,0.5)
-#' lat <- seq(89.75,-89.75,-0.5) # equivalent to the above
 #' sum(gridarea1d(lat,dlon))*720*1.e-12
 gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
   nlat <- length(lat)
@@ -47,11 +46,12 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
   return(area*scale)
 }
 
-#' Returns the area in square meters (if scale=1, default) over a lon/lat grid.
+#' Returns the area for a lon/lat grid.
 #'
 #' The function returns a data.table of area in square meters of a lon-lat grid.
 #' Coordinates must be gridcell midpoint and the northern and southern edges are
-#' calculated by as half of the distance to the next element in the latitude vector.
+#' calculated as half of the distance to the next element in the latitude vector.
+#' Uses \code{\link{gridarea1d}}.
 #' 
 #' @param lat vetor of latitudes
 #' @param lon vector of longitudes
@@ -66,8 +66,7 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
 #' lon <- seq(- 179.75, 179.75, 0.5)
 #' lat <- seq(89.75,-89.75,-0.5) 
 #' sum(gridarea2d(lon,lat, scale=1.e-12)$area)
-#' message("equivalent:")
-#' sum(gridarea2d(lon,lat)$area)*1.e-12
+#' sum(gridarea2d(lon,lat, scale=1.e-12, ellipse=TRUE)$area)
 gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
   nlon   <- length(lon)
   nlat   <- length(lat)
@@ -82,7 +81,7 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
   return(area)
 }
 
-#' extract.seq: Extract a regular sequence from unique values in a vector
+#' Extract a regular sequence from unique values in a vector
 #'
 #' Returns, if possible, an regular spaced sorted vector vector. If more than half of the unique values have unequal distances, the sorted values are returned.    
 #' 
@@ -92,10 +91,6 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
 #' @export
 #' @return data.frame of gridcells with columns c("Lon", "Lat", "area")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @examples
-#' lon <- seq(- 179.75, 179.75, 0.5)
-#' lat <- seq(89.75,-89.75,-0.5) # equivalent to the above
-#' sum(gridarea2d(lat,lon)$area)*1.e-12
 extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   x <- sort(unique(x))
   d <- x[2:length(x)] - x[1:(length(x)-1)]
@@ -114,9 +109,10 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   }
   return(x)
 }
-#' addArea: Adds the gridcell area to a spatial ModelObject or data.table/data.frame
-#' 
 #' Adds the gridcell area to a spatial ModelObject or data.table/data.frame
+#' 
+#' Adds the gridcell area to a spatial ModelObject or data.table/data.frame.
+#' For unit conversion it makes use of \code{\link[udunits2]{ud.convert}}, if installed. If udunits2 is not installed the option is ignored and the returned unit is m^2.
 #' 
 #' @param input a spatial ModelObject or a data.frame/data.table with at least the columns Lon and Lat.
 #' @param unit area unit. Default m^2, if something else is spefified udunits2 must be installed. If udunits2 is not installed this option is ignored.
@@ -204,9 +200,9 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
 ######################################################################
 ### arithmetics with ModelRun data slots ###############################
 ######################################################################
-#' calcNewModelObj: Simple calculation of new ModelObjects
+#' Simple calculation of new ModelObjects
 #' 
-#' Simple calculation of new ModelObjects by operation '+', '-', '*' or '/'
+#' Basic calculation of new ModelObjects by operation '+', '-', '*' or '/'
 #' 
 #' @param run the run the data should be taken from
 #' @param targets a list with elements 'x' and 'y' with components ModelObject name and optionally column name. If neither x nor y has a column name the columns of x and y must be equal.
@@ -414,15 +410,15 @@ calcNewModelObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, v
 #' calculate monthly PET, AET, WC, WD based on Thornthwaite
 #' 
 #' @param run the ModelRun object, if desired (see 'as', below).
-#' @param T monthly temperature (degree Celcius )ModelObject, data.table or data.frame
+#' @param T monthly temperature (degree Celcius ) ModelObject, data.table or data.frame
 #' @param P monthly precipitation in mm. Needed for everything without PET.
-#' @param variable any of PET (potential evapotranspiration), AET (actual evapotranspiration), WC (water content), WD (water deficit)
+#' @param variable character variable any of 'PET' (potential evapotranspiration), 'AET' (actual evapotranspiration), 'WC' (water content), 'WD' (water deficit).
 #' @param as desired output type 'data.table', 'data.frame', anything else will try to return a ModelObject, which need 'run' to be defined.
 #' @return the requested variable in the requested ('as') container
 #' @export
 #' @import data.table
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @references Bonan, G. (2002): Ecological Climatology. Chapter 5 (Hydrological Cycle), Cambridge University Press, 690p. (http://www.cgd.ucar.edu/tss/aboutus/staff/bonan/ecoclim/index-2002.htm)
+#' @references Bonan, G. (2002): Ecological Climatology. Chapter 5 (Hydrological Cycle), Cambridge University Press, 690p. \url{http://www.cgd.ucar.edu/tss/aboutus/staff/bonan/ecoclim/index-2002.htm}
 thornthwaite <- function(run=NULL, T=NULL, P=NULL, variable="PET", as="ModelObject") {
   AET.Jan=Annual=P.Jan=PET.Jan=WC.Dec=WC.Jan=WD.Jan=a=Lon=Lat=NULL
   dom <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)

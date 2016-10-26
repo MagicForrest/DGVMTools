@@ -2,7 +2,7 @@
 % Please edit documentation in R/gridarea.R
 \name{gridarea2d}
 \alias{gridarea2d}
-\title{Returns the area in square meters (if scale=1, default) over a lon/lat grid.}
+\title{Returns the area for a lon/lat grid.}
 \usage{
 gridarea2d(lon, lat, scale = 1, ellipse = FALSE)
 }
@@ -22,14 +22,14 @@ data.table of gridcells with columns c("Lon", "Lat", "area")
 \description{
 The function returns a data.table of area in square meters of a lon-lat grid.
 Coordinates must be gridcell midpoint and the northern and southern edges are
-calculated by as half of the distance to the next element in the latitude vector.
+calculated as half of the distance to the next element in the latitude vector.
+Uses \code{\link{gridarea1d}}.
 }
 \examples{
 lon <- seq(- 179.75, 179.75, 0.5)
 lat <- seq(89.75,-89.75,-0.5) 
 sum(gridarea2d(lon,lat, scale=1.e-12)$area)
-message("equivalent:")
-sum(gridarea2d(lon,lat)$area)*1.e-12
+sum(gridarea2d(lon,lat, scale=1.e-12, ellipse=TRUE)$area)
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

@@ -2,7 +2,7 @@
 ## ggplot2 themes for nicer plots #####################################
 #######################################################################
 
-.dgvm.spatial_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.dgvm.spatial_theme <- list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.background  = element_rect(fill="#cae1ff"),
                                  panel.border      = element_rect(fill=NA, linetype = "solid", colour = "black"),
@@ -20,7 +20,7 @@
                                  plot.title        = element_text(size=22),
                                  strip.background  = element_rect(fill=NA)))
 
-.dgvm.scatter_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.dgvm.scatter_theme <- list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                  panel.background  = element_blank(),
                                  panel.border      = element_blank(),
@@ -35,10 +35,10 @@
                                  legend.key        = element_blank(), #element_rect(colour = "black"),
                                  legend.key.width  = unit(0.08, "npc"),
                                  plot.background   = element_blank(),
-                                 plot.title        = element_text(size=22),
-                                 strip.background  = element_rect(fill=NA)))
+                                 plot.title        = element_text(size=22)))
+#                                 strip.background  = element_rect(fill=NA)))
 
-.dgvm.temporal_theme <- list(theme(panel.grid.minor  = element_line(size=0.1, colour = "black", linetype = "dotted"),
+.dgvm.temporal_theme <- list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                   panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
                                   panel.background  = element_blank(),
                                   panel.border      = element_blank(),
@@ -176,7 +176,8 @@ dgvm.ggplot.theme <- function(x) {
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
 #' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @import raster sp maps ggplot2 data.table
+#' @importFrom raster raster projectRaster as.data.frame
+#' @import sp maps ggplot2 data.table
 #' @export
 plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, map.overlay=NA, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
@@ -853,26 +854,440 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 ## scatter ############################################################
 #######################################################################
 
-## plotGGScatter <- function(x, y, x.column, y.column,
-##                           wrap.column=NA,
-##                           color.column=NA, colors=NA, alpha=0.7,
-##                           lines=NA,
-##                           labels="", label.pos="bottomright",
-##                           sym.col=FALSE,
-##                           equal.axis=FALSE,
-##                           wrap=0) {
+#' Create a various forms of scatterplots
+#' 
+#' Create a point cloud (scatterplot) or density plot with several metrics and line fits.
+#' 
+#'
+#' @param x A ModelObject or a list of them.
+#' @param y A ModelObject, dataframe/data.table or raster.
+#' @param x.column Column name of x to use for the scatter.
+#' @param y.column Column name of y to use for the scatter.
+#' @param limit A data.frame with the possible columns min, max, xmin, xmax, ymin, ymax to exclude data from x and/or y. If a data.column 'inclusive' is present and TRUE, the given values will remain in the data.
+#' @param flip Should x and y be on the other axis. Default TRUE, means x is on the y-axis and y on the x-axis.
+#' @param density Use a ggplot density_2d function instead of a point cloud. Values: 'polygon', 'raster' and everything else than FALSE will result in 'hexagonal'.
+#' @param wrap.column A column name in x, which should be used for faceting.
+#' @param color.column A column name for coloring the points (NOT working currently).
+#' @param colors A data.frame for colors to use mandatory column names: XXX
+#' @param sym.col Should the colors be symmetrical (NOT working currently).
+#' @param alpha transparency value for points (ignored in density mode).
+#' @param lines Character vector of any of '1:1', 'lm' and/or 'gam'. Or a data.frame with the columns 'lines', 'color', 'type', 'width'.
+#' @param labels Character string of metrics to be added. Possible values 'mae', 'rmsd', 'nme', 'nmse', 'me', 'eq', 'rsq', 'rmse'
+#' @param label.pos Position of the labels as character consiting 'top' or 'bottom' and 'left', 'center', 'right'
+#' @param equal.axis Should the x and y- axis be scaled equally.
+#' @param wrap number of column, when wrapping
+#' @param plot Should a ggplot-object be returned (default) or the data.table.
+#' @param verbose print some stupid messages.
+#'
+#' @return a data.table or a ggplot2-object.
+#' @export
+#' @import data.table
+#' @importFrom raster isLonLat
+#' @importFrom stats complete.cases residuals
+#'
+#' @references Mayer, D. G. and Butler, D. G.: Statistical validation, Ecological Modelling, 68(1-2), 21-32, \href{https://dx.doi.org/10.1016/0304-3800(93)90105-2}{doi:10.1016/0304-3800(93)90105-2}, 1993.
+#' Kelley, et al.: A comprehensive benchmarking system for evaluating global vegetation models, Biogeosciences, 10(5), 3313-3340, \href{https://dx.doi.org/10.5194/bg-10-3313-2013}{doi:10.5194/bg-10-3313-2013, 2013.}
+#' 
+#' @examples message("See templates/Example.ggplot.R")
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
+                          flip=TRUE, density=FALSE, wrap.column=NULL,
+                          color.column=NULL, colors="orange", sym.col=FALSE, alpha=0.1,
+                          lines=NA,
+                          labels=NA, label.pos="bottomright",
+                          equal.axis=TRUE,
+                          wrap=2,
+                          plot=TRUE, verbose=TRUE) {
+  ..density.. = ..level.. = Lat = Lon = Year = sens = c.value = w.value = x.value = y.value = NULL
+  spatial  <- FALSE
+  temporal <- FALSE
 
-##   if (is.list(input)) {
+  DT <- NULL
+  if (is.list(x)) {
+    for (i in 1:length(x)) {
+      if (!is.ModelObject(x[[i]], spatial=TRUE))
+        stop(paste0("'x[[", i, "]]' must be a DGVMTools::ModelObject!"))
+      if (all(colnames(x[[i]]@data) != x.column))
+        stop(paste0("'", x.column, "' not present in list object no. ", i, "!"))
+      if (any(colnames(x[[i]]@data) == "Lon") && any(colnames(x[[i]]@data) == "Year")) {
+        DT.tmp <- x[[i]]@data[, c("Lon", "Lat", "Year", x.column, wrap.column, color.column), with=FALSE]
+        spatial  <- TRUE
+        temporal <- TRUE
+      } else if (any(colnames(x[[i]]@data) == "Lon")) {
+        DT.tmp <- x[[i]]@data[, c("Lon", "Lat", x.column, wrap.column, color.column), with=FALSE]
+        spatial <- TRUE
+      } else if (any(colnames(x[[i]]@data) == "Year")) {
+        DT.tmp <- x[[i]]@data[, c("Year", x.column, wrap.column, color.column), with=FALSE]
+        temporal <- TRUE
+      } else {
+        stop("No column named 'Lon'/'Lat' and/or 'Year' present!")
+      }
+      DT.tmp[, sens := paste0(x[[i]]@run@id, ".", x[[i]]@id)]
+      DT <- rbind(DT, DT.tmp)
+    }
+  } else if (is.ModelObject(x)) {
+    if (all(colnames(x@data) != x.column))
+      stop(paste0("'", x.column, "' not present in 'x'!"))
+    if (any(colnames(x@data) == "Lon") && any(colnames(x@data) == "Year")) {
+      spatial  <- TRUE
+      temporal <- TRUE
+      DT <- x@data[, c("Lon", "Lat", "Year", x.column, wrap.column, color.column), with=FALSE]
+    } else if (any(colnames(x@data) == "Lon")) {
+      spatial <- TRUE
+      DT <- x@data[, c("Lon", "Lat", x.column, wrap.column, color.column), with=FALSE]
+    } else if (any(colnames(x@data) == "Year")) {
+      temporal <- TRUE
+      DT <- x@data[, c("Year", x.column, wrap.column, color.column), with=FALSE]
+    } else {
+      stop("No column named 'Lon'/'Lat' and/or 'Year' present!")
+    }
+  } else {
+    stop("x and y must be a DGVMTools::ModelObject or a list if them!")
+  }
+
+  if (flip) {
+    setnames(DT, x.column, "y.value")
+  } else {
+    setnames(DT, x.column, "x.value")
+  }
     
-##   } else if (!is.VegObj(x)) {
-##     stop("x must be a VegObj or a list if VegObj!")
-##   }
-
-##   if (!is.VegObj(y) || !is.raster(y)) {
-##     stop("y must be a VegObj or a raster!")
-##   }
+  if (!is.null(color.column))
+    setnames(DT, color.column, "c.value")
+  if (!is.null(wrap.column))
+    setnames(DT, wrap.column, "w.value")
   
-## }
+  if (temporal) {
+    warning("temporal dimension present in 'x'")
+    message("temporal dimension present in 'x'")
+  }
+
+  if (spatial && temporal) {
+    setkey(DT, Lon, Lat, Year)
+  } else if (spatial) {
+    setkey(DT, Lon, Lat)
+  } else {
+    setkey(DT, Year)
+  }
+
+  if (is.ModelObject(y)) {
+    stop("'y' as ModelObject not yet ready!")
+  
+  } else if (is.data.frame(y)) {
+    if (all(colnames(y) != y.column))
+      stop(paste0("No column named '", y.column, "' present in 'y'!"))
+    if (!is.data.table(y)) {
+      y <- as.data.table(y)
+    }
+    if (spatial && temporal) {
+      y <- y[, c("Lon", "Lat", "Year", y.column), with=FALSE]
+      setkey(y, Lon, Lat, Year)
+    } else if (spatial) {
+      y <- y[, c("Lon", "Lat", y.column), with=FALSE]
+      setkey(y, Lon, Lat)
+    } else if (temporal) {
+      y <- y[, c("Year", y.column), with=FALSE]
+      setkey(y, Year)
+    }
+    if (flip) {
+      setnames(y, y.column, "x.value")
+    } else {
+      setnames(y, y.column, "y.value")
+    }
+    DT <- y[DT]
+
+  } else if (isLonLat(y)) {
+    if (!spatial) {
+      stop("If 'y' is a raster, x must be spatially!")
+    }
+    stop("'y' as Raster not yet ready!")
+  } else {
+    stop("'y' must be a ModelObject, a data.frame/data.table or a raster in Lon/Lat projection!")
+  }
+
+  ## return data.table, if requested
+  if (!plot)
+    return(DT)
+
+  ## apply some data filters
+  if (sum(!complete.cases(DT)) > 0) {
+    warning(paste0("Removing ", sum(!complete.cases(DT)), " rows with missing data!"))
+    message(paste0("Removing ", sum(!complete.cases(DT)), " rows with missing data!"))
+    DT=DT[complete.cases(DT), ]    
+  }
+
+  if (verbose)
+    print(str(DT))
+  
+  if (!is.null(limit)) {
+    if (is.data.frame(limit) || is.list(limit)) {
+      if (!is.null(limit$inclusive)) {
+        if (!is.null(limit$min)) {
+          DT = subset(DT, x.value >= limit$min & y.value >= limit$min)
+        } else {
+          if (!is.null(limit$xmin))
+            DT = subset(DT, x.value >= limit$xmin)
+          if (!is.null(limit$ymin))
+            DT = subset(DT, y.value >= limit$ymin)
+        }
+        if (!is.null(limit$max)) {
+          DT = subset(DT, x.value <= limit$max & y.value <= limit$max)
+        } else {
+          if (!is.null(limit$xmax))
+            DT = subset(DT, x.value <= limit$xmax)
+          if (!is.null(limit$ymax))
+            DT = subset(DT, y.value <= limit$ymax)
+        }
+      } else {
+        if (!is.null(limit$min)) {
+          DT = subset(DT, x.value > limit$min & y.value > limit$min)
+        } else {
+          if (!is.null(limit$xmin))
+            DT = subset(DT, x.value > limit$xmin)
+          if (!is.null(limit$ymin))
+            DT = subset(DT, y.value > limit$ymin)
+        }
+        if (!is.null(limit$max)) {
+          DT = subset(DT, x.value < limit$max & y.value < limit$max)
+        } else {
+          if (!is.null(limit$xmax))
+            DT = subset(DT, x.value < limit$xmax)
+          if (!is.null(limit$ymax))
+            DT = subset(DT, y.value < limit$ymax)
+        }
+      }
+    } else {
+      warning("Wrong format of 'limit', use either list or data.frame!")
+      message("Wrong format of 'limit', use either list or data.frame!")
+    }
+  }
+
+  ## convert to factors to keep order
+  if (is.character(DT$sens))
+    DT$sens <- factor(DT$sens, levels = unique(DT$sens))
+  if (is.character(DT$w.value))
+    DT$w.value <- factor(DT$w.value, levels = unique(DT$w.value))
+
+  # create plot
+  if (density != FALSE) {
+    message("2D density plot is experimental.")
+    warning("2D density plot is experimental.")
+    p <- ggplot(DT, aes(x=x.value, y=y.value))
+    if (density=="polygon") {
+      p <- p + stat_density_2d(aes(fill = ..level..), geom = "polygon")
+    } else if (density=="raster") {
+      p <- p + stat_density_2d(aes(fill = ..density..), geom = "raster", contour=FALSE)
+    } else {
+      p <- p + geom_hex()
+    }
+  } else if (is.null(color.column)) {
+    p <- ggplot(DT, aes(x=x.value, y=y.value))
+    p <- p + geom_point(alpha=alpha, size=1.5, shape=16, col=colors)
+  } else {
+    p <- ggplot(DT, aes(x=x.value, y=y.value, col=c.value))
+    p <- p + geom_point(alpha=alpha, size=1.5, shape=16)
+  }
+  p <- p + .dgvm.scatter_theme
+
+  if (flip) {
+    p <- p + xlab(y.column) + ylab(x.column)
+  } else {
+    p <- p + xlab(x.column) + ylab(y.column)
+  }
+  
+  if (equal.axis && density=="hex") {
+    p <- p + coord_fixed()
+  } else if (equal.axis) {
+    p <- p + coord_fixed(expand=FALSE)
+  }
+
+  ## not tested yet!
+  if (is.data.frame(colors)) {
+    warning("JS_DEBUG: Coloring not tested yet.")
+    message("JS_DEBUG: Coloring not tested yet.")
+    if (any(colnames(colors)=="value") && any(colnames(colors)=="color")) {
+      p <- p + scale_colour_gradientn(colours=colors$color, values=colors$value)
+      p <- p + scale_fill_gradientn(colours=colors$color, values=colors$value)
+      if (sym.col && !density)
+        p <- p + expand_limits(colour = c(-max(abs(DT$c.value)), max(abs(DT$c.value))))
+    } else if (any(colnames(colors)=="name") && any(colnames(colors)=="color")) {
+      colors <- eval(parse(text=paste0("c('",paste0(colors$name, colors$color, sep="'='", collapse="','"),"')")))
+      p <- p + scale_fill_manual(values=colors, na.value="grey", guide=guide_legend(ncol=4))
+      p <- p + scale_colour_manual(values=colors, na.value="grey", guide=guide_legend(ncol=4))
+      p <- p + theme(legend.key.width  = unit(0.03, "npc"))
+    } else {
+      warning(paste("'colors' has wrong column names:", paste(colnames(colors), collapse=", ")))
+    }
+  }
+
+  ## draw trend lines
+  if (!all(is.na(lines))) {
+    if (is.data.frame(lines)) {
+      if (all(colnames(lines) != "method"))
+        stop(paste("No column named 'method' present in data.frame 'lines'!", sep=""))
+      if (all(colnames(lines) != "se"))
+        lines$se=FALSE
+      if (all(colnames(lines) != "col"))
+        lines$col="black"
+      if (all(colnames(lines) != "type"))
+        lines$type="solid"
+      if (all(colnames(lines) != "size"))
+        lines$size=1
+    } else if (is.vector(lines) && typeof(lines) == "character") {
+      lines <- data.frame(method=lines, se=FALSE, col="blue", type="solid", size=1)
+    }
+  }
+
+  if (!all(is.na(lines))) {
+    for (i in 1:nrow(lines)) {
+      if (lines$method[i]=="1:1") {
+        p <- eval(parse(text=paste0("p + geom_abline(col='", lines$col[i], 
+                             "', linetype='", lines$type[i],
+                             "', size=", lines$size[i], ")")))
+      } else if (lines$method[i]=="gam") {
+        p <- eval(parse(text=paste0('p + geom_smooth(method="', lines$method[i],
+                                   '", formula=y ~ s(x, bs = "cs")',
+                                   ', se=', lines$se[i],
+                                   ', col="', lines$col[i],
+                                   '", linetype="', lines$type[i],
+                                   '", size=', lines$size[i], ")")))
+      } else {
+        p <- eval(parse(text=paste0('p + geom_smooth(method="', lines$method[i],
+                                   '", se=', lines$se[i],
+                                   ', col="', lines$col[i],
+                                   '", linetype="', lines$type[i],
+                                   '", size=', lines$size[i], ")")))
+      }
+    }
+  }
+
+  ## add labels
+  if (all(!is.na(labels))) {
+    get.label <- function(l, d, s=NA, w=NA) {
+      if (!is.na(s) && is.na(w)) {
+        d <- subset(d, sens==s)
+      } else if (is.na(s) && !is.na(w)) {
+        d <- subset(d, w.value==w)
+      } else if (!is.na(s) && !is.na(w)) {
+        d <- subset(d, sens==s & w.value==w)
+      }
+      lm.d <- lm(d$y.value ~ d$x.value)
+      sum.lm <- summary(lm.d)
+
+      ## mean absolute error
+      if (tolower(l)=="mae") {
+        label <- paste("MAE ==", signif( mean(d$y.value) - mean(d$x.value), 2))
+      ## root mean square deviation
+      } else if (tolower(l)=="rmsd") {
+        label <- paste("RMSD ==", signif(sqrt(mean((d$y.value - d$x.value)^2)), 2))
+      ## Model efficiency (Mayer & Butler, 1993)
+      } else if (tolower(l)=="me") {
+        label <- paste("ME ==", signif(1 - sum((d$y.value-d$x.value)^2, na.rm=TRUE) / sum((d$y.value-mean(d$y.value))^2, na.rm=TRUE), 2))
+      ## normalized mean error
+      } else if (tolower(l)=="nme") {
+        label <- paste("NME ==", signif(sum(abs(d$y.value - d$x.value)) / sum(abs(d$x.value - mean(d$x.value))), 2))
+      ## normalized mean squared error
+      } else if (tolower(l)=="nsme") {
+        label <- paste("NMSE ==", signif(sum((d$y.value - d$x.value)^2) / sum((d$x.value - mean(d$x.value))^2), 2))
+      ## 
+      ## linear model measures
+      ##
+      ## equation
+      } else if (grepl("eq", l)) {
+        label <- paste("y == ", signif(sum.lm$coefficients[2,1], 2), "* x +", signif(sum.lm$coefficients[1,1], 2))
+      ## root mean square error
+      } else if (tolower(l)=="rmse") {
+        label <- paste("RMSE ==", signif(mean(sqrt((residuals(lm.d))^2), na.rm=TRUE), 2))
+      ## R^2
+      } else if (tolower(l)=="rsq") {
+        ## eventually include the p-value sum.lm$coefficients[2,4]
+        label <- paste("R^2 ==", signif(sum.lm$r.squared, 2))
+      ## adj. R^2
+      } else if (tolower(l)=="adjrsq") {
+        ## eventually include the p-value sum.lm$coefficients[2,4]
+        label <- paste("adj.~R^2 ==", signif(sum.lm$adj.r.squared, 2))
+      } else {
+        warning(paste0("Label '",l, "' not implemented!"))
+        message(paste0("Label '",l, "' not implemented!"))
+        next
+      }
+      return(label)
+    }
+
+    ## calculate the label position
+    x.max = max(DT$x.value)
+    x.min = min(DT$x.value)
+    y.max = max(DT$y.value)
+    y.min = min(DT$y.value)
+    if (grepl("right", label.pos)) {
+      label.x <- x.max
+      label.hjust <- 1
+    } else if (grepl("left", label.pos)) {
+      label.x <- x.min
+      label.hjust <- 0
+    } else {
+      label.x <- (x.max + x.min) / 2
+      label.hjust <- 0.5
+    }
+    if (grepl("top", label.pos)) {
+      label.y <- y.max
+      label.vjust <- 1
+      label.dy <- ((x.max-x.min)/(y.max-y.min)) * (y.min - y.max) / 12
+    } else {
+      label.y <- y.min
+      label.vjust <- 0
+      label.dy <- ((x.max-x.min)/(y.max-y.min)) * (y.max - y.min) / 12
+    }
+    
+    llabels <- list()
+    for (i in 1:length(labels)) {
+      ## create the labels
+      if (is.null(DT$sens)) {
+        if (is.null(DT$w.value)) {
+          llabels[[labels[i]]] = append(llabels[[labels[i]]], get.label(labels[i], DT))
+        } else {
+          if (is.factor(DT$w.value)) {
+            for (j in as.numeric(unique(DT$w.value)))
+              llabels[[labels[i]]] = append(llabels[[labels[i]]], get.label(labels[i], DT, w=levels(DT$w.value)[j]))
+          } else {
+            for (j in sort(unique(DT$w.value)))
+              llabels[[labels[i]]] = append(llabels[[labels[i]]], get.label(labels[i], DT, w=j))
+          }
+        }
+      } else {
+        for (j in as.numeric(unique(DT$sens))) {
+          if (is.null(DT$w.value)) {
+            llabels[[labels[i]]] = append(llabels[[labels[i]]], get.label(labels[i], DT, s=levels(DT$sens)[j]))
+          } else {
+            if (is.factor(DT$w.value)) {
+              for (k in as.numeric(unique(DT$w.value)))
+                llabels[[labels[i]]] = append(llabels[[labels[i]]], get.label(labels[i], DT, s=levels(DT$sens)[j], w=levels(DT$w.value)[k]))
+            } else {
+              for (k in sort(unique(DT$w.value)))
+                llabels[[labels[i]]] = append(llabels[[labels[i]]], get.label(labels[i], DT, s=levels(DT$sens)[j], w=k))
+            }
+          }
+        }
+      }
+      p <- p + annotate("text", x=label.x, y=label.y+label.dy*(i-1),
+                        vjust=label.vjust, hjust=label.hjust, label=llabels[[labels[i]]], parse=TRUE)
+
+      if (verbose) {
+        strout <- paste0(labels[i], ": ", paste(llabels[[labels[i]]], collapse=",\n\t"))
+        cat(strout)
+        cat("\n")
+      }
+    }
+  }
+  
+  if (!is.null(wrap.column) && is.list(x)) {
+    p <- p + facet_grid(w.value~sens)
+  } else if (is.list(x)) {
+    p <- p + facet_wrap(~sens, ncol=wrap)
+  } else if (!is.null(wrap.column)) {
+    p <- p + facet_wrap(~w.value, ncol=wrap)
+  }
+  return(p)
+}
 
 #######################################################################
 ## timeseries #########################################################

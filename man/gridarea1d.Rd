@@ -2,7 +2,7 @@
 % Please edit documentation in R/gridarea.R
 \name{gridarea1d}
 \alias{gridarea1d}
-\title{gridarea1d: grid cell area along a vector of latitudes}
+\title{grid cell area along a vector of latitudes}
 \usage{
 gridarea1d(lat, dlon, scale = 1, ellipse = FALSE)
 }
@@ -32,10 +32,9 @@ calculated as half the distance to the next element in the latitude vector.
 \examples{
 dlon <- 0.5
 lat <- seq(-89.75,89.75,0.5)
-lat <- seq(89.75,-89.75,-0.5) # equivalent to the above
 sum(gridarea1d(lat,dlon))*720*1.e-12
 }
 \author{
-Joerg Steinkamp <joergsteinkamp@yahoo.de>
+Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
 

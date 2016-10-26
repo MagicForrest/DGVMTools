@@ -2,7 +2,7 @@
 % Please edit documentation in R/gridarea.R
 \name{calcNewModelObj}
 \alias{calcNewModelObj}
-\title{calcNewModelObj: Simple calculation of new ModelObjects}
+\title{Simple calculation of new ModelObjects}
 \usage{
 calcNewModelObj(run = NULL, targets = NULL, operator = NULL,
   quant = NULL, verbose = TRUE)
@@ -22,7 +22,7 @@ calcNewModelObj(run = NULL, targets = NULL, operator = NULL,
 hopefully a new ModelObject
 }
 \description{
-Simple calculation of new ModelObjects by operation '+', '-', '*' or '/'
+Basic calculation of new ModelObjects by operation '+', '-', '*' or '/'
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
