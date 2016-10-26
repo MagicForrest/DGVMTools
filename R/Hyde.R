@@ -1,4 +1,18 @@
-
+#' Read HYDE land use dataset
+#' 
+#' Reads either croplands fraction, pasture fraction or population density from the HYDE land use dataset (0.5 degree)
+#' @param location A character string defining where on the disk the data is.  
+#' @param layer A character string, should be one of "CropFraction", "PastureFraction" or "PopulationDensity"
+#' @param temporal.extent A TemporalExtent object to define the period you want the data for.  It will be averaged between these years.
+#' @param verbose Logical, if TRUE spew forth a lot of output to the screen
+#'
+#' @details This functions reads some netCDF files (not the original HYDE data), produced by the author and available on request. 
+#'
+#' @return A DataObject
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#'
+#' @export 
 
 readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF", layer,  temporal.extent, verbose = FALSE) {
   

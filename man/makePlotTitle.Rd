@@ -6,10 +6,12 @@
 ################### PLOT HISTOS FOR COMPARING MODEL AND DATA  #########################################################################
 #######################################################################################################################################}
 \usage{
-makePlotTitle(quantity.str, run = NULL, period = NULL)
+makePlotTitle(quantity.str, layer = NULL, run = NULL, period = NULL)
 }
 \arguments{
 \item{quantity.str}{Character string for the quantity plotted}
+
+\item{layer}{The names of the layer (or another identifier)}
 
 \item{run}{The \code{ModelRun} object for the run plotted (optional)}
 

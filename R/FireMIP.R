@@ -1,7 +1,22 @@
+#' Open a FireMIP output file
+#' 
+#' Opens a .nc file from the FireMIP output and sorts out the meta-data and dimensions and all that messy stuff.  
+#' Returns a data.table, because it is intended to be called by getModelObject(), but of course the data.table could be used directly if you wish
+#' 
+#' 
+#' @param run A ModelRun object to define the run we want to open.
+#' @param quantity A Quantity object to define which variable we want to look up
+#' @param temporal.extent A TemporalExtent object to define which years we want to read
+#' @param spatial.extent A SpatialExtent object to define the spatial extent we want to read
+#' @param verbose Logical, if TRUE spew forth a lot of info.
+#' 
+#' @return A data.table
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#'
+#' @export 
 
-
-
-openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = NULL, spatial.extent = NULL, verbose = TRUE) {
+openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial.extent = NULL, verbose = TRUE) {
   
   Year = Lon = Total = NULL
   
@@ -375,10 +390,22 @@ openFireMIPOutputFile <- function(run, var.string, quantity, temporal.extent = N
   full.dt <- na.omit(full.dt)
   
   return(full.dt)
-  
-  
-  
+
 }
+
+#' Aggregate to FireMIP PFTs
+#' 
+#' Aggregates the PFTs in a FireMIP ModelObject to a standard set of PFTs
+#' 
+#' @param input.data A ModelObject from a FireMIP model
+#' @param remove.agriculture Logical, if TRUE, remove the cropland PFT and scale up the rest to compensate
+#' 
+#' @return A ModelObject with the standard FireMIP PFTs
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#'
+#' @export 
+
 
 toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
   
