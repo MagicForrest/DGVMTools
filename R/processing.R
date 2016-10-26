@@ -298,6 +298,7 @@ addBiomes <-function(input, scheme){
   
   message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
   
+  Grass = NULL
   
   # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
   if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
@@ -312,13 +313,17 @@ addBiomes <-function(input, scheme){
     dt <- dt[dt.gdd5]
     input@data <- dt
   }
-  
+
   # Get the dominant tree and dominant woody PFTs
   input <- newLayer(input, layers = scheme@max.needed, method = "max")
-  
+
+  if(!"Grass" %in% names(input@data) ) {
+    input@data[, Grass := 0]
+  }
+
   # Get the totals required
-  input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed))
-  
+  input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
+
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
@@ -369,8 +374,8 @@ addBiomes <-function(input, scheme){
 #' @seealso expandslayers getVegFractions
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
-  
-  Woody = Total = TempTotal = NULL
+
+    Woody = Total = TempTotal = NULL
   
   ### HANDLE CLASS OF INPUT OBJECT
   # Here allow the possibility to handle both ModelObjects and data.tables directly (for internal calculations)
@@ -396,10 +401,23 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
       message("newLayer() has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
     }
   }
-  
+
   # auxiliary function to be apply'd in the case of max and min
-  max.layer <- function(x){return(names(x)[which.max(x)])}  
-  min.layer <- function(x){return(names(x)[which.min(x)])}
+  max.layer <- function(x){
+    the.max <- names(x)[which.max(x)]
+    if(length(the.max) == 0) {
+      the.max <- "Barren"
+    }
+    return(the.max)
+  }
+  
+  min.layer <- function(x){
+    the.min <- names(x)[which.min(x)]
+    if(length(the.min) == 0) {
+      the.min <- "Barren"
+    }
+    return(the.min)
+  }
   
   
   ### SET UP THE AGGREGATE METHOD 
@@ -418,7 +436,6 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   ### EXPAND LAYERS
   
-  
   # for special case of methods "max" and "min", do not expand "months" and "PFTs" because in these cases we want to provide one layer with the min/max
   # of all months/PFT, not seperate layers for each month/PFTs
   month.present <- FALSE
@@ -429,7 +446,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   }
   if("PFT" %in% layers) {
     layers <- layers[-which(layers == "PFT")]
-    pft.present <- TRUE
+    PFT.present <- TRUE
   }
   
   # expands layer
@@ -446,12 +463,11 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   if(identical(method, max.layer)) method.string <- "Max"
   if(identical(method, min.layer)) method.string <- "Min"
   
-  
   ### FOR PER-PFT FILES
   for(this.layer in layers){
-    
+
     if(this.layer != "Month") {
-      
+
       # build list of columns to combine for layer
       layer.cols <- c()
       for(PFT in all.PFTs){
@@ -466,25 +482,26 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
       }
       
       # now combine the relevant columns
-      
+
       # if not requiring the maximum or minimum
       if(!identical(method, max.layer) & !identical(method, min.layer)) {
+
         if(!is.null(layer.cols)) suppressWarnings(dt[, eval(this.layer) := method(.SD), .SDcols = layer.cols])
+
       }
       
       # else
       else{
+
         # MF TODO: make this faster/nicer?
-        #suppressWarnings(dt[, eval(paste0(method.stringprint, layer) ):= method(.SD), .SDcols = layer.cols])
         suppressWarnings(dt[, eval(paste0(method.string, this.layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
-        dt[Total < 0.2, eval(quote(paste0(method.string, this.layer))) := "Barren"]
         dt[, eval(quote(paste0(method.string, this.layer))) := as.factor(get(paste0(method.string, this.layer)))]
+       
       }
       
     } # if not month
     
   } # for each layer
-  
   
   
   ### FOR MONTHLY FILES
@@ -555,6 +572,8 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
 #' @param input The ModelObject for which to calculate the new fractional layers
 #' @param layers The layers to be divided ie. the numerators (will be calculated by \code{getVegTotals} if the don't exist)
 #' @param denominators The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")
+#' @param aggregate.method If the denominators need to be made, which method should be used to make them, "sum" or "mean", defaults to "sum".
+#' parame
 #'
 #' @details
 #' Division is safe with respect to a zero denominator, the results of dividing by zero is, in this case, zero.
@@ -572,7 +591,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @seealso expandslayers getVegTotals
 
-divideLayers <- function(input, layers, denominators = list("Total")){
+divideLayers <- function(input, layers, denominators = list("Total"), aggregate.method = "sum"){
   
   # To avoid NOTES
   Total = NULL
@@ -586,7 +605,7 @@ divideLayers <- function(input, layers, denominators = list("Total")){
   denominators <- expandLayers(denominators, dt, PFT.data)
   for(denom in denominators) {
     if(!(denom %in% names(dt))) {
-      dt <- newLayer(dt, denom, method = sum, PFT.data = PFT.data)
+      dt <- newLayer(dt, denom, PFT.data = PFT.data, method = aggregate.method)
     }
   }
   
@@ -595,7 +614,7 @@ divideLayers <- function(input, layers, denominators = list("Total")){
   layers <- expandLayers(layers, dt, PFT.data)
   for(layer in layers) {
     if(!(layer %in% names(dt))) {
-      dt <- newLayer(dt, layer, PFT.data = PFT.data)
+      dt <- newLayer(dt, layer, PFT.data = PFT.data, method = aggregate.method)
     }
   }
   
@@ -619,3 +638,52 @@ divideLayers <- function(input, layers, denominators = list("Total")){
 }
 
 
+#' Copy layers from one VegObject or ModelObject to another
+#' 
+#' This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one ModelObject/DataObject to another.  
+#' This is particularly useful for colouring or facetting a plot of one variable by another one say.  To give a more concrete example, one could use a biome classification 
+#' to split (facet) a data-vs-model scatter plot.
+#' 
+#' @param from The ModelObject/DataObject that the layers are to be copied from.
+#' @param to The ModelObject/DataObject that the layers are to be copied to.
+#' @param layer.names The layers to be copied from the "from" argument
+#' @param new.layer.names The new names that the layers should have in the 'to' object. Use this to avoid naming conflict whereby, for 
+#' example, if a layer "Total" is copied to an object which already has a "Total" layer then they layers will be names "Total.x" and "Total.y".  
+#' @param keep.all.to Boolean, if set to FALSE points in the 'to' object which don't have corresponding points in the 'from' object are removed.
+#' 
+#' 
+#' @description This function does not check the Lon, Lat and Year columns are identical.  Any points in the 'from' object which are not in the 'to' object are ignored, 
+#' and any points in the 'to' object which don't have corresponding points in the 'from' object are assigned NA, unless keep.all.to is set to FALSE .
+#'
+#' @return A ModelObject (or data.table) comprising the 'to' object with the new layers added
+#' @import data.table
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
+
+
+copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.to = TRUE) {
+  
+  
+  # first some pre-amble and checks
+  common.layers <- c()
+  from.dt <- from@data
+  for(dim in c("Lon", "Lat", "Year")) {
+    
+    if(dim %in% names(from@data) && dim %in% names(to@data)) { common.layers <- append(common.layers, dim)}         
+    else if(!(dim %in% names(from@data)) && (dim %in% names(to@data))) {
+      stop(paste0("In copyLayers: Can't copy layers because \""), dim ,"\" is present in the \"to\" argument but not the \"from\" argument") 
+    }
+    else if(dim %in% names(from@data) && !(dim %in% names(to@data))) {
+      stop(paste0("In copyLayers: Can't copy layers because \""), dim ,"\" is present in the \"from\" argument but not the \"to\" argument") 
+    }
+  }
+  
+  
+  layers.to.add.dt <- from@data[, append(common.layers, layer.names), with=FALSE]
+  if(!is.null(new.layer.names)) setnames(layers.to.add.dt, append(common.layers, new.layer.names))
+  Temp.dt <- merge(x = to@data, y = layers.to.add.dt, all.x = FALSE, all.y = keep.all.to)
+  to@data <- Temp.dt
+  return(to)
+  
+}

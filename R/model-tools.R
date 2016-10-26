@@ -380,46 +380,67 @@ getModelObject <- function(run,
   ### CASE 4 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   else {
     
+    if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
+    
     ### !!! CALL MODEL SPECIFIC FUNTIONS HERE !!!
     
     # If model is LPJ-GUESS(-SPITFIRE) and the required Quantity is defined for LPJ-GUESS(-SPITFIRE)
-    if((run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE") & ("LPJ-GUESS" %in% quant@model  | "LPJ-GUESS-SPITFIRE" %in% quant@model)) {
+    if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE" ) {
       
-      if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
       
-      this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
+      if("LPJ-GUESS" %in% quant@model  | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
+        this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
+      }
+      else if(quant@model == "Standard") {
+        this.dt <- getStandardQuantity_LPJ(run, quant, verbose = TRUE)
+      }
       
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
     
     # If model is aDGVM and the required Quantity is defined for aDGVM
-    else if(run@model == "aDGVM" & "aDGVM" %in% quant@model) {
+    else if(run@model == "aDGVM") {
       
-      if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
-      if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
-      setKeyDGVM(this.dt)
+      if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
+      
+      if("aDGVM" %in% quant@model) {
+        if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
+        if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
+      }
+      else if(quant@model == "Standard") {
+        stop("Standard quantities nor currently defined for aDGVM")
+      }
       
     } # END IF aDGVM
     
-    # 
-    else if(quant@model == "Standard") {
+    
+    # If model is LPJ-GUESS-SPITFIRE-FireMIP
+    else if(run@model == "LPJ-GUESS-SPITFIRE-FireMIP"  ||
+            run@model == "LPJ-GUESS-BLAZE-FireMIP"     ||
+            run@model == "LPJ-GUESS-GlobFIRM-FireMIP"  ||
+            run@model == "CLM-FireMIP"                 ||
+            run@model == "CTEM-FireMIP"                ||
+            run@model == "Inferno-FireMIP"             ||
+            run@model == "JSBACH-FireMIP"              ||
+            run@model == "ORCHIDEE-FireMIP"               ) {
       
-      if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE"){
+      
+      if(quant@model == "FireMIP") {
+        this.dt <- openFireMIPOutputFile(run, var.string, quantity = quant, temporal.extent = temporal.extent, verbose = verbose)
+      }
+      else {
         
-        this.dt <- getStandardQuantity_LPJ(run, quant, verbose = TRUE)
+        stop(paste0("Cannot open quantity", quant, "for FireMIP output, only special 'FireMIP' quantities are defined"))
+        
       }
       
-      else if(run@model == "aDGVM"){
-        
-        #
-        
-      }
       
-      
-      
-      setKeyDGVM(this.dt)
-      
-    } # End if is a Standard quantity
+    }
+    
+    
+    
+    
+    
     
     else {
       
@@ -428,7 +449,7 @@ getModelObject <- function(run,
       
     }
     
-    
+    setKeyDGVM(this.dt)
     
     
     
@@ -855,16 +876,15 @@ doSpatialAverage <- cmpfun(doSpatialAverage.uncompiled)
 
 #' London centre a gridcell
 #' 
-#' Transform a longitude value to lie in the range (-180,180) instead of (0,36)
+#' Transform a vector of longitude values to lie in the range (-180,180) instead of (0,36)
 #'
-#' @param lon A longitude value to transform data.table  
-#' @return The transformed longitude value
+#' @param lon A vector longitude value to transform 
+#' @return The transformed longitude values
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 LondonCentre <- function(lon) {
   
-  if(lon <= 180) return(lon)
-  else return(lon - 360)
+  return(ifelse(lon >= 180, lon - 360, lon))
   
 }
 

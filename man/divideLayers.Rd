@@ -4,7 +4,8 @@
 \alias{divideLayers}
 \title{Calculate fractions from the layers of a ModelObject with respect to other layers}
 \usage{
-divideLayers(input, layers, denominators = list("Total"))
+divideLayers(input, layers, denominators = list("Total"),
+  aggregate.method = "sum")
 }
 \arguments{
 \item{input}{The ModelObject for which to calculate the new fractional layers}
@@ -12,6 +13,9 @@ divideLayers(input, layers, denominators = list("Total"))
 \item{layers}{The layers to be divided ie. the numerators (will be calculated by \code{getVegTotals} if the don't exist)}
 
 \item{denominators}{The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")}
+
+\item{aggregate.method}{If the denominators need to be made, which method should be used to make them, "sum" or "mean", defaults to "sum".
+parame}
 }
 \value{
 A ModelObject (or data.table) with the new layers added

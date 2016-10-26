@@ -15,7 +15,7 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
     
   }
   
-  warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in veg.quantities, now searching only on the quant.id.  "))
+  warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in veg.quantities, now searching only on the quant.id."))
   
   for(quant in veg.quantities){
     
@@ -23,7 +23,7 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
     
   }
   
-  stop(paste0("Can find a quantity with id = ", quant@id, "and model = ", model.str, " in veg.quantities"))
+  stop(paste0("Can find a quantity with id = ", quant.id, " anywhere in veg.quantities"))
   
 }
 
@@ -108,10 +108,46 @@ veg.quantities <- list(
       cuts = seq(0, 60, 2),
       model = c("Standard")),
   
+  ######################################################################
+  ########## FIREMIP QUANTITIES  ######################################
+  ######################################################################  
   
+  new("Quantity",
+      id = "landCoverFrac",
+      type = "",
+      name = "Areal Cover",
+      units = "%",
+      colours = veg.palette, 
+      cuts = seq(0,1,0.05),
+      model = "FireMIP",
+      aggregate.method = "sum"), 
   
+  new("Quantity",
+      id = "lai",
+      type = "",
+      name = "Leaf Area Index",
+      units = "-",
+      colours = veg.palette, 
+      cuts = seq(0,10,0.5),
+      model = "FireMIP"), 
   
+  new("Quantity",
+      id = "theightpft",
+      type = "",
+      name = "Tree Height",
+      units = "m",
+      colours = veg.palette, 
+      cuts = seq(0,100,1),
+      model = "FireMIP"), 
   
+  new("Quantity",
+      id = "gpp",
+      type = "monthly",
+      name = "Gross Primary Productivity",
+      units = "-",
+      colours = veg.palette, 
+      cuts = seq(0,0.4,0.01),
+      model = "FireMIP"), 
   
   
   ######################################################################
