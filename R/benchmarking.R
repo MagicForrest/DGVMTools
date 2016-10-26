@@ -660,10 +660,10 @@ doKappa <- function(dt,
 #' and compares the model to the data
 #' 
 #' @param runs List of ModelRuns to be compared to the biome data
-#' @param variable The Quantity (or name) of the variable from which the biomes are to be derived. This is not flexible enough, 
+#' @param variable The variable (as a Quantity object or a name string) from which the biomes are to be derived. This is not flexible enough, 
 #' and should be folded into the scheme.
-#' @param period The temporal extent over which the model output should be averaged for calculating the biomes
-#' @param scheme The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or DataObject?) 
+#' @param period The temporal extent (as a TemporalExtent object) over which the model output should be averaged for calculating the biomes
+#' @param scheme The biome scheme (as a BiomeScheme object) we are comparing. Also not flexible enough, here should provide a raster (or DataObject?) 
 #' containing the data
 #' @param biome.dataset The biomes to which you wish to comapre, as a DataObject.
 #' @param plot Logical, if true make a biome plot.
