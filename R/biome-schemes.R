@@ -472,7 +472,7 @@ MeditBiomeRules <- function(lai){
   # BIOME 2 - Needle-leaved evergreen forest
   else if(as.numeric(lai[['Woody']]) > 1.5 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
   # BIOME 3 - Mediterranean woodland/scrub
-  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
   # BIOME 8 - Shrublands/Shrub Steppe
   #else if((as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS" ))  || as.numeric(lai[['Woody']]) > as.numeric(lai[['Grass']])) {return(8)}
   else if((as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS" ))) {return(8)}
