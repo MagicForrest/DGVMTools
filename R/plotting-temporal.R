@@ -38,16 +38,60 @@ plotTemporal <- function(input.data,
                          x.lim = NULL,
                          wrap = NULL,
                          wrap.scales = "fixed"
-                         ){
+){
   
   
   Year = value = variable = NULL
   
-  # Deal with class action
+  # Deal with class action and organise into a data.table for further manipulations and plotting
+
+  # If we get a list it should be a list of ModelObjects and/or DataObjects.  Here we check that, and mangle it in to a data.table
+  if(class(input.data) == "list") {
+    
+    wrap <- "Run"
+
+    plotting.data.dt <- data.table()
+    PFTs <- list()
+    for(x.object in input.data){
+  
+      if(!(is.DataObject(x.object) || is.ModelObject(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  ModelObject") }
+      temp.dt <- copy(x.object@data)
+      temp.dt[,"Run" := x.object@run@id]
+      plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt))
+      rm(temp.dt)
+
+      # also make a superset of all the PFTs
+      if(is.ModelObject(x.object)) PFTs <- append(PFTs, x.object@run@pft.set)
+      
+    }
+ 
+  }
+  # if it is a single DataObject or ModelObject, pull out the data (and PFTs if present)
+  else if(is.DataObject(input.data) || is.ModelObject(input.data)){
+    plotting.data.dt <- input.data@data
+    if(is.ModelObject(x.object)) PFTs <- x.object@run@pft.set
+  }
+  # if it is a data.table then we just use that straight
+  else if(is.data.table(input.data)) {
+    plotting.data.dt <- copy(input.data)
+  }
+  # if it is a data.frame convert it to a data.table
+  else if(is.data.frame(input.data)) {
+    plotting.data.dt <- as.data.frame(input.data)
+  }
+  # else fail
+  else{
+    stop(paste("Don't know how to make temporal plot for object of class", class(input.data), sep = " "))
+  }
+  
+   
+  
+  # Check for Lon and Lat (and remove 'em)
+  if("Lon" %in% names(plotting.data.dt)) plotting.data.dt[, Lon := NULL]
+  if("Lat" %in% names(plotting.data.dt)) plotting.data.dt[, Lat := NULL]
   
   
-  # Check for Lon and Lat
-  
+ 
   
   # Select the layers 
   if(!is.null(layers)) {
@@ -71,13 +115,59 @@ plotTemporal <- function(input.data,
   # melt the data table so that all remaining layers become entries in a column (instead of column names)
   id.vars <- c("Year")
   if(!is.null(wrap)) id.vars <- append(id.vars, wrap)
-  input.data.melted <- melt(input.data, id.vars = id.vars)
+  plotting.data.dt.melted <- melt(plotting.data.dt, id.vars = id.vars)
   
+  # Now that the data is melted into the final form, set the colours if not already specified and if enough meta-data is available
+  if(is.null(cols) && is.null(types)){
+    
+    got.all <- TRUE
+    new.cols <- c()
+    new.types <- c()
+    new.labels <- c()
+    
+    all.layers <- as.character(unique(plotting.data.dt.melted[["variable"]]))
+    
+    for(layer in all.layers) {
+      
+      colour <- NULL
+      type <- NULL
+
+      # check if it is a PFT and use that colour      
+      for(PFT in PFTs){
+          if(layer == PFT@id) { 
+            colour <- PFT@colour
+            if(PFT@combine != "no") type <- 2
+            else type <- 1
+            label <- PFT@id
+          }
+      }
+      
+      if(!is.null(colour)) {
+        new.cols <- append(new.cols, colour)
+        new.types <- append(new.types, type)
+        new.labels <- append(new.labels, labels)
+      }
+      else got.all <- FALSE
+      
+    }
+    
+   if(got.all) {
+     cols <- new.cols
+     types <- new.types
+     if(is.null(labels)) labels <- all.layers
+     names(cols) <- all.layers
+     names(types) <- all.layers
+     names(labels) <- all.layers
+   }
+    
   
+    
+  }
   
+ 
   # now make the plot
-  p <- ggplot(as.data.frame(input.data.melted), aes(Year, value, colour = variable)) + geom_line(aes(linetype=variable), size = 1)
-  #p <- p + scale_x_continuous(breaks = unique(input.data.melted[["Year"]])
+  p <- ggplot(as.data.frame(plotting.data.dt.melted), aes(Year, value, colour = variable)) + geom_line(aes(linetype=variable), size = 1)
+  #p <- p + scale_x_continuous(breaks = unique(plotting.data.dt.melted[["Year"]])
   
   # line formatting
   if(!is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
@@ -97,10 +187,10 @@ plotTemporal <- function(input.data,
   if(!is.null(wrap)){
     p <- p + facet_wrap(as.formula(paste("~", wrap)), ncol = 1, scales = wrap.scales)
   }
-
   
   
-    return(p)
-    
+  
+  return(p)
+  
   
 }

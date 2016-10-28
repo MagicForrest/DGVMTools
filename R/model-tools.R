@@ -192,7 +192,7 @@ makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent
 #' @param run The \code{ModelRun} object for which the temporally-averaged \code{ModelObject} should be built (eg. "lai")
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param period The time period (as a \code{TemporalExtent} over which the data is to be averaged)
-#' @param ... additional arguments passed to \code{getModelObject}, for example \code{rereadfile}, and \code{store.internally}.
+#' @param ... additional arguments passed to \code{getModelObject}, for example \code{read.full}, and \code{store.internally}.
 #' @return A temporally averaged\code{ModelObject}  but with no-spatial averaging or cropping (ie. include complete original simulation domain). In other words, a map!
 #' @export
 #' @seealso \code{getModelObject}, \code{getVegTemporal}
@@ -227,7 +227,7 @@ getVegSpatial <- function(run,
 #' @param run The \code{ModelRun} object for which the spatially-averaged \code{ModelObject} should be built (eg. "lai")
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
-#' @param ... additional arguments passed to \code{getModelObject}, for example \code{rereadfile}, \code{area.weighted} and \code{store.internally}.
+#' @param ... additional arguments passed to \code{getModelObject}, for example \code{read.full}, \code{area.weighted} and \code{store.internally}.
 #' @return A spatially averaged\code{ModelObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
 #' @export
 #' @seealso \code{getModelObject}, \code{getVegspatial}
@@ -255,7 +255,7 @@ getVegTemporal <- function(run,
 
 ################################# GET VEGOBJECT - Does a lot! #########################################
 #
-#' Get a \code{ModelObject}, optionally for spatial/temporal averaging/cropping 
+#' Get a \code{ModelObject}, optionally with spatial/temporal averaging/cropping 
 #' 
 #' Given a \code{ModelRun} object a \code{Quantity} object, return an appropriate spatially-averaged \code{ModelObject} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
 #' 
@@ -389,10 +389,10 @@ getModelObject <- function(run,
       
       
       if("LPJ-GUESS" %in% quant@model  | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
-        this.dt <- openLPJOutputFile(run, var.string, verbose = TRUE)
+        this.dt <- openLPJOutputFile(run, var.string, verbose = verbose)
       }
       else if(quant@model == "Standard") {
-        this.dt <- getStandardQuantity_LPJ(run, quant, verbose = TRUE)
+        this.dt <- getStandardQuantity_LPJ(run, quant, verbose = verbose)
       }
       
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE

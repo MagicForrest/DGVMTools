@@ -490,9 +490,10 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
 
       }
       
-      # else
+      # else it is min/max
       else{
 
+        if("Total" %in% layer.cols) layer.cols <- layer.cols[-which(layer.cols == "Total")]
         # MF TODO: make this faster/nicer?
         suppressWarnings(dt[, eval(paste0(method.string, this.layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
         dt[, eval(quote(paste0(method.string, this.layer))) := as.factor(get(paste0(method.string, this.layer)))]
