@@ -13,7 +13,7 @@ getVegSpatial(run, var, period, ...)
 
 \item{period}{The time period (as a \code{TemporalExtent} over which the data is to be averaged)}
 
-\item{...}{additional arguments passed to \code{getModelObject}, for example \code{rereadfile}, and \code{store.internally}.}
+\item{...}{additional arguments passed to \code{getModelObject}, for example \code{read.full}, and \code{store.internally}.}
 }
 \value{
 A temporally averaged\code{ModelObject}  but with no-spatial averaging or cropping (ie. include complete original simulation domain). In other words, a map!

@@ -13,7 +13,7 @@ getVegTemporal(run, var, spatial.extent = NULL, ...)
 
 \item{spatial.extent}{The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)}
 
-\item{...}{additional arguments passed to \code{getModelObject}, for example \code{rereadfile}, \code{area.weighted} and \code{store.internally}.}
+\item{...}{additional arguments passed to \code{getModelObject}, for example \code{read.full}, \code{area.weighted} and \code{store.internally}.}
 }
 \value{
 A spatially averaged\code{ModelObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!

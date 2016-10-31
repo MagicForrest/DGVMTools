@@ -41,7 +41,7 @@ plotTemporal <- function(input.data,
 ){
   
   
-  Year = value = variable = NULL
+  Year = value = variable = Lat = Lon = NULL
   
   # Deal with class action and organise into a data.table for further manipulations and plotting
 
@@ -107,7 +107,7 @@ plotTemporal <- function(input.data,
   
   # make y label
   if(is.null(y.label)) {
-    title <- ""
+    y.label <- ""
   }
   
   

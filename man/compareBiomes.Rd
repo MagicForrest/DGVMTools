@@ -6,17 +6,18 @@
 \usage{
 compareBiomes(runs, variable, period, scheme, biome.dataset, plot = TRUE,
   show.stats = TRUE, summary.plot.dir = NULL, tag = "",
-  canvas.options = canvas.options, ...)
+  canvas.options = list(dpi = 72, type = "png", width = 1800, height = 1000,
+  bg = "transparent"), ...)
 }
 \arguments{
 \item{runs}{List of ModelRuns to be compared to the biome data}
 
-\item{variable}{The Quantity (or name) of the variable from which the biomes are to be derived. This is not flexible enough, 
+\item{variable}{The variable (as a Quantity object or a name string) from which the biomes are to be derived. This is not flexible enough, 
 and should be folded into the scheme.}
 
-\item{period}{The temporal extent over which the model output should be averaged for calculating the biomes}
+\item{period}{The temporal extent (as a TemporalExtent object) over which the model output should be averaged for calculating the biomes}
 
-\item{scheme}{The biome scheme we are comparing. Also not flexible enough, here should provide a raster (or DataObject?) 
+\item{scheme}{The biome scheme (as a BiomeScheme object) we are comparing. Also not flexible enough, here should provide a raster (or DataObject?) 
 containing the data}
 
 \item{biome.dataset}{The biomes to which you wish to comapre, as a DataObject.}

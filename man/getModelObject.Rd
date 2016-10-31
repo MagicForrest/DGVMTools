@@ -2,7 +2,7 @@
 % Please edit documentation in R/model-tools.R
 \name{getModelObject}
 \alias{getModelObject}
-\title{Get a \code{ModelObject}, optionally for spatial/temporal averaging/cropping}
+\title{Get a \code{ModelObject}, optionally with spatial/temporal averaging/cropping}
 \usage{
 getModelObject(run, var, temporal.extent = NULL, temporally.average = FALSE,
   spatial.extent = NULL, spatially.average = FALSE, area.weighted = TRUE,
