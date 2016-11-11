@@ -13,6 +13,8 @@
 #' @param dt The data.table for which to set the key
 #' @return Returns nothing because changes the original data.table by reference (this is the data.table way)
 #' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+
 setKeyDGVM <- function(dt){
   
   keys.present <- c()
@@ -39,6 +41,7 @@ setKeyDGVM <- function(dt){
 #' @return A ModelRun object, with metadata defined by empty data slots.s
 #' @export
 #' @seealso ModelRun, ModelRunInfo 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 defineModelRun <- function(...){
   
@@ -79,6 +82,8 @@ defineModelRun <- function(...){
 #' @return A ModelRun object the the object argument added
 #' @export
 #' @seealso ModelRun, ModelRunInfo 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+
 addToModelRun <- function(object, run){
   
   # Add a BiomeComaprison or RasterComparison to the list in the benchmarks slot 
@@ -129,6 +134,8 @@ addToModelRun <- function(object, run){
 #' @return A ModelRun with the object removed
 #' @export
 #' @seealso ModelRun, ModelRunInfo 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+
 removeFromModelRun <- function(object.id, run){
   
   
@@ -253,13 +260,13 @@ getVegTemporal <- function(run,
 
 
 
-################################# GET VEGOBJECT - Does a lot! #########################################
+################################# GET MODELOBJECT - Does a lot! #########################################
 #
 #' Get a \code{ModelObject}, optionally with spatial/temporal averaging/cropping 
 #' 
 #' Given a \code{ModelRun} object a \code{Quantity} object, return an appropriate spatially-averaged \code{ModelObject} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
 #' 
-#' Note that because there are two types of averaging available, the resulting \code{ModelRun} obhect can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
+#' Note that because there are two types of averaging available, the resulting \code{ModelRun} object can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
 #' Also not that the data is stored internal as a data.table object, but this is mostly not important to the user.
 #'   
 #' @param run The \code{ModelRun} object for which the spatially-averaged \code{ModelObject} should be built (eg. "lai")
@@ -414,7 +421,7 @@ getModelObject <- function(run,
     } # END IF aDGVM
     
     
-    # If model is LPJ-GUESS-SPITFIRE-FireMIP
+    # If model is from FireMIP
     else if(run@model == "LPJ-GUESS-SPITFIRE-FireMIP"  ||
             run@model == "LPJ-GUESS-BLAZE-FireMIP"     ||
             run@model == "LPJ-GUESS-GlobFIRM-FireMIP"  ||

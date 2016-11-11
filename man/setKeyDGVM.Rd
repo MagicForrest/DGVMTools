@@ -17,4 +17,7 @@ Keys should be set on all data.table object for sorts, joins, DGVMTool-defined o
  This function should be called on a data.table stored in a ModelObject after it has been created,
  including if it was created by avergaing another data.table because it seems as keys are not conserved.
 }
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}
 

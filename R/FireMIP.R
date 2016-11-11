@@ -22,8 +22,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
   
   # get the name of the model
   model.string <- gsub("-FireMIP", "", run@model)
-  print(model.string)
-  
+
   # ANNUAL, PER-VEGTYPE
   # Any annual, per PFT variable should be manageable here, eg landCoverFrac
   if(quantity@id == "landCoverFrac" ||
@@ -409,10 +408,11 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
 
 toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
   
+  Lat = NS = BS = BR = NULL
   
   # get the name of the model
   model.string <- gsub("-FireMIP", "", input.data@run@model)
-  print(model.string)
+  print(paste0("Standardising to FireMIP PFTs: ", model.string))
   
   # retrieve the data.table
   dt <- input.data@data
@@ -616,12 +616,27 @@ toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
   ### SET THE NAMES
   setnames(dt, gsub("FireMIP.", "",  names(dt)))
   
+  ### SPECIAL FIX FOR JSBACH FOR NEEDLE-LEAVED SUMMERGREEN
+  if(model.string == "JSBACH") {
+   dt <- dt[Lat > 60, NS := BS]
+   dt <- dt[Lat > 60, BS := 0]
+  }
+  
+  ### SPECIAL FIX FOR INFERNO FOR BROADLEAVED RAINGREEN
+  if(model.string == "Inferno") {
+    dt <- dt[abs(Lat) < 23, BR := BS]
+    dt <- dt[abs(Lat) < 23, BS := 0]
+  }
+  
+  
+  
+  
   ### RESCALE TO ACCOUNT FOR AGRICULTURE
   if(remove.agriculture) {
     rescale <- function(x) {
       x <- x * (1/(1-x$Crops))
     }
-    print(dt)
+
     dt <- dt[, FireMIP.PFTs := rescale(.SD), .SDcols = FireMIP.PFTs, with = FALSE]
     
     # important, remove any NAs that my have been introduced by scaling

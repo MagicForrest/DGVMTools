@@ -43,7 +43,7 @@ A spatially averaged\code{ModelObject} but with no temporal averaging or croppin
 Given a \code{ModelRun} object a \code{Quantity} object, return an appropriate spatially-averaged \code{ModelObject} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
 }
 \details{
-Note that because there are two types of averaging available, the resulting \code{ModelRun} obhect can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
+Note that because there are two types of averaging available, the resulting \code{ModelRun} object can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
 Also not that the data is stored internal as a data.table object, but this is mostly not important to the user.
 }
 \author{
