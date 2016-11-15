@@ -499,7 +499,6 @@ setClass("SpatialComparison",
 #' 
 #' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string that can be more descriptive.
-#' @slot substitution A "data.frame" describing how the classifications should be substited in the data.  Eh?  Probably not appropriate here
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
 #' @slot combineShadeTolerance If TRUE, call combineShadeTolerance before doing the biome classification
 #' @slot totals.needed List of vegetation totals needed to calculate biomes, for example c("Tree", "Grass")
@@ -517,7 +516,6 @@ setClass("SpatialComparison",
 setClass("BiomeScheme",
          slots = c(id = "character",
                    name = "character", 
-                   substitution = "data.frame",
                    rules = "function",
                    combineShadeTolerance = "logical",
                    max.needed = "character",

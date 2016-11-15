@@ -9,8 +9,7 @@
 Megabiomes_dev.scheme
 }
 \description{
-Note 'substitution' is probably a redundant slot, this is a part of the data, 
-not the classication of the model output.
+Meta-data describing an unpublished "mega biome" scheme for LPJ-GUESS output.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

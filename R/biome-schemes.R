@@ -87,15 +87,12 @@ Smith2014BiomeRules <- function(lai){
 
 #' Meta-data describing the Smith 2014 et al. 2014 biome scheme for LPJ-GUESS output.
 #' 
-#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
-#' not the classication of the model output.
 #' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 Smith2014.scheme <- new("BiomeScheme",
                         id = "Smith2014",
                         name = "Smith et al. 2014", 
-                        substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
                         rules = Smith2014BiomeRules,
                         totals.needed = c("lifeforms", "zones"),
                         max.needed = "Tree",
@@ -272,16 +269,12 @@ Hickler2012Rules <- function(lai){
 
 #' Meta-data describing the Hickler et al. 2012 european biome scheme for LPJ-GUESS output.
 #' 
-#' Note 'substution' is probably a redundant slot, this is a part of the data, 
-#' not the classication of the model output.
-#' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 Hickler2012.scheme <- new("BiomeScheme",
                           id = "Hickler2012",
                           name = "Hickler2012", 
-                          substitution = data.frame(id=1:18, v=1:18),
                           rules = Hickler2012Rules,
                           combineShadeTolerance = FALSE,
                           totals.needed = c("Tree", "Woody", "Grass"),
@@ -404,16 +397,12 @@ Forrest2015MegaBiomeRules <- function(lai){
 
 #' Meta-data describing the Forrest et al. 2015 "mega biome" scheme for LPJ-GUESS output.
 #' 
-#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
-#' not the classication of the model output.
-#' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
 Forrest2015.scheme <- new("BiomeScheme",
                           id = "Forrest2015",
                           name = "Forrest et al. 2015", 
-                          substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
                           rules = Forrest2015MegaBiomeRules,
                           totals.needed = c("lifeforms", "zones"),
                           max.needed = "Tree",
@@ -469,9 +458,9 @@ MeditBiomeRules <- function(lai){
   else if(as.numeric(lai[['Woody']]) > 1.5 && as.numeric(lai[['BorealFractionOfTree']]) > 0.5) {return(5)} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
   #else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}
-  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > 0.5) {return(6)}
+  else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.5) {return(6)}
     # BIOME 2 - Needle-leaved evergreen forest
-  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.5 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
   # BIOME 3 - Mediterranean woodland/scrub
   else if(as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
   # BIOME 8 - Shrublands/Shrub Steppe
@@ -491,16 +480,12 @@ MeditBiomeRules <- function(lai){
 
 #' Meta-data describing a Mediterranean scheme for LPJ-GUESS output.
 #' 
-#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
-#' not the classication of the model output.
-#' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
 MeditBiomes.scheme <- new("BiomeScheme",
                           id = "MeditBiomes",
                           name = "Mediterranean Biomes", 
-                          substitution = data.frame(id=1:18, v=c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)),
                           rules = MeditBiomeRules,
                           totals.needed = c("lifeforms", "zones"),
                           max.needed = "Woody",
@@ -596,16 +581,12 @@ MegaBiomeRules_dev <- function(lai){
 
 #' Meta-data describing an unpublished "mega biome" scheme for LPJ-GUESS output.
 #' 
-#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
-#' not the classication of the model output.
-#' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
 Megabiomes_dev.scheme <- new("BiomeScheme",
                              id = "Megabiomes",
                              name = "Megabiomes", 
-                             substitution = data.frame(id=1:18, v=c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,8,12,13,10)),
                              rules = MegaBiomeRules_dev,
                              combineShadeTolerance = TRUE,
                              max.needed = "Tree",
@@ -665,7 +646,7 @@ FireMIPBiomeRules <- function(fpc){
   
   # BIOMES 2-6 - Forests
   #if(as.numeric(fpc[['Tree']]) > 0.6 &  fpc[['Grass']] < 0.4) {
-  if(as.numeric(fpc[['Tree']]) > 0.5) {
+  if(as.numeric(fpc[['Tree']]) > 0.6) {
     
     
     # BIOME 2 Needleleaved forest
@@ -718,16 +699,12 @@ FireMIPBiomeRules <- function(fpc){
 
 #' Meta-data describing an unpublished "mega biome" scheme for LPJ-GUESS output.
 #' 
-#' Note 'substitution' is probably a redundant slot, this is a part of the data, 
-#' not the classication of the model output.
-#' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
 FireMIPBiomes.scheme <- new("BiomeScheme",
                             id = "FireMIP",
                             name = "FireMIP Biomes", 
-                            substitution = data.frame(id=1:18, v=c(4,3,6,5,6,5,7,1,1,2,8,9,11,12,8,12,13,10)),
                             rules = FireMIPBiomeRules,
                             combineShadeTolerance = FALSE,
                             max.needed = c("Tree", "Grass"),
@@ -836,7 +813,6 @@ FPCMegaBiomeRules <- function(fpc) {
 FPCMegabiomes.scheme <- new("BiomeScheme",
                             id = "FPCMegabiomes",
                             name = "FPCMegabiomes", 
-                            substitution = data.frame(id=1:18, v=1:18),
                             rules = FPCMegaBiomeRules,
                             totals.needed = c("lifeforms", "zones"),
                             max.needed = c("NA"),

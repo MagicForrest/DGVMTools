@@ -706,8 +706,8 @@ compareBiomes <- function(runs,
   # align the data to be on the same grid as the model using the nearest neqbour algorthim
   
   # first rasterise the data and model
-  biome.data.raster <- promoteToRaster(biome.dataset@data)
-  model.data.raster <- promoteToRaster(getVegSpatial(runs[[1]], variable, period, read.full = FALSE, write = TRUE))
+  biome.data.raster <- promoteToRaster(biome.dataset@data, tolerance = 0.01)
+  model.data.raster <- promoteToRaster(getVegSpatial(runs[[1]], variable, period, read.full = FALSE, write = TRUE), tolerance = 0.01)
   
   # 
   # first check if they are on identical grids

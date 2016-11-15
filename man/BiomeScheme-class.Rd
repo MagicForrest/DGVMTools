@@ -17,8 +17,6 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 
 \item{\code{name}}{A character string that can be more descriptive.}
 
-\item{\code{substitution}}{A "data.frame" describing how the classifications should be substited in the data.  Eh?  Probably not appropriate here}
-
 \item{\code{rules}}{A function which is applied to every row of the data.table and describes the biome classification rules.}
 
 \item{\code{combineShadeTolerance}}{If TRUE, call combineShadeTolerance before doing the biome classification}
