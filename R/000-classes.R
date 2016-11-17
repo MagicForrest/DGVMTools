@@ -284,7 +284,7 @@ setClass("ModelRun",
 #' @slot name A longer character string to provide a more complete description of this quantity
 #' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.  
 #' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
-#' @slot colours A fucntion that retutns a colour scale suited for plotting this quantity.
+#' @slot colours A function that returns a colour scale suited for plotting this quantity.
 #' @slot cuts A numerical sequence defining the plot range and colour breakpoint when plotting the quantity
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
 #' @slot model Either a the string "Standard" to denotethat this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.

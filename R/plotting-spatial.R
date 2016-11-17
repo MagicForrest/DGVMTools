@@ -199,7 +199,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   #####################################################################################
   
   ### TOLERANCE - for when making grid to rasterise
-  if(is.null(run)) { tolerance <- 0.05 }
+  if(is.null(run)) { tolerance <- 0.01 }
   else {tolerance <- run@tolerance}  
   
   ### SPECIAL CASE OF BIOMES OR DOMINANT WITH NULL layer (assume the biome scheme id is the layer name)
@@ -222,11 +222,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### PROMOTE TO RASTER AND SANITISE NAMES - also make plot labels (if necessary) before the sanitatisation 
   original.layers <- layers # save for building plot label later
-  print("promoting")
-  print(tolerance)
-  print(data)
   data.toplot <- promoteToRaster(data, layers, tolerance)
-  print("done")
   layers <- names(data.toplot) # update layers to be the names of the raster layers  (which might have changed)
   
   ### CROP THE DATA IF PLOT EXTENT HAS BEEN SPECIFIED

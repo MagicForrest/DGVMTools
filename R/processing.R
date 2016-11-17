@@ -340,7 +340,67 @@ addBiomes <-function(input, scheme){
   
 }
 
-
+###################################################################################################
+######### BIOME CLASSIFICATION
+#'
+#' Perform biome classification using this ModelObject
+#' 
+#' This is very inflexible as it only allows the calcualtion of biomes with only one Quantity.  This is not suitable for many biomes schemes, 
+#' so this will need to be re-written
+#' 
+#' 
+#' @param input The ModelObject for which to calculate the biomes.
+#' @param scheme The biome scheme to use.
+#' @return A new ModelObject with the biomes
+#' @export
+#' @import data.table
+#' @seealso BiomeScheme-class
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+calcBiomes <-function(input, scheme){
+  
+  message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
+  
+  Grass = NULL
+  
+  # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
+  if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
+  
+  # If GDD5 required for classification
+  if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
+    # get gdd5
+    stop("input@run is not a class 'ModelRun' it is class 'ModelRunInfo'!")
+    gdd5 <- getVegSpatial(input@run, "gdd5", input@temporal.extent, read.full = FALSE)
+    dt <- input@data
+    dt.gdd5 <- gdd5@data
+    dt <- dt[dt.gdd5]
+    input@data <- dt
+  }
+  
+  # Get the dominant tree and dominant woody PFTs
+  input <- newLayer(input, layers = scheme@max.needed, method = "max")
+  
+  if(!"Grass" %in% names(input@data) ) {
+    input@data[, Grass := 0]
+  }
+  
+  # Get the totals required
+  input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
+  
+  # Get the fractions required
+  input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
+  input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
+  input <- divideLayers(input, layers = scheme@fraction.of.woody, denominators = list("Woody"))
+  
+  # We get a warning about a shallow copy here, suppress it
+  suppressWarnings(dt <- input@data)
+  
+  # Apply biome rules and return
+  if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
+  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1), with = FALSE])
+  input@data <- dt
+  return(input)
+  
+}
 
 ###################################################################################
 ##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, SEASONAL ETC...)
