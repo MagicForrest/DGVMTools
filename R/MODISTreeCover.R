@@ -54,7 +54,7 @@ getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collect
                          temporal.extent = t.extent,
                          data = dt,
                          quant = quant,
-                         spatial.extent = new("SpatialExtent",  id  = s.extent.id, name = s.extent.name, extent = getExtentFromDT(dt)),
+                         spatial.extent = new("SpatialExtent",  id  = s.extent.id, name = s.extent.name, extent = extent(dt)),
                          correction.layer =  "")
   
   

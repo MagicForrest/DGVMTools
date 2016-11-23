@@ -276,7 +276,7 @@ benchmarkSpatial <- function(runs,
     
     
     # get extent for displaying R^2
-    this.extent <- getExtentFromDT(data.dt)
+    this.extent <- extent(data.dt)
     if(!is.null(local.args[["plot.extent"]])) {
       this.extent <- intersect(local.args[["plot.extent"]], this.extent)
       warning("Reported R^2 value in benchmarkSpatial applies to the whole spatial extent, not the smaller extent you have plotted.  If you want the R^2 for this sub-region, crop the data *before* called the benchmarking routine.")
@@ -398,7 +398,7 @@ benchmarkSpatial <- function(runs,
     
     # add each model run to stacks and text lists
     counter <- 1
-    this.extent <- getExtentFromDT(data.dt)
+    this.extent <- extent(data.dt)
     if(!is.null(args1[["plot.extent"]])) {
       this.extent <- intersect(args1[["plot.extent"]], this.extent)
       warning("Reported R^2 value in benchmarkSpatial applies to the whole spatial extent, not the smaller extent you have plotted.  If you want the R^2 for this sub-region, crop the data *before* called the benchmarking routine.")

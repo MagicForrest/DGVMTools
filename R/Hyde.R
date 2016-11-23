@@ -104,7 +104,7 @@ readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF
                          temporal.extent = temporal.extent,
                          data = HYDE.dt,
                          quant = Quant,
-                         spatial.extent = new("SpatialExtent", id = "HYDEExtent", name = "HYDE extent", extent = getExtentFromDT(HYDE.dt)),
+                         spatial.extent = new("SpatialExtent", id = "HYDEExtent", name = "HYDE extent", extent = extent(HYDE.dt)),
                          correction.layer =  "")
   
   return(HYDE.dataset)

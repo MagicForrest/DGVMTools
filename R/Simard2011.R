@@ -43,7 +43,7 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/Simard2011/", r
                          temporal.extent = new("TemporalExtent", name = "Simard Period", start = 2005, end = 2005),
                          data = dataset.dt,
                          quant = lookupQuantity("canopyheight_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "SimardExtent", name = "Simard extent", extent = getExtentFromDT(dataset.dt)),
+                         spatial.extent = new("SpatialExtent", id = "SimardExtent", name = "Simard extent", extent = extent(dataset.dt)),
                          correction.layer =  "")
   
   

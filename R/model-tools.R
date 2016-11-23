@@ -476,7 +476,7 @@ getModelObject <- function(run,
                                spatial.extent = new("SpatialExtent",
                                                     id = "FullDomain",
                                                     name = "Full simulation extent",
-                                                    extent =  getExtentFromDT(this.dt)),
+                                                    extent =  extent(this.dt)),
                                temporal.extent = new("TemporalExtent",
                                                      id = "FullTS",
                                                      name = "Full simulation duration",
@@ -503,7 +503,7 @@ getModelObject <- function(run,
   
   ### GET THE SPATAIAL AND TEMPORAL EXTENTS BEFORE THEY MAY BE AVERAGED AWAY
   is.site <- FALSE
-  temp.extent <- getExtentFromDT(this.dt)
+  temp.extent <- extent(this.dt)
   ordered.years = NULL
   if("Year" %in% names(this.dt)) { 
     ordered.years <- sort(unique(this.dt[,Year]))
@@ -930,7 +930,6 @@ getExtentFromDT <- function(dt){
   }
   
   return(extent.temp)
-  
   
 }
 

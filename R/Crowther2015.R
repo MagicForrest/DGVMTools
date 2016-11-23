@@ -30,7 +30,7 @@ getCrowther2015 <- function(location="", resolution="HD") {
                          temporal.extent = new("TemporalExtent", name = "Crowther Period", start = 2006, end = 2008),
                          data = Crowther.dt,
                          quant = lookupQuantity("vegC_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "CrowtherExtent", name = "Crowther extent", extent = getExtentFromDT(Crowther.dt)),
+                         spatial.extent = new("SpatialExtent", id = "CrowtherExtent", name = "Crowther extent", extent = extent(Crowther.dt)),
                          correction.layer =  "")
   return(Crowther.dataset)
 }

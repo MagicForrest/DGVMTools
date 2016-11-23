@@ -161,7 +161,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
         name = paste("H&P PNV Biomes classified as in", classification.str, sep = " "),
         data = PNV.dt,
         quant = as(byIDfromList(classification, supported.biome.schemes), "Quantity"),
-        spatial.extent = new("SpatialExtent", id = "PNVExtent", name = "PNV Extent", extent = getExtentFromDT(PNV.dt)),
+        spatial.extent = new("SpatialExtent", id = "PNVExtent", name = "PNV Extent", extent = extent(PNV.dt)),
         temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990),
         correction.layer =  ""
     )
@@ -207,7 +207,7 @@ getSaatchi2011 <- function(resolution = "HD"){
                          temporal.extent = new("TemporalExtent", name = "Saatchi Period", start = 1999, end = 2001),
                          data = Saatchi.dt,
                          quant = lookupQuantity("vegC_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "SaatchiExtent", name = "Saatchi extent", extent = getExtentFromDT(Saatchi.dt)),
+                         spatial.extent = new("SpatialExtent", id = "SaatchiExtent", name = "Saatchi extent", extent = extent(Saatchi.dt)),
                          correction.layer =  "")
   
   

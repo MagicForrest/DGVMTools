@@ -346,6 +346,15 @@ cropDGVM <- function(input, extent){
 }
 
 
+setMethod("is.equal", signature("Quantity", "Quantity"), function(a, b) {
+  if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)
+    return(TRUE)
+  return(FALSE)
+})
+
+
+
+
 ##### RETRIEVES AN OBJECT FROM A LIST BASED ON THE 'id' SLOTS
 #
 #' Retrieves an object from a list based on it's \code{id} slot

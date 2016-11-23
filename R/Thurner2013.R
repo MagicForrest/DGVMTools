@@ -51,7 +51,7 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/Thurner2013/", reso
                          temporal.extent = new("TemporalExtent", id = "ThurnerPeriod", name = "Thurner Period", start = 2000, end = 2010),
                          data = Thurner.dt,
                          quant = quant,
-                         spatial.extent = new("SpatialExtent", id = "ThurnerExtent", name = "Thurner extent", extent = getExtentFromDT(Thurner.dt)),
+                         spatial.extent = new("SpatialExtent", id = "ThurnerExtent", name = "Thurner extent", extent = extent(Thurner.dt)),
                          correction.layer =  "")
   
   
