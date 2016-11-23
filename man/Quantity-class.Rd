@@ -20,7 +20,7 @@ Note that the used will probably need to define their own, and modify these for 
 
 \item{\code{units}}{A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?}
 
-\item{\code{colours}}{A fucntion that retutns a colour scale suited for plotting this quantity.}
+\item{\code{colours}}{A function that returns a colour scale suited for plotting this quantity.}
 
 \item{\code{cuts}}{A numerical sequence defining the plot range and colour breakpoint when plotting the quantity}
 

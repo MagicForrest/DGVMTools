@@ -514,9 +514,8 @@ setClass("SpatialComparison",
 #' @exportClass BiomeScheme
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("BiomeScheme",
-         slots = c(id = "character",
-                   name = "character", 
-                   rules = "function",
+         contains = "Quantity",
+         slots = c(rules = "function",
                    combineShadeTolerance = "logical",
                    max.needed = "character",
                    totals.needed = "character",
@@ -524,8 +523,6 @@ setClass("BiomeScheme",
                    fraction.of.tree = "character",
                    fraction.of.woody = "character",
                    needGDD5 = "logical",
-                   strings = "character",
-                   cols = "character",
                    data.reference = "character",
                    published.reference = "character"
          )
