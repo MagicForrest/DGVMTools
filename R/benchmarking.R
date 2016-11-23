@@ -560,6 +560,8 @@ benchmarkSpatial <- function(runs,
 #' Calculates a SpatialComparison object (which contains the Cohen's Kappa scores) given a stack containing two maps of categorical data (eg. biomes, land cover classes).
 #' 
 #' @param dt A two-columned data.table containing the biomes (or other categorical data) represented as integer codes
+#' @param x Character string giving the column name of the first of the datasets to be compared
+#' @param y Character string giving the column name of the second of the datasets to be compared
 #' @param id A character string to identify this comparison, typically a combination the id of the biome scheme and the id of the vegetation model run.
 #' @param labels A vector of character strings to describe the categories over which Kappa is compared (typically a list of biomes)
 #' following the order of the integer codes used in the data (see \code{stack} argument)
@@ -579,7 +581,7 @@ doKappa <- function(dt,
                     labels = NULL, 
                     verbose = FALSE){
   
-  #x = y = code = NULL
+  dataset1 = dataset2 = code = NULL
   
   # subset the data.table
   dt.local <- dt[,c(x,y), with = FALSE]
@@ -591,8 +593,8 @@ doKappa <- function(dt,
   
   
   # assign each gridcell a code based on the classifications and get the frequency table       
-  setnames(dt.local, c("x", "y"))
-  dt.local[, code := 1000*x + y]
+  setnames(dt.local, c("dataset1", "dataset2"))
+  dt.local[, code := 1000*dataset1 + dataset2]
   freq.table <- as.data.frame(table(dt.local[,code]))
   
   # make the empty kappa matrix

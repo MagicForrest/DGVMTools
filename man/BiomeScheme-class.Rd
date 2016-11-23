@@ -13,9 +13,21 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 \section{Slots}{
 
 \describe{
-\item{\code{id}}{A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names.}
+\item{\code{id}}{A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")}
 
-\item{\code{name}}{A character string that can be more descriptive.}
+\item{\code{name}}{A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")}
+
+\item{\code{type}}{A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")}
+
+\item{\code{units}}{A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")}
+
+\item{\code{colours}}{A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")}
+
+\item{\code{cuts}}{A numerical sequence defining the plot range and colour breakpoints when plotting this biome scheme. Most correctly should be set to seq(1,length(units)), but is actually ignored by plotSpatial() (Inherited from Quantity via "contains")}
+
+\item{\code{aggregate.method}}{A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")}
+
+\item{\code{model}}{Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")}
 
 \item{\code{rules}}{A function which is applied to every row of the data.table and describes the biome classification rules.}
 
@@ -32,10 +44,6 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 \item{\code{fraction.of.woody}}{List of vegetation fraction of woody total needed to calculate biomes}
 
 \item{\code{needGDD5}}{If TRUE the biome rules require GDD5 for the classification}
-
-\item{\code{strings}}{List of character strings containing the names of the biomes}
-
-\item{\code{cols}}{List of character strings containing the names of R colous for the biomes (ordering matching the string slot)}
 
 \item{\code{data.reference}}{Character string giving a reference where the data for this biome scheme comes from}
 

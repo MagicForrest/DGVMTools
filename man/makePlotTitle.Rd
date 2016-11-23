@@ -2,9 +2,7 @@
 % Please edit documentation in R/plotting-spatial.R
 \name{makePlotTitle}
 \alias{makePlotTitle}
-\title{#######################################################################################################################################
-################### PLOT HISTOS FOR COMPARING MODEL AND DATA  #########################################################################
-#######################################################################################################################################}
+\title{Make a plot title}
 \usage{
 makePlotTitle(quantity.str, layer = NULL, run = NULL, period = NULL)
 }
@@ -21,122 +19,6 @@ makePlotTitle(quantity.str, layer = NULL, run = NULL, period = NULL)
 A character string for use as a plot title
 }
 \description{
-#' Make a histograms by comparing two rasters
-#' 
-#' Takes either two rasters or a \code{RasterComparion} object and makes a histograms.
-#' 
-#' Probably should be made a method of \code{RasterComparion}, 
-#' with further additions to that class necessary.
-#'  
-#' @param model Raster of the model
-#' @param data Raster of the data
-#' @param run The \code{ModelRun} object for the run plotted (optional)
-#' @param data.name Character string for the data
-#' @param quant The quantity plotted (as \code{Quantity} object)
-#' @param plot.range A numerical vector with two elements defining the range to plot on the histogram.
-#' @param stat.results The \code{RasterComparion} object if it has already been calculated
-#'
-#' The plot is saved to the run directory of the run object
-#' @importFrom Cairo CairoPNG
-#' @author Matthew Forrest \email{matthew.forrest@senckenberg.de}
-#'
-#' @export
-}
-\details{
-plotHistoComparison <- function(model,
-                                data, 
-                                run, 
-                                data.name, 
-                                quant, 
-                                plot.range, 
-                                stat.results = NULL){
-  
-  if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
-  
-  # set min and max in a robust way for the overlay hist
-  setMinMax(stat.results@diff.raster)
-  setMinMax(data)
-  setMinMax(model)
-  
-  breaks.max <- ceiling(max(maxValue(stat.results@diff.raster), maxValue(data),maxValue(model)))
-  breaks.min <- floor(min(minValue(stat.results@diff.raster), minValue(data),minValue(model)))
-  if(breaks.max - breaks.min > 100) breaks <- seq(breaks.min, breaks.max, by = 10) 
-  else if(breaks.max - breaks.min < 10) breaks <- seq(breaks.min, breaks.max, by = 0.1)
-  else breaks <- seq(breaks.min, breaks.max, by = 1)
-  
-  CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "DiffHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
-  
-  cex.axis.multi = 2
-  par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
-  hist(stat.results@diff.raster,  breaks = breaks, xlim = plot.range, xlab = paste(quant@id, ": ", "LPJ-GUESS - ", data.name, sep = ""), prob = TRUE, main = paste(quant@name, ": ", "LPJ-GUESS - ", data.name, sep = ""), cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
-  x = NULL
-  curve(dnorm(x, mean=stat.results@mean.diff, sd=stat.results@sd.diff), add=TRUE)
-  abline(v=0,col="green", lwd = 4)
-  legend('topright', c( paste("Mean = ", round(stat.results@mean.diff,3)), paste("SD = ", round(stat.results@sd.diff,3))), col = c("red","blue"), text.col = c("red","blue"), cex = 3, bty = "n") 
-  
-  dev.off()
-  
-  CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "OverlayHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
-  
-  cex.axis.multi = 2
-  par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
-  y.height <- 2*max(hist(stat.results@diff.raster, breaks = breaks, plot = FALSE)$counts, hist(data, breaks = breaks, plot = FALSE)$counts,  hist(model, breaks = breaks, plot = FALSE)$counts)
-  diff.histo <- hist(stat.results@diff.raster,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@name, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis = cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
-  hist(data,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@name, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "red", maxpixels =100000000, right = FALSE)
-  hist(model,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@name, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "blue", maxpixels =100000000, right = FALSE)
-  curve(dnorm(x, mean=stat.results@mean.diff, sd=stat.results@sd.diff)*diff(diff.histo$mids[1:2])*cellStats(is.finite(stat.results@diff.raster), stat= sum, na.rm=TRUE, asSample=FALSE), add=TRUE)
-  abline(v=0,col="green", lwd = 4)
-  legend('topright', c(data.name, "LPJ-GUESS", paste("LPJ-GUESS -", data.name, sep = " "), paste("Mean = ", round(stat.results@mean.diff,6)), paste("SD =", round(stat.results@sd.diff,6))), col = c("red","blue", "black", "black", "black"), text.col = c("red","blue", "black", "black", "black"), cex = 3, bty = "n") 
-  
-  dev.off()
-  
-}
-#######################################################################################################################################
-################### PLOT SCATTER PLOT FOR COMPARING MODEL AND DATA  ###################################################################
-#######################################################################################################################################
-
-#' Make a scatter plot by comparing two rasters
-#' 
-#' Takes either two rasters or a \code{RasterComparion} object and makes a scatter plot.
-#' 
-#' Probably should be made a method of \code{RasterComparion}, 
-#' with further additions to that class necessary.
-#'  
-#' @param model Raster of the model
-#' @param data Raster of the data
-#' @param run The \code{ModelRun} object for the run plotted (optional)
-#' @param data.name Character string for the data
-#' @param quant The quantity plotted (as \code{Quantity} object)
-#' @param stat.results The \code{RasterComparion} object if it has already been calculated
-#'
-#' The plot is saved to the run directory of the run object
-#' @importFrom Cairo CairoPNG
-#' @author Matthew Forrest \email{matthew.forrest@senckenberg.de}
-#'
-#' @export
-
-plotScatterComparison <- function(model, 
-                                  data, 
-                                  run, 
-                                  data.name, 
-                                  quant, 
-                                  stat.results = NULL){
-  
-  if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
-  
-  
-  CairoPNG(file.path(run@run.dir,paste(quant@id, run@id, "Scatter.Vs", data.name, "png", sep=".")), width = 1000, height = 1000, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
-  cex.axis.multi = 2
-  par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
-  
-  plot(model, data, col = rgb(0.1,0.1,0.1,0.1), pch = 20, xlab = paste(run@description, " ", quant@name, " (", quant@units, ")", sep = ""), ylab = paste(data.name, " ", quant@name, " (", quant@units, ")", sep =""), ylim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), xlim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), main = paste("Scatter vs. ", data.name, sep = ""), maxpixels = 100000000, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 4)
-  abline(0, 1, col = "red")
-  legend('topleft', c(paste("RMSE:", round(stat.results@RMSE, 2), sep = " "), paste("R^2:", round(stat.results@R2.eff, 2), sep = " "), paste("Pearsons:", round(stat.results@P.cor, 2), sep = " ")), text.col = c("red", "blue", "green"), cex = 3, bty = "n")
-  dev.off()
-  
-}
-Make a plot title
-
 Build an appropriate plot title from some possibly relevant variables.  
 It will use a string to represent the quantity (obligatory), and optionally a period and an ID.
 }

@@ -10,8 +10,7 @@ plotSpatial(data, layers = NULL, expand.layers = TRUE, quant = NULL,
   useLongnames = FALSE, text.multiplier = 1, plot.extent = NULL,
   limit = FALSE, limits = NULL, override.cols = NULL,
   override.cuts = NULL, special = "none", maxpixels = 1e+06,
-  biome.scheme = Smith2014.scheme, biome.data = NULL, kappa.list = NA,
-  kappa.position = NULL, ...)
+  biome.scheme = Smith2014.scheme, biome.data = NULL, ...)
 }
 \arguments{
 \item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
@@ -67,12 +66,6 @@ plotting etc (only used if argument "special" = "biomes")}
 
 \item{biome.data}{A biome dataset, as a Raster or a DataObject (can be left NULL to plot no data, 
 only used if argument "special" = "biomes")}
-
-\item{kappa.list}{A list of Kappa scores (to be coded in a more friendly style, 
-only used if argument "special" = "biomes")}
-
-\item{kappa.position}{A numeric vector with two elements to define the position (in Lon-Lat) of the overall 
-Kappa score on the plot (only used if argument "special" = "biomes")}
 
 \item{...}{Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.}
 }

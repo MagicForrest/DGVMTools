@@ -497,8 +497,16 @@ setClass("SpatialComparison",
 #' This is ultimately not flexible enough for all conceivable biome schemes from all models and will need to be somehow generalised and expanded at some point.  This is most certainly a challenge for another day!
 #' 
 #' 
-#' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot name A character string that can be more descriptive.
+
+
+#' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")
+#' @slot name A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")
+#' @slot type A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")
+#' @slot units A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")
+#' @slot colours A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")
+#' @slot cuts A numerical sequence defining the plot range and colour breakpoints when plotting this biome scheme. Most correctly should be set to seq(1,length(units)), but is actually ignored by plotSpatial() (Inherited from Quantity via "contains")
+#' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")
+#' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
 #' @slot combineShadeTolerance If TRUE, call combineShadeTolerance before doing the biome classification
 #' @slot totals.needed List of vegetation totals needed to calculate biomes, for example c("Tree", "Grass")
@@ -507,8 +515,6 @@ setClass("SpatialComparison",
 #' @slot fraction.of.tree List of vegetation fraction of tree total needed to calculate biomes
 #' @slot fraction.of.woody List of vegetation fraction of woody total needed to calculate biomes
 #' @slot needGDD5 If TRUE the biome rules require GDD5 for the classification
-#' @slot strings List of character strings containing the names of the biomes
-#' @slot cols List of character strings containing the names of R colous for the biomes (ordering matching the string slot)
 #' @slot data.reference Character string giving a reference where the data for this biome scheme comes from
 #' @slot published.reference Character string giving a reference where this model output classification scheme was published
 #' @exportClass BiomeScheme

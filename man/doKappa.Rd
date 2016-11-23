@@ -4,10 +4,14 @@
 \alias{doKappa}
 \title{Kappa comparison between two biome rasters}
 \usage{
-doKappa(dt, id, labels = NULL, verbose = FALSE)
+doKappa(dt, x = 1, y = 2, id, labels = NULL, verbose = FALSE)
 }
 \arguments{
 \item{dt}{A two-columned data.table containing the biomes (or other categorical data) represented as integer codes}
+
+\item{x}{Character string giving the column name of the first of the datasets to be compared}
+
+\item{y}{Character string giving the column name of the second of the datasets to be compared}
 
 \item{id}{A character string to identify this comparison, typically a combination the id of the biome scheme and the id of the vegetation model run.}
 
