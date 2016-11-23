@@ -46,10 +46,6 @@
 #' plotting etc (only used if argument "special" = "biomes")
 #' @param biome.data A biome dataset, as a Raster or a DataObject (can be left NULL to plot no data, 
 #' only used if argument "special" = "biomes")
-#' @param kappa.list A list of Kappa scores (to be coded in a more friendly style, 
-#' only used if argument "special" = "biomes")
-#' @param kappa.position A numeric vector with two elements to define the position (in Lon-Lat) of the overall 
-#' Kappa score on the plot (only used if argument "special" = "biomes") 
 #' @param ... Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
@@ -154,6 +150,19 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
     
   }
+  else if(is.DataObject(data)){
+    
+    #if(data@is.temporally.averaged){
+          if(is.null(quant)) quant <- data@quant
+    #} 
+    #else {
+    #  stop("plotSpatial:: trying to spatially plot a ModelObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
+    #}
+    
+    if(!is.null(run)) run.id <- run@id
+    else run.id <- NULL
+    
+  }
   else{
     
     print("ATTENTION:  plotSpatial() NOT running on a ModelObject")
@@ -192,6 +201,15 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         col = colours, 
                         labels = list(cex = 3 * text.multiplier)
   )
+  if(!is.null(quant)) {
+    if(tolower(quant@type) == "categorical") {
+      colorkey.list[["labels"]] <- list(cex = 2 * text.multiplier,
+                                        labels = rev(quant@units),
+                                        at = (0:(length(quant@units)-1)) + 0.5)
+   
+     colorkey.list[["col"]] <- colorRampPalette(rev(colorkey.list$col(length(quant@units))))
+    }
+  }
   
   
   #####################################################################################
@@ -370,24 +388,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   #### PLOT BIOMES
   else if(special == "biomes"){
     
-    # Build a Quantity object with the appropriate colours and cuts 
-    quant <- new("Quantity",
-                 id = biome.scheme@id,
-                 name = biome.scheme@name,
-                 type = "BiomeClassification",
-                 units = "categorical",
-                 colours = colorRampPalette(biome.scheme@cols),
-                 cuts = 0:length(biome.scheme@strings),
-                 aggregate.method = "categorical"
-    )
-    
-    # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
-    colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex * 2/3, 
-                                      "labels" = rev(biome.scheme@strings), 
-                                      "at" = (0:(length(biome.scheme@strings)-1)) + 0.5)
-    colorkey.list[["at"]] <- 0:length(biome.scheme@strings)
-    colorkey.list[["col"]] <- rev(biome.scheme@cols)
-    
     # Add PNV data if requested read it in and compare rasters
     if(!is.null(biome.data)) {
       data.name <- "Data"
@@ -415,23 +415,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
     }
     
-    # KAPPA
-    if(!is.na(kappa.list)[[1]]){
-    
-      # if only one model run put individual Kappas into biome legend
-      if(nlayers(data.toplot)-1 == 1) colorkey.list[["labels"]][["labels"]] <- paste0(colorkey.list[["labels"]][["labels"]], " (", rev(round(kappa.list[[1]]@individual.Kappas,2)), ")", sep = "")
-      # place overall Kappa on each modelled biome map 
-      if(is.null(kappa.position)) { 
-        this.extent <- extent(data.toplot)
-        stats.pos.x <- (this.extent@xmax-this.extent@xmin) * 0.15 + this.extent@xmin
-        stats.pos.y <- (this.extent@ymax-this.extent@ymin) * 0.15 + this.extent@ymin
-        kappa.position <- c(stats.pos.x, stats.pos.y) }
-      for(layer in 1:(nlayers(data.toplot)-1)) {
-        layout.objs[[paste(layer)]]  <- list("sp.text", loc = kappa.position, txt = paste0("Kappa = ", round(kappa.list[[layer]]@Kappa,3)), which = layer, cex = 1.5)
-      }
-      
-    }
-
   }
   
   #### PLOT DOMINANT
@@ -614,8 +597,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
   }
   else plot.labels.here <- plot.labels
-  
-  return(spplot(data.toplot,
+
+    return(spplot(data.toplot,
                 layers,
                 par.settings = list(panel.background=list(col=plot.bg.col)),
                 xlab = list(label = "Longitude", cex = 3 * text.multiplier),
@@ -641,147 +624,26 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
 }
 
-
-
-#' 
-#' #######################################################################################################################################
-#' ################### PLOT HISTOS FOR COMPARING MODEL AND DATA  #########################################################################
-#' #######################################################################################################################################
-#' 
-#' #' Make a histograms by comparing two rasters
-#' #' 
-#' #' Takes either two rasters or a \code{RasterComparion} object and makes a histograms.
-#' #' 
-#' #' Probably should be made a method of \code{RasterComparion}, 
-#' #' with further additions to that class necessary.
-#' #'  
-#' #' @param model Raster of the model
-#' #' @param data Raster of the data
-#' #' @param run The \code{ModelRun} object for the run plotted (optional)
-#' #' @param data.name Character string for the data
-#' #' @param quant The quantity plotted (as \code{Quantity} object)
-#' #' @param plot.range A numerical vector with two elements defining the range to plot on the histogram.
-#' #' @param stat.results The \code{RasterComparion} object if it has already been calculated
-#' #'
-#' #' The plot is saved to the run directory of the run object
-#' #' @importFrom Cairo CairoPNG
-#' #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' #'
-#' #' @export 
-#' 
-#' plotHistoComparison <- function(model,
-#'                                 data, 
-#'                                 run, 
-#'                                 data.name, 
-#'                                 quant, 
-#'                                 plot.range, 
-#'                                 stat.results = NULL){
-#'   
-#'   if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
-#'   
-#'   # set min and max in a robust way for the overlay hist
-#'   setMinMax(stat.results@diff.raster)
-#'   setMinMax(data)
-#'   setMinMax(model)
-#'   
-#'   breaks.max <- ceiling(max(maxValue(stat.results@diff.raster), maxValue(data),maxValue(model)))
-#'   breaks.min <- floor(min(minValue(stat.results@diff.raster), minValue(data),minValue(model)))
-#'   if(breaks.max - breaks.min > 100) breaks <- seq(breaks.min, breaks.max, by = 10) 
-#'   else if(breaks.max - breaks.min < 10) breaks <- seq(breaks.min, breaks.max, by = 0.1)
-#'   else breaks <- seq(breaks.min, breaks.max, by = 1)
-#'   
-#'   CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "DiffHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
-#'   
-#'   cex.axis.multi = 2
-#'   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
-#'   hist(stat.results@diff.raster,  breaks = breaks, xlim = plot.range, xlab = paste(quant@id, ": ", "LPJ-GUESS - ", data.name, sep = ""), prob = TRUE, main = paste(quant@name, ": ", "LPJ-GUESS - ", data.name, sep = ""), cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
-#'   x = NULL
-#'   curve(dnorm(x, mean=stat.results@mean.diff, sd=stat.results@sd.diff), add=TRUE)
-#'   abline(v=0,col="green", lwd = 4)
-#'   legend('topright', c( paste("Mean = ", round(stat.results@mean.diff,3)), paste("SD = ", round(stat.results@sd.diff,3))), col = c("red","blue"), text.col = c("red","blue"), cex = 3, bty = "n") 
-#'   
-#'   dev.off()
-#'   
-#'   CairoPNG(file.path(run@run.dir, paste(quant@id, run@id, "OverlayHisto.Vs", data.name, "png", sep=".")), width = 1000, height = 700, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
-#'   
-#'   cex.axis.multi = 2
-#'   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
-#'   y.height <- 2*max(hist(stat.results@diff.raster, breaks = breaks, plot = FALSE)$counts, hist(data, breaks = breaks, plot = FALSE)$counts,  hist(model, breaks = breaks, plot = FALSE)$counts)
-#'   diff.histo <- hist(stat.results@diff.raster,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@name, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis = cex.axis.multi, cex.main = 3, maxpixels =100000000, right = FALSE)
-#'   hist(data,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@name, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "red", maxpixels =100000000, right = FALSE)
-#'   hist(model,  breaks = breaks,   xlim = plot.range, ylim = c(0, y.height), xlab = quant@id, ylab = "#gridcells", main=paste(quant@name, run@description, sep = " "), prob = FALSE, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 3, border = "blue", maxpixels =100000000, right = FALSE)
-#'   curve(dnorm(x, mean=stat.results@mean.diff, sd=stat.results@sd.diff)*diff(diff.histo$mids[1:2])*cellStats(is.finite(stat.results@diff.raster), stat= sum, na.rm=TRUE, asSample=FALSE), add=TRUE)
-#'   abline(v=0,col="green", lwd = 4)
-#'   legend('topright', c(data.name, "LPJ-GUESS", paste("LPJ-GUESS -", data.name, sep = " "), paste("Mean = ", round(stat.results@mean.diff,6)), paste("SD =", round(stat.results@sd.diff,6))), col = c("red","blue", "black", "black", "black"), text.col = c("red","blue", "black", "black", "black"), cex = 3, bty = "n") 
-#'   
-#'   dev.off()
-#'   
-#' }
-
-
-#' #######################################################################################################################################
-#' ################### PLOT SCATTER PLOT FOR COMPARING MODEL AND DATA  ###################################################################
-#' #######################################################################################################################################
-#' 
-#' #' Make a scatter plot by comparing two rasters
-#' #' 
-#' #' Takes either two rasters or a \code{RasterComparion} object and makes a scatter plot.
-#' #' 
-#' #' Probably should be made a method of \code{RasterComparion}, 
-#' #' with further additions to that class necessary.
-#' #'  
-#' #' @param model Raster of the model
-#' #' @param data Raster of the data
-#' #' @param run The \code{ModelRun} object for the run plotted (optional)
-#' #' @param data.name Character string for the data
-#' #' @param quant The quantity plotted (as \code{Quantity} object)
-#' #' @param stat.results The \code{RasterComparion} object if it has already been calculated
-#' #'
-#' #' The plot is saved to the run directory of the run object
-#' #' @importFrom Cairo CairoPNG
-#' #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' #'
-#' #' @export 
-#' 
-#' plotScatterComparison <- function(model, 
-#'                                   data, 
-#'                                   run, 
-#'                                   data.name, 
-#'                                   quant, 
-#'                                   stat.results = NULL){
-#'   
-#'   if(is.null(stat.results)) stat.results <- compareTwoRastersStats(model, data)
-#'   
-#'   
-#'   CairoPNG(file.path(run@run.dir,paste(quant@id, run@id, "Scatter.Vs", data.name, "png", sep=".")), width = 1000, height = 1000, title = paste(data.name, "Comparisons", quant@id, sep = " "), bg = "transparent")
-#'   cex.axis.multi = 2
-#'   par(mar = c(cex.axis.multi*2.5, cex.axis.multi*2.5, cex.axis.multi*2.5, 2) + 0.1)
-#'   
-#'   plot(model, data, col = rgb(0.1,0.1,0.1,0.1), pch = 20, xlab = paste(run@description, " ", quant@name, " (", quant@units, ")", sep = ""), ylab = paste(data.name, " ", quant@name, " (", quant@units, ")", sep =""), ylim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), xlim = c(quant@cuts[1],quant@cuts[length(quant@cuts)]), main = paste("Scatter vs. ", data.name, sep = ""), maxpixels = 100000000, cex.lab =cex.axis.multi, cex.axis =cex.axis.multi, cex.main = 4)
-#'   abline(0, 1, col = "red")
-#'   legend('topleft', c(paste("RMSE:", round(stat.results@RMSE, 2), sep = " "), paste("R^2:", round(stat.results@R2.eff, 2), sep = " "), paste("Pearsons:", round(stat.results@P.cor, 2), sep = " ")), text.col = c("red", "blue", "green"), cex = 3, bty = "n")
-#'   dev.off()
-#'   
-#' }
-
-
-
-# plotScatter <- function(x.obj, y.obj = NULL, x.layer, y.layer, col, x.quant, y.quant = NULL, comparison.object = NULL){
-# 
-#   # get the classes
-#   class.x <- class(x.obj)
-#   class.y <- class(y.obj)
-# 
-#   # if y.obj 
-#   if(!is.null)
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# }
+# make a layout object for the Kappa score
+makeStatsOverlay <- function(stat.results, stats = "NME", panel = 1, plot.extent, x.pos.frac = 0.15, y.pos.frac = 0.15, cex = 1.5, digits = 3) {
+  
+  # position
+  if(class(plot.extent) == "SpatialExtent") plot.extent <- plot.extent@extent
+  stats.pos.x <- (plot.extent@xmax-plot.extent@xmin) * x.pos.frac + plot.extent@xmin
+  stats.pos.y <- (plot.extent@ymax-plot.extent@ymin) * y.pos.frac + plot.extent@ymin
+  kappa.position <- c(stats.pos.x, stats.pos.y)
+  
+  # text
+  text <- character()
+  for(stat in stats){
+    text = paste0(stat, "=", round(slot(stat.results, stat), digits))
+    paste(text, paste0(stat, "=", round(slot(stat.results, stat), digits)), sep = " ")
+    
+  }
+  
+  return(list("sp.text", loc = kappa.position, txt = text, which = panel, cex = cex))
+  
+}
 
 
 #######################################################################################################################################
@@ -809,7 +671,7 @@ makePlotTitle <- function(quantity.str, layer = NULL, run = NULL, period = NULL)
   if(!is.null(run)) string <- paste(string, run@description, sep = " ")
   if(!is.null(period)) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
   return(string)
- 
+  
 }
 
 

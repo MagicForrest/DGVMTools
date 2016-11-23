@@ -396,9 +396,31 @@ calcBiomes <-function(input, scheme){
   
   # Apply biome rules and return
   if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
+  
+  # get spatial and temporal columns
+  st.cols <- c()
+  for(st.colname in c("Lon", "Lat", "Year", "Month", "Day")){
+    if(st.colname %in% names(dt)) st.cols <- append(st.cols, st.colname)
+  }
+  
+  # calculate the biomes (first add it to the existing data.table then subset to make a new data.table and then delete the column from the original)
   suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1), with = FALSE])
-  input@data <- dt
-  return(input)
+  biome.dt <- dt[,append(st.cols, scheme@id), with = FALSE]
+  dt[, scheme@id := NULL, with=FALSE]
+  
+  # now make a new ModelObject and return
+  biomes <- new("ModelObject",
+                id = makeModelObjectID(scheme@id, input@temporal.extent, input@spatial.extent, input@is.temporally.averaged, input@is.spatially.averaged),
+                data = biome.dt,
+                quant = as(scheme, "Quantity"),
+                spatial.extent = input@spatial.extent,
+                temporal.extent = input@temporal.extent,
+                is.site = input@is.site,
+                is.spatially.averaged = input@is.spatially.averaged,
+                is.temporally.averaged = input@is.temporally.averaged,
+                run = input@run)
+  
+  return(biomes)
   
 }
 

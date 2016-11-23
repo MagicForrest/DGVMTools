@@ -134,9 +134,11 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   # from above orderings
   if(classification == "Smith2014") {
     subs.rules <- c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)
+    classification.str <- "Smith et al. 2014"
   }
   else if(classification == "Forrest2015"){
     subs.rules <- c(4,4,3,3,3,2,3,1,1,5,5,6,6,6,5,6,8,7)
+    classification.str <- "Forrest et al. 2015"
   }
   # MF: Note: This is a potentially useful Megabiomes scheme 
   else if(classification == "Megabiomes_dev"){
@@ -147,6 +149,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   }
   else if(classification == "original"){
     subs.rules <- 1:18
+    classification.str <- "Hickler et al. 2006"
   }
   
   
@@ -155,9 +158,9 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   return(
     new("DataObject",
         id =  paste(dataset.id, classification, sep = "."),
-        name = paste("H&P PNV Biomes classified by scheme", classification, sep = " "),
+        name = paste("H&P PNV Biomes classified as in", classification.str, sep = " "),
         data = PNV.dt,
-        quant = lookupQuantity("LAI_std", "Standard"),
+        quant = as(byIDfromList(classification, supported.biome.schemes), "Quantity"),
         spatial.extent = new("SpatialExtent", id = "PNVExtent", name = "PNV Extent", extent = getExtentFromDT(PNV.dt)),
         temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990),
         correction.layer =  ""

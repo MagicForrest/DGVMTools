@@ -572,23 +572,28 @@ benchmarkSpatial <- function(runs,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 #' @export
-doKappa <- function(dt, 
+doKappa <- function(dt,
+                    x = 1,
+                    y = 2,
                     id, 
                     labels = NULL, 
                     verbose = FALSE){
   
-  x = y = code = NULL
+  #x = y = code = NULL
   
+  # subset the data.table
+  dt.local <- dt[,c(x,y), with = FALSE]
+
   # get the unique classes and put them in a vector with no missing values
-  unique.classes <- unique(c(as.matrix(dt)))
+  unique.classes <- unique(c(as.matrix(dt.local)))
   unique.classes <- sort(unique.classes)
   unique.class.ids <- seq(unique.classes[1], unique.classes[length(unique.classes)])
   
   
   # assign each gridcell a code based on the classifications and get the frequency table       
-  setnames(dt, c("x", "y"))
-  dt[, code := 1000*x + y]
-  freq.table <- as.data.frame(table(dt[,code]))
+  setnames(dt.local, c("x", "y"))
+  dt.local[, code := 1000*x + y]
+  freq.table <- as.data.frame(table(dt.local[,code]))
   
   # make the empty kappa matrix
   kappa.matrix <- matrix(data = 0, nrow = length(unique.class.ids), ncol = length(unique.class.ids))

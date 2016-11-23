@@ -605,13 +605,13 @@ getModelObject <- function(run,
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
-  
+ 
   ###  Get class of the object we are dealing with
   this.class = class(input.data)[1]
-  
+
   ###  Define the layers we are pulling out
   # for ModelObject - note could define a methods "names" do cover this exception
-  if(is.ModelObject(input.data) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
+  if((is.ModelObject(input.data) || is.DataObject(input.data)) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
   # for data.table or rasters
   else if(is.null(layers) | layers[1] == "all") {layers = names(input.data)}
   
@@ -623,7 +623,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   }
   ### If data.table or ModelObject (which contains a data.table) 
   # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table" | is.ModelObject(input.data)){
+  else if(this.class == "data.table" | is.ModelObject(input.data) |  is.DataObject(input.data)){
     
     # first make a SpatialPointsDataFrame
     
@@ -631,7 +631,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
       data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = grid.topology)
     }
     
-    if(is.ModelObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
+    if(is.ModelObject(input.data) | is.DataObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
     
     # now convert to raster
     if(length(layers) == 1){
