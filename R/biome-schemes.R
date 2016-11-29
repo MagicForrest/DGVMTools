@@ -471,9 +471,9 @@ MeditBiomeRules <- function(lai){
   else if(as.numeric(lai[['Woody']]) > 1.5 && as.numeric(lai[['BorealFractionOfTree']]) > 0.5) {return(5)} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
   #else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}
-  else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.5) {return(6)}
+  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}
   # BIOME 2 - Needle-leaved evergreen forest
-  else if(as.numeric(lai[['Woody']]) > 1.5 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
   # BIOME 3 - Mediterranean woodland/scrub
   else if(as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
   # BIOME 8 - Shrublands/Shrub Steppe
@@ -500,7 +500,7 @@ MeditBiomes.scheme <- new("BiomeScheme",
                           new("Quantity",
                               id = "MeditBiomes",
                               name = "Mediterranean Biomes", 
-                              type = "Catogorical",
+                              type = "categorical",
                               colours = colorRampPalette(c("black",
                                                            "darkolivegreen",
                                                            "orangered4",
@@ -543,6 +543,7 @@ MeditBiomes.scheme <- new("BiomeScheme",
 #' @param lai Numerical vector of LAI values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
 #' 
+#' @keywords internal
 #' @return Biomes code (1-13)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 MegaBiomeRules_dev <- function(lai){
@@ -605,7 +606,7 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
                              new("Quantity",
                                  id = "Megabiomes",
                                  name = "Megabiomes", 
-                                 type = "Catogorical",
+                                 type = "categorical",
                                  colours = colorRampPalette(c("Tropical Rain Forest" = "seagreen",                     
                                                               "Tropical Deciduous Forest" = "orange3", 
                                                               "Boreal Evergreen Forest/Woodland" = "turquoise4",
@@ -658,12 +659,16 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
 #' @param fpc Numerical vector of FPC values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
 #' 
+#' @keywords internal
 #' @return Biomes code (1-10)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 FireMIPBiomeRules <- function(fpc){
   
-  # BIOME 1 - croplands
-  if(as.numeric(fpc[['Crops']]) > 0.2) { return(1) }
+  # BIOME 1 & 2 - croplands mosaics
+  
+  if(as.numeric(fpc[['Crops']]) > 0.5) { return(1) }
+  
+  if(as.numeric(fpc[['Crops']]) > 0.2) { return(2) }
   
   # BIOMES 2-6 - Forests
   #if(as.numeric(fpc[['Tree']]) > 0.6 &  fpc[['Grass']] < 0.4) {
@@ -671,48 +676,45 @@ FireMIPBiomeRules <- function(fpc){
     
     
     # BIOME 2 Needleleaved forest
-    if(fpc[['MaxTree']] == "NE") { return(2) }
+    if(fpc[['MaxTree']] == "NE") { return(3) }
     
     # BIOME 3 NS forest
-    else if(fpc[['MaxTree']] == "NS") { return(3) }
+    else if(fpc[['MaxTree']] == "NS") { return(4) }
     
     # BIOME 4 Summergreen forest
-    else if(fpc[['MaxTree']] == "BS") { return(4) }
+    else if(fpc[['MaxTree']] == "BS") { return(5) }
     
     # BIOME 5 Evergreen forest
-    else if(fpc[['MaxTree']] == "BE") { return(5) }
+    else if(fpc[['MaxTree']] == "BE") { return(6) }
     
     # BIOME 6 Raingreen forest
-    else if(fpc[['MaxTree']] == "BR") { return(6) }
+    else if(fpc[['MaxTree']] == "BR") { return(7) }
     
   }
   
   # BIOME 3 Additional - Lower tree cover requirement for Needle-leaved Summergreen Forest
-  else if(as.numeric(fpc[['Tree']]) > 0.4 && fpc[['MaxTree']] == "NS") { return(3) }
+  else if(as.numeric(fpc[['Tree']]) > 0.4 && fpc[['MaxTree']] == "NS") { return(4) }
   
   
   # BIOMES 7 and 8 - Grassy systems
   else if(as.numeric(fpc[['Grass']]) > 0.4 ) {
     
     # BIOME 7 C4 grassy system
-    if(fpc[['MaxGrass']] == "C4G") { return(7) }
+    if(fpc[['MaxGrass']] == "C4G") { return(8) }
     
     # BIOME 8 C3 grassy system
-    else if(fpc[['MaxGrass']] == "C3G") { return(8) }
+    else if(fpc[['MaxGrass']] == "C3G") { return(9) }
     
   }
   
   # BIOMES 9 - Shrublands
-  else if(as.numeric(fpc[['Shrub']]) > 0.4 ) { return(9) }
-  
-  # BIOMES 9 - Shrublands - alternate because shrubs are not so well represented
-  else if(as.numeric(fpc[['Tree']]) > 0.2 &&  as.numeric(fpc[['Grass']]) < 0.2) { return(9) }
+  else if(as.numeric(fpc[['Shrub']]) > 0.3 ) { return(10) }
   
   # BIOME 10 - Sparse vegetation
-  else if(as.numeric(fpc[['Total']]) > 0.2 ) { return(10) }
+  else if(as.numeric(fpc[['Total']]) > 0.2 ) { return(11) }
   
   # BIOME 11 Barren/Unclassified 
-  else { return(11) }
+  else { return(12) }
   
   
 }
@@ -727,8 +729,9 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                             new("Quantity",
                                 id = "FireMIP",
                                 name = "FireMIP Biomes", 
-                                type = "Catogorical",
-                                colours = colorRampPalette(c("Croplands > 20%" = "darkseagreen1",
+                                type = "categorical",
+                                colours = colorRampPalette(c("Croplands Dominated \n(Croplands > 50%)" = "chartreuse",
+                                                             "Croplands Mosaic \n(20% < Croplands < 50%)" = "darkseagreen1",
                                                              "Evergreen Needle-leafed Forest" = "darkblue",   
                                                              "Summergreen Needle-leafed Forest" = "skyblue2",
                                                              "Broadleafed Summergreen Forest" = "darkgreen", 
@@ -739,7 +742,8 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                                              "Shrubland" = "indianred3",
                                                              "Sparse Vegetation" = "mistyrose2",
                                                              "Other/Barren" = "gray75")),
-                                units =  c("Croplands > 20%",
+                                units =  c("Croplands Dominated \n(Croplands > 50%)",
+                                           "Croplands Mosaic \n(20% < Croplands < 50%)",
                                            "Needle-leafed  \nEvergreen Forest",      
                                            "Needle-leafed  \nSummergreen Forest",
                                            "Broadleafed \nSummergreen Forest", 
@@ -750,7 +754,7 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                            "Shrubland",
                                            "Sparse \nVegetation",
                                            "Other/Barren"),
-                                cuts = seq(0,11),
+                                cuts = seq(0,12),
                                 model = c("LPJ-GUESS-SPITFIRE-FireMIP",
                                           "LPJ-GUESS-BLAZE-FireMIP",
                                           "LPJ-GUESS-GlobFIRM-FireMIP",
@@ -846,7 +850,7 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                             new("Quantity",
                                 id = "FPCMegabiomes",
                                 name = "FPCMegabiomes", 
-                                type = "Catogorical",
+                                type = "categorical",
                                 colours = colorRampPalette(c("Tropical forest" = "darkgreen",
                                                              "Temperate forest" = "seagreen",
                                                              "Boreal forest" = "turquoise4",

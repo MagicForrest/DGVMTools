@@ -25,6 +25,7 @@ importFrom("plyr", "mapvalues")
 importMethodsFrom("data.table")
 importMethodsFrom("raster")
 importMethodsFrom("sp")
+importClassesFrom("ncdf4")
 
 exportClasses(TemporalExtent, 
               SpatialExtent, 

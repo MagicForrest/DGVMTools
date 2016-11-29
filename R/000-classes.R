@@ -343,7 +343,6 @@ setClass("ModelObject",
                    is.spatially.averaged = "logical",
                    is.temporally.averaged = "logical",
                    run = "ModelRunInfo"
-                   
          )
          
 )

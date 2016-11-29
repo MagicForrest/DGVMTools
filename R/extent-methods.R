@@ -3,16 +3,17 @@
 #' Methods for returning a raster::extent object from a ModelObject, DataObject or a data.table.  The data.table, or the data.table in the "data" slot of the ModelObject and DataObject, 
 #' must have columns named "Lon" and "Lat" otherwise these methods fail.  
 #' 
-#' @param x A ModelObject, DataObject or a data.table DGVMTools object
+#' @param x A ModelObject, DataObject or a data.table.
 #' @param ... Other arguments, not currently used
 #' @return A raster::extent
+#' @name extent
 #' @rdname extent
 #' @importMethodsFrom raster extent
 #' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 setGeneric("extent", function(x) standardGeneric("extent"))
 
-#' @describeIn extent Returns a raster::extent object from a data.table.
+#' @rdname extent
 setMethod("extent", signature(x="data.table"), function(x) {
   
   Lon = Lat = NULL
@@ -44,7 +45,7 @@ setMethod("extent", signature(x="data.table"), function(x) {
   
 })
 
-#' @describeIn extent Returns a raster::extent object from a ModelObject.
+#' @rdname extent
 setMethod("extent", signature(x="ModelObject"), function(x) {
   
   
@@ -75,7 +76,7 @@ setMethod("extent", signature(x="ModelObject"), function(x) {
   
 })
 
-#' @describeIn extent Returns a raster::extent object from a DataObject.
+#' @rdname extent 
 setMethod("extent", signature(x="DataObject"), function(x) {
   
   Lon = Lat = NULL

@@ -17,7 +17,7 @@ extent(x, ...)
 \S4method{extent}{DataObject}(x)
 }
 \arguments{
-\item{x}{A ModelObject, DataObject or a data.table DGVMTools object}
+\item{x}{A ModelObject, DataObject or a data.table.}
 
 \item{...}{Other arguments, not currently used}
 }
@@ -28,14 +28,6 @@ A raster::extent
 Methods for returning a raster::extent object from a ModelObject, DataObject or a data.table.  The data.table, or the data.table in the "data" slot of the ModelObject and DataObject, 
 must have columns named "Lon" and "Lat" otherwise these methods fail.
 }
-\section{Methods (by class)}{
-\itemize{
-\item \code{data.table}: Returns a raster::extent object from a data.table.
-
-\item \code{ModelObject}: Returns a raster::extent object from a ModelObject.
-
-\item \code{DataObject}: Returns a raster::extent object from a DataObject.
-}}
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
