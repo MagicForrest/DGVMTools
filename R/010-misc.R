@@ -308,7 +308,7 @@ cropDGVM <- function(input, extent){
     }
     # CASE 2.3 - object to be cropped is a ModelObject or DataObject - select on Lon and Lat by merging
     else if(input.class == "ModelObject" | input.class == "DataObject"){
-
+      
       # first remove any lines with NA (since the are probably not part of the extent) and pull out just the "Lon" and "Lat" columns
       this.extent <- na.omit(this.extent)[,c("Lon", "Lat"),with=FALSE]
       
@@ -318,12 +318,12 @@ cropDGVM <- function(input, extent){
       dt[, Lon := round(Lon, 4)]
       dt[, Lat := round(Lat, 4)]
       dt <- merge(dt, round(this.extent,4), by=c("Lon","Lat"), all.x = FALSE, all.y = TRUE)
-
+      
       # put in new data.table to original object, update meta-data and return
       input@data <- dt
       input@spatial.extent <- extent
       input@id <- makeModelObjectID(input@quant@id, temporal.extent = input@temporal.extent, spatial.extent = extent, temporally.averaged = input@is.temporally.averaged, spatially.averaged = input@is.spatially.averaged)
-
+      
       return(input)
     }
     
@@ -333,7 +333,7 @@ cropDGVM <- function(input, extent){
   else if(extent.class == "numeric" & length(input == 2)) {
     
     stop("cropDGVM: Cropping any object to sites not yet implemented  ")
-  
+    
   }
   
   # CASE 3.X - target extent is a site
@@ -402,13 +402,298 @@ byIDfromList <- function(id, list) {
   
 }
 
+# getDims <- function(input, dimensions){
+#   
+#   stop("Not finished!")
+#   
+#   if(is.ModelObject(input) || is.DataObject(input)) input <- input@data
+#   
+#   for(dim in dimensions){
+#     
+#     all <- sort(unique(input[[dim]]))
+#     
+#     # check spacings are even
+#     all.spacings <- c()
+#     for(counter in 1:(length(all)-1)) {
+#       
+#     }
+#     
+#   }
+#   
+# }
+
+#' Convert a ModelObject, DataObject or data.table to a matrix
+#' 
+#' This function is useful for making a matrix of data (particularly for writing to disk as a netCDF file) whilst maintain the original longitudes and latitudes.  
+#' The longitudes and latitudes are stored as the column and row names respectively. 
+#' This is necessary because making a Raster objects converts unevenly spaced coordinates to evenly spaced ones.
+#' 
+#' @param input The input data, either as a ModelObject, DataObject or data.table
+#' @param Lons A numeric vector of longitude value, used for gap-filling and ensuring that the longitudes are exactly what you want them to be.
+#' @param Lats A numeric vector of latitude value, used for gap-filling and ensuring that the latitudes are exactly what you want them to be. 
+#' @param gap.fill Logical, if true use fill in missing longitide columns and latitudes rows using either the provide Lons and Lats, or by filling in spaces if the grid spacing is regular.
+#' @param layer Character string specifying which layer from the input should be used to make the matrix
+#' @param tol Numeric specifying how close the differences between adjacant latitudes/longitudes should be when determining ir they are evenly spaced or not.    
+#' 
+#' @return A matrix (2D array) of the data with the longitudes and latitudes recored as the column and row names
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
+
+convertToMatrix <- function(input, Lons = NULL, Lats = NULL, gap.fill = TRUE, layer, tol = 1E-10) {
+  
+  
+  #### FUNCTIONS TO INSERT ROWS/COLUMNS INTO A MATRIX
+  
+  # function to insert a column of NAs
+  insertColumns <- function(mat, col.name, fill.value = NA) {
+    
+    # get the columns names and find which is before and after the colum to add
+    c.names <- sort(append(as.numeric(colnames(mat)), as.numeric(col.name)))
+    new.index <- which(c.names ==  col.name)
+    
+    if(new.index < dim(mat)[1] && new.index > 1) {
+      # split the matrix at the correct point
+      first.half <- mat[,1:(new.index-1)]
+      second.half <- mat[,new.index:length(colnames(mat))]
+    } else if(new.index == 1) {
+      first.half <- NULL
+      second.half <- mat
+    }  else {
+      first.half <- mat
+      second.half <- NULL
+    }
+    
+    # make the new data and cbind it into the matrix
+    new.col.data <- rep(NA, NROW(mat))
+    new.mat <- cbind(first.half, new.col.data, second.half)
+    colnames(new.mat) <- c.names
+    
+    return(new.mat)
+    
+  }
+  
+  
+  # function to insert a row of NAs
+  insertRows <- function(mat, row.name, fill.value = NA) {
+    
+    # get the columns names and find which is before and after the colum to add
+    c.names <- sort(append(as.numeric(rownames(mat)), as.numeric(row.name)))
+    new.index <- which(c.names == row.name)
+    
+    if(new.index < dim(mat)[1] && new.index > 1) {
+      # split the matrix at the correct point
+      first.half <- mat[1:(new.index-1),]
+      second.half <- mat[new.index:length(rownames(mat)),]
+    } else if(new.index == 1) {
+      first.half <- NULL
+      second.half <- mat
+    }  else {
+      first.half <- mat
+      second.half <- NULL
+    }
+    
+    # make the new data and cbind it into the matrix
+    new.row.data <- rep(NA, NCOL(mat))
+    new.mat <- rbind(first.half, new.row.data, second.half)
+    rownames(new.mat) <- c.names
+    
+    return(new.mat)
+    
+  }
+  
+  
+  ### MAKE THE MATRIX
+  
+  # input data type
+  if(is.ModelObject(input) || is.DataObject(input)) input <- input@data
+  
+  # dcast the data so that columns at longitudes and rows are latitudes and then convert to matrix
+  input.dcasted <- dcast(input, formula = Lat ~ Lon, value.var = layer, drop = FALSE)
+  input.matrix <- as.matrix(input.dcasted) 
+  
+  # the first column comes out as latitude values, so use those values as row names and delete that first column
+  rownames(input.matrix) <- input.matrix[,1]
+  input.matrix <- input.matrix[,-1]
+  
+  # reverse the latitudes 
+  input.matrix[nrow(input.matrix):1,]
+  
+  
+  
+  ##### GAP FILL MISSING ROWS AND COLUMNS
+  
+  if(gap.fill){
+    
+    #### COLUMNS/LONGITUDES
+    
+    # if latitudes provided
+    if(!is.null(Lons))  { 
+      
+      # find the lats that are missing and we need to add
+      lons.we.want <- Lons
+      lons.we.have <- as.numeric(colnames(input.matrix))
+      need.to.add <- lons.we.want[which(!lons.we.want %in% lons.we.have)]
+      
+      
+      for(newcol in need.to.add){
+        
+        # check precision issues
+        close.lon <- NULL
+        for(check.lon in lons.we.have) {
+          if(abs(newcol - check.lon) < tol) {
+            close.lon <- check.lon
+          }
+        }
+        
+        # if no matched longitude then insert a new row for it
+        if(is.null(close.lon)) {
+          input.matrix <- insertColumns(input.matrix, newcol, fill.value = NA)
+        }
+        # if there was one matched closely, change label to the exact numeric
+        else {
+          # get the index for the one we want to change
+          close.index <- which(as.numeric(colnames(input.matrix)) == close.lon)
+          # get the names 
+          all.names <- as.numeric(colnames(input.matrix))
+          # substitute the longitude with the correct precision
+          all.names[close.index] <- newcol
+          # set the names back
+          colnames(input.matrix) <- all.names
+        }
+        
+      } # for each longitude we need to add
+      
+    } # end if longitudes provided
+    
+    # if lons not provided
+    else {
+      
+      # get the differences between adjacent lats
+      diff.lons <- diff(as.numeric(colnames(input.matrix)))
+      
+      # if diffences are not all the same do gap-filling (otherwise do nothing)
+      if(!(abs(max(diff.lons) - min(diff.lons)) < 0.00000001)){
+        
+        # get a vector of the spacing
+        spacings <- sort(unique(diff.lons))
+        
+        # check if the spacings are even
+        even.spacings <- TRUE
+        for(spacing in spacings){ if(!(spacing %% spacings[1] == 0)) even.spacings <- FALSE }
+        
+        # if even.spacings then we have even spacings and can just insert rows based on equal spacings 
+        if(even.spacings){
+          
+          lons.we.have <- as.numeric(colnames(input.matrix))
+          lons.we.want <- seq(lons.we.have[1], lons.we.have[length(lons.we.have)], by = spacings[1])
+          need.to.add <- lons.we.want[which(!lons.we.want %in% lons.we.have)]
+          for(newcol in need.to.add){
+            input.matrix <- insertColumns(input.matrix, newcol, fill.value = NA)
+          }
+        }
+        # else need to do something rather more clever
+        else {
+          stop("TROUBLE WITH UNEVENLY SPACED LATITUDES WHEN GAP-FILLING A MATRIX")
+        } # end if even.spacings
+        
+      } # end if differences are not all the same
+      
+    } # end if lats not provided
+    
+    
+    #### ROWS/LATITUDES
+    
+    # if latitudes provided
+    if(!is.null(Lats))  { 
+      
+      # find the lats that are missing and we need to add
+      lats.we.want <- Lats
+      lats.we.have <- as.numeric(rownames(input.matrix))
+      need.to.add <- lats.we.want[which(!lats.we.want %in% lats.we.have)]
+      
+      
+      for(newrow in need.to.add){
+        
+        # check precision issues
+        close.lat <- NULL
+        for(check.lat in lats.we.have) {
+          if(abs(newrow - check.lat) < tol) {
+            close.lat <- check.lat
+          }
+        }
+        
+        # if no matched latitude then insert a new row for it
+        if(is.null(close.lat)) {
+          input.matrix <- insertRows(input.matrix, newrow, fill.value = NA)
+        }
+        # if there was one matched closely, change label to the exact numeric
+        else {
+          # get the index for the one we want to change
+          close.index <- which(as.numeric(rownames(input.matrix)) == close.lat)
+          # get the names 
+          all.names <- as.numeric(rownames(input.matrix))
+          # substitute the latitude with the correct precision
+          all.names[close.index] <- newrow
+          # set the names back
+          rownames(input.matrix) <- all.names
+        }
+        
+      } # for each latitude we need to add
+      
+    } # end if latitudes provided
+    
+    # if lats not provided
+    else {
+      
+      # get the differences between adjacent lats
+      diff.lats <- diff(as.numeric(rownames(input.matrix)))
+      
+      # if diffences are not all the same do gap-filling (otherwise do nothing)
+      if(!(abs(max(diff.lats) - min(diff.lats)) < 0.00000001)){
+        
+        # get a vector of the spacing
+        spacings <- sort(unique(diff.lats))
+        
+        # check if the spacings are even
+        even.spacings <- TRUE
+        for(spacing in spacings){ if(!(spacing %% spacings[1] == 0)) even.spacings <- FALSE }
+        
+        # if even.spacings then we have even spacings and can just insert rows based on equal spacings 
+        if(even.spacings){
+          
+          lats.we.have <- as.numeric(rownames(input.matrix))
+          lats.we.want <- seq(lats.we.have[1], lats.we.have[length(lats.we.have)], by = spacings[1])
+          need.to.add <- lats.we.want[which(!lats.we.want %in% lats.we.have)]
+          for(newrow in need.to.add){
+            input.matrix <- insertRows(input.matrix, newrow, fill.value = NA)
+          }
+        }
+        # else need to do something rather more clever
+        else {
+          stop("TROUBLE WITH UNEVENLY SPACED LATITUDES WHEN GAP-FILLING A MATRIX")
+        } # end if even.spacings
+        
+      } # end if differences are not all the same
+      
+    } # end if lats not provided
+    
+  } # end if gap.fill
+  
+  
+  # ...and return
+  return(input.matrix)
+  
+}
+
+
+
 #' Write a netCDF file
 #' 
 #' This function gives more flexibility (for example it can write more meta-data and can re-order the dimensions for efficient LPJ-GUESS reading) 
 #' than the similar raster::\code{writeRaster} function.  It is also intended that this function can write single sites/time series functionality 
 #' is not included yet.  Also might need some work to be CF compliant on the time dimension.
 #' 
-#' @param raster.in The data as a Raster* object.  This should be broadened to also include data.frames and data.tables for writing 
+#' @param data.in The data as a Raster* object.  This should be broadened to also include data.frames and data.tables for writing 
 #' time series from a particular point.
 #' @param var.name A character string containing the name of the variable as used in the netCDF file produced.
 #' @param var.units A character string containing the units of the variable as used in the netCDF file produced.
@@ -424,7 +709,7 @@ byIDfromList <- function(id, list) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 #' @import ncdf4 raster
-writeNetCDF <- function(raster.in, 
+writeNetCDF <- function(data.in, 
                         var.name, 
                         var.units, 
                         time.resolution = "annual", 
@@ -434,44 +719,64 @@ writeNetCDF <- function(raster.in,
                         ordering = "standard", 
                         missing.value = -999999){
   
-  # MAKE LONGITUDE AND LATITUDE DIMENSION
-  lon.list <- seq(from = xmin(raster.in) + xres(raster.in)/2 , to = xmax(raster.in) - xres(raster.in)/2, by = xres(raster.in))
-  lon.dim <- ncdim_def("Lon", "degrees", lon.list, unlim=FALSE, create_dimvar=TRUE)
-  lat.list <- seq(from = ymin(raster.in) + yres(raster.in)/2 , to = ymax(raster.in) - yres(raster.in)/2, by = yres(raster.in))
-  lat.dim <- ncdim_def("Lat", "degrees", lat.list, unlim=FALSE, create_dimvar=TRUE)
   
-  # MAKE TIME DIMENSION
-  # monthly - format as "days since YYYY-MM-DD HH:MM:SS"
-  if(tolower(time.resolution) == "monthly" || tolower(time.resolution) == "month"){ 
-    midpoints <- c(16,44,75,105,136,166,197,228,258,289,319,350)
-    ncycles <- ceiling(nlayers(raster.in)/12)
-    long.midpoints <- c()
-    for(cycle in 0:(ncycles-1)){
-      long.midpoints <- append(long.midpoints,midpoints  + (365*cycle))
+  input.class <- class(data.in)[1]
+  
+  # IF INPUT IS A RASTER
+  if(input.class == "RasterLayer" || input.class == "RasterStack" || input.class == "RasterBrick") {
+    
+    
+    # MAKE LONGITUDE AND LATITUDE DIMENSION
+    lon.list <- seq(from = xmin(data.in) + xres(data.in)/2 , to = xmax(data.in) - xres(data.in)/2, by = xres(data.in))
+    lon.dim <- ncdim_def("Lon", "degrees", lon.list, unlim=FALSE, create_dimvar=TRUE)
+    lat.list <- seq(from = ymin(data.in) + yres(data.in)/2 , to = ymax(data.in) - yres(data.in)/2, by = yres(data.in))
+    lat.dim <- ncdim_def("Lat", "degrees", lat.list, unlim=FALSE, create_dimvar=TRUE)
+    
+    # MAKE TIME DIMENSION
+    # monthly - format as "days since YYYY-MM-DD HH:MM:SS"
+    if(tolower(time.resolution) == "monthly" || tolower(time.resolution) == "month"){ 
+      midpoints <- c(16,44,75,105,136,166,197,228,258,289,319,350)
+      ncycles <- ceiling(nlayers(data.in)/12)
+      long.midpoints <- c()
+      for(cycle in 0:(ncycles-1)){
+        long.midpoints <- append(long.midpoints,midpoints  + (365*cycle))
+      }
+      time.list <- long.midpoints[1:nlayers(data.in)]
+      time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
     }
-    time.list <- long.midpoints[1:nlayers(raster.in)]
-    time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
-  }
-  # annual - format as "days since YYYY-MM-DD HH:MM:SS"
-  else if(tolower(time.resolution) == "annual" || tolower(time.resolution) == "yearly"){
+    # annual - format as "days since YYYY-MM-DD HH:MM:SS"
+    else if(tolower(time.resolution) == "annual" || tolower(time.resolution) == "yearly"){
+      
+      time.list <- seq(from = 0, to = nlayers(data.in)-1, by = 1)*365
+      time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
+      
+    }
+    else if(tolower(time.resolution) == "none"){
+      # if we have a third dimension but no time resolution we have a multivariable netCDF file
+      # in this case check that the var.name matches 
+      
+      ## TOO COMPLICATED, ABORT
+      
+    }
     
-    time.list <- seq(from = 0, to = nlayers(raster.in)-1, by = 1)*365
-    time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
-    
-  }
-  else if(tolower(time.resolution) == "none"){
-    # if we have a third dimension but no time resolution we have a multivariable netCDF file
-    # in this case check that the var.name matches 
-    
-    ## TOO COMPLICATED, ABORT
+    # convert raster to an array
+    array.out <- drop(as.array(data.in))
     
   }
   
+  else if(input.class == "matrix"){
+    
+    # MAKE LONGITUDE AND LATITUDE DIMENSION
+    lon.list <- as.numeric(colnames(data.in))
+    lon.dim <- ncdim_def("Lon", "degrees", lon.list, unlim=FALSE, create_dimvar=TRUE)
+    lat.list <- as.numeric(row.names(data.in))
+    lat.dim <- ncdim_def("Lat", "degrees", lat.list, unlim=FALSE, create_dimvar=TRUE)
+    
+    array.out <- data.in[dim(data.in):1,]
+    
+  }
   
   # PERMUTE THE DATA AND SET UP THE VARIABLE DIMENSION
-  
-  # convert raster to an array
-  array.out <- drop(as.array(raster.in))
   
   # For time series
   if(length(dim(array.out)) == 3) {

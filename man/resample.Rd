@@ -3,22 +3,31 @@
 \docType{methods}
 \name{resample}
 \alias{resample}
+\alias{resample.DGVM}
 \alias{resample.DGVM,DataObject,Raster,character,character-method}
 \alias{resample.DGVM,ModelObject,Raster,character,character-method}
-\alias{resample.DGVM,ModelObject,ncdf4,character,character-method}
+\alias{resample.DGVM,ModelObject,character,character,character-method}
 \title{Resample methods}
 \usage{
+resample.DGVM(x, y, method, filename)
+
 \S4method{resample.DGVM}{ModelObject,Raster,character,character}(x, y, method,
   filename)
 
 \S4method{resample.DGVM}{DataObject,Raster,character,character}(x, y, method,
   filename)
 
-\S4method{resample.DGVM}{ModelObject,ncdf4,character,character}(x, y, method,
-  filename)
+\S4method{resample.DGVM}{ModelObject,character,character,character}(x, y,
+  method, filename)
 }
 \arguments{
 \item{x}{A ModelObject or DataObject to be resample}
+
+\item{y}{A raster define the rather grid for the filename}
+
+\item{method}{The resampling method, can be "bil" or "nn" for raster.}
+
+\item{filename}{If supplied, the resulting resampled raster is written to disk.}
 
 \item{...}{Other arguments, not currently used}
 }

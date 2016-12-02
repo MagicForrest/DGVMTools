@@ -142,6 +142,14 @@ plotTemporal <- function(input.data,
           }
       }
       
+      # now check for specific aggregated layers
+      if(layer == "Woody") {
+        colour <- "brown"
+        label <- "Woody"
+        type <- 1
+      }
+      
+      
       if(!is.null(colour)) {
         new.cols <- append(new.cols, colour)
         new.types <- append(new.types, type)

@@ -27,6 +27,7 @@ check.cdo <- function(){
 #' @param varname If operating on a raster (not a netCDF file) the name for the variable in the resulting netCDF file.
 #' @param return.raster If TRUE, read the resulting netCDF file and return it is a a raster
 #' @param verbose If TRUE print some progress and diagnostic output
+#' @param remove.temps Logical, if TRUE remove the intermediate .nc files from disk
 #' 
 #' Basically just calls CDO on the commandline.  If the input arguments is an R RasterLayer/Stack/Brick, then is uses writeRaster() to write a netCDF file for processing (in the directory of the output file)
 #' 
@@ -37,7 +38,7 @@ check.cdo <- function(){
 #'    
 #'      
 
-cdo <- function(fun, ifile, ofile, grid = NULL, varname = "layer", return.raster = FALSE, verbose = TRUE) {
+cdo <- function(fun, ifile, ofile, grid = NULL, varname = "layer", return.raster = FALSE, verbose = TRUE, remove.temps = TRUE) {
   
   ### CHECK INPUT FILE
   this.class <- class(ifile)[1]
@@ -86,6 +87,9 @@ cdo <- function(fun, ifile, ofile, grid = NULL, varname = "layer", return.raster
   else {
     stop("cdo not available on this system")
   }
+  
+  # remove the temporary file
+  if(remove.temps) system(paste("rm", temp.file, sep = " "), ignore.stdout = !verbose)
   
   if(return.raster) {
     return(stack(ofile))

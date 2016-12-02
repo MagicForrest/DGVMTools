@@ -783,6 +783,12 @@ doTemporalAverage <- cmpfun(doTemporalAverage.uncompiled)
   # To stop compiler NOTES
   Year = NULL
   
+  # Warning if a certain year is not present
+  years.present <- unique(input[["Year"]])
+  for(year in temporal.extent@start:temporal.extent@end){
+    if(!(year %in% years.present)) warning(paste("Year", year, "requested, but it is not in the data!", sep = " "))
+  }
+  
   # return the subsetted data.table
   return(subset(input, Year >= temporal.extent@start & Year <= temporal.extent@end))    
   

@@ -4,12 +4,12 @@
 \alias{writeNetCDF}
 \title{Write a netCDF file}
 \usage{
-writeNetCDF(raster.in, var.name, var.units, time.resolution = "annual",
+writeNetCDF(data.in, var.name, var.units, time.resolution = "annual",
   time.units.string = NULL, long.name = "", filename = "test.nc",
   ordering = "standard", missing.value = -999999)
 }
 \arguments{
-\item{raster.in}{The data as a Raster* object.  This should be broadened to also include data.frames and data.tables for writing 
+\item{data.in}{The data as a Raster* object.  This should be broadened to also include data.frames and data.tables for writing 
 time series from a particular point.}
 
 \item{var.name}{A character string containing the name of the variable as used in the netCDF file produced.}

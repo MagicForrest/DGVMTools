@@ -4,6 +4,9 @@
 #' (especially useful for guassian grids with irregularly spaced latitudes)
 #' 
 #' @param x A ModelObject or DataObject to be resample
+#' @param y A raster define the rather grid for the filename
+#' @param method The resampling method, can be "bil" or "nn" for raster.
+#' @param filename If supplied, the resulting resampled raster is written to disk. 
 #' @param ... Other arguments, not currently used
 #' @return A vector of character strings of the names of the layers
 #' @name resample
@@ -11,6 +14,7 @@
 #' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 NULL
+#' @rdname resample
 setGeneric("resample.DGVM", function(x,y,method,filename) standardGeneric("resample.DGVM"))
 
 

@@ -466,7 +466,7 @@ MeditBiomeRules <- function(lai){
   
   
   # BIOME 4 - Deciduous forest
-  if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
+  if(as.numeric(lai[['Woody']]) > 2.0 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
   # BIOME 5 - Cold Montane forest
   else if(as.numeric(lai[['Woody']]) > 1.5 && as.numeric(lai[['BorealFractionOfTree']]) > 0.5) {return(5)} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
