@@ -148,6 +148,7 @@ supported.models <- c("LPJ-GUESS",
 #' 
 #' @param object The \code{ModelRunInfo} object to check for vailidity.
 #' @return Empty string if the essential slots are fine, a string containing an error message if not.
+#' @keywords internal
 #'    
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 

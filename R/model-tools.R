@@ -897,7 +897,7 @@ doSpatialAverage <- cmpfun(doSpatialAverage.uncompiled)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 LondonCentre <- function(lon) {
   
-  return(ifelse(lon >= 180, lon - 360, lon))
+  return(ifelse(lon > 180, lon - 360, lon))
   
 }
 

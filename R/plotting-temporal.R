@@ -20,7 +20,6 @@
 #' This function is WORK IN PROGRESS!!  For questions about functionality or feature requests contact the author
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
 #' @import ggplot2
 #' @return A ggplot
 #'

@@ -28,4 +28,5 @@ output variable.  Normally it will read the file from disk, but if that has alre
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
+\keyword{internal}
 

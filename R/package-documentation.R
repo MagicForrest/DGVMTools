@@ -3,7 +3,7 @@
 #' @name DGVMTools-package
 #' @docType package
 #' 
-#' @description This package is designed for reading, processing and plotting output from Dynamic Vegetation Models (DGVMs), land surface schemes from climate models and other 
+#' @description This package is designed for reading, processing and plotting output from Dynamic Vegetation Models (DGVMs), land surface models from climate models and other 
 #' spatial representions of the terrestrial biosphere or land surface.  There are many such models and each have their own output format.  
 #' This package gives a framework for reading the different outputs from these models and putting them into a common internal representation.  Once this is done, 
 #' it provides many tools for analysing the model results and comparing them to data (and each other).  These include common tasks such as:
@@ -14,10 +14,10 @@
 #'  \item Making maps and time series plots of the model output,
 #'  \item Reading in observed data (satellite data, flux tower data etc.) to which model the model results can be compared,
 #'  \item Calculating statistical metrics to quantify the agreement between models and data, and producing plots (scatter plots, histograms of residuals) to visually compare models and data,
-#'  \item Making a classification biomes or vegetation types from the model output,
-#'  \item Making differences maps to evaluate the effects of a model change,
+#'  \item Making a classification biomes or vegetation types from the model output and plotting them,
+#'  \item Making differences maps to evaluate the effects of a model change or spatially comparing models to data,
 #'  \item Storing averaged model data on disk for fast re-reading,
-#'  \item Saving model data in netCDF format.
+#'  \item Saving model data in standard netCDF format.
 #' }
 #' 
 #' 
