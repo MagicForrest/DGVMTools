@@ -9,8 +9,7 @@ plotSpatial(data, layers = NULL, expand.layers = TRUE, quant = NULL,
   layout.objs = NULL, plot.labels = NULL, plot.bg.col = "transparent",
   useLongnames = FALSE, text.multiplier = 1, plot.extent = NULL,
   limit = FALSE, limits = NULL, override.cols = NULL,
-  override.cuts = NULL, special = "none", maxpixels = 1e+06,
-  biome.scheme = Smith2014.scheme, biome.data = NULL, ...)
+  override.cuts = NULL, special = "none", maxpixels = 1e+06, ...)
 }
 \arguments{
 \item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
@@ -23,7 +22,7 @@ plotSpatial(data, layers = NULL, expand.layers = TRUE, quant = NULL,
 and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.}
 
 \item{period}{The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.
-In the case of plotting a \code{ModelRun} object this is taken automatically from he object, but this provides an override.}
+In the case of plotting a \code{ModelRun} object this is taken automatically from the object, but this provides an override.}
 
 \item{run}{A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}.}
 
@@ -56,16 +55,9 @@ or the range of the plot.}
 \item{override.cuts}{Cut ranges (a numeric vector) to override the defaults.}
 
 \item{special}{A character string to indicate certain "special modes" which modifies the behaviour of the function a bit.
-Special modes are currectly "fraction", "difference", "percentage.difference" and "firert" (fire return time).
-Biomes, dominant PFT and burnt area fraction should be added soon.}
+Special modes are currectly "fraction", "difference", "percentage.difference", "firert" (fire return time) and "dominant.pft".}
 
 \item{maxpixels}{Maximum number of pixels to plot (see \code{raster} version of \code{spplot})}
-
-\item{biome.scheme}{A biome scheme of type BiomeScheme.  This control the defines the biomes types, names, colours for 
-plotting etc (only used if argument "special" = "biomes")}
-
-\item{biome.data}{A biome dataset, as a Raster or a DataObject (can be left NULL to plot no data, 
-only used if argument "special" = "biomes")}
 
 \item{...}{Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.}
 }

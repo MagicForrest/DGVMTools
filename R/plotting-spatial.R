@@ -18,7 +18,7 @@
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
 #' @param period The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.   
-#' In the case of plotting a \code{ModelRun} object this is taken automatically from he object, but this provides an override.
+#' In the case of plotting a \code{ModelRun} object this is taken automatically from the object, but this provides an override.
 #' @param quant A \code{Quantity} object describy the quantity to be plotted.  This provides an override \code{Quantity} when plotting a \code{ModelObject}
 #' and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.
 #' @param run A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}. 
@@ -39,13 +39,8 @@
 #' @param override.cols A colour palette function to override the defaults
 #' @param override.cuts Cut ranges (a numeric vector) to override the defaults.
 #' @param special A character string to indicate certain "special modes" which modifies the behaviour of the function a bit.
-#' Special modes are currectly "fraction", "difference", "percentage.difference" and "firert" (fire return time).
-#' Biomes, dominant PFT and burnt area fraction should be added soon.
+#' Special modes are currectly "fraction", "difference", "percentage.difference", "firert" (fire return time) and "dominant.pft".
 #' @param maxpixels Maximum number of pixels to plot (see \code{raster} version of \code{spplot})
-#' @param biome.scheme A biome scheme of type BiomeScheme.  This control the defines the biomes types, names, colours for 
-#' plotting etc (only used if argument "special" = "biomes")
-#' @param biome.data A biome dataset, as a Raster or a DataObject (can be left NULL to plot no data, 
-#' only used if argument "special" = "biomes")
 #' @param ... Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
@@ -82,8 +77,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         override.cuts = NULL,
                         special = "none",
                         maxpixels = 1E6,
-                        biome.scheme = Smith2014.scheme,
-                        biome.data = NULL,
                         ...){
   
   ###################################################################################################
@@ -108,7 +101,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                          "burnt.fraction",
                          "firert",
                          "fire.return.time",
-                         "biomes",
                          "dominant.pft"))
   
   special <- switch(special,
@@ -121,11 +113,10 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                     burnt.fraction = "burnt.fraction",
                     firert = "fire.return.time",
                     fire.return.time = "fire.return.time",
-                    biomes = "biomes" ,
                     dominant.pft = "dominant" )
   
   # Warn ig quant is being ignored in special
-  if(!is.null(quant) & (special == "dominant" | special == "biomes"))
+  if(!is.null(quant) & special == "dominant")
     warning(paste("When using a \"special\" = ", special, ", argument \"quant\" is ignored"))
   
   
@@ -218,9 +209,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   if(is.null(run)) { tolerance <- 0.01 }
   else {tolerance <- run@tolerance}  
   
-  ### SPECIAL CASE OF BIOMES OR DOMINANT WITH NULL layer (assume the biome scheme id is the layer name)
+  ### SPECIAL CASE OF DOMINANT WITH NULL layer
   if(is.null(layers) & !is.null(special)){
-    if(special == "biomes") layers = biome.scheme@id
     if(special == "dominant") layers = "Dominant"
   }
   
@@ -382,38 +372,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     quant@cuts = 0:(length(quant@cuts)-1)
     
   }
-  
-  #### PLOT BIOMES
-  else if(special == "biomes"){
-    
-    # Add PNV data if requested read it in and compare rasters
-    if(!is.null(biome.data)) {
-      data.name <- "Data"
-      if(class(biome.data)[[1]] == "DataObject") {
-        data.name <- biome.data@name
-        data.id <- biome.data@id
-        biome.data <- promoteToRaster(biome.data@data)
-      }
-      # first check if they are on identical grids, in nor resample with nearest neighbour algorithm
-      if(!compareRaster(biome.data, data.toplot, extent=TRUE, rowcol=TRUE, crs=TRUE, res=TRUE, orig=FALSE, rotation=TRUE, values=FALSE, stopiffalse=FALSE, showwarning=FALSE)){
-        biome.data <- resample(biome.data, data.toplot, method = "ngb")
-      }
-      
-      biome.data <- crop(biome.data, data.toplot)
-      data.toplot <- mask(data.toplot, biome.data)  
-      
-      # add the PNV raster layer and its title
-      data.toplot <- addLayer(data.toplot, biome.data) 
-      layers <- names(data.toplot)
-      
-      # And finally build plot labels
-      
-      original.layers <- c(original.layers, data.name)
-      if(!is.null(plot.labels)) plot.labels <-  c(plot.labels, data.name) 
-      
-    }
-    
-  }
+ 
   
   #### PLOT DOMINANT
   
