@@ -5,7 +5,7 @@
 #' @param x A ModelObject or DataObject 
 #' @param ... Other arguments, not currently used
 #' @return A vector of character strings of the names of the layers
-#' @name names
+#' @name names-methods
 #' @rdname names
 #' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   

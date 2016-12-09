@@ -6,14 +6,14 @@
 #' @param x A ModelObject, DataObject or a data.table.
 #' @param ... Other arguments, not currently used
 #' @return A raster::extent
-#' @name extent
-#' @rdname extent
+#' @name extent-methods
+#' @rdname extent-methods
 #' @importMethodsFrom raster extent
 #' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 setGeneric("extent", function(x) standardGeneric("extent"))
 
-#' @rdname extent
+#' @rdname extent-methods
 setMethod("extent", signature(x="data.table"), function(x) {
   
   Lon = Lat = NULL
@@ -45,7 +45,7 @@ setMethod("extent", signature(x="data.table"), function(x) {
   
 })
 
-#' @rdname extent
+#' @rdname extent-methods
 setMethod("extent", signature(x="ModelObject"), function(x) {
   
   
@@ -76,7 +76,7 @@ setMethod("extent", signature(x="ModelObject"), function(x) {
   
 })
 
-#' @rdname extent 
+#' @rdname extent-methods 
 setMethod("extent", signature(x="DataObject"), function(x) {
   
   Lon = Lat = NULL

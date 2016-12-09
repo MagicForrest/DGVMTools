@@ -15,7 +15,7 @@ lookupQuantity(quant.id, model.str = "Standard")
 A \code{Quantity} object if it finds the right one.  Otherwise the code halts.
 }
 \description{
-Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties)
+Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties) from the standard \code{dgvm.quantities} list
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
