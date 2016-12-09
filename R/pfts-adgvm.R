@@ -5,12 +5,15 @@
 ########### aDGVM PFTS ########################
 ###############################################
 
-#' aDGVM PFTs (under development)
+#' @title dummy text
 #' 
-#' The list contains PFTs which could be used to classify individuals coming from the aDGVM 
+#' @description
 #' 
-#' @format A list of \code{PFT} objects that store meta-data for PFTs classified from aDGVM model output.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @details aDGVM PFTs (under development)
+#' 
+#' @format A list of \code{PFT} objects that store meta-data for standard PFT for supported models
+#' @rdname PFT-class
+#' @keywords datasets
 aDGVM.PFTs <- list(
   
   C4G = new("PFT",

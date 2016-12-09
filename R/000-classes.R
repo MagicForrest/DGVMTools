@@ -94,7 +94,9 @@ setClass("Period",
 
 #' Class to hold the metadata for a Plant Functional Type (PFT)
 #' 
-#' These will are defined in lists for the default PFTs (or common post-processing schemes in the case of aDGVM) for default model setups, but the user may well need to define their own 
+#' @description   This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their lifeform, phenology, leaftype, climate zone etc, and a default plot colour.
+#' These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a ModelRunInfo object
+#' to define which PFTs might be in a run (but they don't all need to be present in a given run)   
 #' 
 #' @slot id A unique character string to identify this particular PFT.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string to describe the PFT. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
@@ -104,6 +106,11 @@ setClass("Period",
 #' @slot zone A string defining the climate zone of a PFT, typically "Boreal", "Temperate" or "Tropical" (could go crazy and also have "Mediterranean", for example)
 #' @slot colour A string defining a preferred R colour to plot this PFT (for line graphs etc)
 #' @slot combine A string defining the \code{id} of a PFT that this PFT should be combined with when combining PFT with similar functioning but different shade tolerance.  Used primarily with LPJ-GUESS.
+#' 
+#' @details The following PFT list are already defined for standard model output:
+#' 
+#' @name PFT-class
+#' @rdname PFT-class
 #' @exportClass PFT
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("PFT", 
@@ -274,12 +281,12 @@ setClass("ModelRun",
 
 
 
-#' Class to hold the data for a vegetation quantity
+#' Class to hold meta-data for a vegetation quantity
 #' 
-#' Defines specific vegetation quantities like "lai" (LAI) or "mwcont_upper" (mean monthly water).  
-#' Includes metadata about the quantity (the units it is measured in for exampel), values for default plot proprties (color scales, plot ranges) and the aggragating method - ie whether the quantity shoudd generally be summed (for example monthly burnt area or C mass per PFT) or averaged (for example monthly soil water content).
-#' Note that the used will probably need to define their own, and modify these for their own analysis and plots
-#' 
+#' This class hold meta-data for specific vegetation or land surface quantities like "lai" (LAI) or "mwcont_upper" (mean monthly water).  
+#' Includes metadata about the quantity (the units it is measured in for example), values for default plot proprties (color scales, plot ranges) and the aggragating method - ie whether the quantity shoudd generally be summed (for example monthly burnt area or C mass per PFT) or averaged (for example monthly soil water content).
+#' See the 'Slots' documentation below.
+#' Note that the user will probably need to define their own, and modify these for their own analysis and plots
 #' 
 #' @slot id A unique character string to identify this particular vegetation quantity, should match with the name of a particular model output variable.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A longer character string to provide a more complete description of this quantity
@@ -288,8 +295,11 @@ setClass("ModelRun",
 #' @slot colours A function that returns a colour scale suited for plotting this quantity.
 #' @slot cuts A numerical sequence defining the plot range and colour breakpoint when plotting the quantity
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
-#' @slot model Either a the string "Standard" to denotethat this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
+#' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
+#'
 #' @exportClass Quantity
+#' @name Quantity-class
+#' @rdname Quantity-class
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("Quantity", 
          slots = c(id = "character",

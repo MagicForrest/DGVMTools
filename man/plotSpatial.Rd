@@ -5,7 +5,7 @@
 \title{Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.}
 \usage{
 plotSpatial(data, layers = NULL, expand.layers = TRUE, quant = NULL,
-  period = NULL, run = NULL, PFT.set = global.PFTs, title = NULL,
+  period = NULL, run = NULL, PFT.set = lpj.global.PFTs, title = NULL,
   layout.objs = NULL, plot.labels = NULL, plot.bg.col = "transparent",
   useLongnames = FALSE, text.multiplier = 1, plot.extent = NULL,
   limit = FALSE, limits = NULL, override.cols = NULL,

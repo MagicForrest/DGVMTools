@@ -68,7 +68,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         quant = NULL, 
                         period = NULL, 
                         run = NULL, 
-                        PFT.set = global.PFTs,
+                        PFT.set = lpj.global.PFTs,
                         title = NULL,
                         layout.objs = NULL, 
                         plot.labels =  NULL,
