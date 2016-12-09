@@ -9,6 +9,7 @@
 #' 
 #' Currently hard-coded to "", but could also be " ", "_" or "." (for example)
 #' This should clearly be implemented in a more useful way...
+#' @keywords internal datasets
 sep.char = ""
 
 

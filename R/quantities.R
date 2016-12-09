@@ -2,7 +2,7 @@
 
 #' Retrieve a Quantity from the standard list.
 #'
-#' Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties)
+#' Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties) from the standard \code{dgvm.quantities} list
 #' 
 #' @param quant.id String holding the id of the \code{Quantity} you want
 #' @param model.str String holding the name of the model or "Standard"

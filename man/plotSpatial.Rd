@@ -26,12 +26,12 @@ In the case of plotting a \code{ModelRun} object this is taken automatically fro
 
 \item{run}{A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}.}
 
-\item{PFT.set}{A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{ModelObject}.}
+\item{PFT.set}{A PFT set, necessary for expanding layers and plotting long names.  Normally taken from the \code{ModelObject}.}
 
-\item{title}{A character string to override the deafualt title.}
+\item{title}{A character string to override the default title.}
 
-\item{layout.objs}{List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
-so see the there for how to build them.}
+\item{layout.objs}{List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
+so see there for how to build them.}
 
 \item{plot.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
 Sensible titles will be constructed if this is not specified.}
@@ -65,10 +65,10 @@ Special modes are currectly "fraction", "difference", "percentage.difference", "
 Returns a plot object (from spplot)
 }
 \description{
-This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{ModelObject}, although plotting a Raster* is also useful.
+This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{ModelObject} or a \code{DataObject}, although plotting a Raster* is also useful.
 It has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults,
 so that in the case of plotting a \code{ModelObject} all you *need* to supply is the data itself, everything else is either set to a sensible default,
-or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can plot things like biomes, dominant PFTs, months of maximum values, 
+or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can automatically plot things like biomes, dominant PFTs, months of maximum values, 
 burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command.
 }
 \details{

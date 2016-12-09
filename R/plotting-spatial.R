@@ -8,10 +8,10 @@
 
 #' Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.
 #' 
-#' This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{ModelObject}, although plotting a Raster* is also useful.
+#' This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{ModelObject} or a \code{DataObject}, although plotting a Raster* is also useful.
 #' It has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults,
 #' so that in the case of plotting a \code{ModelObject} all you *need* to supply is the data itself, everything else is either set to a sensible default,
-#' or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can plot things like biomes, dominant PFTs, months of maximum values, 
+#' or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can automatically plot things like biomes, dominant PFTs, months of maximum values, 
 #' burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command. 
 #'
 #' @param data The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
@@ -22,10 +22,10 @@
 #' @param quant A \code{Quantity} object describy the quantity to be plotted.  This provides an override \code{Quantity} when plotting a \code{ModelObject}
 #' and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.
 #' @param run A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}. 
-#' @param PFT.set A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{ModelObject}.
-#' @param title A character string to override the deafualt title.
-#' @param layout.objs List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
-#' so see the there for how to build them.
+#' @param PFT.set A PFT set, necessary for expanding layers and plotting long names.  Normally taken from the \code{ModelObject}.
+#' @param title A character string to override the default title.
+#' @param layout.objs List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
+#' so see there for how to build them.
 #' @param plot.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
 #' @param plot.bg.col Colour string for the plot background.
@@ -81,7 +81,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ###################################################################################################
   ### PRE-AMBLE:                                                             ########################
-  ### 1. INITIAL ARGUMENT CHACKSWND WARNINGS ABOUT ARGUMENT  COMBINATIONS    ########################
+  ### 1. INITIAL ARGUMENT CHECKS AND WARNINGS ABOUT ARGUMENT  COMBINATIONS   ########################
   ### 2. WHEN THINGS ARE NOT SPECIFIED, PULL SOME DEFAULTS                   ########################
   ###################################################################################################
   
@@ -154,8 +154,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   else{
     
-    print("ATTENTION:  plotSpatial() NOT running on a ModelObject")
-    warning("ATTENTION:  plotSpatial() NOT running on a ModelObject")
+    print(paste("ATTENTION:  plotSpatial() NOT running on a ModelObject or DataObject, plotting an object of class ", class(data)[1]))
+    warning(paste("ATTENTION:  plotSpatial() NOT running on a ModelObject or DataObject, plotting an object of class ", class(data)[1]))
     
     if(is.null(quant)) {
       
@@ -175,11 +175,9 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CHECK FOR SPECIAL VARIABLES FOR NICER PLOTTING
   if(special == "none" | is.null(special)){
-    
-    
+ 
     if(quant@id == "burntfraction") special <- "burnt.fraction"
-    
-    
+ 
   }
   
   

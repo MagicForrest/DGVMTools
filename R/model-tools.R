@@ -160,7 +160,7 @@ removeFromModelRun <- function(object.id, run){
 
 
 
-############################## MAKE THE 'id' STRING FOR A VEGOBJECT
+############################## MAKE THE 'id' STRING FOR A MODELOBJECT
 #
 #' Make an ID string for a \code{ModelObject}
 #' 
@@ -174,6 +174,7 @@ removeFromModelRun <- function(object.id, run){
 #' @param spatially.averaged Logical, should be TRUE if spatial averaging has been done
 #' @return A character string 
 #' @export
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 
