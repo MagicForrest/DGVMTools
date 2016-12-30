@@ -226,8 +226,8 @@ dgvm.quantities <- list(
       name = "Litter Carbon Mass",
       type = "PFT",
       units = "kgC/m^2",
-      colours = cmass.palette,
-      cuts = seq(0,10,1),
+      colours = fields::tim.colors,
+      cuts = seq(0,2,0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -527,7 +527,7 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "-",
       colours = fields::tim.colors,
-      cuts = seq(0, 20, 0.1),
+      cuts = seq(0, 5, 0.2),
       aggregate.method = "mean",
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
@@ -884,7 +884,7 @@ dgvm.quantities <- list(
                     type = "monthly",
                     units = "kgC/m^2",
                     colours = fields::tim.colors,
-                    cuts = seq(0,1.0,0.1),
+                    cuts = seq(0,1.0,0.05),
                     aggregate.method = "mean",
                     model = c("LPJ-GUESS-SPITFIRE")),
   

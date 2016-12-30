@@ -464,29 +464,30 @@ Forrest2015.scheme <- new("BiomeScheme",
 
 MeditBiomeRules <- function(lai){
   
-  
+  # BIOME 1 - Grass Steppe  
+  #else if(as.numeric(lai[['Grass']]) > 1.0 & as.numeric(lai[['Woody']] < 1.0)) {return(7)}
+  if(as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']])) {return(1)}
   # BIOME 4 - Deciduous forest
   #if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
-  if(as.numeric(lai[['Woody']]) > 2.0 && lai[['MaxWoody']] == "TeBS") {return(4)}  # 2
+  else if(as.numeric(lai[['Woody']]) > 2.0 && lai[['MaxWoody']] == "TeBS") {return(4)}  # 2
   # BIOME 5 - Cold Montane forest
   else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE" )) {return(5)} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
   #else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}
-  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}
+  #else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.25 && lai[['MaxWoody']] == "TeBS") {return(6)}
+  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeNE")) {return(6)}
   # BIOME 2 - Needle-leaved evergreen forest
-  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
   # BIOME 3 - Mediterranean woodland/scrub
-  else if(as.numeric(lai[['Woody']]) > 1.0 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
-  # BIOME 8 - Shrublands/Shrub Steppe
-  else if(as.numeric(lai[['Woody']]) > 0.5 && (lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS" )) {return(8)}
-  else if(as.numeric(lai[['Woody']]) > as.numeric(lai[['Grass']])) {return(8)}
-  # BIOME 7 - Grass Steppe  
-  else if(as.numeric(lai[['Grass']]) > 1.0 & as.numeric(lai[['Woody']] < 1.0)) {return(7)}
-  # BIOME 1 - Remainder, Unclassified
+  else if(as.numeric(lai[['Woody']]) > 1 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
+ 
+ 
+  
+  # BIOME 7 - Remainder, Unclassified
   else {
     #print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
     #print(lai)
-    return(1)
+    return(7)
   }
   
   
@@ -502,23 +503,21 @@ MeditBiomes.scheme <- new("BiomeScheme",
                               id = "MeditBiomes",
                               name = "Mediterranean Biomes", 
                               type = "categorical",
-                              colours = colorRampPalette(c("black",
+                              colours = colorRampPalette(c("darkseagreen1",
                                                            "darkolivegreen",
                                                            "orangered4",
                                                            "green3",
                                                            "royalblue4",
                                                            "sandybrown",
-                                                           "darkseagreen1",
-                                                           "tan")),
-                              units =  c("Not\nclassifiable",
+                                                           "grey75")),
+                              units =  c("Steppe/\nMountain\nGrassland",
                                          "Needleleaved\nEvergreen\nWoodlands",
-                                         "Mediterranean\nSchlerophyllous\nForest/Woodlands",
+                                         "Mediterranean\nSchlerophyllous\nScrub/Woodlands",
                                          "Deciduous\nForest",
                                          "Cold\nMontane\nForest",
                                          "Presteppe\nWoodlands",
-                                         "Grass\nsteppe",
-                                         "Woody steppe/\nShrublands"),
-                              cuts = seq(0,8),
+                                         "Unclassifiable/\nOther"),
+                              cuts = seq(0,7),
                               model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = MeditBiomeRules,
                           totals.needed = c("lifeforms", "zones"),

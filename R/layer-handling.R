@@ -53,7 +53,7 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
    Temp.dt <- merge(x = round(to.dt, dec.places), y = round(layers.to.add.dt, dec.places), all.x = keep.all.from, all.y = keep.all.to)
   }
   else {
-    merge(x = to@data, y = layers.to.add.dt, all.x = keep.all.from, all.y = keep.all.to)
+    Temp.dt <- merge(x = to@data, y = layers.to.add.dt, all.x = keep.all.from, all.y = keep.all.to)
   }
   to@data <- Temp.dt
   return(to)

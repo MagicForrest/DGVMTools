@@ -9,7 +9,7 @@
 #' @param quant A Quantity object to provide meta-data about how to make this plot
 #' @param cols,types Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
 #' the same length as the labels arguments
-#' @param labels A list of character strings which are used as the labels fro the lines.  Must have the same length as the layers argument (after expansion if necessary)
+#' @param labels A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
 #' @param wrap Character string. If specified, split the data (ie melt) the data by the column specified in the argument, and then split the plot into ribbons accordingly.
@@ -55,7 +55,7 @@ plotTemporal <- function(input.data,
   
       if(!(is.DataObject(x.object) || is.ModelObject(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  ModelObject") }
       temp.dt <- copy(x.object@data)
-      temp.dt[,"Run" := x.object@run@id]
+      temp.dt[,"Run" := x.object@run@description]
       plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt))
       rm(temp.dt)
 
