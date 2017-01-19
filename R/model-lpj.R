@@ -106,6 +106,7 @@ openLPJOutputFile <- function(run,
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
+#' @keywords internal
 #' @export
 
 getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {

@@ -20,7 +20,6 @@
 #' This function is WORK IN PROGRESS!!  For questions about functionality or feature requests contact the author
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
 #' @import ggplot2
 #' @return A ggplot
 #'
@@ -141,6 +140,14 @@ plotTemporal <- function(input.data,
             label <- PFT@id
           }
       }
+      
+      # now check for specific aggregated layers
+      if(layer == "Woody") {
+        colour <- "brown"
+        label <- "Woody"
+        type <- 1
+      }
+      
       
       if(!is.null(colour)) {
         new.cols <- append(new.cols, colour)

@@ -1,45 +1,49 @@
 #!/usr/bin/Rscript
 
-
-#' Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties)
-#' 
-#' lalal
+#' Retrieve a Quantity from the standard list.
+#'
+#' Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties) from the standard \code{dgvm.quantities} list
 #' 
 #' @param quant.id String holding the id of the \code{Quantity} you want
 #' @param model.str String holding the name of the model or "Standard"
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @return A \code{Quantity} object if it finds the right one.  Otherwise the code halts.
 lookupQuantity <- function(quant.id, model.str = "Standard"){
   
-  for(quant in veg.quantities){
+  for(quant in dgvm.quantities){
     
     if(quant.id == quant@id & model.str %in% quant@model) return(quant)
     
   }
   
-  warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in veg.quantities, now searching only on the quant.id."))
+  warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in dgvm.quantities, now searching only on the quant.id."))
   
-  for(quant in veg.quantities){
+  for(quant in dgvm.quantities){
     
     if(quant.id == quant@id) return(quant)
     
   }
   
-  stop(paste0("Can find a quantity with id = ", quant.id, " anywhere in veg.quantities"))
+  stop(paste0("Can find a quantity with id = ", quant.id, " anywhere in dgvm.quantities"))
   
 }
 
 
 
-#' Global scope list of all LPJ-GUESS (and SPITFIRE) quantities defined as \code{Quantity} object 
-#' from the default LPJ-GUESS model config and a few extra.
-#'
-#' These quantities have sensible colour schemes, long names and cut ranges for standard global runs,
-#' but they will likely need to be modified and new ones aded for a specific analysis.
-#' Once the package is loaded this is just a standard R list so can be modified and extended as you wish.
+#' @title dummy text
 #' 
-#' @format A list of \code{Quantity} objects that store meta-data for output variable commonly used from LPJ-GUESS (and LPJ-GUESS-SPITFIRE)
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @seealso \code{Quantity}-class
-veg.quantities <- list(
+#' @description A global scope list of all many quantites for many models defined by the \code{dgvm.quantities} list below.
+#' Once the package is loaded this is just a standard R list so can be modified and extended as you wish.  It can be conveniently accesed by the \code{lookupQuantity()} function.
+#' 
+#' @details These quantities have sensible colour schemes, long names and cut ranges for standard global runs,
+#' but they will likely need to be modified and new ones aded for a specific analysis.
+#' 
+#' @format \code{dgvm.quantities} is list of \code{Quantity} objects that store meta-data for common output variables from supported models as well as some standard quantities
+#' which should be derivable from all model output.
+#' @rdname Quantity-class
+#' @keywords datasets
+#' @seealso \code{lookupQuantity}
+dgvm.quantities <- list(
   
   ######################################################################
   ########## STANDARD (CROSS-MODEL) QUANTITIES  ########################

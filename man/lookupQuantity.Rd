@@ -2,7 +2,7 @@
 % Please edit documentation in R/quantities.R
 \name{lookupQuantity}
 \alias{lookupQuantity}
-\title{Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties)}
+\title{Retrieve a Quantity from the standard list.}
 \usage{
 lookupQuantity(quant.id, model.str = "Standard")
 }
@@ -11,7 +11,13 @@ lookupQuantity(quant.id, model.str = "Standard")
 
 \item{model.str}{String holding the name of the model or "Standard"}
 }
+\value{
+A \code{Quantity} object if it finds the right one.  Otherwise the code halts.
+}
 \description{
-lalal
+Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties)
+}
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 

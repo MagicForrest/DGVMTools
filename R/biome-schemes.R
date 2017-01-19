@@ -411,7 +411,7 @@ Forrest2015MegaBiomeRules <- function(lai){
 #' 
 Forrest2015.scheme <- new("BiomeScheme",
                           new("Quantity",
-                              id = "Forrest 2015",
+                              id = "Forrest2015",
                               name = "Forrest et al. 2015", 
                               type = "categorical",
                               colours = colorRampPalette(c("Tropical Forest" = "seagreen",                     
@@ -466,9 +466,10 @@ MeditBiomeRules <- function(lai){
   
   
   # BIOME 4 - Deciduous forest
-  if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
+  #if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
+  if(as.numeric(lai[['Woody']]) > 2.0 && lai[['MaxWoody']] == "TeBS") {return(4)}  # 2
   # BIOME 5 - Cold Montane forest
-  else if(as.numeric(lai[['Woody']]) > 1.5 && as.numeric(lai[['BorealFractionOfTree']]) > 0.5) {return(5)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE" )) {return(5)} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
   #else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}
   else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}

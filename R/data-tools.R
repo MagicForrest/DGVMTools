@@ -107,6 +107,7 @@ countCategoricalData <- function(original.data, output.raster, categories = NULL
 #' @param spatially.averaged Logical, should be TRUE if the data have been averaged over spatial domain 
 #' @return A character string 
 #' @export
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 

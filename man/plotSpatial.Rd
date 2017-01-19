@@ -5,12 +5,11 @@
 \title{Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.}
 \usage{
 plotSpatial(data, layers = NULL, expand.layers = TRUE, quant = NULL,
-  period = NULL, run = NULL, PFT.set = global.PFTs, title = NULL,
+  period = NULL, run = NULL, PFT.set = lpj.global.PFTs, title = NULL,
   layout.objs = NULL, plot.labels = NULL, plot.bg.col = "transparent",
   useLongnames = FALSE, text.multiplier = 1, plot.extent = NULL,
   limit = FALSE, limits = NULL, override.cols = NULL,
-  override.cuts = NULL, special = "none", maxpixels = 1e+06,
-  biome.scheme = Smith2014.scheme, biome.data = NULL, ...)
+  override.cuts = NULL, special = "none", maxpixels = 1e+06, ...)
 }
 \arguments{
 \item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
@@ -23,16 +22,16 @@ plotSpatial(data, layers = NULL, expand.layers = TRUE, quant = NULL,
 and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.}
 
 \item{period}{The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.
-In the case of plotting a \code{ModelRun} object this is taken automatically from he object, but this provides an override.}
+In the case of plotting a \code{ModelRun} object this is taken automatically from the object, but this provides an override.}
 
 \item{run}{A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}.}
 
-\item{PFT.set}{A PFT set, necessary for exapnding layers and plotting long names.  Normally taken from the \code{ModelObject}.}
+\item{PFT.set}{A PFT set, necessary for expanding layers and plotting long names.  Normally taken from the \code{ModelObject}.}
 
-\item{title}{A character string to override the deafualt title.}
+\item{title}{A character string to override the default title.}
 
-\item{layout.objs}{List of overlays (for example coastlines or rivers) or other objects to be plotted by \code{spplot} 
-so see the there for how to build them.}
+\item{layout.objs}{List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
+so see there for how to build them.}
 
 \item{plot.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
 Sensible titles will be constructed if this is not specified.}
@@ -56,16 +55,9 @@ or the range of the plot.}
 \item{override.cuts}{Cut ranges (a numeric vector) to override the defaults.}
 
 \item{special}{A character string to indicate certain "special modes" which modifies the behaviour of the function a bit.
-Special modes are currectly "fraction", "difference", "percentage.difference" and "firert" (fire return time).
-Biomes, dominant PFT and burnt area fraction should be added soon.}
+Special modes are currectly "fraction", "difference", "percentage.difference", "firert" (fire return time) and "dominant.pft".}
 
 \item{maxpixels}{Maximum number of pixels to plot (see \code{raster} version of \code{spplot})}
-
-\item{biome.scheme}{A biome scheme of type BiomeScheme.  This control the defines the biomes types, names, colours for 
-plotting etc (only used if argument "special" = "biomes")}
-
-\item{biome.data}{A biome dataset, as a Raster or a DataObject (can be left NULL to plot no data, 
-only used if argument "special" = "biomes")}
 
 \item{...}{Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.}
 }
@@ -73,10 +65,10 @@ only used if argument "special" = "biomes")}
 Returns a plot object (from spplot)
 }
 \description{
-This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{ModelObject}, although plotting a Raster* is also useful.
+This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{ModelObject} or a \code{DataObject}, although plotting a Raster* is also useful.
 It has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults,
 so that in the case of plotting a \code{ModelObject} all you *need* to supply is the data itself, everything else is either set to a sensible default,
-or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can plot things like biomes, dominant PFTs, months of maximum values, 
+or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can automatically plot things like biomes, dominant PFTs, months of maximum values, 
 burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command.
 }
 \details{

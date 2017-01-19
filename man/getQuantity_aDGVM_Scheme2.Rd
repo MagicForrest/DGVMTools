@@ -23,4 +23,5 @@ Simon Scheiter \email{simon.scheiter@senckenberg.de}, Matthew Forrest \email{mat
 \seealso{
 \code{getQuantity_aDGVM_Scheme1}
 }
+\keyword{internal}
 

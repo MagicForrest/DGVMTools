@@ -269,7 +269,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       
       if(archive){
         
-        writeNetCDF(raster.in = GFED4.data.cropped, 
+        writeNetCDF(data.in = GFED4.data.cropped, 
                     var.name = "burntArea", 
                     var.units = units, 
                     time.resolution = temporal.resolution, 
