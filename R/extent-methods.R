@@ -27,12 +27,23 @@ setMethod("extent", signature(x="data.table"), function(x) {
   
   # Now build the spatial extent depending on if it is a single site or not
   # if it is a site or a transect
-  if(length(ordered.lons) == 1 || length(ordered.lats) == 1){
-    extent.temp <- c(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+  if(length(ordered.lons) == 1 && length(ordered.lats) == 1){
+    extent.temp <- extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+  }
+  # transect along lon
+  else if (length(ordered.lons) == 1) {
+    extent.temp =  extent(ordered.lons[1], ordered.lons[1],
+                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+  }
+  # transect along lat
+  else if (length(ordered.lats) == 1) {
+    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                          ordered.lats[1], ordered.lats[1])
   }
   # else it is a 'proper' extent
   else{
-    
     extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
                           ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
                           ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
@@ -60,12 +71,23 @@ setMethod("extent", signature(x="ModelObject"), function(x) {
   
   # Now build the spatial extent depending on if it is a single site or not
   # if it is a site
-  if(length(ordered.lons) == 1 || length(ordered.lats) == 1){
-    extent.temp <- c(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+  if(length(ordered.lons) == 1 && length(ordered.lats) == 1){
+    extent.temp <- extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+  }
+  # transect along lon
+  else if (length(ordered.lons) == 1) {
+    extent.temp =  extent(ordered.lons[1], ordered.lons[1],
+                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+  }
+  # transect along lat
+  else if (length(ordered.lats) == 1) {
+    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                          ordered.lats[1], ordered.lats[1])
   }
   # else it is a 'proper' extent
   else{
-    
     extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
                           ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
                           ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
@@ -90,12 +112,23 @@ setMethod("extent", signature(x="DataObject"), function(x) {
   
   # Now build the spatial extent depending on if it is a single site or not
   # if it is a site
-  if(length(ordered.lons) == 1 || length(ordered.lats) == 1){
-    extent.temp <- c(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+  if(length(ordered.lons) == 1 && length(ordered.lats) == 1){
+    extent.temp <- extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+  }
+  # transect along lon
+  else if (length(ordered.lons) == 1) {
+    extent.temp =  extent(ordered.lons[1], ordered.lons[1],
+                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+  }
+  # transect along lat
+  else if (length(ordered.lats) == 1) {
+    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                          ordered.lats[1], ordered.lats[1])
   }
   # else it is a 'proper' extent
   else{
-    
     extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
                           ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
                           ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
