@@ -47,7 +47,7 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/Thurner2013/", reso
   
   Thurner.dataset <- new("DataObject",
                          id = "Thurner2013",
-                         name = "Thurner et al. 2015",
+                         name = "Thurner et al. 2013",
                          temporal.extent = new("TemporalExtent", id = "ThurnerPeriod", name = "Thurner Period", start = 2000, end = 2010),
                          data = Thurner.dt,
                          quant = quant,

@@ -112,6 +112,10 @@ dgvm.quantities <- list(
       cuts = seq(0, 60, 2),
       model = c("Standard")),
   
+  
+  ### NITROGEN QUANTITES
+  
+  
   ######################################################################
   ########## FIREMIP QUANTITIES  ######################################
   ######################################################################  
@@ -467,7 +471,14 @@ dgvm.quantities <- list(
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
-      id = "burntarea",
+      id = "burntarea", new("Quantity",
+                            id = "npool",
+                            name = "Nitrogen",
+                            type = "pools",
+                            units = "kgN/m^2",
+                            colours = fields::tim.colors,
+                            cuts = seq(0,2,0.01),
+                            model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
       name = "Annual Fraction Burned",
       type = "annual",
       units = "fraction of gridcell",
@@ -495,12 +506,13 @@ dgvm.quantities <- list(
   
   new("Quantity",
       id = "vmaxnlim",
-      name = "Annual Nitrogen Limitation",
+      name = "Nitrogen Limitation to Vmax",
       type = "PFT",
       units = "fraction",
       colours = fields::tim.colors,
       cuts = seq(0, 1, 0.02),
-      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE"),
+      aggregate.method = "mean"),
   
   new("Quantity",
       id = "bioclim",
@@ -530,6 +542,72 @@ dgvm.quantities <- list(
       cuts = seq(0, 5, 0.2),
       aggregate.method = "mean",
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nmass",
+      name = "Vegetation Nitrogen Mass",
+      type = "PFT",
+      units = "gN/m^2",
+      colours = cmass.palette,
+      cuts = seq(0,2000,1),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "npool",
+      name = "Nitrogen",
+      type = "pools",
+      units = "kgN/m^2",
+      colours = fields::tim.colors,
+      cuts = seq(0,2,0.01),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nuptake",
+      name = "Nitrogen Uptake",
+      type = "PFT",
+      units = "kgN/ha",
+      colours = fields::tim.colors,
+      cuts = seq(0,500,10),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nsources",
+      name = "Nitrogen Source",
+      type = "annual",
+      units = "gN/ha",
+      colours = fields::tim.colors,
+      cuts = seq(0,500,10),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nflux",
+      name = "Nitrogen Flux",
+      type = "annual",
+      units = "kgN/ha",
+      colours = fields::tim.colors,
+      cuts = seq(0,500,10),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nflux",
+      name = "Nitrogen Flux",
+      type = "annual",
+      units = "kgN/ha",
+      colours = fields::tim.colors,
+      cuts = seq(0,500,10),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nlitter",
+      name = "Litter Nitrogen Mass",
+      type = "PFT",
+      units = "kgN/ha",
+      colours = fields::tim.colors,
+      cuts = seq(0,2,0.1),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+ 
+  
+  
   
   
   #############################################################################################

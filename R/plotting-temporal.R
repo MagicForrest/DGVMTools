@@ -116,16 +116,19 @@ plotTemporal <- function(input.data,
   if(!is.null(wrap)) id.vars <- append(id.vars, wrap)
   plotting.data.dt.melted <- melt(plotting.data.dt, id.vars = id.vars)
   
+  # helpful check here
+  if(nrow(plotting.data.dt.melted) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are slecting a site that isn't there?")
+
   # Now that the data is melted into the final form, set the colours if not already specified and if enough meta-data is available
   if(is.null(cols) && is.null(types)){
-    
-    got.all <- TRUE
+
+        got.all <- TRUE
     new.cols <- c()
     new.types <- c()
     new.labels <- c()
     
     all.layers <- as.character(unique(plotting.data.dt.melted[["variable"]]))
-    
+
     for(layer in all.layers) {
       
       colour <- NULL
@@ -157,7 +160,7 @@ plotTemporal <- function(input.data,
       else got.all <- FALSE
       
     }
-    
+
    if(got.all) {
      cols <- new.cols
      types <- new.types

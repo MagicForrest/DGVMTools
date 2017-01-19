@@ -370,7 +370,8 @@ benchmarkSpatial <- function(runs,
     
     print(plotScatterComparison(temp.data.obj,
                                 run.labels = run@description,
-                                text.size = 10))
+                                text.size = 10,
+                                showFitLine = showFitLine))
     
     dev.off()
     
@@ -516,7 +517,8 @@ benchmarkSpatial <- function(runs,
                                  canvas.options.square.scaled)) 
     
     print(plotScatterComparison(dataset,
-                                run.labels = run.descriptions))
+                                run.labels = run.descriptions,
+                                showFitLine = showFitLine))
     
     dev.off()
     
@@ -1428,10 +1430,10 @@ plotScatterComparison <- function(data.obj,
       
       text.vector  <- append(text.vector,
                              paste("NME = ", signif(comparison.obj@NME, 3), 
-                                   "\nNMSE = ", signif(comparison.obj@NMSE, 3), 
+                                   #"\nNMSE = ", signif(comparison.obj@NMSE, 3), 
                                    "\nRMSE = ", signif(comparison.obj@RMSE, 3), 
-                                   "\nR^2 = ", signif(comparison.obj@R2, 3), 
-                                   "\nR^2_eff = ", signif(comparison.obj@R2.eff, 3), 
+                                   #"\nR^2 = ", signif(comparison.obj@R2, 3), 
+                                   #"\nR^2_eff = ", signif(comparison.obj@R2.eff, 3), 
                                    "\nPearson Corr. = ", signif(comparison.obj@P.cor, 3), sep = "")
                              
       )

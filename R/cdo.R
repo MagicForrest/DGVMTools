@@ -58,7 +58,7 @@ cdo <- function(fun, ifile, ofile, grid = NULL, varname = "layer", return.raster
     # make a temporary netcdf intermediatary file
     working.dir <- dirname(ofile)
     temp.file <- file.path(dirname(ofile), paste0(deparse(substitute(ifile)), ".nc"))
-    writeRaster(ifile, temp.file, varname = varname, overwrite = TRUE)
+    writeRaster(ifile, temp.file, varname = varname, overwrite = TRUE, NAflag = -999999.0)
     ifile <- temp.file
     
   }
@@ -67,7 +67,7 @@ cdo <- function(fun, ifile, ofile, grid = NULL, varname = "layer", return.raster
   if(check.cdo()){
     
     # remap functions
-    if(fun == "remaplaf"){
+    if(fun == "remaplaf" | fun == "remapcon2"){
       
       # if target grid not specified
       if(is.null(grid)) {

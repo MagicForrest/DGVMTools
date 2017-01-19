@@ -27,6 +27,7 @@ writeNetCDF <- function(data.in,
                         var.units, 
                         time.resolution = "annual", 
                         time.units.string = NULL, 
+                        time.vals = NULL,
                         long.name = "", 
                         filename = "test.nc", 
                         ordering = "standard", 
@@ -55,12 +56,16 @@ writeNetCDF <- function(data.in,
         long.midpoints <- append(long.midpoints,midpoints  + (365*cycle))
       }
       time.list <- long.midpoints[1:nlayers(data.in)]
+      # FUDGE - if time units explicitly provided then use them
+      if(!is.null(time.vals)) time.list <- time.vals
       time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
     }
     # annual - format as "days since YYYY-MM-DD HH:MM:SS"
     else if(tolower(time.resolution) == "annual" || tolower(time.resolution) == "yearly"){
       
       time.list <- seq(from = 0, to = nlayers(data.in)-1, by = 1)*365
+      # FUDGE - if time units explicitly provided then use them
+      if(!is.null(time.vals)) time.list <- time.vals
       time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
       
     }
@@ -88,7 +93,8 @@ writeNetCDF <- function(data.in,
     array.out <- data.in[dim(data.in)[1]:1,]
     
   }
-  
+ 
+ 
   # PERMUTE THE DATA AND SET UP THE VARIABLE DIMENSION
   
   # For time series

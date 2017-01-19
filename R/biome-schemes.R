@@ -472,18 +472,14 @@ MeditBiomeRules <- function(lai){
   else if(as.numeric(lai[['Woody']]) > 2.0 && lai[['MaxWoody']] == "TeBS") {return(4)}  # 2
   # BIOME 5 - Cold Montane forest
   else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE" )) {return(5)} # 1.5
-  # BIOME 6 - Pre-steppe deciduous woodlands
-  #else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.5 && lai[['MaxWoody']] == "TeBS") {return(6)}
-  #else if(as.numeric(lai[['Woody']]) > 1.5  && as.numeric(lai[['Grass']]) > 0.25 && lai[['MaxWoody']] == "TeBS") {return(6)}
-  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeNE")) {return(6)}
   # BIOME 2 - Needle-leaved evergreen forest
-  else if(as.numeric(lai[['Woody']]) > 1 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
+  # BIOME 6 - Pre-steppe deciduous woodlands
+  #else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeNE")) {return(6)}
+  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && lai[['MaxWoody']] == "TeBS") {return(6)}
   # BIOME 3 - Mediterranean woodland/scrub
   else if(as.numeric(lai[['Woody']]) > 1 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
- 
- 
-  
-  # BIOME 7 - Remainder, Unclassified
+   # BIOME 7 - Remainder, Unclassified
   else {
     #print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
     #print(lai)
@@ -510,12 +506,12 @@ MeditBiomes.scheme <- new("BiomeScheme",
                                                            "royalblue4",
                                                            "sandybrown",
                                                            "grey75")),
-                              units =  c("Steppe/\nMountain\nGrassland",
-                                         "Needleleaved\nEvergreen\nWoodlands",
-                                         "Mediterranean\nSchlerophyllous\nScrub/Woodlands",
+                              units =  c("Grass Steppe or\nMontane Grassland",
+                                         "Needle-leaved\nWoodlands/Forest",
+                                         "Mediterranean\nSclerophyllous\nWoodlands/Forest",
                                          "Deciduous\nForest",
-                                         "Cold\nMontane\nForest",
-                                         "Presteppe\nWoodlands",
+                                         "Cold Montane\nForest",
+                                         "Deciduous\nSteppe-Woodlands",
                                          "Unclassifiable/\nOther"),
                               cuts = seq(0,7),
                               model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
@@ -740,8 +736,8 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                                              "C4 Grassy System" = "orange",
                                                              "C3 Grassy System" = "lightgoldenrod",
                                                              "Shrubland" = "indianred3",
-                                                             "Sparse Vegetation" = "mistyrose2",
-                                                             "Other/Barren" = "gray75")),
+                                                             "Sparse/Other Vegetation" = "mistyrose2",
+                                                             "Barren" = "gray75")),
                                 units =  c("Croplands Dominated \n(Croplands > 50%)",
                                            "Croplands Mosaic \n(20% < Croplands < 50%)",
                                            "Needle-leafed  \nEvergreen Forest",      
@@ -752,8 +748,8 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                            "C4 Grassy \nSystem",
                                            "C3 Grassy \nSystem",
                                            "Shrubland",
-                                           "Sparse \nVegetation",
-                                           "Other/Barren"),
+                                           "Sparse/Other \nVegetation",
+                                           "Barren"),
                                 cuts = seq(0,12),
                                 model = c("LPJ-GUESS-SPITFIRE-FireMIP",
                                           "LPJ-GUESS-BLAZE-FireMIP",
