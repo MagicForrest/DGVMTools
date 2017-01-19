@@ -309,6 +309,8 @@ calcNewModelObj <- function(run=NULL, targets=NULL, operator=NULL, quant=NULL, v
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
     } else if (x@is.spatially.averaged) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
+    } else {
+      new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
 
     return(new("ModelObject",
