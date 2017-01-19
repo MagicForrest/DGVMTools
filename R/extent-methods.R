@@ -60,7 +60,7 @@ setMethod("extent", signature(x="ModelObject"), function(x) {
   
   # Now build the spatial extent depending on if it is a single site or not
   # if it is a site
-  if(length(ordered.lons) == 1 & length(ordered.lats) == 1){
+  if(length(ordered.lons) == 1 || length(ordered.lats) == 1){
     extent.temp <- c(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
   }
   # else it is a 'proper' extent
@@ -90,7 +90,7 @@ setMethod("extent", signature(x="DataObject"), function(x) {
   
   # Now build the spatial extent depending on if it is a single site or not
   # if it is a site
-  if(length(ordered.lons) == 1 & length(ordered.lats) == 1){
+  if(length(ordered.lons) == 1 || length(ordered.lats) == 1){
     extent.temp <- c(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
   }
   # else it is a 'proper' extent
