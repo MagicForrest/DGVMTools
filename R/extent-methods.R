@@ -8,10 +8,12 @@
 #' @return A raster::extent
 #' @name extent-methods
 #' @rdname extent-methods
+#' @aliases extent
 #' @importMethodsFrom raster extent
 #' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 setGeneric("extent", function(x) standardGeneric("extent"))
+
 
 #' @rdname extent-methods
 setMethod("extent", signature(x="data.table"), function(x) {

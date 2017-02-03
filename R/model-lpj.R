@@ -173,11 +173,21 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
   }
   
-  
+  # canopyheight_std 
+  else if(quant@id == "canopyheight_std") {
+    
+    # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
+    this.dt <- openLPJOutputFile(run, "canopyheight", verbose = TRUE)
+    this.dt <- newLayer(this.dt, "CanHght")
+    
+    return(this.dt)
+    
+  }
+
+  # else stop
   else {
     
     stop(paste("Unfortunately "))
-    
     
   }
   

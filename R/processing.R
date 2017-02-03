@@ -189,14 +189,17 @@ calcBiomes <-function(input, scheme){
   if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
   
   # If GDD5 required for classification
-  if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
+  #if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
     # get gdd5
-    stop("input@run is not a class 'ModelRun' it is class 'ModelRunInfo'!")
-    gdd5 <- getVegSpatial(input@run, "gdd5", input@temporal.extent, read.full = FALSE)
+   # stop("input@run is not a class 'ModelRun' it is class 'ModelRunInfo'!")
+  if(scheme@needGDD5){
+    temp.model.run <- new("ModelRun", input@run)
+    gdd5 <- getModelObject(temp.model.run, "gdd5", input@temporal.extent, read.full = FALSE)
     dt <- input@data
     dt.gdd5 <- gdd5@data
     dt <- dt[dt.gdd5]
     input@data <- dt
+    rm(temp.model.run)
   }
   
   # Get the dominant tree and dominant woody PFTs

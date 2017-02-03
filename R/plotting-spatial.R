@@ -594,10 +594,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
-#' 
-#' 
 
-#' 
 makeStatsOverlay <- function(stat.results, stats = "NME", panel = NULL, plot.extent, x.pos.frac = 0.15, y.pos.frac = 0.15, cex = 1.5, digits = 3) {
   
   # position

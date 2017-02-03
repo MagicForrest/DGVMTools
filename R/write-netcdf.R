@@ -12,6 +12,7 @@
 #' @param var.units A character string containing the units of the variable as used in the netCDF file produced.
 #' @param time.resolution A character string denoting the time resolution of the data. Currently can be "monthly" or "annual".
 #' @param time.units.string A string to represent the time units.  CHECK THIS.
+#' @param time.vals A list of strings providing the values for the time axis.
 #' @param long.name A charcter string for the "long_name" of the netCDF file.
 #' @param filename A character string (including the path) specifiying the name of the netCDF file.
 #' @param ordering A character string specifying the ordering of the dimension in the resulting netCDF file, can be "standard" for normal ordering 

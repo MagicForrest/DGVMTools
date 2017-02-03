@@ -170,9 +170,9 @@ Hickler2012Rules <- function(lai){
   if(as.numeric(lai[['Total']] < 0.2)){
     
     # BIOME 1 - Arctic/alpine desert
-    if(as.numeric(lai[['GDD5']]) < 1200 & (lai[['MaxPFT']] == "BES" | lai[['MaxPFT']] == "C3_gr" | lai[['MaxPFT']] == "Barren")) {return(1)}
+    if(as.numeric(lai[['gdd5']]) < 1200 & (lai[['MaxPFT']] == "BES" | lai[['MaxPFT']] == "C3_gr" | lai[['MaxPFT']] == "Barren")) {return(1)}
     # BIOME 13 - Desert
-    else if (as.numeric(lai[['GDD5']]) > 1200) {return(13)}
+    else if (as.numeric(lai[['gdd5']]) > 1200) {return(13)}
     
   } 
   
@@ -252,13 +252,13 @@ Hickler2012Rules <- function(lai){
   ###### MISCELLENEOUS  
   
   # BIOME 11  - Steppe Woodland
-  if(as.numeric(lai[['Woody']]) > 0.5 & as.numeric(lai[['Grass']]) > 0.5 & as.numeric(lai[['GDD5']]) > 1200) {return(11)}
+  if(as.numeric(lai[['Woody']]) > 0.5 & as.numeric(lai[['Grass']]) > 0.5 & as.numeric(lai[['gdd5']]) > 1200) {return(11)}
   
   # BIOME 2 - Arctic/Alpine Tundra
-  if(as.numeric(lai[['Tree']]) <= 0.5 & as.numeric(lai[['GDD5']]) < 1200 & (lai[['MaxPFT']] == "BES" | lai[['MaxPFT']] == "C3_gr")) {return(2)}
+  if(as.numeric(lai[['Tree']]) <= 0.5 & as.numeric(lai[['gdd5']]) < 1200 & (lai[['MaxPFT']] == "BES" | lai[['MaxPFT']] == "C3_gr")) {return(2)}
   
   # BIOME 12 - Steppe
-  if(as.numeric(lai[['Total']]) > 0.2 & as.numeric(lai[['GDD5']]) > 1200) {return(12)}
+  if(as.numeric(lai[['Total']]) > 0.2 & as.numeric(lai[['gdd5']]) > 1200) {return(12)}
   
   
   
@@ -308,7 +308,7 @@ Hickler2012.scheme <- new("BiomeScheme",
                                         "Steppe woodland",
                                         "Steppe",                     
                                         "Desert"),
-                              cuts = seq(0,14),
+                              cuts = seq(0,13),
                               model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = Hickler2012Rules,
                           combineShadeTolerance = FALSE,
@@ -469,7 +469,7 @@ MeditBiomeRules <- function(lai){
   if(as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']])) {return(1)}
   # BIOME 4 - Deciduous forest
   #if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
-  else if(as.numeric(lai[['Woody']]) > 2.0 && lai[['MaxWoody']] == "TeBS") {return(4)}  # 2
+  else if(as.numeric(lai[['Woody']]) > 2.0 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeBS")) {return(4)}  # 2
   # BIOME 5 - Cold Montane forest
   else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE" )) {return(5)} # 1.5
   # BIOME 2 - Needle-leaved evergreen forest

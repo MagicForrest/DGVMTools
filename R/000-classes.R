@@ -415,20 +415,12 @@ setClass("ModelObject",
 #' and included in a \code{ModelObject} in the \code{run} slot (not inherited, so needs to be access be \code{@@run}).
 #' 
 #' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
-#' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
-#' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
-#' @slot description A character string describing this run, ie. "LPJ-GUESS v3.1"
-#' @slot run.dir The location of this run on the file system (Mandatory)
-#' @slot driving.data A character string identifying the climate or other data used to produce this model run
-#' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
-#' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
-#' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
-#' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
+#' @slot name A character string giving the name of this dataset (eg MODIS GPP). (Mandatory)
+#' @slot quant A Quantity object describing the physical quantity thatthe dataset describes
 #' @slot fill.col A string to define an R colour used when plotting this run as a histogram or scatter plot or so
 #' @slot line.col  A string to define an R colour used when plotting this runs as a line graph
 #' @slot line.width A numeric to define the width of a line representing this model run
 #' @slot line.type A numeric to define the line style representing this model run
-#' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @exportClass DatasetInfo
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("DatasetInfo", 
@@ -477,17 +469,17 @@ setClass("DataObject",
 )
 
 
-setClass("MultiObject", 
-         slots = c(id = "character",
-                   data = "data.table",
-                   info = "list",
-                   spatial.extent = "SpatialExtent",
-                   temporal.extent = "TemporalExtent",
-                   is.site = "logical",
-                   is.spatially.averaged = "logical",
-                   is.temporally.averaged = "logical"
-         )
-)
+# setClass("MultiObject", 
+#          slots = c(id = "character",
+#                    data = "data.table",
+#                    info = "list",
+#                    spatial.extent = "SpatialExtent",
+#                    temporal.extent = "TemporalExtent",
+#                    is.site = "logical",
+#                    is.spatially.averaged = "logical",
+#                    is.temporally.averaged = "logical"
+#          )
+# )
 
 
 
