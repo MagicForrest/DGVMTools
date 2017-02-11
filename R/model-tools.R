@@ -606,10 +606,10 @@ getModelObject <- function(run,
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
- 
+  
   ###  Get class of the object we are dealing with
   this.class = class(input.data)[1]
-
+  
   ###  Define the layers we are pulling out
   # for ModelObject - note could define a methods "names" do cover this exception
   if((is.ModelObject(input.data) || is.DataObject(input.data)) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
@@ -627,12 +627,14 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   else if(this.class == "data.table" | is.ModelObject(input.data) |  is.DataObject(input.data)){
     
     # first make a SpatialPointsDataFrame
-    
     if(this.class == "data.table") {
       data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = grid.topology)
     }
     
-    if(is.ModelObject(input.data) | is.DataObject(input.data)) data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
+    if(is.ModelObject(input.data) | is.DataObject(input.data)) {
+      data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
+    }
+    
     
     # now convert to raster
     if(length(layers) == 1){
@@ -699,6 +701,14 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, g
     if(remove %in% layers) {layers <- layers[-which(layers == remove)]}     
   }
   
+  # alternate all columns
+  if(FALSE) {
+    all.cols <- unlist(list("Lon", "Lat", unlist(layers)))
+    data.spdf <- data.frame(input.data[,all.cols,with=FALSE])
+    coordinates(data.spdf) <- ~Lon+Lat
+    gridded(data.spdf) <- TRUE
+  }
+  
   # convert to SPDF
   #sp.points <- SpatialPoints(data.frame(data[,list(Lon, Lat)]), proj4string = CRS("+proj=longlat +datum=WGS84"))
   sp.points <- SpatialPoints(data.frame(input.data[,list(Lon, Lat)]))
@@ -710,6 +720,8 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, g
   )
   # clean up
   rm(sp.points, sp.pixels)
+  
+  
   
   return(data.spdf)  
   

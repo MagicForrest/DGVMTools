@@ -118,7 +118,7 @@ cropDGVM <- function(input, extent){
   
   Lat = Lon = NULL
   
-  print(extent)
+  
   
   # determine the class of the object to which we are cropping
   extent.class <- class(extent)[1]
@@ -131,16 +131,16 @@ cropDGVM <- function(input, extent){
   }
   
   
-  
-  
+
   # determine the class of the object to be cropped
   input.class <- class(input)[1]
+
   
   # Do cropping depending on first the class of extent 'extent' 
   
   # CASE 1.X - target extent is a raster::Extent
   if(extent.class == "Extent") {
-    
+
     # CASE 1.1 - object to be cropped is a raster - just use raster::crop
     if(input.class == "RasterBrick" | input.class == "RasterStack" | input.class == "RasterLayer"){
       return(raster::crop(input, this.extent))    

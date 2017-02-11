@@ -14,7 +14,7 @@
 #' or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can automatically plot things like biomes, dominant PFTs, months of maximum values, 
 #' burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command. 
 #'
-#' @param data The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
+#' @param x The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
 #' @param period The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.   
@@ -57,7 +57,7 @@
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
-plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
+plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
                         layers = NULL,
                         expand.layers = TRUE,
                         quant = NULL, 
@@ -125,24 +125,24 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   ##### 2. DEFAULTS
   
   ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
-  if(is.ModelObject(data)){
+  if(is.ModelObject(x)){
     
-    if(data@is.temporally.averaged){
-      run <- data@run
+    if(x@is.temporally.averaged){
+      run <- x@run
       run.id <- run@id
-      period <- data@temporal.extent
+      period <- x@temporal.extent
       PFT.set <- run@pft.set
-      if(is.null(quant)) quant <- data@quant
+      if(is.null(quant)) quant <- x@quant
     } 
     else {
       stop("plotSpatial:: trying to spatially plot a ModelObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
     }
     
   }
-  else if(is.DataObject(data)){
+  else if(is.DataObject(x)){
     
-    #if(data@is.temporally.averaged){
-          if(is.null(quant)) quant <- data@quant
+    #if(x@is.temporally.averaged){
+    if(is.null(quant)) quant <- x@quant
     #} 
     #else {
     #  stop("plotSpatial:: trying to spatially plot a ModelObject which has not been temporally averaged.  This is crazy, what do I do with all the years?!")
@@ -154,8 +154,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   else{
     
-    print(paste("ATTENTION:  plotSpatial() NOT running on a ModelObject or DataObject, plotting an object of class ", class(data)[1]))
-    warning(paste("ATTENTION:  plotSpatial() NOT running on a ModelObject or DataObject, plotting an object of class ", class(data)[1]))
+    print(paste("ATTENTION:  plotSpatial() NOT running on a ModelObject or DataObject, plotting an object of class ", class(x)[1]))
+    warning(paste("ATTENTION:  plotSpatial() NOT running on a ModelObject or DataObject, plotting an object of class ", class(x)[1]))
     
     if(is.null(quant)) {
       
@@ -175,9 +175,9 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CHECK FOR SPECIAL VARIABLES FOR NICER PLOTTING
   if(special == "none" | is.null(special)){
- 
+    
     if(quant@id == "burntfraction") special <- "burnt.fraction"
- 
+    
   }
   
   
@@ -193,8 +193,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       colorkey.list[["labels"]] <- list(cex = 2 * text.multiplier,
                                         labels = rev(quant@units),
                                         at = (0:(length(quant@units)-1)) + 0.5)
-   
-     colorkey.list[["col"]] <- colorRampPalette(rev(colorkey.list$col(length(quant@units))))
+      
+      colorkey.list[["col"]] <- colorRampPalette(rev(colorkey.list$col(length(quant@units))))
     }
   }
   
@@ -214,11 +214,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### EXPAND layerS
   if(is.null(layers)) {
-    if(is.ModelObject(data)) layers <- names(data@data)
-    else layers <- names(data)
+    if(is.ModelObject(x)) layers <- names(x@data)
+    else layers <- names(x)
   }
   if(expand.layers) {
-    layers <- expandLayers(layers, data, PFT.set)
+    layers <- expandLayers(layers, x, PFT.set)
     if(!is.null(special)){
       if(special == "fraction") layers <- paste(layers, "Fraction", sep = sep.char)
     }
@@ -226,7 +226,12 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### PROMOTE TO RASTER AND SANITISE NAMES - also make plot labels (if necessary) before the sanitatisation 
   original.layers <- layers # save for building plot label later
-  data.toplot <- promoteToRaster(data, layers, tolerance)
+  
+  # alternate - select layers and cast
+  #data.temp <- selectLayers(x, layers)
+  #data.toplot <- as.Raster(data.temp)
+  
+  data.toplot <- promoteToRaster(x, layers, tolerance)
   layers <- names(data.toplot) # update layers to be the names of the raster layers  (which might have changed)
   
   ### CROP THE DATA IF PLOT EXTENT HAS BEEN SPECIFIED
@@ -370,12 +375,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     quant@cuts = 0:(length(quant@cuts)-1)
     
   }
- 
+  
   
   #### PLOT DOMINANT
   
   else if(special == "dominant"){
-    
     
     quant.id <- quant@id
     
@@ -384,6 +388,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     RAT <- data.toplot@data@attributes[[1]]
     data.toplot <- deratify(data.toplot, complete = TRUE)
     
+    # reset the names following deratify, only necessary since update to 2.5-8 (February 2017)
+    # I cannot find any documentation of these changes but it may be that the raster package has been simplifed w.r.t plotting factors and this is now all unnecessary
+    # but to be at the moment it is just inducing ball-ache
+    names(data.toplot) <- layers
+
     # Set colours to be the list of PFT colours
     col.list <- c()
     label.list <- c()
@@ -418,7 +427,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       quant <- new("Quantity",
                    id = "Dominant",
                    name = "Dominant PFT",
-                   type = "DominantPFTs",
+                   type = "categorical",
                    units = "categorical",
                    colours = colorRampPalette(col.list),
                    cuts = 0:length(col.list),
@@ -455,10 +464,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         quant <- new("Quantity",
                      id = "Dominant",
                      name = paste("Dominant Month by", quant.id, sep = " "),
-                     type = "DominantMonth",
+                     type = "categorical",
                      units = "categorical",
                      colours = colorRampPalette(col.list),
-                     cuts = 0:length(col.list),
+                     #cuts = 0:length(col.list),
+                     cuts = NULL,
                      aggregate.method = "categorical"
         )
         
@@ -474,9 +484,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
                                       "labels" = rev(label.list), 
                                       "at" = ((0:length(col.list))-1) + 0.5)
+    #colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
+    #                                  "labels" = rev(label.list))
     colorkey.list[["at"]] <- 0:length(col.list)
     colorkey.list[["col"]] <- rev(col.list)
-    
+
   }
   
   #### CATCH UNIMPLEMENTED SPECIAL CASES
@@ -552,30 +564,53 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
   }
   else plot.labels.here <- plot.labels
+ 
+  if(tolower(quant@type) == "categorical") {
 
     return(spplot(data.toplot,
-                layers,
-                par.settings = list(panel.background=list(col=plot.bg.col)),
-                xlab = list(label = "Longitude", cex = 3 * text.multiplier),
-                ylab = list(label = "Latitude", cex = 3 * text.multiplier),
-                col.regions= quant@colours,
-                colorkey = colorkey.list,                                                                                            
-                at = quant@cuts,
-                scales = list(draw = TRUE, cex = 3 * text.multiplier),
-                as.table = TRUE,
-                main=list(label=title, 
-                          cex = 4 * text.multiplier),
-                par.strip.text = list(#lines = 1.0, 
-                  cex = 2 * text.multiplier),
-                sp.layout = layout.objs,
-                maxpixels = maxpixels,
-                names.attr = plot.labels.here,
-                ...)
-  )
-  
-  # clean up
-  rm(data.toplot)
-  gc()
+                  #layers,
+                  par.settings = list(panel.background=list(col=plot.bg.col)),
+                  xlab = list(label = "Longitude", cex = 3 * text.multiplier),
+                  ylab = list(label = "Latitude", cex = 3 * text.multiplier),
+                  col.regions= quant@colours,
+                  colorkey = colorkey.list,                                                                                            
+                  #at = quant@cuts,
+                  scales = list(draw = TRUE, cex = 3 * text.multiplier),
+                  as.table = TRUE,
+                  main=list(label=title, 
+                            cex = 4 * text.multiplier),
+                  par.strip.text = list(#lines = 1.0, 
+                    cex = 2 * text.multiplier),
+                  sp.layout = layout.objs,
+                  maxpixels = maxpixels,
+                  names.attr = plot.labels.here,
+                  ...)
+    )
+  }
+  else {
+    return(spplot(data.toplot,
+                  layers,
+                  par.settings = list(panel.background=list(col=plot.bg.col)),
+                  xlab = list(label = "Longitude", cex = 3 * text.multiplier),
+                  ylab = list(label = "Latitude", cex = 3 * text.multiplier),
+                  col.regions= quant@colours,
+                  colorkey = colorkey.list,                                                                                            
+                  at = quant@cuts,
+                  scales = list(draw = TRUE, cex = 3 * text.multiplier),
+                  as.table = TRUE,
+                  main=list(label=title, 
+                            cex = 4 * text.multiplier),
+                  par.strip.text = list(#lines = 1.0, 
+                    cex = 2 * text.multiplier),
+                  sp.layout = layout.objs,
+                  maxpixels = maxpixels,
+                  names.attr = plot.labels.here,
+                  ...)
+    )
+    
+  }
+
+
   
 }
 

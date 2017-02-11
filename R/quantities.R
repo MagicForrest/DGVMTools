@@ -112,6 +112,15 @@ dgvm.quantities <- list(
       cuts = seq(0, 60, 2),
       model = c("Standard")),
   
+  new("Quantity",
+      id = "burntfraction_std",
+      name = "Annual Fraction Burned",
+      type = "annual",
+      units = "fraction of gridcell",
+      colours = reversed.fire.palette,
+      cuts = seq(0, 1.0, 0.02),
+      model = c("Standard")),
+  
   
   ### NITROGEN QUANTITES
   
@@ -471,14 +480,7 @@ dgvm.quantities <- list(
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
-      id = "burntarea", new("Quantity",
-                            id = "npool",
-                            name = "Nitrogen",
-                            type = "pools",
-                            units = "kgN/m^2",
-                            colours = fields::tim.colors,
-                            cuts = seq(0,2,0.01),
-                            model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+      id = "burntarea", 
       name = "Annual Fraction Burned",
       type = "annual",
       units = "fraction of gridcell",

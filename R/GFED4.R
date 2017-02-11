@@ -55,7 +55,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   
   # If no spatial extent is specified use a global extent
   if(is.null(list.of.spatial.extents)){
-    list.of.spatial.extents <- new("SpatialExtent", id = "Global", name = "Global", extent = c(-180,180,-90,90))
+    list.of.spatial.extents <- new("SpatialExtent", id = "Global", name = "Global", extent = extent(c(-180,180,-90,90)))
   }
   
   
@@ -97,10 +97,10 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
     if(tolower(temporal.resolution) == "annual" || tolower(temporal.resolution) == "monthly") {
       
       for(month in months){
-        print(month@id)
+
         BA.thisyear <- addLayer(BA.thisyear, raster(paste("HDF4_SDS:UNKNOWN:", location, "original/GFED4.0_MQ_", year, month@padded.index, "_BA.hdf:0", sep = "")))
         names(BA.thisyear) <- append(names(BA.thisyear)[1:length(names(BA.thisyear))-1], paste(datset.id.string, year, month@padded.index, sep = "_"))
-        
+
       }
       
       # if annual make the sum for the year and name the layer
@@ -227,8 +227,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
     # crop
     GFED4.data.cropped <- cropDGVM(GFED4.total, extent)
     
-    print(names(GFED4.data.cropped))
-    
+
     # IF SPATIALLY AGGREGATE RETURN A LIST OF TEMPORAL DATASET OBJECTS
     if(spatially.aggregate){
       
@@ -245,28 +244,58 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       
       #GFED4.data.cropped.timeseries.xts <- xts(GFED4.data.cropped.timeseries , order.by = seq(as.Date(paste(temporal.extent@start, "07-01", sep = "-")), as.Date(paste(temporal.extent@end, "07-01", sep = "-")), by="years"))
       
+      if(tolower(temporal.resolution) == "annual") {
+        GFED4.TS.data <- data.table(Year = temporal.extent@start:temporal.extent@end, GFED4 = GFED4.data.cropped.timeseries)
+      }
+      else if(tolower(temporal.resolution) == "monthly" & temporally.average) {
+        GFED4.TS.data <- data.table(Month = 1:12, GFED4 =  GFED4.data.cropped.timeseries)
+      }
+      else {
+        stop("Code support for full monthly GFED4 time series")
+      }
+      
+      
       list.of.datasets[[extent@id]] <- new("DataObject",
                                            id = "GFED4",
                                            name = "GFED4 Burnt Area",
                                            temporal.extent = temporal.extent,
-                                           data = GFED4.data.cropped.timeseries,
-                                           veg.quant = lookupQuantity("burntarea_std", "Standard"),
-                                           extent = extent,
-                                           units = units)  
+                                           data = GFED4.TS.data,
+                                           spatial.extent = new("SpatialExtent", id = "GFED4Extent", name = "GFED4 extent", extent = extent(GFED4.data.cropped)),
+                                           correction.layer =  "")  
       
       
     } # if not spatially aggregating
     else {
       
+      if(nlayers(GFED4.data.cropped) == 1) {
+        
+        dataset.dt <- data.table(as.data.frame(GFED4.data.cropped,xy = TRUE))
+        dataset.dt <- na.omit(dataset.dt)
+        setnames(dataset.dt, c("Lon", "Lat", "GFED4"))
+        setkey(dataset.dt, Lon, Lat)
+        
+      }
+      else {
+        
+        #print(names())
+        
+        #for
+        
+        stop("In GFED4 code in multiyear conversion from raster to data.table")
+        
+      }
+      
       list.of.datasets[[extent@id]] <- new("DataObject",
                                            id = "GFED4",
                                            name = "GFED4 Burnt Area",
                                            temporal.extent = temporal.extent,
-                                           data = GFED4.data.cropped,
-                                           veg.quant = lookupQuantity("burntarea_std", "Standard"),
-                                           units = units)  
+                                           data = dataset.dt,
+                                           quant = lookupQuantity("burntfraction_std", "Standard"),
+                                           spatial.extent = new("SpatialExtent", id = "GFED4Extent", name = "GFED4 extent", extent = extent(GFED4.data.cropped)),
+                                           correction.layer =  "")  
       
-      
+    
+
       if(archive){
         
         writeNetCDF(data.in = GFED4.data.cropped, 

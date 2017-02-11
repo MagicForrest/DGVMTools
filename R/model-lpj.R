@@ -178,8 +178,27 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
     this.dt <- openLPJOutputFile(run, "canopyheight", verbose = TRUE)
-    this.dt <- newLayer(this.dt, "CanHght")
+
+    return(this.dt)
     
+  }
+  
+  # burntfraction_std 
+  else if(quant@id == "burntfraction_std") {
+    
+    # if mfirefrac is present the open it and use it
+    if("mfirefrac" %in% listAllLPJOutput(run@run.dir)){
+       this.dt <- openLPJOutputFile(run, "mfirefrac", verbose = TRUE)
+       this.dt <- newLayer(this.dt, "Annual")
+    }
+    
+    # otherwise open firert to get GlobFIRM fire return interval and invert it
+    else {
+      this.dt <- openLPJOutputFile(run, "firert", verbose = TRUE)
+      this.dt[, Annual :=  1 / FireRT]
+      this.dt[, FireRT :=  NULL]
+    }
+
     return(this.dt)
     
   }
@@ -212,9 +231,11 @@ listAllLPJOutput <- function(run.directory){
   
   # First get the list of *.out files present
   files.present <- list.files(run.directory, "*.out")
+  files.present <- append(files.present, list.files(run.directory, "*.out.gz"))
+
   
   # Now strip the .out file extension out the get the variable name
-  this.var.list <- unlist(lapply(files.present, FUN = trimLPJFilename))
+  this.var.list <- unlist(lapply(files.present, FUN = LPJQuantFromFilename))
   
   # get rid of stupid ones
   ignore.list <- c("*", "guess_out", "guess_err")
@@ -232,20 +253,26 @@ listAllLPJOutput <- function(run.directory){
 
 
 ######################### TRIM AN LPJ-GUESS FILENAME  #####################################################################
-#' Helper function to trim the ".out" from an LPJ-GUESS filename
+#' Helper function to trim the ".out" or the ".out.gz" from an LPJ-GUESS filename to get the variable in question
 #' 
-#' Very simple, just removes the last four characters. 
-#' No error checking to see if the last four characters are really ".out"!
+#' Returns NULL if the last characters are not ".out" or ".out.gz
 #'
 #' @param var.filename The string of the filename to be trimmed
-#' @return A string less the last four characters.
+#' @return A string less the last fou.
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
 # handy helper function for trimming file names to get a variable name
-trimLPJFilename <- function(var.filename){
-  return(substr( var.filename, 1, (nchar(var.filename) - nchar(".out"))))
+LPJQuantFromFilename <- function(var.filename){
+  
+  
+  for(ending in c(".out", ".out.gz")) {
+    if(substr(var.filename, nchar(var.filename) - nchar(ending) + 1,  nchar(var.filename)) == ending) return(substr(var.filename, 1, nchar(var.filename) - nchar(ending)))
+  }
+
+  return(NULL)
+  
 }
 
 
