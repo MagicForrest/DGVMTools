@@ -2,6 +2,7 @@
 % Please edit documentation in R/extent-methods.R
 \docType{methods}
 \name{extent-methods}
+\alias{extent}
 \alias{extent,DataObject-method}
 \alias{extent,ModelObject-method}
 \alias{extent,data.table-method}

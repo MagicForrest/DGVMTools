@@ -23,7 +23,7 @@ plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
 \item{cols, types}{Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
 the same length as the labels arguments}
 
-\item{labels}{A list of character strings which are used as the labels fro the lines.  Must have the same length as the layers argument (after expansion if necessary)}
+\item{labels}{A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)}
 
 \item{x.label, y.label}{Character strings for the x and y axes (optional)}
 

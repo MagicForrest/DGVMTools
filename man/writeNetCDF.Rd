@@ -5,8 +5,8 @@
 \title{Write a netCDF file}
 \usage{
 writeNetCDF(data.in, var.name, var.units, time.resolution = "annual",
-  time.units.string = NULL, long.name = "", filename = "test.nc",
-  ordering = "standard", missing.value = -999999)
+  time.units.string = NULL, time.vals = NULL, long.name = "",
+  filename = "test.nc", ordering = "standard", missing.value = -999999)
 }
 \arguments{
 \item{data.in}{The data as a Raster* object.  This should be broadened to also include data.frames and data.tables for writing 
@@ -19,6 +19,8 @@ time series from a particular point.}
 \item{time.resolution}{A character string denoting the time resolution of the data. Currently can be "monthly" or "annual".}
 
 \item{time.units.string}{A string to represent the time units.  CHECK THIS.}
+
+\item{time.vals}{A list of strings providing the values for the time axis.}
 
 \item{long.name}{A charcter string for the "long_name" of the netCDF file.}
 
