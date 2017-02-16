@@ -493,9 +493,11 @@ getClimateDriver <- function(run=NA, file=NA, operation="mean", temporal.extent=
 #'   si <- seasonalityIndex(x[, i], variable="both")
 #'   z  <- seasonalityIndex(x[, i], debug=TRUE)
 #'   plot(cumsum(z$vx), cumsum(z$vy), type="b", lwd=3, main=titles[i], asp=1)
-#'   lines(c(0, sum(z$x) * si[1] * sin(Arg(sum(z$c))+pi/2)), c(0, sum(z$x) * si[1] * cos(Arg(sum(z$c))-pi/2)), lty="dashed", col="red", lwd=3)
+#'   lines(c(0, sum(z$x) * si[1] * sin(Arg(sum(z$c))+pi/2)),
+#'         c(0, sum(z$x) * si[1] * cos(Arg(sum(z$c))-pi/2)), lty="dashed", col="red", lwd=3)
 #'   print(paste0("Seasonality index (", titles[i], "): ", signif(si[1], 2)))
-#'   lines(c(0, sin(si[2]) * si[1] * sum(x[, i])), c(0, cos(si[2]) * si[1] * sum(x[, i])), lty="dotted", col="blue")
+#'   lines(c(0, sin(si[2]) * si[1] * sum(x[, i])),
+#'         c(0, cos(si[2]) * si[1] * sum(x[, i])), lty="dotted", col="blue")
 #' }
 #' @references Charles G. Markhan (1970) Seasonality of precipitation in the United States, Annals of the Association of American Geographers, 60:3, 593-597, DOI: \href{http://dx.doi.org/10.1111/j.1467-8306.1970.tb00743.x}{10.1111/j.1467-8306.1970.tb00743.x}
 seasonalityIndex <- function(x, wgt=c(31, 28.25, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31), add.origin=TRUE, variable="strength", debug=FALSE) {

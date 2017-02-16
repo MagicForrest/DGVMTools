@@ -8,9 +8,9 @@ Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.f
 Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
 Maintainer: Matthew Forrest <matthew.forrest@senckenberg.de>
 Description: Process output data produced by dynamic global vegetation
-    models (DGVMs) LPJ-GUESS(-SPITFIRE), FireMIP standard output, aDGVM2 (under development) and
-    possibly others, for use in R. Create standard figures
-    and benchmarking.
+    models (DGVMs) LPJ-GUESS(-SPITFIRE), FireMIP standard output, aDGVM2 (under
+    development) and possibly others, for use in R. Create standard figures and
+    benchmarking.
 Depends:
     R (>= 2.15.0),
     data.table (>= 1.9.6),
@@ -30,7 +30,8 @@ Imports:
     Cairo,
     grid,
     RColorBrewer,
-    plyr
+    plyr,
+    reshape2
 Suggests:
     zoo,
     mgcv,
@@ -39,4 +40,4 @@ License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
-RoxygenNote: 6.0.1
+RoxygenNote: 5.0.1

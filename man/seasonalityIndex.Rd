@@ -38,9 +38,11 @@ for (i in 1:ncol(x)) {
   si <- seasonalityIndex(x[, i], variable="both")
   z  <- seasonalityIndex(x[, i], debug=TRUE)
   plot(cumsum(z$vx), cumsum(z$vy), type="b", lwd=3, main=titles[i], asp=1)
-  lines(c(0, sum(z$x) * si[1] * sin(Arg(sum(z$c))+pi/2)), c(0, sum(z$x) * si[1] * cos(Arg(sum(z$c))-pi/2)), lty="dashed", col="red", lwd=3)
+  lines(c(0, sum(z$x) * si[1] * sin(Arg(sum(z$c))+pi/2)),
+        c(0, sum(z$x) * si[1] * cos(Arg(sum(z$c))-pi/2)), lty="dashed", col="red", lwd=3)
   print(paste0("Seasonality index (", titles[i], "): ", signif(si[1], 2)))
-  lines(c(0, sin(si[2]) * si[1] * sum(x[, i])), c(0, cos(si[2]) * si[1] * sum(x[, i])), lty="dotted", col="blue")
+  lines(c(0, sin(si[2]) * si[1] * sum(x[, i])),
+        c(0, cos(si[2]) * si[1] * sum(x[, i])), lty="dotted", col="blue")
 }
 }
 \author{
