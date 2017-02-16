@@ -7,7 +7,8 @@
 plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
   title = NULL, quant = NULL, cols = NULL, types = NULL,
   labels = NULL, y.label = NULL, y.lim = NULL, x.label = NULL,
-  x.lim = NULL, wrap = NULL, wrap.scales = "fixed")
+  x.lim = NULL, facet = NULL, facet.scales = "fixed",
+  legend.position = "bottom")
 }
 \arguments{
 \item{input.data}{The data to be plotted, either as a ModelObject, DataObject or a data.table.}
@@ -29,9 +30,9 @@ the same length as the labels arguments}
 
 \item{x.lim, y.lim}{Limits for the x and y axes (each a two-element numeric, optional)}
 
-\item{wrap}{Character string. If specified, split the data (ie melt) the data by the column specified in the argument, and then split the plot into ribbons accordingly.}
+\item{facet}{Character string. If specified, split the data (ie melt) the data by the column specified in the argument, and then split the plot into ribbons accordingly.}
 
-\item{wrap.scales}{Character string.  If wrapping (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales
+\item{facet.scales}{Character string.  If facetping (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales
 on both scales/x only/y only on each ribbon}
 }
 \value{

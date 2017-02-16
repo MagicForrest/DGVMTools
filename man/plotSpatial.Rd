@@ -4,7 +4,7 @@
 \alias{plotSpatial}
 \title{Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.}
 \usage{
-plotSpatial(data, layers = NULL, expand.layers = TRUE, quant = NULL,
+plotSpatial(x, layers = NULL, expand.layers = TRUE, quant = NULL,
   period = NULL, run = NULL, PFT.set = lpj.global.PFTs, title = NULL,
   layout.objs = NULL, plot.labels = NULL, plot.bg.col = "transparent",
   useLongnames = FALSE, text.multiplier = 1, plot.extent = NULL,
@@ -12,7 +12,7 @@ plotSpatial(data, layers = NULL, expand.layers = TRUE, quant = NULL,
   override.cuts = NULL, special = "none", maxpixels = 1e+06, ...)
 }
 \arguments{
-\item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
+\item{x}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 

@@ -58,3 +58,55 @@ mmdd2doy <- function(mmdd, leap=FALSE) {
   if (leap) dpm[3] = 29
   return(sum(dpm[1:floor(mmdd / 100)]) + mmdd - (floor(mmdd / 100)) * 100)
 }
+
+
+
+
+#' Convert a ModelObject to a multi-dimensional array
+#' 
+#' @param d the data.table of a \code{\link[DGVMTools]{ModelObject}}
+#' @param cname the column name to convert, if not set a list is returned
+#' @param invertlat start in the north
+#' @return a array or a list or arrays
+#' 
+#' @importFrom reshape2 acast
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
+modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE) {
+  lon <- extract.seq(d$Lon)
+  lat <- extract.seq(d$Lat, descending=invertlat)
+  
+  time <- FALSE
+  
+  if (any(colnames(d)=="Year")) {
+    year <- extract.seq(d$Year)
+    time <- TRUE
+  }
+  
+  full.grid <- data.frame(Lon=rep(lon, length(lat)), Lat=rep(lat, each=length(lon)))
+  
+  if (is.logical(cname))
+    cname <- colnames(d)[!(colnames(d) %in% c("Lon", "Lat", "Year"))]
+  
+  rv <- lapply(cname, function(x) {
+    if (time) {
+      full.grid <- data.frame(full.grid, Year=rep(year, each=nrow(full.grid)))
+      d <- merge(d, full.grid, by=c("Lon", "Lat", "Year"), all=TRUE)
+      rv <- acast(d, Lon ~ Lat ~ Year, value.var=x)
+      if (invertlat)
+        rv <- rv[,length(lat):1,]
+    } else {
+      d <- merge(d, full.grid, by=c("Lon", "Lat"), all=TRUE)
+      rv <- acast(d, Lon ~ Lat, value.var=cname)
+      if (invertlat)
+        rv <- rv[,length(lat):1]
+    }
+    return(rv)
+  })
+  if (length(rv) == 1)
+    return(rv[[1]])
+
+  names(rv) <- cname
+  return(rv)
+}
+
