@@ -51,7 +51,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
       ordering <- c(1,2,3)
       if(quantity@id != "theightpft") remove.total <- TRUE
     }
-    else if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-BLAZE") {
+    else if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
       this.pfts <- c("C3G_pas", "C4G_pas", "BNE", "BINE", "BNS", "TeBS", "IBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "TeSW", "TeSWirr", "TeWW", "TeWWirr", "TeCo", "TeCoirr")
       this.lat <- ncvar_get(this.nc,"lat",verbose=verbose)
       this.lon <- ncvar_get(this.nc,"lon",verbose=verbose)
@@ -69,11 +69,11 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
       africa.centre <- TRUE
     }
     else if(model.string == "CTEM") {
-      if(quantity@id == "landCoverFrac") this.pfts <- c("NDL-EVG", "NDL-DCD", "BDL-EVG", "BDL-DCD-COLD", "BDL-DCD-DRY", "C3-CROP", "C4-CROP", "C3-GRASS", "C4-GRASS")
+      if(quantity@id == "landCoverFrac") this.pfts <- c("NDL-EVG", "NDL-DCD", "BDL-EVG", "BDL-DCD-COLD", "BDL-DCD-DRY", "C3-CROP", "C4-CROP", "C3-GRASS", "C4-GRASS", "Bare")
       if(quantity@id == "lai") this.pfts <- c("NDL-EVG", "NDL-DCD", "BDL-EVG", "BDL-DCD-COLD", "BDL-DCD-DRY", "C3-CROP", "C4-CROP", "C3-GRASS", "C4-GRASS", "Bare")
-      this.lat <- ncvar_get(this.nc,"latitude",verbose=verbose)
-      this.lon <- ncvar_get(this.nc,"longitude",verbose=verbose)
-      this.time <- 1860:2011
+      this.lat <- ncvar_get(this.nc,"lat",verbose=verbose)
+      this.lon <- ncvar_get(this.nc,"lon",verbose=verbose)
+      this.time <- 1860:2015
       ordering <- c(3,1,2)
       africa.centre <- TRUE
       requires.averaging <- TRUE
@@ -143,14 +143,15 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
     for(counter in 0:(n.years-1)) {
       
       # get one year - depends on the structure of each model
-      if(model.string == "LPJ-GUESS-SPITFIRE" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-BLAZE") {
+      if(model.string == "LPJ-GUESS-SPITFIRE" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
         this.slice <- ncvar_get(this.nc, start = c(1,1,1, counter+start.index), count = c(-1,-1,-1, 1))
       }
       else if(model.string == "CLM") {
         this.slice <- ncvar_get(this.nc, start = c(counter+start.index,1,1,1), count = c(1,-1,-1, -1))
       }
       else if(model.string == "CTEM") {
-        this.slice <- ncvar_get(this.nc, start = c(1,1,1, ((counter+start.index) * 12) - 11) , count = c(-1,-1,-1, 12))
+        #this.slice <- ncvar_get(this.nc, start = c(1,1,1, ((counter+start.index) * 12) - 11) , count = c(-1,-1,-1, 12))
+        this.slice <- ncvar_get(this.nc, start = c(1,1,1,counter+start.index) , count = c(-1,-1,-1,1))
       }
       else if(model.string == "Inferno") {
         this.slice <- ncvar_get(this.nc, start = c(1,1,1, ((counter+start.index) * 12)) , count = c(-1,-1,-1, 12))
@@ -163,7 +164,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
         this.nc <- nc_open(file.string, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
         this.lat <- ncvar_get(this.nc,"latitude",verbose=verbose)
         this.lon <- ncvar_get(this.nc,"longitude",verbose=verbose)
-        this.slice <- ncvar_get(this.nc, start = c(1,1,1,1) , count = c(-1,-1,-1,-1))
+        this.slice <- ncvar_get(this.nc, start = c(1,1,1,1) , count = c(-1,-1,-1,1))
         if(quantity@id == "landCoverFrac") this.slice <- this.slice / 100
       }
       
@@ -228,7 +229,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
       ordering <- c(1,2,3)
       if(quantity@id != "theightpft") remove.total <- TRUE
     }
-    else if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-BLAZE") {
+    else if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
       this.pfts <- c("C3G_pas", "C4G_pas", "BNE", "BINE", "BNS", "TeBS", "IBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "TeSW", "TeSWirr", "TeWW", "TeWWirr", "TeCo", "TeCoirr")
       this.lat <- ncvar_get(this.nc,"lat",verbose=verbose)
       this.lon <- ncvar_get(this.nc,"lon",verbose=verbose)
@@ -320,7 +321,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
     for(counter in 0:(n.years-1)) {
       
       # get one year - depends on the structure of each model
-      if(model.string == "LPJ-GUESS-SPITFIRE" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-BLAZE") {
+      if(model.string == "LPJ-GUESS-SPITFIRE" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
         this.slice <- ncvar_get(this.nc, start = c(1,1, ((counter+start.index) * 12) - 11) , count = c(-1,-1, 12))
         print(((counter+start.index) * 12) - 11)
         print(dim(this.slice))
@@ -450,7 +451,7 @@ toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
   }
   
   # LPJ-GUESS-SPITFIRE
-  if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-BLAZE" ) {
+  if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE" ) {
     
     # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE
     classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 

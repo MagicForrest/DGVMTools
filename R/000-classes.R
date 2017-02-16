@@ -136,7 +136,7 @@ supported.models <- c("LPJ-GUESS",
                       "LPJ-GUESS-SPITFIRE", 
                       "aDGVM", 
                       "LPJ-GUESS-SPITFIRE-FireMIP",
-                      "LPJ-GUESS-BLAZE-FireMIP",
+                      "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP",
                       "LPJ-GUESS-GlobFIRM-FireMIP",
                       "CLM-FireMIP",
                       "CTEM-FireMIP",
@@ -230,7 +230,7 @@ setClass("ModelRunInfo",
                    fill.col = "character", # not commonly needed, only for more complex run comparisons
                    line.col = "character", # # not commonly needed, only for more complex run comparisons
                    line.width = "numeric", # not commonly needed, only for more complex run comparisons
-                   line.type = "numeric", # not commonly needed, only for more complex run comparisons
+                   line.type = "ANY", #numeric", # not commonly needed, only for more complex run comparisons
                    landuseSimulated = "logical"
          ),
          validity = checkModelRun

@@ -193,7 +193,7 @@ plotTemporal <- function(input.data,
         if(layer == "Woody") {
           colour <- "brown"
           label <- "Woody"
-          type <- 1
+          type <- 3
         }
         
         
@@ -225,6 +225,8 @@ plotTemporal <- function(input.data,
   # now make the plot
   if(is.null(group)) p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", colour = "variable")) + geom_line(aes_string(linetype="variable"), size = 1)
   else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", group = "Source", colour = "Source")) + geom_line(aes_string(linetype="Source"), size = 1)
+ 
+  
   #else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", group = "Source", colour = "Source")) + geom_line(size = 1)
 
   #p <- p + scale_x_continuous(breaks = unique(plotting.data.dt.melted[["Year"]])

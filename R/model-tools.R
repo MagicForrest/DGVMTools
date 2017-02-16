@@ -424,7 +424,7 @@ getModelObject <- function(run,
     
     # If model is from FireMIP
     else if(run@model == "LPJ-GUESS-SPITFIRE-FireMIP"  ||
-            run@model == "LPJ-GUESS-BLAZE-FireMIP"     ||
+            run@model == "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP"     ||
             run@model == "LPJ-GUESS-GlobFIRM-FireMIP"  ||
             run@model == "CLM-FireMIP"                 ||
             run@model == "CTEM-FireMIP"                ||
@@ -452,7 +452,7 @@ getModelObject <- function(run,
     
     else {
       
-      stop(paste0("The Quantity ", quant@id, " is defined for models ", paste(quant@models, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", run@model, ").  Please check this."))
+      stop(paste0("The Quantity ", quant@id, " is defined for models ", paste(quant@model, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", run@model, ").  Please check this."))
       
       
     }

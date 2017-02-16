@@ -79,6 +79,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                         maxpixels = 1E6,
                         ...){
   
+
   ###################################################################################################
   ### PRE-AMBLE:                                                             ########################
   ### 1. INITIAL ARGUMENT CHECKS AND WARNINGS ABOUT ARGUMENT  COMBINATIONS   ########################
@@ -115,13 +116,15 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                     fire.return.time = "fire.return.time",
                     dominant.pft = "dominant" )
   
-  # Warn ig quant is being ignored in special
+  # Warning quant is being ignored in special
   if(!is.null(quant) & special == "dominant")
     warning(paste("When using a \"special\" = ", special, ", argument \"quant\" is ignored"))
   
-  
-  
-  
+  # special for "burntfraction_std"
+  if(!is.null(quant)) {
+    if(quant@id == "burntfraction_std") special <- "burnt.fraction"
+  }
+ 
   ##### 2. DEFAULTS
   
   ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
@@ -195,6 +198,8 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                                         at = (0:(length(quant@units)-1)) + 0.5)
       
       colorkey.list[["col"]] <- colorRampPalette(rev(colorkey.list$col(length(quant@units))))
+      colorkey.list[["at"]] <- 0:length(quant@units)
+      
     }
   }
   
@@ -428,7 +433,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                    id = "Dominant",
                    name = "Dominant PFT",
                    type = "categorical",
-                   units = "categorical",
+                   units = label.list,
                    colours = colorRampPalette(col.list),
                    cuts = 0:length(col.list),
                    aggregate.method = "categorical"
@@ -483,7 +488,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     # UPDATE LABELS AND CUTS FOR SENSIBLE PLOTTING
     colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
                                       "labels" = rev(label.list), 
-                                      "at" = ((0:length(col.list))-1) + 0.5)
+                                      "at" = 0:(length(col.list)-1) + 0.5)
     #colorkey.list[["labels"]] <- list("cex" = colorkey.list[["labels"]]$cex, 
     #                                  "labels" = rev(label.list))
     colorkey.list[["at"]] <- 0:length(col.list)
@@ -566,15 +571,14 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
   else plot.labels.here <- plot.labels
  
   if(tolower(quant@type) == "categorical") {
-
-    return(spplot(data.toplot,
+     return(spplot(data.toplot,
                   #layers,
                   par.settings = list(panel.background=list(col=plot.bg.col)),
                   xlab = list(label = "Longitude", cex = 3 * text.multiplier),
                   ylab = list(label = "Latitude", cex = 3 * text.multiplier),
                   col.regions= quant@colours,
                   colorkey = colorkey.list,                                                                                            
-                  #at = quant@cuts,
+                  at = 0:length(quant@units),
                   scales = list(draw = TRUE, cex = 3 * text.multiplier),
                   as.table = TRUE,
                   main=list(label=title, 

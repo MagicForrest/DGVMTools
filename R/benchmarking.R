@@ -125,7 +125,9 @@ benchmarkSpatial <- function(runs,
     gc()
     
     # if required apply the correction
-    if(!is.null(correction.dt)) {
+    if(!is.null(correction.dt)  && !run@landuseSimulated) {
+      
+      print(paste0("Applying land use correction for ", run@id))
       
       # first add the correction data and make the new column (name it usign the run id)
       model.dt <- merge(x = round(model.dt, 3), y = round(correction.dt, 3), all = FALSE)
@@ -305,7 +307,7 @@ benchmarkSpatial <- function(runs,
     
     
     print(
-      do.call(plotSpatial, c(list(data = data.dt,
+      do.call(plotSpatial, c(list(x =  data.dt,
                                   layers = paste(run@id, "Error", sep = "_"),
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -320,12 +322,12 @@ benchmarkSpatial <- function(runs,
     dev.off()
     
     ##### ABSOLUTE MAPS
-    
+    print(local.args)
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
     print(
-      do.call(plotSpatial, c(list(data = data.dt,
+      do.call(plotSpatial, c(list(x =  data.dt,
                                   layers = c(run@id, dataset@id),
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -434,10 +436,10 @@ benchmarkSpatial <- function(runs,
     
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
-    
+    print(args1)
     # PLOT ABSOLUTE VALUES
     print(
-      do.call(plotSpatial, c(list(data = data.dt,
+      do.call(plotSpatial, c(list(x =  data.dt,
                                   layers = abs.layers,
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -467,7 +469,7 @@ benchmarkSpatial <- function(runs,
                                  canvas.options)) 
     
     print(
-      do.call(plotSpatial, c(list(data = data.dt,
+      do.call(plotSpatial, c(list(x =  data.dt,
                                   layers = diff.layers,
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -493,7 +495,7 @@ benchmarkSpatial <- function(runs,
     temp.dt <- temp.dt[,(perc.diff.layers) := lapply(.SD, function(x) x * 100 ), .SDcols = perc.diff.layers]
     
     print(
-      do.call(plotSpatial, c(list(data = temp.dt,
+      do.call(plotSpatial, c(list(x =  temp.dt,
                                   layers = perc.diff.layers,
                                   quant = dataset@quant, 
                                   period = dataset@temporal.extent, 
@@ -761,7 +763,7 @@ compareBiomes <- function(runs,
       
       print(
         do.call(plotSpatial, c(
-          list(data = this.VegSpatial,
+          list(x =  this.VegSpatial,
                biome.scheme = scheme, 
                special = "biomes", 
                biome.data = biome.dataset, 
@@ -807,7 +809,7 @@ compareBiomes <- function(runs,
   }
   
   print(
-    do.call(plotSpatial, c(list(data = data.dt, 
+    do.call(plotSpatial, c(list(x =  data.dt, 
                                 layers = layers,
                                 summary.file.name = paste("Biomes", scheme@id, tag, sep = "."),
                                 special = "biomes", 
@@ -1442,7 +1444,7 @@ plotScatterComparison <- function(data.obj,
     
     text.df <- data.frame(Run = run.ids, label = text.vector)
     scatter.plot <- scatter.plot + geom_text(data=text.df, 
-                                             aes(x = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.7, 
+                                             aes(x = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.6, 
                                                  y = (data.obj@quant@cuts[length(data.obj@quant@cuts)] - data.obj@quant@cuts[1]) * 0.2, 
                                                  label=label), 
                                              parse = FALSE, 

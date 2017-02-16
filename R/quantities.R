@@ -850,7 +850,7 @@ dgvm.quantities <- list(
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
-      id = "mros",
+      id = "mRoS",
       name = "Monthly Rate of Spread",
       type = "monthly",
       units = "m/min",
