@@ -95,7 +95,7 @@ benchmarkSpatial <- function(runs,
   
   # list of stuff for the multi-panel plots
   run.ids <- c()
-  run.descriptions <- c()
+  run.namess <- c()
   run.fill.cols <- c()
   run.line.cols <- c()
   
@@ -105,7 +105,7 @@ benchmarkSpatial <- function(runs,
     
     # make the id_to_description
     run.ids <- append(run.ids, run@id)
-    run.descriptions <- append(run.descriptions, run@description)
+    run.names <- append(run.names, run@name)
     run.fill.cols <- append(run.fill.cols, run@fill.col)
     run.line.cols <- append(run.line.cols, run@line.col)
     
@@ -335,7 +335,7 @@ benchmarkSpatial <- function(runs,
                                   summary.file.name = paste(dataset@quant@id, "comp", dataset@id, "2-up", sep = "."),
                                   tag = "Corrected",
                                   maxpixels = 1000000,
-                                  plot.labels = c(run@description, dataset@name)),
+                                  plot.labels = c(run@name, dataset@name)),
                              local.args)
       )
     )
@@ -357,7 +357,7 @@ benchmarkSpatial <- function(runs,
     print(plotResidualsHisto(temp.data.obj, 
                              cols = "darkgreen", 
                              fills = "white", 
-                             title = paste("Residuals: ",  paste(run@model,run@description,sep = " "), "-", paste(dataset@name, sep = " ")),
+                             title = paste("Residuals: ",  paste(run@model,run@name,sep = " "), "-", paste(dataset@name, sep = " ")),
                              bins = diff.cuts,
                              limit = FALSE))
     
@@ -371,7 +371,7 @@ benchmarkSpatial <- function(runs,
                                  canvas.options.square)) 
     
     print(plotScatterComparison(temp.data.obj,
-                                run.labels = run@description,
+                                run.labels = run@name,
                                 text.size = 10,
                                 showFitLine = showFitLine))
     
@@ -424,7 +424,7 @@ benchmarkSpatial <- function(runs,
       rm(comparison.obj)
       
       # add the text to the text lists
-      plot.titles <- append(plot.titles, run@description)
+      plot.titles <- append(plot.titles, run@name)
       
     }
     
@@ -519,7 +519,7 @@ benchmarkSpatial <- function(runs,
                                  canvas.options.square.scaled)) 
     
     print(plotScatterComparison(dataset,
-                                run.labels = run.descriptions,
+                                run.labels = run.names,
                                 showFitLine = showFitLine))
     
     dev.off()
@@ -533,7 +533,7 @@ benchmarkSpatial <- function(runs,
     print(plotResidualsHisto(dataset, 
                              cols = run.line.cols, 
                              fills = run.fill.cols, 
-                             labels = run.descriptions,
+                             labels = run.names,
                              reverse = TRUE, 
                              bins = diff.cuts))
     
@@ -787,7 +787,7 @@ compareBiomes <- function(runs,
   layers <- c()
   for(run in runs){
     
-    labels <- append(labels, run@description)
+    labels <- append(labels, run@name)
     layers <- append(layers, run@id)
     
     # also compare kappas?
@@ -979,7 +979,7 @@ compareRuns <- function(runs,
           col.name <- paste(paste(run@id, sub.layer, sep = "_"), "minus", paste(base.run.id, sub.layer, sep = "_"), sep = ".")
           comparison.dt[, eval(col.name) := get(paste(run@id, sub.layer, sep = "_")) - get(paste(base.run.id, sub.layer, sep = "_"))]
           this.diff.names <- col.name
-          this.diff.titles <- paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " ")
+          this.diff.titles <- paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@name, "-", byIDfromList(base.run.id, runs)@name, sep = " ")
           all.diff.names <- append(all.diff.names, this.diff.names)
           all.diff.titles <- append(all.diff.titles, this.diff.titles)
           
@@ -994,7 +994,7 @@ compareRuns <- function(runs,
                               layers = this.diff.names,
                               quant = run@objects[[veg.spatial.id]]@quant,
                               special = "Diff",
-                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " "),
+                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@name, "-", byIDfromList(base.run.id, runs)@name, sep = " "),
                               plot.labels = this.diff.titles,
                               override.cuts = diff.cuts,
                               tag = tag,
@@ -1010,7 +1010,7 @@ compareRuns <- function(runs,
           col.name <- paste(paste(run@id, sub.layer, sep = "_"), "minus", paste(base.run.id, sub.layer, sep = "_"), "perc.diff", sep = ".")
           comparison.dt[, eval(col.name) := (get(paste(run@id, sub.layer, sep = "_")) - get(paste(base.run.id, sub.layer, sep = "_"))) %/0% get(paste(base.run.id, sub.layer, sep = "_")) * 100]
           this.perc.diff.names <- col.name
-          this.perc.diff.titles <- paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, sep = " ")
+          this.perc.diff.titles <- paste(sub.layer, paste(run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@name, "-", byIDfromList(base.run.id, runs)@name, sep = " ")
           all.perc.diff.names <- append(all.perc.diff.names, this.perc.diff.names)
           all.perc.diff.titles <- append(all.perc.diff.titles, this.perc.diff.titles)
           
@@ -1025,7 +1025,7 @@ compareRuns <- function(runs,
                               layers = this.perc.diff.names,
                               quant = run@objects[[veg.spatial.id]]@quant,
                               special = "Perc.Diff",
-                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@description, "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
+                              title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), run@name, "-", byIDfromList(base.run.id, runs)@name, "(% diff)", sep = " "),
                               limit = TRUE,
                               limits = c(-100,200),
                               plot.labels = this.perc.diff.titles,
@@ -1058,7 +1058,7 @@ compareRuns <- function(runs,
                           layers = all.diff.names,
                           quant = run@objects[[veg.spatial.id]]@quant,
                           special = "Diff",
-                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), "All", "-", byIDfromList(base.run.id, runs)@description, sep = " "),
+                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), "All", "-", byIDfromList(base.run.id, runs)@name, sep = " "),
                           plot.labels = all.diff.titles,
                           override.cuts = diff.cuts,
                           tag = tag,
@@ -1078,7 +1078,7 @@ compareRuns <- function(runs,
                           layers = all.perc.diff.names,
                           quant = run@objects[[veg.spatial.id]]@quant,
                           special = "Perc.Diff",
-                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), "All", "-", byIDfromList(base.run.id, runs)@description, "(% diff)", sep = " "),
+                          title = paste(paste(sub.layer, " ", run@objects[[veg.spatial.id]]@quant@name, ":", sep = ""), "All", "-", byIDfromList(base.run.id, runs)@name, "(% diff)", sep = " "),
                           limit = TRUE,
                           limits = c(-100,200),
                           plot.labels = all.perc.diff.titles,
