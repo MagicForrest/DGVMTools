@@ -73,30 +73,64 @@ mmdd2doy <- function(mmdd, leap=FALSE) {
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE) {
+  ## get the full spatial extent
   lon <- extract.seq(d$Lon)
   lat <- extract.seq(d$Lat, descending=invertlat)
   
-  time <- FALSE
-  
+  ## check for annual data
+  is.temporal <- FALSE
   if (any(colnames(d)=="Year")) {
-    year <- extract.seq(d$Year)
-    time <- TRUE
+    time <- sort(unique(d$Year))
+    is.temporal <- TRUE
   }
   
-  full.grid <- data.frame(Lon=rep(lon, length(lat)), Lat=rep(lat, each=length(lon)))
+  ## check for monthly data
+  is.monthly <- FALSE
+  if (all(month.abb %in% colnames(d))) {
+    cname <- FALSE
+    if (is.temporal) {
+      d <- data.table::melt(d, id.vars=c("Lon", "Lat", "Year"))
+      d[, Year:= Year * 100 + as.numeric(variable)]
+      d$variable <- NULL
+      setkey(d, Lon, Lat, Year)
+    } else {
+      d <- data.table::melt(d, id.vars=c("Lon", "Lat", "Year"))
+      d[, Year:= as.numeric(variable)]
+      d$variable <- NULL
+      setkey(d, Lon, Lat, Year)
+    }
+    time <- sort(unique(d$Year))    
+    is.monthly <- TRUE
+    is.temporal <- TRUE
+  }
   
+  ## create the target grid
+  if (is.temporal) {
+    full.grid <- data.table(Lon=rep(rep(lon, length(lat)), length(time)),
+                            Lat=rep(rep(lat, each=length(lon)), length(time)),
+                            Year=rep(time, each=length(lon) * length(lat)))                     
+    setkey(full.grid, Lon, Lat, Year)
+  } else {
+    full.grid <- data.table(Lon=rep(lon, length(lat)),
+                            Lat=rep(lat, each=length(lon)))
+    setkey(full.grid, Lon, Lat)
+  }
+  
+  ## get the desired column name(s) if none was given
   if (is.logical(cname))
     cname <- colnames(d)[!(colnames(d) %in% c("Lon", "Lat", "Year"))]
   
+  ## create the array(s)
   rv <- lapply(cname, function(x) {
-    if (time) {
-      full.grid <- data.frame(full.grid, Year=rep(year, each=nrow(full.grid)))
-      d <- merge(d, full.grid, by=c("Lon", "Lat", "Year"), all=TRUE)
+    if (is.temporal) {
+      print(str(d))
+      d <- d[full.grid]
+      print(str(d))
       rv <- acast(d, Lon ~ Lat ~ Year, value.var=x)
       if (invertlat)
         rv <- rv[,length(lat):1,]
     } else {
-      d <- merge(d, full.grid, by=c("Lon", "Lat"), all=TRUE)
+      d <- d[full.grid]
       rv <- acast(d, Lon ~ Lat, value.var=cname)
       if (invertlat)
         rv <- rv[,length(lat):1]
@@ -105,8 +139,7 @@ modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE) {
   })
   if (length(rv) == 1)
     return(rv[[1]])
-
+  
   names(rv) <- cname
   return(rv)
 }
-
