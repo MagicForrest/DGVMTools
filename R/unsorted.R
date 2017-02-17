@@ -123,9 +123,7 @@ modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE) {
   ## create the array(s)
   rv <- lapply(cname, function(x) {
     if (is.temporal) {
-      print(str(d))
       d <- d[full.grid]
-      print(str(d))
       rv <- acast(d, Lon ~ Lat ~ Year, value.var=x)
       if (invertlat)
         rv <- rv[,length(lat):1,]
