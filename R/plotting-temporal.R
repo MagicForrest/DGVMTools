@@ -65,7 +65,7 @@ plotTemporal <- function(input.data,
         
         if(!(is.DataObject(x.object) || is.ModelObject(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  ModelObject") }
         temp.dt <- copy(x.object@data)
-        if(is.ModelObject(x.object)) temp.dt[,"Source" := x.object@run@description]
+        if(is.ModelObject(x.object)) temp.dt[,"Source" := x.object@run@name]
         if(is.DataObject(x.object)) temp.dt[,"Source" := x.object@name]
         plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt))
         rm(temp.dt)
@@ -86,7 +86,7 @@ plotTemporal <- function(input.data,
         
         if(!(is.DataObject(x.object) || is.ModelObject(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  ModelObject") }
         temp.dt <- copy(x.object@data)
-        if(is.ModelObject(x.object)) temp.dt[,"Source" := x.object@run@description]
+        if(is.ModelObject(x.object)) temp.dt[,"Source" := x.object@run@name]
         if(is.DataObject(x.object)) temp.dt[,"Source" := x.object@name]
         plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt))
         rm(temp.dt)
