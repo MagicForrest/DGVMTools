@@ -18,7 +18,7 @@ and included in a \code{ModelObject} in the \code{run} slot (not inherited, so n
 
 \item{\code{pft.set}}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
 
-\item{\code{description}}{A character string describing this run, ie. "LPJ-GUESS v3.1"}
+\item{\code{name}}{A character string describing this run, ie. "LPJ-GUESS v3.1"}
 
 \item{\code{run.dir}}{The location of this run on the file system (Mandatory)}
 
@@ -41,6 +41,10 @@ and included in a \code{ModelObject} in the \code{run} slot (not inherited, so n
 \item{\code{line.type}}{A numeric to define the line style representing this model run}
 
 \item{\code{landuseSimulated}}{If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.}
+
+\item{\code{contact}}{Name and email address of responsible person (default to OS username).}
+
+\item{\code{institute}}{Name of the institute (default "none").}
 }}
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

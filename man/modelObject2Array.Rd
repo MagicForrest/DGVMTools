@@ -7,7 +7,7 @@
 modelObject2Array(d, cname = FALSE, invertlat = FALSE)
 }
 \arguments{
-\item{d}{the data.table of a \code{\link[DGVMTools]{ModelObject}}}
+\item{d}{the data.table of a \code{\linkS4class{ModelObject}}}
 
 \item{cname}{the column name to convert, if not set a list is returned}
 

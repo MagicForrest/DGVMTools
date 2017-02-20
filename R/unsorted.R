@@ -64,7 +64,7 @@ mmdd2doy <- function(mmdd, leap=FALSE) {
 
 #' Convert a ModelObject to a multi-dimensional array
 #' 
-#' @param d the data.table of a \code{\link[DGVMTools]{ModelObject}}
+#' @param d the data.table of a \code{\linkS4class{ModelObject}}
 #' @param cname the column name to convert, if not set a list is returned
 #' @param invertlat start in the north
 #' @return a array or a list or arrays
@@ -73,6 +73,9 @@ mmdd2doy <- function(mmdd, leap=FALSE) {
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE) {
+
+  Lon=Lat=Year=variable=NULL
+
   ## get the full spatial extent
   lon <- extract.seq(d$Lon)
   lat <- extract.seq(d$Lat, descending=invertlat)

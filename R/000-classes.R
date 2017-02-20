@@ -214,6 +214,8 @@ checkModelRun <- function(object){
 #' @slot line.width A numeric to define the width of a line representing this model run
 #' @slot line.type A numeric to define the line style representing this model run
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
+#' @slot contact Name and email address of responsible person (default to OS username).
+#' @slot institute Name of the institute (default "none").
 #' @exportClass ModelRunInfo
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("ModelRunInfo", 
