@@ -164,3 +164,22 @@ modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   names(rv) <- cname
   return(rv)
 }
+
+#' Array methods
+#' 
+#' Converts a \code{\linkS4class{ModelObject}} to multi-dimensional array(s) all parameters are passed along to \code{\link{modelObject2Array}}.
+#' 
+#' @param x \code{\linkS4class{ModelObject}}
+#' @param ... Other arguments, not currently used
+#' @return an lon/lat(/time) array - or a list of arrays - of the modelObjects input data.table.
+#' @name Array-methods
+#' @rdname Array-methods
+#' @exportMethod 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}         
+setGeneric("as.array", function(x,...) standardGeneric("as.array"))
+
+#' @rdname Array-methods
+#' @aliases as.array
+setMethod("as.array", signature("ModelRun"), function(x, ...) {
+  modelObject2Array(x, ...)
+})
