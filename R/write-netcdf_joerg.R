@@ -5,7 +5,7 @@
 #' @param filename output file name
 #' @param mo the \code{\linkS4class{ModelObject}}.
 #' @param columns which colums to write as variable (TODO: option as dimension)
-#' @param flux flux unit parseable by \code{\link[udunits2]{udunits2}}. Converts the data to flux. Requires package udunits2 to be installed.
+#' @param as.daily.flux Converts the data to daily fluxes by dividing by the respective number of days.
 #' @param globalAttr a named vector of additional global attributes.
 #' @param compress should NetCDF4 compression be turned on. Either TRUE (compression level 4) of an integer between 1 and 9.
 #' @param chunks chunk size for faster readability. If set make sure its length agrees with the data dimensions.
@@ -18,7 +18,7 @@
 #' @import ncdf4
 #' @importFrom reshape2 acast
 ## TODO: Add daily data compatibility
-write.nc <- function(filename=NA, mo=NA, columns=NA, flux=FALSE, globalAttr=NULL,
+write.nc <- function(filename=NA, mo=NA, columns=NA, as.daily.flux=FALSE, globalAttr=NULL,
                      compress=NA, chunks=NA, reduce=FALSE, invertlat=FALSE, leap=FALSE, verbose=FALSE) {
 
   Lon=Lat=Year=variable=NULL
@@ -79,7 +79,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, flux=FALSE, globalAttr=NULL
   if (c("Day") %in% colnames(mo@data))
     daily <- TRUE
   if (daily && monthly)
-    stop(paste("Something went wrong 'daily' and 'monthly' are both TRUE.\n",
+    stop(paste("Something went wrong: 'daily' and 'monthly' are both TRUE.\n",
                paste(colnames(mo@data), collapse=", ")))
 
   ## TODO: check that if statements are correct for annual, monthly and daily data
@@ -94,11 +94,15 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, flux=FALSE, globalAttr=NULL
   ##       mo@is.temporally.averaged && monthly && !daily     ok (normal & reduced)
   ##       daily makes not really sense, or does it?
   if (!mo@is.temporally.averaged) {
-    years <- extract.seq(mo@data$Year)
+    years <- sort(unique(mo@data$Year))
     if (!monthly && !daily) {
       if (verbose)
         message("Annual data.")
-      time <- is.leapyear(years, doy=TRUE)
+      if (leap) {
+        time <- is.leapyear(years, doy=TRUE)
+      } else {
+        time <- rep(365, length(years))
+      }
       dims[['time']] <- ncdim_def("time", paste0("days since ", years[1], "-01-01 00:00:00"),
                                   cumsum(time), unlim=TRUE, create_dimvar=TRUE)
     } else if (monthly) {
@@ -121,6 +125,9 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, flux=FALSE, globalAttr=NULL
   } else if (!monthly && !daily) {
     if (verbose)
       message("Annual data (multi-annual average).")
+    time <- 365
+    if (leap)
+      time <- 365.25
   } else if (monthly) {
     if (verbose)
       message("Monthly data (multi-annual average).")
@@ -134,24 +141,26 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, flux=FALSE, globalAttr=NULL
   } else if (daily) {
     stop("Daily data as multi-annual average does not really make sense!")
   }
-    
 
-  ## TODO: convert to flux if requested
-  unit <- mo@quant@units
-  if (flux) {
-    if (!requireNamespace("udunits2", quietly = TRUE)) {
-      stop("Package 'udunits2' not present. Conversion to flux not possible!")
+  if (verbose) {
+    if (reduce) {
+      message(paste0(" * dimensions (landid x time): ", nlandid, " x ",
+                     ifelse(is.null(dim(time)), length(time), prod(dim(time)))))
     } else {
-      if (grepl("[CN]", mo@quant@units) && verbose)
-        message("Removing 'C' and/or 'N' from unit string.")
-      unit <- sub("[CN]", "", unit)
-      if (!udunits2::ud.is.parseable(units))
-        stop(paste0("Unit string '", unit, "' is not parseable by udunits2!"))
+      message(paste0(" * dimensions (lon x lat x time): ", length(lon), " x ",length(lat), " x ",
+                     ifelse(is.null(dim(time)), length(time), prod(dim(time)))))
     }
   }
 
- 
-
+  ## TODO: convert to other flux units with udunits2.
+  ## However, that adds another dependency 
+  ## and [CN] must be removed from the units string.
+  unit <- mo@quant@units
+  if (as.daily.flux) {
+    unit = paste0(unit, "/day")
+    message("*** FLUX conversion still experimental. Not yet validated ***")
+    warning("*** FLUX conversion still experimental. Not yet validated ***")
+  }
 
   ## define the variables based on columns (only if not monthly),
   ## otherwise take the quant@id
@@ -168,6 +177,8 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, flux=FALSE, globalAttr=NULL
   }
 
   ## create the NetCDF file
+  if (verbose)
+    message(paste0(" * Opening '", filename, "' for writing."))
   ncout <- nc_create(filename, vars)
 
   ## write lon/lat as variables for reduced grid
@@ -178,38 +189,67 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, flux=FALSE, globalAttr=NULL
 
   ## transform the data in a suitable araay format/shape
   if (monthly) {
+    if (verbose)
+      message(paste0(" * Writing '", mo@quant@id,"'."))
     if (reduce) {
       if (mo@is.temporally.averaged) {
         data <- data.table::melt(mo@data, id.vars=c("landid"), measure.vars=month.abb)
-        ncvar_put(ncout, mo@quant@id, data$value)
+        data <- array(data$value, c(nlandid, length(time)))
+        if (as.daily.flux)
+          data <- data / array(rep(time, each=nlandid), dim(data))
+        ncvar_put(ncout, mo@quant@id, data)
         ncatt_put(ncout, mo@quant@id, "coordinates", "lon lat")
       } else {
         data <- data.table::melt(mo@data, id.vars=c("landid", "Year"), measure.vars=month.abb)
         data[, Year:= Year* 100 + as.numeric(variable)]
-        ncvar_put(ncout, mo@quant@id, acast(data, landid~Year, value.var="value"))
+        data <- acast(data, landid~Year, value.var="value")
+        if (as.daily.flux)
+          data <- data / array(rep(time, each=nlandid), dim(data))
+        ncvar_put(ncout, mo@quant@id, data)
       }
     } else {
-      data <- modelObject2Array(mo@data, FALSE, invertlat)
+      data <- modelObject2Array(mo@data, FALSE, invertlat, verbose=verbose)
+      if (as.daily.flux)
+        data <- data / array(rep(time, each=length(lon) * length(lat)), dim(data))
+      
       ncvar_put(ncout, mo@quant@id, data)
     }
   } else if (daily) {
 
   } else {
     for (name in columns) {
+      if (verbose)
+        message(paste0(" * Writing '", name,"'."))
       if (reduce) {
         if (mo@is.temporally.averaged) {
-          ncvar_put(ncout, name, eval(parse(text=paste0("mo@data$", name))))
+          data <- eval(parse(text=paste0("mo@data$", name)))
+          
+          if (as.daily.flux)
+            data <- data / time
+          
+          ncvar_put(ncout, name, data)
           ncatt_put(ncout, name, "coordinates", "lon lat")
         } else {
-          ncvar_put(ncout, name, acast(mo@data, landid~Year, value.var=name))
+          data <- acast(mo@data, landid~Year, value.var=name)
+          
+          if (as.daily.flux)
+            data <- data / array(rep(time, each=nlandid), dim(data))
+          ncvar_put(ncout, name, data)
         }
       } else {
-        data <- modelObject2Array(mo@data, name, invertlat)
+        data <- modelObject2Array(mo@data, name, invertlat, verbose=verbose)
+
+        if (as.daily.flux && mo@is.temporally.averaged) {
+          data <- data / time
+        } else if (as.daily.flux) {
+          data <- data / array(rep(time, each=length(lon) * length(lat)), dim(data))
+        }
         ncvar_put(ncout, name, data)
       }
     }
   }
 
+  ## Writing additional attributes
   if (reduce)
     ncatt_put(ncout, "landid", "compress", "lon lat")
 
@@ -251,3 +291,5 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, flux=FALSE, globalAttr=NULL
   nc_sync(ncout)
   nc_close(ncout)
 }
+
+

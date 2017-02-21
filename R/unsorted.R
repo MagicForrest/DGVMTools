@@ -59,30 +59,33 @@ mmdd2doy <- function(mmdd, leap=FALSE) {
   return(sum(dpm[1:floor(mmdd / 100)]) + mmdd - (floor(mmdd / 100)) * 100)
 }
 
-
-
-
 #' Convert a ModelObject to a multi-dimensional array
 #' 
 #' @param d the data.table of a \code{\linkS4class{ModelObject}}
 #' @param cname the column name to convert, if not set a list is returned
 #' @param invertlat start in the north
+#' @param verbose print some information
 #' @return a array or a list or arrays
 #' 
 #' @importFrom reshape2 acast
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
-modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE) {
+modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
 
   Lon=Lat=Year=variable=NULL
 
   ## get the full spatial extent
   lon <- extract.seq(d$Lon)
   lat <- extract.seq(d$Lat, descending=invertlat)
-  
+  if (verbose)
+    message(paste0("Spatial extent: Lon: ", min(lon), " ", max(lon), " (", length(lon), ")\n", 
+                   "                Lat: ", min(lat), " ", max(lat), " (", length(lat), ")"))
+
   ## check for annual data
   is.temporal <- FALSE
-  if (any(colnames(d)=="Year")) {
+  if (any(colnames(d) == "Year")) {
+    if (verbose)
+      message("'Year' column present.")
     time <- sort(unique(d$Year))
     is.temporal <- TRUE
   }
@@ -97,7 +100,7 @@ modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE) {
       d$variable <- NULL
       setkey(d, Lon, Lat, Year)
     } else {
-      d <- data.table::melt(d, id.vars=c("Lon", "Lat", "Year"))
+      d <- data.table::melt(d, id.vars=c("Lon", "Lat"))
       d[, Year:= as.numeric(variable)]
       d$variable <- NULL
       setkey(d, Lon, Lat, Year)

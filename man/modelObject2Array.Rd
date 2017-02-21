@@ -4,7 +4,7 @@
 \alias{modelObject2Array}
 \title{Convert a ModelObject to a multi-dimensional array}
 \usage{
-modelObject2Array(d, cname = FALSE, invertlat = FALSE)
+modelObject2Array(d, cname = FALSE, invertlat = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{d}{the data.table of a \code{\linkS4class{ModelObject}}}
@@ -12,6 +12,8 @@ modelObject2Array(d, cname = FALSE, invertlat = FALSE)
 \item{cname}{the column name to convert, if not set a list is returned}
 
 \item{invertlat}{start in the north}
+
+\item{verbose}{print some information}
 }
 \value{
 a array or a list or arrays

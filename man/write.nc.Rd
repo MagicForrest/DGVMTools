@@ -4,7 +4,7 @@
 \alias{write.nc}
 \title{Create a NetCDF4 file from a \code{\linkS4class{ModelObject}}.}
 \usage{
-write.nc(filename = NA, mo = NA, columns = NA, flux = FALSE,
+write.nc(filename = NA, mo = NA, columns = NA, as.daily.flux = FALSE,
   globalAttr = NULL, compress = NA, chunks = NA, reduce = FALSE,
   invertlat = FALSE, leap = FALSE, verbose = FALSE)
 }
@@ -15,7 +15,7 @@ write.nc(filename = NA, mo = NA, columns = NA, flux = FALSE,
 
 \item{columns}{which colums to write as variable (TODO: option as dimension)}
 
-\item{flux}{flux unit parseable by \code{\link[udunits2]{udunits2}}. Converts the data to flux. Requires package udunits2 to be installed.}
+\item{as.daily.flux}{Converts the data to daily fluxes by dividing by the respective number of days.}
 
 \item{globalAttr}{a named vector of additional global attributes.}
 
