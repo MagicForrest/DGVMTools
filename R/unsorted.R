@@ -4,15 +4,15 @@
 #' check if a given year is a leap year
 #' 
 #' @param year year (integer or vector)
-#' @param always use leap years even before 1582
-#' @param doy return days of year instead logical
-#' @return logical or integer, if doy os TRUE
+#' @param proleptic use leap years even before 1582.
+#' @param doy return days of year instead logical.
+#' @return logical or integer, if doy is TRUE
 #' 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
-is.leapyear <- function(year, always=FALSE, doy=FALSE) {
+is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
   leap <- sapply(year, function(x) {
-    if (!always && x<1582) return(FALSE)
+    if (!proleptic && x < 1582) return(FALSE)
     if (((x %% 4 == 0) & (x %% 100 != 0)) | (x %% 400 == 0))
       return(TRUE)
     return(FALSE)
@@ -26,22 +26,30 @@ is.leapyear <- function(year, always=FALSE, doy=FALSE) {
 #' 
 #' @param doy day of the year ('1' for 1. January).
 #' @param leap in a leap year of not.
-#' @return 4 digit string
+#' @param numeric return an integer instead of a string.
+#' @return 4 digit string or na
 #' 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
-doy2mmdd <- function(doy, leap=FALSE) {
+doy2mmdd <- function(doy, leap=FALSE, numeric=FALSE) {
   dpm <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-  if (leap) dpm[3] = 29
-  day <- 0
-  for (i in 1:length(dpm)) {
-    if (doy - sum(dpm[1:i]) <= 0) {
-      i <- i-1
-      day <- doy - sum(dpm[1:i])
-      break
-    }
-  }
-  return(sprintf("%02d%02d", i, day))
+  if (leap)
+    dpm[3] = 29
+  mmdd <- sapply(doy, function(x) {
+    if (x < 1)
+      return(NA)
+    if (!leap && x > 365)
+      return(NA)
+    if (leap && x > 366)
+      return(NA)
+    
+    month <- which(cumsum(dpm) >= x)[1] - 1
+    day <- x - sum(dpm[1:month])
+    if (numeric)
+      return(month * 100 + day)
+    return(sprintf("%02d%02d", month, day))
+  })
+  return(mmdd)
 }
 
 #' date in the form of MonthDay to day of year conversion
@@ -52,11 +60,20 @@ doy2mmdd <- function(doy, leap=FALSE) {
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 mmdd2doy <- function(mmdd, leap=FALSE) {
-  mmdd <- as.numeric(mmdd)
-  stopifnot(mmdd>100 && mmdd<1232)
-  dpm <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-  if (leap) dpm[3] = 29
-  return(sum(dpm[1:floor(mmdd / 100)]) + mmdd - (floor(mmdd / 100)) * 100)
+  doy <- sapply(mmdd, function(x) {
+    x <- as.numeric(x)
+    if (is.na(x) || x < 101 || x > 1231)
+      return(NA)
+    dpm <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    if (leap) dpm[3] = 29
+    month <- floor(x / 100)
+    day <- x - month * 100
+    if (day > dpm[month+1])
+      return(NA)
+    print(paste(day, month))
+    return(sum(dpm[1:floor(x / 100)]) + x - (floor(x / 100)) * 100)
+  })
+  return(doy)
 }
 
 #' Convert a ModelObject to a multi-dimensional array
