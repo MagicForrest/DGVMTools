@@ -4,15 +4,17 @@
 \alias{doy2mmdd}
 \title{day of year to date in the form of MonthDay conversion}
 \usage{
-doy2mmdd(doy, leap = FALSE)
+doy2mmdd(doy, leap = FALSE, numeric = FALSE)
 }
 \arguments{
 \item{doy}{day of the year ('1' for 1. January).}
 
 \item{leap}{in a leap year of not.}
+
+\item{numeric}{return an integer instead of a string.}
 }
 \value{
-4 digit string
+4 digit string or na
 }
 \description{
 day of year to date in the form of MonthDay conversion

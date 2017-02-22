@@ -202,7 +202,7 @@ checkModelRun <- function(object){
 #' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
-#' @slot description A character string describing this run, ie. "LPJ-GUESS v3.1"
+#' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot run.dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
@@ -214,13 +214,15 @@ checkModelRun <- function(object){
 #' @slot line.width A numeric to define the width of a line representing this model run
 #' @slot line.type A numeric to define the line style representing this model run
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
+#' @slot contact Name and email address of responsible person (default to OS username).
+#' @slot institute Name of the institute (default "none").
 #' @exportClass ModelRunInfo
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("ModelRunInfo", 
          slots = c(id = "character",
                    model = "character",
                    pft.set = "list",
-                   description = "character",
+                   name = "character",
                    run.dir = "character",                              
                    driving.data = "character",
                    lonlat.offset = "numeric",
@@ -231,7 +233,9 @@ setClass("ModelRunInfo",
                    line.col = "character", # # not commonly needed, only for more complex run comparisons
                    line.width = "numeric", # not commonly needed, only for more complex run comparisons
                    line.type = "ANY", #numeric", # not commonly needed, only for more complex run comparisons
-                   landuseSimulated = "logical"
+                   landuseSimulated = "logical",
+                   contact = "character",
+                   institute = "character"
          ),
          validity = checkModelRun
          
@@ -254,7 +258,7 @@ setClass("ModelRunInfo",
 #' @slot id A unique character string to identify this particular model run.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
-#' @slot description A character string describing this run, ie. "LPJ-GUESS v3.1"
+#' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot run.dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.

@@ -303,8 +303,8 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
         ##}
         dt <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt[, sens:=input[[i]]@run@description, ]
-          titles <- input[[i]]@run@description
+          dt[, sens:=input[[i]]@run@name, ]
+          titles <- input[[i]]@run@name
         } else {
           dt[, sens:=input[[i]]@run@id, ]
           titles <- input[[i]]@run@id
@@ -312,8 +312,8 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
       } else {
         dt.tmp <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt.tmp[, sens:=input[[i]]@run@description, ]
-          titles <- append(titles, input[[i]]@run@description)
+          dt.tmp[, sens:=input[[i]]@run@name, ]
+          titles <- append(titles, input[[i]]@run@name)
         } else {
           dt.tmp[, sens:=input[[i]]@run@id, ]
           titles <- append(titles, input[[i]]@run@id)
@@ -459,7 +459,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   } else if (long.title && is.DataObject(input)) {
     p <- p + labs(title=input@name)
   } else if (long.title) {
-    p <- p + labs(title=input@run@description)
+    p <- p + labs(title=input@run@name)
   }
     
   ## make axis labels smaller for facet plots
@@ -533,8 +533,8 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
         units <- input[[i]]@quant@units
         dt <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt[, sens:=input[[i]]@run@description, ]
-          titles <- input[[i]]@run@description
+          dt[, sens:=input[[i]]@run@name, ]
+          titles <- input[[i]]@run@name
         } else {
           dt[, sens:=input[[i]]@run@id, ]
           titles <- input[[i]]@run@id
@@ -542,8 +542,8 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
        } else {
         dt.tmp <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt.tmp[, sens:=input[[i]]@run@description, ]
-          titles <- append(titles, input[[i]]@run@description)
+          dt.tmp[, sens:=input[[i]]@run@name, ]
+          titles <- append(titles, input[[i]]@run@name)
         } else {
           dt.tmp[, sens:=input[[i]]@run@id, ]
           titles <- append(titles, input[[i]]@run@id)
@@ -775,8 +775,8 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
           }
           dt <- dy[dx]
           if (long.title) {
-            dt[, sens:=vsx@run@description, ]
-            titles <- vsx@run@description
+            dt[, sens:=vsx@run@name, ]
+            titles <- vsx@run@name
           } else {
             dt[, sens:=vsx@run@id, ]
             titles <- vsx@run@id
@@ -796,8 +796,8 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
           }
           dt.tmp <- dy[dx]
           if (long.title) {
-            dt.tmp[, sens:=vsx@run@description, ]
-            titles <- append(titles, vsx@run@description)
+            dt.tmp[, sens:=vsx@run@name, ]
+            titles <- append(titles, vsx@run@name)
           } else {
             dt.tmp[, sens:=vsx@run@id, ]
             titles <- append(titles, vsx@run@id)
@@ -1383,8 +1383,8 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
         dt <- input[[i]]@data[, c("Year", columns), with = FALSE]
         quant = input[[i]]@quant
         if (long.title) {
-          dt[, sens:=input[[i]]@run@description, ]
-          titles <- input[[i]]@run@description
+          dt[, sens:=input[[i]]@run@name, ]
+          titles <- input[[i]]@run@name
         } else {
           dt[, sens:=input[[i]]@run@id, ]
           titles <- input[[i]]@run@id
@@ -1396,8 +1396,8 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
         }
         dt.tmp <- input[[i]]@data[, c("Year", columns), with = FALSE]
         if (long.title) {
-          dt.tmp[, sens:=input[[i]]@run@description, ]
-          titles <- append(titles, input[[i]]@run@description)
+          dt.tmp[, sens:=input[[i]]@run@name, ]
+          titles <- append(titles, input[[i]]@run@name)
         } else {
           dt.tmp[, sens:=input[[i]]@run@id, ]
           titles <- append(titles, input[[i]]@run@id)
@@ -1592,8 +1592,8 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
       if (i==1) {
         dt <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt[, sens:=input[[i]]@run@description, ]
-          titles <- input[[i]]@run@description
+          dt[, sens:=input[[i]]@run@name, ]
+          titles <- input[[i]]@run@name
         } else {
           dt[, sens:=input[[i]]@run@id, ]
           titles <- input[[i]]@run@id
@@ -1601,8 +1601,8 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
       } else {
         dt.tmp <- input[[i]]@data[, c("Lon", "Lat", column), with = FALSE]
         if (long.title) {
-          dt.tmp[, sens:=input[[i]]@run@description, ]
-          titles <- append(titles, input[[i]]@run@description)
+          dt.tmp[, sens:=input[[i]]@run@name, ]
+          titles <- append(titles, input[[i]]@run@name)
         } else {
           dt.tmp[, sens:=input[[i]]@run@id, ]
           titles <- append(titles, input[[i]]@run@id)

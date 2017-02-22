@@ -63,7 +63,7 @@ setGeneric("summary", function(object,...) standardGeneric("summary"))
 #' @rdname Summary-methods
 #' @aliases summary
 setMethod("summary", signature("ModelRun"), function(object, ...) {
-  ret <- list(id=object@id, description=object@description, model=object@model)
+  ret <- list(id=object@id, name=object@name, model=object@model)
   
   spatial=NULL
   temporal=NULL

@@ -4,17 +4,17 @@
 \alias{is.leapyear}
 \title{check if a given year is a leap year}
 \usage{
-is.leapyear(year, always = FALSE, doy = FALSE)
+is.leapyear(year, proleptic = FALSE, doy = FALSE)
 }
 \arguments{
 \item{year}{year (integer or vector)}
 
-\item{always}{use leap years even before 1582}
+\item{proleptic}{use leap years even before 1582.}
 
-\item{doy}{return days of year instead logical}
+\item{doy}{return days of year instead logical.}
 }
 \value{
-logical or integer, if doy os TRUE
+logical or integer, if doy is TRUE
 }
 \description{
 check if a given year is a leap year

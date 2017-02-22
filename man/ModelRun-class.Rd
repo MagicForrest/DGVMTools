@@ -27,7 +27,7 @@ The following slots are inherited from \code{ModelRunInfo}.}
 
 \item{\code{pft.set}}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
 
-\item{\code{description}}{A character string describing this run, ie. "LPJ-GUESS v3.1"}
+\item{\code{name}}{A character string describing this run, ie. "LPJ-GUESS v3.1"}
 
 \item{\code{run.dir}}{The location of this run on the file system (Mandatory)}
 
