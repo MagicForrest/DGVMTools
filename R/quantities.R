@@ -764,7 +764,7 @@ dgvm.quantities <- list(
       name = "Monthly Litter Moisture of Live Grass",
       type = "monthly",
       units = "",
-      colours = fields::tim.colors,
+      colours = reversed.tim.colors,
       cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS-SPITFIRE")),
   
@@ -773,7 +773,7 @@ dgvm.quantities <- list(
       name = "Monthly Litter Moisture of Dead Fuel",
       type = "monthly",
       units = "",
-      colours = fields::tim.colors,
+      colours = reversed.tim.colors,
       cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS-SPITFIRE")),
   
@@ -793,7 +793,9 @@ dgvm.quantities <- list(
       units = "m/min",
       colours = fields::tim.colors,
       cuts = seq(0, 1, 0.02),
+      aggregate.method = "mean",
       model = c("LPJ-GUESS-SPITFIRE")),
+  
   
   new("Quantity",
       id = "mFBD",

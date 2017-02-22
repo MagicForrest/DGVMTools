@@ -218,10 +218,7 @@ benchmarkSpatial <- function(runs,
     data.vector <- comparison.dt[[dataset@id]]
     model.vector <- comparison.dt[[run@id]]
     
-    
-    print(length(difference.vector))
-    print(length(model.vector))
-    
+  
     # calculated mean, SD, MSE, RMSE, R^2, Pearson correlation etc
     
     # standard deviation and variance of the data
@@ -322,7 +319,6 @@ benchmarkSpatial <- function(runs,
     dev.off()
     
     ##### ABSOLUTE MAPS
-    print(local.args)
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
@@ -436,8 +432,8 @@ benchmarkSpatial <- function(runs,
     
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
-    print(args1)
-    # PLOT ABSOLUTE VALUES
+
+        # PLOT ABSOLUTE VALUES
     print(
       do.call(plotSpatial, c(list(x =  data.dt,
                                   layers = abs.layers,

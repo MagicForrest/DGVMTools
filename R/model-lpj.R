@@ -36,13 +36,13 @@ openLPJOutputFile <- function(run,
   else if(file.exists(paste(file.string, "gz", sep = "."))){
     if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
     dt <- fread(paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
-
+    
   }
   else {
     stop(paste("File (or gzipped file) not found:", file.string))
   }
   
-
+  
   #  Print messages
   if(verbose) {
     message("Read table. It has header:")
@@ -64,7 +64,7 @@ openLPJOutputFile <- function(run,
     if(run@lonlat.offset[1] != 0) dt[, Lon := Lon + run@lonlat.offset[1]]
     if(run@lonlat.offset[1] != 0) dt[, Lat := Lat + run@lonlat.offset[1]]
   }
-    
+  
   if(verbose) {
     message("Offsets applied. Head of full .out file (after offsets):")
     print(head(dt))
@@ -117,7 +117,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   
   # Check that this really is a standard Quantity and therefore should have behaviour defined here
   if(!"Standard" %in% quant@model) {
-        stop()(paste("getStandardQuantity_LPJ called for a non-standard Quantity (", quant@id, ")", sep = ""))
+    stop()(paste("getStandardQuantity_LPJ called for a non-standard Quantity (", quant@id, ")", sep = ""))
   }
   
   
@@ -168,7 +168,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     # newer versions have the agpp output variable which has the per PFT version
     this.dt <- openLPJOutputFile(run, "mgpp", verbose = TRUE)
     this.dt <- newLayer(this.dt, "Annual")
-
+    
     return(this.dt)
     
   }
@@ -178,7 +178,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
     this.dt <- openLPJOutputFile(run, "canopyheight", verbose = TRUE)
-
+    
     return(this.dt)
     
   }
@@ -188,8 +188,8 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # if mfirefrac is present the open it and use it
     if("mfirefrac" %in% listAllLPJOutput(run@run.dir)){
-       this.dt <- openLPJOutputFile(run, "mfirefrac", verbose = TRUE)
-       this.dt <- newLayer(this.dt, "Annual")
+      this.dt <- openLPJOutputFile(run, "mfirefrac", verbose = TRUE)
+      this.dt <- newLayer(this.dt, "Annual")
     }
     
     # otherwise open firert to get GlobFIRM fire return interval and invert it
@@ -198,11 +198,11 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
       this.dt[, Annual :=  1 / FireRT]
       this.dt[, FireRT :=  NULL]
     }
-
+    
     return(this.dt)
     
   }
-
+  
   # else stop
   else {
     
@@ -210,8 +210,8 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
   }
   
-   
- 
+  
+  
 }
 
 
@@ -232,7 +232,7 @@ listAllLPJOutput <- function(run.directory){
   # First get the list of *.out files present
   files.present <- list.files(run.directory, "*.out")
   files.present <- append(files.present, list.files(run.directory, "*.out.gz"))
-
+  
   
   # Now strip the .out file extension out the get the variable name
   this.var.list <- unlist(lapply(files.present, FUN = LPJQuantFromFilename))
@@ -270,8 +270,79 @@ LPJQuantFromFilename <- function(var.filename){
   for(ending in c(".out", ".out.gz")) {
     if(substr(var.filename, nchar(var.filename) - nchar(ending) + 1,  nchar(var.filename)) == ending) return(substr(var.filename, 1, nchar(var.filename) - nchar(ending)))
   }
-
+  
   return(NULL)
+  
+}
+
+####################### LON-LAT TO CF INDEX #################################################################################
+#' Returns 
+#' 
+#' 
+#' 
+#' 
+#' 
+#' 
+
+translateLonLatAndCFIndex <- function(lon.lat = NULL, cf.index = NULL, lon.res = 0.5, lat.res = 0.5, lon.start = -180, lat.start = -90, southwest = FALSE){
+  
+  lon.offset <- lon.res
+  lat.offset <- lat.res
+  if(southwest) {
+    lon.offset <- 0
+    lat.offset <- 0
+  }
+  
+  # ERROR - both arguements empty
+  if(is.null(lon.lat) && is.null(cf.index)){
+    stop("function convertlon.latAndcf.index():  You must provide either lon.lat or cf.index.")
+  }
+  # ERROR - both arguements specified
+  else  if(!is.null(lon.lat) && !is.null(cf.index)){
+    stop("function convertlon.latAndcf.index():  You must provide only on of lon.lat or cf.index.")
+  }
+  # CASE 1 - got lat-lon, return cf index
+  else if(!is.null(lon.lat)){
+    
+    # make sure it is a data.frame and check it has more than one column 
+    lon.lat.df <- as.data.frame(lon.lat)
+    if(ncol(lon.lat.df) < 2) {   stop("function convertlon.latAndcf.index(): Input data doesn't look right, not enough columns maybe?")}
+    
+    # assume first column is longitude
+    lons <- lon.lat.df[,1]
+    lon.cf.index <- ((lons - lon.start ) / lon.res) - lon.offset
+    lon.lat.df[,1] <- lon.cf.index
+    
+    # assume second column is latitude
+    lats <- lon.lat.df[,2]
+    lat.cf.index <- ((lats - lat.start ) / lat.res) - lat.offset
+    lon.lat.df[,2] <- lat.cf.index
+    
+    return(lon.lat.df)
+    
+  }
+  
+  
+  # CASE 2 - got cf index, return lat,lon
+  else if(!is.null(cf.index)){
+    
+    # make sure it is a data.frame and check it has more than one column 
+    lon.lat.df <- as.data.frame(cf.index)
+    if(ncol(lon.lat.df) < 2) {   stop("function convertlon.latAndcf.index(): Input data doesn't look right, not enough columns maybe?")}
+    
+    # assume first column is longitude
+    lons.cf.index <- lon.lat.df[,1]
+    lons <- (lons.cf.index + lon.offset) * lon.res + lon.start
+    lon.lat.df[,1] <- lons
+    
+    # assume second column is latitude
+    lats.cf.index <- lon.lat.df[,2]
+    lats <- (lats.cf.index + lat.offset) * lat.res + lat.start
+    lon.lat.df[,2] <- lats 
+    
+    return(lon.lat.df)
+   
+  }
   
 }
 
