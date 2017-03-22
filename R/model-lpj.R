@@ -161,6 +161,17 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
   }
   
+  # LAI_std 
+  else if(quant@id == "FPAR_std") {
+    
+    # lai provides the right quantity here - so done
+    temp.dt <- openLPJOutputFile(run, "fpc", verbose = TRUE)
+    this.dt <- temp.dt[, c("Lon", "Lat", "Year", "Total")]
+    this.dt[, Total := pmin(Total, 1) * 100 * 0.83]
+    return(this.dt)
+    
+  }
+  
   # mGPP_std 
   else if(quant@id == "aGPP_std") {
     

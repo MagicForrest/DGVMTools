@@ -256,7 +256,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     minmax <- max(quant@cuts) - min(quant@cuts)
     step <- (max(quant@cuts) - min(quant@cuts)) / (length(quant@cuts) - 1)
     quant@cuts <- seq(from = -minmax, to = minmax, by = step)
-    quant@colours <- colorRampPalette(c("green","blue","white","red", "yellow"))
+    quant@colours <- difference.palette
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     quant@id <-  paste(quant@id, "diff", sep =".")
@@ -269,7 +269,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
   else if(special == "percentage.difference"){
     
     quant@cuts <- seq(from = -100, to = 200, by = 10)
-    quant@colours <- colorRampPalette(c("blue","white","red", "yellow"))
+    quant@colours <- difference.palette
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     quant@id <-  paste(quant@id, "percdiff", sep =".")
@@ -569,8 +569,8 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     }
   }
   else plot.labels.here <- plot.labels
- 
-  if(quant@id == "Dominant") {
+
+    if(quant@id == "Dominant") {
        return(spplot(data.toplot,
                   #layers,
                   par.settings = list(panel.background=list(col=plot.bg.col)),
@@ -737,7 +737,7 @@ makePlotTitle <- function(quantity.str, layer = NULL, run = NULL, period = NULL)
   
   string <- quantity.str
   if(!is.null(layer)) string <- paste(string, layer, sep = " ")
-  if(!is.null(run)) string <- paste(string, run@description, sep = " ")
+  if(!is.null(run)) string <- paste(string, run@name, sep = " ")
   if(!is.null(period)) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
   return(string)
   

@@ -153,7 +153,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   }
   
   
-  PNV.dt[, paste(dataset.id, classification, sep = ".") := plyr::mapvalues(PNV.dt[[paste(dataset.id, classification, sep = ".")]], from = 1:18, to = subs.rules),with=FALSE]
+  PNV.dt[, paste(dataset.id, classification, sep = ".") := plyr::mapvalues(PNV.dt[[paste(dataset.id, classification, sep = ".")]], from = 1:18, to = subs.rules)]
  
   return(
     new("DataObject",

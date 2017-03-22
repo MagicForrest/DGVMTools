@@ -95,7 +95,7 @@ benchmarkSpatial <- function(runs,
   
   # list of stuff for the multi-panel plots
   run.ids <- c()
-  run.namess <- c()
+  run.names <- c()
   run.fill.cols <- c()
   run.line.cols <- c()
   
@@ -116,7 +116,7 @@ benchmarkSpatial <- function(runs,
                                    temporally.average = TRUE, 
                                    store.internally = TRUE, 
                                    write = TRUE, 
-                                   read.full = FALSE)
+                                   read.full = TRUE)
     
     # get the layer 
     if(!(layer.name %in% names(model.object@data))) model.object <- newLayer(model.object, layer.name, PFT.data = run@pft.set)
@@ -912,11 +912,13 @@ compareRuns <- function(runs,
   all.layers <- c()
   for(sub.layer in layer) {
     layers <- c()
+    labels <- c()
     for(run in runs){
       layers <- append(layers, paste(run@id, sub.layer, sep = "_"))
       all.layers  <- append(all.layers, paste(run@id, sub.layer, sep = "_"))
+      labels  <- append(labels, run@name)
     }
-    
+
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", sub.layer, veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
@@ -927,6 +929,7 @@ compareRuns <- function(runs,
                       tag = paste(tag, "RunComparison", sub.layer, sep = "."),
                       special = special,
                       override.cuts = abs.value.cuts,
+                      plot.labels = labels,
                       ...)
     )
     

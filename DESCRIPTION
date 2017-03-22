@@ -31,7 +31,8 @@ Imports:
     grid,
     RColorBrewer,
     plyr,
-    reshape2
+    reshape2,
+    viridis
 Suggests:
     zoo,
     mgcv,

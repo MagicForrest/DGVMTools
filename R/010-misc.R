@@ -870,7 +870,16 @@ lai.palette <- colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "kha
 cmass.palette <- colorRampPalette(c("lemonchiffon","peru", "forestgreen", "dodgerblue4", "orchid4", "hotpink", "red4"))
 
 #' @rdname veg.palettes
-difference.palette <- colorRampPalette(c("green", "blue", "white", "red", "yellow")) #this is a function which returns a list of colours
+difference.palette <- function(n){
+  
+  # Make palette based on RColorBrewer "RdBu" palette
+  rdbu <- rev(brewer.pal(11, "RdBu"))
+  cols <- colorRampPalette(rdbu)
+  return(cols(n))  
+
+  #colorRampPalette(c("green", "blue", "white", "red", "yellow")) #this is a function which returns a list of colours
+
+}
 
 #' @rdname veg.palettes
 fire.palette <- colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))

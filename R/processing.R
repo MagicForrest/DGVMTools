@@ -156,8 +156,8 @@ addBiomes <-function(input, scheme){
   suppressWarnings(dt <- input@data)
   
   # Apply biome rules and return
-  if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
-  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1), with = FALSE])
+  if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL] }
+  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1)])
   input@data <- dt
   return(input)
   
@@ -230,9 +230,9 @@ calcBiomes <-function(input, scheme){
   }
   
   # calculate the biomes (first add it to the existing data.table then subset to make a new data.table and then delete the column from the original)
-  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1), with = FALSE])
+  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1)])
   biome.dt <- dt[,append(st.cols, scheme@id), with = FALSE]
-  dt[, scheme@id := NULL, with=FALSE]
+  dt[, scheme@id := NULL]
   
   # now make a new ModelObject and return
   biomes <- new("ModelObject",

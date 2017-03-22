@@ -10,7 +10,8 @@ import(maps,
        rgdal, 
        sp,
        raster,
-       data.table)
+       data.table,
+       viridis)
 
 importFrom("fields", "tim.colors")
 importFrom("compiler", "cmpfun")

@@ -27,7 +27,7 @@ Smith2014BiomeRules <- function(lai){
   if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['MaxTree']] == "TrBE") {return(1)}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(2)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(2)}
   
   # BIOME 3 - Tropical Seasonal Forest
   else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['MaxTree']] == "TrBE" | lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(3)}
@@ -75,7 +75,7 @@ Smith2014BiomeRules <- function(lai){
   else if(as.numeric(lai[['Total']]) > 0.2) {return(16)}
   
   # BIOME 17 - Desert
-  else if(as.numeric(lai[['Total']]) < 0.2) {return(17)}
+  else if(as.numeric(lai[['Total']]) <= 0.2) {return(17)}
   
   # REMAINDER
   else {
