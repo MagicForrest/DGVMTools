@@ -256,7 +256,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     minmax <- max(quant@cuts) - min(quant@cuts)
     step <- (max(quant@cuts) - min(quant@cuts)) / (length(quant@cuts) - 1)
     quant@cuts <- seq(from = -minmax, to = minmax, by = step)
-    quant@colours <- colorRampPalette(c("green","blue","white","red", "yellow"))
+    quant@colours <- difference.palette
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     quant@id <-  paste(quant@id, "diff", sep =".")
@@ -269,7 +269,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
   else if(special == "percentage.difference"){
     
     quant@cuts <- seq(from = -100, to = 200, by = 10)
-    quant@colours <- colorRampPalette(c("blue","white","red", "yellow"))
+    quant@colours <- difference.palette
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     quant@id <-  paste(quant@id, "percdiff", sep =".")
@@ -392,7 +392,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     # because currently (May 2016) raster package doesn't handle factor rasters very well
     RAT <- data.toplot@data@attributes[[1]]
     data.toplot <- deratify(data.toplot, complete = TRUE)
-    
+
     # reset the names following deratify, only necessary since update to 2.5-8 (February 2017)
     # I cannot find any documentation of these changes but it may be that the raster package has been simplifed w.r.t plotting factors and this is now all unnecessary
     # but to be at the moment it is just inducing ball-ache
@@ -470,7 +470,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                      id = "Dominant",
                      name = paste("Dominant Month by", quant.id, sep = " "),
                      type = "categorical",
-                     units = "categorical",
+                     units = col.list,
                      colours = colorRampPalette(col.list),
                      #cuts = 0:length(col.list),
                      cuts = NULL,
@@ -569,16 +569,16 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     }
   }
   else plot.labels.here <- plot.labels
- 
-  if(tolower(quant@type) == "categorical") {
-     return(spplot(data.toplot,
+
+    if(quant@id == "Dominant") {
+       return(spplot(data.toplot,
                   #layers,
                   par.settings = list(panel.background=list(col=plot.bg.col)),
                   xlab = list(label = "Longitude", cex = 3 * text.multiplier),
                   ylab = list(label = "Latitude", cex = 3 * text.multiplier),
                   col.regions= quant@colours,
                   colorkey = colorkey.list,                                                                                            
-                  at = 0:length(quant@units),
+                  #at = 0:length(quant@units),
                   scales = list(draw = TRUE, cex = 3 * text.multiplier),
                   as.table = TRUE,
                   main=list(label=title, 
@@ -592,7 +592,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     )
   }
   else {
-    return(spplot(data.toplot,
+     return(spplot(data.toplot,
                   layers,
                   par.settings = list(panel.background=list(col=plot.bg.col)),
                   xlab = list(label = "Longitude", cex = 3 * text.multiplier),
@@ -737,7 +737,7 @@ makePlotTitle <- function(quantity.str, layer = NULL, run = NULL, period = NULL)
   
   string <- quantity.str
   if(!is.null(layer)) string <- paste(string, layer, sep = " ")
-  if(!is.null(run)) string <- paste(string, run@description, sep = " ")
+  if(!is.null(run)) string <- paste(string, run@name, sep = " ")
   if(!is.null(period)) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
   return(string)
   

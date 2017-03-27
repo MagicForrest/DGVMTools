@@ -95,7 +95,7 @@ benchmarkSpatial <- function(runs,
   
   # list of stuff for the multi-panel plots
   run.ids <- c()
-  run.namess <- c()
+  run.names <- c()
   run.fill.cols <- c()
   run.line.cols <- c()
   
@@ -116,7 +116,7 @@ benchmarkSpatial <- function(runs,
                                    temporally.average = TRUE, 
                                    store.internally = TRUE, 
                                    write = TRUE, 
-                                   read.full = FALSE)
+                                   read.full = TRUE)
     
     # get the layer 
     if(!(layer.name %in% names(model.object@data))) model.object <- newLayer(model.object, layer.name, PFT.data = run@pft.set)
@@ -218,10 +218,7 @@ benchmarkSpatial <- function(runs,
     data.vector <- comparison.dt[[dataset@id]]
     model.vector <- comparison.dt[[run@id]]
     
-    
-    print(length(difference.vector))
-    print(length(model.vector))
-    
+  
     # calculated mean, SD, MSE, RMSE, R^2, Pearson correlation etc
     
     # standard deviation and variance of the data
@@ -322,7 +319,6 @@ benchmarkSpatial <- function(runs,
     dev.off()
     
     ##### ABSOLUTE MAPS
-    print(local.args)
     do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
@@ -436,8 +432,8 @@ benchmarkSpatial <- function(runs,
     
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("Absolute", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
-    print(args1)
-    # PLOT ABSOLUTE VALUES
+
+        # PLOT ABSOLUTE VALUES
     print(
       do.call(plotSpatial, c(list(x =  data.dt,
                                   layers = abs.layers,
@@ -916,11 +912,13 @@ compareRuns <- function(runs,
   all.layers <- c()
   for(sub.layer in layer) {
     layers <- c()
+    labels <- c()
     for(run in runs){
       layers <- append(layers, paste(run@id, sub.layer, sep = "_"))
       all.layers  <- append(all.layers, paste(run@id, sub.layer, sep = "_"))
+      labels  <- append(labels, run@name)
     }
-    
+
     do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("RunComparison", sub.layer, veg.spatial.id, tag, canvas.options[["type"]], sep = "."))), 
                                  canvas.options)) 
     
@@ -931,6 +929,7 @@ compareRuns <- function(runs,
                       tag = paste(tag, "RunComparison", sub.layer, sep = "."),
                       special = special,
                       override.cuts = abs.value.cuts,
+                      plot.labels = labels,
                       ...)
     )
     

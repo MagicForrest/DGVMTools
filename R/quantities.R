@@ -121,6 +121,15 @@ dgvm.quantities <- list(
       cuts = seq(0, 1.0, 0.02),
       model = c("Standard")),
   
+  new("Quantity",
+      id = "FPAR_std",
+      name = "Fraction absorbed of Photosynthetically Active Radiation",
+      type = "annual",
+      units = "fraction",
+      colours = veg.palette,
+      cuts = seq(0, 100.0, 1),
+      model = c("Standard")),
+  
   
   ### NITROGEN QUANTITES
   
@@ -144,7 +153,7 @@ dgvm.quantities <- list(
       type = "",
       name = "Leaf Area Index",
       units = "-",
-      colours = veg.palette, 
+      colours = viridis, 
       cuts = seq(0,10,0.5),
       model = "FireMIP"), 
   
@@ -539,9 +548,9 @@ dgvm.quantities <- list(
       id = "aleafshed",
       name = "Number times leafs shed per year",
       type = "PFT",
-      units = "-",
+      units = "",
       colours = fields::tim.colors,
-      cuts = seq(0, 5, 0.2),
+      cuts = seq(0, 20, 0.5),
       aggregate.method = "mean",
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
@@ -764,7 +773,7 @@ dgvm.quantities <- list(
       name = "Monthly Litter Moisture of Live Grass",
       type = "monthly",
       units = "",
-      colours = fields::tim.colors,
+      colours = reversed.tim.colors,
       cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS-SPITFIRE")),
   
@@ -773,7 +782,7 @@ dgvm.quantities <- list(
       name = "Monthly Litter Moisture of Dead Fuel",
       type = "monthly",
       units = "",
-      colours = fields::tim.colors,
+      colours = reversed.tim.colors,
       cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS-SPITFIRE")),
   
@@ -793,7 +802,9 @@ dgvm.quantities <- list(
       units = "m/min",
       colours = fields::tim.colors,
       cuts = seq(0, 1, 0.02),
+      aggregate.method = "mean",
       model = c("LPJ-GUESS-SPITFIRE")),
+  
   
   new("Quantity",
       id = "mFBD",
