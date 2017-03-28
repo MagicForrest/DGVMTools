@@ -555,6 +555,15 @@ dgvm.quantities <- list(
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
+      id = "cton_leaf",
+      name = "C:N leaf",
+      type = "PFT",
+      units = "ckgC/kgN",
+      colours = fields::tim.colors,
+      cuts = seq(0,100,1),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
       id = "nmass",
       name = "Vegetation Nitrogen Mass",
       type = "PFT",

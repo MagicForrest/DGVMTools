@@ -14,7 +14,7 @@
 #' or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can automatically plot things like biomes, dominant PFTs, months of maximum values, 
 #' burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command. 
 #'
-#' @param data The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
+#' @param x The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
 #' @param period The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.   
@@ -40,6 +40,7 @@
 #' @param override.cuts Cut ranges (a numeric vector) to override the defaults.
 #' @param special A character string to indicate certain "special modes" which modifies the behaviour of the function a bit.
 #' Special modes are currectly "fraction", "difference", "percentage.difference", "firert" (fire return time) and "dominant.pft".
+#' @param map.overlay A character 
 #' @param ... Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
@@ -51,8 +52,12 @@
 #' @return Returns a plot object (from spplot)
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @importFrom Cairo Cairo
-#' @import raster data.table
+#' @import ggplot2 data.table
+#' @importFrom maptools map2SpatialLines
+#' @importFrom rgeos gLength
+#' @importFrom sp SpatialLinesDataFrame
+#' @importFrom raster crs
+#' 
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
@@ -69,12 +74,15 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
                          plot.bg.col =  "transparent",
                          useLongnames = FALSE,
                          text.multiplier = 1,
+                         xlim = NULL,
+                         ylim = NULL,
                          plot.extent = NULL,
                          limit = FALSE,
                          limits = NULL,
                          override.cols = NULL,
                          override.cuts = NULL,
                          special = "none",
+                         map.overlay = NULL,
                          ...){
   # 
   # ###################################################################################################
@@ -556,7 +564,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   # #               par.settings = list(panel.background=list(col=plot.bg.col)),
   # #               xlab = list(label = "Longitude", cex = 3 * text.multiplier),
   # #               ylab = list(label = "Latitude", cex = 3 * text.multiplier),
-  # #               col.regions= quant@colours,
+  # #               col.regions= quant@colours,as.data.frame(data.toplot)
   # #               colorkey = colorkey.list,                                                                                            
   # #               at = quant@cuts,
   # #               scales = list(draw = TRUE, cex = 3 * text.multiplier),
@@ -573,11 +581,31 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   # 
   # 
   
+  # CHEC
   
-  # PREPARE DATA FOR PLOTTING
+  
+  
+  ### PREPARE DATA FOR PLOTTING
+  discrete <- FALSE
+  continuous <- FALSE
   
   ### CASE 1 - A single ModelObject or DataObject
   if(is.ModelObject(data) || is.DataObject(data)) {
+    
+    print("Got a single *Object")
+    
+    # first check 
+    
+    
+    # if layers not specified, assume all
+    if(is.null(layers)) layers <- names(data)
+    
+    # check if layers are all continuous or discrete
+    for(layer in layers) {
+      if(class(data@data[[layer]]) == "factor") discrete <- TRUE
+      if(class(data@data[[layer]]) == "numeric") continuous <- TRUE
+    }
+    if(discrete & continuous) stop("plotSpatial canot simultaneously plot discrete and continuous layers, check your layers")    
     
     # select layers and convert to a data,table
     data.toplot <- selectLayers(data, layers)
@@ -586,11 +614,14 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     # now melt the layers
     data.toplot <- melt(data.toplot, measure.vars = layers)
     
-    if(is.null(override.cols)) override.cols <- data@quant@colours(20)
+    if(is.null(override.cols) & continuous) override.cols <- data@quant@colours(20)
     legend.title <- data@quant@units
+    quant <- data@quant
     
   }
   else if(class(data)[1] == "list") {
+    
+    print("Got a list of *Objects")
     
     # check if each item is a Data/ModelObject
     all.objects <- TRUE
@@ -600,6 +631,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     
     # if they are all Data/ModelObjects the pull the layers from each one into a large data.table for plotting
     data.toplot.list <- list()
+    first <- TRUE
     for(object in data){
       
       these.layers <- selectLayers(object, layers)
@@ -612,43 +644,201 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
       
       data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
       
-      if(is.null(override.cols)) override.cols <- object@quant@colours(20)
-      legend.title <- object@quant@units
-      
+      if(first) {
+        if(is.null(override.cols)) override.cols <- object@quant@colours(20)
+        legend.title <- object@quant@units
+        quant <- object@quant
+      }
+      first <- FALSE
     }
     
     data.toplot <- rbindlist(data.toplot.list)
     
   }
   
+  ### VERBOSE
+  #if(discrete) print("Printing in mode for discrete variables")
+  #if(continuous) print("Printing in mode for continuous variables")
+  #if(!continuous & !discrete) stop("Neither discrete nor continuous")
   
-  mp <- ggplot(data = as.data.frame(data.toplot))
-  mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "value"))
-  if("object.id" %in% names(data.toplot)) mp <- mp + facet_grid(as.formula(paste("variable", "~", "object.id")), switch = "y")
-  else mp <- mp + facet_wrap(as.formula(paste("~", "variable")))
+  
+  ### CALCULATE THE RANGE OF LONGITUDE AND LATITUDE TO BE PLOTTED
+  all.lons <- sort(unique(data.toplot[["Lon"]]))
+  all.lats <- sort(unique(data.toplot[["Lat"]]))
+  
+  if(is.null(ylim)) ylim <- c(min(all.lats), max(all.lats)) 
+  if(is.null(xlim)) xlim <- c(min(all.lons), max(all.lons)) 
+  
+  
+  
+  ### PREPARE THE MAP OVERLAY
+  if(class(map.overlay)[1] == "character"){
+    
+    # determine if london centered (if not call "maps2" for Pacific centered versions)
+    gt.180 <- FALSE
+    for(lon in all.lons) {
+      if(lon > 180) gt.180 <- TRUE
+    }
+    if(tolower(map.overlay)=="world" && gt.180) map.overlay <- "world2"
+    else if(tolower(map.overlay)=="worldHires" && gt.180) map.overlay <- "worldHires2"
+    else if(tolower(map.overlay)=="world2" && !gt.180) map.overlay <- "world"
+    else if(tolower(map.overlay)=="world2ires" && !gt.180) map.overlay <- "worldHires"
+    
+    # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
+    proj4str <- "+proj=longlat +datum=WGS84"
+    map.sp.lines <- map2SpatialLines(map(map.overlay, plot = FALSE, interior = TRUE, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = CRS(proj4str))
+    df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) gLength(map.sp.lines[i, ])))
+    rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
+    map.sp.lines.df <- SpatialLinesDataFrame(map.sp.lines, data = df)
+    map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
+    map.overlay <- fortify(map.sp.lines.df)
+    
+    rm(df, map.sp.lines, map.sp.lines.df)   
+    
+  }
+  else if(!is.null(map.overlay)) {
+    stop("Some other overlay type...")
+  }
+  
+  ### IF PLOT IS DISCRETE, BUILD THE COLOURS
+  if(discrete){
+    
+    # make a list of all the unique values (factors), each of these will need a colour
+    unique.vals <- unique(data.toplot[["value"]])
+    
+    # Final results of stuff below
+    cols <- c()
+    is.PFTs <- FALSE
+    is.categorical <- FALSE
+    
+    ###  If the Quantity if specifically defined as categorical then use the colours defined in the Quantity's units slot
+    if(tolower(quant@type) == "categorical") {
+      
+      legend.title = NULL
+      
+      # reverse engineer colours from palette
+      quant.cols <- quant@colours(length(quant@units))
+      names(quant.cols) <- quant@units
+      
+      for(val in unique.vals) {
+        for(factor.value in quant@units) {
+          if(val == factor.value) cols[[val]] <- quant.cols[[val]]
+        }    
+      }
+      
+      if(length(cols) == length(unique.vals)){
+        is.categorical <- TRUE
+      }
+      
+      
+    }
+    
+    ### Else check if the factors are PFTs 
+    # TODO - implement months!!
+    else {
+      
+      # check if the factors are PFTs, and if so assign them their meta-data colour
+      pft.superset <- NULL
+      if(is.ModelObject(data)) {
+        pft.superset <- data@run@pft.set 
+      }
+      else {
+        
+        for(object in data) {
+          if(is.ModelObject(object)) {
+            pft.superset <- append(pft.superset, object@run@pft.set)
+          }
+          
+        }
+      }
+      
+      for(val in unique.vals) {
+        for(PFT in pft.superset) {
+          if(val == PFT@id) cols[[val]] <- PFT@colour
+        }    
+      }
+      
+      if(length(cols) == length(unique.vals)) is.PFTs <- TRUE
+      
+      # if not PFTs, look for months
+      if(!is.PFTs){
+        
+        print("Here look for months")
+        
+      }
+      
+    }
+    
+    
+    # If found colours for all the factors, set the values for plotting
+    if(is.PFTs) {
+      if(!is.null(override.cols)) override.cols <- cols
+      legend.title <- "PFT"
+      breaks <- sort(names(override.cols))
+    }
+    if(is.categorical) {
+      if(!is.null(override.cols)) override.cols <- cols
+      legend.title <- quant@name
+      breaks <- quant@units
+    }
+  
+}
+
+### HANDLE THE FACET GRID/WRAP ISSUE
+
+# don't wrap if only one "variable"
+wrap <- FALSE 
+if(length(unique(data.toplot[["variable"]])) > 1) wrap = TRUE
+
+### BUILD THE PLOT
+
+# basic plot building
+mp <- ggplot(data = as.data.frame(data.toplot))
+mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "value"))
+
+# facet with grid or wrap 
+if("object.id" %in% names(data.toplot)) mp <- mp + facet_grid(as.formula(paste("variable", "~", "object.id")), switch = "y")
+else if(wrap) mp <- mp + facet_wrap(as.formula(paste("~", "variable")))
+
+# colour bar ()
+if(continuous)  {
   mp <- mp + scale_fill_gradientn(name = legend.title, limits = limits, colors = override.cols)
-  mp <- mp + coord_fixed()
-  
-  
-  # labels and positioning
-  mp <- mp + labs(title = title, y = "Latitude", x = "Longitude", fill='custom text')
-  mp <- mp + theme(plot.title = element_text(hjust = 0.5))
-  mp <- mp + theme(text = element_text(size=30))
-  
-  # scale up colour bar
   mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
-  
-  # set background colour of panel
-  mp <- mp + theme(#panel.background = element_rect(fill = plot.bg.col) # bg of the panel
-                   plot.background = element_rect(fill = "transparent"), # bg of the plot
-                   #, panel.grid.major = element_blank() # get rid of major grid
-                   #, panel.grid.minor = element_blank() # get rid of minor grid
-                   legend.background = element_rect(fill = "transparent")#, # get rid of legend bg
-                   #legend.box.background = element_rect(fill = "transparent") # get rid of legend panel bg
-  )
-  
-  
-  return(mp)
-  
-  
+}
+if(discrete) {
+  mp <- mp + scale_fill_manual(values = override.cols, breaks = breaks)
+}
+
+# crop to xlim and ylim as appropriate and fix the aspect ratio 
+mp <- mp + xlim(xlim)
+mp <- mp + ylim(ylim)
+mp <- mp + coord_fixed()
+
+# labels and positioning
+mp <- mp + labs(title = title, y = "Latitude", x = "Longitude")
+if(!is.null(legend.title)) {
+  mp <- mp + labs(fill=legend.title)
+}
+else {
+  mp <- mp + theme(legend.title = element_blank())
+}
+mp <- mp + theme(plot.title = element_text(hjust = 0.5))
+mp <- mp + theme(text = element_text(size=30))
+
+# set background colour of panel
+mp <- mp + theme(#panel.background = element_rect(fill = plot.bg.col) # bg of the panel
+  plot.background = element_rect(fill = "transparent"), # bg of the plot
+  #, panel.grid.major = element_blank() # get rid of major grid
+  #, panel.grid.minor = element_blank() # get rid of minor grid
+  legend.background = element_rect(fill = "transparent")#, # get rid of legend bg
+  #legend.box.background = element_rect(fill = "transparent") # get rid of legend panel bg
+)
+
+
+# map overlay
+if(!is.null(map.overlay)) mp <- mp + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group = group))
+
+return(mp)
+
+
 }

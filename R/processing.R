@@ -230,7 +230,7 @@ calcBiomes <-function(input, scheme){
   }
   
   # calculate the biomes (first add it to the existing data.table then subset to make a new data.table and then delete the column from the original)
-  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1)])
+  suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
   biome.dt <- dt[,append(st.cols, scheme@id), with = FALSE]
   dt[, scheme@id := NULL]
   
