@@ -5,7 +5,7 @@
 #' @param filename output file name
 #' @param mo the \code{\linkS4class{ModelObject}}.
 #' @param columns which colums to write as variable (TODO: option as dimension)
-#' @param as.daily.flux Converts the data to daily fluxes by dividing by the respective number of days.
+#' @param as.flux Converts the data to fluxes by dividing by the respective number of days, if TRUE or "day[s]". If set to "^s*", the divided by 86400 additionally.
 #' @param globalAttr a named vector of additional global attributes.
 #' @param compress should NetCDF4 compression be turned on. Either TRUE (compression level 4) of an integer between 1 and 9.
 #' @param chunks chunk size for faster readability. If set make sure its length agrees with the data dimensions.
@@ -18,7 +18,7 @@
 #' @import ncdf4
 #' @importFrom reshape2 acast
 ## TODO: Add daily data compatibility
-write.nc <- function(filename=NA, mo=NA, columns=NA, as.daily.flux=FALSE, globalAttr=NULL,
+write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=NULL,
                      compress=NA, chunks=NA, reduce=FALSE, invertlat=FALSE, leap=FALSE, verbose=FALSE) {
 
   Lon=Lat=Year=variable=NULL
@@ -38,6 +38,21 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.daily.flux=FALSE, global
     }
   }
 
+  ## check, if flux is desired
+  if (as.flux != FALSE) {
+    if (grepl("^d", as.flux)) {
+      as.flux = 1.0
+    } else if (grepl("^h", as.flux)) {
+      as.flux = 24.0
+    } else if (grepl("^m", as.flux)) {
+      as.flux = 24.0 * 60.0
+    } else if (grepl("^s", as.flux)) {
+      as.flux = 24.0 * 60.0 * 60.0
+    } else if (!is.numeric(as.flux)) {
+      stop(paste0("Don't what to do with 'as.flux=", as.flux, "'!"))
+    }
+  }
+  
   ## define spatial dimensions
   ## landid if 'reduce' is TRUE, otherwise lat/lon grid
   dims <- list()
@@ -156,10 +171,28 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.daily.flux=FALSE, global
   ## However, that adds another dependency 
   ## and [CN] must be removed from the units string.
   unit <- mo@quant@units
-  if (as.daily.flux) {
-    unit = paste0(unit, "/day")
-    message("*** FLUX conversion still experimental. Not yet validated ***")
-    warning("*** FLUX conversion still experimental. Not yet validated ***")
+  if (as.flux==1.0) {
+    unit = paste0(unit, " day-1")
+    message("*** FLUX conversion still experimental. Not yet validated properly ***")
+    warning("*** FLUX conversion still experimental. Not yet validated properly ***")
+  } else if (as.flux==24.0) {
+    unit = paste0(unit, " h-1")
+    message("*** FLUX conversion still experimental. Not yet validated properly ***")
+    warning("*** FLUX conversion still experimental. Not yet validated properly ***")
+  } else if (as.flux==24.0 * 60.0) {
+    unit = paste0(unit, " min-1")
+    message("*** FLUX conversion still experimental. Not yet validated properly ***")
+    warning("*** FLUX conversion still experimental. Not yet validated properly ***")
+  } else if (as.flux==24.0 * 60.0 * 60.0) {
+    unit = paste0(unit, " s-1")
+    message("*** FLUX conversion still experimental. Not yet validated properly ***")
+    warning("*** FLUX conversion still experimental. Not yet validated properly ***")
+  } else if (as.flux) {
+    unit = paste0(unit, " (", as.flux, ")-1")
+    message(paste0("*** FLUX: unknown divisor: '", as.flux,"'  ***"))
+    warning(paste0("*** FLUX: unknown divisor: '", as.flux,"'  ***"))
+    message("*** FLUX conversion still experimental. Not yet validated properly ***")
+    warning("*** FLUX conversion still experimental. Not yet validated properly ***")
   }
 
   ## define the variables based on columns (only if not monthly),
@@ -195,22 +228,22 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.daily.flux=FALSE, global
       if (mo@is.temporally.averaged) {
         data <- data.table::melt(mo@data, id.vars=c("landid"), measure.vars=month.abb)
         data <- array(data$value, c(nlandid, length(time)))
-        if (as.daily.flux)
-          data <- data / array(rep(time, each=nlandid), dim(data))
+        if (as.flux)
+          data <- data / array(rep(time * as.flux, each=nlandid), dim(data))
         ncvar_put(ncout, mo@quant@id, data)
         ncatt_put(ncout, mo@quant@id, "coordinates", "lon lat")
       } else {
         data <- data.table::melt(mo@data, id.vars=c("landid", "Year"), measure.vars=month.abb)
         data[, Year:= Year* 100 + as.numeric(variable)]
         data <- acast(data, landid~Year, value.var="value")
-        if (as.daily.flux)
-          data <- data / array(rep(time, each=nlandid), dim(data))
+        if (as.flux)
+          data <- data / array(rep(time * as.flux, each=nlandid), dim(data))
         ncvar_put(ncout, mo@quant@id, data)
       }
     } else {
       data <- modelObject2Array(mo@data, FALSE, invertlat, verbose=verbose)
-      if (as.daily.flux)
-        data <- data / array(rep(time, each=length(lon) * length(lat)), dim(data))
+      if (as.flux)
+        data <- data / array(rep(time * as.flux, each=length(lon) * length(lat)), dim(data))
       
       ncvar_put(ncout, mo@quant@id, data)
     }
@@ -224,25 +257,25 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.daily.flux=FALSE, global
         if (mo@is.temporally.averaged) {
           data <- eval(parse(text=paste0("mo@data$", name)))
           
-          if (as.daily.flux)
-            data <- data / time
+          if (as.flux)
+            data <- data / (time * as.flux)
           
           ncvar_put(ncout, name, data)
           ncatt_put(ncout, name, "coordinates", "lon lat")
         } else {
           data <- acast(mo@data, landid~Year, value.var=name)
           
-          if (as.daily.flux)
-            data <- data / array(rep(time, each=nlandid), dim(data))
+          if (as.flux)
+            data <- data / array(rep(time * as.flux, each=nlandid), dim(data))
           ncvar_put(ncout, name, data)
         }
       } else {
         data <- modelObject2Array(mo@data, name, invertlat, verbose=verbose)
 
-        if (as.daily.flux && mo@is.temporally.averaged) {
+        if (as.flux && mo@is.temporally.averaged) {
           data <- data / time
-        } else if (as.daily.flux) {
-          data <- data / array(rep(time, each=length(lon) * length(lat)), dim(data))
+        } else if (as.flux) {
+          data <- data / array(rep(time * as.flux, each=length(lon) * length(lat)), dim(data))
         }
         ncvar_put(ncout, name, data)
       }
