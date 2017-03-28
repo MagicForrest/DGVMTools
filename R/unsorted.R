@@ -180,6 +180,6 @@ setGeneric("as.array", function(x,...) standardGeneric("as.array"))
 
 #' @rdname Array-methods
 #' @aliases as.array
-setMethod("as.array", signature("ModelRun"), function(x, ...) {
-  modelObject2Array(x, ...)
+setMethod("as.array", signature("ModelObject"), function(x, ...) {
+  modelObject2Array(x@data, ...)
 })
