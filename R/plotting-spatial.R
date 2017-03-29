@@ -657,24 +657,7 @@ makeStatsOverlay <- function(stat.results, stats = "NME", panel = NULL, plot.ext
 
 
 
-######################### CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED #####################################################################
-#' 
-#' Fixes a spatial lines object where some of eastern Russia transposed to the other side of the world
-#' 
-#' 
-#' @param spl SpatialLines object to fix
-#' @return a the SpatialLines object 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @import raster
-correct.map.offset <- function(spl) {
-  we <- crop(spl, extent(-180, 180, -90, 90))
-  ww <- crop(spl, extent(179.999, 200, -90, 90))
-  if(!is.null(ww) & !is.null(we)) {
-    ww <- raster::shift(ww, -360)
-    spl <- raster::bind(we, ww)  
-  }
-  return(spl)
-}
+
 
 
 ######################### MAKES A MAP OVERLAY - A SPATAIL LINES OF CONTINENTS OR COUNTY OUTLINES FOR PLOTTING   #####################################################################
@@ -715,33 +698,7 @@ makeOverlay <- function(which, interior.lines = TRUE, lwd = 0.5, col = NULL){
   
 }
 
-#######################################################################################################################################
-################### HELPER FUNCTIONS FOR MAKING PLOT TITLES, FILENAMES ETC... #########################################################
-#######################################################################################################################################
 
-#' Make a plot title
-#' 
-#' Build an appropriate plot title from some possibly relevant variables.  
-#' It will use a string to represent the quantity (obligatory), and optionally a period and an ID.
-#' 
-#' @param quantity.str Character string for the quantity plotted
-#' @param layer The names of the layer (or another identifier)
-#' @param run The \code{ModelRun} object for the run plotted (optional)
-#' @param period The time period plotted as \code{TemporalExtent} (optional)
-#' @return A character string for use as a plot title
-#'  
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#'
-#' @export 
-makePlotTitle <- function(quantity.str, layer = NULL, run = NULL, period = NULL){
-  
-  string <- quantity.str
-  if(!is.null(layer)) string <- paste(string, layer, sep = " ")
-  if(!is.null(run)) string <- paste(string, run@name, sep = " ")
-  if(!is.null(period)) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
-  return(string)
-  
-}
 
 
 

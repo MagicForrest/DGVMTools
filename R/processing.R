@@ -136,17 +136,17 @@ addBiomes <-function(input, scheme){
     dt <- dt[dt.gdd5]
     input@data <- dt
   }
-
+  
   # Get the dominant tree and dominant woody PFTs
   input <- newLayer(input, layers = scheme@max.needed, method = "max")
-
+  
   if(!"Grass" %in% names(input@data) ) {
     input@data[, Grass := 0]
   }
-
+  
   # Get the totals required
   input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
-
+  
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
@@ -190,8 +190,8 @@ calcBiomes <-function(input, scheme){
   
   # If GDD5 required for classification
   #if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
-    # get gdd5
-   # stop("input@run is not a class 'ModelRun' it is class 'ModelRunInfo'!")
+  # get gdd5
+  # stop("input@run is not a class 'ModelRun' it is class 'ModelRunInfo'!")
   if(scheme@needGDD5){
     temp.model.run <- new("ModelRun", input@run)
     gdd5 <- getModelObject(temp.model.run, "gdd5", input@temporal.extent, read.full = FALSE)
@@ -282,8 +282,8 @@ calcBiomes <-function(input, scheme){
 #' @seealso expandslayers getVegFractions
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
-
-    Woody = Total = TempTotal = NULL
+  
+  Woody = Total = TempTotal = NULL
   
   ### HANDLE CLASS OF INPUT OBJECT
   # Here allow the possibility to handle both ModelObjects and data.tables directly (for internal calculations)
@@ -309,7 +309,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
       message("newLayer() has been called on a data.table but the aggregation method has not been specified so assuming sum.  Is this what you wanted? ")
     }
   }
-
+  
   # auxiliary function to be apply'd in the case of max and min
   max.layer <- function(x){
     the.max <- names(x)[which.max(x)]
@@ -373,9 +373,9 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   ### FOR PER-PFT FILES
   for(this.layer in layers){
-
+    
     if(this.layer != "Month") {
-
+      
       # build list of columns to combine for layer
       layer.cols <- c()
       for(PFT in all.PFTs){
@@ -390,22 +390,22 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
       }
       
       # now combine the relevant columns
-
+      
       # if not requiring the maximum or minimum
       if(!identical(method, max.layer) & !identical(method, min.layer)) {
-
+        
         if(!is.null(layer.cols)) suppressWarnings(dt[, eval(this.layer) := method(.SD), .SDcols = layer.cols])
-
+        
       }
       
       # else it is min/max
       else{
-
+        
         if("Total" %in% layer.cols) layer.cols <- layer.cols[-which(layer.cols == "Total")]
         # MF TODO: make this faster/nicer?
         suppressWarnings(dt[, eval(paste0(method.string, this.layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
         dt[, eval(quote(paste0(method.string, this.layer))) := as.factor(get(paste0(method.string, this.layer)))]
-       
+        
       }
       
     } # if not month
@@ -440,7 +440,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
       dt[, eval(quote(paste0(method.string, this.layer))) := factor(get(paste0(method.string, this.layer)), levels = factor.order)]
       dt[,TempTotal := NULL]
       
-
+      
     }
     
     # for other layers
@@ -565,14 +565,15 @@ getSTInfo <- function(x, info = "names") {
   
   
   # sort classes
-  this.class <- class(x)[1]
-  
-  if(this.class == "ModelObject" | this.class == "DataObject") x <- x@data
-  else if(this.class != "data.table" ) stop(paste("Cant get spatio-temporal info from class", this.class, sep = " "))
+  if(is.ModelObject(x) | is.DataObject(x)) x <- x@data
+  else if(this.class != "data.table" ) stop(paste("Cant get spatio-temporal info from class", class(x)[1], sep = " "))
   
   # set up list and vector/columns present
   if(info == "names") {
     st.info <- c()
+  }
+  else if(info == "full") {
+    st.info <- "dummy"
   }
   else {
     st.info <- c()
@@ -583,11 +584,25 @@ getSTInfo <- function(x, info = "names") {
     
     if(dim %in% all.cols) {
       
+      # case = names only
       if(info == "names") st.info <- append(st.info, dim)
-  
+      # case = full 
+      if(info == "full") {
+        if(class(st.info)[1] == "character") {
+          st.info <- data.table(dim = x[[dim]])
+          setnames(st.info, "dim", dim)
+        }
+        else {
+          st.info[,dim := x[[dim]]]
+          setnames(st.info, "dim", dim)
+        }
+      }  
+      
+      
+      
     }
   }
-
+  
   return(st.info)
   
 }

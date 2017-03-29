@@ -588,9 +588,12 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   ### PREPARE DATA FOR PLOTTING
   discrete <- FALSE
   continuous <- FALSE
+  single.object <- FALSE
   
   ### CASE 1 - A single ModelObject or DataObject
   if(is.ModelObject(data) || is.DataObject(data)) {
+    
+    single.object <- TRUE
     
     print("Got a single *Object")
     
@@ -617,42 +620,65 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     if(is.null(override.cols) & continuous) override.cols <- data@quant@colours(20)
     legend.title <- data@quant@units
     quant <- data@quant
+    temporal.extent <- data@temporal.extent
     
   }
+  
+  ### CASE 2- A list of ModelObjects and DataObjects
   else if(class(data)[1] == "list") {
     
-    print("Got a list of *Objects")
     
-    # check if each item is a Data/ModelObject
-    all.objects <- TRUE
-    for(thing in data){
-      if(!(is.ModelObject(thing) || is.DataObject(thing))) all.objects <- FALSE
-    }
-    
+    # Loop through the objects checking if they are Data/ModelObjects and processign as required
     # if they are all Data/ModelObjects the pull the layers from each one into a large data.table for plotting
     data.toplot.list <- list()
+    temporal.extent <- NULL
     first <- TRUE
     for(object in data){
       
+      # if not Data/ModelObject then stop
+      if(!(is.ModelObject(object) || is.DataObject(object))) stop("plotSpatial:: Some items you have passed me in this list are not either DataObjects ot ModelObjects")
+      
+      # select the layers and mash the data into shape
       these.layers <- selectLayers(object, layers)
-      
       these.layers.melted <- melt(these.layers@data, measure.vars = layers)
-      
-      
       if(is.DataObject(object)) these.layers.melted[, object.id := object@name]
       else  these.layers.melted[, object.id := object@run@name]
-      
       data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
       
+      # check if layers are all continuous or discrete
+      for(layer in layers) {
+        if(class(object@data[[layer]]) == "factor") discrete <- TRUE
+        if(class(object@data[[layer]]) == "numeric") continuous <- TRUE
+      }
+      if(discrete & continuous) stop("plotSpatial canot simultaneously plot discrete and continuous layers, check your layers")   
+      
       if(first) {
-        if(is.null(override.cols)) override.cols <- object@quant@colours(20)
+        if(is.null(override.cols) & continuous) override.cols <- object@quant@colours(20)
         legend.title <- object@quant@units
         quant <- object@quant
+        temporal.extent <- object@temporal.extent
       }
+      else {
+        
+        # check for consistent temporal extent
+        if(temporal.extent@start != object@temporal.extent@start || temporal.extent@end != object@temporal.extent@end) temporal.extent <- NULL
+        # check for consistent Quantity
+        if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
+        
+      }
+      
       first <- FALSE
+      
     }
     
     data.toplot <- rbindlist(data.toplot.list)
+    rm(data.toplot.list)
+    
+  } 
+  
+  else {
+    
+    stop("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects")
     
   }
   
@@ -734,7 +760,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     }
     
     ### Else check if the factors are PFTs 
-    # TODO - implement months!!
+    # TODO - implement months below!!
     else {
       
       # check if the factors are PFTs, and if so assign them their meta-data colour
@@ -772,73 +798,136 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     
     # If found colours for all the factors, set the values for plotting
     if(is.PFTs) {
-      if(!is.null(override.cols)) override.cols <- cols
+      if(is.null(override.cols)) override.cols <- cols
       legend.title <- "PFT"
       breaks <- sort(names(override.cols))
     }
-    if(is.categorical) {
-      if(!is.null(override.cols)) override.cols <- cols
+    else if(is.categorical) {
+      if(is.null(override.cols)) override.cols <- cols
       legend.title <- quant@name
       breaks <- quant@units
     }
+    
+  }
+  
+  ### HANDLE THE FACET GRID/WRAP ISSUE
+  
+  # don't wrap if only one "variable"
+  wrap <- FALSE 
+  if(length(unique(data.toplot[["variable"]])) > 1) wrap = TRUE
+  
+  
+  
+  ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
+  if(is.null(title)) {
+    if(single.object) {
+      if(length(unique(data.toplot[["variable"]])) > 1) title <- makePlotTitle(quant@name, layer = NULL, run = data@run, period = data@temporal.extent) 
+      else title <- makePlotTitle(quant@name, layer = layers, run = data@run, period = data@temporal.extent) 
+    }
+    else {
+      if(length(unique(data.toplot[["variable"]])) > 1) title <- makePlotTitle(quant@name, layer = NULL, run = NULL, period = temporal.extent) 
+      else title <- makePlotTitle(quant@name, layer = layers, run = NULL, period = temporal.extent) 
+    }
+  }
+  
+  
+  ### BUILD THE PLOT
+  
+  # basic plot building
+  mp <- ggplot(data = as.data.frame(data.toplot))
+  mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "value"))
+  
+  # facet with grid or wrap 
+  if("object.id" %in% names(data.toplot)) mp <- mp + facet_grid(as.formula(paste("variable", "~", "object.id")), switch = "y")
+  else if(wrap) mp <- mp + facet_wrap(as.formula(paste("~", "variable")))
+  
+  # colour bar
+  if(continuous)  {
+    mp <- mp + scale_fill_gradientn(name = legend.title, limits = limits, colors = override.cols)
+    mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
+  }
+  if(discrete) {
+    mp <- mp + scale_fill_manual(values = override.cols, breaks = breaks)
+  }
+  
+  # crop to xlim and ylim as appropriate and fix the aspect ratio 
+  mp <- mp + xlim(xlim)
+  mp <- mp + ylim(ylim)
+  mp <- mp + coord_fixed()
+  
+  # labels and positioning
+  mp <- mp + labs(title = title, y = "Latitude", x = "Longitude")
+  if(!is.null(legend.title)) {
+    mp <- mp + labs(fill=legend.title)
+  }
+  else {
+    mp <- mp + theme(legend.title = element_blank())
+  }
+  mp <- mp + theme(plot.title = element_text(hjust = 0.5))
+  mp <- mp + theme(text = element_text(size=30))
+  
+  # set background colour of panel
+  mp <- mp + theme(#panel.background = element_rect(fill = plot.bg.col) # bg of the panel
+    plot.background = element_rect(fill = "transparent"), # bg of the plot
+    #, panel.grid.major = element_blank() # get rid of major grid
+    #, panel.grid.minor = element_blank() # get rid of minor grid
+    legend.background = element_rect(fill = "transparent")#, # get rid of legend bg
+    #legend.box.background = element_rect(fill = "transparent") # get rid of legend panel bg
+  )
+  
+  
+  # map overlay
+  if(!is.null(map.overlay)) mp <- mp + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group = group))
+  
+  return(mp)
+  
   
 }
 
-### HANDLE THE FACET GRID/WRAP ISSUE
-
-# don't wrap if only one "variable"
-wrap <- FALSE 
-if(length(unique(data.toplot[["variable"]])) > 1) wrap = TRUE
-
-### BUILD THE PLOT
-
-# basic plot building
-mp <- ggplot(data = as.data.frame(data.toplot))
-mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "value"))
-
-# facet with grid or wrap 
-if("object.id" %in% names(data.toplot)) mp <- mp + facet_grid(as.formula(paste("variable", "~", "object.id")), switch = "y")
-else if(wrap) mp <- mp + facet_wrap(as.formula(paste("~", "variable")))
-
-# colour bar ()
-if(continuous)  {
-  mp <- mp + scale_fill_gradientn(name = legend.title, limits = limits, colors = override.cols)
-  mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
-}
-if(discrete) {
-  mp <- mp + scale_fill_manual(values = override.cols, breaks = breaks)
+######################### CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED #####################################################################
+#' 
+#' Fixes a spatial lines object where some of eastern Russia transposed to the other side of the world
+#' 
+#' 
+#' @param spl SpatialLines object to fix
+#' @return a the SpatialLines object 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @import raster
+correct.map.offset <- function(spl) {
+  we <- crop(spl, extent(-180, 180, -90, 90))
+  ww <- crop(spl, extent(179.999, 200, -90, 90))
+  if(!is.null(ww) & !is.null(we)) {
+    ww <- raster::shift(ww, -360)
+    spl <- raster::bind(we, ww)  
+  }
+  return(spl)
 }
 
-# crop to xlim and ylim as appropriate and fix the aspect ratio 
-mp <- mp + xlim(xlim)
-mp <- mp + ylim(ylim)
-mp <- mp + coord_fixed()
 
-# labels and positioning
-mp <- mp + labs(title = title, y = "Latitude", x = "Longitude")
-if(!is.null(legend.title)) {
-  mp <- mp + labs(fill=legend.title)
-}
-else {
-  mp <- mp + theme(legend.title = element_blank())
-}
-mp <- mp + theme(plot.title = element_text(hjust = 0.5))
-mp <- mp + theme(text = element_text(size=30))
+#######################################################################################################################################
+################### HELPER FUNCTIONS FOR MAKING PLOT TITLES, FILENAMES ETC... #########################################################
+#######################################################################################################################################
 
-# set background colour of panel
-mp <- mp + theme(#panel.background = element_rect(fill = plot.bg.col) # bg of the panel
-  plot.background = element_rect(fill = "transparent"), # bg of the plot
-  #, panel.grid.major = element_blank() # get rid of major grid
-  #, panel.grid.minor = element_blank() # get rid of minor grid
-  legend.background = element_rect(fill = "transparent")#, # get rid of legend bg
-  #legend.box.background = element_rect(fill = "transparent") # get rid of legend panel bg
-)
-
-
-# map overlay
-if(!is.null(map.overlay)) mp <- mp + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group = group))
-
-return(mp)
-
-
+#' Make a plot title
+#' 
+#' Build an appropriate plot title from some possibly relevant variables.  
+#' It will use a string to represent the quantity (obligatory), and optionally a period and an ID.
+#' 
+#' @param quantity.str Character string for the quantity plotted
+#' @param layer The names of the layer (or another identifier)
+#' @param run The \code{ModelRun} object for the run plotted (optional)
+#' @param period The time period plotted as \code{TemporalExtent} (optional)
+#' @return A character string for use as a plot title
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#'
+#' @export 
+makePlotTitle <- function(quantity.str, layer = NULL, run = NULL, period = NULL){
+  
+  string <- quantity.str
+  if(!is.null(layer)) string <- paste(string, layer, sep = " ")
+  if(!is.null(run)) string <- paste(string, run@name, sep = " ")
+  if(!is.null(period)) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
+  return(string)
+  
 }

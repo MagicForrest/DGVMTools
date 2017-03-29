@@ -436,7 +436,7 @@ setClass("DatasetInfo",
                    line.width = "numeric", # not commonly needed, only for more complex run comparisons
                    line.type = "numeric" # not commonly needed, only for more complex run comparisons
          )
-
+         
 )
 
 
@@ -471,20 +471,6 @@ setClass("DataObject",
          contains = "DatasetInfo" 
          
 )
-
-
-# setClass("MultiObject", 
-#          slots = c(id = "character",
-#                    data = "data.table",
-#                    info = "list",
-#                    spatial.extent = "SpatialExtent",
-#                    temporal.extent = "TemporalExtent",
-#                    is.site = "logical",
-#                    is.spatially.averaged = "logical",
-#                    is.temporally.averaged = "logical"
-#          )
-# )
-
 
 
 #' Result of comparing a model raster to a data raster
@@ -534,6 +520,22 @@ setClass("SpatialComparison",
 
 
 
+setClass("ComparisonLayer", 
+         slots = c(id = "character",
+                   data = "data.table",
+                   stats = "SpatialComparison",
+                   info1 = "ANY",
+                   info2 = "ANY",
+                   spatial.extent = "SpatialExtent",
+                   temporal.extent = "TemporalExtent",
+                   is.site = "logical",
+                   is.spatially.averaged = "logical",
+                   is.temporally.averaged = "logical"
+                   
+         )#,
+         #validity = checkComparison
+)
+
 
 
 
@@ -551,8 +553,6 @@ setClass("SpatialComparison",
 #' This is ultimately not flexible enough for all conceivable biome schemes from all models and will need to be somehow generalised and expanded at some point.  This is most certainly a challenge for another day!
 #' 
 #' 
-
-
 #' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")
 #' @slot name A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")
 #' @slot type A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")
