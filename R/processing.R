@@ -565,7 +565,7 @@ getSTInfo <- function(x, info = "names") {
   
   
   # sort classes
-  if(is.ModelObject(x) | is.DataObject(x)) x <- x@data
+  if(is.ModelObject(x) | is.DataObject(x) | is.ComparisonLayer(x)) x <- x@data
   else if(this.class != "data.table" ) stop(paste("Cant get spatio-temporal info from class", class(x)[1], sep = " "))
   
   # set up list and vector/columns present

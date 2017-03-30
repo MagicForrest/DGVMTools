@@ -22,7 +22,6 @@
 #' @param quant A \code{Quantity} object describy the quantity to be plotted.  This provides an override \code{Quantity} when plotting a \code{ModelObject}
 #' and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.
 #' @param run A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}. 
-#' @param PFT.set A PFT set, necessary for expanding layers and plotting long names.  Normally taken from the \code{ModelObject}.
 #' @param title A character string to override the default title.
 #' @param layout.objs List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
 #' so see there for how to build them.
@@ -64,14 +63,10 @@
 plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
                          layers = NULL,
                          expand.layers = TRUE,
-                         quant = NULL, 
-                         period = NULL, 
-                         run = NULL, 
-                         PFT.set = lpj.global.PFTs,
                          title = NULL,
                          layout.objs = NULL, 
                          plot.labels =  NULL,
-                         plot.bg.col =  "transparent",
+                         plot.bg.col =  "white",
                          useLongnames = FALSE,
                          text.multiplier = 1,
                          xlim = NULL,
@@ -83,6 +78,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
                          override.cuts = NULL,
                          special = "none",
                          map.overlay = NULL,
+                         grid = TRUE,
                          ...){
   # 
   # ###################################################################################################
@@ -594,11 +590,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   if(is.ModelObject(data) || is.DataObject(data)) {
     
     single.object <- TRUE
-    
-    print("Got a single *Object")
-    
-    # first check 
-    
+    grid <- FALSE
     
     # if layers not specified, assume all
     if(is.null(layers)) layers <- names(data)
@@ -608,7 +600,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
       if(class(data@data[[layer]]) == "factor") discrete <- TRUE
       if(class(data@data[[layer]]) == "numeric") continuous <- TRUE
     }
-    if(discrete & continuous) stop("plotSpatial canot simultaneously plot discrete and continuous layers, check your layers")    
+    if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers")    
     
     # select layers and convert to a data,table
     data.toplot <- selectLayers(data, layers)
@@ -624,9 +616,67 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     
   }
   
-  ### CASE 2- A list of ModelObjects and DataObjects
-  else if(class(data)[1] == "list") {
+  ### CASE 2 - A single ComparisionLayer
+  else if(is.ComparisonLayer(data)) {
     
+    single.object <- TRUE
+    grid <- FALSE
+    
+    # first check if discrete or continuous
+    for(layer in names(data)[1:2]) {
+      if(class(data@data[[layer]]) == "factor") discrete <- TRUE
+      if(class(data@data[[layer]]) == "numeric") continuous <- TRUE
+    }
+    if(discrete & continuous) stop("plotSpatial ComparisonObject does not seem to be consistenly defined")    
+    
+    
+    # if layers not specified, assume "Difference"
+    if(is.null(layers)  || tolower(layers) == "difference") {
+      layers <- "Difference" 
+      if(is.null(override.cols) & continuous) override.cols <- rev(brewer.pal(11, "RdBu"))
+    }
+    else if(tolower(layers) == "absolute") {
+      # put side by side
+      layers <- names(data)[1:2]
+    }
+    else if(tolower(layers) == "percentage.difference" || tolower(layers) == "percentagedifference"){
+      
+      layers <- "Percentage Difference"
+      data.temp <- data@data[, "Percentage Difference" := (get(paste("Difference")) %/0% get(names(data)[2])) * 100]
+      data@data <- data.temp
+      if(is.null(override.cols) & continuous) override.cols <- rev(brewer.pal(11, "RdBu"))
+      
+    }
+ 
+    # select layers and convert to a data,table
+    data.toplot <- selectLayers(data, layers)
+    data.toplot <- as.data.table(data.toplot)
+    
+    # now melt the layers
+    data.toplot <- melt(data.toplot, measure.vars = layers)
+    
+    if(is.null(override.cols) & continuous) override.cols <- data@quant@colours(20)
+    legend.title <- data@quant@units
+    quant <- data@quant
+    temporal.extent <- data@temporal.extent
+    
+    # special case for difference plots, make limits symmetric around 0
+    if(is.null(limits) & (layers == "Difference" || layers == "Percentage Difference")){
+      min.value <- min(data.toplot[["value"]])
+      max.value <- max(data.toplot[["value"]])
+      abs.max <- max(abs(min.value),abs(max.value))
+      if(layers == "Percentage Difference") {
+        abs.max <- min(abs.max, 200)
+        legend.title <- "%"
+      }
+      limits <- c(-abs.max, abs.max)
+    }
+    
+  }
+  
+  
+  ### CASE 3- A list of ModelObjects and DataObjects
+  else if(class(data)[1] == "list") {
     
     # Loop through the objects checking if they are Data/ModelObjects and processign as required
     # if they are all Data/ModelObjects the pull the layers from each one into a large data.table for plotting
@@ -641,8 +691,8 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
       # select the layers and mash the data into shape
       these.layers <- selectLayers(object, layers)
       these.layers.melted <- melt(these.layers@data, measure.vars = layers)
-      if(is.DataObject(object)) these.layers.melted[, object.id := object@name]
-      else  these.layers.melted[, object.id := object@run@name]
+      if(is.DataObject(object)) these.layers.melted[, Source := object@name]
+      else  these.layers.melted[, Source := object@run@name]
       data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
       
       # check if layers are all continuous or discrete
@@ -681,6 +731,11 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     stop("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects")
     
   }
+
+  ### Rename "variable" to "Layer" which makes more conceptual sense
+  setnames(data.toplot, "variable", "Layer")
+  setnames(data.toplot, "value", "Value")
+  
   
   ### VERBOSE
   #if(discrete) print("Printing in mode for discrete variables")
@@ -730,7 +785,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   if(discrete){
     
     # make a list of all the unique values (factors), each of these will need a colour
-    unique.vals <- unique(data.toplot[["value"]])
+    unique.vals <- unique(data.toplot[["Value"]])
     
     # Final results of stuff below
     cols <- c()
@@ -747,13 +802,16 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
       names(quant.cols) <- quant@units
       
       for(val in unique.vals) {
-        for(factor.value in quant@units) {
-          if(val == factor.value) cols[[val]] <- quant.cols[[val]]
-        }    
+        if(!is.na(val)){
+          for(factor.value in quant@units) {
+            if(val == factor.value) cols[[val]] <- quant.cols[[val]]
+          }  
+        }
       }
       
       if(length(cols) == length(unique.vals)){
         is.categorical <- TRUE
+        print("yes")
       }
       
       
@@ -812,34 +870,46 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   
   ### HANDLE THE FACET GRID/WRAP ISSUE
   
-  # don't wrap if only one "variable"
+  # don't wrap if only one "Layer"
   wrap <- FALSE 
-  if(length(unique(data.toplot[["variable"]])) > 1) wrap = TRUE
-  
-  
+  wrap.by <- "Layer"
+  if(length(unique(data.toplot[["Layer"]])) > 1) {
+    wrap = TRUE
+  }
+  if("Source" %in% names(data.toplot)) {
+    if(!grid) wrap <- TRUE
+    wrap.by <- "Source"
+  }
+ 
+    
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(is.null(title)) {
     if(single.object) {
-      if(length(unique(data.toplot[["variable"]])) > 1) title <- makePlotTitle(quant@name, layer = NULL, run = data@run, period = data@temporal.extent) 
-      else title <- makePlotTitle(quant@name, layer = layers, run = data@run, period = data@temporal.extent) 
+      if(length(unique(data.toplot[["Layer"]])) > 1) {
+        title <- makePlotTitle(quant@name, layer = NULL, source = data, period = data@temporal.extent) 
+      }
+      else {
+        title <- makePlotTitle(quant@name, layer = layers, source = data, period = data@temporal.extent) 
+      }
     }
     else {
-      if(length(unique(data.toplot[["variable"]])) > 1) title <- makePlotTitle(quant@name, layer = NULL, run = NULL, period = temporal.extent) 
-      else title <- makePlotTitle(quant@name, layer = layers, run = NULL, period = temporal.extent) 
+      if(length(unique(data.toplot[["Layer"]])) > 1) title <- makePlotTitle(quant@name, layer = NULL, source = NULL, period = temporal.extent) 
+      else title <- makePlotTitle(quant@name, layer = layers, source = NULL, period = temporal.extent) 
     }
   }
+  
   
   
   ### BUILD THE PLOT
   
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
-  mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "value"))
+  mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "Value"))
   
   # facet with grid or wrap 
-  if("object.id" %in% names(data.toplot)) mp <- mp + facet_grid(as.formula(paste("variable", "~", "object.id")), switch = "y")
-  else if(wrap) mp <- mp + facet_wrap(as.formula(paste("~", "variable")))
+  if(grid) mp <- mp + facet_grid(as.formula(paste("Layer", "~", "Source")), switch = "y")
+  else if(wrap) mp <- mp + facet_wrap(as.formula(paste("~", wrap.by)))
   
   # colour bar
   if(continuous)  {
@@ -868,7 +938,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   
   # set background colour of panel
   mp <- mp + theme(#panel.background = element_rect(fill = plot.bg.col) # bg of the panel
-    plot.background = element_rect(fill = "transparent"), # bg of the plot
+    plot.background = element_rect(fill = plot.bg.col), # bg of the plot
     #, panel.grid.major = element_blank() # get rid of major grid
     #, panel.grid.minor = element_blank() # get rid of minor grid
     legend.background = element_rect(fill = "transparent")#, # get rid of legend bg
@@ -922,11 +992,22 @@ correct.map.offset <- function(spl) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #'
 #' @export 
-makePlotTitle <- function(quantity.str, layer = NULL, run = NULL, period = NULL){
+makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NULL){
   
+  # Quantity.str must be supplied
   string <- quantity.str
+  
+  # A layer name may be supplied
   if(!is.null(layer)) string <- paste(string, layer, sep = " ")
-  if(!is.null(run)) string <- paste(string, run@name, sep = " ")
+  
+  # A source may be supplied (either a DataObject, ModelObject or ComparisonLayer)
+  if(!is.null(source)) {
+    if(is.ModelObject(source)) string <- paste(string, source@run@name, sep = " ")
+    if(is.DataObject(source)) string <- paste(string, source@name, sep = " ")
+    if(is.ComparisonLayer(source)) string <- paste(string, source@name, sep = " ")
+  }
+  
+  # Ands a period may be suppled  
   if(!is.null(period)) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
   return(string)
   

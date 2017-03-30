@@ -273,3 +273,104 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   return(layers)
   
 }
+
+compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE){
+  
+  ### Check that the object have the same dimensions, if not fail immediately
+  if(!identical(getSTInfo(object1), getSTInfo(object2))) stop("Trying to compare layers with different dimenisons.  Definitely can't do this.  Check your dimension and/or averaging")
+  
+  
+  ###  First get the layers - maybe do a nicer error check here   
+  layer.object1 <- selectLayers(object1, layer1)
+  layer.object2 <- selectLayers(object2, layer2)
+  
+  
+  ###  Set the names by appending the id so that they are not identical
+  # object 1
+  if(is.DataObject(layer.object1)) {
+    new.id1 <- paste(layer1, object1@id, sep = ".")
+    info1 <- object1@info
+  }
+  else {
+    new.id1 <- paste(object1@run@id, layer1, object1@id, sep = ".")
+    info1 <- as(object1@run, "ModelRunInfo")
+  }  
+  setnames(layer.object1@data, layer1, new.id1) 
+  
+  # object 1
+  if(is.DataObject(layer.object2)) {
+    new.id2 <- paste(layer2, object2@id, sep = ".")
+    info2 <- object2@info
+  }
+  else {
+    new.id2 <- paste(object2@run@id, layer2, object2@id, sep = ".")
+    info2 <- as(object2@run, "ModelRunInfo")
+  }  
+  setnames(layer.object2@data, layer2, new.id2) 
+  
+  ### Check the case that the longitudes, latitudes and years are identical
+  ### This is often the case with model runs and if it is true, maybe the whole procedure much faster and easier
+  same.domain <- FALSE
+  if(identical(getSTInfo(object1, "full"), getSTInfo(object2, "full")))  same.domain <- TRUE
+  
+  ### Easy life case, both objects are on exactly the same domain
+  if(!same.domain) {
+    
+    new.data <- layer.object1@data[layer.object2@data] 
+    new.data[, "Difference" := get(new.id1) - get(new.id2)]
+    
+  }
+  ### Else, not so-easy-life is having to check the domains and keeping points or not
+  else {
+    
+    new.data <- copyLayers(from = layer.object2, 
+                           to = layer.object1, 
+                           layer.names = new.id2, 
+                           new.layer.names = NULL, 
+                           keep.all.to = keepall1, 
+                           keep.all.from = keepall2, 
+                           dec.places = NULL)@data
+    
+    new.data[, "Difference" := get(new.id1) - get(new.id2)]
+
+  }
+  
+  # make meta-data for the ComparisonLayer
+  id <- paste0(new.id1, "-", new.id2)
+  if(object1@temporal.extent@start == object2@temporal.extent@start & object1@temporal.extent@end == object2@temporal.extent@end){
+    te <- object2@temporal.extent
+  }
+  else {
+    te <- NULL
+  }
+  se <- new("SpatialExtent", id = id, name = id, extent = extent(new.data))
+  if(!identical(object1@quant, object1@quant)) {
+    if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", object1@quant@id, " and ", object2@quant@id, "), proceeding using quantity", object1@quant@id))
+    else  stop("Comapring different Qunatit")
+  }
+  new.name <- paste(info1@name, "-",  info2@name)
+  
+  ### Calculate the approriate statistical comparisons
+  
+  
+  comparison.layer <- new("ComparisonLayer",
+                          id = id,
+                          name = new.name,
+                          data = new.data,
+                          quant = object1@quant,
+                          spatial.extent = se,
+                          temporal.extent = te,
+                          info1 = info1,
+                          info2 = info2,
+                          stats = new("SpatialComparison"),
+                          is.site = FALSE,
+                          is.spatially.averaged = FALSE,
+                          is.temporally.averaged = FALSE
+  )
+  
+  
+  
+  
+  return(comparison.layer)
+  
+}
