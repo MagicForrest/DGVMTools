@@ -39,7 +39,7 @@ getAvitabile2015 <- function(location = "/data/forrest/Biomass/Avitabile2015/", 
   
   Avitabile.dt <- data.table(as.data.frame(Avitabile.raster,xy = TRUE))
   Avitabile.dt <- na.omit(Avitabile.dt)
-  setnames(Avitabile.dt, c("Lon", "Lat", "Avitabile2015"))
+  setnames(Avitabile.dt, c("Lon", "Lat", "Tree"))
   setkey(Avitabile.dt, Lon, Lat)
   
   
