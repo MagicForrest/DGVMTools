@@ -32,7 +32,8 @@ Imports:
     RColorBrewer,
     plyr,
     reshape2,
-    viridis
+    viridis,
+    rgeos
 Suggests:
     zoo,
     mgcv,

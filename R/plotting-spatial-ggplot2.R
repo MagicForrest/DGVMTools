@@ -884,7 +884,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
     proj4str <- "+proj=longlat +datum=WGS84"
     map.sp.lines <- map2SpatialLines(map(map.overlay, plot = FALSE, interior = TRUE, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = CRS(proj4str))
-    df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) gLength(map.sp.lines[i, ])))
+    df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ])))
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
     map.sp.lines.df <- SpatialLinesDataFrame(map.sp.lines, data = df)
     map.sp.lines.df <- correct.map.offset(map.sp.lines.df)

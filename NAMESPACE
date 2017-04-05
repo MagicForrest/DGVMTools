@@ -24,7 +24,6 @@ importFrom("stats", "cor", "dnorm", "median", "na.omit", "sd", "coef", "lm", "va
 importFrom("utils", "capture.output", "data", "file_test", "object.size", "read.table", "write.table", "str")
 importFrom("plyr", "mapvalues")
 importFrom("reshape2", "acast")
-importFrom("rgeos", "gLength")
 importMethodsFrom("data.table")
 importMethodsFrom("raster")
 importMethodsFrom("sp")
