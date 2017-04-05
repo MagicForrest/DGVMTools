@@ -271,7 +271,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
         
         dataset.dt <- data.table(as.data.frame(GFED4.data.cropped,xy = TRUE))
         dataset.dt <- na.omit(dataset.dt)
-        setnames(dataset.dt, c("Lon", "Lat", "GFED4"))
+        setnames(dataset.dt, c("Lon", "Lat", "Annual"))
         setkey(dataset.dt, Lon, Lat)
         
       }

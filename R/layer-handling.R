@@ -274,7 +274,7 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   
 }
 
-compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = FALSE){
+compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE){
   
   ### Check that the object have the same dimensions, if not fail immediately
   if(!identical(getSTInfo(object1), getSTInfo(object2))) stop("Trying to compare layers with different dimenisons.  Definitely can't do this.  Check your dimension and/or averaging")
@@ -313,14 +313,13 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   same.domain <- FALSE
   if(identical(getSTInfo(object1, "full"), getSTInfo(object2, "full")))  same.domain <- TRUE
   
-  ### Easy life case, both objects are on exactly the same domain
+  ### Easy-life case, both objects are on exactly the same domain
   if(same.domain) {
     
     new.data <- layer.object1@data[layer.object2@data] 
-    new.data[, "Difference" := get(new.id1) - get(new.id2)]
     
   }
-  ### Else, not so-easy-life is having to check the domains and keeping points or not
+  ### Else, not-so-easy-life is having to check the domains and keeping points or not
   else {
     
     new.data <- copyLayers(from = layer.object2, 
@@ -330,8 +329,6 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
                            dec.places = NULL)@data
-    
-    new.data[, "Difference" := get(new.id1) - get(new.id2)]
     
   }
   
@@ -351,66 +348,140 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   new.name <- paste(info1@name, "-",  info2@name)
   
   ### Calculate the approriate statistical comparisons
-  
-  # MOVE SOMEWHERE ELSE
-  calcNME <- function(vector2, vector1) {
-    return( sum(abs(vector2 - vector1), na.rm=TRUE) / sum(abs(vector2 - mean(vector2)), na.rm=TRUE)) 
-  }
-  
-  calcNashSutcliffe <- function(vector2, vector1) {
-    return( 1 -  (sum((vector2 - vector1)^2, na.rm=TRUE) / length(vector2)) / stats::var(vector2) )
-  }
-  
-  calcR2 <- function(vector2, vector1) {
-    return( sum( (vector1 - mean(vector1)) * (vector2 - mean(vector2)) )^2 / (sum( (vector1 - mean(vector1))^2 ) * sum( (vector2 - mean(vector2)) ^2)) )
-  }
-  
   # make vectors of values
   vector1 <- new.data[[new.id1]]
   vector2 <- new.data[[new.id2]]
-  difference.vector <- vector1 - vector2
   
-  # ME and NME 
-  ME <- mean(abs(vector2 - vector1))
-  NME <- calcNME(vector2, vector1)
-  
-  # MSE, RMSE, NMSE
-  MSE <- mean(difference.vector^2, na.rm=TRUE)
-  NMSE <- MSE / mean((vector2 - mean(vector2))^2)
-  RMSE <- MSE^0.5
-  
-  
-  # R2 - coefficient of determination
-  R2 <- calcR2(vector2, vector1)
-  
-  # R2eff - model efficiency
-  R2.eff <- calcNashSutcliffe(vector2, vector1)
-  
-  # Pearson product moment correlation coefficient
-  P.cor <- cor(vector1, vector2, method = "pearson")
-  
-  if(verbose) {
-    print(paste("+++ Stats for", info1@name, "vs",  info2@name,  "+++", sep = " "))
-    print(paste("Mean Error (ME) = ", round(ME, 4)))
-    print(paste("Normalised Mean Error (NME) = ", round(NME, 4)))
-    print(paste("Mean Squared Error (MSE) = ", round(MSE, 4)))
-    print(paste("Normalised Mean Squared Error (NMSE) = ", round(NMSE, 4)))
-    print(paste("Root Mean Squared Error (RMSE) = ", round(RMSE, 4)))
-    print(paste("Coefficient of Determiantion (R^2) = ", round(R2, 4)))
-    print(paste("Nash-Sutcliffe Model Efficiency (R^2_eff) = ", round(R2.eff, 4)))
-    print(paste("Pearson's PMCC (r)= ", round(P.cor, 4)))
+  # check the classes of the data and perform the appropriate comparison
+  if(class(vector1) == "numeric" & class(vector2) == "numeric") {
+    # Statistics
+    stats <- continuousComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = verbose)
+    # Make the difference layer
+    new.data[, "Difference" := get(new.id1) - get(new.id2)]
+  }
+  else if(class(vector1) == "factor" & class(vector2) == "factor") {
+    stats <- categoricalComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = verbose)
+    
+  }
+  else {
+    stop("Layers for comparison are of inconsistent types, check your inputs!")
   }
   
-  stats <- new("SpatialComparison",
-               id = paste(info1@name, "vs",  info2@name,  sep = "."),
-               R2 = R2, 
-               R2.eff = R2.eff,
-               P.cor = P.cor,
-               ME = ME, 
-               NME = NME,
-               NMSE = NMSE,
-               RMSE = RMSE
+  
+  
+  ### Finally build the layer and return
+  comparison.layer <- new("ComparisonLayer",
+                          id = id,
+                          name = new.name,
+                          data = new.data,
+                          quant = object1@quant,
+                          spatial.extent = se,
+                          temporal.extent = te,
+                          info1 = info1,
+                          info2 = info2,
+                          stats = stats,
+                          is.site = FALSE,
+                          is.spatially.averaged = FALSE,
+                          is.temporally.averaged = FALSE
   )
+  
+  return(comparison.layer)
+  
+}
+
+
+compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE){
+  
+  ### Check that the object have the same dimensions, if not fail immediately
+  if(!identical(getSTInfo(object1), getSTInfo(object2))) stop("Trying to compare layers with different dimenisons.  Definitely can't do this.  Check your dimension and/or averaging")
+  
+  
+  ###  First get the layers - maybe do a nicer error check here   
+  layers.object1 <- selectLayers(object1, layers)
+  layers.object2 <- selectLayers(object2, layers)
+  print(layers.object1@data)
+  print(layers.object2@data)
+  
+  ###  Set the names by appending the id so that they are not identical
+  new.ids1 <- c()
+  new.ids2 <- c()
+  id1 <- ""
+  id2 <- ""
+  for(layer in layers) {
+    # object 1
+    if(is.DataObject(layers.object1)) {
+      new.ids1 <- append(new.ids1, paste(layer, object1@id, sep = "."))
+      info1 <- as(object1, "DatasetInfo")
+      id1 <- object1@id
+    }
+    else {
+      new.ids1 <- append(new.ids1, paste(object1@run@id, layer, object1@id, sep = "."))
+      info1 <- as(object1@run, "ModelRunInfo")
+      id1 <- object1@run@id
+    }  
+    
+    # object 2
+    if(is.DataObject(layers.object2)) {
+      new.ids2 <- append(new.ids2, paste(layer, object2@id, sep = "."))
+      info2 <- as(object2, "DatasetInfo")
+      id2 <- object2@id
+    }
+    else {
+      new.ids2 <- append(new.ids2, paste(object2@run@id, layer, object2@id, sep = "."))
+      info2 <- as(object2@run, "ModelRunInfo")
+      id2 <- object2@run@id
+    }  
+  }
+  
+  setnames(layers.object1@data, layers, new.ids1) 
+  setnames(layers.object2@data, layers, new.ids2) 
+  
+  ### Check the case that the longitudes, latitudes and years are identical
+  ### This is often the case with model runs and if it is true, maybe the whole procedure much faster and easier
+  same.domain <- FALSE
+  if(identical(getSTInfo(object1, "full"), getSTInfo(object2, "full")))  same.domain <- TRUE
+  
+  ### Easy-life case, both objects are on exactly the same domain
+  if(same.domain) {
+    
+    new.data <- layers.object1@data[layers.object2@data] 
+    
+  }
+  ### Else, not-so-easy-life is having to check the domains and keeping points or not
+  else {
+    
+    new.data <- copyLayers(from = layers.object2, 
+                           to = layers.object1, 
+                           layer.names = new.ids2, 
+                           new.layer.names = NULL, 
+                           keep.all.to = keepall1, 
+                           keep.all.from = keepall2, 
+                           dec.places = NULL)@data
+    
+  }
+  
+  # make meta-data for the ComparisonLayer
+  id <- paste0(id1, "-", id2)
+  if(object1@temporal.extent@start == object2@temporal.extent@start & object1@temporal.extent@end == object2@temporal.extent@end){
+    te <- object2@temporal.extent
+  }
+  else {
+    te <- NULL
+  }
+  se <- new("SpatialExtent", id = id, name = id, extent = extent(new.data))
+  if(!identical(object1@quant, object1@quant)) {
+    if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", object1@quant@id, " and ", object2@quant@id, "), proceeding using quantity", object1@quant@id))
+    else  stop("Comapring different Qunatit")
+  }
+  new.name <- paste(id1, "vs",  id2)
+  
+  ### Calculate the approriate statistical comparisons
+  # make data.table of values
+  dt1 <- new.data[,new.ids1,with=FALSE]
+  dt2 <- new.data[,new.ids2,with=FALSE]
+ 
+  # Calculate Manhattan Metric and Squared Chord Distance
+  stats <- proportionsComparison(dt1 =dt1, dt2 = dt2, name1 = info1@name, name2 = info2@name, verbose = verbose)
   
   
   ### Finally build the layer and return

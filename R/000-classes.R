@@ -502,7 +502,9 @@ setClass("SpatialComparison",
                    RMSE = "numeric", 
                    sd.diff = "numeric",
                    Kappa = "numeric", 
-                   individual.Kappas = "numeric"  
+                   individual.Kappas = "numeric",
+                   MM = "numeric",
+                   SCD = "numeric"
          ),
          prototype = c(id = "-",
                        R2 = NA,
@@ -514,7 +516,9 @@ setClass("SpatialComparison",
                        RMSE = NA, 
                        sd.diff = NA,
                        Kappa = NA, 
-                       individual.Kappas = NA 
+                       individual.Kappas = NA,
+                       MM = NA,
+                       SCD = NA
          ) 
 )
 

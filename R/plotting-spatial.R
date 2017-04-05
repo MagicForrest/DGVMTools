@@ -550,8 +550,8 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
   
   # PLOT MAIN TITLE
   if(is.null(title)) {
-    if(length(layers) == 1)  title <- makePlotTitle(paste(quant@name, sep = " "), layer = layers, run = run, period = period)
-    else  title <- makePlotTitle(paste(quant@name, sep = " "), run = run, period = period)
+    if(length(layers) == 1)  title <- makePlotTitle(paste(quant@name, sep = " "), layer = layers, source = run, period = period)
+    else  title <- makePlotTitle(paste(quant@name, sep = " "), source = run, period = period)
   }
   
   # PANEL LABELS - note expand longnames here if requested 

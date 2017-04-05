@@ -218,8 +218,10 @@ getSaatchi2011 <- function(resolution = "HD"){
   }
   
   Saatchi.dt <- data.table(as.data.frame(Saatchi.raster,xy = TRUE))
-  setnames(Saatchi.dt, c("Lon", "Lat", "Saatchi2011"))
+  setnames(Saatchi.dt, c("Lon", "Lat", "Tree"))
   setkey(Saatchi.dt, Lon, Lat)
+  Saatchi.dt <- na.omit(Saatchi.dt)
+  
   
   Saatchi.dataset <- new("DataObject",
                          id = "Saatchi2011",

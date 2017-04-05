@@ -32,7 +32,7 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/Simard2011/", r
   
   dataset.dt <- data.table(as.data.frame(dataset.raster,xy = TRUE))
   dataset.dt <- na.omit(dataset.dt)
-  setnames(dataset.dt, c("Lon", "Lat", "Simard2011"))
+  setnames(dataset.dt, c("Lon", "Lat", "CanHght"))
   setkey(dataset.dt, Lon, Lat)
 
   

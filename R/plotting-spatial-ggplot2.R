@@ -16,12 +16,6 @@
 #'
 #' @param x The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
-#' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
-#' @param period The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.   
-#' In the case of plotting a \code{ModelRun} object this is taken automatically from the object, but this provides an override.
-#' @param quant A \code{Quantity} object describy the quantity to be plotted.  This provides an override \code{Quantity} when plotting a \code{ModelObject}
-#' and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.
-#' @param run A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}. 
 #' @param title A character string to override the default title.
 #' @param layout.objs List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
 #' so see there for how to build them.
@@ -31,7 +25,6 @@
 #' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. 
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa
-#' @param plot.extent An extent object to limit the plot area.
 #' @param limit Boolean, whether or not to limit the plotted values between a range, either the limits argument below,
 #' or the range of the plot.
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values
@@ -39,8 +32,8 @@
 #' @param override.cuts Cut ranges (a numeric vector) to override the defaults.
 #' @param special A character string to indicate certain "special modes" which modifies the behaviour of the function a bit.
 #' Special modes are currectly "fraction", "difference", "percentage.difference", "firert" (fire return time) and "dominant.pft".
-#' @param map.overlay A character 
-#' @param ... Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.
+#' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
+#' Other things can be overlain on the resulting plot with further ggplot2 commands.
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
 #' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
@@ -62,16 +55,15 @@
 
 plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
                          layers = NULL,
-                         expand.layers = TRUE,
                          title = NULL,
                          layout.objs = NULL, 
                          facet.labels =  NULL,
+                         facet.order = NULL,
                          plot.bg.col =  "white",
                          useLongnames = FALSE,
                          text.multiplier = 1,
                          xlim = NULL,
                          ylim = NULL,
-                         plot.extent = NULL,
                          limit = FALSE,
                          limits = NULL,
                          override.cols = NULL,
@@ -79,6 +71,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
                          special = "none",
                          map.overlay = NULL,
                          dont.grid = FALSE,
+                         return.data = FALSE,
                          ...){
   # 
   # ###################################################################################################
@@ -621,6 +614,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     
     single.object <- TRUE
     grid <- FALSE
+    original.layers <- layers # this is needed to keep track of the plotting mode since 'layers' is changed
     
     # first check if discrete or continuous
     for(layer in names(data)[1:2]) {
@@ -633,6 +627,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     # if layers not specified, assume "Difference"
     if(is.null(layers)  || tolower(layers) == "difference") {
       layers <- "Difference" 
+      original.layers <- "Difference"
       if(is.null(override.cols) & continuous) override.cols <- rev(brewer.pal(11, "RdBu"))
     }
     else if(tolower(layers) == "absolute") {
@@ -651,6 +646,14 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     # select layers and convert to a data,table
     data.toplot <- selectLayers(data, layers)
     data.toplot <- as.data.table(data.toplot)
+    
+    
+    # in the special case of absolute, change the layer names at this point from the ugly ids to the nice names
+    if(tolower(original.layers) == "absolute") {
+      new.layer.names <- c(data@info1@name, data@info2@name)
+      setnames(data.toplot, layers, new.layer.names)
+      layers <- new.layer.names
+    }
     
     # now melt the layers
     data.toplot <- melt(data.toplot, measure.vars = layers)
@@ -843,6 +846,19 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   #if(!continuous & !discrete) stop("Neither discrete nor continuous")
   
   
+  
+  ### APPLY CUSTOM CUTS TO DISCRETISE IF NECESSARY
+  if(continuous & !is.null(override.cuts)) {
+    data.toplot[,Value:= cut(Value, override.cuts, right = FALSE, include.lowest = TRUE)]
+    discrete <- TRUE
+    continuous <- FALSE
+    breaks <- waiver()
+  }
+ 
+  
+  ### RETURN DATA ONLY IF REQUESTED
+  if(return.data) return(data.toplot)
+  
   ### CALCULATE THE RANGE OF LONGITUDE AND LATITUDE TO BE PLOTTED
   all.lons <- sort(unique(data.toplot[["Lon"]]))
   all.lats <- sort(unique(data.toplot[["Lat"]]))
@@ -881,9 +897,9 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     stop("Some other overlay type...")
   }
   
-  ### IF PLOT IS DISCRETE, BUILD THE COLOURS
-  if(discrete){
-    
+  ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
+  if(discrete & is.null(override.cols)){
+    print("YES, discrete")
     # make a list of all the unique values (factors), each of these will need a colour
     unique.vals <- unique(data.toplot[["Value"]])
     
@@ -996,7 +1012,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     facet.string <- "~Layer"
   }
   
-  # CASE 3 - multiple sources and single layer (inverse of case 2, but equivalent)
+  # CASE 3 - multiple sources and single layer (opposite of case 2)
   #          then wrap, gridding doesn't make sense
   else if(!multiple.layers & multiple.sources) {
     grid <- FALSE
@@ -1013,11 +1029,15 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
       facet.string <- "Layer~Source"
     }
     else {
-      stop("If you want some the dont.grid option action then code it up!")
+      stop("If you want some 'dont.grid' option action then code it up!")
     }
   }
   
-  
+  # if wrapping and facet order has been provided in facet.order, re-order the factor to re-order the facets
+  if(wrap & !is.null(facet.order)) {
+    if(multiple.layers & !multiple.sources) data.toplot[, Layer := factor(Layer, facet.order)]
+    else  if(!multiple.layers & multiple.sources) data.toplot[, Source := factor(Source, levels = facet.order)]
+  }
   
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
@@ -1037,13 +1057,12 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   }
   
   
-  
   ### BUILD THE PLOT
 
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
   mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "Value"))
-  
+
   # facet with grid or wrap 
   if(grid) mp <- mp + facet_grid(as.formula(paste(facet.string)), switch = "y", labeller = as_labeller(facet.labels))
   else if(wrap) mp <- mp + facet_wrap(as.formula(facet.string), labeller = as_labeller(facet.labels))

@@ -59,9 +59,10 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass/Baccini2012", resol
   
   # convert to a date.table
   Baccini.dt <- data.table(as.data.frame(Baccini.raster,xy = TRUE))
-  setnames(Baccini.dt, c("Lon", "Lat", "Baccini2012"))
+  setnames(Baccini.dt, c("Lon", "Lat", "Tree"))
   setkey(Baccini.dt, Lon, Lat)
   
+  Baccini.dt <- na.omit(Baccini.dt)
   
   
   Baccini.dataset <- new("DataObject",

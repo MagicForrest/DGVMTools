@@ -36,12 +36,14 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/Thurner2013/", reso
   
   
   Thurner.dt <- data.table(as.data.frame(Thurner.raster,xy = TRUE))
-  setnames(Thurner.dt, c("Lon", "Lat", "Thurner2013"))
+  setnames(Thurner.dt, c("Lon", "Lat", "Tree"))
   Thurner.dt[,Lon:= round(Lon, 3)]
   Thurner.dt[,Lat:= round(Lat, 3)]
 
   setkey(Thurner.dt, Lon, Lat)
 
+  Thurner.dt <- na.omit(Thurner.dt)
+  
   quant <- lookupQuantity("vegC_std", "Standard")
   quant@cuts <- seq(0,25,1)
   
