@@ -45,7 +45,7 @@ getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collect
   dt[,Lat:= round(Lat, 3)]
 
   # Any values of 200.0 mean water, set these to NA 
-  dt <- dt[Tree != 200.0]
+  dt[Tree > 110.0] <- NA
   
   setkey(dt, Lon, Lat)
 

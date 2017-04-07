@@ -50,7 +50,7 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
     layers.to.add.dt[, Lon := round(Lon, dec.places)]
     layers.to.add.dt[, Lat := round(Lat, dec.places)]
     
-    Temp.dt <- merge(x = round(to.dt, dec.places), y = round(layers.to.add.dt, dec.places), all.x = keep.all.from, all.y = keep.all.to)
+    Temp.dt <- merge(x = round(to.dt, dec.places), y = round(layers.to.add.dt, dec.places), all.y = keep.all.from, all.x = keep.all.to)
   }
   else {
     Temp.dt <- merge(x = to@data, y = layers.to.add.dt, all.y = keep.all.from, all.x = keep.all.to)
@@ -274,7 +274,7 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   
 }
 
-compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE){
+compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE, match.NAs = FALSE){
   
   ### Check that the object have the same dimensions, if not fail immediately
   if(!identical(getSTInfo(object1), getSTInfo(object2))) stop("Trying to compare layers with different dimenisons.  Definitely can't do this.  Check your dimension and/or averaging")
@@ -331,6 +331,15 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
                            dec.places = NULL)@data
     
   }
+  
+  # match NAs if necessary
+  if(match.NAs) {
+    
+    are.NAs <- which(is.na(new.data[[new.id1]] * new.data[[new.id2]]))
+    new.data[are.NAs, (c(new.id1, new.id2)) := .SD[NA], .SDcols =c(new.id1, new.id2)]
+
+  }
+  
   
   # make meta-data for the ComparisonLayer
   id <- paste0(new.id1, "-", new.id2)
@@ -460,6 +469,7 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
     
   }
   
+
   # make meta-data for the ComparisonLayer
   id <- paste0(id1, "-", id2)
   if(object1@temporal.extent@start == object2@temporal.extent@start & object1@temporal.extent@end == object2@temporal.extent@end){

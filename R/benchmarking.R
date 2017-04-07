@@ -1497,6 +1497,15 @@ calcR2 <- function(vector2, vector1) {
 
 continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE){
   
+  # Preamble - remove NAs from both vectors 
+  
+  # first remove where there are NAs in vector1
+  vector2 <- vector2[!is.na(vector1)]
+  vector1 <- vector1[!is.na(vector1)]
+  # now for vector2
+  vector1 <- vector1[!is.na(vector2)]
+  vector2 <- vector2[!is.na(vector2)]
+
   difference.vector <- vector1 - vector2
   
   # ME and NME 
@@ -1507,8 +1516,7 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
   MSE <- mean(difference.vector^2, na.rm=TRUE)
   NMSE <- MSE / mean((vector2 - mean(vector2))^2)
   RMSE <- MSE^0.5
-  
-  
+
   # R2 - coefficient of determination
   R2 <- calcR2(vector2, vector1)
   
