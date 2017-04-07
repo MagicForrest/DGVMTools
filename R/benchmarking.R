@@ -1187,7 +1187,7 @@ plotResidualsHisto <- function(data.obj,
   }
   
   
-  # make the plot and set the xlim (using cuts if provided)
+  # make the plot and set the xlim (using bins if provided)
   # also note special handling of alpha becuase if alpha is specified, "transparent" seems to become "white" with the alpha transparency level, this can be annoying
   histo.plot <- ggplot(as.data.frame(temp.dt), aes(x = Model, colour = Run)) 
   if(!is.null(bins)) {

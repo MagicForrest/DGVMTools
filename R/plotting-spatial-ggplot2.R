@@ -563,7 +563,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
 
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
-  mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  mp <- mp + geom_tile(aes_string(x = "Lon", y = "Lat", fill = "Value"))
 
   # facet with grid or wrap 
   if(grid) mp <- mp + facet_grid(as.formula(paste(facet.string)), switch = "y", labeller = as_labeller(facet.labels))
@@ -571,7 +571,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   
   # colour bar
   if(continuous)  {
-    mp <- mp + scale_fill_gradientn(name = legend.title, limits = limits, colors = override.cols, na.value="grey92")
+    mp <- mp + scale_fill_gradientn(name = legend.title, limits = limits, colors = override.cols, na.value="grey75")
     mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
   }
   if(discrete) {
