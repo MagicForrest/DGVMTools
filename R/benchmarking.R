@@ -344,22 +344,7 @@ benchmarkSpatial <- function(runs,
     temp.data.obj <- dataset
     temp.data.obj@data <- data.dt[, c(dataset@id, run@id, paste(run@id, "Error", sep = "_"), paste(run@id, "NormError", sep = "_")),with=FALSE]
     
-    
-    
-    ##### RESIDUAL HISTO
-    do.call(Cairo, args = append(list(file = file.path(run@run.dir, paste(dataset@quant@id, "ResidualsHisto", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
-                                 canvas.options.square)) 
-    
-    print(plotResidualsHisto(temp.data.obj, 
-                             cols = "darkgreen", 
-                             fills = "white", 
-                             title = paste("Residuals: ",  paste(run@model,run@name,sep = " "), "-", paste(dataset@name, sep = " ")),
-                             bins = diff.cuts,
-                             limit = FALSE))
-    
-    dev.off()
-    
-    
+ 
     
     ##### SCATTER PLOT
     
@@ -521,20 +506,8 @@ benchmarkSpatial <- function(runs,
     dev.off()
     
     
-    
-    ##### PLOT ALL RESIDUAL HISTOS
-    do.call(Cairo, args = append(list(file = file.path(summary.plot.dir, paste("ResidualHistos", "vs", dataset@id, tag, canvas.options[["type"]], sep = "."))), 
-                                 canvas.options.wide)) 
-    
-    print(plotResidualsHisto(dataset, 
-                             cols = run.line.cols, 
-                             fills = run.fill.cols, 
-                             labels = run.names,
-                             reverse = TRUE, 
-                             bins = diff.cuts))
-    
-    dev.off()
-    
+ 
+ 
     
     #####  CLEAR UP
     rm(plot.titles, abs.layers, diff.layers, perc.diff.layers)
@@ -1095,135 +1068,6 @@ compareRuns <- function(runs,
   } # if base run is specified  
   
 } # end function
-
-
-
-#' Plot the residuals from a DataObject as histogram
-#' 
-#' Function will overlay histograms if more than one ModelRun has been compared to the the DataObject.  
-#' Line colours, line types and fill colours can all be specified but have sensible defaults. 
-#' 
-#' @param data.obj The DataObject for which to plot the residuals
-#' @param cols,types,fills Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.
-#' @param labels Vector of character for label the histos. Can be left empty (defaults to the run id) but if defined it must have one entry for each set of residuals you are plotting.
-#' @param title Character for plot title (optional)
-#' @param xlab Character for x-axis label (optional)
-#' @param ylab Character for y-axis label (optional)
-#' @param alpha Numerical value [0,1] to specify opacity of histo fill colours (optional)
-#' @param reverse Logical if TRUE reverse the layering of the histograms (optional, default = FALSE)
-#' @param bins Numerical vector (evenly spaced) defining the histogram bins (optional)
-#' @param limit Logical if TRUE (and argument bins provided) limit x-axis to the bins given.  If FALSE (and argument bins provided) then bins defines the bin width, but the plot is not limited
-#' 
-#' @details
-#' This function should be called after a call to \code{benckmarkSpatial} for a DataObject.  It plots the residuals for each model run to which it was compared.  
-#' It is called automatically by \code{benckmarkSpatial}, but can be called again for better flexibility.
-#' 
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import ggplot2
-#' @export
-#' @return A ggplot2 plot.
-
-plotResidualsHisto <- function(data.obj, 
-                               cols = NULL, 
-                               fills = NULL, 
-                               types = NULL,
-                               labels = NULL,
-                               title = NULL,
-                               xlab = NULL,
-                               ylab = NULL,
-                               alpha = NULL, 
-                               reverse = FALSE, 
-                               bins = NULL,
-                               limit = TRUE) {
-  
-  Run = Model = NULL
-  
-  # checks
-  if(!is.DataObject(data.obj)) {
-    warning("plotResidualsHists(): can't plot residuals because this is not a DataObject")
-    return(NULL)
-  }
-  
-  # get the data.table, select the residual layers (all the ones with names ending "_Error") from the incoming DataObject and remove NAs
-  diff.layers <- names(data.obj@data)[grep("_Error", names(data.obj@data))]
-  if(is.null(diff.layers)) {
-    warning("plotResidualsHists(): no residuals found! Did you already compare this DataObject to a ModelRun?")
-    return(NULL)
-  }
-  temp.dt <- na.omit(data.obj@data[, append(data.obj@id, diff.layers) , with = FALSE])
-  
-  
-  # if there are no labels supplied, strip the "_Error" from the names and use that  
-  if(is.null(labels)) {
-    labels <- gsub("_Error", "", diff.layers)
-    names(temp.dt) <- append(names(temp.dt)[1:(length(names(temp.dt))-length(labels))], labels)
-  }
-  
-  
-  # if cols, fills or types no spcified, set to some defaults
-  if(is.null(fills)) { fills <- rep("transparent", length(diff.layers)) }
-  if(is.null(cols)) { cols <- tim.colors(length(diff.layers)) }
-  if(is.null(types)) { types <- rep(1, length(diff.layers)) }
-  
-  
-  # also set sensible default axis and main titles
-  if(is.null(title)) title <- paste("Residuals vs", data.obj@name, data.obj@quant@name, sep = " ")
-  if(is.null(ylab)) ylab <-"# gridcells"
-  if(is.null(xlab)) xlab<- paste("Residuals vs", data.obj@name, data.obj@quant@name, paste0("(",data.obj@quant@units,")"), sep = " ")
-  
-  
-  # melt the data.table and set new names
-  temp.dt <- melt.data.table(temp.dt, id.vars = data.obj@id)
-  setnames(temp.dt, c(data.obj@id, "Run", "Model"))
-  
-  
-  # deal with reverse for plotting histos in opposite order
-  if(reverse) {
-    temp.dt[,Run := factor(Run, ordered = TRUE)]
-    temp.dt[,Run := factor(Run, levels=rev(levels(Run)))]
-    if(!is.null(cols)) cols <- rev(cols)
-    if(!is.null(fills)) fills <- rev(fills)
-    labels <- rev(labels)
-  }
-  
-  
-  # make the plot and set the xlim (using bins if provided)
-  # also note special handling of alpha becuase if alpha is specified, "transparent" seems to become "white" with the alpha transparency level, this can be annoying
-  histo.plot <- ggplot(as.data.frame(temp.dt), aes(x = Model, colour = Run)) 
-  if(!is.null(bins)) {
-    if(!is.null(alpha)) histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run, linetype = Run), binwidth = abs(bins[2] - bins[1]), position="identity", alpha = alpha)
-    else histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run, linetype = Run), binwidth = abs(bins[2] - bins[1]), position="identity")
-    if(limit) histo.plot <- histo.plot + xlim(bins[1], bins[length(bins)])
-  } 
-  else {
-    if(!is.null(alpha))  histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run, linetype = Run), position="identity", alpha = alpha)
-    else histo.plot <- histo.plot + geom_histogram(aes(colour = Run, fill = Run, linetype = Run), position="identity")
-  }
-  
-  
-  # cols, fills and types
-  histo.plot <- histo.plot + scale_colour_manual(NULL, labels = labels, values = cols)
-  histo.plot <- histo.plot + scale_fill_manual(NULL, labels = labels, values = fills)
-  histo.plot <- histo.plot + scale_linetype_manual(NULL, labels = labels, values = types)
-  histo.plot <- histo.plot + guides(colour = guide_legend(keywidth = 5, keyheight = 3, reverse=reverse), 
-                                    fill = guide_legend(keywidth = 5, keyheight = 3, reverse=reverse),
-                                    linetype = guide_legend(keywidth = 5, keyheight = 3, reverse=reverse))
-  
-  
-  # Standard titles, labels etc...
-  histo.plot <- histo.plot + ggtitle(title) + theme(plot.title = element_text(lineheight=.8, face="bold"))
-  histo.plot <- histo.plot + xlab(xlab)   
-  histo.plot <- histo.plot + ylab(ylab)   
-  histo.plot <- histo.plot + theme(text = element_text(size=30), legend.position=c(0.8,0.85))
-  histo.plot <- histo.plot + geom_vline(xintercept = 0, size = 1, colour = "black")
-  
-  
-  # consider implementing automatic faceting
-  #histo.plot <- histo.plot + facet_grid( Run ~ ., labeller = as_labeller(labeller))
-  
-  return(histo.plot)
-  
-}
 
 
 
