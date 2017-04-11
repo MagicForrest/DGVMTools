@@ -206,7 +206,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
 #' @return A \code{DataObject} object.  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
-getSaatchi2011 <- function(resolution = "HD"){
+getSaatchi2011_example <- function(resolution = "HD"){
   
   Lat = Lon = NULL
   

@@ -13,7 +13,42 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 
-getAvitabile2015 <- function(location = "/data/forrest/Biomass/Avitabile2015/", resolution = "HD") {
+getAvitabile2015 <- function(location = "/data/forrest/Biomass/", resolution = "HD") {
+  
+  
+  #### NEW ORDER, CODE BELOW NOW REDUNDANT
+  
+  # read the standard dataset
+  Avitabile.dt <- readData("Avitabile2015",
+                         location = location,
+                         resolution = resolution,
+                         start.year = NULL,
+                         end.year = NULL,
+                         temporally.average = TRUE,
+                         verbose = FALSE)
+  
+  
+  # set the name to something equivalent in the model
+  setnames(Avitabile.dt, c("DATALAYER"), c("Tree"))
+  
+  # also set the key 
+  setkey(Avitabile.dt, Lon, Lat)
+  
+  # build the DataObject with the metadata
+  Avitabile.dataset <- new("DataObject",
+                           id = "Avitabile2015",
+                           name = "Avitabile et al. 2015 Biomass",
+                           temporal.extent = new("TemporalExtent", name = "Avitabile Period", start = 2000, end = 2010),
+                           data = Avitabile.dt,
+                           quant = lookupQuantity("vegC_std", "Standard"),
+                           spatial.extent = new("SpatialExtent", id = "AvitabileExtent", name = "Avitabile extent", extent = extent(Avitabile.dt)),
+                           correction.layer =  "")
+  
+  
+  
+  return(Avitabile.dataset)
+  
+  
   
   Lon = Lat = NULL
   

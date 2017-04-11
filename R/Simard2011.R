@@ -13,7 +13,39 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 
-getSimard2011 <- function(location = "/data/forrest/CanopyHeight/Simard2011/", resolution = "HD") {
+getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution = "HD") {
+  
+  
+  #### NEW ORDER, CODE BELOW NOW REDUNDANT
+  
+  # read the standard dataset
+  Simard.dt <- readData("Simard2011",
+                         location = location,
+                         resolution = resolution,
+                         start.year = NULL,
+                         end.year = NULL,
+                         temporally.average = TRUE,
+                         verbose = FALSE)
+  
+  # set the name to something equivalent in the model
+  setnames(Simard.dt, c("DATALAYER"), c("CanHght"))
+  
+  # also set the key 
+  setkey(Simard.dt, Lon, Lat)
+  
+  # build the DataObject with the metadata
+  Simard.dataset <- new("DataObject",
+                         id = "Simard2011",
+                         name = "Simard et al. 2011 Canopy Height",
+                         temporal.extent = new("TemporalExtent", name = "Simard Period", start = 2003, end = 2009),
+                         data = Simard.dt,
+                         quant = lookupQuantity("canopyheight_std", "Standard"),
+                         spatial.extent = new("SpatialExtent", id = "SimardExtent", name = "Simard extent", extent = extent(Simard.dt)),
+                         correction.layer =  "")
+  
+  return(Simard.dataset)
+  
+  
 
   Lon = Lat = NULL
     

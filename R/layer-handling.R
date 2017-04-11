@@ -274,7 +274,7 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   
 }
 
-compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE, match.NAs = FALSE){
+compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE, match.NAs = FALSE, dec.places = NULL){
   
   ### Check that the object have the same dimensions, if not fail immediately
   if(!identical(getSTInfo(object1), getSTInfo(object2))) stop("Trying to compare layers with different dimenisons.  Definitely can't do this.  Check your dimension and/or averaging")
@@ -328,7 +328,7 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
                            new.layer.names = NULL, 
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
-                           dec.places = NULL)@data
+                           dec.places = dec.places)@data
     
   }
   
@@ -347,7 +347,7 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
     te <- object2@temporal.extent
   }
   else {
-    te <- NULL
+    te <- object1@temporal.extent
   }
   se <- new("SpatialExtent", id = id, name = id, extent = extent(new.data))
   if(!identical(object1@quant, object1@quant)) {
@@ -399,7 +399,7 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
 }
 
 
-compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE){
+compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE, dec.places = NULL){
   
   ### Check that the object have the same dimensions, if not fail immediately
   if(!identical(getSTInfo(object1), getSTInfo(object2))) stop("Trying to compare layers with different dimenisons.  Definitely can't do this.  Check your dimension and/or averaging")
@@ -465,7 +465,7 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
                            new.layer.names = NULL, 
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
-                           dec.places = NULL)@data
+                           dec.places = dec.places)@data
     
   }
   
