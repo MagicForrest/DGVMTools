@@ -20,9 +20,9 @@
 ## TODO: Add daily data compatibility
 write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=NULL,
                      compress=NA, chunks=NA, reduce=FALSE, invertlat=FALSE, leap=FALSE, verbose=FALSE) {
-
+  
   Lon=Lat=Year=variable=NULL
-
+  
   ## check mandatory input
   if (is.na(filename))
     stop("No filename given!")
@@ -37,7 +37,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
       compress <- 4
     }
   }
-
+  
   ## check, if flux is desired
   if (as.flux != FALSE) {
     if (grepl("^d", as.flux)) {
@@ -85,7 +85,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
       dims[['lat']] <- ncdim_def("lat", "degrees_north", lat, unlim=FALSE, create_dimvar=TRUE, longname="latitude")
     }
   }
-
+  
   ## temporal (unlimited) dimension
   monthly <- FALSE
   if (all(month.abb %in% colnames(mo@data)))
@@ -96,7 +96,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
   if (daily && monthly)
     stop(paste("Something went wrong: 'daily' and 'monthly' are both TRUE.\n",
                paste(colnames(mo@data), collapse=", ")))
-
+  
   ## TODO: check that if statements are correct for annual, monthly and daily data
   ##       and temporal averaging is on or off respectivly
   ##       Usefull combinations:
@@ -156,7 +156,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
   } else if (daily) {
     stop("Daily data as multi-annual average does not really make sense!")
   }
-
+  
   if (verbose) {
     if (reduce) {
       message(paste0(" * dimensions (landid x time): ", nlandid, " x ",
@@ -166,7 +166,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
                      ifelse(is.null(dim(time)), length(time), prod(dim(time)))))
     }
   }
-
+  
   ## TODO: convert to other flux units with udunits2.
   ## However, that adds another dependency 
   ## and [CN] must be removed from the units string.
@@ -194,7 +194,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
     message("*** FLUX conversion still experimental. Not yet validated properly ***")
     warning("*** FLUX conversion still experimental. Not yet validated properly ***")
   }
-
+  
   ## define the variables based on columns (only if not monthly),
   ## otherwise take the quant@id
   if (!monthly) {
@@ -208,18 +208,18 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
     vars[[mo@quant@id]] <- ncvar_def(mo@quant@id, unit, dims, longname=mo@quant@name,
                                      prec="float", compression=compress, chunksizes=chunks)
   }
-
+  
   ## create the NetCDF file
   if (verbose)
     message(paste0(" * Opening '", filename, "' for writing."))
   ncout <- nc_create(filename, vars)
-
+  
   ## write lon/lat as variables for reduced grid
   if (reduce) {
     ncvar_put(ncout, 'lon', lon)
     ncvar_put(ncout, 'lat', lat)
   }
-
+  
   ## transform the data in a suitable araay format/shape
   if (monthly) {
     if (verbose)
@@ -248,7 +248,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
       ncvar_put(ncout, mo@quant@id, data)
     }
   } else if (daily) {
-
+    
   } else {
     for (name in columns) {
       if (verbose)
@@ -271,7 +271,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
         }
       } else {
         data <- modelObject2Array(mo@data, name, invertlat, verbose=verbose)
-
+        
         if (as.flux && mo@is.temporally.averaged) {
           data <- data / time
         } else if (as.flux) {
@@ -281,11 +281,11 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
       }
     }
   }
-
+  
   ## Writing additional attributes
   if (reduce)
     ncatt_put(ncout, "landid", "compress", "lon lat")
-
+  
   ncatt_put(ncout, "lon" , "standard_name", "longitude")
   ncatt_put(ncout, "lat" , "standard_name", "latitude")
   ncatt_put(ncout, "lon" , "axis", "X")
@@ -323,6 +323,5 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
   ncatt_put(ncout, 0, "Conventions", "CF-1.6")
   nc_sync(ncout)
   nc_close(ncout)
+
 }
-
-

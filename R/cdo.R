@@ -38,7 +38,7 @@ check.cdo <- function(){
 #'    
 #'      
 
-cdo <- function(fun, ifile, ofile, grid = NULL, varname = "layer", return.raster = FALSE, verbose = TRUE, remove.temps = TRUE) {
+cdo <- function(fun, ifile, ofile, grid = NULL, return.raster = FALSE, verbose = TRUE, remove.temps = TRUE, ...) {
   
   ### CHECK INPUT FILE
   this.class <- class(ifile)[1]
@@ -58,7 +58,8 @@ cdo <- function(fun, ifile, ofile, grid = NULL, varname = "layer", return.raster
     # make a temporary netcdf intermediatary file
     working.dir <- dirname(ofile)
     temp.file <- file.path(dirname(ofile), paste0(deparse(substitute(ifile)), ".nc"))
-    writeRaster(ifile, temp.file, varname = varname, overwrite = TRUE, NAflag = -999999.0)
+    message(paste("Saving temporary file", temp.file))
+    writeRaster(ifile, temp.file, overwrite = TRUE, NAflag = -999999.0, ...)
     ifile <- temp.file
     
   }
@@ -66,8 +67,10 @@ cdo <- function(fun, ifile, ofile, grid = NULL, varname = "layer", return.raster
   # if cdo available 
   if(check.cdo()){
     
+    if(verbose) message("CDO available")
+    
     # remap functions
-    if(fun == "remaplaf" | fun == "remapcon2"){
+    if(fun == "remaplaf" | fun == "remapcon" | fun == "remapcon2"){
       
       # if target grid not specified
       if(is.null(grid)) {
@@ -75,6 +78,7 @@ cdo <- function(fun, ifile, ofile, grid = NULL, varname = "layer", return.raster
       }
       
       command.string <- paste("cdo", paste0(fun,",",grid), ifile, ofile, sep = " ")
+      message(command.string)
       if(verbose) message(paste0("Performing: ", command.string))
       system(command.string, ignore.stdout = !verbose)
       

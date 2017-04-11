@@ -187,10 +187,12 @@ plotResidualsHisto <- function(input.CLayers,
 plotScatterComparison2 <- function(input.CLayers, 
                                    run.ids = NULL,
                                    run.labels = NULL,
-                                   facet = NULL,
+                                   wrap = TRUE,
                                    facet.labels = NULL,
                                    xlim = NULL,
                                    ylim = NULL,
+                                   xlab = NULL,
+                                   ylab = NULL,
                                    showFitLine = TRUE,
                                    showStats = TRUE,
                                    alpha = 0.05,
@@ -202,16 +204,13 @@ plotScatterComparison2 <- function(input.CLayers,
   # for a single ComparisonLayer
   if(is.ComparisonLayer(input.CLayers)) {
     
-    temp.dt <- na.omit(input.CLayers@data[, c(1,2), with=FALSE])
-    setnames(temp.dt, input.CLayers@name) 
-    diff.layers <- input.CLayers@name
-    if(is.null(labels)) labels <- input.CLayers@info1@name
-    
-    # melt the data.table and set new names
-    temp.dt <- melt.data.table(temp.dt, measure.vars = names(temp.dt))
-    setnames(temp.dt, c("value", "variable"), c("Value", "Source"))
-    
+    temp.dt <- na.omit(input.CLayers@data[, names(input.CLayers)[1:2], with=FALSE])
     print(temp.dt)
+    setnames(temp.dt, c("ValueX", "ValueY")) 
+    if(is.null(labels)) labels <- input.CLayers@info1@name
+    print(temp.dt)
+    
+    wrap <- FALSE
     
   }
   # for list of comparison layers 
@@ -219,110 +218,72 @@ plotScatterComparison2 <- function(input.CLayers,
     
     list.of.dts <- list()
     new.labels <- c()
-    diff.layers <- c()
     for(thing in input.CLayers){
       
       if(!is.ComparisonLayer(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
       else {
         
-        really.temp.dt <- na.omit(thing@data[, c("Difference"), with=FALSE])
-        setnames(really.temp.dt, thing@name) 
-        diff.layers <- append(diff.layers, thing@name)
+
+        really.temp.dt <- na.omit(thing@data[, names(thing)[1:2], with=FALSE])
+        setnames(really.temp.dt, c("ValueX", "ValueY")) 
+        
+        # also add the source of the comparison
+        really.temp.dt <- really.temp.dt[, "Source" := paste(thing@info1@name, "vs", thing@info2@name, sep = " ")]
+        print(thing@name)
+        print(really.temp.dt)
+       
         if(is.null(labels)) new.labels <- append(new.labels, thing@info1@name)
-        
-        # melt the data.table and set new names
-        really.temp.dt <- melt.data.table(really.temp.dt, measure.vars = names(really.temp.dt))
-        setnames(really.temp.dt, c("value", "variable"), c("Value", "Source"))
-        
         list.of.dts[[thing@id]] <- really.temp.dt
         
       }
+ 
     }
-  
-  
-  # checks
-  if(!is.DataObject(input.CLayers)) {
-    warning("plotResidualsHists(): can't plot residuals because this is not a data object")
-    return(NULL)
+    
+    temp.dt <- rbindlist(list.of.dts)
+    if(is.null(labels)) labels <- new.labels
+    
+    rm(list.of.dts)
   }
   
   
-  # if no runs specified, get the data.table, select the absolute layers (ie not the ones with names ending "_Error", "_NormError", or "Lon"/"Lat"/"Year") from the incoming DataObject and remove NAs
-  if(is.null(run.ids)){
-    layers.for.plotting <- names(input.CLayers@data)
-    layers.for.plotting <- layers.for.plotting[-grep("_Error", layers.for.plotting)]
-    layers.for.plotting <- layers.for.plotting[-grep("_NormError", layers.for.plotting)]
-    if("Lon" %in% layers.for.plotting) layers.for.plotting <- layers.for.plotting[-grep("Lon", layers.for.plotting)]
-    if("Lat" %in% layers.for.plotting) layers.for.plotting <- layers.for.plotting[-grep("Lat", layers.for.plotting)]
-    if("Year" %in% layers.for.plotting) layers.for.plotting <- layers.for.plotting[-grep("Year", layers.for.plotting)]
-    # for making 
-    run.ids <- layers.for.plotting[-grep(input.CLayers@id, layers.for.plotting)] 
-  }
-  # else use the runs specified, but we also need to add the data column
-  else{
-    layers.for.plotting <- append(run.ids, input.CLayers@id)
-  }
-  
-  if(length(layers.for.plotting) == 0) {
-    warning("plotScatterComparison: no model data found! Did you already compare this DataObject to a ModelRun using benchmarkSpatial()?")
-    #return(NULL)
-  }
+ 
   
   # consider facetting
   facet.run <- FALSE
   facet.other <- FALSE
   title.substring <- "Simulation"
   # if there is more than one run present then facet by run (that means thet there must more than two columns at this stage)
-  if(length(layers.for.plotting) > 2)  { 
-    
-    facet.run <- TRUE
-    
-    # Make labeller 
-    if(is.null(run.labels)) run.labels = run.ids
-    names(run.labels) <- run.ids
-    
-    title.substring <- "Simulations"
-    
-  }
-  else {
-    if(!is.null(run.labels)) title.substring <- run.labels[1]
-    else title.substring <- "Simulation"
-  }
+  
   
   
   # if facet is not NULL, ignore the different runs and instead facet by the specified column
-  if(!is.null(facet))  {
-    
-    facet.other <- TRUE
-    
-    # Make labeller
-    if(is.null(facet.labels)) {
-      unique.facets <- sort(unique(input.CLayers@data[[facet]]))
-      facet.labels <- unique.facets
-      names(facet.labels) <- unique.facets
-    }
-    
-    # append the facet layer as we will need it for plotting
-    layers.for.plotting <- append(layers.for.plotting, facet)
-    # don't show the overall stats on each panel, that is silly
-    warning("In plotScatterComparison, not displaying statisics despite showStats = TRUE because the plot is to be facetted, and I don't have the stats for each facet.")
-    showStats = FALSE
-    
-  }
+  # if(!is.null(facet))  {
+  #   
+  #   facet.other <- TRUE
+  #   
+  #   # Make labeller
+  #   if(is.null(facet.labels)) {
+  #     unique.facets <- sort(unique(input.CLayers@data[[facet]]))
+  #     facet.labels <- unique.facets
+  #     names(facet.labels) <- unique.facets
+  #   }
+  #   
+  #   # append the facet layer as we will need it for plotting
+  #   #layers.for.plotting <- append(layers.for.plotting, facet)
+  #   # don't show the overall stats on each panel, that is silly
+  #   warning("In plotScatterComparison, not displaying statisics despite showStats = TRUE because the plot is to be facetted, and I don't have the stats for each facet.")
+  #   showStats = FALSE
+  #   
+  # }
   
-  temp.dt <- na.omit(input.CLayers@data[, layers.for.plotting, with = FALSE])
-  temp.dt <- melt.data.table(temp.dt, id.vars = c(input.CLayers@id, facet))
-  
-  if(!facet.other) setnames(temp.dt, c(input.CLayers@id, "Run", "Model"))
-  else setnames(temp.dt, c(input.CLayers@id, "OtherFacet", "Run", "Model"))
-  
-  print(na.omit(temp.dt))
+
+ 
   
   ### Get the xlim and ylim (for placing statistics labels) if they are not specified
   if(is.null(ylim) | is.null(xlim)) {
     # get min/max of y values
-    all.y <- temp.dt[["Model"]]
-    all.x <-  temp.dt[["input.CLayers@id"]]
+    all.y <- temp.dt[["ValueY"]]
+    all.x <-  temp.dt[["ValueX"]]
     
     if(is.null(ylim) & is.null(xlim)) {
       ylim <- c(min(append(all.x, all.y)), max(append(all.x, all.y)))
@@ -338,17 +299,48 @@ plotScatterComparison2 <- function(input.CLayers,
     
   }
   
-  scatter.plot <- ggplot(as.data.frame(na.omit(temp.dt)), aes_string(x=input.CLayers@id, y="Model")) +  geom_point(size=3, alpha =alpha)
+  # The basic plot
+  scatter.plot <- ggplot(as.data.frame(na.omit(temp.dt)), aes_string(x="ValueX", y="ValueY")) +  geom_point(size=3, alpha =alpha)
+  
+  
+  scatter.plot <- scatter.plot + theme(text = element_text(size=25))
+  if(is.null(wrap)) scatter.plot <- scatter.plot + ggtitle(paste(input.CLayers@info1@name, "vs.", input.CLayers@info2@name)) + theme(plot.title = element_text(lineheight=.8, face="bold", hjust = 0.5))
+
+  # x and y labels
+  if(is.null(wrap)) {
+    scatter.plot <- scatter.plot +  xlab(input.CLayers@info1@name) + ylab(input.CLayers@info2@name)  
+  }
+  else{
+    if(!is.null(xlab)) scatter.plot <- scatter.plot +  xlab(xlab)
+    if(!is.null(ylab)) scatter.plot <- scatter.plot +  ylab(ylab)
+  }
+  
+  #else  scatter.plot <- scatter.plot +  xlab(input.CLayers@info1@name) + ylab(input.CLayers@info2@name)     
+  
+  
+  # crop to xlim and ylim as appropriate and fix the aspect ratio 
+  scatter.plot <- scatter.plot + scale_x_continuous(limits = xlim, expand = c(0, 0))
+  scatter.plot <- scatter.plot + scale_y_continuous(limits = ylim, expand = c(0, 0))
+  scatter.plot <- scatter.plot + coord_fixed()
+
+  # Plot one-to-one line
+  scatter.plot <- scatter.plot + geom_abline(intercept = 0, slope = 1, size= 1, colour = "red3")
+  
+  # X and 
+  
+  
+  if(wrap) scatter.plot <- scatter.plot + facet_wrap(~ Source)
+  
+  return(scatter.plot)
+  
+
+  
   
   if( facet.run && !facet.other) { scatter.plot <- scatter.plot + facet_wrap(~ Run, labeller = as_labeller(run.labels)) }
   if(!facet.run &&  facet.other) { scatter.plot <- scatter.plot + facet_wrap(~ OtherFacet, labeller = as_labeller(facet.labels))}
   if(facet.other && facet.run)   { scatter.plot <- scatter.plot + facet_grid(OtherFacet ~ Run, labeller = labeller(.rows = as_labeller(facet.labels), .cols = as_labeller(run.labels))) }
   
-  scatter.plot <- scatter.plot + theme(text = element_text(size=25))
-  scatter.plot <- scatter.plot + ggtitle(paste(title.substring, "vs.", paste(input.CLayers@name, sep = " "))) + theme(plot.title = element_text(lineheight=.8, face="bold"))
-  scatter.plot <- scatter.plot +  xlab(paste(input.CLayers@name, input.CLayers@quant@name ,sep = " "))   +   ylab(paste("Simulated", input.CLayers@quant@name, sep = " "))     
-  scatter.plot <- scatter.plot +  coord_cartesian(xlim = xlim, ylim = ylim) 
-  scatter.plot <- scatter.plot + geom_abline(intercept = 0, slope = 1, size= 1, colour = "red3")
+  
   
   # show the fit line and equation
   if(showFitLine) {
