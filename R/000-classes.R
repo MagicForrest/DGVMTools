@@ -300,6 +300,7 @@ setClass("ModelRun",
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
 #'
+#' @importFrom fields tim.colors  
 #' @exportClass Quantity
 #' @name Quantity-class
 #' @rdname Quantity-class
@@ -317,7 +318,7 @@ setClass("Quantity",
                        name = "UnknownString",
                        type = "UnknownType",
                        units = "-",
-                       colours = tim.colors,
+                       colours = fields::tim.colors,
                        aggregate.method = "sum",
                        model = "Standard"
          )

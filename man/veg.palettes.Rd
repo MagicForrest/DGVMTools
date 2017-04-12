@@ -36,6 +36,6 @@ reversed.tim.colors(n)
 \item{difference.palette}{Colour scheme for differences. Symmetrical, centred on white}
 \item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from more-to-less fire)}
 \item{reversed.fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from less-to-more fire)}
-\item{reversed.tim.colors}{The tim.colors scheme reversed to go from red (hot/dry) to blue (cold/wet)}
+\item{reversed.tim.colors}{The fields::tim.colors scheme reversed to go from red (hot/dry) to blue (cold/wet)}
 }
 }

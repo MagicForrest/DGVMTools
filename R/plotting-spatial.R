@@ -195,7 +195,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                                         labels = rev(quant@units),
                                         at = (0:(length(quant@units)-1)) + 0.5)
       
-      colorkey.list[["col"]] <- colorRampPalette(rev(colorkey.list$col(length(quant@units))))
+      colorkey.list[["col"]] <- grDevices::colorRampPalette(rev(colorkey.list$col(length(quant@units))))
       colorkey.list[["at"]] <- 0:length(quant@units)
       
     }
@@ -311,7 +311,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     quant@cuts <- seq(from = 0, to = 1, by = 0.05)
     quant@id <- paste(quant@id, "fraction", sep = ".")
     quant@name <- paste(quant@name, "Fraction", sep = " ")
-    quant@colours <- colorRampPalette(c("grey85", "black"))
+    quant@colours <- grDevices::colorRampPalette(c("grey85", "black"))
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     
@@ -322,7 +322,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     
     # SET THE INTERVALS (using either these sensible options or the overrides)
     quant@cuts <- c(0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1)
-    quant@colours <-  colorRampPalette(rev(c("red4", "red","orange","yellow", "palegreen2", "cyan", "dodgerblue2", "blue", "midnightblue")))
+    quant@colours <-  grDevices::colorRampPalette(rev(c("red4", "red","orange","yellow", "palegreen2", "cyan", "dodgerblue2", "blue", "midnightblue")))
     
     # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
     if(!is.null(override.cols)) {quant@colours <- override.cols}
@@ -357,7 +357,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     
     # SET THE INTERVALS (using either these sensible options or the overrides)
     quant@cuts <- c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000)
-    quant@colours <-  colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+    quant@colours <-  grDevices::colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
     # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
     if(!is.null(override.cols)) {quant@colours <- override.cols}
     if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
@@ -430,7 +430,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                    name = "Dominant PFT",
                    type = "categorical",
                    units = label.list,
-                   colours = colorRampPalette(col.list),
+                   colours = grDevices::colorRampPalette(col.list),
                    cuts = 0:length(col.list),
                    aggregate.method = "categorical"
       )
@@ -467,7 +467,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                      name = paste("Dominant Month by", quant.id, sep = " "),
                      type = "categorical",
                      units = col.list,
-                     colours = colorRampPalette(col.list),
+                     colours = grDevices::colorRampPalette(col.list),
                      #cuts = 0:length(col.list),
                      cuts = NULL,
                      aggregate.method = "categorical"

@@ -73,6 +73,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
                          return.data = FALSE,
                          tile = TRUE,
                          interpolate = FALSE,
+                         interior.lines = TRUE,
                          ...){
  
   ### PREPARE DATA FOR PLOTTING
@@ -131,7 +132,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     if(is.null(layers)  || tolower(layers) == "difference") {
       layers <- "Difference" 
       original.layers <- "Difference"
-      if(is.null(override.cols) & continuous) override.cols <- rev(brewer.pal(11, "RdBu"))
+      if(is.null(override.cols) & continuous) override.cols <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
     }
     else if(tolower(layers) == "absolute") {
       # put side by side
@@ -142,7 +143,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
       layers <- "Percentage Difference"
       data.temp <- data@data[, "Percentage Difference" := (get(paste("Difference")) %/0% get(names(data)[2])) * 100]
       data@data <- data.temp
-      if(is.null(override.cols) & continuous) override.cols <- rev(brewer.pal(11, "RdBu"))
+      if(is.null(override.cols) & continuous) override.cols <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
       
     }
     
@@ -263,7 +264,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
         if(is.null(original.layers)  || tolower(original.layers) == "difference") {
           layers <- "Difference" 
           original.layers <- layers
-          if(is.null(override.cols) & continuous) override.cols <- rev(brewer.pal(11, "RdBu"))
+          if(is.null(override.cols) & continuous) override.cols <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
         }
         else if(tolower(original.layers) == "absolute") {
           # changes the names of the ComparisonLayer 
@@ -275,7 +276,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
           layers <- "Percentage Difference"
           comp.layer.temp <- comp.layer@data[, "Percentage Difference" := (get(paste("Difference")) %/0% get(names(comp.layer)[2])) * 100]
           comp.layer@data <- comp.layer.temp
-          if(is.null(override.cols) & continuous) override.cols <- rev(brewer.pal(11, "RdBu"))
+          if(is.null(override.cols) & continuous) override.cols <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
           
         }
         
@@ -386,13 +387,13 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     else if(tolower(map.overlay)=="world2ires" && !gt.180) map.overlay <- "worldHires"
     
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
-    proj4str <- "+proj=longlat +datum=WGS84"
-    map.sp.lines <- map2SpatialLines(map(map.overlay, plot = FALSE, interior = TRUE, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = CRS(proj4str))
-    df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ])))
+    proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
+    map.sp.lines <- map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = CRS(proj4str))
+    suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
     map.sp.lines.df <- SpatialLinesDataFrame(map.sp.lines, data = df)
     map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
-    map.overlay <- fortify(map.sp.lines.df)
+    suppressWarnings(map.overlay <- fortify(map.sp.lines.df))
     
     rm(df, map.sp.lines, map.sp.lines.df)   
     
@@ -569,8 +570,8 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   else mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "Value"), interpolate = interpolate)
   
   # facet with grid or wrap 
-  if(grid) mp <- mp + facet_grid(as.formula(paste(facet.string)), switch = "y", labeller = as_labeller(facet.labels))
-  else if(wrap) mp <- mp + facet_wrap(as.formula(facet.string), labeller = as_labeller(facet.labels))
+  if(grid) mp <- mp + facet_grid(stats::as.formula(paste(facet.string)), switch = "y", labeller = as_labeller(facet.labels))
+  else if(wrap) mp <- mp + facet_wrap(stats::as.formula(facet.string), labeller = as_labeller(facet.labels))
   
   # colour bar
   if(continuous)  {

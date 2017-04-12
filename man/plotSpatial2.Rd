@@ -9,7 +9,8 @@ plotSpatial2(data, layers = NULL, title = NULL, layout.objs = NULL,
   useLongnames = FALSE, text.multiplier = 1, xlim = NULL, ylim = NULL,
   limit = FALSE, limits = NULL, override.cols = NULL,
   override.cuts = NULL, map.overlay = NULL, dont.grid = FALSE,
-  return.data = FALSE, tile = TRUE, interpolate = FALSE, ...)
+  return.data = FALSE, tile = TRUE, interpolate = FALSE,
+  interior.lines = TRUE, ...)
 }
 \arguments{
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}

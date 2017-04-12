@@ -16,7 +16,6 @@
 #'
 #' @import data.table
 #' @import ncdf4
-#' @importFrom reshape2 acast
 ## TODO: Add daily data compatibility
 write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=NULL,
                      compress=NA, chunks=NA, reduce=FALSE, invertlat=FALSE, leap=FALSE, verbose=FALSE) {
@@ -235,7 +234,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
       } else {
         data <- data.table::melt(mo@data, id.vars=c("landid", "Year"), measure.vars=month.abb)
         data[, Year:= Year* 100 + as.numeric(variable)]
-        data <- acast(data, landid~Year, value.var="value")
+        data <- reshape2::acast(data, landid~Year, value.var="value")
         if (as.flux)
           data <- data / array(rep(time * as.flux, each=nlandid), dim(data))
         ncvar_put(ncout, mo@quant@id, data)
@@ -263,7 +262,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
           ncvar_put(ncout, name, data)
           ncatt_put(ncout, name, "coordinates", "lon lat")
         } else {
-          data <- acast(mo@data, landid~Year, value.var=name)
+          data <- reshape2::acast(mo@data, landid~Year, value.var=name)
           
           if (as.flux)
             data <- data / array(rep(time * as.flux, each=nlandid), dim(data))

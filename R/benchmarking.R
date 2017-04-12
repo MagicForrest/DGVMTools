@@ -64,7 +64,7 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
   R2.eff <- calcNashSutcliffe(vector2, vector1)
   
   # Pearson product moment correlation coefficient
-  P.cor <- cor(vector1, vector2, method = "pearson")
+  P.cor <- stats::cor(vector1, vector2, method = "pearson")
   
   if(verbose) {
     print(paste("+++ Stats for", name1, "vs",  name2,  "+++", sep = " "))

@@ -16,7 +16,7 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
     
   }
   
-  warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in dgvm.quantities, now searching only on the quant.id."))
+  if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std") warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in dgvm.quantities, now searching only on the quant.id."))
   
   for(quant in dgvm.quantities){
     
@@ -42,6 +42,7 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
 #' which should be derivable from all model output.
 #' @rdname Quantity-class
 #' @keywords datasets
+#' @importFrom fields tim.colors  
 #' @seealso \code{lookupQuantity}
 dgvm.quantities <- list(
   
@@ -54,7 +55,7 @@ dgvm.quantities <- list(
       type = "unknown",
       name = "Fraction",
       units = "",
-      colours = colorRampPalette(c("grey85", "black")), 
+      colours = grDevices::colorRampPalette(c("grey85", "black")), 
       model = "Standard"), 
  
   new("Quantity",

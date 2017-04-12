@@ -54,9 +54,9 @@ doTemporalAverage.uncompiled <- function(input.dt,
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A data.table
 #' @keywords export
-#' @import cmpfun compiler
+#' @import  compiler cmpfun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-doTemporalAverage <- cmpfun(doTemporalAverage.uncompiled)
+doTemporalAverage <- compiler::cmpfun(doTemporalAverage.uncompiled)
 
 
 
@@ -165,6 +165,6 @@ doSpatialAverage.uncompiled <- function(input.obj,
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A data.table
 #' @keywords internal
-#' @import data.table
+#' @import  compiler cmpfun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-doSpatialAverage <- cmpfun(doSpatialAverage.uncompiled)
+doSpatialAverage <- compiler::cmpfun(doSpatialAverage.uncompiled)

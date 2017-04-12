@@ -13,16 +13,10 @@ import(maps,
        data.table,
        viridis)
 
-importFrom("fields", "tim.colors")
-importFrom("compiler", "cmpfun")
-importFrom("grid", "unit")
-importFrom("RColorBrewer", "brewer.pal")
-importFrom("grDevices", "col2rgb", "colorRampPalette", "dev.off", "rgb", "gray.colors")
+
 importFrom("graphics", "abline", "curve", "legend", "par")
-importFrom("stats", "cor", "dnorm", "median", "na.omit", "sd", "coef", "lm", "var", "as.formula", "residuals", "complete.cases")
+importFrom("stats", "na.omit", "coef", "complete.cases")
 importFrom("utils", "capture.output", "data", "file_test", "object.size", "read.table", "write.table", "str")
-importFrom("plyr", "mapvalues")
-importFrom("reshape2", "acast")
 importMethodsFrom("data.table")
 importMethodsFrom("raster")
 importMethodsFrom("sp")

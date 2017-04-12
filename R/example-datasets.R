@@ -18,7 +18,6 @@
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table raster
-#' @importFrom plyr mapvalues
 
 readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   

@@ -28,7 +28,7 @@ readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF
                  name = "Crop Fraction",
                  type = "-",
                  units = "",
-                 colours = gray.colors,
+                 colours = grDevices::gray.colors,
                  model = c("Data"))
     
     name <- "HYDE Crop Fraction" 
@@ -42,7 +42,7 @@ readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF
                  name = "Pasture Fraction",
                  type = "-",
                  units = "",
-                 colours = gray.colors,
+                 colours = grDevices::gray.colors,
                  model = c("Data"))
     
     name <- "HYDE Pasture Fraction" 

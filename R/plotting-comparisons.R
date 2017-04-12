@@ -99,7 +99,7 @@ plotResidualsHisto <- function(input.CLayers,
   
   # if cols, fills or types no spcified, set to some defaults
   if(is.null(fills)) { fills <- rep("transparent", length(diff.layers)) }
-  if(is.null(cols)) { cols <- tim.colors(length(diff.layers)) }
+  if(is.null(cols)) { cols <- fields::tim.colors(length(diff.layers)) }
   if(is.null(types)) { types <- rep(1, length(diff.layers)) }
   
   # also set sensible default axis and main titles
@@ -205,11 +205,9 @@ plotScatterComparison2 <- function(input.CLayers,
   if(is.ComparisonLayer(input.CLayers)) {
     
     temp.dt <- na.omit(input.CLayers@data[, names(input.CLayers)[1:2], with=FALSE])
-    print(temp.dt)
     setnames(temp.dt, c("ValueX", "ValueY")) 
     if(is.null(labels)) labels <- input.CLayers@info1@name
-    print(temp.dt)
-    
+
     wrap <- FALSE
     
   }
@@ -229,9 +227,6 @@ plotScatterComparison2 <- function(input.CLayers,
         
         # also add the source of the comparison
         really.temp.dt <- really.temp.dt[, "Source" := paste(thing@info1@name, "vs", thing@info2@name, sep = " ")]
-        print(thing@name)
-        print(really.temp.dt)
-       
         if(is.null(labels)) new.labels <- append(new.labels, thing@info1@name)
         list.of.dts[[thing@id]] <- really.temp.dt
         
@@ -362,7 +357,7 @@ plotScatterComparison2 <- function(input.CLayers,
         temp.temp.dt <- temp.temp.dt[paste(run.id)]
         temp.df <- as.data.frame(temp.temp.dt[, "Run" := NULL, with = FALSE])
         names(temp.df) <- c("x", "y")
-        text.vector <- append(text.vector, lm_eqn(lm(y ~ x, temp.df)))
+        text.vector <- append(text.vector, lm_eqn(stats::lm(y ~ x, temp.df)))
         rm(temp.df, temp.temp.dt)
         runs.vector <- append(runs.vector, run.id)
       }
@@ -376,7 +371,7 @@ plotScatterComparison2 <- function(input.CLayers,
           temp.temp.dt <- temp.temp.dt[OtherFacet == sub.facet & Run == run.id]
           temp.df <- as.data.frame(temp.temp.dt[, c("OtherFacet","Run") := NULL, with = FALSE])
           names(temp.df) <- c("x", "y")
-          text.vector <- append(text.vector, lm_eqn(lm(y ~ x, temp.df)))
+          text.vector <- append(text.vector, lm_eqn(stats::lm(y ~ x, temp.df)))
           rm(temp.df, temp.temp.dt)
           runs.vector <- append(runs.vector, run.id)
           other.vector <- append(other.vector, sub.facet)
