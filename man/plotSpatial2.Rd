@@ -4,37 +4,20 @@
 \alias{plotSpatial2}
 \title{Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.}
 \usage{
-plotSpatial2(data, layers = NULL, expand.layers = TRUE, quant = NULL,
-  period = NULL, run = NULL, PFT.set = lpj.global.PFTs, title = NULL,
-  layout.objs = NULL, plot.labels = NULL, plot.bg.col = "transparent",
-  useLongnames = FALSE, text.multiplier = 1, plot.extent = NULL,
+plotSpatial2(data, layers = NULL, title = NULL, layout.objs = NULL,
+  facet.labels = NULL, facet.order = NULL, plot.bg.col = "white",
+  useLongnames = FALSE, text.multiplier = 1, xlim = NULL, ylim = NULL,
   limit = FALSE, limits = NULL, override.cols = NULL,
-  override.cuts = NULL, special = "none", maxpixels = 1e+06, ...)
+  override.cuts = NULL, map.overlay = NULL, dont.grid = FALSE,
+  return.data = FALSE, tile = TRUE, interpolate = FALSE, ...)
 }
 \arguments{
-\item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
-
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
-
-\item{expand.layers}{A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.}
-
-\item{quant}{A \code{Quantity} object describy the quantity to be plotted.  This provides an override \code{Quantity} when plotting a \code{ModelObject}
-and is useful to specify metadata (colours, plot ranges, names, etc.) when plotting other objects.}
-
-\item{period}{The time period (represented by a \code{TemporalExtent} object), used only for plot labels and filenames.
-In the case of plotting a \code{ModelRun} object this is taken automatically from the object, but this provides an override.}
-
-\item{run}{A \code{ModelRun} object from which to pull metadata.  Note that normally this information is stored in the \code{ModelObject}.}
-
-\item{PFT.set}{A PFT set, necessary for expanding layers and plotting long names.  Normally taken from the \code{ModelObject}.}
 
 \item{title}{A character string to override the default title.}
 
 \item{layout.objs}{List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
 so see there for how to build them.}
-
-\item{plot.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
-Sensible titles will be constructed if this is not specified.}
 
 \item{plot.bg.col}{Colour string for the plot background.}
 
@@ -42,8 +25,6 @@ Sensible titles will be constructed if this is not specified.}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa}
-
-\item{plot.extent}{An extent object to limit the plot area.}
 
 \item{limit}{Boolean, whether or not to limit the plotted values between a range, either the limits argument below,
 or the range of the plot.}
@@ -54,12 +35,16 @@ or the range of the plot.}
 
 \item{override.cuts}{Cut ranges (a numeric vector) to override the defaults.}
 
+\item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.
+Other things can be overlain on the resulting plot with further ggplot2 commands.}
+
+\item{x}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
+
+\item{plot.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
+Sensible titles will be constructed if this is not specified.}
+
 \item{special}{A character string to indicate certain "special modes" which modifies the behaviour of the function a bit.
 Special modes are currectly "fraction", "difference", "percentage.difference", "firert" (fire return time) and "dominant.pft".}
-
-\item{maxpixels}{Maximum number of pixels to plot (see \code{raster} version of \code{spplot})}
-
-\item{...}{Extra arguments to be be passed to \code{spplot} and therefore also to \code{lattice::levelplot}.}
 }
 \value{
 Returns a plot object (from spplot)
@@ -78,10 +63,9 @@ However, the \code{plotGGSpatial} function makes pretty plots with a simpler syn
 
 The function works best for \code{ModelObjects} (which contain a lot of useful metadata).
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

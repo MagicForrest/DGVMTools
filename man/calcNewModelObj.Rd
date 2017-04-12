@@ -27,4 +27,3 @@ Basic calculation of new ModelObjects by operation '+', '-', '*' or '/'
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

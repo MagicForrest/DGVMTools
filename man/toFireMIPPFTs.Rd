@@ -20,4 +20,3 @@ Aggregates the PFTs in a FireMIP ModelObject to a standard set of PFTs
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

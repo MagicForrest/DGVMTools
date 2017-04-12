@@ -24,10 +24,9 @@ the requested variable in the requested ('as') container
 \description{
 calculate monthly PET, AET, WC, WD based on Thornthwaite
 }
-\author{
-Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
-}
 \references{
 Bonan, G. (2002): Ecological Climatology. Chapter 5 (Hydrological Cycle), Cambridge University Press, 690p. \url{http://www.cgd.ucar.edu/tss/aboutus/staff/bonan/ecoclim/index-2002.htm}
 }
-
+\author{
+Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
+}

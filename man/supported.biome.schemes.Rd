@@ -28,11 +28,10 @@ It a list of biomes schemes with elements with the followinf names/ids:
 The mechanics of all this could do with a serious overhaul to deal with other model outputs
 and classifications involving more that one 'primary variable', ie FPC and biomass.
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 \code{BiomeClassification}, \code{readHandPBiomes}
 }
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}
 \keyword{datasets}
-

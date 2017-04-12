@@ -58,11 +58,10 @@ Create a point cloud (scatterplot) or density plot with several metrics and line
 \examples{
 message("See templates/Example.ggplot.R")
 }
-\author{
-Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
-}
 \references{
 Mayer, D. G. and Butler, D. G.: Statistical validation, Ecological Modelling, 68(1-2), 21-32, \href{https://dx.doi.org/10.1016/0304-3800(93)90105-2}{doi:10.1016/0304-3800(93)90105-2}, 1993.
 Kelley, et al.: A comprehensive benchmarking system for evaluating global vegetation models, Biogeosciences, 10(5), 3313-3340, \href{https://dx.doi.org/10.5194/bg-10-3313-2013}{doi:10.5194/bg-10-3313-2013, 2013.}
 }
-
+\author{
+Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
+}

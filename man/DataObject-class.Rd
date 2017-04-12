@@ -30,7 +30,7 @@ Generally these are not created directly by the user, but rather by functions li
 
 \item{\code{comparisons}}{A list of SpatialComparison objects, one for each ModelObject which has been compared to this DataObject}
 }}
+
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

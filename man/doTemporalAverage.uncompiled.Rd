@@ -21,4 +21,3 @@ Time average all availables years (denoted by column "Years") or a data.table ob
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

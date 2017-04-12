@@ -41,4 +41,4 @@ License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

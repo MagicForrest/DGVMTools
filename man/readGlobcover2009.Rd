@@ -17,10 +17,9 @@ This function simply returns the original data, but packaged into a DataObject o
 Therefore, this function does not do this it just returns the original data (still stored on disk, not in memory).  If you want to process by 
 by aggregeting to fractions of a larger, more workable resolution, please see \code{processGlobcover2009}
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 code{processGlobcover2009}, \code{countCategoricalData}
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

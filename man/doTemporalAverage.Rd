@@ -21,4 +21,3 @@ Time average all availables years (denoted by column "Years") of a data.table ob
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{export}
-

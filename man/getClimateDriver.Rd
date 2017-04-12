@@ -52,4 +52,3 @@ message("See templates/Example.ggplot.R")
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

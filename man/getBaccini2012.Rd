@@ -4,8 +4,7 @@
 \alias{getBaccini2012}
 \title{Read Baccini et al. 2012 total biomass map}
 \usage{
-getBaccini2012(location = "/data/forrest/Biomass/Baccini2012",
-  resolution = "original")
+getBaccini2012(location = "/data/forrest/Biomass", resolution = "HD")
 }
 \arguments{
 \item{location}{A character string specifying the the location of the original data files}
@@ -25,4 +24,3 @@ Original dataset is 1km, also provided here at 0.5 degrees or T63.
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

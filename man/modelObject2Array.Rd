@@ -24,4 +24,3 @@ Convert a ModelObject to a multi-dimensional array
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

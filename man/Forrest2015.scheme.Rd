@@ -15,4 +15,3 @@ Meta-data describing the Forrest et al. 2015 "mega biome" scheme for LPJ-GUESS o
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

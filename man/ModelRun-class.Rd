@@ -51,7 +51,7 @@ The following slots are inherited from \code{ModelRunInfo}.}
 
 \item{\code{landuseSimulated}}{If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.}
 }}
+
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

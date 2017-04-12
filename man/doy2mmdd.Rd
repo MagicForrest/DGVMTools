@@ -22,4 +22,3 @@ day of year to date in the form of MonthDay conversion
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

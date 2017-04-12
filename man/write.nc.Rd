@@ -4,7 +4,7 @@
 \alias{write.nc}
 \title{Create a NetCDF4 file from a \code{\linkS4class{ModelObject}}.}
 \usage{
-write.nc(filename = NA, mo = NA, columns = NA, as.daily.flux = FALSE,
+write.nc(filename = NA, mo = NA, columns = NA, as.flux = FALSE,
   globalAttr = NULL, compress = NA, chunks = NA, reduce = FALSE,
   invertlat = FALSE, leap = FALSE, verbose = FALSE)
 }
@@ -15,7 +15,7 @@ write.nc(filename = NA, mo = NA, columns = NA, as.daily.flux = FALSE,
 
 \item{columns}{which colums to write as variable (TODO: option as dimension)}
 
-\item{as.daily.flux}{Converts the data to daily fluxes by dividing by the respective number of days.}
+\item{as.flux}{Converts the data to fluxes by dividing by the respective number of days, if TRUE or "day[s]". If set to "^s*", the divided by 86400 additionally.}
 
 \item{globalAttr}{a named vector of additional global attributes.}
 
@@ -34,4 +34,3 @@ write.nc(filename = NA, mo = NA, columns = NA, as.daily.flux = FALSE,
 \description{
 Create a NetCDF4 file from a \code{\linkS4class{ModelObject}}.
 }
-

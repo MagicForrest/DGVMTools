@@ -15,4 +15,3 @@ Meta-data describing a Mediterranean scheme for LPJ-GUESS output.
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

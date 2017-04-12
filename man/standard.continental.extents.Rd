@@ -15,4 +15,3 @@ These were just defined by the author for studying different regions of the worl
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{datasets}
-

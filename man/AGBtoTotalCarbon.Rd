@@ -16,4 +16,3 @@ Used when reading the original Baccini et al. 2012 and Avitabile et al. 2015 dat
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

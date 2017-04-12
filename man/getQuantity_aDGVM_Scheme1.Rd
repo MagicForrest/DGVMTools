@@ -17,11 +17,10 @@ getQuantity_aDGVM_Scheme1(run, period, variable)
 Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
 Simple scheme, classifies only as tree or grass based on only the pop file, doesn't open the trait file.
 }
-\author{
-Simon Scheiter \email{simon.scheiter@senckenberg.de}, Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 \code{getQuantity_aDGVM_Scheme2}
 }
+\author{
+Simon Scheiter \email{simon.scheiter@senckenberg.de}, Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}
 \keyword{internal}
-

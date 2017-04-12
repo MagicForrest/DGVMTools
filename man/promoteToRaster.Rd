@@ -28,4 +28,3 @@ but can be useful in and of itself.
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

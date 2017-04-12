@@ -15,4 +15,3 @@ Meta-data describing the Smith 2014 et al. 2014 biome scheme for LPJ-GUESS outpu
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

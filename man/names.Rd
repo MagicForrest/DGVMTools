@@ -2,14 +2,17 @@
 % Please edit documentation in R/names-methods.R
 \docType{methods}
 \name{names-methods}
-\alias{names,DataObject-method}
-\alias{names,ModelObject-method}
 \alias{names-methods}
+\alias{names,ModelObject-method}
+\alias{names,DataObject-method}
+\alias{names,ComparisonLayer-method}
 \title{Names methods}
 \usage{
 \S4method{names}{ModelObject}(x)
 
 \S4method{names}{DataObject}(x)
+
+\S4method{names}{ComparisonLayer}(x)
 }
 \arguments{
 \item{x}{A ModelObject or DataObject}
@@ -25,4 +28,3 @@ Methods for returning the names of the layers in a ModelObject or a DataObject.
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

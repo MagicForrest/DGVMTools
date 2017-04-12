@@ -20,4 +20,3 @@ date in the form of MonthDay to day of year conversion
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

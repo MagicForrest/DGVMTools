@@ -26,7 +26,7 @@ and included in a \code{ModelObject} in the \code{run} slot (not inherited, so n
 
 \item{\code{line.type}}{A numeric to define the line style representing this model run}
 }}
+
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

@@ -20,4 +20,3 @@ This function returns information about the spacio-temporal dimensions of a Data
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

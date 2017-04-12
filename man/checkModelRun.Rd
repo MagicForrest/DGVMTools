@@ -20,4 +20,3 @@ exists on the file system; a model type which is valid and an \code{id} that is 
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

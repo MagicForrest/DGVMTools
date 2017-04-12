@@ -21,10 +21,9 @@ A spatially averaged\code{ModelObject} but with no temporal averaging or croppin
 \description{
 Given a \code{ModelRun} object, a \code{Quantity} object and a \code{SpatialExtent} object, return an appropriate spatially-averaged \code{ModelObject} oject for that run, quantity and time period over the whole simulation domain.
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 \code{getModelObject}, \code{getVegspatial}
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

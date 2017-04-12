@@ -22,4 +22,3 @@ check if a given year is a leap year
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

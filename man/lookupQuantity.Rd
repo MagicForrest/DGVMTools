@@ -20,4 +20,3 @@ Function to get an Quantity based on an ID string *and* the scope (i.e. a partic
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

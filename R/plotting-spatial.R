@@ -670,7 +670,7 @@ makeStatsOverlay <- function(stat.results, stats = "NME", panel = NULL, plot.ext
 #' @import mapdata
 #' @importFrom sp CRS
 #' @export
-makeOverlay <- function(which, interior.lines = TRUE, lwd = 0.5, col = NULL){
+makeOverlay_spplot <- function(which, interior.lines = TRUE, lwd = 0.5, col = NULL){
   
   proj4str <- "+proj=longlat +datum=WGS84"
   

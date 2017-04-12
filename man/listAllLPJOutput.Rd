@@ -19,4 +19,3 @@ Also ignores some common red herrings like "guess.out" and "*.out"
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

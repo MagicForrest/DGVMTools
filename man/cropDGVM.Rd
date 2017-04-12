@@ -21,4 +21,3 @@ and can use a SpatialExtent object to define the domain.  SHOULD BE DEFINED AS A
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

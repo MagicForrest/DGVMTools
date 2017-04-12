@@ -24,4 +24,3 @@ gridcell of the target grid for each landcover. Then return the fraction of each
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

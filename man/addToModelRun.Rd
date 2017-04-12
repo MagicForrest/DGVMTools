@@ -17,10 +17,9 @@ A ModelRun object the the object argument added
 \description{
 Stores an object in its run for later calculations, plotting, comparisons.
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 ModelRun, ModelRunInfo
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

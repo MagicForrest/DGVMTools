@@ -4,8 +4,7 @@
 \alias{getSimard2011}
 \title{Read dataset et al. 2015 total biomass map}
 \usage{
-getSimard2011(location = "/data/forrest/CanopyHeight/Simard2011/",
-  resolution = "HD")
+getSimard2011(location = "/data/forrest/CanopyHeight/", resolution = "HD")
 }
 \arguments{
 \item{location}{A character string specifying the the location of the original data files}
@@ -25,4 +24,3 @@ Original dataset is 1km, but provided here at 0.5 degrees.
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

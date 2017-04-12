@@ -19,10 +19,9 @@ This function is preferred to a \code{new("ModelRunInfo",...)} initialisation fo
 \details{
 Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as ModelObjects and added to a ModelRun object, are added built with later with other commands and added to \code{ModelRun} command using \code{addToModelRun}
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 ModelRun, ModelRunInfo
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

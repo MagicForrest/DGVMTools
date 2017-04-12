@@ -19,4 +19,3 @@ Returns NULL if the last characters are not ".out" or ".out.gz
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

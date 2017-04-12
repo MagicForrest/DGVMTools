@@ -13,4 +13,3 @@ TRUE if cdo present, false if not
 Checks if the CDO (climate data operators) are available on the system
 }
 \keyword{internal}
-

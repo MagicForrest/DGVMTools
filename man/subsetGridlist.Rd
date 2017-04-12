@@ -28,4 +28,3 @@ Crop a gridlist (taken as a file in the form of a two-columned table to a smalle
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

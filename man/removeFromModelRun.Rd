@@ -18,10 +18,9 @@ A ModelRun with the object removed
 Processing a lot of different files and storing the full output internally (in the ModelRun) may use too much memory. You can get around this by not storing them internally, 
 but if you need to do this, for example because you want to average many spatial or temporal extents from one output file, this function lets you remove ModelObject to free the space again.
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 ModelRun, ModelRunInfo
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

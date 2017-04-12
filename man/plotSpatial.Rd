@@ -78,10 +78,9 @@ However, the \code{plotGGSpatial} function makes pretty plots with a simpler syn
 
 The function works best for \code{ModelObjects} (which contain a lot of useful metadata).
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

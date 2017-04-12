@@ -46,10 +46,9 @@ Given a \code{ModelRun} object a \code{Quantity} object, return an appropriate s
 Note that because there are two types of averaging available, the resulting \code{ModelRun} object can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
 Also not that the data is stored internal as a data.table object, but this is mostly not important to the user.
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 \code{getModelObject}, \code{getVegspatial}
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

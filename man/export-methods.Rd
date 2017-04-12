@@ -2,29 +2,47 @@
 % Please edit documentation in R/export-methods.R
 \docType{methods}
 \name{export-methods}
+\alias{export-methods}
+\alias{export-methods}
+\alias{as.data.frame.ModelObject}
+\alias{export-methods}
+\alias{as.data.frame.DataObject}
+\alias{export-methods}
+\alias{as.data.frame.ComparisonLayer}
+\alias{export-methods}
+\alias{as.data.table.ModelObject}
+\alias{export-methods}
+\alias{as.data.table.DataObject}
+\alias{export-methods}
+\alias{as.data.table.ComparisonLayer}
+\alias{export-methods}
+\alias{export-methods}
+\alias{export-methods}
 \alias{as.Raster}
 \alias{as.Raster,DataObject-method}
 \alias{as.Raster,ModelObject-method}
-\alias{as.data.frame.DataObject}
-\alias{as.data.frame.ModelObject}
-\alias{as.data.table.DataObject}
-\alias{as.data.table.ModelObject}
-\alias{export-methods}
+\alias{as.Raster,ComparisonLayer-method}
 \title{Coerce from ModelObjects and DataObjects}
 \usage{
 \method{as.data.frame}{ModelObject}(x, row.names, optional, ...)
 
 \method{as.data.frame}{DataObject}(x, row.names, optional, ...)
 
+\method{as.data.frame}{ComparisonLayer}(x, row.names, optional, ...)
+
 \method{as.data.table}{ModelObject}(x, keep.rownames, ...)
 
 \method{as.data.table}{DataObject}(x, keep.rownames, ...)
+
+\method{as.data.table}{ComparisonLayer}(x, keep.rownames, ...)
 
 as.Raster(x)
 
 \S4method{as.Raster}{DataObject}(x)
 
 \S4method{as.Raster}{ModelObject}(x)
+
+\S4method{as.Raster}{ComparisonLayer}(x)
 }
 \arguments{
 \item{x}{A ModelObject or a DataObject}
@@ -46,4 +64,3 @@ Functions to coerce ModelObjects and DataObjects into other objects (data.frame,
 Note that for coercing to a Raster* object (RasterLayer or RasterBrick) the function is called "as.Raster" (capital "R") to avoid conflict with  
 another function in the raster package called "as.raster"
 }
-
