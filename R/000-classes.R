@@ -297,7 +297,6 @@ setClass("ModelRun",
 #' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.  
 #' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
 #' @slot colours A function that returns a colour scale suited for plotting this quantity.
-#' @slot cuts A numerical sequence defining the plot range and colour breakpoint when plotting the quantity
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
 #'
@@ -311,7 +310,6 @@ setClass("Quantity",
                    type = "character",
                    units = "character",
                    colours = "function",
-                   cuts = "numeric",
                    aggregate.method = "character",
                    model = "character"
          ),
@@ -320,7 +318,6 @@ setClass("Quantity",
                        type = "UnknownType",
                        units = "-",
                        colours = tim.colors,
-                       cuts = integer(0),
                        aggregate.method = "sum",
                        model = "Standard"
          )
@@ -564,7 +561,6 @@ setClass("ComparisonLayer",
 #' @slot type A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")
 #' @slot units A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")
 #' @slot colours A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")
-#' @slot cuts A numerical sequence defining the plot range and colour breakpoints when plotting this biome scheme. Most correctly should be set to seq(1,length(units)), but is actually ignored by plotSpatial() (Inherited from Quantity via "contains")
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.

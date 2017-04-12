@@ -45,8 +45,7 @@ getMODISFPAR <- function(location = "/data/forrest/FPAR/", resolution = "origina
   dt[Total > 110.0] <- NA
   
   quant <- lookupQuantity("FPAR_std", "Standard")
-  quant@cuts <- seq(0,100,1)
-  
+
   
   dataset <- new("DataObject",
                          id = "MODISFPAR",

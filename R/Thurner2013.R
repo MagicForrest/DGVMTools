@@ -75,8 +75,7 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/", resolution = "HD
   Thurner.dt <- na.omit(Thurner.dt)
   
   quant <- lookupQuantity("vegC_std", "Standard")
-  quant@cuts <- seq(0,25,1)
-  
+
   Thurner.dataset <- new("DataObject",
                          id = "Thurner2013",
                          name = "Thurner et al. 2013",

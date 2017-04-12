@@ -167,7 +167,6 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                    name = "Generic",
                    units = "unknown",
                    colours = fields::tim.colors, 
-                   cuts = seq(0,1,0.05),
                    model = "none")
     } 
     
@@ -254,7 +253,6 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     
     minmax <- max(quant@cuts) - min(quant@cuts)
     step <- (max(quant@cuts) - min(quant@cuts)) / (length(quant@cuts) - 1)
-    quant@cuts <- seq(from = -minmax, to = minmax, by = step)
     quant@colours <- difference.palette
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
@@ -267,7 +265,6 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
   ### PLOT PERCENTAGE DIFFERENCE MAPS
   else if(special == "percentage.difference"){
     
-    quant@cuts <- seq(from = -100, to = 200, by = 10)
     quant@colours <- difference.palette
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours

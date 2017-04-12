@@ -43,9 +43,7 @@ getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resol
   setkey(dt, Lon, Lat)
 
   quant <- lookupQuantity("aGPP_std", "Standard")
-  quant@cuts <- seq(0,3,0.1)
-  
-  
+
   dataset <- new("DataObject",
                          id = "MODISGPP",
                          name = "MODIS MOD17A2",
