@@ -71,6 +71,8 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
                          map.overlay = NULL,
                          dont.grid = FALSE,
                          return.data = FALSE,
+                         tile = TRUE,
+                         interpolate = FALSE,
                          ...){
  
   ### PREPARE DATA FOR PLOTTING
@@ -401,7 +403,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   
   ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
   if(discrete & is.null(override.cols)){
-    print("YES, discrete")
+
     # make a list of all the unique values (factors), each of these will need a colour
     unique.vals <- unique(data.toplot[["Value"]])
     
@@ -563,8 +565,9 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
 
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
-  mp <- mp + geom_tile(aes_string(x = "Lon", y = "Lat", fill = "Value"))
-
+  if(tile) mp <- mp + geom_tile(aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  else mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "Value"), interpolate = interpolate)
+  
   # facet with grid or wrap 
   if(grid) mp <- mp + facet_grid(as.formula(paste(facet.string)), switch = "y", labeller = as_labeller(facet.labels))
   else if(wrap) mp <- mp + facet_wrap(as.formula(facet.string), labeller = as_labeller(facet.labels))

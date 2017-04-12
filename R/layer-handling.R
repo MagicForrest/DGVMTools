@@ -43,14 +43,17 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
   layers.to.add.dt <- from@data[, append(common.layers, layer.names), with=FALSE]
   if(!is.null(new.layer.names)) setnames(layers.to.add.dt, append(common.layers, new.layer.names))
   if(!is.null(dec.places)) {
+
     to.dt <- copy(to@data)
     to.dt[, Lon := round(Lon, dec.places)]
     to.dt[, Lat := round(Lat, dec.places)]
+
     setKeyDGVM(to.dt)
     layers.to.add.dt[, Lon := round(Lon, dec.places)]
     layers.to.add.dt[, Lat := round(Lat, dec.places)]
-    
-    Temp.dt <- merge(x = round(to.dt, dec.places), y = round(layers.to.add.dt, dec.places), all.y = keep.all.from, all.x = keep.all.to)
+
+    Temp.dt <- merge(x = to.dt, y =layers.to.add.dt,  all.y = keep.all.from, all.x = keep.all.to)
+ 
   }
   else {
     Temp.dt <- merge(x = to@data, y = layers.to.add.dt, all.y = keep.all.from, all.x = keep.all.to)
@@ -312,16 +315,16 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   ### This is often the case with model runs and if it is true, maybe the whole procedure much faster and easier
   same.domain <- FALSE
   if(identical(getSTInfo(object1, "full"), getSTInfo(object2, "full")))  same.domain <- TRUE
-  
+ 
   ### Easy-life case, both objects are on exactly the same domain
   if(same.domain) {
-    
+
     new.data <- layer.object1@data[layer.object2@data] 
-    
+
   }
   ### Else, not-so-easy-life is having to check the domains and keeping points or not
   else {
-    
+
     new.data <- copyLayers(from = layer.object2, 
                            to = layer.object1, 
                            layer.names = new.id2, 
@@ -329,9 +332,9 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
                            dec.places = dec.places)@data
-    
+
   }
-  
+
   # match NAs if necessary
   if(match.NAs) {
     
@@ -339,7 +342,6 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
     new.data[are.NAs, (c(new.id1, new.id2)) := .SD[NA], .SDcols =c(new.id1, new.id2)]
 
   }
-  
   
   # make meta-data for the ComparisonLayer
   id <- paste0(new.id1, "-", new.id2)
@@ -369,6 +371,7 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
     new.data[, "Difference" := get(new.id1) - get(new.id2)]
   }
   else if(class(vector1) == "factor" & class(vector2) == "factor") {
+    print("Doing stats comparison")
     stats <- categoricalComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = verbose)
     
   }
