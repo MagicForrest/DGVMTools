@@ -27,7 +27,6 @@ Imports:
     sp,
     fields,
     compiler,
-    Cairo,
     grid,
     RColorBrewer,
     plyr,

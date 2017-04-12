@@ -52,7 +52,6 @@
 #' @return Returns a plot object (from spplot)
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @importFrom Cairo Cairo
 #' @import raster data.table
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}

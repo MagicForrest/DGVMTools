@@ -15,7 +15,6 @@ import(maps,
 
 importFrom("fields", "tim.colors")
 importFrom("compiler", "cmpfun")
-importFrom("Cairo", "Cairo")
 importFrom("grid", "unit")
 importFrom("RColorBrewer", "brewer.pal")
 importFrom("grDevices", "col2rgb", "colorRampPalette", "dev.off", "rgb", "gray.colors")
@@ -37,4 +36,5 @@ exportClasses(TemporalExtent,
               ModelObject, 
               Quantity,  
               DataObject,
+              ComparisonLayer,
               BiomeScheme)
