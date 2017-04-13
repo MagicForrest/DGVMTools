@@ -463,24 +463,24 @@ MeditBiomeRules <- function(lai){
   
   # BIOME 1 - Grass Steppe  
   #else if(as.numeric(lai[['Grass']]) > 1.0 & as.numeric(lai[['Woody']] < 1.0)) {return(7)}
-  if(as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']])) {return(1)}
+  if(as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']])) {return("Grass Steppe or Montane Grassland")}
   # BIOME 4 - Deciduous forest
   #if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
-  else if(as.numeric(lai[['Woody']]) > 2.0 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeBS")) {return(4)}  # 2
+  else if(as.numeric(lai[['Woody']]) > 2.0 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeBS")) {return("Deciduous Forest")}  # 2
   # BIOME 5 - Cold Montane forest
-  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE" )) {return(5)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE" )) {return("Cold Montane Forest")} # 1.5
   # BIOME 2 - Needle-leaved evergreen forest
-  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return("Needle-leaved Woodlands/Forest")} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
   #else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeNE")) {return(6)}
-  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && lai[['MaxWoody']] == "TeBS") {return(6)}
+  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && lai[['MaxWoody']] == "TeBS") {return("Deciduous Steppe-Woodlands")}
   # BIOME 3 - Mediterranean woodland/scrub
-  else if(as.numeric(lai[['Woody']]) > 1 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return("Mediterranean Sclerophyllous Woodlands/Forest")} # 1.5
    # BIOME 7 - Remainder, Unclassified
   else {
     #print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
     #print(lai)
-    return(7)
+    return("Unclassifiable/Other")
   }
   
   
@@ -496,20 +496,20 @@ MeditBiomes.scheme <- new("BiomeScheme",
                               id = "MeditBiomes",
                               name = "Mediterranean Biomes", 
                               type = "categorical",
-                              colours = grDevices::colorRampPalette(c("darkseagreen1",
-                                                           "darkolivegreen",
-                                                           "orangered4",
-                                                           "green3",
-                                                           "royalblue4",
-                                                           "sandybrown",
-                                                           "grey75")),
-                              units =  c("Grass Steppe or\nMontane Grassland",
-                                         "Needle-leaved\nWoodlands/Forest",
-                                         "Mediterranean\nSclerophyllous\nWoodlands/Forest",
-                                         "Deciduous\nForest",
-                                         "Cold Montane\nForest",
-                                         "Deciduous\nSteppe-Woodlands",
-                                         "Unclassifiable/\nOther"),
+                              colours = grDevices::colorRampPalette(c("Grass Steppe or Montane Grassland" = "darkseagreen1",
+                                                                      "Needle-leaved Woodlands/Forest" = "darkolivegreen",
+                                                                      "Mediterranean Sclerophyllous Woodlands/Forest" = "orangered4",
+                                                                      "Deciduous Forest" = "green3",
+                                                                      "Cold Montane Forest" = "royalblue4",
+                                                                      "Deciduous Steppe-Woodlands" = "sandybrown",
+                                                                      "Unclassifiable/Other" = "grey75")),
+                              units =  c("Grass Steppe or Montane Grassland",
+                                         "Needle-leaved Woodlands/Forest",
+                                         "Mediterranean Sclerophyllous Woodlands/Forest",
+                                         "Deciduous Forest",
+                                         "Cold Montane Forest",
+                                         "Deciduous Steppe-Woodlands",
+                                         "Unclassifiable/Other"),
                               model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = MeditBiomeRules,
                           totals.needed = c("lifeforms", "zones"),

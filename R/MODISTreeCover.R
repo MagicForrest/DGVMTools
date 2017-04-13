@@ -53,7 +53,7 @@ getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collect
   
   dataset <- new("DataObject",
                          id = "MODISTreeCover",
-                         name = "MODIS MOD44B Tree",
+                         name = "MODIS MOD44B",
                          temporal.extent = t.extent,
                          data = dt,
                          quant = quant,
