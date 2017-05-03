@@ -99,6 +99,14 @@ dgvm.quantities <- list(
       model = c("Standard")),
   
   new("Quantity",
+      id = "aNPP_std",
+      name = "Annual NPP",
+      type = "PFT",
+      units = "kgC/m^2/year",
+      colours = fields::tim.colors,
+      model = c("Standard")),
+  
+  new("Quantity",
       id = "canopyheight_std",
       name = "Canopy Height",
       type = "-",

@@ -17,7 +17,7 @@ subsetGridlist(gridlist.file, subset.extent, file.name = NULL,
 \item{header}{Logical, whether or not the original file has a header}
 
 \item{offset}{A two-member numeric vector specifying the longitude-latitude offset from the given coordinates 
-to the gridcell centre, ie. should be c(0.25,0.25) for old LPj-GUESS gridlists, and c(0.0,0.0) for most other more sensible scenarios}
+to the gridcell centre, ie. should be c(0.25,0.25) for old LPJ-GUESS gridlists, and c(0.0,0.0) for most other more sensible scenarios}
 }
 \value{
 The new gridlist as a data.frame

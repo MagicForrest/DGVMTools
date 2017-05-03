@@ -561,7 +561,7 @@ convertToMatrix <- function(input, Lons = NULL, Lats = NULL, gap.fill = TRUE, la
 #' @param file.name A character string specifying a path to write the new gridlist (can be ignored to write no file)
 #' @param header Logical, whether or not the original file has a header
 #' @param offset A two-member numeric vector specifying the longitude-latitude offset from the given coordinates 
-#' to the gridcell centre, ie. should be c(0.25,0.25) for old LPj-GUESS gridlists, and c(0.0,0.0) for most other more sensible scenarios
+#' to the gridcell centre, ie. should be c(0.25,0.25) for old LPJ-GUESS gridlists, and c(0.0,0.0) for most other more sensible scenarios
 #' 
 #' @return The new gridlist as a data.frame   
 #' 
@@ -571,16 +571,18 @@ convertToMatrix <- function(input, Lons = NULL, Lats = NULL, gap.fill = TRUE, la
 subsetGridlist <- function(gridlist.file, subset.extent, file.name = NULL, header = TRUE, offset = c(0.25, 0.25)){
   
   
-  gridlist <- read.table(gridlist.file, header)
+  gridlist <- read.table(gridlist.file, header = header)
   names(gridlist )  <- c("Lon", "Lat")
+  
+  print(head(gridlist))
   
   gridlist$Lon <- gridlist$Lon + offset[1]
   gridlist$Lat <- gridlist$Lat + offset[2]
-  
-  gridlist<-gridlist[gridlist$Lon<=subset.extent@xmax 
-                     & gridlist$Lon>=subset.extent@xmin 
-                     & gridlist$Lat<=subset.extent@ymax 
-                     & gridlist$Lat>=subset.extent@ymin]
+ 
+  gridlist <- gridlist[which(gridlist$Lon <= subset.extent@xmax 
+                     & gridlist$Lon >= subset.extent@xmin 
+                     & gridlist$Lat <= subset.extent@ymax 
+                     & gridlist$Lat >= subset.extent@ymin), ]
   
   
   gridlist$Lon <- gridlist$Lon - offset[1]
