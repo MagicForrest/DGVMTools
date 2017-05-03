@@ -3,8 +3,8 @@
 \docType{methods}
 \name{Summary-methods}
 \alias{Summary-methods}
-\alias{summary}
 \alias{summary,ModelRun-method}
+\alias{summary}
 \title{Summary methods}
 \usage{
 summary(object, ...)
@@ -25,4 +25,3 @@ Print easy to read summaries of DGVMTools objects
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

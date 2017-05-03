@@ -13,8 +13,38 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 
-getThurner2013 <- function(location = "/data/forrest/Biomass/Thurner2013/", resolution = "original") {
+getThurner2013 <- function(location = "/data/forrest/Biomass/", resolution = "HD") {
 
+  
+  #### NEW ORDER, CODE BELOW NOW REDUNDANT
+  
+  # read the standard dataset
+  Thurner.dt <- readData("Thurner2013",
+                         location = location,
+                         resolution = resolution,
+                         start.year = NULL,
+                         end.year = NULL,
+                         temporally.average = TRUE,
+                         verbose = FALSE)
+  
+  # set the name to something equivalent in the model
+  setnames(Thurner.dt, c("DATALAYER"), c("Tree"))
+  
+  # also set the key 
+  setkey(Thurner.dt, Lon, Lat)
+  
+  Thurner.dataset <- new("DataObject",
+                         id = "Thurner2013",
+                         name = "Thurner et al. 2013",
+                         temporal.extent = new("TemporalExtent", id = "ThurnerPeriod", name = "Thurner Period", start = 2000, end = 2010),
+                         data = Thurner.dt,
+                         quant = lookupQuantity("vegC_std", "Standard"),
+                         spatial.extent = new("SpatialExtent", id = "ThurnerExtent", name = "Thurner extent", extent = extent(Thurner.dt)),
+                         correction.layer =  "")
+  
+  return(Thurner.dataset)
+  
+  
   Lon = Lat = NULL
     
   if(resolution == "original"){
@@ -36,15 +66,16 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/Thurner2013/", reso
   
   
   Thurner.dt <- data.table(as.data.frame(Thurner.raster,xy = TRUE))
-  setnames(Thurner.dt, c("Lon", "Lat", "Thurner2013"))
+  setnames(Thurner.dt, c("Lon", "Lat", "Tree"))
   Thurner.dt[,Lon:= round(Lon, 3)]
   Thurner.dt[,Lat:= round(Lat, 3)]
 
   setkey(Thurner.dt, Lon, Lat)
 
-  quant <- lookupQuantity("vegC_std", "Standard")
-  quant@cuts <- seq(0,25,1)
+  Thurner.dt <- na.omit(Thurner.dt)
   
+  quant <- lookupQuantity("vegC_std", "Standard")
+
   Thurner.dataset <- new("DataObject",
                          id = "Thurner2013",
                          name = "Thurner et al. 2013",

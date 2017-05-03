@@ -18,7 +18,6 @@
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table raster
-#' @importFrom plyr mapvalues
 
 readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
@@ -60,7 +59,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   }
   
   # set names and key
-  setnames(PNV.dt, c("Lon", "Lat", paste(dataset.id, classification, sep = ".")))
+  setnames(PNV.dt, c("Lon", "Lat", paste(classification)))
   setkey(PNV.dt, Lon, Lat)
   
   
@@ -133,7 +132,25 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   # from above orderings
   if(classification == "Smith2014") {
-    subs.rules <- c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)
+    #subs.rules <- c(5,4,8,9,7,6,9,3,1,2,11,12,14,15,10,16,17,13)
+    subs.rules <- c("Boreal Deciduous Forest/Woodland",
+                    "Boreal Evergreen Forest/Woodland",
+                    "Temperate/Boreal Mixed Forest",
+                    "Temperate Mixed Forest",
+                    "Temperate Deciduous Forest",
+                    "Temperate Broadleaved Evergreen Forest",
+                    "Temperate Mixed Forest",
+                    "Tropical Seasonal Forest",
+                    "Tropical Rain Forest",
+                    "Tropical Deciduous Forest",
+                    "Moist Savanna",
+                    "Dry Savanna",
+                    "Tall Grassland",
+                    "Dry Grassland",
+                    "Xeric Woodland/Shrubland",
+                    "Arid Shrubland/Steppe",
+                    "Desert",
+                    "Arctic/Alpine Tundra")
     classification.str <- "Smith et al. 2014"
   }
   else if(classification == "Forrest2015"){
@@ -153,7 +170,9 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   }
   
   
-  PNV.dt[, paste(dataset.id, classification, sep = ".") := plyr::mapvalues(PNV.dt[[paste(dataset.id, classification, sep = ".")]], from = 1:18, to = subs.rules)]
+  PNV.dt[, paste(classification) := as.factor(plyr::mapvalues(PNV.dt[[classification]], from = 1:18, to = subs.rules))]
+  PNV.dt <- na.omit(PNV.dt)
+
  
   return(
     new("DataObject",
@@ -186,7 +205,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
 #' @return A \code{DataObject} object.  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
-getSaatchi2011 <- function(resolution = "HD"){
+getSaatchi2011_example <- function(resolution = "HD"){
   
   Lat = Lon = NULL
   
@@ -198,8 +217,10 @@ getSaatchi2011 <- function(resolution = "HD"){
   }
   
   Saatchi.dt <- data.table(as.data.frame(Saatchi.raster,xy = TRUE))
-  setnames(Saatchi.dt, c("Lon", "Lat", "Saatchi2011"))
+  setnames(Saatchi.dt, c("Lon", "Lat", "Tree"))
   setkey(Saatchi.dt, Lon, Lat)
+  Saatchi.dt <- na.omit(Saatchi.dt)
+  
   
   Saatchi.dataset <- new("DataObject",
                          id = "Saatchi2011",

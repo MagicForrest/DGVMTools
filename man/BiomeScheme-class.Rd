@@ -23,8 +23,6 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 
 \item{\code{colours}}{A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")}
 
-\item{\code{cuts}}{A numerical sequence defining the plot range and colour breakpoints when plotting this biome scheme. Most correctly should be set to seq(1,length(units)), but is actually ignored by plotSpatial() (Inherited from Quantity via "contains")}
-
 \item{\code{aggregate.method}}{A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")}
 
 \item{\code{model}}{Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")}
@@ -49,7 +47,7 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 
 \item{\code{published.reference}}{Character string giving a reference where this model output classification scheme was published}
 }}
+
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

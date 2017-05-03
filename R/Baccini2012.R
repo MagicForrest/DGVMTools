@@ -14,7 +14,42 @@
 #' @import raster
 
 
-getBaccini2012 <- function(location = "/data/forrest/Biomass/Baccini2012", resolution = "original") {
+getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD") {
+  
+  
+  #### NEW ORDER, CODE BELOW NOW REDUNDANT
+  
+  # read the standard dataset
+  Baccini.dt <- readData("Baccini2012",
+                       location = location,
+                       resolution = resolution,
+                       start.year = NULL,
+                       end.year = NULL,
+                       temporally.average = TRUE,
+                       verbose = FALSE)
+  
+  
+  # set the name to something equivalent in the model
+  setnames(Baccini.dt, c("DATALAYER"), c("Tree"))
+  
+  # also set the key 
+  setkey(Baccini.dt, Lon, Lat)
+  
+  # build the DataObject with the metadata
+  Baccini.dataset <- new("DataObject",
+                         id = "Baccini2012",
+                         name = "Baccini et al. 2012 Biomass",
+                         temporal.extent = new("TemporalExtent", name = "Baccini Period", start = 2006, end = 2008),
+                         data = Baccini.dt,
+                         quant = lookupQuantity("vegC_std", "Standard"),
+                         spatial.extent = new("SpatialExtent", id = "BacciniExtent", name = "Baccini extent", extent = extent(Baccini.dt)),
+                         correction.layer =  "")
+  
+  
+  
+  return(Baccini.dataset)
+  
+  
   
   
   Lon = Lat = NULL
@@ -59,9 +94,10 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass/Baccini2012", resol
   
   # convert to a date.table
   Baccini.dt <- data.table(as.data.frame(Baccini.raster,xy = TRUE))
-  setnames(Baccini.dt, c("Lon", "Lat", "Baccini2012"))
+  setnames(Baccini.dt, c("Lon", "Lat", "Tree"))
   setkey(Baccini.dt, Lon, Lat)
   
+  Baccini.dt <- na.omit(Baccini.dt)
   
   
   Baccini.dataset <- new("DataObject",

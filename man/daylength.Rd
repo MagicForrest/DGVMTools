@@ -20,10 +20,9 @@ daylength in hours as vector or matrix, depending on input shape
 daylength calculation depending on latitude and day of year.
 taken from function daylengthinsoleet (driver.cpp) LPJ-GUESS v2.1
 }
-\author{
-Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
-}
 \references{
 This code is based on the original LPJ-GUESS C++ source code (\href{http://iis4.nateko.lu.se/lpj-guess/}{LPJ-GUESS homepage}).
 }
-
+\author{
+Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
+}

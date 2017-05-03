@@ -33,4 +33,3 @@ Import external raster data and return them as data.frame
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

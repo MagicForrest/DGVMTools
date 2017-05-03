@@ -21,4 +21,3 @@ It does thsi based on the names of the layers/columns of the data
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

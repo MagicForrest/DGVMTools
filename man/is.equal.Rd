@@ -4,8 +4,8 @@
 \name{is.equal}
 \alias{is.equal}
 \alias{is.equal,Quantity,Quantity-method}
-\alias{is.equal,SpatialExtent,SpatialExtent-method}
 \alias{is.equal,TemporalExtent,TemporalExtent-method}
+\alias{is.equal,SpatialExtent,SpatialExtent-method}
 \title{Checks two DGVMTools metadata objects for equality}
 \usage{
 is.equal(a, b)
@@ -35,7 +35,7 @@ checks if two objects have the same quantity, spatial or temporal extent
 
 \item \code{a = SpatialExtent,b = SpatialExtent}: Checks two SpatialExtent objects for equality
 }}
+
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

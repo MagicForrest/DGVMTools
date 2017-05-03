@@ -25,4 +25,3 @@ An example dataset of distribution of global potential natural vegetation classi
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

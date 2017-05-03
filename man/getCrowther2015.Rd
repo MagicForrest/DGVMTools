@@ -20,4 +20,3 @@ Read the tree count/tree density of Crwother et al. (2015)
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

@@ -17,11 +17,10 @@ convertYearlyScheme2(runid, fire, directory)
 Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the DGVM framework and is probably now
 redundant.  Classifies as evergreen tree, deciduous tree or grass based on the pop file and the trait file.
 }
-\author{
-Simon Scheiter \email{simon.scheiter@senckenberg.de}
-}
 \seealso{
 \code{getQuantity_aDGVM_Scheme2}
 }
+\author{
+Simon Scheiter \email{simon.scheiter@senckenberg.de}
+}
 \keyword{internal}
-

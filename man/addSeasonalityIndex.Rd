@@ -22,4 +22,3 @@ Adds a column of the seasonality index (\code{\link{seasonalityIndex}}) based on
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

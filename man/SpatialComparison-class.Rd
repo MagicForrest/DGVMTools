@@ -32,7 +32,7 @@ This class stores the rasters (model, data, difference and precentage difference
 
 \item{\code{individual.Kappas}}{The individual Cohen's Kappas for each category when comparing categorical data}
 }}
+
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

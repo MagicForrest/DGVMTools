@@ -70,6 +70,17 @@ is.ModelObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
 }
 
 
+#' @rdname is.object-methods
+#' @export
+is.ComparisonLayer <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "ComparisonLayer" && attr(class.def, "package")=="DGVMTools")
+      return(TRUE)
+  return(FALSE)
+}
+
+
 
 #' @rdname is.object-methods
 #' @export

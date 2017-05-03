@@ -2,11 +2,12 @@
 % Please edit documentation in R/extent-methods.R
 \docType{methods}
 \name{extent-methods}
-\alias{extent}
-\alias{extent,DataObject-method}
-\alias{extent,ModelObject-method}
-\alias{extent,data.table-method}
 \alias{extent-methods}
+\alias{extent}
+\alias{extent,data.table-method}
+\alias{extent,ModelObject-method}
+\alias{extent,DataObject-method}
+\alias{extent,ComparisonLayer-method}
 \title{Extent methods}
 \usage{
 extent(x, ...)
@@ -16,6 +17,8 @@ extent(x, ...)
 \S4method{extent}{ModelObject}(x)
 
 \S4method{extent}{DataObject}(x)
+
+\S4method{extent}{ComparisonLayer}(x)
 }
 \arguments{
 \item{x}{A ModelObject, DataObject or a data.table.}
@@ -32,4 +35,3 @@ must have columns named "Lon" and "Lat" otherwise these methods fail.
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

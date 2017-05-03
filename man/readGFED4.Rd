@@ -50,4 +50,3 @@ Read the original GFED4 data files, and optionally aggregates/averages and crops
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

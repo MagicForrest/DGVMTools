@@ -31,4 +31,3 @@ This is necessary because making a Raster objects converts unevenly spaced coord
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

@@ -22,4 +22,3 @@ Make sure the model is \code{y ~ x} or this function doesn't really make sense
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

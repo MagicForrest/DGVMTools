@@ -1,6 +1,6 @@
 Package: DGVMTools
 Type: Package
-Version: 0.1.4
+Version: 0.1.5
 Title: DGVM Processing, Analysis and Plotting Tools
 Date: 2017-02-13
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
@@ -27,12 +27,12 @@ Imports:
     sp,
     fields,
     compiler,
-    Cairo,
     grid,
     RColorBrewer,
     plyr,
     reshape2,
-    viridis
+    viridis,
+    rgeos
 Suggests:
     zoo,
     mgcv,
@@ -41,4 +41,4 @@ License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

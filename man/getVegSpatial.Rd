@@ -21,10 +21,9 @@ A temporally averaged\code{ModelObject}  but with no-spatial averaging or croppi
 \description{
 Given a \code{ModelRun} object, a \code{Quantity} object and a \code{TemporalExtent} object, return an appropriate temporally-averaged \code{ModelObject} oject for that run, quantity and time period over the whole simulation domain.
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 \code{getModelObject}, \code{getVegTemporal}
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

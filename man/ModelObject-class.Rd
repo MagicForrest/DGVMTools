@@ -32,7 +32,7 @@ Generally these are not created directly by the user, but rather by functions li
 
 \item{\code{run}}{A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.}
 }}
+
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

@@ -15,4 +15,3 @@ Meta-data describing the Hickler et al. 2012 european biome scheme for LPJ-GUESS
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

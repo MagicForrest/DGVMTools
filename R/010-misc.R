@@ -604,7 +604,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Jan",
                               days = 31,
                               days.leap = 31,
-                              col = tim.colors(12)[1]),
+                              col = fields::tim.colors(12)[1]),
                     Feb = new("Period",
                               id = "Feb",
                               name = "February",
@@ -614,7 +614,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Feb",
                               days = 28,
                               days.leap = 29,
-                              col = tim.colors(12)[2]),
+                              col = fields::tim.colors(12)[2]),
                     Mar = new("Period",
                               id = "Mar",
                               name = "March",
@@ -624,7 +624,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Mar",
                               days = 31,
                               days.leap = 31,
-                              col = tim.colors(12)[3]),
+                              col = fields::tim.colors(12)[3]),
                     Apr = new("Period",
                               id = "Apr",
                               name = "April",
@@ -634,7 +634,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Apr",
                               days = 30,
                               days.leap = 30,
-                              col = tim.colors(12)[4]),
+                              col = fields::tim.colors(12)[4]),
                     May = new("Period",
                               id = "May",
                               name = "May",
@@ -644,7 +644,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "May",
                               days = 31,
                               days.leap = 31,
-                              col = tim.colors(12)[5]),
+                              col = fields::tim.colors(12)[5]),
                     Jun = new("Period",
                               id = "Jun",
                               name = "June",
@@ -654,7 +654,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Jun",
                               days = 30,
                               days.leap = 30,
-                              col = tim.colors(12)[6]),
+                              col = fields::tim.colors(12)[6]),
                     Jul = new("Period",
                               id ="Jul",
                               name = "July",
@@ -664,7 +664,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Jul",
                               days = 31,
                               days.leap = 31,
-                              col = tim.colors(12)[7]),
+                              col = fields::tim.colors(12)[7]),
                     Aug = new("Period",
                               id = "Aug",
                               name = "August",
@@ -674,7 +674,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Aug",
                               days = 31,
                               days.leap = 31,
-                              col = tim.colors(12)[8]),
+                              col = fields::tim.colors(12)[8]),
                     Sep = new("Period",
                               id = "Sep",
                               name = "September",
@@ -684,7 +684,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Sep",
                               days = 30,
                               days.leap = 30,
-                              col = tim.colors(12)[9]),
+                              col = fields::tim.colors(12)[9]),
                     Oct = new("Period",
                               id = "Oct",
                               name = "October",
@@ -694,7 +694,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Oct",
                               days = 31,
                               days.leap = 31,
-                              col = tim.colors(12)[10]),
+                              col = fields::tim.colors(12)[10]),
                     Nov = new("Period",
                               id = "Nov",
                               name = "November",
@@ -704,7 +704,7 @@ all.periods <- list(Jan = new("Period",
                               contains = "Nov",
                               days = 30,
                               days.leap = 30,
-                              col = tim.colors(12)[11]),
+                              col = fields::tim.colors(12)[11]),
                     Dec = new("Period",
                               id = "Dec",
                               name = "December",
@@ -724,7 +724,7 @@ all.periods <- list(Jan = new("Period",
                               contains = c("Dec", "Jan", "Feb"),
                               days = 60,
                               days.leap = 61,
-                              col = tim.colors(4)[1]),
+                              col = fields::tim.colors(4)[1]),
                     MAM = new("Period",
                               id = "MAM",
                               name = "Spring",
@@ -734,7 +734,7 @@ all.periods <- list(Jan = new("Period",
                               contains = c("Mar", "Apr", "May"),
                               days = 62,
                               days.leap = 62,
-                              col = tim.colors(4)[2]),
+                              col = fields::tim.colors(4)[2]),
                     JJA = new("Period",
                               id = "JJA",
                               name = "Summer",
@@ -744,7 +744,7 @@ all.periods <- list(Jan = new("Period",
                               contains = c("Jun", "Jul", "Aug"),
                               days = 62,
                               days.leap = 62,
-                              col = tim.colors(4)[3]),          
+                              col = fields::tim.colors(4)[3]),          
                     SON = new("Period",
                               id = "SON",
                               name = "Autumn",
@@ -754,7 +754,7 @@ all.periods <- list(Jan = new("Period",
                               contains = c("Sep", "Oct", "Nov"),
                               days = 61,
                               days.leap = 61,
-                              col = tim.colors(4)[4]),
+                              col = fields::tim.colors(4)[4]),
                     Annual = new("Period",
                                  id = "Annual",
                                  name = "Annual",
@@ -854,41 +854,41 @@ lsos <- function (pos = 1, pattern, order.by = "Size",
 #' \item{difference.palette}{Colour scheme for differences. Symmetrical, centred on white}
 #' \item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from more-to-less fire)}
 #' \item{reversed.fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from less-to-more fire)}
-#' \item{reversed.tim.colors}{The tim.colors scheme reversed to go from red (hot/dry) to blue (cold/wet)}
+#' \item{reversed.tim.colors}{The fields::tim.colors scheme reversed to go from red (hot/dry) to blue (cold/wet)}
 #' }
 #' @param n Number of colour shades required
 #' @name veg.palettes
 NULL
 
 #' @rdname veg.palettes
-veg.palette <- colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black"))
+veg.palette <- grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black"))
 
 #' @rdname veg.palettes
-lai.palette <- colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "khaki1", "yellowgreen", "forestgreen", "saddlebrown","black" )) #this is a function which returns a list of colours
+lai.palette <- grDevices::colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "khaki1", "yellowgreen", "forestgreen", "saddlebrown","black" )) #this is a function which returns a list of colours
 
 #' @rdname veg.palettes
-cmass.palette <- colorRampPalette(c("lemonchiffon","peru", "forestgreen", "dodgerblue4", "orchid4", "hotpink", "red4"))
+cmass.palette <- grDevices::colorRampPalette(c("lemonchiffon","peru", "forestgreen", "dodgerblue4", "orchid4", "hotpink", "red4"))
 
 #' @rdname veg.palettes
 difference.palette <- function(n){
   
   # Make palette based on RColorBrewer "RdBu" palette
-  rdbu <- rev(brewer.pal(11, "RdBu"))
-  cols <- colorRampPalette(rdbu)
+  rdbu <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
+  cols <- grDevices::colorRampPalette(rdbu)
   return(cols(n))  
 
-  #colorRampPalette(c("green", "blue", "white", "red", "yellow")) #this is a function which returns a list of colours
+  #grDevices::colorRampPalette(c("green", "blue", "white", "red", "yellow")) #this is a function which returns a list of colours
 
 }
 
 #' @rdname veg.palettes
-fire.palette <- colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+fire.palette <- grDevices::colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
 
 #' @rdname veg.palettes
-reversed.fire.palette <- colorRampPalette(rev(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3")))
+reversed.fire.palette <- grDevices::colorRampPalette(rev(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3")))
 
 #' @rdname veg.palettes
-reversed.tim.colors = function(n) rev(tim.colors(n))
+reversed.tim.colors = function(n) rev(fields::tim.colors(n))
 
 
 ########### CONVERSION OF ABOVE-GROUND BIOMASS TO TOTAL CARBON ####################

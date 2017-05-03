@@ -52,7 +52,6 @@
 #' @return Returns a plot object (from spplot)
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @importFrom Cairo Cairo
 #' @import raster data.table
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
@@ -168,7 +167,6 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                    name = "Generic",
                    units = "unknown",
                    colours = fields::tim.colors, 
-                   cuts = seq(0,1,0.05),
                    model = "none")
     } 
     
@@ -197,7 +195,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                                         labels = rev(quant@units),
                                         at = (0:(length(quant@units)-1)) + 0.5)
       
-      colorkey.list[["col"]] <- colorRampPalette(rev(colorkey.list$col(length(quant@units))))
+      colorkey.list[["col"]] <- grDevices::colorRampPalette(rev(colorkey.list$col(length(quant@units))))
       colorkey.list[["at"]] <- 0:length(quant@units)
       
     }
@@ -255,7 +253,6 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     
     minmax <- max(quant@cuts) - min(quant@cuts)
     step <- (max(quant@cuts) - min(quant@cuts)) / (length(quant@cuts) - 1)
-    quant@cuts <- seq(from = -minmax, to = minmax, by = step)
     quant@colours <- difference.palette
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
@@ -268,7 +265,6 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
   ### PLOT PERCENTAGE DIFFERENCE MAPS
   else if(special == "percentage.difference"){
     
-    quant@cuts <- seq(from = -100, to = 200, by = 10)
     quant@colours <- difference.palette
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
@@ -315,7 +311,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     quant@cuts <- seq(from = 0, to = 1, by = 0.05)
     quant@id <- paste(quant@id, "fraction", sep = ".")
     quant@name <- paste(quant@name, "Fraction", sep = " ")
-    quant@colours <- colorRampPalette(c("grey85", "black"))
+    quant@colours <- grDevices::colorRampPalette(c("grey85", "black"))
     # also update colorkey
     colorkey.list[["col"]] <- quant@colours
     
@@ -326,7 +322,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     
     # SET THE INTERVALS (using either these sensible options or the overrides)
     quant@cuts <- c(0, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1)
-    quant@colours <-  colorRampPalette(rev(c("red4", "red","orange","yellow", "palegreen2", "cyan", "dodgerblue2", "blue", "midnightblue")))
+    quant@colours <-  grDevices::colorRampPalette(rev(c("red4", "red","orange","yellow", "palegreen2", "cyan", "dodgerblue2", "blue", "midnightblue")))
     
     # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
     if(!is.null(override.cols)) {quant@colours <- override.cols}
@@ -361,7 +357,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
     
     # SET THE INTERVALS (using either these sensible options or the overrides)
     quant@cuts <- c(0, 1, 3, 5, 10, 25, 50, 100, 200, 400, 800, 1000)
-    quant@colours <-  colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+    quant@colours <-  grDevices::colorRampPalette(c("black", "red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
     # if override cuts and cols specified use them, but note we have to then kill them otherwise they will override the new cuts below
     if(!is.null(override.cols)) {quant@colours <- override.cols}
     if(!is.null(override.cuts)) {quant@cuts <- override.cuts}  
@@ -434,7 +430,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                    name = "Dominant PFT",
                    type = "categorical",
                    units = label.list,
-                   colours = colorRampPalette(col.list),
+                   colours = grDevices::colorRampPalette(col.list),
                    cuts = 0:length(col.list),
                    aggregate.method = "categorical"
       )
@@ -471,7 +467,7 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
                      name = paste("Dominant Month by", quant.id, sep = " "),
                      type = "categorical",
                      units = col.list,
-                     colours = colorRampPalette(col.list),
+                     colours = grDevices::colorRampPalette(col.list),
                      #cuts = 0:length(col.list),
                      cuts = NULL,
                      aggregate.method = "categorical"
@@ -550,8 +546,8 @@ plotSpatial <- function(x, # can be a data.table, a SpatialPixelsDataFrame, or a
   
   # PLOT MAIN TITLE
   if(is.null(title)) {
-    if(length(layers) == 1)  title <- makePlotTitle(paste(quant@name, sep = " "), layer = layers, run = run, period = period)
-    else  title <- makePlotTitle(paste(quant@name, sep = " "), run = run, period = period)
+    if(length(layers) == 1)  title <- makePlotTitle(paste(quant@name, sep = " "), layer = layers, source = run, period = period)
+    else  title <- makePlotTitle(paste(quant@name, sep = " "), source = run, period = period)
   }
   
   # PANEL LABELS - note expand longnames here if requested 
@@ -657,24 +653,7 @@ makeStatsOverlay <- function(stat.results, stats = "NME", panel = NULL, plot.ext
 
 
 
-######################### CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED #####################################################################
-#' 
-#' Fixes a spatial lines object where some of eastern Russia transposed to the other side of the world
-#' 
-#' 
-#' @param spl SpatialLines object to fix
-#' @return a the SpatialLines object 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @import raster
-correct.map.offset <- function(spl) {
-  we <- crop(spl, extent(-180, 180, -90, 90))
-  ww <- crop(spl, extent(179.999, 200, -90, 90))
-  if(!is.null(ww) & !is.null(we)) {
-    ww <- raster::shift(ww, -360)
-    spl <- raster::bind(we, ww)  
-  }
-  return(spl)
-}
+
 
 
 ######################### MAKES A MAP OVERLAY - A SPATAIL LINES OF CONTINENTS OR COUNTY OUTLINES FOR PLOTTING   #####################################################################
@@ -691,7 +670,7 @@ correct.map.offset <- function(spl) {
 #' @import mapdata
 #' @importFrom sp CRS
 #' @export
-makeOverlay <- function(which, interior.lines = TRUE, lwd = 0.5, col = NULL){
+makeOverlay_spplot <- function(which, interior.lines = TRUE, lwd = 0.5, col = NULL){
   
   proj4str <- "+proj=longlat +datum=WGS84"
   
@@ -715,33 +694,7 @@ makeOverlay <- function(which, interior.lines = TRUE, lwd = 0.5, col = NULL){
   
 }
 
-#######################################################################################################################################
-################### HELPER FUNCTIONS FOR MAKING PLOT TITLES, FILENAMES ETC... #########################################################
-#######################################################################################################################################
 
-#' Make a plot title
-#' 
-#' Build an appropriate plot title from some possibly relevant variables.  
-#' It will use a string to represent the quantity (obligatory), and optionally a period and an ID.
-#' 
-#' @param quantity.str Character string for the quantity plotted
-#' @param layer The names of the layer (or another identifier)
-#' @param run The \code{ModelRun} object for the run plotted (optional)
-#' @param period The time period plotted as \code{TemporalExtent} (optional)
-#' @return A character string for use as a plot title
-#'  
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#'
-#' @export 
-makePlotTitle <- function(quantity.str, layer = NULL, run = NULL, period = NULL){
-  
-  string <- quantity.str
-  if(!is.null(layer)) string <- paste(string, layer, sep = " ")
-  if(!is.null(run)) string <- paste(string, run@name, sep = " ")
-  if(!is.null(period)) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
-  return(string)
-  
-}
 
 
 

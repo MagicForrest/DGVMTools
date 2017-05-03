@@ -147,12 +147,12 @@ modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   rv <- lapply(cname, function(x) {
     if (is.temporal) {
       d <- d[full.grid]
-      rv <- acast(d, Lon ~ Lat ~ Year, value.var=x)
+      rv <- reshape2::acast(d, Lon ~ Lat ~ Year, value.var=x)
       if (invertlat)
         rv <- rv[,length(lat):1,]
     } else {
       d <- d[full.grid]
-      rv <- acast(d, Lon ~ Lat, value.var=cname)
+      rv <- reshape2::acast(d, Lon ~ Lat, value.var=cname)
       if (invertlat)
         rv <- rv[,length(lat):1]
     }

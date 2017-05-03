@@ -18,11 +18,10 @@ Original from Simon Scheiter, ***THERE IS CURRENTLY NO INTERGATED VERSION OF THI
 Someone needs to do that...    
 Classifies only as tree or grass based on only the pop file, doesn't open the trait file.
 }
-\author{
-Simon Scheiter \email{simon.scheiter@senckenberg.de}
-}
 \seealso{
 \code{getQuantity_aDGVM_Scheme1}
 }
+\author{
+Simon Scheiter \email{simon.scheiter@senckenberg.de}
+}
 \keyword{internal}
-

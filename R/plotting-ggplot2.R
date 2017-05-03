@@ -151,7 +151,7 @@ dgvm.ggplot.theme <- function(x) {
 ## from http://stackoverflow.com/questions/13289009/check-if-character-string-is-a-valid-color-representation
 .is.color <- function(x) {
   sapply(x, function(X) {
-    tryCatch(is.matrix(col2rgb(X)), 
+    tryCatch(is.matrix(grDevices::col2rgb(X)), 
              error = function(e) FALSE)
   })
 }
@@ -491,7 +491,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import ggplot2 data.table
-#' @importFrom RColorBrewer brewer.pal
+#' @importFrom RColorBrewer RColorBrewer::brewer.pal
 plotGGMeridional <- function(input, column='value', what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lat = sens = value = value.center = value.sd = value.se = value.max = value.min = NULL
@@ -575,30 +575,30 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 
   if (any(colnames(dt)=="sens")) {
     if (what[["center"]] == "md" || what[["center"]] == "median") {
-      md <- dt[, list(value.center=median(value),
-                      value.sd=sd(value),
-                      value.se=sd(value)/sqrt(length(value)),
+      md <- dt[, list(value.center=stats::median(value),
+                      value.sd=stats::sd(value),
+                      value.se=stats::sd(value)/sqrt(length(value)),
                       value.min=quantile(value, qt[1]),
                       value.max=quantile(value, qt[2])), by = c("Lat", "sens")]
     } else {
       md <- dt[, list(value.center=mean(value),
-                      value.sd=sd(value),
-                      value.se=sd(value)/sqrt(length(value)),
+                      value.sd=stats::sd(value),
+                      value.se=stats::sd(value)/sqrt(length(value)),
                       value.min=quantile(value, qt[1]),
                       value.max=quantile(value, qt[2])), by = c("Lat", "sens")]
     }
     p <- ggplot(md, aes(x=Lat, y=value.center, col=sens))
   } else {
     if (what[["center"]] == "md" || what[["center"]] == "median") {
-      md <- dt[, list(value.center=median(value),
-                      value.sd=sd(value),
-                      value.se=sd(value)/sqrt(length(value)),
+      md <- dt[, list(value.center=stats::median(value),
+                      value.sd=stats::sd(value),
+                      value.se=stats::sd(value)/sqrt(length(value)),
                       value.min=quantile(value, qt[1]),
                       value.max=quantile(value, qt[2])), by = c("Lat")]
     } else {
       md <- dt[, list(value.center=mean(value),
-                      value.sd=sd(value),
-                      value.se=sd(value)/sqrt(length(value)),
+                      value.sd=stats::sd(value),
+                      value.se=stats::sd(value)/sqrt(length(value)),
                       value.min=quantile(value, qt[1]),
                       value.max=quantile(value, qt[2])), by = c("Lat")]
     }
@@ -654,8 +654,8 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
     p <- p + scale_fill_manual(values=colors, guide=guide_legend(ncol=3))
     p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=3))
   } else {
-    p <- p + scale_fill_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"), guide=guide_legend(ncol=3))
-    p <- p + scale_color_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"), guide=guide_legend(ncol=3))
+    p <- p + scale_fill_manual(values=RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1"), guide=guide_legend(ncol=3))
+    p <- p + scale_color_manual(values=RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1"), guide=guide_legend(ncol=3))
   }
   p <- p + xlab("Latitude")
   
@@ -685,7 +685,7 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import ggplot2 data.table
-#' @importFrom RColorBrewer brewer.pal
+#' @importFrom RColorBrewer RColorBrewer::brewer.pal
 plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, vertical=FALSE, bar=FALSE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   sens = value = name = category = NULL
@@ -840,7 +840,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
         p <- ggplot(dt, aes(x=value, y=category, col=sens))
       }
       p <- p + geom_point(size=2.5, position = position_jitter(width = 0, height = 0.2))
-      p <- p + scale_color_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"),
+      p <- p + scale_color_manual(values=RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1"),
                                   na.value="grey", guide=guide_legend(ncol=2))
     } else {
       if (any(colnames(dt) == "name")) {
@@ -859,7 +859,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
       } else {
         p <- ggplot(dt, aes(x=category, y=value, fill=sens))
       }
-      p <- p + scale_fill_manual(values=brewer.pal(length(unique(dt$sens)), "Set1"),
+      p <- p + scale_fill_manual(values=RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1"),
                                  na.value="grey", guide=guide_legend(ncol=2))
       p <- p + geom_bar(position="dodge", stat="identity")
     } else {
@@ -915,7 +915,6 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @export
 #' @import data.table
 #' @importFrom raster isLonLat
-#' @importFrom stats complete.cases residuals
 #'
 #' @references Mayer, D. G. and Butler, D. G.: Statistical validation, Ecological Modelling, 68(1-2), 21-32, \href{https://dx.doi.org/10.1016/0304-3800(93)90105-2}{doi:10.1016/0304-3800(93)90105-2}, 1993.
 #' Kelley, et al.: A comprehensive benchmarking system for evaluating global vegetation models, Biogeosciences, 10(5), 3313-3340, \href{https://dx.doi.org/10.5194/bg-10-3313-2013}{doi:10.5194/bg-10-3313-2013, 2013.}
@@ -1041,10 +1040,10 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     return(DT)
 
   ## apply some data filters
-  if (sum(!complete.cases(DT)) > 0) {
-    warning(paste0("Removing ", sum(!complete.cases(DT)), " rows with missing data!"))
-    message(paste0("Removing ", sum(!complete.cases(DT)), " rows with missing data!"))
-    DT=DT[complete.cases(DT), ]    
+  if (sum(!stats::complete.cases(DT)) > 0) {
+    warning(paste0("Removing ", sum(!stats::complete.cases(DT)), " rows with missing data!"))
+    message(paste0("Removing ", sum(!stats::complete.cases(DT)), " rows with missing data!"))
+    DT=DT[stats::complete.cases(DT), ]    
   }
 
   if (verbose)
@@ -1202,7 +1201,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
       } else if (!is.na(s) && !is.na(w)) {
         d <- subset(d, sens==s & w.value==w)
       }
-      lm.d <- lm(d$y.value ~ d$x.value)
+      lm.d <- stats::lm(d$y.value ~ d$x.value)
       sum.lm <- summary(lm.d)
 
       ## mean absolute error
@@ -1228,7 +1227,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
         label <- paste("y == ", signif(sum.lm$coefficients[2,1], 2), "* x +", signif(sum.lm$coefficients[1,1], 2))
       ## root mean square error
       } else if (tolower(l)=="rmse") {
-        label <- paste("RMSE ==", signif(mean(sqrt((residuals(lm.d))^2), na.rm=TRUE), 2))
+        label <- paste("RMSE ==", signif(mean(sqrt((stats::residuals(lm.d))^2), na.rm=TRUE), 2))
       ## R^2
       } else if (tolower(l)=="rsq") {
         ## eventually include the p-value sum.lm$coefficients[2,4]
@@ -1343,7 +1342,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
 #' @export
 #' @import ggplot2 
-#' @importFrom RColorBrewer brewer.pal
+#' @importFrom RColorBrewer RColorBrewer::brewer.pal
 plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="line", wrap=NA, long.title=TRUE, lty="sens", alpha=NA, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Year = sens = value = variable = NULL
@@ -1438,31 +1437,31 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
       if (length(columns)>1 && length(input)==1) {
         p <- p + geom_line(aes(col=variable), alpha=alpha, size=1)
         if (length(colors)!=length(unique(dt$variable)))
-          colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+          colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
       } else if (length(columns)==1 && length(input)>1) {
         p <- p + geom_line(aes(col=sens), alpha=alpha, size=1)
         if (length(colors)!=length(unique(dt$sens)))
-          colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+          colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
       } else {
         if (grepl("^c", wrap) || grepl("^v", wrap)) {
           p <- p + geom_line(aes(col=sens), alpha=alpha, size=1)
           p <- p + facet_wrap(~variable, ncol=1) 
           if (length(colors)!=length(unique(dt$sens)))
-            colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+            colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
         } else if (grepl("^r", wrap) || grepl("^s", wrap)) {
           p <- p + geom_line(aes(col=variable), alpha=alpha)
           p <- p + facet_wrap(~sens, ncol=1)
           if (length(colors)!=length(unique(dt$variable)))
-            colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+            colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
         } else {
           if (grepl("^v", lty) || grepl("^c", lty)) {
             p <- p + geom_line(aes(col=sens, lty=variable), alpha=alpha)
             if (length(colors)!=length(unique(dt$sens)))
-              colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+              colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
           } else {
             p <- p + geom_line(aes(col=variable, lty=sens), alpha=alpha)
             if (length(colors)!=length(unique(dt$variable)))
-              colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+              colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
           }
         }
       }
@@ -1486,7 +1485,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
           p <- p + geom_area(aes(fill=variable), alpha=alpha, position = "stack")
         }
         if (length(colors)!=length(unique(dt$variable)))
-          colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+          colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
       } else if (length(input)>1 && length(columns)==1) {
         if (grepl("^a", type)) {
           p <- p + geom_area(aes(fill=sens), alpha=alpha, position = position_dodge(width=0))
@@ -1495,7 +1494,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
           p <- p + geom_area(aes(fill=sens), alpha=alpha, position = "stack")
         }
         if (length(colors)!=length(unique(dt$sens)))
-          colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+          colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
       } else {
         if (grepl("^c", wrap) || grepl("^v", wrap)) {
           if (grepl("^a", type)) {
@@ -1506,7 +1505,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
             p <- p + geom_area(aes(fill=sens), alpha=alpha, position = "stack")
           }
           if (length(colors)!=length(unique(dt$sens)))
-            colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+            colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
         } else {
           if (grepl("^a", type)) {
             p <- p + geom_area(aes(fill=variable), alpha=alpha, position = position_dodge(width=0))
@@ -1514,7 +1513,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
             p <- p + geom_area(aes(fill=variable), alpha=alpha, position = "stack")
           }
           if (length(colors)!=length(unique(dt$variable)))
-            colors <- brewer.pal(length(unique(dt$variable)), "Set1")
+            colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
         }
         if (grepl("^c", wrap) || grepl("^v", wrap)) {
           p <- p + facet_wrap(~variable, ncol=1) 
@@ -1549,7 +1548,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
 #' @param ... Ignored further parameters
 #' @export
 #' @import ggplot2
-#' @importFrom RColorBrewer brewer.pal
+#' @importFrom RColorBrewer RColorBrewer::brewer.pal
 plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE, bins=10, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   sens = bin = value = N = NULL
@@ -1621,9 +1620,9 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
     bins=10
 
   if (any(colnames(dt)=="sens") && is.na(colors))  {
-    colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+    colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
   } else if (any(colnames(dt)=="sens") && length(colors)!=length(unique(dt$sens))) {
-    colors <- brewer.pal(length(unique(dt$sens)), "Set1")
+    colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
   } else if (is.na(colors)) {
     colors="#333333"
   }

@@ -28,8 +28,7 @@ readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF
                  name = "Crop Fraction",
                  type = "-",
                  units = "",
-                 colours = gray.colors,
-                 cuts = seq(0, 1, 0.05),
+                 colours = grDevices::gray.colors,
                  model = c("Data"))
     
     name <- "HYDE Crop Fraction" 
@@ -43,8 +42,7 @@ readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF
                  name = "Pasture Fraction",
                  type = "-",
                  units = "",
-                 colours = gray.colors,
-                 cuts = seq(0, 1, 0.05),
+                 colours = grDevices::gray.colors,
                  model = c("Data"))
     
     name <- "HYDE Pasture Fraction" 
@@ -60,7 +58,6 @@ readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF
                  type = "-",
                  units = "",
                  colours = fields::tim.colors,
-                 cuts = seq(0, 1000, 10),
                  model = c("Data"))
     
     name <- "HYDE Pasture Fraction" 

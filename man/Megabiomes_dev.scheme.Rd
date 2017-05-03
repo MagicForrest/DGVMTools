@@ -15,4 +15,3 @@ Meta-data describing an unpublished "mega biome" scheme for LPJ-GUESS output.
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

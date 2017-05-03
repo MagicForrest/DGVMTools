@@ -38,4 +38,3 @@ A ggplot object, which can either be printed directly or further modified, or a 
 Plot a timeseries with ggplot. Either as line default, overlaying area,
 applicable p.e. for height or stacked polygons (e.g. for succession).
 }
-

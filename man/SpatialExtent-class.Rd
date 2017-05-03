@@ -16,7 +16,7 @@ A simple S4 class to define a spatial extent.
 
 \item{\code{extent}}{Currently can be a raster \code{Extent} object, but should be expanded to include a raster mask (to define an irregularly shaped spatial extent), or a c(Lon,Lat) coordinate to define a site.}
 }}
+
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

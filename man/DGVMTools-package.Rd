@@ -37,4 +37,3 @@ DGVMTools can be used to read the data and perform standard operations, but then
 However, DGVMTools is intended to be a reasonably complete analysis environment in itself.  It should be possible to go from model output all the way to results and publication
 quality plots using only DGVMTools and some base R functionality for other tasks.
 }
-

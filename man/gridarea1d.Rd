@@ -37,4 +37,3 @@ sum(gridarea1d(lat,dlon))*720*1.e-12
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

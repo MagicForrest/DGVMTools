@@ -39,4 +39,3 @@ to split (facet) a data-vs-model scatter plot.
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

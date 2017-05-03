@@ -37,4 +37,3 @@ for use in the \code{id} slot of a \code{ModelObject} and for filenames etc.
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

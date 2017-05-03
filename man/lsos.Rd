@@ -28,4 +28,3 @@ Because rasters and \code{ModelObject}s and so can be quite large, this function
 \keyword{from:}
 \keyword{http://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session}
 \keyword{internal}
-

@@ -20,4 +20,3 @@ This function returns a copy of a DataObject or ModelObject containing only a se
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

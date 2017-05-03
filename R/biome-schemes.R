@@ -24,58 +24,58 @@
 Smith2014BiomeRules <- function(lai){
   
   # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['MaxTree']] == "TrBE") {return(1)}
+  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['MaxTree']] == "TrBE") {return("Tropical Rain Forest")}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(2)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return("Tropical Deciduous Forest")}
   
   # BIOME 3 - Tropical Seasonal Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['MaxTree']] == "TrBE" | lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(3)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['MaxTree']] == "TrBE" | lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return("Tropical Seasonal Forest")}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return(4)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return("Boreal Evergreen Forest/Woodland")}
   
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['MaxTree']] == "BNS") {return(5)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 &  as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['MaxTree']] == "BNS") {return("Boreal Deciduous Forest/Woodland")}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return(6)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return("Temperate Broadleaved Evergreen Forest")}
   
   # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBS") {return(7)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBS") {return("Temperate Deciduous Forest")}
   
   # BIOME 8 - Temperate/Boreal Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return(8) }
+  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['BorealFractionOfTree']]) < 0.8 & as.numeric(lai[['BorealFractionOfTree']]) > 0.2 & as.numeric(lai[['TemperateFractionOfTree']]) < 0.8 & as.numeric(lai[['TemperateFractionOfTree']]) > 0.2) {return("Temperate/Boreal Mixed Forest") }
   
   # BIOME 9 - Temperate Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return(9)}
+  else if(as.numeric(lai[['Tree']]) > 2.5) {return("Temperate Mixed Forest")}
   
   # BIOME 10 - Xeric Woodland/Shrubland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return(10)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return("Xeric Woodland/Shrubland")}
   
   # BIOME 11 - Moist Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return(11)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return("Moist Savanna")}
   
   # BIOME 12 - Dry Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return(12)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return("Dry Savanna")}
   
   # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & as.numeric(lai[['Lat']]) >= 54) {return(13)}
+  else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & as.numeric(lai[['Lat']]) >= 54) {return("Arctic/Alpine Tundra")}
   
   # BIOME 14 - Tall Grassland
-  else if(as.numeric(lai[['Grass']]) > 2.0) {return(14)}
+  else if(as.numeric(lai[['Grass']]) > 2.0) {return("Tall Grassland")}
   
   # BIOME 16 (1) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Tree']]) > 0.2 & as.numeric(lai[['Grass']]) < 1.0) {return(16)}
+  else if(as.numeric(lai[['Tree']]) > 0.2 & as.numeric(lai[['Grass']]) < 1.0) {return("Arid Shrubland/Steppe")}
   
   # BIOME 15 - Dry Grassland
-  else if(as.numeric(lai[['Grass']]) > 0.2) {return(15)}
+  else if(as.numeric(lai[['Grass']]) > 0.2) {return("Dry Grassland")}
   
   # BIOME 16 (2) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Total']]) > 0.2) {return(16)}
+  else if(as.numeric(lai[['Total']]) > 0.2) {return("Arid Shrubland/Steppe")}
   
   # BIOME 17 - Desert
-  else if(as.numeric(lai[['Total']]) <= 0.2) {return(17)}
+  else if(as.numeric(lai[['Total']]) <= 0.2) {return("Desert")}
   
   # REMAINDER
   else {
@@ -95,7 +95,7 @@ Smith2014.scheme <- new("BiomeScheme",
                             id = "Smith2014",
                             type = "categorical",
                             name = "Smith et al. 2014 Biomes", 
-                            colours = colorRampPalette(c("Tropical Rain Forest" = "seagreen",                     
+                            colours = grDevices::colorRampPalette(c("Tropical Rain Forest" = "seagreen",                     
                                                          "Tropical Deciduous Forest" = "orange3", 
                                                          "Tropical Seasonal Forest" = "green3", 
                                                          "Boreal Evergreen Forest/Woodland" = "turquoise4",
@@ -129,7 +129,6 @@ Smith2014.scheme <- new("BiomeScheme",
                                       "Dry Grassland",
                                       "Arid Shrubland/Steppe",
                                       "Desert"),
-                            cuts = seq(0,17),
                             model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                         rules = Smith2014BiomeRules,
                         totals.needed = c("lifeforms", "zones"),
@@ -282,7 +281,7 @@ Hickler2012.scheme <- new("BiomeScheme",
                               id = "Hickler2012",
                               name = "Hickler2012", 
                               type = "categorical",
-                              colours = colorRampPalette(c("Arctic/alpine desert" = "lightblue1",                     
+                              colours = grDevices::colorRampPalette(c("Arctic/alpine desert" = "lightblue1",                     
                                                            "Arctic/alpine tundra" = "lightsteelblue", 
                                                            "Boreal/alpine mixed woodland" = "deepskyblue",
                                                            "Boreal/alpine conifer forest"= "royalblue4",
@@ -308,7 +307,6 @@ Hickler2012.scheme <- new("BiomeScheme",
                                         "Steppe woodland",
                                         "Steppe",                     
                                         "Desert"),
-                              cuts = seq(0,13),
                               model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = Hickler2012Rules,
                           combineShadeTolerance = FALSE,
@@ -414,7 +412,7 @@ Forrest2015.scheme <- new("BiomeScheme",
                               id = "Forrest2015",
                               name = "Forrest et al. 2015", 
                               type = "categorical",
-                              colours = colorRampPalette(c("Tropical Forest" = "seagreen",                     
+                              colours = grDevices::colorRampPalette(c("Tropical Forest" = "seagreen",                     
                                                            "Temperate Evergeen Forest"= "dodgerblue3", 
                                                            "Temperate Deciduous Forest "= "green3", 
                                                            "Boreal Forest" = "turquoise4",
@@ -430,7 +428,6 @@ Forrest2015.scheme <- new("BiomeScheme",
                                          "Grasslands and Dry Shrublands",
                                          "Tundra",
                                          "Desert"),
-                              cuts = seq(0,8),
                               model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = Forrest2015MegaBiomeRules,
                           totals.needed = c("lifeforms", "zones"),
@@ -466,24 +463,24 @@ MeditBiomeRules <- function(lai){
   
   # BIOME 1 - Grass Steppe  
   #else if(as.numeric(lai[['Grass']]) > 1.0 & as.numeric(lai[['Woody']] < 1.0)) {return(7)}
-  if(as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']])) {return(1)}
+  if(as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']])) {return("Grass Steppe or Montane Grassland")}
   # BIOME 4 - Deciduous forest
   #if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
-  else if(as.numeric(lai[['Woody']]) > 2.0 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeBS")) {return(4)}  # 2
+  else if(as.numeric(lai[['Woody']]) > 2.0 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeBS")) {return("Deciduous Forest")}  # 2
   # BIOME 5 - Cold Montane forest
-  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE" )) {return(5)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE" )) {return("Cold Montane Forest")} # 1.5
   # BIOME 2 - Needle-leaved evergreen forest
-  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return(2)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return("Needle-leaved Woodlands/Forest")} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
   #else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeNE")) {return(6)}
-  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && lai[['MaxWoody']] == "TeBS") {return(6)}
+  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && lai[['MaxWoody']] == "TeBS") {return("Deciduous Steppe-Woodlands")}
   # BIOME 3 - Mediterranean woodland/scrub
-  else if(as.numeric(lai[['Woody']]) > 1 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return(3)} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return("Mediterranean Sclerophyllous Woodlands/Forest")} # 1.5
    # BIOME 7 - Remainder, Unclassified
   else {
     #print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
     #print(lai)
-    return(7)
+    return("Unclassifiable/Other")
   }
   
   
@@ -499,21 +496,20 @@ MeditBiomes.scheme <- new("BiomeScheme",
                               id = "MeditBiomes",
                               name = "Mediterranean Biomes", 
                               type = "categorical",
-                              colours = colorRampPalette(c("darkseagreen1",
-                                                           "darkolivegreen",
-                                                           "orangered4",
-                                                           "green3",
-                                                           "royalblue4",
-                                                           "sandybrown",
-                                                           "grey75")),
-                              units =  c("Grass Steppe or\nMontane Grassland",
-                                         "Needle-leaved\nWoodlands/Forest",
-                                         "Mediterranean\nSclerophyllous\nWoodlands/Forest",
-                                         "Deciduous\nForest",
-                                         "Cold Montane\nForest",
-                                         "Deciduous\nSteppe-Woodlands",
-                                         "Unclassifiable/\nOther"),
-                              cuts = seq(0,7),
+                              colours = grDevices::colorRampPalette(c("Grass Steppe or Montane Grassland" = "darkseagreen1",
+                                                                      "Needle-leaved Woodlands/Forest" = "darkolivegreen",
+                                                                      "Mediterranean Sclerophyllous Woodlands/Forest" = "orangered4",
+                                                                      "Deciduous Forest" = "green3",
+                                                                      "Cold Montane Forest" = "royalblue4",
+                                                                      "Deciduous Steppe-Woodlands" = "sandybrown",
+                                                                      "Unclassifiable/Other" = "grey75")),
+                              units =  c("Grass Steppe or Montane Grassland",
+                                         "Needle-leaved Woodlands/Forest",
+                                         "Mediterranean Sclerophyllous Woodlands/Forest",
+                                         "Deciduous Forest",
+                                         "Cold Montane Forest",
+                                         "Deciduous Steppe-Woodlands",
+                                         "Unclassifiable/Other"),
                               model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = MeditBiomeRules,
                           totals.needed = c("lifeforms", "zones"),
@@ -603,7 +599,7 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
                                  id = "Megabiomes",
                                  name = "Megabiomes", 
                                  type = "categorical",
-                                 colours = colorRampPalette(c("Tropical Rain Forest" = "seagreen",                     
+                                 colours = grDevices::colorRampPalette(c("Tropical Rain Forest" = "seagreen",                     
                                                               "Tropical Deciduous Forest" = "orange3", 
                                                               "Boreal Evergreen Forest/Woodland" = "turquoise4",
                                                               "Boreal Deciduous Forest/Woodland"= "cyan",
@@ -629,7 +625,6 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
                                             "Tall Grassland",
                                             "Arid Shrubland/Grassland",
                                             "Desert"),
-                                 cuts = seq(0,13),
                                  model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                              rules = MegaBiomeRules_dev,
                              combineShadeTolerance = TRUE,
@@ -726,7 +721,7 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                 id = "FireMIP",
                                 name = "FireMIP Biomes", 
                                 type = "categorical",
-                                colours = colorRampPalette(c("Croplands Dominated \n(Croplands > 50%)" = "chartreuse",
+                                colours = grDevices::colorRampPalette(c("Croplands Dominated \n(Croplands > 50%)" = "chartreuse",
                                                              "Croplands Mosaic \n(20% < Croplands < 50%)" = "darkseagreen1",
                                                              "Evergreen Needle-leafed Forest" = "darkblue",   
                                                              "Summergreen Needle-leafed Forest" = "skyblue2",
@@ -750,7 +745,6 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                            "Shrubland",
                                            "Sparse/Other \nVegetation",
                                            "Barren"),
-                                cuts = seq(0,12),
                                 model = c("LPJ-GUESS-SPITFIRE-FireMIP",
                                           "LPJ-GUESS-BLAZE-FireMIP",
                                           "LPJ-GUESS-GlobFIRM-FireMIP",
@@ -847,7 +841,7 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                                 id = "FPCMegabiomes",
                                 name = "FPCMegabiomes", 
                                 type = "categorical",
-                                colours = colorRampPalette(c("Tropical forest" = "darkgreen",
+                                colours = grDevices::colorRampPalette(c("Tropical forest" = "darkgreen",
                                                              "Temperate forest" = "seagreen",
                                                              "Boreal forest" = "turquoise4",
                                                              "Savannah" = "tan",
@@ -869,7 +863,6 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                                           "Tundra",
                                           "Desert",
                                           "Arctic desert"),
-                                cuts = seq(0,10),
                                 model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                             rules = FPCMegaBiomeRules,
                             totals.needed = c("lifeforms", "zones"),

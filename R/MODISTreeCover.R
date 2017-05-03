@@ -40,17 +40,20 @@ getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collect
   
   
   dt <- data.table(as.data.frame(raster,xy = TRUE))
-  setnames(dt, c("Lon", "Lat", "MODISTreeCover"))
+  setnames(dt, c("Lon", "Lat", "Tree"))
   dt[,Lon:= round(Lon, 3)]
   dt[,Lat:= round(Lat, 3)]
 
+  # Any values of 200.0 mean water, set these to NA 
+  dt[Tree > 110.0] <- NA
+  
   setkey(dt, Lon, Lat)
 
   quant <- lookupQuantity("vegcover_std", "Standard")
   
   dataset <- new("DataObject",
                          id = "MODISTreeCover",
-                         name = "MODIS MOD44B Tree",
+                         name = "MODIS MOD44B",
                          temporal.extent = t.extent,
                          data = dt,
                          quant = quant,

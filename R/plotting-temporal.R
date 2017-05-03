@@ -248,7 +248,7 @@ plotTemporal <- function(input.data,
   
   # if facet
   if(!is.null(facet)){
-    p <- p + facet_wrap(as.formula(paste("~", facet)), ncol = 1, scales = facet.scales)
+    p <- p + facet_wrap(stats::as.formula(paste("~", facet)), ncol = 1, scales = facet.scales)
   }
   
   

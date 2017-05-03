@@ -30,4 +30,3 @@ from the first object from list.of.vegruns.  It is therefore up to the user not 
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

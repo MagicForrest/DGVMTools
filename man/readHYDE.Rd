@@ -28,4 +28,3 @@ This functions reads some netCDF files (not the original HYDE data), produced by
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

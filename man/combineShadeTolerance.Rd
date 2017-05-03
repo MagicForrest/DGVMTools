@@ -18,4 +18,3 @@ The effects of this depend on the shade-tolerant cousin PFTs being defined in th
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

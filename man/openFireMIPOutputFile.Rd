@@ -28,4 +28,3 @@ Returns a data.table, because it is intended to be called by getModelObject(), b
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

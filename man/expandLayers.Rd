@@ -40,4 +40,3 @@ Supported short-hand strings are:
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

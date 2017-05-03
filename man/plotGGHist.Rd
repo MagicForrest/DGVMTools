@@ -29,4 +29,3 @@ plotGGHist(input, column = "value", colors = NA, bars = TRUE,
 \description{
 Plot the given columns as histogram
 }
-

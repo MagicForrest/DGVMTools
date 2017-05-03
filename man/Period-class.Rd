@@ -4,10 +4,10 @@
 \name{Period-class}
 \alias{Period-class}
 \alias{all.periods}
-\alias{annual}
-\alias{months}
 \alias{periods}
+\alias{months}
 \alias{seasons}
+\alias{annual}
 \title{Time periods - eg. a month or a season or a year.}
 \format{An object of class \code{list} of length 17.}
 \usage{
@@ -56,8 +56,8 @@ However other periods can be defined for specific growing seasons etc.
 
 \item{\code{col}}{A colour (as a character string) for this particular period}
 }}
+
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{datasets}
-

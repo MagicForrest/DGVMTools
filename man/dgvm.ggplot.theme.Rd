@@ -18,4 +18,3 @@ Get the internal ggplot2 theme definitions
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

@@ -18,7 +18,7 @@ A simple S4 class to define a time period ie 1961-1990, but called here \code{Te
 
 \item{\code{end}}{Last year of the temporal extent (a year, eg 1990)}
 }}
+
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

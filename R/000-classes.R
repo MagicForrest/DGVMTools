@@ -297,10 +297,10 @@ setClass("ModelRun",
 #' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.  
 #' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
 #' @slot colours A function that returns a colour scale suited for plotting this quantity.
-#' @slot cuts A numerical sequence defining the plot range and colour breakpoint when plotting the quantity
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
 #'
+#' @importFrom fields tim.colors  
 #' @exportClass Quantity
 #' @name Quantity-class
 #' @rdname Quantity-class
@@ -311,7 +311,6 @@ setClass("Quantity",
                    type = "character",
                    units = "character",
                    colours = "function",
-                   cuts = "numeric",
                    aggregate.method = "character",
                    model = "character"
          ),
@@ -319,8 +318,7 @@ setClass("Quantity",
                        name = "UnknownString",
                        type = "UnknownType",
                        units = "-",
-                       colours = tim.colors,
-                       cuts = integer(0),
+                       colours = fields::tim.colors,
                        aggregate.method = "sum",
                        model = "Standard"
          )
@@ -436,7 +434,7 @@ setClass("DatasetInfo",
                    line.width = "numeric", # not commonly needed, only for more complex run comparisons
                    line.type = "numeric" # not commonly needed, only for more complex run comparisons
          )
-
+         
 )
 
 
@@ -473,20 +471,6 @@ setClass("DataObject",
 )
 
 
-# setClass("MultiObject", 
-#          slots = c(id = "character",
-#                    data = "data.table",
-#                    info = "list",
-#                    spatial.extent = "SpatialExtent",
-#                    temporal.extent = "TemporalExtent",
-#                    is.site = "logical",
-#                    is.spatially.averaged = "logical",
-#                    is.temporally.averaged = "logical"
-#          )
-# )
-
-
-
 #' Result of comparing a model raster to a data raster
 #' 
 #' This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToDataObject}
@@ -516,7 +500,9 @@ setClass("SpatialComparison",
                    RMSE = "numeric", 
                    sd.diff = "numeric",
                    Kappa = "numeric", 
-                   individual.Kappas = "numeric"  
+                   individual.Kappas = "numeric",
+                   MM = "numeric",
+                   SCD = "numeric"
          ),
          prototype = c(id = "-",
                        R2 = NA,
@@ -528,11 +514,31 @@ setClass("SpatialComparison",
                        RMSE = NA, 
                        sd.diff = NA,
                        Kappa = NA, 
-                       individual.Kappas = NA 
+                       individual.Kappas = NA,
+                       MM = NA,
+                       SCD = NA
          ) 
 )
 
 
+
+setClass("ComparisonLayer", 
+         slots = c(id = "character",
+                   name = "character",
+                   data = "data.table",
+                   quant = "Quantity",
+                   stats = "SpatialComparison",
+                   info1 = "ANY",
+                   info2 = "ANY",
+                   spatial.extent = "SpatialExtent",
+                   temporal.extent = "TemporalExtent",
+                   is.site = "logical",
+                   is.spatially.averaged = "logical",
+                   is.temporally.averaged = "logical"
+                   
+         )#,
+         #validity = checkComparison
+)
 
 
 
@@ -551,14 +557,11 @@ setClass("SpatialComparison",
 #' This is ultimately not flexible enough for all conceivable biome schemes from all models and will need to be somehow generalised and expanded at some point.  This is most certainly a challenge for another day!
 #' 
 #' 
-
-
 #' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")
 #' @slot name A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")
 #' @slot type A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")
 #' @slot units A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")
 #' @slot colours A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")
-#' @slot cuts A numerical sequence defining the plot range and colour breakpoints when plotting this biome scheme. Most correctly should be set to seq(1,length(units)), but is actually ignored by plotSpatial() (Inherited from Quantity via "contains")
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.

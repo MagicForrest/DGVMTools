@@ -34,10 +34,9 @@ This allows all lifeforms fractions in a ModelObject to be calculated using a si
  
 See documention of \code{expandLayers} for details.
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 expandslayers getVegTotals
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

@@ -50,6 +50,15 @@ setAs("DataObject", "data.frame", function(from) as.data.frame(from@data))
 as.data.frame.DataObject = function(x, row.names, optional, ...) as(x, "data.frame") 
 
 
+#' @name export-methods
+#' @export
+setAs("ComparisonLayer", "data.frame", function(from) as.data.frame(from@data))
+
+
+#' @rdname export-methods
+#' @method as.data.frame ComparisonLayer
+#' @export
+as.data.frame.ComparisonLayer = function(x, row.names, optional, ...) as(x, "data.frame") 
 
 #############  data.table
 
@@ -70,7 +79,13 @@ setAs("DataObject", "data.table", function(from) from@data)
 as.data.table.DataObject = function(x, keep.rownames, ...) as(x, "data.table") 
 
 
+#' @name export-methods
+#' @export
+setAs("ComparisonLayer", "data.table", function(from) from@data)
 
+#' @rdname export-methods
+#' @export
+as.data.table.ComparisonLayer = function(x, keep.rownames, ...) as(x, "data.table") 
 
 
 ############# raster
@@ -82,6 +97,11 @@ setAs("ModelObject", "Raster", function(from) promoteToRaster(from@data))
 #' @name export-methods
 #' @export
 setAs("DataObject", "Raster", function(from) promoteToRaster(from@data))
+
+#' @name export-methods
+#' @export
+setAs("ComparisonLayer", "Raster", function(from) promoteToRaster(from@data))
+
 
 
 #' @name as.Raster
@@ -103,6 +123,10 @@ setMethod("as.Raster", signature("DataObject"), function(x)  promoteToRaster(x@d
 #' @exportMethod as.Raster
 setMethod("as.Raster", signature("ModelObject"),   function(x) promoteToRaster(x@data))
 
+#' @rdname export-methods
+#' @export
+#' @exportMethod as.Raster
+setMethod("as.Raster", signature("ComparisonLayer"),   function(x) promoteToRaster(x@data))
 
 
 

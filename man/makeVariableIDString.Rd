@@ -26,4 +26,3 @@ Helper function to build an appropriate variable ID (for use in filenames) from 
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

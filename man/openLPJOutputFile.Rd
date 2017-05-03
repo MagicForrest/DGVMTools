@@ -26,4 +26,3 @@ Note that the files can be gzipped on UNIX systems, but this might fail on windo
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

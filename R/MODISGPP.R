@@ -29,12 +29,12 @@ getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resol
   
   dt <- data.table(as.data.frame(raster,xy = TRUE))
   if(average) {
-    setnames(dt, c("Lon", "Lat", "MODISGPP"))
+    setnames(dt, c("Lon", "Lat", "Annual"))
   }
   else {
     setnames(dt, c("Lon", "Lat", paste(2000:2010)))
     dt <- melt(dt, id=c("Lon","Lat")) 
-    setnames(dt, c("Lon", "Lat", "Year", "MODISGPP"))
+    setnames(dt, c("Lon", "Lat", "Year", "Annual"))
     dt[,Year:= as.numeric(as.character(Year))]
   }
   dt[,Lon:= round(Lon, 3)]
@@ -43,9 +43,7 @@ getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resol
   setkey(dt, Lon, Lat)
 
   quant <- lookupQuantity("aGPP_std", "Standard")
-  quant@cuts <- seq(0,3,0.1)
-  
-  
+
   dataset <- new("DataObject",
                          id = "MODISGPP",
                          name = "MODIS MOD17A2",

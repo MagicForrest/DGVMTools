@@ -3,13 +3,13 @@
 \docType{methods}
 \name{Array-methods}
 \alias{Array-methods}
+\alias{as.array,ModelObject-method}
 \alias{as.array}
-\alias{as.array,ModelRun-method}
 \title{Array methods}
 \usage{
 as.array(x, ...)
 
-\S4method{as.array}{ModelRun}(x, ...)
+\S4method{as.array}{ModelObject}(x, ...)
 }
 \arguments{
 \item{x}{\code{\linkS4class{ModelObject}}}
@@ -25,4 +25,3 @@ Converts a \code{\linkS4class{ModelObject}} to multi-dimensional array(s) all pa
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

@@ -36,17 +36,15 @@ but they will likely need to be modified and new ones aded for a specific analys
 
 \item{\code{colours}}{A function that returns a colour scale suited for plotting this quantity.}
 
-\item{\code{cuts}}{A numerical sequence defining the plot range and colour breakpoint when plotting the quantity}
-
 \item{\code{aggregate.method}}{A character string defining the default method for how to aggregate the quantity, either "sum" or "average"}
 
 \item{\code{model}}{Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.}
 }}
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
+
 \seealso{
 \code{lookupQuantity}
 }
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}
 \keyword{datasets}
-

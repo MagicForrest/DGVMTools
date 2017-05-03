@@ -21,7 +21,7 @@ getMODISFPAR <- function(location = "/data/forrest/FPAR/", resolution = "origina
     
   }
   else if(resolution == "1km-Turkey"){
-    if(average) raster <- trim(rotate(raster(file.path(location, "Turkey/fpar.Turkey.TA.2000-2010.nc"))))
+    if(average) raster <- trim(rotate(raster(file.path(location, "Turkey/fpar.Turkey.TA.2000-2010.quartile.nc"))))
     else raster <- trim(rotate(brick(file.path(location, "processed/MODISFPAR.2000-2010.1km-Turkey.nc"))))
     print(raster)
   }
@@ -29,12 +29,12 @@ getMODISFPAR <- function(location = "/data/forrest/FPAR/", resolution = "origina
   
   dt <- data.table(as.data.frame(raster,xy = TRUE))
   if(average) {
-    setnames(dt, c("Lon", "Lat", "MODISFPAR"))
+    setnames(dt, c("Lon", "Lat", "Total"))
   }
   else {
     setnames(dt, c("Lon", "Lat", paste(2000:2010)))
     dt <- melt(dt, id=c("Lon","Lat")) 
-    setnames(dt, c("Lon", "Lat", "Year", "MODISFPAR"))
+    setnames(dt, c("Lon", "Lat", "Year", "Total"))
     dt[,Year:= as.numeric(as.character(Year))]
   }
   dt[,Lon:= round(Lon, 3)]
@@ -42,9 +42,10 @@ getMODISFPAR <- function(location = "/data/forrest/FPAR/", resolution = "origina
 
   setkey(dt, Lon, Lat)
 
-  quant <- lookupQuantity("FPAR_std", "Standard")
-  quant@cuts <- seq(0,100,1)
+  dt[Total > 110.0] <- NA
   
+  quant <- lookupQuantity("FPAR_std", "Standard")
+
   
   dataset <- new("DataObject",
                          id = "MODISFPAR",

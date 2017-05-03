@@ -30,4 +30,3 @@ Make a layout object to display stats on a map when using either spplot() or plo
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

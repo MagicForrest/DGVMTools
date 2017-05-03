@@ -4,8 +4,7 @@
 \alias{getThurner2013}
 \title{Read Thurner et al. 2013 total biomass map}
 \usage{
-getThurner2013(location = "/data/forrest/Biomass/Thurner2013/",
-  resolution = "original")
+getThurner2013(location = "/data/forrest/Biomass/", resolution = "HD")
 }
 \arguments{
 \item{location}{A character string specifying the the location of the original data files}
@@ -25,4 +24,3 @@ Original dataset is 1km, also provided here at 0.5 degrees or T63.
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

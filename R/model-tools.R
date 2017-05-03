@@ -613,9 +613,18 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   
   ###  Define the layers we are pulling out
   # for ModelObject - note could define a methods "names" do cover this exception
-  if((is.ModelObject(input.data) || is.DataObject(input.data)) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
+  if((is.ModelObject(input.data) || is.DataObject(input.data) || is.ComparisonLayer(input.data) ) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
   # for data.table or rasters
-  else if(is.null(layers) | layers[1] == "all") {layers = names(input.data)}
+  else if(is.null(layers) | layers[1] == "all") {
+    layers = names(input.data)
+    
+    # remove things we don't want to plot like "Lon" and "Lat"
+    remove.list <- c("Lon", "Lat", "Year")
+    for(remove in remove.list){
+      if(remove %in% layers) {layers <- layers[-which(layers == remove)]}     
+    }
+    
+  }
   
   
   ###  If SpatialPixelsDataFrame rasterise it directly
@@ -625,14 +634,13 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   }
   ### If data.table or ModelObject (which contains a data.table) 
   # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table" | is.ModelObject(input.data) |  is.DataObject(input.data)){
-    
+  else if(this.class == "data.table" | is.ModelObject(input.data) |  is.DataObject(input.data) | is.ComparisonLayer(input.data)) {
     # first make a SpatialPointsDataFrame
     if(this.class == "data.table") {
       data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = grid.topology)
     }
     
-    if(is.ModelObject(input.data) | is.DataObject(input.data)) {
+    if(is.ModelObject(input.data) | is.DataObject(input.data) | is.ComparisonLayer(input.data)) {
       data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
     }
     

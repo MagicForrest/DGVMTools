@@ -25,4 +25,3 @@ Can use area-weighting to take into account the difference different areas of gr
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

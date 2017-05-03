@@ -15,4 +15,3 @@ List of supported vegetation models
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

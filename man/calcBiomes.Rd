@@ -18,10 +18,9 @@ A new ModelObject with the biomes
 This is very inflexible as it only allows the calcualtion of biomes with only one Quantity.  This is not suitable for many biomes schemes, 
 so this will need to be re-written
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \seealso{
 BiomeScheme-class
 }
-
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}

@@ -25,4 +25,3 @@ For unit conversion it makes use of \code{\link[udunits2]{ud.convert}}, if insta
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

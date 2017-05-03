@@ -4,8 +4,8 @@
 \name{resample}
 \alias{resample}
 \alias{resample.DGVM}
-\alias{resample.DGVM,DataObject,Raster,character,character-method}
 \alias{resample.DGVM,ModelObject,Raster,character,character-method}
+\alias{resample.DGVM,DataObject,Raster,character,character-method}
 \alias{resample.DGVM,ModelObject,character,character,character-method}
 \title{Resample methods}
 \usage{
@@ -41,4 +41,3 @@ Methods for resampling ModelObjects and Data objects to other resolutions based 
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-

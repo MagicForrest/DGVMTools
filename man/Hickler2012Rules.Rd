@@ -20,4 +20,3 @@ Based on LAI, GDD5 and lon/lat only, see paper for details.
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
-

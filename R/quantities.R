@@ -16,7 +16,7 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
     
   }
   
-  warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in dgvm.quantities, now searching only on the quant.id."))
+  if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std") warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in dgvm.quantities, now searching only on the quant.id."))
   
   for(quant in dgvm.quantities){
     
@@ -42,6 +42,7 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
 #' which should be derivable from all model output.
 #' @rdname Quantity-class
 #' @keywords datasets
+#' @importFrom fields tim.colors  
 #' @seealso \code{lookupQuantity}
 dgvm.quantities <- list(
   
@@ -54,8 +55,7 @@ dgvm.quantities <- list(
       type = "unknown",
       name = "Fraction",
       units = "",
-      colours = colorRampPalette(c("grey85", "black")), 
-      cuts = seq(0,1,0.05),
+      colours = grDevices::colorRampPalette(c("grey85", "black")), 
       model = "Standard"), 
  
   new("Quantity",
@@ -64,7 +64,6 @@ dgvm.quantities <- list(
       name = "Areal Cover",
       units = "%",
       colours = veg.palette, 
-      cuts = seq(0,100,5),
       model = "Standard"), 
   
   new("Quantity",
@@ -73,7 +72,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = cmass.palette,
-      cuts = seq(0,40,1),
       model = c("Standard")),
   
   new("Quantity",
@@ -82,7 +80,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "m^2/m^2",
       colours = lai.palette,
-      cuts = seq(0,7, 0.01),
       model = c("Standard")),
   
   new("Quantity",
@@ -91,7 +88,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0, 0.4, 0.01),
       model = c("Standard")),
   
   new("Quantity",
@@ -100,7 +96,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2/year",
       colours = fields::tim.colors,
-      cuts = seq(0, 3, 0.025),
       model = c("Standard")),
   
   new("Quantity",
@@ -109,7 +104,6 @@ dgvm.quantities <- list(
       type = "-",
       units = "m",
       colours = fields::tim.colors,
-      cuts = seq(0, 60, 2),
       model = c("Standard")),
   
   new("Quantity",
@@ -118,7 +112,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
-      cuts = seq(0, 1.0, 0.02),
       model = c("Standard")),
   
   new("Quantity",
@@ -127,7 +120,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "fraction",
       colours = veg.palette,
-      cuts = seq(0, 100.0, 1),
       model = c("Standard")),
   
   
@@ -144,7 +136,6 @@ dgvm.quantities <- list(
       name = "Areal Cover",
       units = "%",
       colours = veg.palette, 
-      cuts = seq(0,1,0.05),
       model = "FireMIP",
       aggregate.method = "sum"), 
   
@@ -154,7 +145,6 @@ dgvm.quantities <- list(
       name = "Leaf Area Index",
       units = "-",
       colours = viridis, 
-      cuts = seq(0,10,0.5),
       model = "FireMIP"), 
   
   new("Quantity",
@@ -163,7 +153,6 @@ dgvm.quantities <- list(
       name = "Tree Height",
       units = "m",
       colours = veg.palette, 
-      cuts = seq(0,100,1),
       model = "FireMIP"), 
   
   new("Quantity",
@@ -172,7 +161,6 @@ dgvm.quantities <- list(
       name = "Gross Primary Productivity",
       units = "-",
       colours = veg.palette, 
-      cuts = seq(0,0.4,0.01),
       model = "FireMIP"), 
   
   
@@ -186,7 +174,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "m^2/m^2",
       colours = lai.palette,
-      cuts = seq(0,7, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -195,7 +182,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "m^2/m^2",
       colours = lai.palette,
-      cuts = seq(0,10, 0.2),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -204,7 +190,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "m^2/m^2",
       colours = veg.palette,
-      cuts = seq(0,1.5, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -213,7 +198,6 @@ dgvm.quantities <- list(
       type = "Monthly",
       units = "m^2/m^2",
       colours = veg.palette,
-      cuts = seq(0,1.5, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -222,7 +206,6 @@ dgvm.quantities <- list(
       type = "",
       units = "m^2/m^2",
       colours = veg.palette,
-      cuts = seq(0,1.0, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -231,7 +214,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m2/year",
       colours = fields::tim.colors,
-      cuts = seq(0, 3, 0.05),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -240,7 +222,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = cmass.palette,
-      cuts = seq(0,40,1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -249,7 +230,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,2,0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -258,7 +238,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "tonnes/hectare",
       colours = cmass.palette,
-      cuts = seq(0,800,10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -267,7 +246,6 @@ dgvm.quantities <- list(
       type = "pools",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,70,1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -276,7 +254,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,2,0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -285,7 +262,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.002),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -294,7 +270,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.05),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -303,7 +278,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.05),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -312,7 +286,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(-0.1, 0.3, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -321,7 +294,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0, 0.4, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -330,7 +302,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(-0.1, 0.2, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -339,7 +310,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0.0, 0.3, 0.005),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -348,7 +318,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0.0, 0.3, 0.005),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -357,7 +326,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(-0.5, 2, 0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -366,7 +334,6 @@ dgvm.quantities <- list(
       type = "flux",
       units = "kgC/m^2/y",
       colours = fields::tim.colors,
-      cuts = seq(-3, 3, 0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -375,7 +342,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "indiv/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0, 0.1, 0.002),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -384,7 +350,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "m",
       colours = fields::tim.colors,
-      cuts = seq(0, 40, 1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -393,7 +358,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      cuts = seq(0, 200, 10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -402,7 +366,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      cuts = seq(0, 300, 10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -411,7 +374,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      cuts = seq(0, 100, 2),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -420,7 +382,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      cuts = seq(0, 500, 10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -429,7 +390,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      cuts = seq(0, 50, 1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -438,7 +398,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "",
       colours = reversed.tim.colors,
-      cuts = seq(0, 1, 0.02),
       aggregate.method = "mean",
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
@@ -448,7 +407,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "",
       colours = reversed.tim.colors,
-      cuts = seq(0, 1, 0.02),
       aggregate.method = "mean",
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
@@ -458,7 +416,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mm H20",
       colours = reversed.tim.colors,
-      cuts = seq(0, 5, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -467,7 +424,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "years",
       colours = fire.palette,
-      cuts = c(0,3,6,12,25,50,100,200,400,800,1000),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -476,7 +432,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "days",
       colours = fire.palette,
-      cuts = seq(0, 365, 5),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -485,7 +440,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "days",
       colours = fire.palette,
-      cuts = seq(0, 365, 5),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -494,7 +448,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "fraction of gridcell",
       colours = fire.palette,
-      cuts = seq(0, 1.0, 0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -503,7 +456,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
-      cuts = seq(0, 1.0, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -512,7 +464,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "mm/year",
       colours = fields::tim.colors,
-      cuts = seq(0, 1000, 50),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -521,7 +472,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "fraction",
       colours = fields::tim.colors,
-      cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE"),
       aggregate.method = "mean"),
   
@@ -531,7 +481,6 @@ dgvm.quantities <- list(
       type = "irregular",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(-1, 3, 0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -540,7 +489,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "degree days",
       colours = fields::tim.colors,
-      cuts = seq(0, 5000, 100),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   
@@ -550,8 +498,15 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "",
       colours = fields::tim.colors,
-      cuts = seq(0, 20, 0.5),
       aggregate.method = "mean",
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "cton_leaf",
+      name = "C:N leaf",
+      type = "PFT",
+      units = "ckgC/kgN",
+      colours = fields::tim.colors,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -560,7 +515,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "gN/m^2",
       colours = cmass.palette,
-      cuts = seq(0,2000,1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -569,7 +523,6 @@ dgvm.quantities <- list(
       type = "pools",
       units = "kgN/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,2,0.01),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -578,7 +531,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgN/ha",
       colours = fields::tim.colors,
-      cuts = seq(0,500,10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -587,7 +539,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "gN/ha",
       colours = fields::tim.colors,
-      cuts = seq(0,500,10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -596,7 +547,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "kgN/ha",
       colours = fields::tim.colors,
-      cuts = seq(0,500,10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -605,7 +555,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "kgN/ha",
       colours = fields::tim.colors,
-      cuts = seq(0,500,10),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -614,7 +563,6 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgN/ha",
       colours = fields::tim.colors,
-      cuts = seq(0,2,0.1),
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
  
   
@@ -631,7 +579,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.05),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -640,7 +587,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mins",
       colours = fields::tim.colors,
-      cuts = seq(0,8,0.2),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -657,7 +603,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kW/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0, 5000, 50),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -666,7 +611,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -675,7 +619,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -684,7 +627,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -693,7 +635,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -702,7 +643,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -711,7 +651,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -720,7 +659,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -729,7 +667,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -738,7 +675,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -747,7 +683,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      cuts = seq(0,1,0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -756,7 +691,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "days",
       colours = fields::tim.colors,
-      cuts = seq(0, 366, 12),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -765,7 +699,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      cuts = seq(0, 100000, 5000),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -774,7 +707,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "",
       colours = reversed.tim.colors,
-      cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -783,7 +715,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "",
       colours = reversed.tim.colors,
-      cuts = seq(0, 1, 0.02),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -792,7 +723,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "m/min",
       colours = fields::tim.colors,
-      cuts = seq(0, 100, 0.2),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -801,7 +731,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "m/min",
       colours = fields::tim.colors,
-      cuts = seq(0, 1, 0.02),
       aggregate.method = "mean",
       model = c("LPJ-GUESS-SPITFIRE")),
   
@@ -812,7 +741,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "m^3/m^3",
       colours = fields::tim.colors,
-      cuts = seq(0, 30, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -821,7 +749,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "m^2/m^3",
       colours = fields::tim.colors,
-      cuts = seq(25, 100, 5),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -830,7 +757,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      cuts = seq(0.2, 0.4, 0.01),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -839,7 +765,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      cuts = seq(0, 1, 0.05),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -848,7 +773,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mins",
       colours = fields::tim.colors,
-      cuts = seq(0, 250, 5),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -857,7 +781,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "m",
       colours = fields::tim.colors,
-      cuts = seq(0, 30, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -866,7 +789,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "m/min",
       colours = fields::tim.colors,
-      cuts = seq(0, 30, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -875,7 +797,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "ha",
       colours = fields::tim.colors,
-      cuts = seq(0, 100, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -884,7 +805,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "ign/day",
       colours = fields::tim.colors,
-      cuts = seq(0, 100, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -893,7 +813,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "ign/day",
       colours = fields::tim.colors,
-      cuts = seq(0, 5, 0.1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -902,7 +821,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mins",
       colours = fields::tim.colors,
-      cuts = seq(0, 250, 5),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -911,7 +829,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "m",
       colours = fields::tim.colors,
-      cuts = seq(0, 30, 1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -920,7 +837,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "kW/m",
       colours = fields::tim.colors,
-      cuts = seq(0, 500000, 5000),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -929,7 +845,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      cuts = seq(0, 5000000, 5000),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -938,7 +853,6 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "min",
       colours = fields::tim.colors,
-      cuts = seq(0, 10, 0.1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -947,7 +861,6 @@ dgvm.quantities <- list(
       type = "annual",
       units = "days",
       colours = fields::tim.colors,
-      cuts = seq(0,31,1),
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -956,7 +869,6 @@ dgvm.quantities <- list(
                            type = "annual",
                            units = "days",
                            colours = fields::tim.colors,
-                           cuts = seq(0,20,1),
                            model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -965,7 +877,6 @@ dgvm.quantities <- list(
                 type = "monthly",
                 units = "kgC/m^2",
                 colours = fields::tim.colors,
-                cuts = seq(0,1.0,0.1),
                 aggregate.method = "mean",
                 model = c("LPJ-GUESS-SPITFIRE")),
   
@@ -975,7 +886,6 @@ dgvm.quantities <- list(
                     type = "monthly",
                     units = "kgC/m^2",
                     colours = fields::tim.colors,
-                    cuts = seq(0,1.0,0.05),
                     aggregate.method = "mean",
                     model = c("LPJ-GUESS-SPITFIRE")),
   
@@ -985,7 +895,6 @@ dgvm.quantities <- list(
                     type = "monthly",
                     units = "kgC/m^2",
                     colours = fields::tim.colors,
-                    cuts = seq(0,1.0,0.1),
                     aggregate.method = "mean",
                     model = c("LPJ-GUESS-SPITFIRE")),
   
@@ -996,7 +905,6 @@ dgvm.quantities <- list(
                     type = "monthly",
                     units = "days",
                     colours = fields::tim.colors,
-                    cuts = seq(0,31,1),
                     aggregate.method = "sum",
                     model = c("LPJ-GUESS-SPITFIRE")),
   
@@ -1006,7 +914,6 @@ dgvm.quantities <- list(
                          type = "monthly",
                          units = "days",
                          colours = fields::tim.colors,
-                         cuts = seq(0,31,1),
                          aggregate.method = "sum",
                          model = c("LPJ-GUESS-SPITFIRE"))
   

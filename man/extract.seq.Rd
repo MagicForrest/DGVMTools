@@ -22,4 +22,3 @@ Returns, if possible, an regular spaced sorted vector vector. If more than half 
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
-

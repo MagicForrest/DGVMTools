@@ -45,10 +45,9 @@ for (i in 1:ncol(x)) {
         c(0, cos(si[2]) * si[1] * sum(x[, i])), lty="dotted", col="blue")
 }
 }
-\author{
-Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
-}
 \references{
 Charles G. Markhan (1970) Seasonality of precipitation in the United States, Annals of the Association of American Geographers, 60:3, 593-597, DOI: \href{http://dx.doi.org/10.1111/j.1467-8306.1970.tb00743.x}{10.1111/j.1467-8306.1970.tb00743.x}
 }
-
+\author{
+Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
+}

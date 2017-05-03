@@ -26,4 +26,3 @@ Blah
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-
