@@ -6,29 +6,42 @@
 #' @param mo the \code{\linkS4class{ModelObject}}.
 #' @param columns which colums to write as variable (TODO: option as dimension)
 #' @param as.flux Converts the data to fluxes by dividing by the respective number of days, if TRUE or "day[s]". If set to "^s*", the divided by 86400 additionally.
+#' @param fill.value value to use for _FillValue variable attribute.
+#' @param invert.lat latitude dimension starts in the north.
 #' @param globalAttr a named vector of additional global attributes.
 #' @param compress should NetCDF4 compression be turned on. Either TRUE (compression level 4) of an integer between 1 and 9.
 #' @param chunks chunk size for faster readability. If set make sure its length agrees with the data dimensions.
 #' @param reduce reduced grid, only valid points are written. Spatial dimensions are reduced to one landID (TODO, currently not implemented).
+#' @param start.year start year for units attribute of time axis.
+#' @param time.unit unit for time axis units attribute, so far "days", "months" and "years" are valid. Default: "days".
 #' @param leap turn leap years on (default off; TODO, currently not implemented).
-#' @param invertlat latitude dimension starts in the north.
 #' @param verbose print some information
 #'
 #' @import data.table
 #' @import ncdf4
 #' @importFrom reshape2 acast
 ## TODO: Add daily data compatibility
-write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=NULL,
-                     compress=NA, chunks=NA, reduce=FALSE, invertlat=FALSE, leap=FALSE, verbose=FALSE) {
+write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=FALSE, invert.lat=FALSE, 
+                     globalAttr=NULL, compress=NA, chunks=NA, reduce=FALSE,
+                     leap=FALSE, start.year=NA, time.unit="days",
+                     verbose=FALSE) {
 
   Lon=Lat=Year=variable=NULL
 
+  if (!is.null(fill.value)) {
+    if (is.na(fill.value)) {
+      fill.value = NULL
+    } else if (is.logical(fill.value) && !fill.value) {
+      fill.value = NULL
+    }
+  }
+  
   ## check mandatory input
   if (is.na(filename))
     stop("No filename given!")
   if (class(mo) != "ModelObject" && attr(class(mo), "package") != "DGVMTools")
     stop("'mo' is not a DGVMTools::ModelObject!")
-  
+
   ## set compression
   if (!is.na(compress)) {
     if (is.logical(compress) && compress) {
@@ -77,7 +90,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
     if (!mo@is.spatially.averaged) {
       lon <- extract.seq(mo@data$Lon)
       dims[['lon']] <- ncdim_def("lon", "degrees_east", lon, unlim=FALSE, create_dimvar=TRUE, longname="longitude")
-      if (invertlat) {
+      if (invert.lat) {
         lat <- extract.seq(mo@data$Lat, descending=TRUE)
       } else {
         lat <- extract.seq(mo@data$Lat)
@@ -110,16 +123,42 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
   ##       daily makes not really sense, or does it?
   if (!mo@is.temporally.averaged) {
     years <- sort(unique(mo@data$Year))
+    if (leap) {
+      time <- is.leapyear(years, doy=TRUE)
+    } else {
+      time <- rep(365, length(years))
+    }
+    if (is.na(start.year))
+      start.year = years[1]
+      nc.time.offset = 0
     if (!monthly && !daily) {
       if (verbose)
         message("Annual data.")
-      if (leap) {
-        time <- is.leapyear(years, doy=TRUE)
+      if (time.unit == "days") {
+        if (start.year == years[1]) {
+          nc.time.offset <- 0
+        } else if (leap && start.year < years[1]) {
+          time.offset <- sum(is.leapyear(start.year:(years[1]-1), doy=TRUE))
+        } else if (start.year < years[1]) {
+          nc.time.offset = 365 * (years[1] - start.year)
+        } else {
+          stop(paste0("start.year (", start.year, ") is later than first record (", years[1],")!"))
+        }
+        nc.time <- time
+      } else if (time.unit == "years") {
+        nc.time <- rep(1, length(years))
+        if (start.year == years[i]) {
+          nc.time.offset <- 0
+        } else if (start.year < years[1]) {
+          nc.time.offset <- years[i] - start.year
+        } else {
+          stop(paste0("start.year (", start.year, ") is later than first record (", years[1],")!"))
+        }
       } else {
-        time <- rep(365, length(years))
+        stop(paste0("time.unit '", time.unit, "' not compatible with annual data."))
       }
-      dims[['time']] <- ncdim_def("time", paste0("days since ", years[1], "-01-01 00:00:00"),
-                                  cumsum(time), unlim=TRUE, create_dimvar=TRUE)
+      dims[['time']] <- ncdim_def("time", paste0(time.unit, " since ", start.year, "-01-01 00:00:00"),
+                                  cumsum(nc.time) + nc.time.offset, unlim=TRUE, create_dimvar=TRUE)
     } else if (monthly) {
       if (verbose)
         message("Monthly data.")
@@ -130,14 +169,38 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
           c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
         }
       })
-      dims[['time']] <- ncdim_def("time", paste0("days since ", years[1], "-01-01 00:00:00"),
-                                  cumsum(time), unlim=TRUE, create_dimvar=TRUE)
+      if (time.unit == "days") {
+        if (start.year == years[1]) {
+          time.offset <- 0
+        } else if (leap && start.year < years[1]) {
+          nc.time.offset <- sum(is.leapyear(start.year:(years[1]-1), doy=TRUE))
+        } else if (start.year < years[1]) {
+          nc.time.offset <- 365 * (years[1] - start.year)
+        } else {
+          stop(paste0("start.year (", start.year, ") is later than first record (", years[1],")!"))
+        }
+        nc.time <- time
+      } else if (time.unit == "months") {
+        nc.time <- rep(1, 12 * length(years))
+        if (start.year == years[1]) {
+          nc.time.offset <- 0
+        } else if (start.year < years[1]) {
+          nc.time.offset <- 12 * (years[1] - start.year)
+        } else {
+          stop(paste0("start.year (", start.year, ") is later than first record (", years[1],")!"))
+        }
+      } else {
+        stop(paste0("time.unit '", time.unit, "' not compatible with monthly data."))
+      }
+      dims[['time']] <- ncdim_def("time", paste0(time.unit, " since ", start.year, "-01-01 00:00:00"),
+                                  cumsum(nc.time) + nc.time.offset, unlim=TRUE, create_dimvar=TRUE)
     } else if (daily) {
       if (verbose)
         message("Daily data.")
       stop("'daily' still work in progress.")
     }
   } else if (!monthly && !daily) {
+    stop("multiannual averages currently not working!")
     if (verbose)
       message("Annual data (multi-annual average).")
     time <- 365
@@ -202,10 +265,10 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
       if (is.na(columns))
         columns = colnames(mo@data)[! (colnames(mo@data) %in% c("Lon", "Lat", "Year", "Day", "landid"))]
       for (name in columns)
-        vars[[name]] <- ncvar_def(name, unit, dims, longname=paste0(mo@quant@name, " (", name, ")"), prec="float",
+        vars[[name]] <- ncvar_def(name, unit, dims, fill.value, longname=paste0(mo@quant@name, " (", name, ")"), prec="float",
                                   compression=compress, chunksizes=chunks)
   } else {
-    vars[[mo@quant@id]] <- ncvar_def(mo@quant@id, unit, dims, longname=mo@quant@name,
+    vars[[mo@quant@id]] <- ncvar_def(mo@quant@id, unit, dims, fill.value, longname=mo@quant@name,
                                      prec="float", compression=compress, chunksizes=chunks)
   }
 
@@ -241,10 +304,9 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
         ncvar_put(ncout, mo@quant@id, data)
       }
     } else {
-      data <- modelObject2Array(mo@data, FALSE, invertlat, verbose=verbose)
+      data <- modelObject2Array(mo@data, FALSE, invert.lat, verbose=verbose)
       if (as.flux)
         data <- data / array(rep(time * as.flux, each=length(lon) * length(lat)), dim(data))
-      
       ncvar_put(ncout, mo@quant@id, data)
     }
   } else if (daily) {
@@ -256,22 +318,18 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, globalAttr=N
       if (reduce) {
         if (mo@is.temporally.averaged) {
           data <- eval(parse(text=paste0("mo@data$", name)))
-          
           if (as.flux)
             data <- data / (time * as.flux)
-          
           ncvar_put(ncout, name, data)
           ncatt_put(ncout, name, "coordinates", "lon lat")
         } else {
           data <- acast(mo@data, landid~Year, value.var=name)
-          
           if (as.flux)
             data <- data / array(rep(time * as.flux, each=nlandid), dim(data))
           ncvar_put(ncout, name, data)
         }
       } else {
-        data <- modelObject2Array(mo@data, name, invertlat, verbose=verbose)
-
+        data <- modelObject2Array(mo@data, name, invert.lat, verbose=verbose)
         if (as.flux && mo@is.temporally.averaged) {
           data <- data / time
         } else if (as.flux) {
