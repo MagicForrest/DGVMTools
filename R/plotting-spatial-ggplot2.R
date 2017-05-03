@@ -364,12 +364,21 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   if(return.data) return(data.toplot)
   
   
-  ### CALCULATE THE RANGE OF LONGITUDE AND LATITUDE TO BE PLOTTED
+  ### CALCULATE THE RANGE OF LONGITUDE AND LATITUDE TO BE PLOTTED AND CROP
   all.lons <- sort(unique(data.toplot[["Lon"]]))
   all.lats <- sort(unique(data.toplot[["Lat"]]))
   
+  # y cropping
   if(is.null(ylim)) ylim <- c(min(all.lats), max(all.lats)) 
+  else {
+    data.toplot <- data.toplot[Lat >= ylim[1] & Lat <= ylim[2],]
+  }
+  
+  # x cropping
   if(is.null(xlim)) xlim <- c(min(all.lons), max(all.lons)) 
+  else {
+    data.toplot <- data.toplot[Lon >= xlim[1] & Lon <= xlim[2],]
+  }
   
   
   
@@ -557,7 +566,9 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     }
     else {
       if(length(unique(data.toplot[["Layer"]])) > 1) title <- makePlotTitle(quant@name, layer = NULL, source = NULL, period = temporal.extent) 
-      else title <- makePlotTitle(quant@name, layer = layers, source = NULL, period = temporal.extent) 
+      else {
+        title <- makePlotTitle(quant@name, layer = layers, source = NULL, period = temporal.extent) 
+      }
     }
   }
   

@@ -279,7 +279,7 @@ calcBiomes <-function(input, scheme){
 #' @return A ModelObject (or data.table) with the new layers added
 #' @import data.table
 #' @export
-#' @seealso expandslayers getVegFractions
+#' @seealso expandLayers getVegFractions
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
@@ -287,7 +287,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   ### HANDLE CLASS OF INPUT OBJECT
   # Here allow the possibility to handle both ModelObjects and data.tables directly (for internal calculations)
-  
+ 
   # if it is a ModelObject 
   if(is.ModelObject(input)) {
     # We get a warning about a shallow copy here, suppress it

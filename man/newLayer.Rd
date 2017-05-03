@@ -36,7 +36,7 @@ This allows all lifeforms totals in a ModelObject to be calculated using a simpl
 See documention of \code{expandLayers} for details.
 }
 \seealso{
-expandslayers getVegFractions
+expandLayers getVegFractions
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
