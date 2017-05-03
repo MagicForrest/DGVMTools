@@ -146,10 +146,10 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
         nc.time <- time
       } else if (time.unit == "years") {
         nc.time <- rep(1, length(years))
-        if (start.year == years[i]) {
+        if (start.year == years[1]) {
           nc.time.offset <- 0
         } else if (start.year < years[1]) {
-          nc.time.offset <- years[i] - start.year
+          nc.time.offset <- years[1] - start.year
         } else {
           stop(paste0("start.year (", start.year, ") is later than first record (", years[1],")!"))
         }
