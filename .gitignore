@@ -3,3 +3,5 @@
 .RData
 .Rbuildignore
 DGVMTools.Rproj
+man/*.Rd
+
