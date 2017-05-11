@@ -70,7 +70,7 @@ cdo <- function(fun, ifile, ofile, grid = NULL, return.raster = FALSE, verbose =
     if(verbose) message("CDO available")
     
     # remap functions
-    if(fun == "remaplaf" | fun == "remapcon" | fun == "remapcon2"){
+    if(fun == "remaplaf" | fun == "remapcon" | fun == "remapcon2" | fun == "remapbil" | fun == "remapbic" ){
       
       # if target grid not specified
       if(is.null(grid)) {

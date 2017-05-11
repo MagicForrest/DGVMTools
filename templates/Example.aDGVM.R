@@ -9,23 +9,21 @@ library(DGVMTools)
 ##### PREAMBLE: Define the run settings and an averaging period
 
 # Define the RUNs to process
-run1 <- defineVegRun(run.dir = "/home/forrest/FastData/RVCExamples/Example.aDGVM/Run1",
+run1 <- defineModelRun(run.dir = "/home/forrest/FastData/RVCExamples/Example.aDGVM/Run1",
                     model = "aDGVM",
                     pft.set = aDGVM.PFTs,
                     id = "44_0", # this is, by former aDGVM way, <runid>_<fire>
-                    description= "Example aDGVM run 1",
-                    driving.data = "CRU",
-                    map.overlay = "world"
+                    name= "Example aDGVM run 1",
+                    driving.data = "CRU"
 )
 
 # Define the RUNs to process
-run2 <- defineVegRun(run.dir = "/home/forrest/FastData/RVCExamples/Example.aDGVM/Run2",
+run2 <- defineModelRun(run.dir = "/home/forrest/FastData/RVCExamples/Example.aDGVM/Run2",
                      model = "aDGVM",
                      pft.set = aDGVM.PFTs,
                      id = "45_0", # this is, by former aDGVM way, <runid>_<fire>
-                     description= "Example aDGVM run 2",
-                     driving.data = "CRU",
-                     map.overlay = "world"
+                     name= "Example aDGVM run 2",
+                     driving.data = "CRU"
 )
 
 # Define a TIME PERIOD over which to average - this is ignored, the last 20 years is hard-coded
@@ -40,48 +38,46 @@ period = new("TemporalExtent", name = "Reference", start = 81, end = 100)
 variable <- "lai"
 
 # Read the lai from both runs
-lai.1 <- getVegSpatial(run = run1, 
-                       period = period,
+lai.1 <- getModelObject(run = run1, 
+                       temporal.extent  = period,
+                       temporally.average = TRUE,
                        var = variable, 
                        adgvm.scheme = 1,
                        write = TRUE,
-                       reread.file = FALSE)
+                       read.full = TRUE)
 
-lai.2 <- getVegSpatial(run = run2, 
-                       period = period, 
+lai.2 <- getModelObject(run = run2, 
+                       temporal.extent = period, 
+                       temporally.average = TRUE,
                        var = variable, 
                        adgvm.scheme = 1,
                        write = TRUE,
-                       reread.file = FALSE)
+                       read.full = TRUE)
 
-stop()
+
 
 ### Simple summary plots of each "PFT" - one plot for each PFT and a summary plot of them all
-plotVegMaps(lai.1, 
-            doSummary = TRUE, 
-            doIndividual = TRUE)
 
-plotVegMaps(lai.2, 
-            doSummary = TRUE, 
-            doIndividual = TRUE)
+print(plotSpatial2(lai.1))
+print(plotSpatial2(lai.2))
+
 
 ### Fractions of each PFT
 
 # calculate the PFT fractions
-lai.reference.period <- divideLayers(lai.reference.period, layers = "pfts")
+lai.1 <- divideLayers(lai.1, layers = "pfts")
 
 # Plot the tree and grass fraction
-plotVegMaps(lai.reference.period, 
-            layers = c("pfts"),
-            tag = "PFT.Fractions",
-            special = "fraction")
-
+print(plotSpatial2(lai.1,
+                   layers = c("TrFraction", "C4GFraction"),
+                   override.cols = colorRampPalette(c("grey85", "black"))(20)))
 
 
 
 # calculate and plot dominant PFT
-lai.reference.period <- addDominantPFT(lai.reference.period)
-plotDominantPFTMap(lai.reference.period)
+lai.1 <- newLayer(lai.1, layers = c("PFT"), method = "max")
+print(plotSpatial2(data = lai.1, 
+                   layer = c("MaxPFT")))
 
 
 

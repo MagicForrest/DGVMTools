@@ -67,7 +67,7 @@ plotTemporal <- function(input.data,
         temp.dt <- copy(x.object@data)
         if(is.ModelObject(x.object)) temp.dt[,"Source" := x.object@run@name]
         if(is.DataObject(x.object)) temp.dt[,"Source" := x.object@name]
-        plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt))
+        plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
         rm(temp.dt)
         
         # also make a superset of all the PFTs
@@ -88,7 +88,7 @@ plotTemporal <- function(input.data,
         temp.dt <- copy(x.object@data)
         if(is.ModelObject(x.object)) temp.dt[,"Source" := x.object@run@name]
         if(is.DataObject(x.object)) temp.dt[,"Source" := x.object@name]
-        plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt))
+        plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
         rm(temp.dt)
         
         # also make a superset of all the PFTs

@@ -321,6 +321,7 @@ convertMonthlyScheme1 <- function( runid, fire, directory )
 #' @seealso \code{getQuantity_aDGVM_Scheme2}
 getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
 {
+
   fname <- file.path(run@run.dir, paste("pop_", run@id,".nc", sep=""))
 
   cat( "Convert", fname, "\n" )
@@ -393,6 +394,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
 #' @seealso \code{getQuantity_aDGVM_Scheme1}
 getQuantity_aDGVM_Scheme2 <- function(run, period, variable)
 {
+
   fname <- file.path(run@run.dir, paste("trait_", run@id,".nc", sep=""))
   
   cat( "Convert", fname, "\n" )

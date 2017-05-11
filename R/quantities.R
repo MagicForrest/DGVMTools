@@ -182,7 +182,7 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "m^2/m^2",
       colours = lai.palette,
-      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")),
   
   new("Quantity",
       id = "mlai",
@@ -402,9 +402,9 @@ dgvm.quantities <- list(
   
   new("Quantity",
       id = "mwcont_upper",
-      name = "Monthly Upper Soil Layer WC",
+      name = "Monthly Upper Soil Layer",
       type = "monthly",
-      units = "",
+      units = "fraction",
       colours = reversed.tim.colors,
       aggregate.method = "mean",
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
@@ -413,7 +413,7 @@ dgvm.quantities <- list(
       id = "mwcont_lower",
       name = "Monthly Lower Soil Layer",
       type = "monthly",
-      units = "",
+      units = "fraction",
       colours = reversed.tim.colors,
       aggregate.method = "mean",
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
@@ -574,6 +574,37 @@ dgvm.quantities <- list(
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
  
   
+  new("Quantity",
+      id = "mprec",
+      name = "Monthly Precipitation",
+      type = "monthly",
+      units = "mm",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+     id = "mtemp",
+     name = "Mean Monthly Temperature",
+     type = "monthly",
+     units = "deg C",
+     colours = fields::tim.colors,
+     model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mwmass_stem",
+      name = "Water Stored in Stem",
+      type = "monthly",
+      units = "kgH20/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mwmass_leaf",
+      name = "Water Stored in Leaves",
+      type = "monthly",
+      units = "kgH20/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   
   
