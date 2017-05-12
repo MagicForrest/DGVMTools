@@ -77,7 +77,7 @@ combineShadeTolerance <- function(input){
       PFT <- PFT.data[[colname]]
       
       # if PFT is to be combined
-      if(tolower(PFT@combine) != "no"){
+      if(!(tolower(PFT@combine) == "no" && tolower(PFT@combine) == "none")){
         
         # if PFT to be added is present the combine them and set the shade intolerant PFT to zero, if not send a warning and do nothing
         if(!is.null(PFT.data[[PFT@combine]])){
@@ -99,69 +99,6 @@ combineShadeTolerance <- function(input){
 }
 
 
-
-
-###################################################################################################
-######### BIOME CLASSIFICATION
-#'
-#' Perform biome classification using this ModelObject
-#' 
-#' This is very inflexible as it only allows the calcualtion of biomes with only one Quantity.  This is not suitable for many biomes schemes, 
-#' so this will need to be re-written
-#' 
-#' 
-#' @param input The ModelObject for which to calculate the biomes.
-#' @param scheme The biome scheme to use.
-#' @return A ModelObject with the biomes added
-#' @export
-#' @import data.table
-#' @seealso BiomeScheme-class
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-addBiomes <-function(input, scheme){
-  
-  message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
-  
-  Grass = NULL
-  
-  # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
-  if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
-  
-  # If GDD5 required for classification
-  if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
-    # get gdd5
-    stop("input@run is not a class 'ModelRun' it is class 'ModelRunInfo'!")
-    gdd5 <- getVegSpatial(input@run, "gdd5", input@temporal.extent, read.full = FALSE)
-    dt <- input@data
-    dt.gdd5 <- gdd5@data
-    dt <- dt[dt.gdd5]
-    input@data <- dt
-  }
-  
-  # Get the dominant tree and dominant woody PFTs
-  input <- newLayer(input, layers = scheme@max.needed, method = "max")
-  
-  if(!"Grass" %in% names(input@data) ) {
-    input@data[, Grass := 0]
-  }
-  
-  # Get the totals required
-  input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
-  
-  # Get the fractions required
-  input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
-  input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
-  input <- divideLayers(input, layers = scheme@fraction.of.woody, denominators = list("Woody"))
-  
-  # We get a warning about a shallow copy here, suppress it
-  suppressWarnings(dt <- input@data)
-  
-  # Apply biome rules and return
-  if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL] }
-  suppressWarnings(dt[, scheme@id := apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1)])
-  input@data <- dt
-  return(input)
-  
-}
 
 ###################################################################################################
 ######### BIOME CLASSIFICATION
@@ -566,7 +503,7 @@ getSTInfo <- function(x, info = "names") {
   
   # sort classes
   if(is.ModelObject(x) | is.DataObject(x) | is.ComparisonLayer(x)) x <- x@data
-  else if(this.class != "data.table" ) stop(paste("Cant get spatio-temporal info from class", class(x)[1], sep = " "))
+  else if(class(x)[1] != "data.table" ) stop(paste("Cant get spatio-temporal info from class", class(x)[1], sep = " "))
   
   # set up list and vector/columns present
   if(info == "names") {

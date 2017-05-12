@@ -27,8 +27,6 @@ Generally these are not created directly by the user, but rather by functions li
 \item{\code{temporal.extent}}{A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.}
 
 \item{\code{correction.layer}}{A character string defining a multiplicative corection layer that can be used for the data set}
-
-\item{\code{comparisons}}{A list of SpatialComparison objects, one for each ModelObject which has been compared to this DataObject}
 }}
 
 \author{

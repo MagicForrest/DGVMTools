@@ -15,6 +15,7 @@
 
 getSaatchi2011 <- function(location = "/data/forrest/Biomass/", resolution = "HD") {
   
+  Lon = Lat = NULL
   
   #### NEW ORDER, CODE BELOW NOW REDUNDANT
   

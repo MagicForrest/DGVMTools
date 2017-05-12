@@ -26,7 +26,7 @@ lpj.global.PFTs <- list(
             phenology = "Evergreen",
             zone = "Boreal",
             colour = "darkblue",
-            combine = "no"
+            combine = "None"
   ),
   
   BINE = new("PFT",
@@ -48,20 +48,10 @@ lpj.global.PFTs <- list(
             phenology = "Summergreen",
             zone = "Boreal",
             colour = "cornflowerblue",
-            combine = "no"
+            combine = "None"
   ),
   
-  BIBS = new("PFT",
-             id = "BIBS",
-             name = "Boreal Shade-intolerant B/leaved Summergreen Tree",
-             lifeform = "Tree",
-             leafform = "Broadleaved",
-             phenology = "Summergreen",
-             zone = "Boreal",
-             colour = "cyan",
-             combine = "no"
-  ),
-  
+ 
   IBS = new("PFT",
             id = "IBS",
             name = "Shade-intolerant B/leaved Summergreen Tree",
@@ -70,7 +60,7 @@ lpj.global.PFTs <- list(
             phenology = "Summergreen",
             zone = "Temperate",
             colour = "chartreuse",
-            combine = "no"
+            combine = "None"
   ),
   
   # TEMPERATE TREES
@@ -83,7 +73,7 @@ lpj.global.PFTs <- list(
              phenology = "Evergreen",
              zone = "Temperate",
              colour = "darkgreen",
-             combine = "no"
+             combine = "None"
   ),
   
   TeNE = new("PFT",
@@ -94,7 +84,7 @@ lpj.global.PFTs <- list(
              phenology = "Evergreen",
              zone = "Temperate",
              colour = "lightseagreen",
-             combine = "no"
+             combine = "None"
   ),
   
   TeBS = new("PFT",
@@ -105,18 +95,9 @@ lpj.global.PFTs <- list(
              phenology = "Summergreen",
              colour = "darkolivegreen3",
              zone = "Temperate",
-             combine = "no"
+             combine = "None"
   ),
-  TeIBS = new("PFT",
-              id = "TeIBS",
-              name = "Temperate Shade-Intolerant B/leaved S/green Tree",
-              lifeform = "Tree",
-              leafform = "Broadleaved",
-              phenology = "Summergreen",
-              colour = "darkolivegreen3",
-              zone = "Temperate",
-              combine = "TeBS"
-  ),
+ 
   
   # TROPICAL TREES
   
@@ -128,7 +109,7 @@ lpj.global.PFTs <- list(
              phenology = "Evergreen",
              zone = "Tropical",
              colour = "orchid4",
-             combine = "no"
+             combine = "None"
   ),
   
   
@@ -151,19 +132,9 @@ lpj.global.PFTs <- list(
              phenology = "Raingreen",
              zone = "Tropical",
              colour = "palevioletred",
-             combine = "no"
+             combine = "None"
   ),
   
-  TrTBR = new("PFT",
-              id = "TrTBR",
-              name = "Tropical Broadleaved Raingreen Tree",
-              lifeform = "Tree",
-              leafform = "Broadleaved",
-              phenology = "Raingreen",
-              zone = "Tropical",
-              colour = "maroon",
-              combine = "no"
-  ),
   
   # GRASSES
   
@@ -175,7 +146,7 @@ lpj.global.PFTs <- list(
             phenology = "GrassPhenology",
             zone = "NA",
             colour = "lightgoldenrod1",
-            combine = "no"
+            combine = "None"
   ),
   
   C4G = new("PFT",
@@ -186,77 +157,10 @@ lpj.global.PFTs <- list(
             phenology = "GrassPhenology",
             zone = "NA",
             colour = "sienna2",
-            combine = "no"
+            combine = "None"
   ),
   
-  # SHRUBS
-  
-  BES = new("PFT",
-            id = "BES",
-            name = "Boreal Evergreen Shrub",
-            lifeform = "Shrub",
-            leafform = "Any",
-            phenology = "Evergreen",
-            zone = "Boreal",
-            colour = "darkred",
-            combine = "no"
-  ),
-  
-  MRS = new("PFT",
-            id = "MRS",
-            name = "Mediterranean Raingreen Shrub",
-            lifeform = "Shrub",
-            leafform = "Any",
-            phenology = "Raingreen",
-            zone = "Mediterranean",
-            colour = "red",
-            combine = "no"
-  ),
-  
-  
-  MESb = new("PFT",
-             id = "MESb",
-             name = "Mediterranean Evergreen Shrub",
-             lifeform = "Shrub",
-             leafform = "Any",
-             phenology = "Evergreen",
-             zone = "Mediterranean",
-             colour = "red",
-             combine = "no"
-  ),
-  
-  MeES = new("PFT",
-             id = "MeES",
-             name = "Mediterranean Evergreen Shrub",
-             lifeform = "Shrub",
-             leafform = "Any",
-             phenology = "Evergreen",
-             zone = "Mediterranean",
-             colour = "red",
-             combine = "no"
-  ),
-  
-  MRSb = new("PFT",
-             id = "MRSb",
-             name = "Mediterranean Evergreen Shrub",
-             lifeform = "Shrub",
-             leafform = "Any",
-             phenology = "Raingreen",
-             zone = "Mediterranean",
-             colour = "pink",
-             combine = "no"
-  ),
-  
-  MeRS = new("PFT",
-             id = "MeRS",
-             name = "Mediterranean Evergreen Shrub",
-             lifeform = "Shrub",
-             leafform = "Any",
-             phenology = "Raingreen",
-             zone = "Mediterranean",
-             colour = "pink",
-             combine = "no"
-  ),
+ 
   
   
   Total = new("PFT",
@@ -267,86 +171,9 @@ lpj.global.PFTs <- list(
               phenology = "NA",
               zone = "NA", 
               colour = "Black",
-              combine = "no"
+              combine = "None"
   ),
-  
-  TeESh = new("PFT",
-              id = "TeESh",
-              name = "Temperate Evergreen Shrub",
-              lifeform = "Shrub",
-              leafform = "Any",
-              phenology = "Evergreen",
-              zone = "Temperate",
-              colour = "red",
-              combine = "no"
-  ),
-  
-  TeRSh = new("PFT",
-              id = "TeRSh",
-              name = "Temperate Raingreen Shrub",
-              lifeform = "Shrub",
-              leafform = "Any",
-              phenology = "Raingreen",
-              zone = "Temperate",
-              colour = "pink",
-              combine = "no"
-  ),
-  
-  TeSSh = new("PFT",
-              id = "TeSSh",
-              name = "Temperate Summergreen Shrub",
-              lifeform = "Shrub",
-              leafform = "Any",
-              phenology = "Summergreen",
-              zone = "Temperate",
-              colour = "maroon1",
-              combine = "no"
-  ),
-  
-  BESh = new("PFT",
-             id = "BESh",
-             name = "Boreal Evergreen Shrub",
-             lifeform = "Shrub",
-             leafform = "Any",
-             phenology = "Evergreen",
-             zone = "Boreal",
-             colour = "lightsteelblue4",
-             combine = "no"
-  ),
-  
-  BSSh = new("PFT",
-             id = "BSSh",
-             name = "Boreal Summergreen Shrub",
-             lifeform = "Shrub",
-             leafform = "Any",
-             phenology = "Summergreen",
-             zone = "Boreal",
-             colour = "lightsteelblue1",
-             combine = "no"
-  ),
-  
-  TrESh = new("PFT",
-              id = "TrESh",
-              name = "Tropical Evergreen Shrub",
-              lifeform = "Shrub",
-              leafform = "Any",
-              phenology = "Evergreen",
-              zone = "Tropical",
-              colour = "saddlebrown",
-              combine = "no"
-  ),
-  
-  TrRSh = new("PFT",
-              id = "TrRSh",
-              name = "Tropical Raingreen Shrub",
-              lifeform = "Shrub",
-              leafform = "Any",
-              phenology = "Raingreen",
-              zone = "Tropical",
-              colour = "navajowhite3",
-              combine = "no"
-  ),
-  
+
   Bare = new("PFT",
              id = "Bare",
              name = "Bare ground",
@@ -355,7 +182,7 @@ lpj.global.PFTs <- list(
              phenology = "NA",
              zone = "NA",
              colour = "grey50",
-             combine = "no"
+             combine = "None"
   )
   
 )
@@ -386,7 +213,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Evergreen",
                 zone = "Temperate",
                 colour = "blue",
-                combine = "no"
+                combine = "None"
   ),
   
   BES = new("PFT",
@@ -397,7 +224,7 @@ lpj.euro.PFTs <- list(
             phenology = "Evergreen",
             zone = "Boreal",
             colour = "cyan",
-            combine = "no"
+            combine = "None"
   ),
   
   "Bet_pen" = new("PFT",
@@ -408,7 +235,7 @@ lpj.euro.PFTs <- list(
                   phenology = "Summergreen",
                   zone = "Temperate",
                   colour = "darkcyan",
-                  combine = "no"
+                  combine = "None"
   ),
   
   Bet_pub = new("PFT",
@@ -419,7 +246,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Boreal",
                 colour = "lightskyblue1",
-                combine = "no"
+                combine = "None"
   ),
   
   Car_bet = new("PFT",
@@ -430,7 +257,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Temperate",
                 colour = "peru",
-                combine = "no"
+                combine = "None"
   ),
   
   Cor_ave = new("PFT",
@@ -441,7 +268,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Temperate",
                 colour = "saddlebrown",
-                combine = "no"
+                combine = "None"
   ),
   
   Fag_syl = new("PFT",
@@ -452,7 +279,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Temperate",
                 colour = "darkgreen",
-                combine = "no"
+                combine = "None"
   ),
   
   Fra_exc = new("PFT",
@@ -463,7 +290,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Temperate",
                 colour = "darkgray",
-                combine = "no"
+                combine = "None"
   ),
   
   Jun_oxy = new("PFT",
@@ -474,7 +301,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Evergreen",
                 zone = "Mediterranean",
                 colour = "darkseagreen4",
-                combine = "no"
+                combine = "None"
   ),
   
   MRS = new("PFT",
@@ -485,7 +312,7 @@ lpj.euro.PFTs <- list(
             phenology = "Raingreen",
             zone = "Mediterranean",
             colour = "pink",
-            combine = "no"
+            combine = "None"
   ),
   
   Pic_abi = new("PFT",
@@ -496,7 +323,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Evergreen",
                 zone = "Boreal",
                 colour = "darkslateblue",
-                combine = "no"
+                combine = "None"
   ),
   
   Pic_sit = new("PFT",
@@ -507,7 +334,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Evergreen",
                 zone = "Boreal",
                 colour = "black",
-                combine = "no"
+                combine = "None"
   ),
   
   Pin_syl = new("PFT",
@@ -518,7 +345,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Evergreen",
                 zone = "Boreal",
                 colour = "darkorchid4",
-                combine = "no"
+                combine = "None"
   ),
   
   Pin_hal = new("PFT",
@@ -529,7 +356,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Evergreen",
                 zone = "Mediterranean",
                 colour = "orangered",
-                combine = "no"
+                combine = "None"
   ),
   
   Pop_tre = new("PFT",
@@ -540,7 +367,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Temperate",
                 colour = "lightsteelblue3",
-                combine = "no"
+                combine = "None"
   ),
   
   Que_coc = new("PFT",
@@ -551,7 +378,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Evergreen",
                 zone = "Mediterranean",
                 colour = "magenta",
-                combine = "no"
+                combine = "None"
   ),
   
   Que_ile = new("PFT",
@@ -562,7 +389,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Evergreen",
                 zone = "Mediterranean",
                 colour = "violetred",
-                combine = "no"
+                combine = "None"
   ),
   
   Que_pub = new("PFT",
@@ -573,7 +400,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Supra-mediterranean",
                 colour = "springgreen4",
-                combine = "no"
+                combine = "None"
   ),
   
   Que_rob = new("PFT",
@@ -584,7 +411,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Temperate",
                 colour = "seagreen3",
-                combine = "no"
+                combine = "None"
   ),
   
   Til_cor = new("PFT",
@@ -595,7 +422,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Temperate",
                 colour = "limegreen",
-                combine = "no"
+                combine = "None"
   ),
   
   Ulm_gla = new("PFT",
@@ -606,7 +433,7 @@ lpj.euro.PFTs <- list(
                 phenology = "Summergreen",
                 zone = "Temperate",
                 colour = "olivedrab",
-                combine = "no"
+                combine = "None"
   ),
   
   C3_gr = new("PFT",
@@ -617,7 +444,7 @@ lpj.euro.PFTs <- list(
               phenology = "GrassPhenology",
               zone = "Temperate-boreal",
               colour = "lightgoldenrod1",
-              combine = "no"
+              combine = "None"
   ),
   
   C4_gr = new("PFT",
@@ -628,7 +455,7 @@ lpj.euro.PFTs <- list(
               phenology = "GrassPhenology",
               zone = "Tropical",
               colour = "sienna2",
-              combine = "no"
+              combine = "None"
   ),
   
   Bare = new("PFT",
@@ -639,7 +466,7 @@ lpj.euro.PFTs <- list(
              phenology = "NA",
              zone = "NA",
              colour = "grey50",
-             combine = "no"
+             combine = "None"
   ),
   
   Total = new("PFT",
@@ -650,7 +477,7 @@ lpj.euro.PFTs <- list(
               phenology = "NA",
               zone = "NA", 
               colour = "black",
-              combine = "no"
+              combine = "None"
   )
 )
 

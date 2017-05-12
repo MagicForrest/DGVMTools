@@ -76,6 +76,9 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                          interior.lines = TRUE,
                          ...){
  
+  
+  Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
+  
   ### PREPARE DATA FOR PLOTTING
   
   # some flags tonote what type of data we have been handed

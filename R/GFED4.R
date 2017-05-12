@@ -43,6 +43,8 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
                      units = "fraction", 
                      archive = FALSE) {
   
+  Lon = Lat = NULL
+  
   # metadata for this dataset
   GFED4.scale.factor <- 0.01
   datset.id.string <- "GFED4BA"

@@ -24,10 +24,10 @@ check.cdo <- function(){
 #' @param ifile The input, either a RasterLayer/Stack/Brick or a character string pointing to netCDF file on disk
 #' @param ofile Character sting for the output file (path on disk)
 #' @param grid Character string specifying the grid for the output file. Can be a code (sag, "n31' or "r192x145", or a file on disk), see CDO documentation  
-#' @param varname If operating on a raster (not a netCDF file) the name for the variable in the resulting netCDF file.
 #' @param return.raster If TRUE, read the resulting netCDF file and return it is a a raster
 #' @param verbose If TRUE print some progress and diagnostic output
 #' @param remove.temps Logical, if TRUE remove the intermediate .nc files from disk
+#' @param ... Other arguments to pass to \code{writeRaster}
 #' 
 #' Basically just calls CDO on the commandline.  If the input arguments is an R RasterLayer/Stack/Brick, then is uses writeRaster() to write a netCDF file for processing (in the directory of the output file)
 #' 

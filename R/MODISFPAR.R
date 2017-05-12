@@ -15,7 +15,7 @@
 
 getMODISFPAR <- function(location = "/data/forrest/FPAR/", resolution = "original", average = TRUE) {
 
-  Lon = Lat = Year = NULL
+  Lon = Lat = Year = Total = NULL
     
   if(resolution == "original"){
     

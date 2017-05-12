@@ -28,6 +28,10 @@ This class stores the rasters (model, data, difference and precentage difference
 
 \item{\code{sd.diff}}{The standard deviation of the difference between the model and the the data (all gridcells)}
 
+\item{\code{MM}}{The Manhattan Metric (for comparisons of relative proportions)}
+
+\item{\code{SCD}}{The Manhattan Metric (for comparisons of relative proportions)}
+
 \item{\code{Kappa}}{The overall Cohen's Kappa obtained when comparing categorical variables.}
 
 \item{\code{individual.Kappas}}{The individual Cohen's Kappas for each category when comparing categorical data}

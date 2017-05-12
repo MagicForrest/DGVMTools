@@ -8,6 +8,8 @@ readData <- function(dataset.id,
                      end.year = NULL,
                      temporally.average = TRUE,
                      verbose = FALSE) {
+  
+  Lon = NULL
 
   if(dataset.id == "GFED4") {
    stop("GFED4 not implemented yet")

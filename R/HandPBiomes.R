@@ -15,6 +15,8 @@
 
 getHandPBiomes <- function(location = "/data/forrest/Biomes/", resolution = "HD", classification = "Smith2014") {
   
+  Lon = Lat = NULL
+  
   
   #### NEW ORDER, CODE BELOW NOW REDUNDANT
   

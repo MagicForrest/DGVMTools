@@ -8,7 +8,7 @@
 A \code{ModelRun} object contains the metadata concerning the an inherited \code{ModelRunInfo} object
  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToDataObject()}
+Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj},
  and \code{compareBiomes()}, and saved to the \code{ModelRun} using \code{addToModelRun()}. 
  
 Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
@@ -18,12 +18,9 @@ Slots can be accessed by user directly, but more easily and usefully by function
 \describe{
 \item{\code{objects}}{List of \code{ModelObjects} saved in this run}
 
-\item{\code{benchmarks}}{List of benchmarks (\code{BiomeComparisons} and \code{RasterComparisons}) performed and saved for this run.
-The following slots are inherited from \code{ModelRunInfo}.}
-
 \item{\code{id}}{A unique character string to identify this particular model run.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)}
 
-\item{\code{model}}{A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)}
+\item{\code{model}}{A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "FireMIP" or "aDGVM". (Mandatory)}
 
 \item{\code{pft.set}}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
 

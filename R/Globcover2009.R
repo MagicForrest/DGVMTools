@@ -66,6 +66,9 @@ readGlobcover2009 <- function(location){
 
 
 getGlobcover2009HDCorrection <- function() {
+  
+  Lon = Lat = NULL
+  
   # do class 40 first to set up the raster
   natural.raster <- raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 40, "HD.nc", sep = ".")))
   

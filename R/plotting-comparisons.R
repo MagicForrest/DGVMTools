@@ -184,7 +184,7 @@ plotResidualsHisto <- function(input.CLayers,
 #' @return A ggplot2 plot.
 
 
-plotScatterComparison2 <- function(input.CLayers, 
+plotScatterComparison <- function(input.CLayers, 
                                    run.ids = NULL,
                                    run.labels = NULL,
                                    wrap = TRUE,
@@ -198,7 +198,7 @@ plotScatterComparison2 <- function(input.CLayers,
                                    alpha = 0.05,
                                    text.size = 6){
   
-  Run = Model = OtherFacet = NULL
+  Run = Model = OtherFacet = facet = NULL
   
   # checks
   # for a single ComparisonLayer

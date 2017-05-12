@@ -247,16 +247,14 @@ setClass("ModelRunInfo",
 #' A \code{ModelRun} object contains the metadata concerning the an inherited \code{ModelRunInfo} object
 #'  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
 #'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-#' Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj}, \code{compareRunToDataObject()}
+#' Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj},
 #'  and \code{compareBiomes()}, and saved to the \code{ModelRun} using \code{addToModelRun()}. 
 #'  
 #' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
 #' 
 #' @slot objects List of \code{ModelObjects} saved in this run
-#' @slot benchmarks List of benchmarks (\code{BiomeComparisons} and \code{RasterComparisons}) performed and saved for this run.
-#' The following slots are inherited from \code{ModelRunInfo}.
 #' @slot id A unique character string to identify this particular model run.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
-#' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
+#' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "FireMIP" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot run.dir The location of this run on the file system (Mandatory)
@@ -273,11 +271,9 @@ setClass("ModelRunInfo",
 #' @exportClass ModelRun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("ModelRun", 
-         slots = c(objects = "list",
-                   benchmarks = "list"
+         slots = c(objects = "list"
          ),
-         prototype = c(objects = list(),
-                       benchmarks = list()
+         prototype = c(objects = list()
          ),
          contains = "ModelRunInfo"
          
@@ -456,15 +452,13 @@ setClass("DatasetInfo",
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.
 #' @slot correction.layer A character string defining a multiplicative corection layer that can be used for the data set
-#' @slot comparisons A list of SpatialComparison objects, one for each ModelObject which has been compared to this DataObject
 #' @exportClass DataObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("DataObject", 
          slots = c(data = "data.table",
                    spatial.extent = "SpatialExtent",
                    temporal.extent = "TemporalExtent",
-                   correction.layer =  "character",
-                   comparisons = "list"
+                   correction.layer =  "character"
          ),
          contains = "DatasetInfo" 
          
@@ -484,6 +478,8 @@ setClass("DataObject",
 #' @slot NMSE The Normalised Square Mean Error (mean of the square of the residuals after the residuals have been divided the value of the data point) between the model and the data
 #' @slot RMSE The Root Mean Squared Error between the model and the the data
 #' @slot sd.diff The standard deviation of the difference between the model and the the data (all gridcells)
+#' @slot MM The Manhattan Metric (for comparisons of relative proportions)
+#' @slot SCD The Manhattan Metric (for comparisons of relative proportions)
 #' @slot Kappa The overall Cohen's Kappa obtained when comparing categorical variables.
 #' @slot individual.Kappas The individual Cohen's Kappas for each category when comparing categorical data
 #' @exportClass RasterComparison
@@ -521,6 +517,37 @@ setClass("SpatialComparison",
 )
 
 
+
+
+
+
+
+
+#' Contains a comparison between two layers 
+#' 
+#' This object is produced as the result of a call to the functions \code{compareLayers()} and shouldn't be directly created by a user.
+#'  
+#' It contains a data slot with each of the compared layers and the difference between them (layer 1 - layer 2), a SpatialComaprisons object with the calculated values of 
+#' various statistical metric, meta-data about the source of the two compared layers and spatio-temporal meta-data describing where the comparison is valid.
+#' 
+#' It can be plotted by functions like   
+#'    
+#' Generally these are not created directly by the user, but rather by functions like \code{getModelObject}.
+#' 
+#' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot name A character string describing this comaprison layer, is automatically generated
+#' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
+#' @slot quant A Quantity object to define what output this ModelObject contains
+#' @slot stats An SpatialComaprison object giving ther statistical comparison metric between these two layers
+#' @slot info1 Either a ModeulRunInfo object or a DatasetInfo object describing the source of the first layer in the comparison
+#' @slot info2 Either a ModeulRunInfo object or a DatasetInfo object describing the source of the second layer in the comparison
+#' @slot spatial.extent A SpatialExtent object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
+#' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ComparisonLayer.  Particularly useful if the data has been temporally averaged.
+#' @slot is.site Set to TRUE is this ComparisonLayer describes a single site
+#' @slot is.spatially.averaged Set to TRUE is this ComparisonLayer has been spatially averaged
+#' @slot is.temporally.averaged Set to TRUE is this ComparisonLayer has been temporally averaged
+#' @exportClass ComparisonLayer
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 setClass("ComparisonLayer", 
          slots = c(id = "character",

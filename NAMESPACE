@@ -32,3 +32,26 @@ exportClasses(TemporalExtent,
               DataObject,
               ComparisonLayer,
               BiomeScheme)
+
+S3method(print, TemporalExtent)
+S3method(print, SpatialExtent)
+S3method(print, Period)
+S3method(print, PFT) 
+S3method(print, ModelRun)  
+S3method(print, ModelObject)
+S3method(print, Quantity)
+S3method(print, DataObject)
+S3method(print, DatasetInfo)
+S3method(print, ComparisonLayer)
+S3method(print, BiomeScheme)
+S3method(print, ModelRunInfo)
+S3method(print, SpatialComparison)
+
+S3method(as.data.frame, ComparisonLayer)
+S3method(as.data.frame, DataObject)
+S3method(as.data.frame, ModelObject)
+
+S3method(as.data.table, ComparisonLayer)
+S3method(as.data.table, DataObject)
+S3method(as.data.table, ModelObject)
+

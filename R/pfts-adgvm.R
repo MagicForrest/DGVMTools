@@ -24,7 +24,7 @@ aDGVM.PFTs <- list(
             phenology = "GrassPhenology",
             zone = "NA",
             colour = "sienna2",
-            combine = "no"
+            combine = "None"
   ),
     
   Tr= new("PFT",
@@ -35,7 +35,7 @@ aDGVM.PFTs <- list(
           phenology = "Evergreen",
           zone = "Tropical",
           colour = "palevioletred",
-          combine = "no"
+          combine = "None"
   ),
   
   TrBE = new("PFT",
@@ -46,7 +46,7 @@ aDGVM.PFTs <- list(
              phenology = "Evergreen",
              zone = "Tropical",
              colour = "orchid4",
-             combine = "no"
+             combine = "None"
   ),
   
   TrBR = new("PFT",
@@ -57,7 +57,7 @@ aDGVM.PFTs <- list(
              phenology = "Raingreen",
              zone = "Tropical",
              colour = "palevioletred",
-             combine = "no"
+             combine = "None"
   ),
   
   
@@ -69,7 +69,7 @@ aDGVM.PFTs <- list(
               phenology = "NA",
               zone = "NA", 
               colour = "Black",
-              combine = "no"
+              combine = "None"
   ),
   
   Bare = new("PFT",
@@ -80,7 +80,7 @@ aDGVM.PFTs <- list(
              phenology = "NA",
              zone = "NA",
              colour = "grey50",
-             combine = "no"
+             combine = "None"
   )
   
 )

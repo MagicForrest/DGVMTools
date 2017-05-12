@@ -20,11 +20,11 @@ cdo(fun, ifile, ofile, grid = NULL, return.raster = FALSE, verbose = TRUE,
 
 \item{verbose}{If TRUE print some progress and diagnostic output}
 
-\item{remove.temps}{Logical, if TRUE remove the intermediate .nc files from disk
+\item{remove.temps}{Logical, if TRUE remove the intermediate .nc files from disk}
+
+\item{...}{Other arguments to pass to \code{writeRaster}
 
 Basically just calls CDO on the commandline.  If the input arguments is an R RasterLayer/Stack/Brick, then is uses writeRaster() to write a netCDF file for processing (in the directory of the output file)}
-
-\item{varname}{If operating on a raster (not a netCDF file) the name for the variable in the resulting netCDF file.}
 }
 \value{
 NULL, unless return.raster is TRUE (j which case it returns a raster of the result of the cdo processing)

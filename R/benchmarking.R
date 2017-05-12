@@ -134,16 +134,14 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
   
 }
 
-#' Kappa comparison between two biome rasters
+#' Categorical comparison between two biome rasters
 #' 
 #' Calculates a SpatialComparison object (which contains the Cohen's Kappa scores) given a stack containing two maps of categorical data (eg. biomes, land cover classes).
 #' 
-#' @param dt A two-columned data.table containing the biomes (or other categorical data) represented as integer codes
-#' @param x Character string giving the column name of the first of the datasets to be compared
-#' @param y Character string giving the column name of the second of the datasets to be compared
-#' @param id A character string to identify this comparison, typically a combination the id of the biome scheme and the id of the vegetation model run.
-#' @param labels A vector of character strings to describe the categories over which Kappa is compared (typically a list of biomes)
-#' following the order of the integer codes used in the data (see \code{stack} argument)
+#' @param vector1 The first of the datasets to be compared to each other, as a vector of factors (categorical data) 
+#' @param vector2 The second of the datasets to be compared to each other, as a vector of factors (categorical data) 
+#' @param name1 A character string giving the name of the first dataset (for making a useful id)
+#' @param name2 A character string giving the name of the second dataset (for making a useful id)
 #' @param verbose A logical, if TRUE print out all the Kappa scores
 #' 
 #' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are for continuous as opposed to categorical data

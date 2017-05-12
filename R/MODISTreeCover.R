@@ -18,7 +18,7 @@
 
 getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collection5", resolution = "original", start = 2000, end = 2015, average = TRUE, layer = "treecover") {
 
-  Lon = Lat = NULL
+  Lon = Lat = Tree = NULL
     
   if(resolution == "original"){
     

@@ -111,6 +111,7 @@ openLPJOutputFile <- function(run,
 
 getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   
+  Total = Annual = FireRT = NULL
   
   # columns not to be modified for unit conversions etc.
   unmod.cols <- c("Lon", "Lat", "Year", "Day")
