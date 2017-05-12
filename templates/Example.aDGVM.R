@@ -58,8 +58,8 @@ lai.2 <- getModelObject(run = run2,
 
 ### Simple summary plots of each "PFT" - one plot for each PFT and a summary plot of them all
 
-print(plotSpatial2(lai.1))
-print(plotSpatial2(lai.2))
+print(plotSpatial(lai.1))
+print(plotSpatial(lai.2))
 
 
 ### Fractions of each PFT
@@ -71,7 +71,7 @@ lai.1 <- divideLayers(lai.1, layers = "pfts")
 print(names(lai.1))
 
 # Plot the tree and grass fraction
-print(plotSpatial2(lai.1,
+print(plotSpatial(lai.1,
                    layers = c("TrFraction", "C4GFraction"),
                    override.cols = colorRampPalette(c("grey85", "black"))(20)))
 
@@ -79,7 +79,7 @@ print(plotSpatial2(lai.1,
 
 # calculate and plot dominant PFT
 lai.1 <- newLayer(lai.1, layers = c("PFT"), method = "max")
-print(plotSpatial2(data = lai.1, 
+print(plotSpatial(data = lai.1, 
                    layer = c("MaxPFT")))
 
 
@@ -103,7 +103,7 @@ agb.1 <- getModelObject(run = run1,
 ### Simple summary plots
 
 # Plot all PFTs on one figure and each one individually
-print(plotSpatial2(data = agb.1))
+print(plotSpatial(data = agb.1))
 
 
 
@@ -112,7 +112,7 @@ print(plotSpatial2(data = agb.1))
 # Calculate the lifeform totals, the temperate total and the evergeen total
 agb.1 <- newLayer(agb.1, layers = c("Lifeforms"))
 
-print(plotSpatial2(data = agb.1,
+print(plotSpatial(data = agb.1,
                    layers = c("Tree", "Grass")))
 
 
@@ -124,7 +124,7 @@ print(plotSpatial2(data = agb.1,
 agb.1 <- divideLayers(agb.1, layers = "lifeforms")
 
 # Plot the tree and grass fraction
-print(plotSpatial2(data = agb.1,
+print(plotSpatial(data = agb.1,
                    layers = expandLayers(input.data = agb.1,layers = "Lifeforms")))
 
 
@@ -135,7 +135,7 @@ print(plotSpatial2(data = agb.1,
 
 # calculate and plot dominant PFT
 agb.1 <- newLayer(agb.1, layers = c("PFT"), method = "max")
-print(plotSpatial2(data = agb.1, 
+print(plotSpatial(data = agb.1, 
                    layer = c("MaxPFT")))
 
 # print the time
