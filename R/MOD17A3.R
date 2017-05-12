@@ -6,6 +6,7 @@
 #' @param resolution A character string specifying the resolution, currently supported
 #' are "1km-Turkey"
 #' @param average Logical, if true return average of all years, if false return all years
+#' @param var A character string with value either "npp" for net primary productivity, or "gpp" for gross primary productivity.
 #' 
 #' Should be moved to DGVMDatasets, not distributed with DGVMTools
 #' 

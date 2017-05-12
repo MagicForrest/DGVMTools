@@ -13,7 +13,9 @@ getMOD17A3(location = "/data/forrest/Productivity/MODIS/V55/processed/",
 \item{resolution}{A character string specifying the resolution, currently supported
 are "1km-Turkey"}
 
-\item{average}{Logical, if true return average of all years, if false return all years
+\item{average}{Logical, if true return average of all years, if false return all years}
+
+\item{var}{A character string with value either "npp" for net primary productivity, or "gpp" for gross primary productivity.
 
 Should be moved to DGVMDatasets, not distributed with DGVMTools}
 }

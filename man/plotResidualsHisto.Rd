@@ -27,7 +27,7 @@ plotResidualsHisto(input.CLayers, cols = NULL, fills = NULL, types = NULL,
 
 \item{bin.width}{Numeric, width of bins on histogram (can be left blank)}
 
-\item{limit}{Logical if TRUE (and argument bins provided) limit x-axis to the bins given.  If FALSE (and argument bins provided) then bins defines the bin width, but the plot is not limited}
+\item{xlim}{Numeric, if provided should be a vector of two values defining the range on the x-axis}
 }
 \value{
 A ggplot2 plot.

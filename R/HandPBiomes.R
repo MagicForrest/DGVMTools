@@ -6,6 +6,7 @@
 #' @param location A character string specifying the the location of the original data files
 #' @param resolution A character string specifying the resolution, currently supported
 #' are "HD" and "T63" and "original"
+#' @param classification A character string describing how to aggregate and sort the biomes.  Can be "Smith2014", "Forrest2015", "Megabiomes_dev" or "original" (which follows Hickler et al. 2006)
 #' 
 #' Should be moved to DGVMDatasets, not distributed with DGVMTools
 #' 

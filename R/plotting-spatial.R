@@ -14,12 +14,12 @@
 #' or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can automatically plot things like biomes, dominant PFTs, months of maximum values, 
 #' burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command. 
 #'
-#' @param x The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
+#' @param data The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.
 #' @param layout.objs List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
 #' so see there for how to build them.
-#' @param plot.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
+#' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
 #' @param plot.bg.col Colour string for the plot background.
 #' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. 
@@ -30,8 +30,7 @@
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values
 #' @param override.cols A colour palette function to override the defaults
 #' @param override.cuts Cut ranges (a numeric vector) to override the defaults.
-#' @param special A character string to indicate certain "special modes" which modifies the behaviour of the function a bit.
-#' Special modes are currectly "fraction", "difference", "percentage.difference", "firert" (fire return time) and "dominant.pft".
+
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
 #' 
@@ -669,14 +668,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 }
 
 
-plotSpatial2 <- function(...){
-  
-  warning("plotSpatial2() now depricated, please change function call to plotSpatial()")
-  
-  return(plotSpatial(...))
-  
-}
-
 ######################### CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED #####################################################################
 #' 
 #' Fixes a spatial lines object where some of eastern Russia transposed to the other side of the world
@@ -708,8 +699,8 @@ correct.map.offset <- function(spl) {
 #' 
 #' @param quantity.str Character string for the quantity plotted
 #' @param layer The names of the layer (or another identifier)
-#' @param run The \code{ModelRun} object for the run plotted (optional)
-#' @param period The time period plotted as \code{TemporalExtent} (optional)
+#' @param source The ModelObject, DataObject or ComparisonLayer that is being plotted
+#' @param period The time period plotted as TemporalExtent (optional)
 #' @return A character string for use as a plot title
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}

@@ -13,12 +13,17 @@ plotSpatial(data, layers = NULL, title = NULL, layout.objs = NULL,
   interior.lines = TRUE, ...)
 }
 \arguments{
+\item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
+
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
 \item{title}{A character string to override the default title.}
 
 \item{layout.objs}{List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
 so see there for how to build them.}
+
+\item{facet.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
+Sensible titles will be constructed if this is not specified.}
 
 \item{plot.bg.col}{Colour string for the plot background.}
 
@@ -38,14 +43,6 @@ or the range of the plot.}
 
 \item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.
 Other things can be overlain on the resulting plot with further ggplot2 commands.}
-
-\item{x}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
-
-\item{plot.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
-Sensible titles will be constructed if this is not specified.}
-
-\item{special}{A character string to indicate certain "special modes" which modifies the behaviour of the function a bit.
-Special modes are currectly "fraction", "difference", "percentage.difference", "firert" (fire return time) and "dominant.pft".}
 }
 \value{
 Returns a plot object (from spplot)

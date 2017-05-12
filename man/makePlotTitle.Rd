@@ -11,9 +11,9 @@ makePlotTitle(quantity.str, layer = NULL, source = NULL, period = NULL)
 
 \item{layer}{The names of the layer (or another identifier)}
 
-\item{period}{The time period plotted as \code{TemporalExtent} (optional)}
+\item{source}{The ModelObject, DataObject or ComparisonLayer that is being plotted}
 
-\item{run}{The \code{ModelRun} object for the run plotted (optional)}
+\item{period}{The time period plotted as TemporalExtent (optional)}
 }
 \value{
 A character string for use as a plot title

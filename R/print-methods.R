@@ -6,6 +6,7 @@
 #' Returns TRUE if an object of the particular object type and FALSE otherwise 
 #' 
 #' @param x Any DGVMTools object to be printed
+#' @param ... other arguments to be passed on to other print function, not currently used
 #' @name print-methods
 #' @rdname print-methods
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -13,7 +14,7 @@
 NULL
 
 #' @rdname print-methods
-#' @export print.PFT
+#' @export
 print.PFT <- function(x, ...) {
   
   cat(paste0("PFT: ", x@id," (", x@name, "): ", "Lifeform=",  x@lifeform, ", Leafform=", x@leafform, ", Phenology=", x@phenology, ", Climate zone=", x@zone, ", Preferred colour=", x@colour, ", Combine with=", x@combine, "\n"))
@@ -21,7 +22,7 @@ print.PFT <- function(x, ...) {
 }
 
 #' @rdname print-methods
-#' @export print.Quantity
+#' @export
 print.Quantity <- function(x, ...) {
   
   cat(paste0("Quantity: ", x@id," (", x@name, "): ", "Type=",  x@type, ", Units=", x@units, ", Aggregate Method=", x@aggregate.method, ", Defined for models: ", paste0(unlist(x@model), collapse = ', '), "\n"))
@@ -29,7 +30,7 @@ print.Quantity <- function(x, ...) {
 }
 
 #' @rdname print-methods
-#' @export print.TemporalExtent
+#' @export
 print.TemporalExtent <- function(x, ...) {
   
   cat(paste0("Temporal Extent:\n"))
@@ -41,7 +42,7 @@ print.TemporalExtent <- function(x, ...) {
 }
 
 #' @rdname print-methods
-#' @export print.SpatialExtent
+#' @export
 print.SpatialExtent <- function(x, ...) {
   
   cat(paste0("Spatial Extent:\n"))
@@ -55,7 +56,7 @@ print.SpatialExtent <- function(x, ...) {
 }
 
 #' @rdname print-methods
-#' @export print.Period 
+#' @export
 print.Period <- function(x, ...) {
   
   cat(paste0("Sub-annual time period:\n"))
@@ -73,7 +74,7 @@ print.Period <- function(x, ...) {
 
 
 #' @rdname print-methods
-#' @export ModelRunInfo
+#' @export
 print.ModelRunInfo <- function(x, ...) {
   
   cat(paste0("Model run:\n"))
@@ -96,7 +97,7 @@ print.ModelRunInfo <- function(x, ...) {
 }
 
 #' @rdname print-methods
-#' @export print.ModelRun
+#' @export
 print.ModelRun <- function(x, ...) {
   
   print(as(x, "ModelRunInfo"))
@@ -112,7 +113,7 @@ print.ModelRun <- function(x, ...) {
 
 
 #' @rdname print-methods
-#' @export print.ModelObject
+#' @export
 print.ModelObject <- function(x, ...) {
   
   cat(paste0("Model object:\n"))
@@ -132,7 +133,7 @@ print.ModelObject <- function(x, ...) {
   }
 
 #' @rdname print-methods
-#' @export print.DatasetInfo
+#' @export
 print.DatasetInfo <- function(x, ...) {
   
   cat(paste0("DatasetInfo:\n"))
@@ -144,7 +145,7 @@ print.DatasetInfo <- function(x, ...) {
 }
 
 #' @rdname print-methods
-#' @export print.DataObject
+#' @export
 print.DataObject <- function(x, ...) {
   
   cat(paste0("DataObject:\n"))
@@ -164,7 +165,7 @@ print.DataObject <- function(x, ...) {
 
 
 #' @rdname print-methods
-#' @export print.ComparisonLayer
+#' @export
 print.ComparisonLayer <- function(x, ...) {
   
   cat(paste0("Comparison Layer:\n"))
@@ -188,7 +189,7 @@ print.ComparisonLayer <- function(x, ...) {
 
 
 #' @rdname print-methods
-#' @export print.SpatialComparison
+#' @export
 print.SpatialComparison <- function(x, ...) {
   
   cat(paste0("Spatial Comparison:\n"))
@@ -215,7 +216,7 @@ print.SpatialComparison <- function(x, ...) {
 
 
 #' @rdname print-methods
-#' @export print.BiomeScheme
+#' @export 
 print.BiomeScheme <- function(x, ...) {
   
   cat(paste0("Biome Scheme:\n"))

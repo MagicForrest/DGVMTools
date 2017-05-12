@@ -12,7 +12,7 @@
 #' @param alpha Numerical value [0,1] to specify opacity of histo fill colours (optional)
 #' @param reverse Logical if TRUE reverse the layering of the histograms (optional, default = FALSE)
 #' @param bin.width Numeric, width of bins on histogram (can be left blank) 
-#' @param limit Logical if TRUE (and argument bins provided) limit x-axis to the bins given.  If FALSE (and argument bins provided) then bins defines the bin width, but the plot is not limited
+#' @param xlim Numeric, if provided should be a vector of two values defining the range on the x-axis 
 #' 
 #' @details
 #' This function should be called after a call to \code{benckmarkSpatial} for a DataObject.  It plots the residuals for each model run to which it was compared.  
