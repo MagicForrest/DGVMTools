@@ -369,19 +369,30 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   all.lats <- sort(unique(data.toplot[["Lat"]]))
   
   # y cropping
-  if(is.null(ylim)) ylim <- c(min(all.lats), max(all.lats)) 
+  if(is.null(ylim)) {
+    
+    # MF this code is not bullet proof, could possible be replaced with a dedicated getSpacing() function to handle this better
+    
+    # expand to the limit to the edge of the gridcell rather than the gridcell centres
+    ylim <- c(min(all.lats) - abs(all.lats[1] - all.lats[2])/2, max(all.lats) + abs(all.lats[length(all.lats)] - all.lats[length(all.lats)-1])/2) 
+  }
   else {
     data.toplot <- data.toplot[Lat >= ylim[1] & Lat <= ylim[2],]
   }
   
   # x cropping
-  if(is.null(xlim)) xlim <- c(min(all.lons), max(all.lons)) 
+  if(is.null(xlim)) {
+    
+    # MF as above
+    
+    # expand to the limit to the edge of the gridcell rather than the gridcell centres
+    xlim <- c(min(all.lons) - abs(all.lons[1] - all.lons[2])/2, max(all.lons) + abs(all.lons[length(all.lons)] - all.lons[length(all.lons)-1])/2) 
+  }
   else {
     data.toplot <- data.toplot[Lon >= xlim[1] & Lon <= xlim[2],]
   }
   
-  
-  
+
   ### PREPARE THE MAP OVERLAY
   if(class(map.overlay)[1] == "character"){
     
@@ -405,6 +416,9 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
     suppressWarnings(map.overlay <- fortify(map.sp.lines.df))
     
     rm(df, map.sp.lines, map.sp.lines.df)   
+    
+    # also fix the plot area
+    
     
   }
   else if(!is.null(map.overlay)) {
@@ -595,8 +609,12 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   }
   
   # crop to xlim and ylim as appropriate and fix the aspect ratio 
-  mp <- mp + scale_x_continuous(limits = xlim, expand = c(0, 0))
-  mp <- mp + scale_y_continuous(limits = ylim, expand = c(0, 0))
+  if(!is.null(xlim)) mp <- mp + scale_x_continuous(limits = xlim, expand = c(0, 0))
+  else   mp <- mp + scale_x_continuous(expand = c(0, 0))  
+  
+  if(!is.null(ylim)) mp <- mp + scale_y_continuous(limits = ylim, expand = c(0, 0))
+  else   mp <- mp + scale_y_continuous(expand = c(0, 0))
+
   mp <- mp + coord_fixed()
   
   # labels and positioning

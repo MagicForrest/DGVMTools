@@ -67,6 +67,9 @@ print(plotSpatial2(lai.2))
 # calculate the PFT fractions
 lai.1 <- divideLayers(lai.1, layers = "pfts")
 
+# Print the names to see what happened to out ModelObject
+print(names(lai.1))
+
 # Plot the tree and grass fraction
 print(plotSpatial2(lai.1,
                    layers = c("TrFraction", "C4GFraction"),
@@ -89,49 +92,51 @@ print(plotSpatial2(data = lai.1,
 variable <- "agb"
 
 # Open the lai.out file, and average over the reference period
-lai.reference.period <- getVegSpatial(run = run, period = period, var = variable, adgvm.scheme = 2)
-
+agb.1 <- getModelObject(run = run1, 
+                          temporal.extent  = period,
+                          temporally.average = TRUE,
+                          var = variable, 
+                          adgvm.scheme = 2,
+                          write = TRUE,
+                          read.full = TRUE)
 
 ### Simple summary plots
 
 # Plot all PFTs on one figure and each one individually
-plotVegMaps(lai.reference.period, 
-            doSummary = TRUE, 
-            doIndividual = TRUE)
+print(plotSpatial2(data = agb.1))
+
 
 
 ### TOTALS
 
 # Calculate the lifeform totals, the temperate total and the evergeen total
-lai.reference.period <- aggregateLayers(lai.reference.period, layers = c("Lifeforms"))
+agb.1 <- newLayer(agb.1, layers = c("Lifeforms"))
 
-plotVegMaps(lai.reference.period, 
-            layers = c("Tree", "Grass", "Total"),
-            tag = "Lifeforms")
+print(plotSpatial2(data = agb.1,
+                   layers = c("Tree", "Grass")))
+
 
 
 
 ### FRACTIONS
 
 # calculate the tree and grass fractions (if no denominators specified, "Total" is assumed)
-lai.reference.period <- divideLayers(lai.reference.period, layers = "lifeforms")
+agb.1 <- divideLayers(agb.1, layers = "lifeforms")
 
 # Plot the tree and grass fraction
-plotVegMaps(lai.reference.period, 
-            layers = c("lifeforms"),
-            tag = "Lifeform",
-            special = "fraction")
+print(plotSpatial2(data = agb.1,
+                   layers = expandLayers(input.data = agb.1,layers = "Lifeforms")))
+
 
 
 
 
 ### DOMINANT PFT
 
-
-# calculate  and plot dominant PFT
-lai.reference.period <- addDominantPFT(lai.reference.period)
-plotDominantPFTMap(lai.reference.period)
-
+# calculate and plot dominant PFT
+agb.1 <- newLayer(agb.1, layers = c("PFT"), method = "max")
+print(plotSpatial2(data = agb.1, 
+                   layer = c("MaxPFT")))
 
 # print the time
 t2 <- Sys.time()

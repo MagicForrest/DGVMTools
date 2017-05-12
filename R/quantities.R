@@ -954,7 +954,22 @@ dgvm.quantities <- list(
                          units = "days",
                          colours = fields::tim.colors,
                          aggregate.method = "sum",
-                         model = c("LPJ-GUESS-SPITFIRE"))
+                         model = c("LPJ-GUESS-SPITFIRE")),
+  
+  #############################################################################################
+  ################################### aDGVM QUANTITIES ########################################
+  #############################################################################################
+  
+  
+  new("Quantity",
+      id = "agb",
+      name = "Above Ground Biomass",
+      type = "PFT",
+      units = "kgC/m^2",
+      colours = cmass.palette,
+      aggregate.method = "sum",
+      model = c("aDGVM"))
+  
   
  
 )
