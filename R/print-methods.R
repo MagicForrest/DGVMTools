@@ -7,13 +7,13 @@
 #' 
 #' @param x Any DGVMTools object to be printed
 #' @param ... other arguments to be passed on to other print function, not currently used
-#' @name print-methods
-#' @rdname print-methods
+#' @name print.object-methods
+#' @rdname print.object-methods
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 NULL
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.PFT <- function(x, ...) {
   
@@ -21,7 +21,7 @@ print.PFT <- function(x, ...) {
 
 }
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.Quantity <- function(x, ...) {
   
@@ -29,7 +29,7 @@ print.Quantity <- function(x, ...) {
 
 }
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.TemporalExtent <- function(x, ...) {
   
@@ -41,7 +41,7 @@ print.TemporalExtent <- function(x, ...) {
   
 }
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.SpatialExtent <- function(x, ...) {
   
@@ -55,7 +55,7 @@ print.SpatialExtent <- function(x, ...) {
   
 }
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.Period <- function(x, ...) {
   
@@ -73,7 +73,7 @@ print.Period <- function(x, ...) {
 
 
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.ModelRunInfo <- function(x, ...) {
   
@@ -96,7 +96,7 @@ print.ModelRunInfo <- function(x, ...) {
   
 }
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.ModelRun <- function(x, ...) {
   
@@ -112,7 +112,7 @@ print.ModelRun <- function(x, ...) {
 }
 
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.ModelObject <- function(x, ...) {
   
@@ -132,7 +132,7 @@ print.ModelObject <- function(x, ...) {
   
   }
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.DatasetInfo <- function(x, ...) {
   
@@ -144,7 +144,7 @@ print.DatasetInfo <- function(x, ...) {
   
 }
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.DataObject <- function(x, ...) {
   
@@ -164,7 +164,7 @@ print.DataObject <- function(x, ...) {
 }
 
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.ComparisonLayer <- function(x, ...) {
   
@@ -188,7 +188,7 @@ print.ComparisonLayer <- function(x, ...) {
 
 
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export
 print.SpatialComparison <- function(x, ...) {
   
@@ -215,7 +215,7 @@ print.SpatialComparison <- function(x, ...) {
 }
 
 
-#' @rdname print-methods
+#' @rdname print.object-methods
 #' @export 
 print.BiomeScheme <- function(x, ...) {
   
