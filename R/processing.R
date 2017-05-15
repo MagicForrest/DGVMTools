@@ -77,7 +77,7 @@ combineShadeTolerance <- function(input){
       PFT <- PFT.data[[colname]]
       
       # if PFT is to be combined
-      if(!(tolower(PFT@combine) == "no" && tolower(PFT@combine) == "none")){
+      if(!(tolower(PFT@combine) == "no" || tolower(PFT@combine) == "none")){
         
         # if PFT to be added is present the combine them and set the shade intolerant PFT to zero, if not send a warning and do nothing
         if(!is.null(PFT.data[[PFT@combine]])){
