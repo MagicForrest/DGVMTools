@@ -22,7 +22,6 @@ Imports:
     methods,
     maptools,
     ncdf4,
-    RNetCDF,
     rgdal,
     sp,
     fields,
