@@ -9,19 +9,19 @@ library(DGVMTools)
 ##### PREAMBLE: Define the run settings and an averaging period
 
 # Define the RUNs to process
-run1 <- defineModelRun(run.dir = "/home/forrest/FastData/RVCExamples/Example.aDGVM/Run1",
+run1 <- defineModelRun(run.dir = "/home/sscheiter/results",
                     model = "aDGVM",
                     pft.set = aDGVM.PFTs,
-                    id = "44_0", # this is, by former aDGVM way, <runid>_<fire>
+                    id = "3_1_wshrubs_wannuals", # this is, by former aDGVM way, <runid>_<fire>
                     name= "Example aDGVM run 1",
                     driving.data = "CRU"
 )
 
 # Define the RUNs to process
-run2 <- defineModelRun(run.dir = "/home/forrest/FastData/RVCExamples/Example.aDGVM/Run2",
+run2 <- defineModelRun(run.dir = "/home/sscheiter/results",
                      model = "aDGVM",
                      pft.set = aDGVM.PFTs,
-                     id = "45_0", # this is, by former aDGVM way, <runid>_<fire>
+                     id = "3_1_wshrubs_wannuals", # this is, by former aDGVM way, <runid>_<fire>
                      name= "Example aDGVM run 2",
                      driving.data = "CRU"
 )
@@ -39,7 +39,7 @@ variable <- "lai"
 
 # Read the lai from both runs
 lai.1 <- getModelObject(run = run1, 
-                       temporal.extent  = period,
+#                       temporal.extent  = period,
                        temporally.average = TRUE,
                        var = variable, 
                        adgvm.scheme = 1,
