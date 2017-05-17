@@ -164,9 +164,13 @@ plotResidualsHisto <- function(input.CLayers,
 #' @param input.CLayers The DataObject for which to plot the residual
 #' @param run.ids The character vector of run ids of the runs to scatter against the data (must be a vector, not a list).  Leave blank to compare all runs that have been previouslty compared to this dataset.
 #' @param run.labels A vector of more descriptive strings from each run (each the run@names)
-#' @param facet An optional string identifying an additional column by which to subdivide (facet) that data
+#' @param wrap An optional string identifying an additional column by which to subdivide (facet) that data
 #' @param facet.labels An option vector of strings giving descriptive labels for facets, if provided it *must* be a named vector, 
 #' where each element has a name corresponding to the value in the facet column. 
+#' @param xlim An optional vector of two numerics to define the x plot range
+#' @param ylim An optional vector of two numerics to define the y plot range
+#' @param xlab An optional character string for the x-axis
+#' @param ylab An optional character string for the y-axis
 #' @param showFitLine Boolean, if TRUE shows a linear fit and the fit equation
 #' @param showStats Boolean, if TRUE show some stats do quantify how well the model fits the data
 #' @param labels Character vector of labels (one for each run).  If not provided uses the run ids

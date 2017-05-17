@@ -8,30 +8,37 @@
 
 #' Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.
 #' 
-#' This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{ModelObject} or a \code{DataObject}, although plotting a Raster* is also useful.
-#' It has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults,
-#' so that in the case of plotting a \code{ModelObject} all you *need* to supply is the data itself, everything else is either set to a sensible default,
-#' or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can automatically plot things like biomes, dominant PFTs, months of maximum values, 
-#' burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command. 
+#' This is a heavy lifting function for plotting maps from ModelObjects, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
+#' As a consequence, iIt has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
+#' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
+#' using further ggplot2 commands. 
 #'
 #' @param data The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.
-#' @param layout.objs List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
-#' so see there for how to build them.
+#' @param layout.objs A character string name of a map overlay from the \code{maps} or \code{mapdata} packages. For example, "world" or "worldHires".  
+#' Note that using these, especially "worldHires", can add quite a bit off time. 
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
+#' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "return.data=TRUE"
+#' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
+#' in this function). 
 #' @param plot.bg.col Colour string for the plot background.
-#' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. 
+#' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENLTLY IMPLEMENTED!!
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
-#' Make it bigger if the text is too small on large plots and vice-versa
-#' @param limit Boolean, whether or not to limit the plotted values between a range, either the limits argument below,
-#' or the range of the plot.
-#' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values
-#' @param override.cols A colour palette function to override the defaults
+#' Make it bigger if the text is too small on large plots and vice-versa.
+#' @param ylim An optional vector of two numerics to specify the y/latitude range of the plot.
+#' @param xlim An optional vector of two numerics to specify the x/longitude range of the plot.
+#' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
+#' @param override.cols A colour palette function to override the defaults.
 #' @param override.cuts Cut ranges (a numeric vector) to override the defaults.
-
+#' @param dont.grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
+#' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
+#' @param return.data Return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
+#' @param tile Boolean If true use the ggplot function geom_tile() instead of the function geom_raster().
+#' @param interpolate Boolean, whether or not to use interpolation in the case of a call to geom_raster().  Probably not a good idea, results tend to hurt my eyes. 
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
+#' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
@@ -63,7 +70,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                          text.multiplier = 1,
                          xlim = NULL,
                          ylim = NULL,
-                         limit = FALSE,
                          limits = NULL,
                          override.cols = NULL,
                          override.cuts = NULL,
@@ -72,8 +78,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                          return.data = FALSE,
                          tile = TRUE,
                          interpolate = FALSE,
-                         interior.lines = TRUE,
-                         ...){
+                         interior.lines = TRUE){
  
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
