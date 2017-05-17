@@ -16,6 +16,17 @@
 #' @keywords datasets
 aDGVM.PFTs <- list(
   
+  C3G = new("PFT",
+            id = "C3G",
+            name = "Boreal/Temperate Grass",
+            lifeform = "Grass",
+            leafform = "Broadleaved",
+            phenology = "GrassPhenology",
+            zone = "NA",
+            colour = "lightgoldenrod1",
+            combine = "None"
+  ),
+
   C4G = new("PFT",
             id = "C4G",
             name = "Tropical Grass",

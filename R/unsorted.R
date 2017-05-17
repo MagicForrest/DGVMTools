@@ -22,60 +22,6 @@ is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
   return(leap)
 }
 
-#' day of year to date in the form of MonthDay conversion
-#' 
-#' @param doy day of the year ('1' for 1. January).
-#' @param leap in a leap year of not.
-#' @param numeric return an integer instead of a string.
-#' @return 4 digit string or na
-#' 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @export
-doy2mmdd <- function(doy, leap=FALSE, numeric=FALSE) {
-  dpm <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-  if (leap)
-    dpm[3] = 29
-  mmdd <- sapply(doy, function(x) {
-    if (x < 1)
-      return(NA)
-    if (!leap && x > 365)
-      return(NA)
-    if (leap && x > 366)
-      return(NA)
-    
-    month <- which(cumsum(dpm) >= x)[1] - 1
-    day <- x - sum(dpm[1:month])
-    if (numeric)
-      return(month * 100 + day)
-    return(sprintf("%02d%02d", month, day))
-  })
-  return(mmdd)
-}
-
-#' date in the form of MonthDay to day of year conversion
-#' @param mmdd string or number interpreted as MMDD
-#' @param leap in a leap year of not.
-#' @return Day of the year as integer (1. Januar is day 1).
-#' 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @export
-mmdd2doy <- function(mmdd, leap=FALSE) {
-  doy <- sapply(mmdd, function(x) {
-    x <- as.numeric(x)
-    if (is.na(x) || x < 101 || x > 1231)
-      return(NA)
-    dpm <- c(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-    if (leap) dpm[3] = 29
-    month <- floor(x / 100)
-    day <- x - month * 100
-    if (day > dpm[month+1])
-      return(NA)
-    print(paste(day, month))
-    return(sum(dpm[1:floor(x / 100)]) + x - (floor(x / 100)) * 100)
-  })
-  return(doy)
-}
-
 #' Convert a ModelObject to a multi-dimensional array
 #' 
 #' @param d the data.table of a \code{\linkS4class{ModelObject}}
