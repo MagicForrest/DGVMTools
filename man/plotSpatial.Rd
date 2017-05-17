@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting-spatial.R
 \name{plotSpatial}
 \alias{plotSpatial}
-\title{Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.}
+\title{Plot maps from a temporally-averaged \code{ModelObject}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)}
 \usage{
 plotSpatial(data, layers = NULL, title = NULL, layout.objs = NULL,
   facet.labels = NULL, facet.order = NULL, plot.bg.col = "white",

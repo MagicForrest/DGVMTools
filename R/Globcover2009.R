@@ -64,7 +64,18 @@ readGlobcover2009 <- function(location){
   
 }
 
-
+#' Read Globcover2009 correction data
+#' 
+#' This function simply returns the correction factor (at 0.5 degrees) to take into account the precentage of each gridcell which is not natural vegetation.  
+#' 
+#' @return DataObject object
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#'
+#' No arguments, this is very quick and dirty
+#'
+#' @seealso code{processGlobcover2009}, \code{countCategoricalData} 
 getGlobcover2009HDCorrection <- function() {
   
   Lon = Lat = NULL
@@ -89,8 +100,6 @@ getGlobcover2009HDCorrection <- function() {
   setkey(correction.dt , Lon, Lat)
   
  
-  
-  
   Globcover2009.DObj <- new("DataObject",
                             id = "Globcover2009",
                             name = "Globcover2009-derived LU correction",

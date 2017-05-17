@@ -13,7 +13,6 @@ import(maps,
        viridis)
 
 
-importFrom("graphics", "abline", "curve", "legend", "par")
 importFrom("stats", "na.omit", "coef", "complete.cases")
 importFrom("utils", "capture.output", "data", "file_test", "object.size", "read.table", "write.table", "str")
 importMethodsFrom("data.table")
