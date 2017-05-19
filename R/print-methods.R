@@ -1,37 +1,46 @@
 #!/usr/bin/Rscript
 
-
-#' Print a DGVMTools object in a reasonably nice and space efficient way.   
-#'
-#' Returns TRUE if an object of the particular object type and FALSE otherwise 
+#' Print a DGVMTools object
+#' 
+#' Print a DGVMTools object in a reasonably nice and space efficient way. 
 #' 
 #' @param x Any DGVMTools object to be printed
-#' @param ... other arguments to be passed on to other print function, not currently used
-#' @name print.object-methods
-#' @rdname print.object-methods
+#' @param ... other arguments to be passed on to a further print functions, not currently used.
+#' @name print-methods
+#' @rdname print-methods
+#' @aliases print
+#' 
+#' @details Simple stuff, implemented as S4 methods.  Further tweaking of the formatting may be in order, feedback from users welcome.
+#' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 NULL
 
-#' @rdname print.object-methods
+if (!isGeneric("print")) {
+  setGeneric("print", function(x, ...) standardGeneric("print"))
+}
+
+
+#' @rdname print-methods
 #' @export
-print.PFT <- function(x, ...) {
+setMethod("print", signature(x="PFT"), function(x) {
   
   cat(paste0("PFT: ", x@id," (", x@name, "): ", "Lifeform=",  x@lifeform, ", Leafform=", x@leafform, ", Phenology=", x@phenology, ", Climate zone=", x@zone, ", Preferred colour=", x@colour, ", Combine with=", x@combine, "\n"))
 
-}
+})
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.Quantity <- function(x, ...) {
+setMethod("print", signature(x="Quantity"), function(x) {
   
   cat(paste0("Quantity: ", x@id," (", x@name, "): ", "Type=",  x@type, ", Units=", x@units, ", Aggregate Method=", x@aggregate.method, ", Defined for models: ", paste0(unlist(x@model), collapse = ', '), "\n"))
 
-}
+})
 
-#' @rdname print.object-methods
+
+#' @rdname print-methods
 #' @export
-print.TemporalExtent <- function(x, ...) {
+setMethod("print", signature(x="TemporalExtent"), function(x) {
   
   cat(paste0("Temporal Extent:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -39,11 +48,11 @@ print.TemporalExtent <- function(x, ...) {
   cat(paste0("start = ", x@start, "\n"))
   cat(paste0("end = ", x@end, "\n"))
   
-}
+})
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.SpatialExtent <- function(x, ...) {
+setMethod("print", signature(x="SpatialExtent"), function(x) {
   
   cat(paste0("Spatial Extent:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -53,11 +62,11 @@ print.SpatialExtent <- function(x, ...) {
   cat(paste0("        ymin = ", x@extent@ymin, "\n"))
   cat(paste0("        ymax = ", x@extent@ymax, "\n"))
   
-}
+})
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.Period <- function(x, ...) {
+setMethod("print", signature(x="Period"), function(x) {
   
   cat(paste0("Sub-annual time period:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -69,13 +78,13 @@ print.Period <- function(x, ...) {
   cat(paste0("days = ", x@days, "\n"))
   cat(paste0("days.leap = ", x@days.leap, "\n"))
   
-}
+})
 
 
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.ModelRunInfo <- function(x, ...) {
+setMethod("print", signature(x="ModelRunInfo"), function(x) {
   
   cat(paste0("Model run:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -94,11 +103,11 @@ print.ModelRunInfo <- function(x, ...) {
     print(PFT)
   }
   
-}
+})
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.ModelRun <- function(x, ...) {
+setMethod("print", signature(x="ModelRun"), function(x) {
   
   print(as(x, "ModelRunInfo"))
   cat("The following ModelObjects have been stored internally in this ModelRun:\n")
@@ -109,12 +118,12 @@ print.ModelRun <- function(x, ...) {
     cat("(None)\n")
   }
 
-}
+})
 
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.ModelObject <- function(x, ...) {
+setMethod("print", signature(x="ModelObject"), function(x) {
   
   cat(paste0("Model object:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -130,11 +139,11 @@ print.ModelObject <- function(x, ...) {
   cat(paste0("Model Run = ", "\"", x@run@name, "\"", "\n"))
   cat("For full ModelRun metadata type \"print(X@run)\", where X is this ModelObject")
   
-  }
+})
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.DatasetInfo <- function(x, ...) {
+setMethod("print", signature(x="DatasetInfo"), function(x) {
   
   cat(paste0("DatasetInfo:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -142,11 +151,11 @@ print.DatasetInfo <- function(x, ...) {
   print(x@quant)
  
   
-}
+})
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.DataObject <- function(x, ...) {
+setMethod("print", signature(x="DataObject"), function(x) {
   
   cat(paste0("DataObject:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -161,12 +170,12 @@ print.DataObject <- function(x, ...) {
   if(x@correction.layer == "") cat("No correction layer has been defined")
   else cat(paste0("Correction layer is \"", x@correction.layer, "\""))
 
-}
+})
 
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.ComparisonLayer <- function(x, ...) {
+setMethod("print", signature(x="ComparisonLayer"), function(x) {
   
   cat(paste0("Comparison Layer:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -184,13 +193,13 @@ print.ComparisonLayer <- function(x, ...) {
   cat(paste0("Source for second layer: \n"))
   print(x@info2)
 
-}
+})
 
 
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export
-print.SpatialComparison <- function(x, ...) {
+setMethod("print", signature(x="SpatialComparison"), function(x) {
   
   cat(paste0("Spatial Comparison:\n"))
   cat("Continuous comparison metrics")
@@ -212,12 +221,12 @@ print.SpatialComparison <- function(x, ...) {
     print(kappa)
   }
 
-}
+})
 
 
-#' @rdname print.object-methods
+#' @rdname print-methods
 #' @export 
-print.BiomeScheme <- function(x, ...) {
+setMethod("print", signature(x="BiomeScheme"), function(x) {
   
   cat(paste0("Biome Scheme:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -236,6 +245,6 @@ print.BiomeScheme <- function(x, ...) {
     cat(paste0("     ", type,"\n"))    
   }
 
-}
+})
 
 
