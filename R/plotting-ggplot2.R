@@ -360,7 +360,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
                  xmn=min(lon) - res/2, xmx=max(lon) + res/2,
                  ymn=min(lat) - res/2, ymx=max(lat) + res/2,
                  crs=CRS("+proj=longlat +ellps=WGS84"))
-    data(slm, envir = environment())
+    utils::data(slm, envir = environment())
     slm <- projectRaster(slm, to, "nbg")
     slm <- as.data.frame(slm, xy=TRUE)
     colnames(slm) <- c("Lon", "Lat", "value")
@@ -1047,7 +1047,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
   }
 
   if (verbose)
-    print(str(DT))
+    print(utils::str(DT))
   
   if (!is.null(limit)) {
     if (is.data.frame(limit) || is.list(limit)) {

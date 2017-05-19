@@ -9,16 +9,17 @@ import(maps,
        rgdal, 
        sp,
        raster,
-       data.table,
-       viridis)
+       data.table)
 
 
-importFrom("stats", "na.omit", "coef", "complete.cases")
-importFrom("utils", "capture.output", "data", "file_test", "object.size", "read.table", "write.table", "str")
 importMethodsFrom("data.table")
-importMethodsFrom("raster")
-importMethodsFrom("sp")
 importClassesFrom("ncdf4")
+
+importClassesFrom("sp")
+importMethodsFrom("sp")
+
+importClassesFrom("raster")
+importMethodsFrom("raster")
 
 exportClasses(TemporalExtent, 
               SpatialExtent, 

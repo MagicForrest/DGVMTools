@@ -177,7 +177,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
       this.slice.dt <- as.data.table(melt(this.slice))
       
       # chuck out the NAs (to save space)
-      this.slice.dt <- na.omit(this.slice.dt)
+      this.slice.dt <- stats::na.omit(this.slice.dt)
       
       # re-label the columns
       setnames(this.slice.dt, c("PFT", "Lon", "Lat", "value"))
@@ -359,7 +359,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
       this.slice.dt <- as.data.table(melt(this.slice))
 
       # chuck out the NAs (to save space)
-      this.slice.dt <- na.omit(this.slice.dt)
+      this.slice.dt <- stats::na.omit(this.slice.dt)
       
       # re-label the columns
       setnames(this.slice.dt, c("Lon", "Lat", "Month", "value"))
@@ -387,7 +387,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
   # Tidy stuff
   if(africa.centre) full.dt[,Lon := LondonCentre(Lon)]
   if(remove.total) full.dt[, Total := NULL]
-  full.dt <- na.omit(full.dt)
+  full.dt <- stats::na.omit(full.dt)
   
   return(full.dt)
 
@@ -641,7 +641,7 @@ toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
     dt <- dt[, FireMIP.PFTs := rescale(.SD), .SDcols = FireMIP.PFTs, with = FALSE]
     
     # important, remove any NAs that my have been introduced by scaling
-    dt <- na.omit(dt)
+    dt <- stats::na.omit(dt)
     
     # remove agriculture column 
     if("Crops" %in% names(dt)) dt <- dt[, "Crops" := 0, with = FALSE]

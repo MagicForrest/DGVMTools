@@ -56,7 +56,7 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
   
   if(resolution == "original"){
     
-    Baccini.data <- read.table(file.path(location, "Baccini_220912.txt"), header = TRUE, stringsAsFactors=FALSE)
+    Baccini.data <- utils::read.table(file.path(location, "Baccini_220912.txt"), header = TRUE, stringsAsFactors=FALSE)
     
     # if london.centre is requested, make sure all negative longitudes are shifted to positive
     Baccini.data$Lon <- vapply(Baccini.data$Lon, 1, FUN = LondonCentre)    
@@ -97,7 +97,7 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
   setnames(Baccini.dt, c("Lon", "Lat", "Tree"))
   setkey(Baccini.dt, Lon, Lat)
   
-  Baccini.dt <- na.omit(Baccini.dt)
+  Baccini.dt <- stats::na.omit(Baccini.dt)
   
   
   Baccini.dataset <- new("DataObject",

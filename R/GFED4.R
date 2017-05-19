@@ -227,7 +227,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   for(extent in list.of.spatial.extents){
     
     # crop
-    GFED4.data.cropped <- cropDGVM(GFED4.total, extent)
+    GFED4.data.cropped <- crop(GFED4.total, extent)
     
 
     # IF SPATIALLY AGGREGATE RETURN A LIST OF TEMPORAL DATASET OBJECTS
@@ -272,7 +272,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       if(nlayers(GFED4.data.cropped) == 1) {
         
         dataset.dt <- data.table(as.data.frame(GFED4.data.cropped,xy = TRUE))
-        dataset.dt <- na.omit(dataset.dt)
+        dataset.dt <- stats::na.omit(dataset.dt)
         setnames(dataset.dt, c("Lon", "Lat", "Annual"))
         setkey(dataset.dt, Lon, Lat)
         

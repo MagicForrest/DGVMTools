@@ -152,7 +152,7 @@ dgvm.quantities <- list(
       type = "",
       name = "Leaf Area Index",
       units = "-",
-      colours = viridis, 
+      colours = viridis::viridis, 
       model = "FireMIP"), 
   
   new("Quantity",

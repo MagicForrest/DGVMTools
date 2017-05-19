@@ -80,7 +80,7 @@ openLPJOutputFile <- function(run,
   setkey(dt, Lon, Lat, Year)
   
   # remove any NAs
-  dt <- na.omit(dt)
+  dt <- stats::na.omit(dt)
   
   return(dt)
   

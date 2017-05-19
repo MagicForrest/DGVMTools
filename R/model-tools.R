@@ -432,7 +432,7 @@ getModelObject <- function(run,
   
   
   ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
-  if(!is.null(spatial.extent))  this.dt <- cropDGVM(this.dt, spatial.extent)      
+  if(!is.null(spatial.extent))  this.dt <- crop(this.dt, spatial.extent)      
   if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
   
   

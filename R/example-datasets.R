@@ -171,7 +171,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   
   PNV.dt[, paste(classification) := as.factor(plyr::mapvalues(PNV.dt[[classification]], from = 1:18, to = subs.rules))]
-  PNV.dt <- na.omit(PNV.dt)
+  PNV.dt <- stats::na.omit(PNV.dt)
 
  
   return(
@@ -219,7 +219,7 @@ getSaatchi2011_example <- function(resolution = "HD"){
   Saatchi.dt <- data.table(as.data.frame(Saatchi.raster,xy = TRUE))
   setnames(Saatchi.dt, c("Lon", "Lat", "Tree"))
   setkey(Saatchi.dt, Lon, Lat)
-  Saatchi.dt <- na.omit(Saatchi.dt)
+  Saatchi.dt <- stats::na.omit(Saatchi.dt)
   
   
   Saatchi.dataset <- new("DataObject",

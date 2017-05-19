@@ -72,7 +72,7 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/", resolution = "HD
 
   setkey(Thurner.dt, Lon, Lat)
 
-  Thurner.dt <- na.omit(Thurner.dt)
+  Thurner.dt <- stats::na.omit(Thurner.dt)
   
   quant <- lookupQuantity("vegC_std", "Standard")
 

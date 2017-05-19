@@ -8,6 +8,7 @@
 \alias{extent,ModelObject-method}
 \alias{extent,DataObject-method}
 \alias{extent,ComparisonLayer-method}
+\alias{extent,SpatialExtent-method}
 \title{Extent methods}
 \usage{
 extent(x, ...)
@@ -19,6 +20,8 @@ extent(x, ...)
 \S4method{extent}{DataObject}(x)
 
 \S4method{extent}{ComparisonLayer}(x)
+
+\S4method{extent}{SpatialExtent}(x)
 }
 \arguments{
 \item{x}{A ModelObject, DataObject or a data.table.}

@@ -20,12 +20,12 @@ Depends:
     raster
 Imports:
     methods,
+    compiler,
     maptools,
     ncdf4,
     rgdal,
     sp,
     fields,
-    compiler,
     grid,
     RColorBrewer,
     plyr,

@@ -89,7 +89,7 @@ readHYDE <- function(location = "/home/forrest/Data/LandUseLandCover/HYDE/netCDF
   HYDE.slice <- apply(HYDE.slice, c(2,3), mean)
   dimnames(HYDE.slice) <- list(this.lon, this.lat)
   HYDE.dt <- as.data.table(melt(HYDE.slice))
-  HYDE.dt <- na.omit( HYDE.dt)
+  HYDE.dt <- stats::na.omit( HYDE.dt)
   setnames(HYDE.dt, c("Lon", "Lat", layer))
   setkey(HYDE.dt, Lon, Lat)
   

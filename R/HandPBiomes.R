@@ -74,7 +74,7 @@ getHandPBiomes <- function(location = "/data/forrest/Biomes/", resolution = "HD"
   
   
   HandPBiomes.dt[, paste(classification) := as.factor(plyr::mapvalues(HandPBiomes.dt[[classification]], from = 1:18, to = subs.rules))]
-  HandPBiomes.dt <- na.omit(HandPBiomes.dt)
+  HandPBiomes.dt <- stats::na.omit(HandPBiomes.dt)
   
   
   # also set the key 

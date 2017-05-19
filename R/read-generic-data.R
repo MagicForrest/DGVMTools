@@ -55,7 +55,7 @@ readData <- function(dataset.id,
   setnames(this.slice.dt, c("Lon", "Lat", "DATALAYER"))
   
   # remove NAs
-  this.slice.dt <- na.omit(this.slice.dt)
+  this.slice.dt <- stats::na.omit(this.slice.dt)
   
   # London centre
   this.slice.dt[,Lon := LondonCentre(Lon)]

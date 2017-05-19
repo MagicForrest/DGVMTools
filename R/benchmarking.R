@@ -15,8 +15,8 @@
 
 lm_eqn <- function(linear.model) {
   eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
-                   list(a = format(coef(linear.model)[1], digits = 2), 
-                        b = format(coef(linear.model)[2], digits = 2), 
+                   list(a = format(stats::coef(linear.model)[1], digits = 2), 
+                        b = format(stats::coef(linear.model)[2], digits = 2), 
                         r2 = format(summary(linear.model)$r.squared, digits = 3)))
   as.character(as.expression(eq));                 
 }

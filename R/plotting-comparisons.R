@@ -42,7 +42,7 @@ plotResidualsHisto <- function(input.CLayers,
   # for a single ComparisonLayer
   if(is.ComparisonLayer(input.CLayers)) {
     
-    temp.dt <- na.omit(input.CLayers@data[, c("Difference"), with=FALSE])
+    temp.dt <- stats::na.omit(input.CLayers@data[, c("Difference"), with=FALSE])
     setnames(temp.dt, input.CLayers@name) 
     diff.layers <- input.CLayers@name
     if(is.null(labels)) labels <- input.CLayers@info1@name
@@ -63,7 +63,7 @@ plotResidualsHisto <- function(input.CLayers,
       if(!is.ComparisonLayer(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
       else {
         
-        really.temp.dt <- na.omit(thing@data[, c("Difference"), with=FALSE])
+        really.temp.dt <- stats::na.omit(thing@data[, c("Difference"), with=FALSE])
         setnames(really.temp.dt, thing@name) 
         diff.layers <- append(diff.layers, thing@name)
         if(is.null(labels)) new.labels <- append(new.labels, thing@info1@name)
@@ -208,7 +208,7 @@ plotScatterComparison <- function(input.CLayers,
   # for a single ComparisonLayer
   if(is.ComparisonLayer(input.CLayers)) {
     
-    temp.dt <- na.omit(input.CLayers@data[, names(input.CLayers)[1:2], with=FALSE])
+    temp.dt <- stats::na.omit(input.CLayers@data[, names(input.CLayers)[1:2], with=FALSE])
     setnames(temp.dt, c("ValueX", "ValueY")) 
     if(is.null(labels)) labels <- input.CLayers@info1@name
 
@@ -226,7 +226,7 @@ plotScatterComparison <- function(input.CLayers,
       else {
         
 
-        really.temp.dt <- na.omit(thing@data[, names(thing)[1:2], with=FALSE])
+        really.temp.dt <- stats::na.omit(thing@data[, names(thing)[1:2], with=FALSE])
         setnames(really.temp.dt, c("ValueX", "ValueY")) 
         
         # also add the source of the comparison
@@ -299,7 +299,7 @@ plotScatterComparison <- function(input.CLayers,
   }
   
   # The basic plot
-  scatter.plot <- ggplot(as.data.frame(na.omit(temp.dt)), aes_string(x="ValueX", y="ValueY")) +  geom_point(size=3, alpha =alpha)
+  scatter.plot <- ggplot(as.data.frame(stats::na.omit(temp.dt)), aes_string(x="ValueX", y="ValueY")) +  geom_point(size=3, alpha =alpha)
   
   
   scatter.plot <- scatter.plot + theme(text = element_text(size=25))

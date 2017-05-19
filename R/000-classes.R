@@ -174,7 +174,7 @@ checkModelRun <- function(object){
   }
   
   # Check run.dir exists
-  if (!file_test("-d", object@run.dir)) {
+  if (!utils::file_test("-d", object@run.dir)) {
     msg <- paste("Run directory not found:", object@run.dir, sep = " ")
     errors <- c(errors, msg)
   }
