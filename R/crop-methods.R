@@ -10,13 +10,18 @@
 #' @name crop-methods
 #' @rdname crop-methods
 #' @aliases crop
+#' @importFrom raster crop
+#' @importMethodsFrom raster crop
 #' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 #' 
 #' 
+#' 
+# first define (redfine) the generic
 if (!isGeneric("crop")) {
   setGeneric("crop", function(x, y, ...) standardGeneric("crop"))
 }
+
 
 #######################################################################################
 ###### Methods for cropping ModelObjectsto a raster::Extent object ####################

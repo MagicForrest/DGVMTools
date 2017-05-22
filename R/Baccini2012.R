@@ -71,13 +71,13 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
     Baccini.data = as(Baccini.data, "SpatialGridDataFrame") # to full grid
     
     # make raster 
-    Baccini.raster <- brick(Baccini.data)
+    Baccini.raster <- raster::brick(Baccini.data)
     
     # subset to get the mean layer only
     Baccini.raster <-subset(Baccini.raster, "MEAN")
 
     # convert from AGB to total
-    Baccini.raster <- calc(Baccini.raster, AGBtoTotalCarbon)
+    Baccini.raster <- raster::calc(Baccini.raster, AGBtoTotalCarbon)
     
     # divide by 10 to go from tC/Ha to kgC/m^2
     Baccini.raster <- Baccini.raster/10
@@ -85,10 +85,10 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
   }
   
   else if(resolution == "HD"){
-    Baccini.raster <- raster(file.path(location, "Baccini2012.HD.nc"))
+    Baccini.raster <- raster::raster(file.path(location, "Baccini2012.HD.nc"))
   }
   else if(resolution == "T63"){
-    Baccini.raster <- trim(rotate(raster(file.path(location, "Baccini2012.T63.nc"))))
+    Baccini.raster <- raster::trim(raster::rotate(raster::raster(file.path(location, "Baccini2012.T63.nc"))))
   }
   
   

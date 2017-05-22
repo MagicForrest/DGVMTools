@@ -680,8 +680,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import raster
 correct.map.offset <- function(spl) {
-  we <- crop(spl, extent(-180, 180, -90, 90))
-  ww <- crop(spl, extent(179.999, 200, -90, 90))
+  we <- raster::crop(spl, raster::extent(-180, 180, -90, 90))
+  ww <- raster::crop(spl, raster::extent(179.999, 200, -90, 90))
   if(!is.null(ww) & !is.null(we)) {
     ww <- raster::shift(ww, -360)
     spl <- raster::bind(we, ww)  

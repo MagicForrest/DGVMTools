@@ -8,7 +8,6 @@ import(maps,
        ncdf4,
        rgdal, 
        sp,
-       raster,
        data.table)
 
 
@@ -20,6 +19,8 @@ importMethodsFrom("sp")
 
 importClassesFrom("raster")
 importMethodsFrom("raster")
+
+importFrom(raster, crop, extent)
 
 exportClasses(TemporalExtent, 
               SpatialExtent, 

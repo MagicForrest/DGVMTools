@@ -9,10 +9,13 @@
 #' @name extent-methods
 #' @rdname extent-methods
 #' @aliases extent
+#' @importFrom raster extent
 #' @importMethodsFrom raster extent
 #' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
-setGeneric("extent", function(x) standardGeneric("extent"))
+if (!isGeneric("extent")) {
+  setGeneric("extent", function(x) standardGeneric("extent"))
+}
 
 
 #' @rdname extent-methods
@@ -30,26 +33,26 @@ setMethod("extent", signature(x="data.table"), function(x) {
   # Now build the spatial extent depending on if it is a single site or not
   # if it is a site or a transect
   if(length(ordered.lons) == 1 && length(ordered.lats) == 1){
-    extent.temp <- extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+    extent.temp <- raster::extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
   }
   # transect along lon
   else if (length(ordered.lons) == 1) {
-    extent.temp =  extent(ordered.lons[1], ordered.lons[1],
-                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
-                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+    extent.temp =  raster::extent(ordered.lons[1], ordered.lons[1],
+                                  ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                                  ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
   }
   # transect along lat
   else if (length(ordered.lats) == 1) {
-    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
-                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
-                          ordered.lats[1], ordered.lats[1])
+    extent.temp =  raster::extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                                  ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                                  ordered.lats[1], ordered.lats[1])
   }
   # else it is a 'proper' extent
   else{
-    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
-                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
-                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
-                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+    extent.temp =  raster::extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                                  ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                                  ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                                  ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
   }
   
   return(extent.temp)
@@ -74,26 +77,26 @@ setMethod("extent", signature(x="ModelObject"), function(x) {
   # Now build the spatial extent depending on if it is a single site or not
   # if it is a site
   if(length(ordered.lons) == 1 && length(ordered.lats) == 1){
-    extent.temp <- extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+    extent.temp <- raster::extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
   }
   # transect along lon
   else if (length(ordered.lons) == 1) {
-    extent.temp =  extent(ordered.lons[1], ordered.lons[1],
-                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
-                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+    extent.temp =  raster::extent(ordered.lons[1], ordered.lons[1],
+                                  ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                                  ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
   }
   # transect along lat
   else if (length(ordered.lats) == 1) {
-    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
-                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
-                          ordered.lats[1], ordered.lats[1])
+    extent.temp = raster::extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                                 ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                                 ordered.lats[1], ordered.lats[1])
   }
   # else it is a 'proper' extent
   else{
-    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
-                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
-                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
-                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+    extent.temp =  raster::extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                                  ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                                  ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                                  ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
   }
   
   return(extent.temp)
@@ -108,33 +111,33 @@ setMethod("extent", signature(x="DataObject"), function(x) {
   # Get an ordered list of lons and lats
   if("Lat" %in% names(x@data)) { ordered.lats <- sort(unique(x@data[,Lat]))}
   else {stop("No column called \"Lat\" in the data.table in the data slot of the DataObject")}
-    if("Lon" %in% names(x@data)) { ordered.lons <- sort(unique(x@data[,Lon]))}
+  if("Lon" %in% names(x@data)) { ordered.lons <- sort(unique(x@data[,Lon]))}
   else {stop("No column called \"Lon\" in the data.table in the data slot of the DataObject")}
   
   
   # Now build the spatial extent depending on if it is a single site or not
   # if it is a site
   if(length(ordered.lons) == 1 && length(ordered.lats) == 1){
-    extent.temp <- extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+    extent.temp <- raster::extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
   }
   # transect along lon
   else if (length(ordered.lons) == 1) {
-    extent.temp =  extent(ordered.lons[1], ordered.lons[1],
-                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
-                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+    extent.temp =  raster::extent(ordered.lons[1], ordered.lons[1],
+                                  ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                                  ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
   }
   # transect along lat
   else if (length(ordered.lats) == 1) {
-    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
-                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
-                          ordered.lats[1], ordered.lats[1])
+    extent.temp =  raster::extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                                  ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                                  ordered.lats[1], ordered.lats[1])
   }
   # else it is a 'proper' extent
   else{
-    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
-                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
-                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
-                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+    extent.temp =  raster::extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                                  ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                                  ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                                  ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
   }
   
   return(extent.temp)
@@ -156,26 +159,26 @@ setMethod("extent", signature(x="ComparisonLayer"), function(x) {
   # Now build the spatial extent depending on if it is a single site or not
   # if it is a site
   if(length(ordered.lons) == 1 && length(ordered.lats) == 1){
-    extent.temp <- extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
+    extent.temp <- raster::extent(ordered.lons[1], ordered.lons[1], ordered.lats[1], ordered.lats[1])
   }
   # transect along lon
   else if (length(ordered.lons) == 1) {
-    extent.temp =  extent(ordered.lons[1], ordered.lons[1],
-                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
-                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+    extent.temp =  raster::extent(ordered.lons[1], ordered.lons[1],
+                                  ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                                  ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
   }
   # transect along lat
   else if (length(ordered.lats) == 1) {
-    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
-                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
-                          ordered.lats[1], ordered.lats[1])
+    extent.temp =  raster::extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                                  ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                                  ordered.lats[1], ordered.lats[1])
   }
   # else it is a 'proper' extent
   else{
-    extent.temp =  extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
-                          ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
-                          ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
-                          ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
+    extent.temp =  raster::extent(ordered.lons[1] - ((ordered.lons[2] - ordered.lons[1])/2),
+                                  ordered.lons[length(ordered.lons)] + ((ordered.lons[length(ordered.lons)] - ordered.lons[length(ordered.lons)-1])/2),
+                                  ordered.lats[1] - ((ordered.lats[2] - ordered.lats[1])/2),
+                                  ordered.lats[length(ordered.lats)] + ((ordered.lats[length(ordered.lats)] - ordered.lats[length(ordered.lats)-1])/2))
   }
   
   return(extent.temp)

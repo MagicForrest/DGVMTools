@@ -59,7 +59,7 @@ cdo <- function(fun, ifile, ofile, grid = NULL, return.raster = FALSE, verbose =
     working.dir <- dirname(ofile)
     temp.file <- file.path(dirname(ofile), paste0(deparse(substitute(ifile)), ".nc"))
     message(paste("Saving temporary file", temp.file))
-    writeRaster(ifile, temp.file, overwrite = TRUE, NAflag = -999999.0, ...)
+    raster::writeRaster(ifile, temp.file, overwrite = TRUE, NAflag = -999999.0, ...)
     ifile <- temp.file
     
   }
@@ -96,7 +96,7 @@ cdo <- function(fun, ifile, ofile, grid = NULL, return.raster = FALSE, verbose =
   if(remove.temps) system(paste("rm", temp.file, sep = " "), ignore.stdout = !verbose)
   
   if(return.raster) {
-    return(stack(ofile))
+    return(raster::stack(ofile))
   }
   else{
     return(NULL)

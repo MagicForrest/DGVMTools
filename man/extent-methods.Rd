@@ -11,8 +11,6 @@
 \alias{extent,SpatialExtent-method}
 \title{Extent methods}
 \usage{
-extent(x, ...)
-
 \S4method{extent}{data.table}(x)
 
 \S4method{extent}{ModelObject}(x)

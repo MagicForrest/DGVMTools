@@ -432,7 +432,7 @@ getModelObject <- function(run,
   
   
   ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
-  if(!is.null(spatial.extent))  this.dt <- crop(this.dt, spatial.extent)      
+  if(!is.null(spatial.extent))  this.dt <- raster::crop(this.dt, spatial.extent)      
   if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
   
   
@@ -451,7 +451,7 @@ getModelObject <- function(run,
     this.dt <- doSpatialAverage(this.dt, verbose, area.weighted)
     if(verbose) {
       message("Head of spatially averaged data.table:")
-      print(head(this.dt))
+      print(utils::head(this.dt))
     }
   }
   
@@ -461,7 +461,7 @@ getModelObject <- function(run,
     this.dt <- doTemporalAverage(this.dt, verbose)
     if(verbose) {
       message("Head of time averaged data.table:")
-      print(head(this.dt))
+      print(utils::head(this.dt))
     }
   }
   
@@ -563,7 +563,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   ###  If SpatialPixelsDataFrame rasterise it directly
   if(this.class == "SpatialPixelsDataFrame"){ 
     print("If error check here: promoteToRaster in veg-runtools.R")
-    data.raster <- brick(input.data, layers)
+    data.raster <- raster::brick(input.data, layers)
   }
   ### If data.table or ModelObject (which contains a data.table) 
   # could make this a little bit more efficient maybe...
@@ -580,11 +580,11 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
     
     # now convert to raster
     if(length(layers) == 1){
-      data.raster <- raster(data.spdf)
+      data.raster <- raster::raster(data.spdf)
       rm(data.spdf)
     }
     else {
-      data.raster <- brick(data.spdf)
+      data.raster <- raster::brick(data.spdf)
       rm(data.spdf)   
     }
     

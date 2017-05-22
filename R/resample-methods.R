@@ -25,7 +25,7 @@ setMethod("resample.DGVM", signature(x="ModelObject", y="Raster", method = "char
   x.raster <- as.Raster(x)
   
   # second do the resampling
-  x.resampled <- resample(x.raster, y, method, filename)
+  x.resampled <- raster::resample(x.raster, y, method, filename)
   
   # finally resample and return
   return(x.resampled)
@@ -39,7 +39,7 @@ setMethod("resample.DGVM", signature(x="DataObject", y="Raster", method = "chara
   x.raster <- as.Raster(x)
   
   # second do the resampling
-  x.resampled <- resample(x.raster, y, method, filename)
+  x.resampled <- raster::resample(x.raster, y, method, filename)
   
   # finally resample and return
   return(x.resampled)

@@ -42,7 +42,7 @@ setClass("SpatialExtent",
          ),
          prototype= c(id = "Global",
                       name = "Global",
-                      extent = extent(-180, 180, -90 ,90)
+                      extent = raster::extent(-180, 180, -90 ,90)
          )
 )
 

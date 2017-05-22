@@ -21,8 +21,8 @@ getMODISGPP <- function(location = "/data/forrest/Productivity/MODIS/V55", resol
     
   }
   else if(resolution == "1km-Turkey"){
-    if(average) raster <- trim(rotate(raster(file.path(location, "processed/MODISGPP.TA.2000-2010.1km-Turkey.nc"))))
-    else raster <- trim(rotate(brick(file.path(location, "processed/MODISGPP.2000-2010.1km-Turkey.nc"))))
+    if(average) raster <- raster::trim(raster::rotate(raster::raster(file.path(location, "processed/MODISGPP.TA.2000-2010.1km-Turkey.nc"))))
+    else raster <- raster::trim(raster::rotate(raster::brick(file.path(location, "processed/MODISGPP.2000-2010.1km-Turkey.nc"))))
     print(raster)
   }
   

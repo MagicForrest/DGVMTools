@@ -6,8 +6,8 @@
 \usage{
 
   processGlobcover2009(location = "/data/forrest/LandUseLandCover/Globcover2009/",
-  target.grid = raster(nrows = 360, ncols = 720, xmn = -180, xmx = 180, ymn =
-  -90, ymx = 90))
+  target.grid = raster::raster(nrows = 360, ncols = 720, xmn = -180, xmx =
+  180, ymn = -90, ymx = 90))
 }
 \arguments{
 \item{location}{A character string specifying the location of the original Globcover2009 data}

@@ -48,7 +48,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   # metadata for this dataset
   GFED4.scale.factor <- 0.01
   datset.id.string <- "GFED4BA"
-  rasterOptions(maxmemory = maxmemory)
+  raster::rasterOptions(maxmemory = maxmemory)
   kmsq_to_ha <- 100
   ha_to_kmsq <- 0.01
   
@@ -88,19 +88,19 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   ######### PART ONE: READ THE DATA
   
   # the final raster
-  GFED4.total <- brick()
+  GFED4.total <- raster::brick()
   
   for(year in temporal.extent@start:temporal.extent@end){
     print(year)
     # read each month into a temporary raster for the year
-    BA.thisyear <- brick()
+    BA.thisyear <- raster::brick()
     
     # READ MONTHLY DATA (if need annual or month data then read the monthly files for speed)
     if(tolower(temporal.resolution) == "annual" || tolower(temporal.resolution) == "monthly") {
       
       for(month in months){
 
-        BA.thisyear <- addLayer(BA.thisyear, raster(paste("HDF4_SDS:UNKNOWN:", location, "original/GFED4.0_MQ_", year, month@padded.index, "_BA.hdf:0", sep = "")))
+        BA.thisyear <- raster::addLayer(BA.thisyear, raster::raster(paste("HDF4_SDS:UNKNOWN:", location, "original/GFED4.0_MQ_", year, month@padded.index, "_BA.hdf:0", sep = "")))
         names(BA.thisyear) <- append(names(BA.thisyear)[1:length(names(BA.thisyear))-1], paste(datset.id.string, year, month@padded.index, sep = "_"))
 
       }
@@ -108,7 +108,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       # if annual make the sum for the year and name the layer
       if(tolower(temporal.resolution) == "annual") {
         
-        BA.thisyear <- calc(BA.thisyear, sum)
+        BA.thisyear <- raster::calc(BA.thisyear, sum)
         names(BA.thisyear) <- paste(datset.id.string, year, sep = "_")
         
       }
@@ -131,7 +131,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       
       for(day.str in day.strings){
         print(day.str)
-        BA.thisyear <- addLayer(BA.thisyear, raster(paste("HDF4_SDS:UNKNOWN:", location, "original/", year, "/GFED4.0_DQ_", year, day.str, "_BA.hdf:0", sep = "")))
+        BA.thisyear <- raster::addLayer(BA.thisyear, raster::raster(paste("HDF4_SDS:UNKNOWN:", location, "original/", year, "/GFED4.0_DQ_", year, day.str, "_BA.hdf:0", sep = "")))
       }
       
     }
@@ -154,7 +154,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
         GFED4.total <- GFED4.total + BA.thisyear
       }
       else {
-        GFED4.total <- stack(GFED4.total, BA.thisyear)
+        GFED4.total <- raster::stack(GFED4.total, BA.thisyear)
       }
       
     }
@@ -178,18 +178,18 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   ########### PART TWO: SET THE METADATA, UNITS, ETC 
   
   # SET EXTENT AND PROJECT
-  xmin(GFED4.total) <- -180
-  xmax(GFED4.total) <- 180
-  ymin(GFED4.total) <- -90
-  ymax(GFED4.total) <- 90
-  projection(GFED4.total) <- "+proj=longlat +datum=WGS84"
+  raster::xmin(GFED4.total) <- -180
+  raster::xmax(GFED4.total) <- 180
+  raster::ymin(GFED4.total) <- -90
+  raster::ymax(GFED4.total) <- 90
+  raster::projection(GFED4.total) <- "+proj=longlat +datum=WGS84"
   
   store.names <- names(GFED4.total)
   
   # AGGREGATE IF REQUESTED AT COARSER RESOLUTION (but ignore if spatial averaging requested)
   if(!spatially.aggregate){
     if(spatial.resolution == "HD"){
-      GFED4.total <- aggregate(GFED4.total, fact = 2, fun = sum)
+      GFED4.total <- raster::aggregate(GFED4.total, fact = 2, fun = sum)
     }
     else {
       if(spatial.resolution != "QD") stop(paste("Unknown resolution attempted - ", resolution, sep = ""))
@@ -206,14 +206,14 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
     GFED4.total <- GFED4.total * (GFED4.scale.factor * ha_to_kmsq)
   }
   else if(units == "fraction"){
-    GFED4.total <- GFED4.total / area(GFED4.total)  * (GFED4.scale.factor * ha_to_kmsq) 
+    GFED4.total <- GFED4.total / raster::area(GFED4.total)  * (GFED4.scale.factor * ha_to_kmsq) 
   }
   else{
     stop(paste("In readGFED4():: Unknown units:", units, "specified. Valid options are \"ha\", \"kmsq\" or \"fraction\".", sep = ""))
   }
   
   # CALCULATE THE MIN/MAX
-  GFED4.total <- setMinMax(GFED4.total)
+  GFED4.total <- raster::setMinMax(GFED4.total)
   
   # SET THE NAMES AGAIN
   names(GFED4.total) <- store.names 
@@ -227,7 +227,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   for(extent in list.of.spatial.extents){
     
     # crop
-    GFED4.data.cropped <- crop(GFED4.total, extent)
+    GFED4.data.cropped <- raster::crop(GFED4.total, extent)
     
 
     # IF SPATIALLY AGGREGATE RETURN A LIST OF TEMPORAL DATASET OBJECTS
@@ -236,11 +236,11 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       # an absolute unit, just sum them up, nae borra
       store.names <- names(GFED4.data.cropped)
       if(units == "ha" || units == "kmsq") { 
-        GFED4.data.cropped.timeseries <- cellStats(GFED4.data.cropped, sum)
+        GFED4.data.cropped.timeseries <- raster::cellStats(GFED4.data.cropped, sum)
       }
       # if fraction, weight by the gridcell areas
       else{
-        GFED4.data.cropped.timeseries <- cellStats(GFED4.data.cropped * area(GFED4.data.cropped), sum)/ cellStats(area(GFED4.data.cropped), sum)
+        GFED4.data.cropped.timeseries <- raster::cellStats(GFED4.data.cropped * raster::area(GFED4.data.cropped), sum)/ raster::cellStats(raster::area(GFED4.data.cropped), sum)
       }
       names(GFED4.data.cropped.timeseries) <- store.names 
       
@@ -269,7 +269,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
     } # if not spatially aggregating
     else {
       
-      if(nlayers(GFED4.data.cropped) == 1) {
+      if(raster::nlayers(GFED4.data.cropped) == 1) {
         
         dataset.dt <- data.table(as.data.frame(GFED4.data.cropped,xy = TRUE))
         dataset.dt <- stats::na.omit(dataset.dt)

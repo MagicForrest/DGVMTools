@@ -67,7 +67,7 @@ openLPJOutputFile <- function(run,
   
   if(verbose) {
     message("Offsets applied. Head of full .out file (after offsets):")
-    print(head(dt))
+    print(utils::head(dt))
   }
   
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
@@ -278,17 +278,17 @@ listAllLPJOutput <- function(run.directory){
 
 
 ######################### TRIM AN LPJ-GUESS FILENAME  #####################################################################
-#' Helper function to trim the ".out" or the ".out.gz" from an LPJ-GUESS filename to get the variable in question
+#' Helper function to raster::trim the ".out" or the ".out.gz" from an LPJ-GUESS filename to get the variable in question
 #' 
 #' Returns NULL if the last characters are not ".out" or ".out.gz
 #'
-#' @param var.filename The string of the filename to be trimmed
+#' @param var.filename The string of the filename to be raster::trimmed
 #' @return A string less the last fou.
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-# handy helper function for trimming file names to get a variable name
+# handy helper function for raster::trimming file names to get a variable name
 LPJQuantFromFilename <- function(var.filename){
   
   for(ending in c(".out", ".out.gz")) {

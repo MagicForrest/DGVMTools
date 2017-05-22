@@ -24,15 +24,15 @@ getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collect
     
   }
   if(resolution == "HD"){
-    raster <- brick("/home/forrest/Data/TreeCover/MOD44B/v051/processed/MOD44B.2000-2015.HD.nc", varname = layer)
+    raster <- raster::brick("/home/forrest/Data/TreeCover/MOD44B/v051/processed/MOD44B.2000-2015.HD.nc", varname = layer)
     if(start != 2000 | end != 2015) raster <- subset(raster, (start-1999):(end-1999))
-    if(average) raster <- calc(raster, mean)
+    if(average) raster <- raster::calc(raster, mean)
     t.extent <- new("TemporalExtent", id = "MODISPeriod", name = "MODIS Period", start = start, end = end)
     s.extent.id <- "Global"
     s.extent.name <- "Global"
   }
   else if(resolution == "1km-Turkey"){
-    raster <- trim(rotate(raster(file.path(location, "processed/MODISTreeCover.2000-2010.1km-Turkey.nc"))))
+    raster <- raster::trim(raster::rotate(raster::raster(file.path(location, "processed/MODISTreeCover.2000-2010.1km-Turkey.nc"))))
     t.extent <- new("TemporalExtent", id = "MODISPeriod", name = "MODIS Period", start = 2000, end = 2010)
     s.extent.id = "TurkeyExtent"
     s.extent.name = "Turkey 1km extent"
