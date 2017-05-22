@@ -18,15 +18,15 @@
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbose=TRUE) {
   ## check if valid arguments are given
-  if (is.missing(x) || is.missing(y) || is.missing(op))
+  if (missing(x) || missing(y) || missing(op))
     stop("Missing values for 'x', 'y' and/or 'op'!")
 
   if (!is.ModelObject(x))
-    stop(paste("target '", targets[['x']][1], "is not a ModelObject!", sep=""))
+    stop(paste("'x' is not a ModelObject!", sep=""))
   if (!is.ModelObject(y))
-    stop(paste("target '", targets[['y']][1], "is not a ModelObject!", sep=""))
+    stop(paste("'y' is not a ModelObject!", sep=""))
   
-  if (grepl("^a", op, ignore.case=TRUE) || o == "+") {
+  if (grepl("^a", op, ignore.case=TRUE) || op == "+") {
     op = "+"
   } else if (grepl("^s", op, ignore.case=TRUE) || op == "-") {
     op = "-"
@@ -110,7 +110,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                is.site = x@is.site,
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
-               run = as(run, "ModelRunInfo")))      
+               run = as(x.run, "ModelRunInfo")))      
 
   } else if (is.null(x.col) && !is.null(y.col)) {
     key.names <- key(x.dt)
@@ -135,7 +135,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                is.site = x@is.site,
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
-               run = as(run, "ModelRunInfo")))      
+               run = as(x.run, "ModelRunInfo")))      
     
   } else if (!is.null(x.col) && is.null(y.col)) {
     key.names <- key(y.dt)
@@ -160,7 +160,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                is.site = x@is.site,
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
-               run = as(run, "ModelRunInfo")))      
+               run = as(x.run, "ModelRunInfo")))      
   } else {
     key.names <- key(x.dt)
     val.names <- names(x.dt)
@@ -192,7 +192,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                is.site = x@is.site,
                is.temporally.averaged = x@is.temporally.averaged,
                is.spatially.averaged = x@is.spatially.averaged,
-               run = as(run, "ModelRunInfo")))      
+               run = as(x.run, "ModelRunInfo")))      
   }
   stop("MISSING: Not implemented yet.")
 }
