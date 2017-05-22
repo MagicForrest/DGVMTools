@@ -60,26 +60,26 @@
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
 plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
-                         layers = NULL,
-                         title = NULL,
-                         layout.objs = NULL, 
-                         facet.labels =  NULL,
-                         facet.order = NULL,
-                         plot.bg.col =  "white",
-                         useLongnames = FALSE,
-                         text.multiplier = 1,
-                         xlim = NULL,
-                         ylim = NULL,
-                         limits = NULL,
-                         override.cols = NULL,
-                         override.cuts = NULL,
-                         map.overlay = NULL,
-                         dont.grid = FALSE,
-                         return.data = FALSE,
-                         tile = TRUE,
-                         interpolate = FALSE,
-                         interior.lines = TRUE){
- 
+                        layers = NULL,
+                        title = NULL,
+                        layout.objs = NULL, 
+                        facet.labels =  NULL,
+                        facet.order = NULL,
+                        plot.bg.col =  "white",
+                        useLongnames = FALSE,
+                        text.multiplier = 1,
+                        xlim = NULL,
+                        ylim = NULL,
+                        limits = NULL,
+                        override.cols = NULL,
+                        override.cuts = NULL,
+                        map.overlay = NULL,
+                        dont.grid = FALSE,
+                        return.data = FALSE,
+                        tile = TRUE,
+                        interpolate = FALSE,
+                        interior.lines = TRUE){
+  
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
   
@@ -365,7 +365,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     continuous <- FALSE
     breaks <- waiver()
   }
- 
+  
   
   ### RETURN DATA ONLY IF REQUESTED
   if(return.data) return(data.toplot)
@@ -399,7 +399,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     data.toplot <- data.toplot[Lon >= xlim[1] & Lon <= xlim[2],]
   }
   
-
+  
   ### PREPARE THE MAP OVERLAY
   if(class(map.overlay)[1] == "character"){
     
@@ -420,13 +420,10 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
     map.sp.lines.df <- SpatialLinesDataFrame(map.sp.lines, data = df)
     map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
-    suppressWarnings(map.overlay <- fortify(map.sp.lines.df))
-    
+    map.overlay <- fortify(map.sp.lines.df)
+
     rm(df, map.sp.lines, map.sp.lines.df)   
-    
-    # also fix the plot area
-    
-    
+
   }
   else if(!is.null(map.overlay)) {
     stop("Some other overlay type...")
@@ -434,7 +431,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
   if(discrete & is.null(override.cols)){
-
+    
     # make a list of all the unique values (factors), each of these will need a colour
     unique.vals <- unique(data.toplot[["Value"]])
     
@@ -595,7 +592,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   ### BUILD THE PLOT
-
+  
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
   if(tile) mp <- mp + geom_tile(aes_string(x = "Lon", y = "Lat", fill = "Value"))
@@ -621,7 +618,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   if(!is.null(ylim)) mp <- mp + scale_y_continuous(limits = ylim, expand = c(0, 0))
   else   mp <- mp + scale_y_continuous(expand = c(0, 0))
-
+  
   mp <- mp + coord_fixed()
   
   # labels and positioning
