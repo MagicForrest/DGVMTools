@@ -238,7 +238,7 @@ plotSpatial_sp <- function(x, # can be a data.table, a SpatialPixelsDataFrame, o
   layers <- names(data.toplot) # update layers to be the names of the raster layers  (which might have changed)
   
   ### CROP THE DATA IF PLOT EXTENT HAS BEEN SPECIFIED
-  if(!is.null(plot.extent)){ data.toplot <- crop(data.toplot, plot.extent)}
+  if(!is.null(plot.extent)){ data.toplot <- raster::crop(data.toplot, plot.extent)}
   
   
   #####################################################################################
@@ -387,7 +387,7 @@ plotSpatial_sp <- function(x, # can be a data.table, a SpatialPixelsDataFrame, o
     # Get Raster Attribute Table and then convert raster back to simple integers instead of factors 
     # because currently (May 2016) raster package doesn't handle factor rasters very well
     RAT <- data.toplot@data@attributes[[1]]
-    data.toplot <- deratify(data.toplot, complete = TRUE)
+    data.toplot <- raster::deratify(data.toplot, complete = TRUE)
 
     # reset the names following deratify, only necessary since update to 2.5-8 (February 2017)
     # I cannot find any documentation of these changes but it may be that the raster package has been simplifed w.r.t plotting factors and this is now all unnecessary
@@ -524,12 +524,12 @@ plotSpatial_sp <- function(x, # can be a data.table, a SpatialPixelsDataFrame, o
     
     quant@cuts <- seq(from = limits[1], to = limits[2], length.out = length(quant@cuts))
     
-    for(layer in 1:nlayers(data.toplot)) {
+    for(layer in 1:raster::nlayers(data.toplot)) {
       this.layer <- subset(data.toplot, layer)
       this.layer[this.layer < limits[1]] <- limits[1]
       this.layer[this.layer > limits[2]] <- limits[2]
-      if(exists("data.limited")) data.limited <- addLayer(data.limited, this.layer)
-      else data.limited <- brick(this.layer)
+      if(exists("data.limited")) data.limited <- raster::addLayer(data.limited, this.layer)
+      else data.limited <- raster::brick(this.layer)
       rm(this.layer)
     }
     rm(data.toplot)

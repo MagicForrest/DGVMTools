@@ -8,18 +8,19 @@ import(maps,
        ncdf4,
        rgdal, 
        sp,
-       raster,
-       data.table,
-       viridis)
+       data.table)
 
 
-importFrom("graphics", "abline", "curve", "legend", "par")
-importFrom("stats", "na.omit", "coef", "complete.cases")
-importFrom("utils", "capture.output", "data", "file_test", "object.size", "read.table", "write.table", "str")
 importMethodsFrom("data.table")
-importMethodsFrom("raster")
-importMethodsFrom("sp")
 importClassesFrom("ncdf4")
+
+importClassesFrom("sp")
+importMethodsFrom("sp")
+
+importClassesFrom("raster")
+importMethodsFrom("raster")
+
+importFrom(raster, crop, extent)
 
 exportClasses(TemporalExtent, 
               SpatialExtent, 
@@ -31,20 +32,6 @@ exportClasses(TemporalExtent,
               DataObject,
               ComparisonLayer,
               BiomeScheme)
-
-S3method(print, TemporalExtent)
-S3method(print, SpatialExtent)
-S3method(print, Period)
-S3method(print, PFT) 
-S3method(print, ModelRun)  
-S3method(print, ModelObject)
-S3method(print, Quantity)
-S3method(print, DataObject)
-S3method(print, DatasetInfo)
-S3method(print, ComparisonLayer)
-S3method(print, BiomeScheme)
-S3method(print, ModelRunInfo)
-S3method(print, SpatialComparison)
 
 S3method(as.data.frame, ComparisonLayer)
 S3method(as.data.frame, DataObject)

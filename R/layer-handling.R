@@ -277,6 +277,36 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   
 }
 
+#########################################################################
+######################### COMPARE LAYERS ################################
+#########################################################################
+
+
+#' Compare single layers to each other
+#' 
+#' Compare two layers (each from a ModelObject or DataObject) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a ComparisonLayer object. 
+#'
+#' 
+#' @param object1 A ModelObject or DataObject from which to get the first layer for comparison
+#' @param object2 A ModelObject or DataObject from which to get the second layer for comparison
+#' @param layer1 The name of the first layer (character string)
+#' @param layer2 The name of the first layer (character string).  If not defined taken to the be the same as layer1
+#' @param keepall1 Boolean, keep all data points in layer1 even if there is not corresponding data in layer2 
+#' @param keepall2 Boolean, keep all data points in layer2 even if there is not corresponding data in layer2 
+#' @param override.quantity Boolean, if TRUE ignore situation where object1 and object2 have non-identical Quantities and use the Quantity from object1 for the returned ComparisonLayer
+#' @param match.NAs Boolean, if TRUE copy NAs from one layer to the other.  This is mostly to make sure that when you later plot the data in the final ComparisonLayer side-by-side,
+#' that the both have 'no data' (typically grey areas) plotted on both maps.
+#' @param dec.places Numeric, passed to copyLayers. Defines to how many decimal places to round the coordinates in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.  
+#' @param verbose Boolean, if TRUE print some informative output
+#' 
+#' The returned ComparisonLayer object can be plotted using \code{plotSpatail} (to give the absolute difference, original values side-by-side and percentage difference, also the NME spatial - to be implemented)
+#' The stats slot (which contains a SpatialComparison object) holds information such as RSME, NME, Nash-Sutcliffe Model Efficiency, etc. between the datasets in the case of a continous data.
+#' In the case of comparing categorical data (ie layers of factors) it contains Cohen's Kappa.
+#' 
+#' 
+#' @return A ComparisonLayer object
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE, match.NAs = FALSE, dec.places = NULL){
   
   ### Check that the object have the same dimensions, if not fail immediately
@@ -354,7 +384,7 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   se <- new("SpatialExtent", id = id, name = id, extent = extent(new.data))
   if(!identical(object1@quant, object1@quant)) {
     if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", object1@quant@id, " and ", object2@quant@id, "), proceeding using quantity", object1@quant@id))
-    else  stop("Comapring different Qunatit")
+    else stop("Comparing different Quantity")
   }
   new.name <- paste(info1@name, "-",  info2@name)
   
@@ -402,6 +432,29 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
 }
 
 
+#' Compare relative abundances
+#' 
+#' Compare two datasets (each from a ModelObject or DataObject) of relative abundances to calculate statistical metrics which is returned as a ComparisonLayer object.   
+#' Whereas the \code{compareLayers()} function is for comparing two layers of data, this function is for comparing multiple layers, which each layer representing the fraction of some particualar class 
+#' and so much sum to unity.  For example the classes could be tree cover, low vegetation cover and bare ground.
+#'
+#' 
+#' @param object1 A ModelObject or DataObject from which to get the first layer for comparison
+#' @param object2 A ModelObject or DataObject from which to get the second layer for comparison
+#' @param layers The name of the layers with the relative abundances (must be present in both object1 and object2)
+#' @param keepall1 Boolean, keep all data points in layer1 even if there is not corresponding data in layer2 
+#' @param keepall2 Boolean, keep all data points in layer2 even if there is not corresponding data in layer2 
+#' @param override.quantity Boolean, if TRUE ignore situation where object1 and object2 have non-identical Quantities and use the Quantity from object1 for the returned ComparisonLayer
+
+#' @param dec.places Numeric, passed to copyLayers. Defines to how many decimal places to round the coordinates in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.  
+#' @param verbose Boolean, if TRUE print some informative output
+#' 
+#' The returned ComparisonLayer object can be plotted using \code{plotSpatial} but only side-by-side.  Other options (difference and percentage difference) will not work.
+#' The stats slot (which contains a SpatialComparison object) holds information such as Manhattan Metric and Square Chord Distance.  Other slots are invalid and can be ingored.
+#' 
+#' @return A ComparisonLayer object
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE, verbose = TRUE, dec.places = NULL){
   
   ### Check that the object have the same dimensions, if not fail immediately

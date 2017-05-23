@@ -42,19 +42,19 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   }
   # Return half degree data from netCDF file (probably slightly faster)
   else if(resolution == "HD"){
-    PNV.raster <- raster(HD.data)
+    PNV.raster <- raster::raster(HD.data)
     PNV.dt <- data.table(as.data.frame(PNV.raster,xy = TRUE))
   }
   # Return T63 data from netCDF file 
   else if(resolution == "T63"){
-    PNV.raster <- raster(T63.data)
-    PNV.raster <- rotate(PNV.raster)
+    PNV.raster <- raster::raster(T63.data)
+    PNV.raster <- raster::rotate(PNV.raster)
     PNV.dt <- data.table(as.data.frame(PNV.raster,xy = TRUE))
   }
   # Else default to original resolution
   else{
     message(paste("readPNVBiomes: Unknown resolution ", resolution, "returned half degree (native resolution)"))
-    PNV.raster <- raster(HD.data)
+    PNV.raster <- raster::raster(HD.data)
     PNV.dt <- data.table(as.data.frame(PNV.raster,xy = TRUE))
   }
   
@@ -171,7 +171,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   
   PNV.dt[, paste(classification) := as.factor(plyr::mapvalues(PNV.dt[[classification]], from = 1:18, to = subs.rules))]
-  PNV.dt <- na.omit(PNV.dt)
+  PNV.dt <- stats::na.omit(PNV.dt)
 
  
   return(
@@ -210,16 +210,16 @@ getSaatchi2011_example <- function(resolution = "HD"){
   Lat = Lon = NULL
   
   if(resolution == "T63"){
-    Saatchi.raster <- trim(rotate(raster(system.file("extdata", "Saatchi2011.T63.nc", package = "DGVMTools"))/10))
+    Saatchi.raster <- raster::trim(raster::rotate(raster::raster(system.file("extdata", "Saatchi2011.T63.nc", package = "DGVMTools"))/10))
   }
   else if(resolution == "HD"){
-    Saatchi.raster <- trim(raster(system.file("extdata", "Saatchi2011.HD.nc", package = "DGVMTools"))/10)
+    Saatchi.raster <- raster::trim(raster::raster(system.file("extdata", "Saatchi2011.HD.nc", package = "DGVMTools"))/10)
   }
   
   Saatchi.dt <- data.table(as.data.frame(Saatchi.raster,xy = TRUE))
   setnames(Saatchi.dt, c("Lon", "Lat", "Tree"))
   setkey(Saatchi.dt, Lon, Lat)
-  Saatchi.dt <- na.omit(Saatchi.dt)
+  Saatchi.dt <- stats::na.omit(Saatchi.dt)
   
   
   Saatchi.dataset <- new("DataObject",

@@ -184,7 +184,7 @@ plotTemporal <- function(input.data,
         for(PFT in PFTs){
           if(layer == PFT@id) { 
             colour <- PFT@colour
-            if(PFT@combine != "no") type <- 2
+            if(PFT@combine != "no" &&  tolower(PFT@combine) != "none") type <- 2
             else type <- 1
             label <- PFT@id
           }

@@ -21,8 +21,8 @@ getMODISFPAR <- function(location = "/data/forrest/FPAR/", resolution = "origina
     
   }
   else if(resolution == "1km-Turkey"){
-    if(average) raster <- trim(rotate(raster(file.path(location, "Turkey/fpar.Turkey.TA.2000-2010.quartile.nc"))))
-    else raster <- trim(rotate(brick(file.path(location, "processed/MODISFPAR.2000-2010.1km-Turkey.nc"))))
+    if(average) raster <- raster::trim(raster::rotate(raster::raster(file.path(location, "Turkey/fpar.Turkey.TA.2000-2010.quartile.nc"))))
+    else raster <- raster::trim(raster::rotate(raster::brick(file.path(location, "processed/MODISFPAR.2000-2010.1km-Turkey.nc"))))
     print(raster)
   }
   

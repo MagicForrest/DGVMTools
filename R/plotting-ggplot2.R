@@ -356,12 +356,12 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 
   ## if a valid color for the land is requested
   if (!is.na(terr.bg) && .is.color(terr.bg)) {
-    to <- raster(nrows=length(lat), ncols=length(lon),
+    to <- raster::raster(nrows=length(lat), ncols=length(lon),
                  xmn=min(lon) - res/2, xmx=max(lon) + res/2,
                  ymn=min(lat) - res/2, ymx=max(lat) + res/2,
                  crs=CRS("+proj=longlat +ellps=WGS84"))
-    data(slm, envir = environment())
-    slm <- projectRaster(slm, to, "nbg")
+    utils::data(slm, envir = environment())
+    slm <- raster::projectRaster(slm, to, "nbg")
     slm <- as.data.frame(slm, xy=TRUE)
     colnames(slm) <- c("Lon", "Lat", "value")
     slm <- subset(slm, value>0)
@@ -578,14 +578,14 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
       md <- dt[, list(value.center=stats::median(value),
                       value.sd=stats::sd(value),
                       value.se=stats::sd(value)/sqrt(length(value)),
-                      value.min=quantile(value, qt[1]),
-                      value.max=quantile(value, qt[2])), by = c("Lat", "sens")]
+                      value.min=stats::quantile(value, qt[1]),
+                      value.max=stats::quantile(value, qt[2])), by = c("Lat", "sens")]
     } else {
       md <- dt[, list(value.center=mean(value),
                       value.sd=stats::sd(value),
                       value.se=stats::sd(value)/sqrt(length(value)),
-                      value.min=quantile(value, qt[1]),
-                      value.max=quantile(value, qt[2])), by = c("Lat", "sens")]
+                      value.min=stats::quantile(value, qt[1]),
+                      value.max=stats::quantile(value, qt[2])), by = c("Lat", "sens")]
     }
     p <- ggplot(md, aes(x=Lat, y=value.center, col=sens))
   } else {
@@ -593,14 +593,14 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
       md <- dt[, list(value.center=stats::median(value),
                       value.sd=stats::sd(value),
                       value.se=stats::sd(value)/sqrt(length(value)),
-                      value.min=quantile(value, qt[1]),
-                      value.max=quantile(value, qt[2])), by = c("Lat")]
+                      value.min=stats::quantile(value, qt[1]),
+                      value.max=stats::quantile(value, qt[2])), by = c("Lat")]
     } else {
       md <- dt[, list(value.center=mean(value),
                       value.sd=stats::sd(value),
                       value.se=stats::sd(value)/sqrt(length(value)),
-                      value.min=quantile(value, qt[1]),
-                      value.max=quantile(value, qt[2])), by = c("Lat")]
+                      value.min=stats::quantile(value, qt[1]),
+                      value.max=stats::quantile(value, qt[2])), by = c("Lat")]
     }
     if (!is.character(colors) || !.is.color(colors)) {
       colors="black"
@@ -740,7 +740,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     setnames(dt, targets$column[1], "value")
     setnames(dt, targets$column[2], "category")
     if (area.weighted) {
-      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area, na.rm=TRUE)), by=list(category)]", sep="")))
+      dt <- eval(parse(text=paste("dt[, list(value=stats::weighted.mean(value, area, na.rm=TRUE)), by=list(category)]", sep="")))
     } else {
       dt <- eval(parse(text=paste("dt[, list(value=mean(value, na.rm=TRUE)), by=list(category)]", sep="")))
     }
@@ -811,7 +811,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
     setnames(dt, targets$column[1], "value")
     setnames(dt, targets$column[2], "category")
     if (area.weighted) {
-      dt <- eval(parse(text=paste("dt[, list(value=weighted.mean(value, area)), by=list(category, sens)]", sep="")))
+      dt <- eval(parse(text=paste("dt[, list(value=stats::weighted.mean(value, area)), by=list(category, sens)]", sep="")))
     } else {
       dt <- eval(parse(text=paste("dt[, list(value=mean(value)), by=list(category, sens)]", sep="")))
     }
@@ -1026,7 +1026,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     }
     DT <- y[DT]
 
-  } else if (isLonLat(y)) {
+  } else if (raster::isLonLat(y)) {
     if (!spatial) {
       stop("If 'y' is a raster, x must be spatially!")
     }
@@ -1047,7 +1047,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
   }
 
   if (verbose)
-    print(str(DT))
+    print(utils::str(DT))
   
   if (!is.null(limit)) {
     if (is.data.frame(limit) || is.list(limit)) {

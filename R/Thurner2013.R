@@ -50,18 +50,18 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/", resolution = "HD
   if(resolution == "original"){
     
     # read the original data
-    Thurner.raster <- raster(file.path(location, "original/2013125152231biomass_v3_total.nc"), varname = "biomass_total")
+    Thurner.raster <- raster::raster(file.path(location, "original/2013125152231biomass_v3_total.nc"), varname = "biomass_total")
     print(Thurner.raster)
   
   }
   else if(resolution == "HD"){
-    Thurner.raster <- raster(file.path(location, "processed/Thurner2013.HD.nc"))
+    Thurner.raster <- raster::raster(file.path(location, "processed/Thurner2013.HD.nc"))
   }
   else if(resolution == "T63"){
-    Thurner.raster <- trim(rotate(raster(file.path(location, "processed/Thurner2013.T63.nc"))))
+    Thurner.raster <- raster::trim(raster::rotate(raster::raster(file.path(location, "processed/Thurner2013.T63.nc"))))
   }
   else if(resolution == "1km-Turkey"){
-    Thurner.raster <- trim(rotate(raster(file.path(location, "processed/Thurner2013.1km-Turkey.nc"))))
+    Thurner.raster <- raster::trim(raster::rotate(raster::raster(file.path(location, "processed/Thurner2013.1km-Turkey.nc"))))
   }
   
   
@@ -72,7 +72,7 @@ getThurner2013 <- function(location = "/data/forrest/Biomass/", resolution = "HD
 
   setkey(Thurner.dt, Lon, Lat)
 
-  Thurner.dt <- na.omit(Thurner.dt)
+  Thurner.dt <- stats::na.omit(Thurner.dt)
   
   quant <- lookupQuantity("vegC_std", "Standard")
 

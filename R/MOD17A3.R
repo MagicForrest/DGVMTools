@@ -38,8 +38,8 @@ getMOD17A3 <- function(location = "/data/forrest/Productivity/MODIS/V55/processe
     
   }
   else if(resolution == "1km-Turkey"){
-    if(average) raster <- trim(rotate(raster(file.path(location, file.name))))
-    else raster <- trim(rotate(brick(file.path(location, paste("processed/MODIS", var.string, ".2000-2010.1km-Turkey.nc", sep = "")))))
+    if(average) raster <- raster::trim(raster::rotate(raster::raster(file.path(location, file.name))))
+    else raster <- raster::trim(raster::rotate(raster::brick(file.path(location, paste("processed/MODIS", var.string, ".2000-2010.1km-Turkey.nc", sep = "")))))
 
   }
   

@@ -127,24 +127,3 @@ setMethod("as.Raster", signature("ModelObject"),   function(x) promoteToRaster(x
 #' @export
 #' @exportMethod as.Raster
 setMethod("as.Raster", signature("ComparisonLayer"),   function(x) promoteToRaster(x@data))
-
-
-
-
-
-
-
-
-
-
-# # SpatialPixelsDataFrame
-# 
-# 
-# setAs("ModelObject", "SpatialPixelsDataFrame", function(from) makeSPDFfromDT(from@data))
-# 
-# #as.SpatialPixelsDataFrame() <- function (x, ...) {
-# #  UseMethod("as.SpatialPixelsDataFrame", x)
-# #}
-# 
-# 
-# as.SpatialPixelsDataFrame.ModelObject = function(x) as(x, "SpatialPixelsDataFrame") 

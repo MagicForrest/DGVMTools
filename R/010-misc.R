@@ -100,124 +100,6 @@ setMethod("summary", signature("ModelRun"), function(object, ...) {
 })
 
 
-#' Crop ModelObjects (or data.tables, or Raster* objects)
-#' 
-#' A more flexible version of raster::crop() which also take ModelObjects and data.tables for cropping, 
-#' and can use a SpatialExtent object to define the domain.  SHOULD BE DEFINED AS A METHOD EXTENDING raster::crop()!
-#' 
-#' @param input The ModelObject, data.table or Raster* object to be cropped
-#' @param extent The spatial extent to be be cropped to, defined as a SpatialExtent or raster::extent
-#' 
-#' @return A ModelObject, data.table or Raster* object cropped to the desired extent.
-#' 
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import raster data.table
-#' @export
-
-cropDGVM <- function(input, extent){
-  
-  Lat = Lon = NULL
-  
-  
-  
-  # determine the class of the object to which we are cropping
-  extent.class <- class(extent)[1]
-  if(extent.class == "Extent") {
-    this.extent <- extent
-  }
-  else if(extent.class == "SpatialExtent"){
-    this.extent <- extent@extent
-    extent.class <- class(this.extent)[1] 
-  }
-  
-  
-
-  # determine the class of the object to be cropped
-  input.class <- class(input)[1]
-
-  
-  # Do cropping depending on first the class of extent 'extent' 
-  
-  # CASE 1.X - target extent is a raster::Extent
-  if(extent.class == "Extent") {
-
-    # CASE 1.1 - object to be cropped is a raster - just use raster::crop
-    if(input.class == "RasterBrick" | input.class == "RasterStack" | input.class == "RasterLayer"){
-      return(raster::crop(input, this.extent))    
-    }
-    # CASE 1.2 - object to be cropped is a data.table - select on Lon and Lat
-    else if(input.class == "data.table"){
-      return(input[Lat < this.extent@ymax & Lat > this.extent@ymin & Lon < this.extent@xmax & Lon > this.extent@xmin,])
-    }
-    # CASE 1.3 - object to be cropped is a ModelObject or DataObject - pull out the data.table and select on Lon and Lat
-    else if(input.class == "ModelObject" | input.class == "DataObject"){
-      dt <- input@data
-      dt[Lat < this.extent@ymax & Lat > this.extent@ymin & Lon < this.extent@xmax & Lon > this.extent@xmin,]
-      input@data <- dt
-      input@spatial.extent <- extent
-      return(input)
-    }
-    
-  }
-  
-  # CASE 2.X - target extent is a data.table
-  else if(extent.class == "data.table") {
-    
-    # CASE 2.1 - object to be cropped is a raster - just use raster::crop
-    if(input.class == "RasterBrick" | input.class == "RasterStack" | input.class == "RasterLayer"){
-      
-      stop("cropDGVM: Cropping a Raster* object to an extent defined by a data.table is not yet defined")
-      
-    }
-    # CASE 2.2 - object to be cropped is a data.table - select on Lon and Lat by merging
-    else if(input.class == "data.table"){
-      
-      # first remove any lines with NA (since the are probably not part of the extent) and pull out just the "Lon" and "Lat" columns
-      this.extent <- na.omit(this.extent)[,c("Lon", "Lat")]
-      
-      # now merge the data.tables on Lon and Lat, requiring that all Lons and Lats in the new extent are included and return
-      return(merge(input, this.extent, by=c("Lon","Lat"), all.x = FALSE, all.y = TRUE))
-      
-    }
-    # CASE 2.3 - object to be cropped is a ModelObject or DataObject - select on Lon and Lat by merging
-    else if(input.class == "ModelObject" | input.class == "DataObject"){
-      
-      # first remove any lines with NA (since the are probably not part of the extent) and pull out just the "Lon" and "Lat" columns
-      this.extent <- na.omit(this.extent)[,c("Lon", "Lat"),with=FALSE]
-      
-      # now pull out the data.table merge the data.tables on Lon and Lat, requiring that all Lons and Lats in the new extent are included and return
-      dt <- input@data
-      #round only Lon and Lat fields to maintain precision of the data
-      dt[, Lon := round(Lon, 4)]
-      dt[, Lat := round(Lat, 4)]
-      dt <- merge(dt, round(this.extent,4), by=c("Lon","Lat"), all.x = FALSE, all.y = TRUE)
-      
-      # put in new data.table to original object, update meta-data and return
-      input@data <- dt
-      input@spatial.extent <- extent
-      input@id <- makeModelObjectID(input@quant@id, temporal.extent = input@temporal.extent, spatial.extent = extent, temporally.averaged = input@is.temporally.averaged, spatially.averaged = input@is.spatially.averaged)
-      
-      return(input)
-    }
-    
-  }
-  
-  # CASE 3.X - target extent is a site
-  else if(extent.class == "numeric" & length(input == 2)) {
-    
-    stop("cropDGVM: Cropping any object to sites not yet implemented  ")
-    
-  }
-  
-  # CASE 3.X - target extent is a site
-  else {
-    
-    stop(paste("cropDGVM: Cropping any object to extent defined by object type", extent.class, "with length =", length(extent), "is not defined", sep = " "))
-    
-  }
-  
-}
-
 
 setMethod("is.equal", signature("Quantity", "Quantity"), function(a, b) {
   if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)
@@ -571,10 +453,10 @@ convertToMatrix <- function(input, Lons = NULL, Lats = NULL, gap.fill = TRUE, la
 subsetGridlist <- function(gridlist.file, subset.extent, file.name = NULL, header = TRUE, offset = c(0.25, 0.25)){
   
   
-  gridlist <- read.table(gridlist.file, header = header)
+  gridlist <- utils::read.table(gridlist.file, header = header)
   names(gridlist )  <- c("Lon", "Lat")
   
-  print(head(gridlist))
+  print(utils::head(gridlist))
   
   gridlist$Lon <- gridlist$Lon + offset[1]
   gridlist$Lat <- gridlist$Lat + offset[2]
@@ -588,7 +470,7 @@ subsetGridlist <- function(gridlist.file, subset.extent, file.name = NULL, heade
   gridlist$Lon <- gridlist$Lon - offset[1]
   gridlist$Lat <- gridlist$Lat - offset[2]
   
-  if(!is.null(file.name)) write.table(gridlist, file.name, quote = FALSE, row.names = FALSE)
+  if(!is.null(file.name)) utils::write.table(gridlist, file.name, quote = FALSE, row.names = FALSE)
   
   return(gridlist)
   
@@ -811,8 +693,8 @@ lsos <- function (pos = 1, pattern, order.by = "Size",
   obj.mode <- napply(names, mode)
   obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
   obj.prettysize <- napply(names, function(x) {
-    capture.output(print(object.size(x), units = "auto")) })
-  obj.size <- napply(names, object.size)
+  utils::capture.output(print(utils::object.size(x), units = "auto")) })
+  obj.size <- napply(names, utils::object.size)
   obj.dim <- t(napply(names, function(x)
     as.numeric(dim(x))[1:2]))
   vec <- is.na(obj.dim)[, 1] & (obj.type != "function")
@@ -822,7 +704,7 @@ lsos <- function (pos = 1, pattern, order.by = "Size",
   if (!missing(order.by))
     out <- out[order(out[[order.by]], decreasing=decreasing), ]
   if (head)
-    out <- head(out, n)
+    out <- utils::head(out, n)
   out
 }
 
@@ -918,20 +800,20 @@ AGBtoTotalCarbon <- function(AGB){
 #' These were just defined by the author for studying different regions of the world.  Maybe also be handy for other people.
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global", name = "Global", extent = extent(-180, 180, -90, 90)),
-                                     Africa = new("SpatialExtent", id = "Africa", name = "Africa", extent =  extent(-20, 55, -30, 36)),
-                                     Europe = new("SpatialExtent", id = "Europe", name = "Europe", extent =  extent(-30, 40, 36, 70)),
-                                     Asia = new("SpatialExtent", id = "Asia", name = "Asia", extent =  extent(40, 180, -10, 80)),
-                                     NorthAmerica = new("SpatialExtent", id = "NorthAmerica", name = "North America", extent =  extent(-170, -70, 25, 75)),
-                                     SouthAmerica = new("SpatialExtent", id = "SouthAmerica", name = "South America", extent = extent(-180, -50, -60, 25)),
-                                     Australia = new("SpatialExtent", id = "Australia", name = "Australia", extent = extent(110, 160, -45 ,10)),
-                                     Mediterranean = new("SpatialExtent", id = "Med", name = "Mediterranean", extent = extent(10, 40, 28 ,48)),
-                                     CentralAsia = new("SpatialExtent", id = "CentralAsia", name = "Central Asia", extent = extent(25, 140, 40, 55)),
-                                     SouthEastAsia = new("SpatialExtent", id = "SouthEastAsia", name = "South East Asia", extent = extent(90, 140, 10, 40)),
-                                     CentralNorthAmerica = new("SpatialExtent", id = "CentralNorthAmerica", name = "Central North America", extent = extent(-110, -85, 30, 50)),
-                                     Boreal = new("SpatialExtent", id = "Boreal", name = "Boreal", extent = extent(-180, 180, 60, 90)),
-                                     NHAfrica = new("SpatialExtent", id = "NHAfrica", name = "Northern Hemisphere Africa", extent = extent(-20, 50, 0, 25)),
-                                     SHAfrica = new("SpatialExtent", id = "SHAfrica", name = "Southern Hemisphere Africa", extent = extent(5, 50, -30, 0))
+standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global", name = "Global", extent = raster::extent(-180, 180, -90, 90)),
+                                     Africa = new("SpatialExtent", id = "Africa", name = "Africa", extent =  raster::extent(-20, 55, -30, 36)),
+                                     Europe = new("SpatialExtent", id = "Europe", name = "Europe", extent =  raster::extent(-30, 40, 36, 70)),
+                                     Asia = new("SpatialExtent", id = "Asia", name = "Asia", extent =  raster::extent(40, 180, -10, 80)),
+                                     NorthAmerica = new("SpatialExtent", id = "NorthAmerica", name = "North America", extent =  raster::extent(-170, -70, 25, 75)),
+                                     SouthAmerica = new("SpatialExtent", id = "SouthAmerica", name = "South America", extent = raster::extent(-180, -50, -60, 25)),
+                                     Australia = new("SpatialExtent", id = "Australia", name = "Australia", extent = raster::extent(110, 160, -45 ,10)),
+                                     Mediterranean = new("SpatialExtent", id = "Med", name = "Mediterranean", extent = raster::extent(10, 40, 28 ,48)),
+                                     CentralAsia = new("SpatialExtent", id = "CentralAsia", name = "Central Asia", extent = raster::extent(25, 140, 40, 55)),
+                                     SouthEastAsia = new("SpatialExtent", id = "SouthEastAsia", name = "South East Asia", extent = raster::extent(90, 140, 10, 40)),
+                                     CentralNorthAmerica = new("SpatialExtent", id = "CentralNorthAmerica", name = "Central North America", extent = raster::extent(-110, -85, 30, 50)),
+                                     Boreal = new("SpatialExtent", id = "Boreal", name = "Boreal", extent = raster::extent(-180, 180, 60, 90)),
+                                     NHAfrica = new("SpatialExtent", id = "NHAfrica", name = "Northern Hemisphere Africa", extent = raster::extent(-20, 50, 0, 25)),
+                                     SHAfrica = new("SpatialExtent", id = "SHAfrica", name = "Southern Hemisphere Africa", extent = raster::extent(5, 50, -30, 0))
                                      
 )
 

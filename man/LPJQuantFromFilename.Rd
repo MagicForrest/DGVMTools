@@ -2,12 +2,12 @@
 % Please edit documentation in R/model-lpj.R
 \name{LPJQuantFromFilename}
 \alias{LPJQuantFromFilename}
-\title{Helper function to trim the ".out" or the ".out.gz" from an LPJ-GUESS filename to get the variable in question}
+\title{Helper function to raster::trim the ".out" or the ".out.gz" from an LPJ-GUESS filename to get the variable in question}
 \usage{
 LPJQuantFromFilename(var.filename)
 }
 \arguments{
-\item{var.filename}{The string of the filename to be trimmed}
+\item{var.filename}{The string of the filename to be raster::trimmed}
 }
 \value{
 A string less the last fou.

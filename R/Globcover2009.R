@@ -14,7 +14,7 @@
 #' @export
 
 processGlobcover2009 <- function(location = "/data/forrest/LandUseLandCover/Globcover2009/", 
-                                 target.grid = raster(nrows=360, ncols=720, xmn=-180, xmx=180, ymn=-90, ymx=90)
+                                 target.grid = raster::raster(nrows=360, ncols=720, xmn=-180, xmx=180, ymn=-90, ymx=90)
 ){
   
   # hard coded categories
@@ -48,7 +48,7 @@ readGlobcover2009 <- function(location){
   
   # open the oririginal data, note that it should remain on disk
   file.name <- "GLOBCOVER_L4_200901_200912_V2.3.tif"
-  full.original.data <- raster(file.path(location, file.name))
+  full.original.data <- raster::raster(file.path(location, file.name))
   
   Globcover2009 <- new("DataObject",
                        id = "Globcover2009",
@@ -57,31 +57,42 @@ readGlobcover2009 <- function(location){
                        data = full.original.data,
                        veg.quant = lookupQuantity("landCoverClass_std", "Standard"),
                        units = "categorical",
-                       correction.raster = raster()
+                       correction.raster = raster::raster()
   )
   
   return(Globcover2009)
   
 }
 
-
+#' Read Globcover2009 correction data
+#' 
+#' This function simply returns the correction factor (at 0.5 degrees) to take into account the precentage of each gridcell which is not natural vegetation.  
+#' 
+#' @return DataObject object
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#'
+#' No arguments, this is very quick and dirty
+#'
+#' @seealso code{processGlobcover2009}, \code{countCategoricalData} 
 getGlobcover2009HDCorrection <- function() {
   
   Lon = Lat = NULL
   
   # do class 40 first to set up the raster
-  natural.raster <- raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 40, "HD.nc", sep = ".")))
+  natural.raster <- raster::raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 40, "HD.nc", sep = ".")))
   
   # note that is list doesn't include class 40
   natural.landcover.classes <- c(50, 60, 70, 90, 100, 110, 120, 130, 140)
   
   for(lc.class in natural.landcover.classes){
-    natural.raster <- natural.raster + raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", lc.class, "HD.nc", sep = ".")))
+    natural.raster <- natural.raster + raster::raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", lc.class, "HD.nc", sep = ".")))
   }
   
   # Also add the semi-natural mosaic pixels 
-  natural.raster <- natural.raster + raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 20, "HD.nc", sep = "."))) * 0.35
-  natural.raster <- natural.raster + raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 30, "HD.nc", sep = "."))) * 0.65
+  natural.raster <- natural.raster + raster::raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 20, "HD.nc", sep = "."))) * 0.35
+  natural.raster <- natural.raster + raster::raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 30, "HD.nc", sep = "."))) * 0.65
   
   # Make into a data.table
   correction.dt  <- data.table(as.data.frame(natural.raster,xy = TRUE))
@@ -89,8 +100,6 @@ getGlobcover2009HDCorrection <- function() {
   setkey(correction.dt , Lon, Lat)
   
  
-  
-  
   Globcover2009.DObj <- new("DataObject",
                             id = "Globcover2009",
                             name = "Globcover2009-derived LU correction",

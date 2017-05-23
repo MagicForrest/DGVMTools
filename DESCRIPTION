@@ -16,16 +16,16 @@ Depends:
     data.table (>= 1.9.6),
     maps,
     mapdata,
-    ggplot2,
-    raster
+    ggplot2
 Imports:
+    raster,
     methods,
+    compiler,
     maptools,
     ncdf4,
     rgdal,
     sp,
     fields,
-    compiler,
     grid,
     RColorBrewer,
     plyr,

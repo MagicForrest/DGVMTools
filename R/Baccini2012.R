@@ -56,7 +56,7 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
   
   if(resolution == "original"){
     
-    Baccini.data <- read.table(file.path(location, "Baccini_220912.txt"), header = TRUE, stringsAsFactors=FALSE)
+    Baccini.data <- utils::read.table(file.path(location, "Baccini_220912.txt"), header = TRUE, stringsAsFactors=FALSE)
     
     # if london.centre is requested, make sure all negative longitudes are shifted to positive
     Baccini.data$Lon <- vapply(Baccini.data$Lon, 1, FUN = LondonCentre)    
@@ -71,13 +71,13 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
     Baccini.data = as(Baccini.data, "SpatialGridDataFrame") # to full grid
     
     # make raster 
-    Baccini.raster <- brick(Baccini.data)
+    Baccini.raster <- raster::brick(Baccini.data)
     
     # subset to get the mean layer only
     Baccini.raster <-subset(Baccini.raster, "MEAN")
 
     # convert from AGB to total
-    Baccini.raster <- calc(Baccini.raster, AGBtoTotalCarbon)
+    Baccini.raster <- raster::calc(Baccini.raster, AGBtoTotalCarbon)
     
     # divide by 10 to go from tC/Ha to kgC/m^2
     Baccini.raster <- Baccini.raster/10
@@ -85,10 +85,10 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
   }
   
   else if(resolution == "HD"){
-    Baccini.raster <- raster(file.path(location, "Baccini2012.HD.nc"))
+    Baccini.raster <- raster::raster(file.path(location, "Baccini2012.HD.nc"))
   }
   else if(resolution == "T63"){
-    Baccini.raster <- trim(rotate(raster(file.path(location, "Baccini2012.T63.nc"))))
+    Baccini.raster <- raster::trim(raster::rotate(raster::raster(file.path(location, "Baccini2012.T63.nc"))))
   }
   
   
@@ -97,7 +97,7 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
   setnames(Baccini.dt, c("Lon", "Lat", "Tree"))
   setkey(Baccini.dt, Lon, Lat)
   
-  Baccini.dt <- na.omit(Baccini.dt)
+  Baccini.dt <- stats::na.omit(Baccini.dt)
   
   
   Baccini.dataset <- new("DataObject",

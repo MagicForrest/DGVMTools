@@ -15,9 +15,9 @@ getCrowther2015 <- function(location="", resolution="HD") {
   if(resolution == "original") {
     warning("Reading a very big file. Be patient!")
     message("Reading a very big file. Be patient!")
-    Crowther.raster <- raster(file.path(location, "Crowther_Nature_Files_Revision_01_WGS84_GeoTiff", "Crowther_Nature_Biome_Revision_01_WGS84_GeoTiff.tif"))
+    Crowther.raster <- raster::raster(file.path(location, "Crowther_Nature_Files_Revision_01_WGS84_GeoTiff", "Crowther_Nature_Biome_Revision_01_WGS84_GeoTiff.tif"))
   } else {
-    Crowther.raster <- raster(file.path(location, paste0("Crowther2015.", resolution, ".nc")))
+    Crowther.raster <- raster::raster(file.path(location, paste0("Crowther2015.", resolution, ".nc")))
   }
 
   Crowther.dt <- data.table(as.data.frame(Crowther.raster,xy = TRUE))

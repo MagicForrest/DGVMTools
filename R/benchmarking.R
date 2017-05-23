@@ -15,26 +15,80 @@
 
 lm_eqn <- function(linear.model) {
   eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
-                   list(a = format(coef(linear.model)[1], digits = 2), 
-                        b = format(coef(linear.model)[2], digits = 2), 
+                   list(a = format(stats::coef(linear.model)[1], digits = 2), 
+                        b = format(stats::coef(linear.model)[2], digits = 2), 
                         r2 = format(summary(linear.model)$r.squared, digits = 3)))
   as.character(as.expression(eq));                 
 }
 
 
+#' Calculate Normalised Mean Error
+#' 
+#' Calculates NME between two datasets (represented as two equally sized numeric vectors) 
+#' 
+#' @param vector1 A numeric vector of data
+#' @param vector2 A numeric vector of data (same size as vector2)
+#' 
+#' @details  No check currently done on vector lengths
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' @return A numeric
 calcNME <- function(vector2, vector1) {
   return( sum(abs(vector2 - vector1), na.rm=TRUE) / sum(abs(vector2 - mean(vector2)), na.rm=TRUE)) 
 }
 
+
+#' Calculate Nash-Sutcliff Model Efficiency
+#' 
+#' Calculates Nash-Sutcliff Model Efficiency between two datasets (represented as two equally sized numeric vectors) 
+#' 
+#' @param vector1 A numeric vector of data
+#' @param vector2 A numeric vector of data (same size as vector2)
+#' 
+#' @details  No check currently done on vector lengths. See:
+#' Nash, J. E. and J. V. Sutcliffe (1970), River flow forecasting through conceptual models part I - A discussion of principles, Jounral of Hydrology, 10 (3), 282-290.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' @return A numeric
 calcNashSutcliffe <- function(vector2, vector1) {
   return( 1 -  (sum((vector2 - vector1)^2, na.rm=TRUE) / length(vector2)) / stats::var(vector2) )
 }
 
+
+#' Calculate Coefficient of Determination
+#' 
+#' Calculates Coefficient of Determination between two datasets (represented as two equally sized numeric vectors) 
+#' 
+#' @param vector1 A numeric vector of data
+#' @param vector2 A numeric vector of data (same size as vector2)
+#' 
+#' @details  No check currently done on vector lengths.
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' @return A numeric
 calcR2 <- function(vector2, vector1) {
   return( sum( (vector1 - mean(vector1)) * (vector2 - mean(vector2)) )^2 / (sum( (vector1 - mean(vector1))^2 ) * sum( (vector2 - mean(vector2)) ^2)) )
 }
 
-
+#' Compare continuous data
+#' 
+#' Compares two datasets of continuous data. Specifically calculates and returns a SpatialComparison object (which contains many metrics) given numeric two vectors of equal size 
+#' 
+#' @param vector1 The first of the datasets to be compared to each other, as a vector of numerics (categorical data) 
+#' @param vector2 The second of the datasets to be compared to each other, as a vector of numerics(categorical data) 
+#' @param name1 A character string giving the name of the first dataset (for making a useful id)
+#' @param name2 A character string giving the name of the second dataset (for making a useful id)
+#' @param verbose A logical, if TRUE print out all the Kappa scores
+#' 
+#' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are not for continuous data.
+#' 
+#' @return A spatial comparison object
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export    
 continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE){
   
   # Preamble - remove NAs from both vectors 
@@ -93,7 +147,23 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
   
 }
 
-
+#' Compare relative proportions data
+#' 
+#' Compares two datasets of relative proportions of multiple classes (sum of classes equals one at each point) where the total for each  data where the totally value for each. 
+#' Specifically calculates and returns a SpatialComparison object (which contains many metrics) with the relevants slots are Manhattan Metric (MM) and Square Chord Distance (SCD).
+#' 
+#' @param dt1 The first of the datasets to be compared to each other, as a data.table with a column for the  elative proportion of each class (sum of classes must equal one for metric to be meaningful)
+#' @param dt2 The second of the datasets to be compared to each other, as a data.table with a column for the  elative proportion of each class (sum of classes must equal one for metric to be meaningful)
+#' @param name1 A character string giving the name of the first dataset (for making a useful id)
+#' @param name2 A character string giving the name of the second dataset (for making a useful id)
+#' @param verbose A logical, if TRUE print out all the Kappa scores
+#' 
+#' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are not for relative proportions data.
+#' 
+#' @return A spatial comparison object
+#' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export    
 proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
   
   # check the incoming data.tables are the same size
@@ -134,7 +204,7 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
   
 }
 
-#' Categorical comparison between two biome rasters
+#' Comparison between two datasets of categorical variables
 #' 
 #' Calculates a SpatialComparison object (which contains the Cohen's Kappa scores) given a stack containing two maps of categorical data (eg. biomes, land cover classes).
 #' 
@@ -149,10 +219,7 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
 #' @return A spatial comparison object
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import raster
 #' @export    
-#' stats <- categoricalComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = verbose)
-
 categoricalComparison<- function(vector1,
                                  vector2, 
                                  name1, 

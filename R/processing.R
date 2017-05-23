@@ -147,8 +147,8 @@ calcBiomes <-function(input, scheme){
   }
   
   # Get the totals required
-  input <-newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
-  
+  input <- newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
+
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
@@ -296,7 +296,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   # expands layer
   layers <- expandLayers(layers, dt, PFT.data)
-  
+
   # remove PFTs from layers since a layer for a PFT is already the sum/avg/min/max for that particular PFT
   for(PFT in all.PFTs){ if(PFT@id %in% layers) layers <- layers[-which(layers == PFT@id)]}
   
@@ -321,11 +321,11 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
         if(PFT@leafform == this.layer) {layer.cols <- append(layer.cols, PFT@id)}
         if(PFT@phenology == this.layer) {layer.cols <- append(layer.cols, PFT@id)}
         # Special case for Woody
-        if(this.layer == "Woody" & (PFT@lifeform == "Tree" | PFT@lifeform == "Shrub")) {layer.cols <- append(layer.cols, PFT@id)}
+        if(this.layer == "Woody" & (PFT@lifeform == "Tree" || PFT@lifeform == "Shrub")) {layer.cols <- append(layer.cols, PFT@id)}
         # Special case for Total and PFT
         if(this.layer == "Total" | this.layer == "PFT") {layer.cols <- append(layer.cols, PFT@id)}
       }
-      
+
       # now combine the relevant columns
       
       # if not requiring the maximum or minimum

@@ -42,21 +42,21 @@ writeNetCDF <- function(data.in,
     
     
     # MAKE LONGITUDE AND LATITUDE DIMENSION
-    lon.list <- seq(from = xmin(data.in) + xres(data.in)/2 , to = xmax(data.in) - xres(data.in)/2, by = xres(data.in))
+    lon.list <- seq(from = raster::xmin(data.in) + raster::xres(data.in)/2 , to = raster::xmax(data.in) - raster::xres(data.in)/2, by = raster::xres(data.in))
     lon.dim <- ncdim_def("Lon", "degrees", lon.list, unlim=FALSE, create_dimvar=TRUE)
-    lat.list <- seq(from = ymin(data.in) + yres(data.in)/2 , to = ymax(data.in) - yres(data.in)/2, by = yres(data.in))
+    lat.list <- seq(from = raster::ymin(data.in) + raster::yres(data.in)/2 , to = raster::ymax(data.in) - raster::yres(data.in)/2, by = raster::yres(data.in))
     lat.dim <- ncdim_def("Lat", "degrees", lat.list, unlim=FALSE, create_dimvar=TRUE)
     
     # MAKE TIME DIMENSION
     # monthly - format as "days since YYYY-MM-DD HH:MM:SS"
     if(tolower(time.resolution) == "monthly" || tolower(time.resolution) == "month"){ 
       midpoints <- c(16,44,75,105,136,166,197,228,258,289,319,350)
-      ncycles <- ceiling(nlayers(data.in)/12)
+      ncycles <- ceiling(raster::nlayers(data.in)/12)
       long.midpoints <- c()
       for(cycle in 0:(ncycles-1)){
         long.midpoints <- append(long.midpoints,midpoints  + (365*cycle))
       }
-      time.list <- long.midpoints[1:nlayers(data.in)]
+      time.list <- long.midpoints[1:raster::nlayers(data.in)]
       # FUDGE - if time units explicitly provided then use them
       if(!is.null(time.vals)) time.list <- time.vals
       time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
@@ -64,7 +64,7 @@ writeNetCDF <- function(data.in,
     # annual - format as "days since YYYY-MM-DD HH:MM:SS"
     else if(tolower(time.resolution) == "annual" || tolower(time.resolution) == "yearly"){
       
-      time.list <- seq(from = 0, to = nlayers(data.in)-1, by = 1)*365
+      time.list <- seq(from = 0, to = raster::nlayers(data.in)-1, by = 1)*365
       # FUDGE - if time units explicitly provided then use them
       if(!is.null(time.vals)) time.list <- time.vals
       time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)

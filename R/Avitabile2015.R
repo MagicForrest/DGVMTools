@@ -55,25 +55,25 @@ getAvitabile2015 <- function(location = "/data/forrest/Biomass/", resolution = "
   if(resolution == "original"){
     
     # read the original data
-    Avitabile.raster <- raster(file.path(location, "Avitabile_AGB_Map/Avitabile_AGB_Map.tif"))
+    Avitabile.raster <- raster::raster(file.path(location, "Avitabile_AGB_Map/Avitabile_AGB_Map.tif"))
     
     # convert from AGB (dry matter) to total carbon
-    Avitabile.raster <- calc(Avitabile.raster, AGBtoTotalCarbon)
+    Avitabile.raster <- raster::calc(Avitabile.raster, AGBtoTotalCarbon)
     
     # divide by 10 to go from tC/Ha to kgC/m^2
     Avitabile.raster <- Avitabile.raster/10
     
   }
   else if(resolution == "HD"){
-    Avitabile.raster <- raster(file.path(location, "Avitabile2015.HD.nc"))
+    Avitabile.raster <- raster::raster(file.path(location, "Avitabile2015.HD.nc"))
   }
   else if(resolution == "T63"){
-    Avitabile.raster <- trim(rotate(raster(file.path(location, "Avitabile2015.T63.nc"))))
+    Avitabile.raster <- raster::trim(raster::rotate(raster::raster(file.path(location, "Avitabile2015.T63.nc"))))
   }
   
   
   Avitabile.dt <- data.table(as.data.frame(Avitabile.raster,xy = TRUE))
-  Avitabile.dt <- na.omit(Avitabile.dt)
+  Avitabile.dt <- stats::na.omit(Avitabile.dt)
   setnames(Avitabile.dt, c("Lon", "Lat", "Tree"))
   setkey(Avitabile.dt, Lon, Lat)
   

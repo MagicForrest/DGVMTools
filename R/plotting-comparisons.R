@@ -42,7 +42,7 @@ plotResidualsHisto <- function(input.CLayers,
   # for a single ComparisonLayer
   if(is.ComparisonLayer(input.CLayers)) {
     
-    temp.dt <- na.omit(input.CLayers@data[, c("Difference"), with=FALSE])
+    temp.dt <- stats::na.omit(input.CLayers@data[, c("Difference"), with=FALSE])
     setnames(temp.dt, input.CLayers@name) 
     diff.layers <- input.CLayers@name
     if(is.null(labels)) labels <- input.CLayers@info1@name
@@ -63,7 +63,7 @@ plotResidualsHisto <- function(input.CLayers,
       if(!is.ComparisonLayer(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
       else {
         
-        really.temp.dt <- na.omit(thing@data[, c("Difference"), with=FALSE])
+        really.temp.dt <- stats::na.omit(thing@data[, c("Difference"), with=FALSE])
         setnames(really.temp.dt, thing@name) 
         diff.layers <- append(diff.layers, thing@name)
         if(is.null(labels)) new.labels <- append(new.labels, thing@info1@name)
@@ -164,9 +164,13 @@ plotResidualsHisto <- function(input.CLayers,
 #' @param input.CLayers The DataObject for which to plot the residual
 #' @param run.ids The character vector of run ids of the runs to scatter against the data (must be a vector, not a list).  Leave blank to compare all runs that have been previouslty compared to this dataset.
 #' @param run.labels A vector of more descriptive strings from each run (each the run@names)
-#' @param facet An optional string identifying an additional column by which to subdivide (facet) that data
+#' @param wrap An optional string identifying an additional column by which to subdivide (facet) that data
 #' @param facet.labels An option vector of strings giving descriptive labels for facets, if provided it *must* be a named vector, 
 #' where each element has a name corresponding to the value in the facet column. 
+#' @param xlim An optional vector of two numerics to define the x plot range
+#' @param ylim An optional vector of two numerics to define the y plot range
+#' @param xlab An optional character string for the x-axis
+#' @param ylab An optional character string for the y-axis
 #' @param showFitLine Boolean, if TRUE shows a linear fit and the fit equation
 #' @param showStats Boolean, if TRUE show some stats do quantify how well the model fits the data
 #' @param labels Character vector of labels (one for each run).  If not provided uses the run ids
@@ -204,7 +208,7 @@ plotScatterComparison <- function(input.CLayers,
   # for a single ComparisonLayer
   if(is.ComparisonLayer(input.CLayers)) {
     
-    temp.dt <- na.omit(input.CLayers@data[, names(input.CLayers)[1:2], with=FALSE])
+    temp.dt <- stats::na.omit(input.CLayers@data[, names(input.CLayers)[1:2], with=FALSE])
     setnames(temp.dt, c("ValueX", "ValueY")) 
     if(is.null(labels)) labels <- input.CLayers@info1@name
 
@@ -222,7 +226,7 @@ plotScatterComparison <- function(input.CLayers,
       else {
         
 
-        really.temp.dt <- na.omit(thing@data[, names(thing)[1:2], with=FALSE])
+        really.temp.dt <- stats::na.omit(thing@data[, names(thing)[1:2], with=FALSE])
         setnames(really.temp.dt, c("ValueX", "ValueY")) 
         
         # also add the source of the comparison
@@ -295,7 +299,7 @@ plotScatterComparison <- function(input.CLayers,
   }
   
   # The basic plot
-  scatter.plot <- ggplot(as.data.frame(na.omit(temp.dt)), aes_string(x="ValueX", y="ValueY")) +  geom_point(size=3, alpha =alpha)
+  scatter.plot <- ggplot(as.data.frame(stats::na.omit(temp.dt)), aes_string(x="ValueX", y="ValueY")) +  geom_point(size=3, alpha =alpha)
   
   
   scatter.plot <- scatter.plot + theme(text = element_text(size=25))

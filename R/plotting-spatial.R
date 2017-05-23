@@ -6,32 +6,39 @@
 ##########################################################################################################################################
 
 
-#' Plots a map from a temporally-averaged \code{ModelObject}, a data.table, a Raster* or a SpatialPixelsDataFrame.
+#' Plot maps from a temporally-averaged \code{ModelObject}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
 #' 
-#' This is a heavy lifting function for plotting models variables with flexibly, but with a high degree of automation. It's main use is to plot a map from a \code{ModelObject} or a \code{DataObject}, although plotting a Raster* is also useful.
-#' It has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults,
-#' so that in the case of plotting a \code{ModelObject} all you *need* to supply is the data itself, everything else is either set to a sensible default,
-#' or provided by the \code{ModelObject} itself.  It is basically a very complex wrapper for spplot, and can automatically plot things like biomes, dominant PFTs, months of maximum values, 
-#' burnt fraction on an approximately logarithic scale etc.  It returns a plot, which will need to be displayed using a \code{print()} command. 
+#' This is a heavy lifting function for plotting maps from ModelObjects, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
+#' As a consequence, iIt has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
+#' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
+#' using further ggplot2 commands. 
 #'
 #' @param data The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.
-#' @param layout.objs List of overlays (for example coastlines or rivers or statistical values) or other objects to be plotted by \code{spplot} 
-#' so see there for how to build them.
+#' @param layout.objs A character string name of a map overlay from the \code{maps} or \code{mapdata} packages. For example, "world" or "worldHires".  
+#' Note that using these, especially "worldHires", can add quite a bit off time. 
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
+#' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "return.data=TRUE"
+#' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
+#' in this function). 
 #' @param plot.bg.col Colour string for the plot background.
-#' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. 
+#' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENLTLY IMPLEMENTED!!
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
-#' Make it bigger if the text is too small on large plots and vice-versa
-#' @param limit Boolean, whether or not to limit the plotted values between a range, either the limits argument below,
-#' or the range of the plot.
-#' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values
-#' @param override.cols A colour palette function to override the defaults
+#' Make it bigger if the text is too small on large plots and vice-versa.
+#' @param ylim An optional vector of two numerics to specify the y/latitude range of the plot.
+#' @param xlim An optional vector of two numerics to specify the x/longitude range of the plot.
+#' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
+#' @param override.cols A colour palette function to override the defaults.
 #' @param override.cuts Cut ranges (a numeric vector) to override the defaults.
-
+#' @param dont.grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
+#' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
+#' @param return.data Return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
+#' @param tile Boolean If true use the ggplot function geom_tile() instead of the function geom_raster().
+#' @param interpolate Boolean, whether or not to use interpolation in the case of a call to geom_raster().  Probably not a good idea, results tend to hurt my eyes. 
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
+#' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
@@ -53,28 +60,26 @@
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
 plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
-                         layers = NULL,
-                         title = NULL,
-                         layout.objs = NULL, 
-                         facet.labels =  NULL,
-                         facet.order = NULL,
-                         plot.bg.col =  "white",
-                         useLongnames = FALSE,
-                         text.multiplier = 1,
-                         xlim = NULL,
-                         ylim = NULL,
-                         limit = FALSE,
-                         limits = NULL,
-                         override.cols = NULL,
-                         override.cuts = NULL,
-                         map.overlay = NULL,
-                         dont.grid = FALSE,
-                         return.data = FALSE,
-                         tile = TRUE,
-                         interpolate = FALSE,
-                         interior.lines = TRUE,
-                         ...){
- 
+                        layers = NULL,
+                        title = NULL,
+                        layout.objs = NULL, 
+                        facet.labels =  NULL,
+                        facet.order = NULL,
+                        plot.bg.col =  "white",
+                        useLongnames = FALSE,
+                        text.multiplier = 1,
+                        xlim = NULL,
+                        ylim = NULL,
+                        limits = NULL,
+                        override.cols = NULL,
+                        override.cuts = NULL,
+                        map.overlay = NULL,
+                        dont.grid = FALSE,
+                        return.data = FALSE,
+                        tile = TRUE,
+                        interpolate = FALSE,
+                        interior.lines = TRUE){
+  
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
   
@@ -360,7 +365,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     continuous <- FALSE
     breaks <- waiver()
   }
- 
+  
   
   ### RETURN DATA ONLY IF REQUESTED
   if(return.data) return(data.toplot)
@@ -394,7 +399,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     data.toplot <- data.toplot[Lon >= xlim[1] & Lon <= xlim[2],]
   }
   
-
+  
   ### PREPARE THE MAP OVERLAY
   if(class(map.overlay)[1] == "character"){
     
@@ -415,13 +420,10 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
     map.sp.lines.df <- SpatialLinesDataFrame(map.sp.lines, data = df)
     map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
-    suppressWarnings(map.overlay <- fortify(map.sp.lines.df))
-    
+    map.overlay <- fortify(map.sp.lines.df)
+
     rm(df, map.sp.lines, map.sp.lines.df)   
-    
-    # also fix the plot area
-    
-    
+
   }
   else if(!is.null(map.overlay)) {
     stop("Some other overlay type...")
@@ -429,7 +431,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
   if(discrete & is.null(override.cols)){
-
+    
     # make a list of all the unique values (factors), each of these will need a colour
     unique.vals <- unique(data.toplot[["Value"]])
     
@@ -590,7 +592,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   ### BUILD THE PLOT
-
+  
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
   if(tile) mp <- mp + geom_tile(aes_string(x = "Lon", y = "Lat", fill = "Value"))
@@ -616,7 +618,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   if(!is.null(ylim)) mp <- mp + scale_y_continuous(limits = ylim, expand = c(0, 0))
   else   mp <- mp + scale_y_continuous(expand = c(0, 0))
-
+  
   mp <- mp + coord_fixed()
   
   # labels and positioning
@@ -678,8 +680,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import raster
 correct.map.offset <- function(spl) {
-  we <- crop(spl, extent(-180, 180, -90, 90))
-  ww <- crop(spl, extent(179.999, 200, -90, 90))
+  we <- raster::crop(spl, raster::extent(-180, 180, -90, 90))
+  ww <- raster::crop(spl, raster::extent(179.999, 200, -90, 90))
   if(!is.null(ww) & !is.null(we)) {
     ww <- raster::shift(ww, -360)
     spl <- raster::bind(we, ww)  

@@ -55,7 +55,7 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution =
     
   }
   else if(resolution == "HD"){
-    dataset.raster <- raster(file.path(location, "Simard2011.HD.nc"))
+    dataset.raster <- raster::raster(file.path(location, "Simard2011.HD.nc"))
   }
   else if(resolution == "T63"){
     stop("Simard 2011 data not currently available at T63 resolution")
@@ -63,7 +63,7 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution =
   
   
   dataset.dt <- data.table(as.data.frame(dataset.raster,xy = TRUE))
-  dataset.dt <- na.omit(dataset.dt)
+  dataset.dt <- stats::na.omit(dataset.dt)
   setnames(dataset.dt, c("Lon", "Lat", "CanHght"))
   setkey(dataset.dt, Lon, Lat)
 

@@ -99,7 +99,7 @@ doSpatialAverage.uncompiled <- function(input.obj,
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
-  Year = Lat = Lon = NULL
+  Year = Lat = Lon = area = NULL
   
   # sort out the input object class
   if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {input.dt <- input.obj@data}
@@ -115,9 +115,9 @@ doSpatialAverage.uncompiled <- function(input.obj,
     }
     if(verbose) message(paste("Spatially averaging (area weighted) whole domain...", sep = ""))
     # check to see if Year is still a clomun name (it might have been averaged away)
-    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area), by=list(Year)]
+    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, stats::weighted.mean, w=area), by=list(Year)]
     else {
-      output.dt <- input.dt[,lapply(.SD, weighted.mean, w=area)]
+      output.dt <- input.dt[,lapply(.SD, stats::weighted.mean, w=area)]
     }
     
     output.dt[,area:=NULL]
