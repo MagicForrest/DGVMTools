@@ -333,52 +333,74 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
   len_tt <- length(tt)
    
   # process only the last nyears years of the simulation run
-  nyears <- 20
+  nyears <- 3
   t_seq <- seq( len_tt-(nyears*12), len_tt, by=12 )
+
+  biomass_conversion <- 1/20  # convert from t/ha to kgC/m^2
   
-  cnames <- c( "Lon", "Lat", "Year", "Tr", "C4G", "C3G", "Total")
-  
-  out.abm <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.abm) <- cnames
-  
-  out.lai <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.lai) <- cnames
+  cnames  <- c( "Lon", "Lat", "Year", "Tr", "C4G", "C3G", "Total")
+  out.all <- matrix(0, ncol=length(cnames), nrow=0)
+  colnames(out.all) <- cnames
   
   for ( x in 1:length(xx) )
   {
+    cat( "Progress:", round(x/length(xx)*100,1), "%                                     \r")
     for ( y in 1:length(yy) )
     {
       for ( z in t_seq )
       {
-        tmp.tr <-          ncvar_get( d, "SumBBark", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-        tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-        tmp.g4 <-          ncvar_get( d, "SumBLeaf", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-        tmp.g3 <-          ncvar_get( d, "SumBLeaf", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+        if(variable@id == "agb"){
+          tmp.tr <-          ncvar_get( d, "SumBBark", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          tmp.g4 <-          ncvar_get( d, "SumBLeaf", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+          tmp.g3 <-          ncvar_get( d, "SumBLeaf", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+          
+          tmp.tr <- tmp.tr*biomass_conversion
+          tmp.g4 <- tmp.g4*biomass_conversion
+          tmp.g3 <- tmp.g3*biomass_conversion
         
-        #            Lon      Lat    Year            Tr      C4G     C3G     Total
-        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-        out.abm <- rbind( out.abm, out.vec )
+          #            Lon      Lat    Year            Tr      C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
         
-        tmp.tr <- ncvar_get( d, "MeanLai", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-        tmp.g4 <- ncvar_get( d, "MeanLai", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-        tmp.g3 <- ncvar_get( d, "MeanLai", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+        if(variable@id == "lai"){
+          tmp.tr <- ncvar_get( d, "MeanLai", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          tmp.g4 <- ncvar_get( d, "MeanLai", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+          tmp.g3 <- ncvar_get( d, "MeanLai", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
         
-        #            Lon      Lat    Year            Tr      C4G     C3G     Total
-        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-        out.lai <- rbind( out.lai, out.vec )
+          #            Lon      Lat    Year            Tr      C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "nind"){
+          tmp.tr <- ncvar_get( d, "nind_alive", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          tmp.g4 <- ncvar_get( d, "nind_alive", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+          tmp.g3 <- ncvar_get( d, "nind_alive", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+        
+          #            Lon      Lat    Year            Tr      C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "meanheight"){
+          tmp.tr <- ncvar_get( d, "MeanHeight", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          tmp.g4 <- ncvar_get( d, "MeanHeight", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+          tmp.g3 <- ncvar_get( d, "MeanHeight", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+        
+          #            Lon      Lat    Year            Tr      C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+
       }
     }
   }
- 
+  cat("\n") 
   
-  if(variable@id == "lai"){
-    return(out.lai)
-  }
-  else if(variable@id == "agb"){
-    return(out.abm)
-  }
-  
-  
+  return(out.all)
 }
 
 #' Slightty more complex classification of yearly output for aDGVM
@@ -396,7 +418,6 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
 #' @seealso \code{getQuantity_aDGVM_Scheme1}
 getQuantity_aDGVM_Scheme2 <- function(run, period, variable)
 {
-
   fname <- file.path(run@run.dir, paste("trait_", run@id,".nc", sep=""))
   
   cat( "Convert", fname, "\n" )
@@ -406,24 +427,20 @@ getQuantity_aDGVM_Scheme2 <- function(run, period, variable)
   yy <- ncvar_get(d,"lat")
   tt <- ncvar_get(d,"time")
   len_tt <- length(tt)
-  print(len_tt)
   # process only the last nyears years of the simulation run
-  nyears <- 2
+  nyears <- 1
   t_seq <- (len_tt-nyears+1):len_tt
   
   max_pop_size <- length(ncvar_get(d,"individual"))          # maximum population size
-  biomass_conversion <- 1/1000  # convert from kg/ha to t/ha
+  biomass_conversion <- 1/1000*(1/20)  # convert from kg/ha to kgC/m^2
   
-  cnames <- c( "Lon", "Lat", "Year", "TrBE", "TrBR", "C4G", "C3G", "Total")
-  
-  out.abm <- matrix(0, ncol=length(cnames), nrow=0)
-  out.lai <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.abm) <- cnames
-  colnames(out.lai) <- cnames
-  
+  cnames  <- c( "Lon", "Lat", "Year", "TrBE", "TrBR", "C4G", "C3G", "Total")
+  out.all <- matrix(0, ncol=length(cnames), nrow=0)
+  colnames(out.all) <- cnames
+
   for ( x in 1:length(xx) )
   {
-    cat( "x=", x, "of", length(xx), "\n")
+    cat( "Progress:", round(x/length(xx)*100,1), "%                                     \r")
     for ( y in 1:length(yy) )
     {
       for ( z in t_seq )
@@ -431,44 +448,78 @@ getQuantity_aDGVM_Scheme2 <- function(run, period, variable)
         alive       <- ncvar_get( d, "alive",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
         vegtp       <- ncvar_get( d, "VegType",   start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
         pheno       <- ncvar_get( d, "Evergreen", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        bm_leaf_all <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        bm_wood_all <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        bm_bark_all <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        lai_all     <- ncvar_get( d, "Lai",       start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        
-        ind_alive <- which( alive==1 )
-        ind_te    <- which( alive==1 & vegtp==0 & pheno==1 )   # indices of evergreen trees in trait data
-        ind_td    <- which( alive==1 & vegtp==0 & pheno==0 )   # indices of deciduous trees in trait data
-        ind_g4    <- which( alive==1 & vegtp==1 )              # indices of grasses in trait data
-        ind_g3    <- which( alive==1 & vegtp==2 )              # indices of grasses in trait data
-        
-        bm_ag_te <- sum(bm_wood_all[ind_te]+bm_bark_all[ind_te])*biomass_conversion  # calculate biomass of evergreen trees and convert to t/ha
-        bm_ag_td <- sum(bm_wood_all[ind_td]+bm_bark_all[ind_td])*biomass_conversion  # calculate biomass of deciduous trees and convert to t/ha
-        bm_ag_g4 <- sum(bm_leaf_all[ind_g4])*biomass_conversion  # calculate biomass of C4 grasses and convert to t/ha
-        bm_ag_g3 <- sum(bm_leaf_all[ind_g3])*biomass_conversion  # calculate biomass of C3 grasses and convert to t/ha
-        
-        #            Lon      Lat    Year            TrBE      TrBR      C4G       C3G       Total
-        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), bm_ag_te, bm_ag_td, bm_ag_g4, bm_ag_g3, bm_ag_te+bm_ag_td+bm_ag_g4+bm_ag_g3 )
-        out.abm <- rbind( out.abm, out.vec )
 
-        lai_te   <- mean(lai_all[ind_te])*(length(ind_te)/length(alive))
-        lai_td   <- mean(lai_all[ind_td])*(length(ind_td)/length(alive))
-        lai_g4   <- mean(lai_all[ind_g4])*(length(ind_g4)/length(alive))
-        lai_g3   <- mean(lai_all[ind_g3])*(length(ind_g3)/length(alive))
+        ind.alive <- which( alive==1 )
+        ind.te    <- which( alive==1 & vegtp==0 & pheno==1 )   # indices of evergreen trees in trait data
+        ind.td    <- which( alive==1 & vegtp==0 & pheno==0 )   # indices of deciduous trees in trait data
+        ind.g4    <- which( alive==1 & vegtp==1 )              # indices of grasses in trait data
+        ind.g3    <- which( alive==1 & vegtp==2 )              # indices of grasses in trait data
+        
+        if(variable@id == "agb"){
+          bm.leaf.all <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+          bm.wood.all <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+          bm.bark.all <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+          tmp.te <- sum(bm.wood.all[ind.te]+bm.bark.all[ind.te])
+          tmp.td <- sum(bm.wood.all[ind.td]+bm.bark.all[ind.td])
+          tmp.g4 <- sum(bm.leaf.all[ind.g4])
+          tmp.g3 <- sum(bm.leaf.all[ind.g3])
+          
+          tmp.te <- tmp.te*biomass_conversion
+          tmp.td <- tmp.td*biomass_conversion
+          tmp.g4 <- tmp.g4*biomass_conversion
+          tmp.g3 <- tmp.g3*biomass_conversion
+          
+          #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "lai"){
+          lai.all  <- ncvar_get( d, "Lai", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+          tmp.te   <- mean(lai.all[ind.te])*(length(ind.te)/length(alive))
+          tmp.td   <- mean(lai.all[ind.td])*(length(ind.td)/length(alive))
+          tmp.g4   <- mean(lai.all[ind.g4])*(length(ind.g4)/length(alive))
+          tmp.g3   <- mean(lai.all[ind.g3])*(length(ind.g3)/length(alive))
             
-        #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
-        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), lai_te, lai_td, lai_g4, lai_g3, lai_te+lai_td+lai_g4+lai_g3 )
-        out.lai <- rbind( out.lai, out.vec )
+          #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "nind"){
+          tmp.te   <- length(ind.te)
+          tmp.td   <- length(ind.td)
+          tmp.g4   <- length(ind.g4)
+          tmp.g3   <- length(ind.g3)
+            
+          #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "meanheight"){
+          tmp.all  <- ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+          tmp.te   <- mean(tmp.all[ind.te])
+          tmp.td   <- mean(tmp.all[ind.td])
+          tmp.g4   <- mean(tmp.all[ind.g4])
+          tmp.g3   <- mean(tmp.all[ind.g3])
+            
+          #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.g4, tmp.g3, mean(tmp.te+tmp.td+tmp.g4+tmp.g3) )
+          out.all <- rbind( out.all, out.vec )
+        }
+
       }
     }
   }
+  cat( "\n")
 
-  if(variable@id == "lai"){
-    return(out.lai)
-  }
-  else if(variable@id == "agb"){
-    return(out.abm)
-  }
+  return(out.all)
   
 }
+
+
+
+
+
 

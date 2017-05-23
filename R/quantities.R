@@ -968,8 +968,25 @@ dgvm.quantities <- list(
       units = "kgC/m^2",
       colours = cmass.palette,
       aggregate.method = "sum",
-      model = c("aDGVM"))
+      model = c("aDGVM")),
   
+  new("Quantity",
+      id = "meanheight",
+      name = "Mean Canopy Height",
+      type = "PFT",
+      units = "m",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("aDGVM")),
+
+  new("Quantity",
+      id = "nind",
+      name = "Number of individuals",
+      type = "PFT",
+      units = "plants",
+      colours = cmass.palette,
+      aggregate.method = "sum",
+      model = c("aDGVM"))
   
  
 )

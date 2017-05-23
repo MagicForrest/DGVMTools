@@ -4,6 +4,56 @@ t1 <- Sys.time()
 # Load DGVMTools package
 library(DGVMTools)
 
+run1 <- defineModelRun(run.dir = "/home/sscheiter/results",
+                    model = "aDGVM",
+                    pft.set = aDGVM.PFTs,
+#                   id = "3_1_wshrubs_wannuals_end", # this is, by former aDGVM way, <runid>_<fire>
+#                    id = "4_0_india", # this is, by former aDGVM way, <runid>_<fire>
+#                    id = "1_1", # this is, by former aDGVM way, <runid>_<fire>
+                    name= "Example aDGVM run",
+                    driving.data = "CRU"
+)
+
+#period = new("TemporalExtent", name = "Reference", start = 81, end = 100)
+variable <- "meanheight" #"lai" "agb" #"nind"
+scheme   <- 2
+# Open the lai.out file, and average over the reference period
+agb.1 <- getModelObject(run = run1, 
+#                          temporal.extent  = period,
+                          temporally.average = TRUE,
+                          var = variable, 
+                          adgvm.scheme = scheme,
+                          write = TRUE,
+                          read.full = TRUE)
+
+### Simple summary plots
+
+
+
+vvv <- agb.1
+
+graphics.off()
+pdf( paste( vvv@run@model, "_", vvv@run@id, "_", vvv@quant@id, "_s", scheme, ".pdf", sep="" ), height=10, width=15 )
+print(plotSpatial(data = agb.1))
+graphics.off()
+
+
+asd()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ############################################################################
 ##### PREAMBLE: Define the run settings and an averaging period
@@ -12,7 +62,8 @@ library(DGVMTools)
 run1 <- defineModelRun(run.dir = "/home/sscheiter/results",
                     model = "aDGVM",
                     pft.set = aDGVM.PFTs,
-                    id = "3_1_wshrubs_wannuals", # this is, by former aDGVM way, <runid>_<fire>
+#                   id = "3_1_wshrubs_wannuals_end", # this is, by former aDGVM way, <runid>_<fire>
+                    id = "4_0_india", # this is, by former aDGVM way, <runid>_<fire>
                     name= "Example aDGVM run 1",
                     driving.data = "CRU"
 )
@@ -21,7 +72,7 @@ run1 <- defineModelRun(run.dir = "/home/sscheiter/results",
 run2 <- defineModelRun(run.dir = "/home/sscheiter/results",
                      model = "aDGVM",
                      pft.set = aDGVM.PFTs,
-                     id = "3_1_wshrubs_wannuals", # this is, by former aDGVM way, <runid>_<fire>
+                     id = "4_0_india", # this is, by former aDGVM way, <runid>_<fire>
                      name= "Example aDGVM run 2",
                      driving.data = "CRU"
 )
@@ -47,7 +98,7 @@ lai.1 <- getModelObject(run = run1,
                        read.full = TRUE)
 
 lai.2 <- getModelObject(run = run2, 
-                       temporal.extent = period, 
+#                       temporal.extent = period, 
                        temporally.average = TRUE,
                        var = variable, 
                        adgvm.scheme = 1,
@@ -72,8 +123,8 @@ print(names(lai.1))
 
 # Plot the tree and grass fraction
 print(plotSpatial(lai.1,
-                   layers = c("TrFraction", "C4GFraction"),
-                   override.cols = colorRampPalette(c("grey85", "black"))(20)))
+                   layers = c("TrFraction", "C4GFraction", "C3GFraction"),
+                   override.cols = colorRampPalette(c("grey85", "blue"))(20)))
 
 
 
@@ -93,7 +144,7 @@ variable <- "agb"
 
 # Open the lai.out file, and average over the reference period
 agb.1 <- getModelObject(run = run1, 
-                          temporal.extent  = period,
+#                          temporal.extent  = period,
                           temporally.average = TRUE,
                           var = variable, 
                           adgvm.scheme = 2,
