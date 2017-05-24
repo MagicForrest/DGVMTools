@@ -16,9 +16,9 @@ Depends:
     data.table (>= 1.9.6),
     maps,
     mapdata,
-    ggplot2
+    ggplot2,
+    raster
 Imports:
-    raster,
     methods,
     compiler,
     maptools,

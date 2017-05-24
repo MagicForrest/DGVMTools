@@ -82,8 +82,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
-  
-  ### PREPARE DATA FOR PLOTTING
+
+    ### PREPARE DATA FOR PLOTTING
   
   # some flags tonote what type of data we have been handed
   discrete <- FALSE
@@ -92,7 +92,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CASE 1 - A single ModelObject or DataObject
   if(is.ModelObject(data) || is.DataObject(data)) {
-    
+
     single.object <- TRUE
     grid <- FALSE
     
@@ -122,7 +122,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CASE 2 - A single ComparisionLayer
   else if(is.ComparisonLayer(data)) {
-    
+   
     single.object <- TRUE
     grid <- FALSE
     original.layers <- layers # this is needed to keep track of the plotting mode since 'layers' is changed
@@ -193,7 +193,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CASE 3- A list, hopefully made exclusively of ModelObjects/DataObjects xor ComparisonLayers
   else if(class(data)[1] == "list") {
-    
+
     # PREAMBLE - first determine if the list contains consistent types and then fail if it does not
     only.data.or.model.objects <- TRUE
     only.comparison.layers <- TRUE
@@ -345,7 +345,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     stop("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects")
     
   }
-  
+
   ### Rename "variable" to "Layer" which makes more conceptual sense
   setnames(data.toplot, "variable", "Layer")
   setnames(data.toplot, "value", "Value")
@@ -399,7 +399,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     data.toplot <- data.toplot[Lon >= xlim[1] & Lon <= xlim[2],]
   }
   
-  
   ### PREPARE THE MAP OVERLAY
   if(class(map.overlay)[1] == "character"){
     
@@ -412,7 +411,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else if(tolower(map.overlay)=="worldHires" && gt.180) map.overlay <- "worldHires2"
     else if(tolower(map.overlay)=="world2" && !gt.180) map.overlay <- "world"
     else if(tolower(map.overlay)=="world2ires" && !gt.180) map.overlay <- "worldHires"
-    
+
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
     proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
     map.sp.lines <- map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = CRS(proj4str))
@@ -421,15 +420,14 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     map.sp.lines.df <- SpatialLinesDataFrame(map.sp.lines, data = df)
     map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
     map.overlay <- fortify(map.sp.lines.df)
-
     rm(df, map.sp.lines, map.sp.lines.df)   
 
   }
   else if(!is.null(map.overlay)) {
     stop("Some other overlay type...")
   }
-  
-  ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
+
+    ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
   if(discrete & is.null(override.cols)){
     
     # make a list of all the unique values (factors), each of these will need a colour
@@ -442,7 +440,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     ###  If the Quantity if specifically defined as categorical then use the colours defined in the Quantity's units slot
     if(tolower(quant@type) == "categorical") {
-      
+
       legend.title = NULL
       
       # reverse engineer colours from palette
@@ -467,7 +465,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     ### Else check if the factors are PFTs 
     # TODO - implement months below!!
     else {
-      
+
       # check if the factors are PFTs, and if so assign them their meta-data colour
       pft.superset <- NULL
       if(is.ModelObject(data)) {
@@ -514,7 +512,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
     
   }
-  
+
   ### HANDLE THE FACET GRID/WRAP ISSUE
   multiple.sources <- FALSE
   multiple.layers <- FALSE
@@ -589,7 +587,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       }
     }
   }
-  
   
   ### BUILD THE PLOT
   
@@ -680,11 +677,15 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @import raster
 correct.map.offset <- function(spl) {
+
   we <- raster::crop(spl, raster::extent(-180, 180, -90, 90))
   ww <- raster::crop(spl, raster::extent(179.999, 200, -90, 90))
+
   if(!is.null(ww) & !is.null(we)) {
+
     ww <- raster::shift(ww, -360)
     spl <- raster::bind(we, ww)  
+
   }
   return(spl)
 }
