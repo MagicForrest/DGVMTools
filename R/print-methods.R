@@ -6,8 +6,8 @@
 #' 
 #' @param x Any DGVMTools object to be printed
 #' @param ... other arguments to be passed on to a further print functions, not currently used.
-#' @name print-methods
-#' @rdname print-methods
+#' @name print
+#' @rdname print
 #' @aliases print
 #' 
 #' @details Simple stuff, implemented as S4 methods.  Further tweaking of the formatting may be in order, feedback from users welcome.
@@ -16,12 +16,10 @@
 #' @export
 NULL
 
-if (!isGeneric("print")) {
-  setGeneric("print", function(x, ...) standardGeneric("print"))
-}
+setGeneric("print", function(x, ...) standardGeneric("print"))
 
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="PFT"), function(x) {
   
@@ -29,7 +27,7 @@ setMethod("print", signature(x="PFT"), function(x) {
 
 })
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="Quantity"), function(x) {
   
@@ -38,7 +36,7 @@ setMethod("print", signature(x="Quantity"), function(x) {
 })
 
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="TemporalExtent"), function(x) {
   
@@ -50,7 +48,7 @@ setMethod("print", signature(x="TemporalExtent"), function(x) {
   
 })
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="SpatialExtent"), function(x) {
   
@@ -64,7 +62,7 @@ setMethod("print", signature(x="SpatialExtent"), function(x) {
   
 })
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="Period"), function(x) {
   
@@ -82,7 +80,7 @@ setMethod("print", signature(x="Period"), function(x) {
 
 
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="ModelRunInfo"), function(x) {
   
@@ -105,7 +103,7 @@ setMethod("print", signature(x="ModelRunInfo"), function(x) {
   
 })
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="ModelRun"), function(x) {
   
@@ -121,7 +119,7 @@ setMethod("print", signature(x="ModelRun"), function(x) {
 })
 
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="ModelObject"), function(x) {
   
@@ -141,7 +139,7 @@ setMethod("print", signature(x="ModelObject"), function(x) {
   
 })
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="DatasetInfo"), function(x) {
   
@@ -153,7 +151,7 @@ setMethod("print", signature(x="DatasetInfo"), function(x) {
   
 })
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="DataObject"), function(x) {
   
@@ -173,7 +171,7 @@ setMethod("print", signature(x="DataObject"), function(x) {
 })
 
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="ComparisonLayer"), function(x) {
   
@@ -197,7 +195,7 @@ setMethod("print", signature(x="ComparisonLayer"), function(x) {
 
 
 
-#' @rdname print-methods
+#' @rdname print
 #' @export
 setMethod("print", signature(x="SpatialComparison"), function(x) {
   
@@ -224,7 +222,7 @@ setMethod("print", signature(x="SpatialComparison"), function(x) {
 })
 
 
-#' @rdname print-methods
+#' @rdname print
 #' @export 
 setMethod("print", signature(x="BiomeScheme"), function(x) {
   

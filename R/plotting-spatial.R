@@ -67,7 +67,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         facet.order = NULL,
                         plot.bg.col =  "white",
                         useLongnames = FALSE,
-                        text.multiplier = 1,
+                        text.multiplier = NULL,
                         xlim = NULL,
                         ylim = NULL,
                         limits = NULL,
@@ -83,7 +83,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
 
-    ### PREPARE DATA FOR PLOTTING
+  ### CHECK FOR MISSIGN ARGUMENTS AND INITILIASE WHERE APPROPRIATE
+  # ????    
+  
+  
+  ### PREPARE DATA FOR PLOTTING
   
   # some flags tonote what type of data we have been handed
   discrete <- FALSE
@@ -623,9 +627,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   if(!is.null(legend.title)) {mp <- mp + labs(fill=legend.title) }
   else { mp <- mp + theme(legend.title = element_blank()) }
   mp <- mp + theme(plot.title = element_text(hjust = 0.5))
-  mp <- mp + theme(text = element_text(size=30))
   
-  # set background colour of panel
+  # overall text multiplier
+  if(!missing(text.multiplier)) mp <- mp + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
+
+    # set background colour of panel
   mp <- mp + theme(
     panel.background = element_rect(fill = plot.bg.col), # bg of the panel
     plot.background = element_rect(fill = plot.bg.col), # bg of the plot

@@ -6,10 +6,11 @@
 \usage{
 plotSpatial(data, layers = NULL, title = NULL, layout.objs = NULL,
   facet.labels = NULL, facet.order = NULL, plot.bg.col = "white",
-  useLongnames = FALSE, text.multiplier = 1, xlim = NULL, ylim = NULL,
-  limits = NULL, override.cols = NULL, override.cuts = NULL,
-  map.overlay = NULL, dont.grid = FALSE, return.data = FALSE,
-  tile = TRUE, interpolate = FALSE, interior.lines = TRUE)
+  useLongnames = FALSE, text.multiplier = NULL, xlim = NULL,
+  ylim = NULL, limits = NULL, override.cols = NULL,
+  override.cuts = NULL, map.overlay = NULL, dont.grid = FALSE,
+  return.data = FALSE, tile = TRUE, interpolate = FALSE,
+  interior.lines = TRUE)
 }
 \arguments{
 \item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
