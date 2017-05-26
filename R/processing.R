@@ -249,17 +249,21 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   # auxiliary function to be apply'd in the case of max and min
   max.layer <- function(x){
-    the.max <- names(x)[which.max(x)]
-    if(length(the.max) == 0) {
-      the.max <- "Barren"
+    if(sum(x) == 0) {
+      the.max <- "None"
+    }
+    else{
+      the.max <- names(x)[which.max(x)]
     }
     return(the.max)
   }
   
   min.layer <- function(x){
-    the.min <- names(x)[which.min(x)]
-    if(length(the.min) == 0) {
-      the.min <- "Barren"
+    if(sum(x) == 0) {
+      the.min <- "None"
+    }
+    else{
+      the.min <- names(x)[which.min(x)]
     }
     return(the.min)
   }
