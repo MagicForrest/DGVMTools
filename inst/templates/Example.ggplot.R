@@ -7,71 +7,27 @@ library(RColorBrewer)
 period = new("TemporalExtent", id = "Reference", name = "Reference", start = 1981, end = 2010)
 
 ## Define the simulation runs
-base <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons",
-                     model = "LPJ-GUESS",
-                     pft.set = global.PFTs,
-                     id = "base",
-                     description= "base run with conservative N fixation",
-                     driving.data = "PGF",
-                     map.overlay = "lowres",
-                     lonlat.offset = c(0,0),
-                     year.offset = 0
-                     )
+runs.def <- data.frame(id=c("base", "daily", "cryptCover"),
+                       name=c("base run with conservative N fixation",
+                              "sensitivity run with conservative quasi daily N fixation",
+                              "sensitivity run with conservative N fixation elevated to cryptogamic N fixation"),
+                       dir=c("/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons",
+                             "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons_daily",
+                             "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons_CC"),
+                       stringsAsFactors = FALSE)
 
-sens_constCO2 <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons_constCO2",
-                              model = "LPJ-GUESS",
-                              pft.set = global.PFTs,
-                              id = "sens_constCO2",
-                              description= "sensitivity run with constant CO2 (300ppm) and conservative N fixation",
-                              driving.data = "PGF",
-                              map.overlay = "lowres",
-                              lonlat.offset = c(0,0),
-                              year.offset = 0
-                              )
-
-sens_daily <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons_daily",
-                           model = "LPJ-GUESS",
-                           pft.set = global.PFTs,
-                           id = "sens_daily",
-                           description= "sensitivity run with conservative quasi daily N fixation",
-                           driving.data = "PGF",
-                           map.overlay = "lowres",
-                           lonlat.offset = c(0,0),
-                           year.offset = 0
-                           )
-
-sens_CC <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons_CC",
-                        model = "LPJ-GUESS",
-                        pft.set = global.PFTs,
-                        id = "sens_CC",
-                        description= "sensitivity run with conservative N fixation elevated to cryptogamic N fixation",
-                        driving.data = "PGF",
-                        map.overlay = "lowres",
-                        lonlat.offset = c(0,0),
-                        year.offset = 0
-                        )
-
-sens_centr <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_centr",
-                           model = "LPJ-GUESS",
-                           pft.set = global.PFTs,
-                           id = "sens_centr",
-                           description= "sensitivity run with central N fixation",
-                           driving.data = "PGF",
-                           map.overlay = "lowres",
-                           lonlat.offset = c(0,0),
-                           year.offset = 0
-                           )
-
-sens_CLM <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/CLM",
-                         model = "LPJ-GUESS",
-                         pft.set = global.PFTs,
-                         id = "sens_CLM",
-                         description= "sensitivity run with CLM-like N fixation",
-                         driving.data = "PGF",
-                         map.overlay = "lowres",
-                         lonlat.offset = c(0,0),
-                         year.offset = 0
-                         )
+runs <- list()
+for (i in 1:nrow(runs.def)) {
+  runs[[runs.def$id[i]]] <- defineModelRun(run.dir = runs.def$dir[i],
+                                          model = "LPJ-GUESS",
+                                          pft.set = lpj.global.PFTs,
+                                          id = runs.def$id[i],
+                                          name = runs.def$name[i],
+                                          driving.data = "PGF",
+                                          lonlat.offset = c(0,0),
+                                          year.offset = 0
+  )
+}
 
 ########################################################################
 ### The functions return a ggplot object, which can be further modified
@@ -79,60 +35,64 @@ sens_CLM <- defineVegRun(run.dir = "/senckenberg.de/cub/bigdata/LPJ/output/globa
 ### default behaviour.
 ########################################################################
 
-### Spatial analyses
+### Spatial plots
 
 ## Fill the runs with time averaged spatial data
-for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@objects[['lai.sp']] <- getVegObject(",run,", 'lai', period, temporally.average=TRUE, write=TRUE)", sep="")))
-  eval(parse(text=paste(run, "@objects[['gpp.sp']] <- getVegObject(",run,", 'agpp', period, temporally.average=TRUE, write=TRUE)", sep="")))
-  eval(parse(text=paste(run, "@objects[['lai.sp']] <- addBiomes(",run, "@objects[['lai.sp']], Smith2014.scheme)", sep="")))
+lai.sp    <-  list()
+biomes.sp <- list()
+gpp.sp    <-  list()
+for (run in runs) {
+  lai.sp[[run@id]] = getModelObject(run, 'lai', period, temporally.average=TRUE, write=TRUE)
+  biomes.sp[[run@id]] <- calcBiomes(lai.sp[[run@id]], Smith2014.scheme)
+  gpp.sp[[run@id]] = getModelObject(run, 'agpp', period, temporally.average=TRUE, write=TRUE)
 }
 
 ## single panel without title
-plotGGSpatial(base@objects[['lai.sp']], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
-
-## split into panels by different data.table columns
-plotGGSpatial(base@objects[['gpp.sp']], c("BNE", "BNS", "TeBS", "TrBE", "C3G", "Total"), colors=brewer.pal(9, "YlGn"), wrap=3)
-
-## split into different panels by another spatial data
-plotGGSpatial(base@objects[['lai.sp']], "Total", wrap=c("base", "lai.sp", "Smith2014", 4), colors=brewer.pal(9, "YlGn"), long.title=FALSE)
-## the same maps as above but nicer labels and missing terrestial cells are filled with white (terr.bg),
-##using either a named vector (then the names are used) or an unnamed vetor (then the values are used)
-wrap <- list(run="base", name="lai.sp", column="Smith2014", ncol=4, map=Smith2014.scheme@cols)
-wrap <- list(run="base", name="lai.sp", column="Smith2014", ncol=4, map=names(Smith2014.scheme@cols))
-plotGGSpatial(base@objects[['lai.sp']], "Total", wrap=wrap, colors=brewer.pal(9, "YlGn"), long.title=FALSE, terr.bg="white")
-
-## 2 panels of different runs (dataset also possible, but use the same colorbar)
-plotGGSpatial(list(base@objects[['gpp.sp']], sens_constCO2@objects[['gpp.sp']]), "Total", colors=brewer.pal(9, "YlGn"))
+plotGGSpatial(lai.sp[[runs.def$id[1]]], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
 
 ## 2 panels with overriding the default number of legend columns
-p <- plotGGSpatial(list(a=base@objects[['lai.sp']], b=sens_constCO2@objects[['lai.sp']]), 
-                   "Smith2014", colors=Smith2014.scheme@cols, terr.bg="white")
+cols <- Smith2014.scheme@colours(length(Smith2014.scheme@units))
+names(cols) <- Smith2014.scheme@units
+p <- plotGGSpatial(biomes.sp, "Smith2014", colours=cols, terr.bg="white")
 p <- p + guides(fill = guide_legend(ncol = 2))
 print(p)
 
+## split into panels by different data.table columns
+plotGGSpatial(gpp.sp[[runs.def$id[1]]], c("BNE", "BNS", "TeBS", "TrBE", "C3G", "Total"), colours=brewer.pal(9, "YlGn"), wrap=3)
+
+## split into different panels by another spatial data
+plotGGSpatial(gpp.sp[[runs.def$id[1]]], "Total", wrap=c("biomes.sp[[1]]", "Smith2014", 4), colours=brewer.pal(9, "YlGn"), long.title=FALSE)
+
+plotGGSpatial(gpp.sp[[runs.def$id[1]]], "Total", wrap=c("biomes.sp[[1]]", "Smith2014", 4), colours=brewer.pal(9, "YlGn"), long.title=FALSE, terr.bg = "white")
+
+## 2 panels of different runs (dataset also possible, but use the same colorbar)
+plotGGSpatial(gpp.sp, "Total", colours=brewer.pal(9, "YlGn"))
+
+## 2 panels with overriding the default number of legend columns
+p <- plotGGSpatial(list(biomes.sp[[1]], biomes.sp[[3]]), "Smith2014", colors=cols)
+p <- p + guides(fill = guide_legend(ncol = 3))
+print(p)
+
 ## single meridional plot
-plotGGMeridional(base@objects[['gpp.sp']], "Total", what=list(center="md", var=c(0.25,0.75)), colors="red")
+plotGGMeridional(gpp.sp[[1]], "Total", what=list(center="md", var=c(0.25, 0.75)), colors="red")
 
 ## multiple columns
-plotGGMeridional(base@objects[['gpp.sp']], c("BNE", "TeBS", "TrBE", "Total"), what=list(center="mn", var="sd"))
+plotGGMeridional(gpp.sp[[1]], c("BNE", "TeBS", "TrBE", "Total"), what=list(center="mn", var="sd"))
 
 
 ## several sensitivity runs with short names
-p <- plotGGMeridional(list(base@objects[['gpp.sp']],
-                           sens_constCO2@objects[['gpp.sp']],
-                           sens_daily@objects[['gpp.sp']],
-                           sens_CC@objects[['gpp.sp']],
-                           sens_centr@objects[['gpp.sp']],
-                           sens_CLM@objects[['gpp.sp']]),
-                      "Total", long.title=FALSE)
+p <- plotGGMeridional(gpp.sp, "Total", long.title=FALSE)
 p <- p + guides(fill = guide_legend(ncol = 1)) + theme(legend.position = "right")
 print(p)
 
 ## categorically aggregated summary plot of one run
 ## specifying either slot/column or x/y as either list or data.frame
-plotGGCategorialAggregated(base, targets=list(slot=c("gpp.sp", "lai.sp"), col=c("Total", "Smith2014")))
-plotGGCategorialAggregated(base, targets=data.frame(x=c("gpp.sp", "Total"), y=c("lai.sp", "Smith2014")))
+plotGGCategorialAggregated(gpp.sp[[1]], biomes.sp[[1]], x.col.name = "Total", cat.col.name = "Smith2014")
+
+
+
+## Continue here
+
 
 ## several sensitivity runs
 p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
