@@ -5,10 +5,10 @@
 \title{Create a various forms of scatterplots}
 \usage{
 plotGGScatter(x, y, x.column = "value", y.column = "value", limit = NULL,
-  flip = TRUE, density = FALSE, wrap.column = NULL, color.column = NULL,
-  colors = "orange", sym.col = FALSE, alpha = 0.1, lines = NA,
-  labels = NA, label.pos = "bottomright", equal.axis = TRUE, wrap = 2,
-  plot = TRUE, verbose = TRUE)
+  flip = TRUE, density = FALSE, wrap.column = NULL,
+  colour.column = NULL, colours = "orange", sym.col = FALSE,
+  alpha = 0.1, lines = NA, labels = NA, label.pos = "bottomright",
+  equal.axis = TRUE, wrap = 2, plot = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{x}{A ModelObject or a list of them.}
@@ -27,15 +27,15 @@ plotGGScatter(x, y, x.column = "value", y.column = "value", limit = NULL,
 
 \item{wrap.column}{A column name in x, which should be used for faceting.}
 
-\item{color.column}{A column name for coloring the points (NOT working currently).}
+\item{colour.column}{A column name for colouring the points (NOT working currently).}
 
-\item{colors}{A data.frame for colors to use mandatory column names: XXX}
+\item{colours}{A data.frame for colours to use mandatory column names: XXX}
 
-\item{sym.col}{Should the colors be symmetrical (NOT working currently).}
+\item{sym.col}{Should the colours be symmetrical (NOT working currently).}
 
 \item{alpha}{transparency value for points (ignored in density mode).}
 
-\item{lines}{Character vector of any of '1:1', 'lm' and/or 'gam'. Or a data.frame with the columns 'lines', 'color', 'type', 'width'.}
+\item{lines}{Character vector of any of '1:1', 'lm' and/or 'gam'. Or a data.frame with the columns 'lines', 'colour', 'type', 'width'.}
 
 \item{labels}{Character string of metrics to be added. Possible values 'mae', 'rmsd', 'nme', 'nmse', 'me', 'eq', 'rsq', 'rmse'}
 

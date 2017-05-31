@@ -4,22 +4,22 @@
 \alias{plotGGSpatial}
 \title{Spatial plot (map) with ggplot2}
 \usage{
-plotGGSpatial(input, column = "value", colors = NA, sym.col = FALSE,
-  wrap = 1, terr.bg = NA, map.overlay = NA, long.title = TRUE,
+plotGGSpatial(input, column = "value", colours = NA, sym.col = FALSE,
+  wrap = 1, miss.bg = NA, map.overlay = NA, long.title = TRUE,
   plot = TRUE, ...)
 }
 \arguments{
-\item{input}{A VegSpatial or a list of VegSpatial objects.}
+\item{input}{A temporally averaged ModelObject or a list of them.}
 
-\item{column}{Name of the column(s) in the data slot of input, which should be plotted. Several columns can only be supplied with a single VegSpatial. Default: 'value'.}
+\item{column}{Name of the column(s) in the data slot of input, which should be plotted. Several columns can only be supplied with a single ModelObject. Default: 'value'.}
 
-\item{colors}{A (named) vector of colors or a data.frame with the columns 'color' and ('name' or 'value'), to be used for plotting.}
+\item{colours}{A (named) vector of colours or a data.frame with the columns 'colour' and ('name' or 'value'), to be used for plotting.}
 
-\item{sym.col}{boolean, if the colors should be distributed symetrically around 0.}
+\item{sym.col}{boolean, if the colours should be distributed symetrically around 0.}
 
 \item{wrap}{a single number of facet_wrap columns or a vector/list with the run, VegSpatial name, column and optionally ncol (number of columns), which is used to split the data in different panels. Only valid when a vector of column names or a list of VegSpatial was given as input. Otherwise it is ignored.}
 
-\item{terr.bg}{which colour should be used for missing terrestial pixels (e.g. Greenland)}
+\item{miss.bg}{which colour should be used for missing pixels if wraped by another ModelObject or column.}
 
 \item{map.overlay}{if set to 'lowres' or 'highres' national borders are included (uses package maps). It can also be a data.frame as returned by \code{ggplot2::fortify}.}
 

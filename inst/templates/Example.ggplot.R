@@ -38,17 +38,19 @@ for (i in 1:nrow(runs.def)) {
 ### Spatial plots
 
 ## Fill the runs with time averaged spatial data
-lai.sp    <-  list()
+lai.sp    <- list()
 biomes.sp <- list()
-gpp.sp    <-  list()
+gpp.sp    <- list()
+cpool.sp  <- list()
 for (run in runs) {
   lai.sp[[run@id]] = getModelObject(run, 'lai', period, temporally.average=TRUE, write=TRUE)
   biomes.sp[[run@id]] <- calcBiomes(lai.sp[[run@id]], Smith2014.scheme)
   gpp.sp[[run@id]] = getModelObject(run, 'agpp', period, temporally.average=TRUE, write=TRUE)
+  cpool.sp[[run@id]] = getModelObject(run, 'cpool', period, temporally.average=TRUE, write=TRUE)
 }
 
 ## single panel without title
-plotGGSpatial(lai.sp[[runs.def$id[1]]], "Total", colors=brewer.pal(9, "YlGn"), long.title=FALSE)
+plotGGSpatial(lai.sp[[runs.def$id[1]]], "Total", colours=brewer.pal(9, "YlGn"), long.title=FALSE)
 
 ## 2 panels with overriding the default number of legend columns
 cols <- Smith2014.scheme@colours(length(Smith2014.scheme@units))
@@ -63,13 +65,13 @@ plotGGSpatial(gpp.sp[[runs.def$id[1]]], c("BNE", "BNS", "TeBS", "TrBE", "C3G", "
 ## split into different panels by another spatial data
 plotGGSpatial(gpp.sp[[runs.def$id[1]]], "Total", wrap=c("biomes.sp[[1]]", "Smith2014", 4), colours=brewer.pal(9, "YlGn"), long.title=FALSE)
 
-plotGGSpatial(gpp.sp[[runs.def$id[1]]], "Total", wrap=c("biomes.sp[[1]]", "Smith2014", 4), colours=brewer.pal(9, "YlGn"), long.title=FALSE, terr.bg = "white")
+plotGGSpatial(gpp.sp[[runs.def$id[1]]], "Total", wrap=c("biomes.sp[[1]]", "Smith2014", 4), colours=brewer.pal(9, "YlGn"), long.title=FALSE, miss.bg = "white")
 
 ## 2 panels of different runs (dataset also possible, but use the same colorbar)
 plotGGSpatial(gpp.sp, "Total", colours=brewer.pal(9, "YlGn"))
 
 ## 2 panels with overriding the default number of legend columns
-p <- plotGGSpatial(list(biomes.sp[[1]], biomes.sp[[3]]), "Smith2014", colors=cols)
+p <- plotGGSpatial(list(biomes.sp[[1]], biomes.sp[[3]]), "Smith2014", colours=cols)
 p <- p + guides(fill = guide_legend(ncol = 3))
 print(p)
 
@@ -89,162 +91,94 @@ print(p)
 ## specifying either slot/column or x/y as either list or data.frame
 plotGGCategorialAggregated(gpp.sp[[1]], biomes.sp[[1]], x.col.name = "Total", cat.col.name = "Smith2014")
 
+## several sensitivity runs by one biome definition
+p <- plotGGCategorialAggregated(list(gpp.sp[["base"]], gpp.sp[["daily"]], gpp.sp[["cryptCover"]]), biomes.sp[[1]], x.col.name = "Total", cat.col.name = "Smith2014")
+p <- p + guides(col = guide_legend(ncol = 1))
+print(p)
 
-
-## Continue here
-
-
-## several sensitivity runs
-p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
-                                targets=data.frame(slot=c("gpp.sp", "lai.sp"), column=c("Total", "Smith2014")), 
-                                name.map=Smith2014.scheme@cols)
+## several sensitivity runs by individual biome definition 
+p <- plotGGCategorialAggregated(list(gpp.sp[["base"]], gpp.sp[["daily"]], gpp.sp[["cryptCover"]]), 
+                                list(biomes.sp[["base"]], biomes.sp[["daily"]], biomes.sp[["cryptCover"]]),
+                                x.col.name = "Total", cat.col.name = "Smith2014", vertical=TRUE)
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 p <- p + guides(col = guide_legend(ncol = 1))
 print(p)
 
 ## the same data, but displayed as vertical bars instead of horizontal points
 ## please note that bars use "fill" instead of "col" in guide
-p <- plotGGCategorialAggregated(list(base, sens_constCO2, sens_daily), 
-                                targets=data.frame(slot=c("gpp.sp", "lai.sp"), column=c("Total", "Smith2014")), 
-                                name.map=Smith2014.scheme@cols, bar=TRUE, vertical=TRUE)
+p <- plotGGCategorialAggregated(list(gpp.sp[["base"]], gpp.sp[["daily"]], gpp.sp[["cryptCover"]]), 
+                                list(biomes.sp[["base"]], biomes.sp[["daily"]], biomes.sp[["cryptCover"]]),
+                                x.col.name = "Total", cat.col.name = "Smith2014", bar=TRUE, vertical=TRUE)
 p <- p + guides(fill = guide_legend(ncol = 1))
 p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 print(p)
 
 ### Time series
-for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@objects[['gpp.ts']] <- getVegTemporal(",run,", 'agpp', reread.file = FALSE, write=TRUE)", sep="")))
-  eval(parse(text=paste(run, "@objects[['cpool.ts']] <- getVegTemporal(",run,", 'cpool', reread.file = FALSE, write=TRUE)", sep="")))
+
+period = new("TemporalExtent", id = "Reference", name = "Reference", start = 1951, end = 2010)
+## Fill the runs with time averaged spatial data
+gpp.ts   <- list()
+cflux.ts <- list()
+for (run in runs) {
+  cflux.ts[[run@id]] = getModelObject(run, 'cflux', period, temporally.average=FALSE, spatially.average=TRUE, write=TRUE)
+  gpp.ts[[run@id]] = getModelObject(run, 'agpp', period, temporally.average=FALSE, spatially.average=TRUE, write=TRUE)
 }
 
 ## plot several columns together
-plotGGTemporal(base@objects[['gpp.ts']], c("BNE", "TeBS", "TrIBE", "TrBR"))
+plotGGTemporal(gpp.ts[["base"]], c("BNE", "TeBS", "TrIBE", "TrBR"))
 
-lon <- extract.seq(base@objects[['lai.sp']]@data$Lon)
-lat <- extract.seq(base@objects[['lai.sp']]@data$Lat)
+lon <- extract.seq(lai.sp[['base']]@data$Lon)
+lat <- extract.seq(lai.sp[['base']]@data$Lat)
 area2d <- gridarea2d(lon, lat, scale=1.e-12)
-land.area <- sum(area2d[base@objects[['lai.sp']]@data]$area)
+land.area <- sum(area2d[lai.sp[['base']]@data]$area)
 ## plot several
-p <- plotGGTemporal(list(base@objects[['gpp.ts']],
-                         sens_constCO2@objects[['gpp.ts']],
-                         sens_daily@objects[['gpp.ts']],
-                         sens_CC@objects[['gpp.ts']],
-                         sens_centr@objects[['gpp.ts']],
-                         sens_CLM@objects[['gpp.ts']]), "Total", scale=land.area)
+p <- plotGGTemporal(gpp.ts, "Total", scale=land.area)
 p <- p + guides(col = guide_legend(title="", ncol = 1))
 print(p)
 
-### simple Arithmetics
+## adding Le Quere land sink data
+library(xlsx)
+LeQuere2015 <- read.xlsx("/home/jsteinkamp/Cloud/Dropbox/WIP/Establishment/Global_Carbon_Budget_2015_v1.1.xlsx", sheetName = "Global Carbon Budget", startRow=22, endRow=78, header=TRUE)
+LeQuere2015$land.sink <- -1 * LeQuere2015$land.sink 
+p <- plotGGTemporal(cflux.ts, "NEE", scale=land.area)
+p = p + guides(col = guide_legend(title="", ncol = 1))
+p = p + geom_line(data=LeQuere2015, aes(x=Year, y=land.sink))
+print(p)
 
-## Add some more time averaged spatial data
-for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  eval(parse(text=paste(run, "@objects[['cpool.sp']] <- getVegSpatial(",run,", 'cpool', period)", sep="")))
-}
+
+### simple Arithmetics
 
 ## create a new quantity description for Carbon residence time,
 ## which will be calculated
-RT.quant <- new("VegQuant",
+RT.quant <- new("Quantity",
                 id="CResidenceTime",
-                short.string="CResidenceTime",
-                full.string="Carbon residence time",
+                name="Carbon Residence Time",
                 type="pools",
                 units="years")
 ## spatial
-t <- list(x=c("cpool.sp"), y=c("gpp.sp", "Total"))
-residence.time <- calcNewVegObj(base, t, "/", quant=RT.quant)
+residence.time <- calcNewModelObj(cpool.sp[[1]], gpp.sp[[1]], "/", "Total", "Total", quant=RT.quant)
 key.names <- key(residence.time@data)
 val.names <- names(residence.time@data)
 val.names <- val.names[sapply(val.names, function(x) {!any(x==key.names)})]
 ## set negative RT to NA
 for (j in val.names)
-  set(residence.time@data, which(residence.time@data[[j]]<0), j, NA)
+  set(residence.time@data, which(residence.time@data[[j]] < 0), j, NA)
 
 ## use the logarithm, otherwise everything will be just yellow
 residence.time@data[, logTotal:=log10(Total), ]
-plotGGSpatial(residence.time, "logTotal", colors=brewer.pal(9, "YlOrBr"))
+p <- plotGGSpatial(residence.time, "logTotal")
+p <- p + scale_fill_gradientn(colours=brewer.pal(9, "YlOrBr"), labels=c(1,10,100,1000), breaks=c(1,2,3,4))
+print(p)
 
-base@objects[['rt.sp']] = residence.time
-plotGGCategorialAggregated(base, targets=list(slot=c("rt.sp", "lai.sp"), col=c("Total", "Smith2014")), name.map=Smith2014.scheme@cols)
+plotGGCategorialAggregated(residence.time, biomes.sp[[1]], "Total", "Smith2014")
 
-## temporal
-plotGGTemporal(base@objects[['cpool.ts']], "Total", colors="green")
 
-## This one has the wrong axis unit!
-plotGGTemporal(base@objects[['cpool.ts']], c("VegC", "LitterC", "SoilC"), scale=land.area)
-
-t <- list(x=c("cpool.ts"), y=c("gpp.ts", "Total"))
-for (run in c("base", "sens_constCO2", "sens_daily", "sens_CC", "sens_centr", "sens_CLM")) {
-  message(run)
-  eval(parse(text=paste(run, "@objects[['rt.ts']] <- calcNewVegObj(", run, ", t, '/', quant=RT.quant)", sep="")))
+## several sesitivity time series
+rt.ts <- list()
+for (run in runs) {
+  rt.ts[[run@id]] <- calcNewModelObj(cpool.ts[[run@id]], gpp.ts[[run@id]], "/", "Total", "Total", quant=RT.quant)
 }
-p <- plotGGTemporal(list(base@objects[['rt.ts']],
-                         sens_constCO2@objects[['rt.ts']],
-                         sens_daily@objects[['rt.ts']],
-                         sens_CC@objects[['rt.ts']],
-                         sens_centr@objects[['rt.ts']],
-                         sens_CLM@objects[['rt.ts']]), "Total")
+p <- plotGGTemporal(rt.ts, "Total")
 p <- p + guides(col = guide_legend(title="", ncol = 1))
 print(p)
 
-## The code below here is not yet working!
-q()
-#################################################
-### get some temporal stand data (site level) ###
-#################################################
-MoMo1 <- defineVegRun(run.dir = "/data/WIP/MoMo/output/Hyytiala/miroc-esm-chem/rcp8p5/longevity/",
-                      model = "LPJ-GUESS",
-                      pft.set = global.PFTs,
-                      id = "MoMo1",
-                      description= "Future projection in Hyytiala Finnland with RCP8.5",
-                      driving.data = "ISI-MIP fasttrack",
-                      map.overlay = "",
-                      lonlat.offset = c(0,0),
-                      year.offset = 0)
-
-MoMo2 <- defineVegRun(run.dir = "/data/WIP/MoMo/output/Hyytiala/miroc-esm-chem/rcp2p6/longevity/",
-                      model = "LPJ-GUESS",
-                      pft.set = global.PFTs,
-                      id = "MoMo1",
-                      description= "Future projection in Hyytiala Finnland with RCP2.6",
-                      driving.data = "ISI-MIP fasttrack",
-                      map.overlay = "",
-                      lonlat.offset = c(0,0),
-                      year.offset = 0)
-
-Hyy <- new("SpatialExtent", id="Hyy", name="Hyytiala", extent=extent(rep(24.25, 2),rep(61.75, 2)))
-MoMo1 <- defineVegRun(run.dir = "/data/WIP/MoMo/output/Hyytiala/miroc-esm-chem/rcp8p5/longevity/",
-                      model = "LPJ-GUESS",
-                      pft.set = global.PFTs,
-                      id = "MoMo1",
-                      description= "Future projection in Hyytiala Finnland with RCP8.5",
-                      driving.data = "ISI-MIP fasttrack",
-                      map.overlay = "",
-                      lonlat.offset = c(0,0),
-                      year.offset = 0)
-MoMo1@objects[['height']] <- getVegObject(MoMo1, 'height')
-
-MoMo1@objects[['height']]@data
-
-hgt.quant <- new("VegQuant",
-                id="height",
-                short.string="height",
-                full.string="Average tree height",
-                type="",
-                units="m")
-ba.quant <- new("VegQuant",
-                id="ba",
-                short.string="ba",
-                full.string="basal area",
-                type="",
-                units="m^2 ha^-1")
-MoMo1@temporal[['height']] <- getVegTemporal(",run,", 'height', spatial.extent=Hyy, area.weighted=FALSE)
-
-for (run in c("MoMo1", "MoMo2")) {
-  message(run)
-  eval(parse(text=paste(run, "@temporal[['height']] <- getVegTemporal(",run,", 'height', spatial.extent=Hyy, area.weighted=FALSE, forceReAveraging = FALSE)", sep="")))
-  eval(parse(text=paste(run, "@temporal[['height']]@quant <- hgt.quant", sep="")))
-  eval(parse(text=paste(run, "@temporal[['ba']] <- getVegTemporal(",run,", 'ba', spatial.extent=Hyy, area.weighted=FALSE, forceReAveraging = FALSE)", sep="")))
-  eval(parse(text=paste(run, "@temporal[['ba']]@quant <- ba.quant", sep="")))
-}
-dt=plotGGTemporal(list(MoMo1@temporal[['ba']], MoMo2@temporal[['ba']]),
-                    columns=c("Bet_pub", "Pic_abi", "Pop_tre", "C3_gr"),
-                    type="s", plot=FALSE)

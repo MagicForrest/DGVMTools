@@ -4,28 +4,30 @@
 \alias{plotGGCategorialAggregated}
 \title{Plot a categorically aggregated summary.}
 \usage{
-plotGGCategorialAggregated(input, targets = NULL, name.map = NA,
-  area.weighted = TRUE, long.title = TRUE, vertical = FALSE,
-  bar = FALSE, plot = TRUE, ...)
+plotGGCategorialAggregated(x, cat, x.col.name = "value",
+  cat.col.name = "category", name.map = NA, area.weighted = TRUE,
+  vertical = FALSE, bar = FALSE, plot = TRUE, ...)
 }
 \arguments{
-\item{input}{A VegSpatial or a list of VegSpatial objects.}
+\item{x}{A ModelObject or a list of them.}
 
-\item{targets}{data.frame/list, either specifying x/y columns as c('VegSpatial name', 'column name') or slot/column columns as c('x', 'y').}
+\item{cat}{A ModelObject containing the categories to summarize 'x' or a list of them.}
 
-\item{name.map}{a named vector, to translate numerical y-data into human understandable names}
+\item{x.col.name}{The column name of 'x' data.table to use. Default: 'value'.}
+
+\item{cat.col.name}{The column name of the grouping variable. Should be either of type character, factor or integer.}
+
+\item{name.map}{a named vector, to translate numerical category-data into human understandable names.}
 
 \item{area.weighted}{weight the mean by the gridcell area (default: TRUE) or not.}
 
-\item{long.title}{If the description (default) should be used as titles or the shorter id.}
-
 \item{vertical}{boolean: values on the y-axis, categories on the x-axis}
 
-\item{bar}{boolean: use bars instead of points}
+\item{bar}{boolean: use bars instead of points.}
 
 \item{plot}{If FALSE only the data is returned, without drawing the map.}
 
-\item{...}{Ignored further parameters}
+\item{...}{Ignored further parameters.}
 }
 \value{
 A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.

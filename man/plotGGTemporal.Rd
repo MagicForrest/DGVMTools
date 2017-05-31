@@ -4,18 +4,18 @@
 \alias{plotGGTemporal}
 \title{Plot a timeseries}
 \usage{
-plotGGTemporal(input, columns = "value", scale = 1, colors = NA,
+plotGGTemporal(input, columns = "value", scale = 1, colours = NA,
   type = "line", wrap = NA, long.title = TRUE, lty = "sens",
   alpha = NA, plot = TRUE, ...)
 }
 \arguments{
-\item{input}{a VegTemporal object or a list of several.}
+\item{input}{a ModelObject or a list of several.}
 
 \item{columns}{The column(s) to display. Default: 'value'.}
 
 \item{scale}{a scaling factor for multiplication}
 
-\item{colors}{Colors for the diffent VegSpatial objects or columns. Must have the same length otherwise colors are choosing automatically.}
+\item{colours}{colours for the diffent VegSpatial objects or columns. Must have the same length otherwise colours are choosing automatically.}
 
 \item{type}{"line", overlayed "area" or "stack"ed area}
 
