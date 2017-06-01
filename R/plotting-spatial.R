@@ -31,7 +31,8 @@
 #' @param xlim An optional vector of two numerics to specify the x/longitude range of the plot.
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param override.cols A colour palette function to override the defaults.
-#' @param override.cuts Cut ranges (a numeric vector) to override the defaults.
+#' @param override.cuts Cut ranges (a numeric vector) to override the default colour delimitation
+#' @param discretise Boolen, if true, but the discretise the data according the override.cuts argument above
 #' @param dont.grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
 #' @param return.data Return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
@@ -73,6 +74,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         limits = NULL,
                         override.cols = NULL,
                         override.cuts = NULL,
+                        discretise = FALSE,
                         map.overlay = NULL,
                         dont.grid = FALSE,
                         return.data = FALSE,
@@ -82,7 +84,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
-
+  
   ### CHECK FOR MISSIGN ARGUMENTS AND INITILIASE WHERE APPROPRIATE
   # ????    
   
@@ -98,7 +100,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CASE 1 - A single ModelObject or DataObject
   if(is.ModelObject(data) || is.DataObject(data)) {
-
+    
     single.object <- TRUE
     grid <- FALSE
     
@@ -128,7 +130,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CASE 2 - A single ComparisionLayer
   else if(is.ComparisonLayer(data)) {
-   
+    
     single.object <- TRUE
     grid <- FALSE
     original.layers <- layers # this is needed to keep track of the plotting mode since 'layers' is changed
@@ -199,7 +201,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### CASE 3- A list, hopefully made exclusively of ModelObjects/DataObjects xor ComparisonLayers
   else if(class(data)[1] == "list") {
-
+    
     # PREAMBLE - first determine if the list contains consistent types and then fail if it does not
     only.data.or.model.objects <- TRUE
     only.comparison.layers <- TRUE
@@ -353,7 +355,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     stop("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects")
     
   }
-
+  
   ### Rename "variable" to "Layer" which makes more conceptual sense
   setnames(data.toplot, "variable", "Layer")
   setnames(data.toplot, "value", "Value")
@@ -368,10 +370,21 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### APPLY CUSTOM CUTS TO DISCRETISE IF NECESSARY
   if(continuous & !is.null(override.cuts)) {
-    data.toplot[,Value:= cut(Value, override.cuts, right = FALSE, include.lowest = TRUE)]
-    discrete <- TRUE
-    continuous <- FALSE
-    breaks <- waiver()
+    if(discretise) {
+      data.toplot[,Value:= cut(Value, override.cuts, right = FALSE, include.lowest = TRUE)]
+      discrete <- TRUE
+      continuous <- FALSE
+      breaks <- waiver()
+      if(length(override.cols) != length(override.cuts)){
+        override.cols <- grDevices::colorRampPalette(override.cols)(length(override.cuts))
+      }
+    }
+    else{
+      
+    }
+  }
+  else{
+    override.cuts <- waiver()
   }
   
   
@@ -419,7 +432,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else if(tolower(map.overlay)=="worldHires" && gt.180) map.overlay <- "worldHires2"
     else if(tolower(map.overlay)=="world2" && !gt.180) map.overlay <- "world"
     else if(tolower(map.overlay)=="world2ires" && !gt.180) map.overlay <- "worldHires"
-
+    
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
     proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
     map.sp.lines <- map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = CRS(proj4str))
@@ -429,13 +442,13 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
     map.overlay <- fortify(map.sp.lines.df)
     rm(df, map.sp.lines, map.sp.lines.df)   
-
+    
   }
   else if(!is.null(map.overlay)) {
     stop("Some other overlay type...")
   }
-
-    ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
+  
+  ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
   if(discrete & is.null(override.cols)){
     
     # make a list of all the unique values (factors), each of these will need a colour
@@ -448,7 +461,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     ###  If the Quantity if specifically defined as categorical then use the colours defined in the Quantity's units slot
     if(tolower(quant@type) == "categorical") {
-
+      
       legend.title = NULL
       
       # reverse engineer colours from palette
@@ -474,7 +487,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # check if the factors are PFTs 
     # TODO - implement months below!!
     else {
-
+      
       # check if the factors are PFTs, and if so assign them their meta-data colour
       pft.superset <- NULL
       if(is.ModelObject(data)) {
@@ -516,8 +529,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       if(useLongNames) {
         categorical.legend.labels <- c()
         for(this.break in breaks){
-         
-           for(PFT in pft.superset) {
+          
+          for(PFT in pft.superset) {
             if(this.break == PFT@id) categorical.legend.labels <- append(categorical.legend.labels, PFT@name)
           }   
           
@@ -532,7 +545,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
     
   }
-
+  
   ### HANDLE THE FACET GRID/WRAP ISSUE
   multiple.sources <- FALSE
   multiple.layers <- FALSE
@@ -621,10 +634,15 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   # colour bar
   if(continuous)  {
-    mp <- mp + scale_fill_gradientn(name = legend.title, limits = limits, colors = override.cols, na.value="grey75")
+    mp <- mp + scale_fill_gradientn(name = legend.title, 
+                                    limits = limits, 
+                                    colors = override.cols, 
+                                    breaks = override.cuts,
+                                    na.value="grey75")
     mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
   }
   if(discrete) {
+    print(breaks)
     mp <- mp + scale_fill_manual(values = override.cols, 
                                  breaks = breaks,
                                  labels = categorical.legend.labels)
@@ -648,8 +666,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   # overall text multiplier
   if(!missing(text.multiplier)) mp <- mp + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
-
-    # set background colour of panel
+  
+  # set background colour of panel
   mp <- mp + theme(
     panel.background = element_rect(fill = plot.bg.col), # bg of the panel
     plot.background = element_rect(fill = plot.bg.col), # bg of the plot

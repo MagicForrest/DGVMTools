@@ -606,6 +606,13 @@ dgvm.quantities <- list(
       colours = fields::tim.colors,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
+  new("Quantity",
+      id = "bioclim_mtemps",
+      name = "Bioclimactic Temperatures",
+      type = "annual",
+      units = "deg C",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   
   #############################################################################################
