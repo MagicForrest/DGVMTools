@@ -30,11 +30,11 @@ setMethod("is.equal", signature("TemporalExtent", "TemporalExtent"), function(a,
 
 #' @describeIn is.equal Checks two SpatialExtent objects for equality
 setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b) {
-  if (all(!is.finite(c(a@extent@xmin, b@extent@xmin, a@extent@xmax, b@extent@xmax, 
-                       a@extent@ymin, b@extent@ymin, a@extent@ymax, b@extent@ymax))))
+  if (all(!is.finite(c(a@xmin, b@xmin, a@xmax, b@xmax, 
+                       a@ymin, b@ymin, a@ymax, b@ymax))))
     return(TRUE)
-  if (a@extent@xmin==b@extent@xmin && a@extent@xmax==b@extent@xmax && 
-      a@extent@ymin==b@extent@ymin && a@extent@ymax==b@extent@ymax)
+  if (a@xmin==b@xmin && a@xmax==b@xmax && 
+      a@ymin==b@ymin && a@ymax==b@ymax)
     return(TRUE)
   return(FALSE)
 })
@@ -800,20 +800,20 @@ AGBtoTotalCarbon <- function(AGB){
 #' These were just defined by the author for studying different regions of the world.  Maybe also be handy for other people.
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global", name = "Global", extent = raster::extent(-180, 180, -90, 90)),
-                                     Africa = new("SpatialExtent", id = "Africa", name = "Africa", extent =  raster::extent(-20, 55, -30, 36)),
-                                     Europe = new("SpatialExtent", id = "Europe", name = "Europe", extent =  raster::extent(-30, 40, 36, 70)),
-                                     Asia = new("SpatialExtent", id = "Asia", name = "Asia", extent =  raster::extent(40, 180, -10, 80)),
-                                     NorthAmerica = new("SpatialExtent", id = "NorthAmerica", name = "North America", extent =  raster::extent(-170, -70, 25, 75)),
-                                     SouthAmerica = new("SpatialExtent", id = "SouthAmerica", name = "South America", extent = raster::extent(-180, -50, -60, 25)),
-                                     Australia = new("SpatialExtent", id = "Australia", name = "Australia", extent = raster::extent(110, 160, -45 ,10)),
-                                     Mediterranean = new("SpatialExtent", id = "Med", name = "Mediterranean", extent = raster::extent(10, 40, 28 ,48)),
-                                     CentralAsia = new("SpatialExtent", id = "CentralAsia", name = "Central Asia", extent = raster::extent(25, 140, 40, 55)),
-                                     SouthEastAsia = new("SpatialExtent", id = "SouthEastAsia", name = "South East Asia", extent = raster::extent(90, 140, 10, 40)),
-                                     CentralNorthAmerica = new("SpatialExtent", id = "CentralNorthAmerica", name = "Central North America", extent = raster::extent(-110, -85, 30, 50)),
-                                     Boreal = new("SpatialExtent", id = "Boreal", name = "Boreal", extent = raster::extent(-180, 180, 60, 90)),
-                                     NHAfrica = new("SpatialExtent", id = "NHAfrica", name = "Northern Hemisphere Africa", extent = raster::extent(-20, 50, 0, 25)),
-                                     SHAfrica = new("SpatialExtent", id = "SHAfrica", name = "Southern Hemisphere Africa", extent = raster::extent(5, 50, -30, 0))
+standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global", name = "Global", raster::extent(-180, 180, -90, 90)),
+                                     Africa = new("SpatialExtent", id = "Africa", name = "Africa", raster::extent(-20, 55, -30, 36)),
+                                     Europe = new("SpatialExtent", id = "Europe", name = "Europe", raster::extent(-30, 40, 36, 70)),
+                                     Asia = new("SpatialExtent", id = "Asia", name = "Asia", raster::extent(40, 180, -10, 80)),
+                                     NorthAmerica = new("SpatialExtent", id = "NorthAmerica", name = "North America", raster::extent(-170, -70, 25, 75)),
+                                     SouthAmerica = new("SpatialExtent", id = "SouthAmerica", name = "South America", raster::extent(-180, -50, -60, 25)),
+                                     Australia = new("SpatialExtent", id = "Australia", name = "Australia", raster::extent(110, 160, -45 ,10)),
+                                     Mediterranean = new("SpatialExtent", id = "Med", name = "Mediterranean", raster::extent(10, 40, 28 ,48)),
+                                     CentralAsia = new("SpatialExtent", id = "CentralAsia", name = "Central Asia", raster::extent(25, 140, 40, 55)),
+                                     SouthEastAsia = new("SpatialExtent", id = "SouthEastAsia", name = "South East Asia", raster::extent(90, 140, 10, 40)),
+                                     CentralNorthAmerica = new("SpatialExtent", id = "CentralNorthAmerica", name = "Central North America", raster::extent(-110, -85, 30, 50)),
+                                     Boreal = new("SpatialExtent", id = "Boreal", name = "Boreal", raster::extent(-180, 180, 60, 90)),
+                                     NHAfrica = new("SpatialExtent", id = "NHAfrica", name = "Northern Hemisphere Africa", raster::extent(-20, 50, 0, 25)),
+                                     SHAfrica = new("SpatialExtent", id = "SHAfrica", name = "Southern Hemisphere Africa", raster::extent(5, 50, -30, 0))
                                      
 )
 

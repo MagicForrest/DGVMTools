@@ -48,7 +48,12 @@ setMethod("crop", signature(x="ModelObject", y = "ANY"), function(x, y) {
 
   # adjust the meta-data
   new.sp.ex <- x@spatial.extent
-  new.sp.ex@extent <- extent(x@data)
+  #new.sp.ex@extent <- extent(x@data)
+  new.sp.ex@xmin <- extent(x@data)@xmin
+  new.sp.ex@xmax <- extent(x@data)@xmax
+  new.sp.ex@ymin <- extent(x@data)@ymin
+  new.sp.ex@ymax <- extent(x@data)@ymax
+  
 
   # If y was a SpatialExtent object it has a handy name and id which can be used to indicate the spatial domain
   if(class(original.y)[1] == "SpatialExtent") {
@@ -88,7 +93,11 @@ setMethod("crop", signature(x="DataObject", y = "ANY"), function(x, y) {
   
   # adjust the meta-data
   new.sp.ex <- x@spatial.extent
-  new.sp.ex@extent <- extent(x@data)
+  #new.sp.ex@extent <- extent(x@data)
+  new.sp.ex@xmin <- extent(x@data)@xmin
+  new.sp.ex@xmax <- extent(x@data)@xmax
+  new.sp.ex@ymin <- extent(x@data)@ymin
+  new.sp.ex@ymax <- extent(x@data)@ymax
   
   # If y was a SpatialExtent object it has a handy name and id which can be used to indicate the spatial domain
   if(class(original.y)[1] == "SpatialExtent") {
@@ -126,7 +135,11 @@ setMethod("crop", signature(x="ComparisonLayer", y = "ANY"), function(x, y) {
   
   # adjust the meta-data
   new.sp.ex <- x@spatial.extent
-  new.sp.ex@extent <- extent(x@data)
+  #new.sp.ex@extent <- extent(x@data)
+  new.sp.ex@xmin <- extent(x@data)@xmin
+  new.sp.ex@xmax <- extent(x@data)@xmax
+  new.sp.ex@ymin <- extent(x@data)@ymin
+  new.sp.ex@ymax <- extent(x@data)@ymax
   
   # If y was a SpatialExtent object it has a handy name and id which can be used to indicate the spatial domain
   if(class(original.y)[1] == "SpatialExtent") {

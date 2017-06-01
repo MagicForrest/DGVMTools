@@ -67,7 +67,7 @@ lpj.global.PFTs <- list(
   
   TeBE = new("PFT",
              id = "TeBE",
-             name = "Temperate B/leaved Evergreen Tree",
+             name = "Temperate Broadleaved Evergreen Tree",
              lifeform = "Tree",
              leafform = "Broadleaved",
              phenology = "Evergreen",
@@ -162,7 +162,7 @@ lpj.global.PFTs <- list(
   
   None = new("PFT",
              id = "None",
-             name = "Nothing here",
+             name = "None",
              lifeform = "NA",
              leafform = "NA",
              phenology = "NA",

@@ -6,7 +6,7 @@
 \usage{
 plotSpatial(data, layers = NULL, title = NULL, layout.objs = NULL,
   facet.labels = NULL, facet.order = NULL, plot.bg.col = "white",
-  useLongnames = FALSE, text.multiplier = NULL, xlim = NULL,
+  useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
   ylim = NULL, limits = NULL, override.cols = NULL,
   override.cuts = NULL, map.overlay = NULL, dont.grid = FALSE,
   return.data = FALSE, tile = TRUE, interpolate = FALSE,
@@ -31,7 +31,7 @@ in this function).}
 
 \item{plot.bg.col}{Colour string for the plot background.}
 
-\item{useLongnames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENLTLY IMPLEMENTED!!}
+\item{useLongNames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}

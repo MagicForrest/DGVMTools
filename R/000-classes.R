@@ -35,15 +35,13 @@ setClass("TemporalExtent",
 #' @slot extent Currently can be a raster \code{Extent} object, but should be expanded to include a raster mask (to define an irregularly shaped spatial extent), or a c(Lon,Lat) coordinate to define a site.
 #' @exportClass SpatialExtent
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
 setClass("SpatialExtent",
          slots = c(id = "character",
-                   name = "character",
-                   extent = "ANY"
+                   name = "character"
+                   #extent = "Extent"
          ),
-         prototype= c(id = "Global",
-                      name = "Global",
-                      extent = raster::extent(-180, 180, -90 ,90)
-         )
+         contains = "Extent"
 )
 
 #' Time periods - eg. a month or a season or a year.
@@ -342,6 +340,8 @@ setClass("Quantity",
 #' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.
 #' @exportClass ModelObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
+
 setClass("ModelObject", 
          slots = c(id = "character",
                    data = "data.table",
@@ -353,7 +353,6 @@ setClass("ModelObject",
                    is.temporally.averaged = "logical",
                    run = "ModelRunInfo"
          )
-         
 )
 
 

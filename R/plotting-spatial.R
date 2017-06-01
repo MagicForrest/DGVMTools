@@ -24,7 +24,7 @@
 #' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
 #' @param plot.bg.col Colour string for the plot background.
-#' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENLTLY IMPLEMENTED!!
+#' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param ylim An optional vector of two numerics to specify the y/latitude range of the plot.
@@ -66,7 +66,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         facet.labels =  NULL,
                         facet.order = NULL,
                         plot.bg.col =  "white",
-                        useLongnames = FALSE,
+                        useLongNames = FALSE,
                         text.multiplier = NULL,
                         xlim = NULL,
                         ylim = NULL,
@@ -85,6 +85,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
 
   ### CHECK FOR MISSIGN ARGUMENTS AND INITILIASE WHERE APPROPRIATE
   # ????    
+  
+  categorical.legend.labels <- waiver()
   
   
   ### PREPARE DATA FOR PLOTTING
@@ -245,7 +247,9 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         }
         else {
           # check for consistent temporal extent
-          if(temporal.extent@start != object@temporal.extent@start || temporal.extent@end != object@temporal.extent@end) temporal.extent <- NULL
+          if(!is.null(temporal.extent)){
+            if(temporal.extent@start != object@temporal.extent@start || temporal.extent@end != object@temporal.extent@end) temporal.extent <- NULL
+          }
           # check for consistent Quantity
           if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
         }
@@ -466,7 +470,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
     }
     
-    ### Else check if the factors are PFTs 
+    ### Else data is categorical, but not explicitly defined as so in the Quantity, so we need to scan the names to identify the PFTs or months
+    # check if the factors are PFTs 
     # TODO - implement months below!!
     else {
 
@@ -508,6 +513,17 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       if(is.null(override.cols)) override.cols <- cols
       legend.title <- "PFT"
       breaks <- sort(names(override.cols))
+      if(useLongNames) {
+        categorical.legend.labels <- c()
+        for(this.break in breaks){
+         
+           for(PFT in pft.superset) {
+            if(this.break == PFT@id) categorical.legend.labels <- append(categorical.legend.labels, PFT@name)
+          }   
+          
+          
+        }
+      }
     }
     else if(is.categorical) {
       if(is.null(override.cols)) override.cols <- cols
@@ -609,8 +625,10 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
   }
   if(discrete) {
-    mp <- mp + scale_fill_manual(values = override.cols, breaks = breaks)
-    mp <- mp + guides(fill = guide_legend(keyheight = 2))
+    mp <- mp + scale_fill_manual(values = override.cols, 
+                                 breaks = breaks,
+                                 labels = categorical.legend.labels)
+    # mp <- mp + guides(fill = guide_legend(keyheight = 1))
   }
   
   # crop to xlim and ylim as appropriate and fix the aspect ratio 

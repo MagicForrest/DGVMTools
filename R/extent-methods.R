@@ -189,6 +189,6 @@ setMethod("extent", signature(x="ComparisonLayer"), function(x) {
 #' @rdname extent-methods 
 setMethod("extent", signature(x="SpatialExtent"), function(x) {
   
-  return(x@extent)
+  return(extent(x@xmin, x@xmax, x@ymin, x@ymax))
   
 })

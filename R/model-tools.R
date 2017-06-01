@@ -411,7 +411,7 @@ getModelObject <- function(run,
                                spatial.extent = new("SpatialExtent",
                                                     id = "FullDomain",
                                                     name = "Full simulation extent",
-                                                    extent =  extent(this.dt)),
+                                                    extent(this.dt)),
                                temporal.extent = new("TemporalExtent",
                                                      id = "FullTS",
                                                      name = "Full simulation duration",
@@ -485,9 +485,9 @@ getModelObject <- function(run,
     spatial.extent <- new("SpatialExtent",
                           id = "FullDomain",
                           name = "Full simulation extent",
-                          extent =  temp.extent)
+                          temp.extent)
     
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@xmin, ",", spatial.extent@xmax, "), Lat = (" ,  spatial.extent@ymin, ",", spatial.extent@ymax, ").", sep = ""))
     
   }
   
