@@ -433,7 +433,7 @@ convertToMatrix <- function(input, Lons = NULL, Lats = NULL, gap.fill = TRUE, la
 #' Crop a gridlist (taken as a file in the form of a two-columned table to a smaller subset provided by an Extent object
 #' 
 #' @param gridlist.file A character string giving the location of the original gridlist
-#' @param subset.extent  A raster Extent object specifying the geograpical sub-domain required
+#' @param subset.extent  A raster::Extent or a SpatialExtent object specifying the geograpical sub-domain required
 #' @param file.name A character string specifying a path to write the new gridlist (can be ignored to write no file)
 #' @param header Logical, whether or not the original file has a header
 #' @param offset A two-member numeric vector specifying the longitude-latitude offset from the given coordinates 

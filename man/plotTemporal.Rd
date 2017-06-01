@@ -11,7 +11,7 @@ plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
   legend.position = "bottom")
 }
 \arguments{
-\item{input.data}{The data to be plotted, either as a ModelObject, DataObject or a data.table.}
+\item{input.data}{The data to be plotted, either as a ModelObject, DataObject or a list of Model/DataObjects.}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
@@ -26,7 +26,7 @@ the same length as the labels arguments}
 
 \item{labels}{A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)}
 
-\item{x.label, y.label}{Character strings for the x and y axes (optional)}
+\item{x.label, }{y.label Character strings for the x and y axes (optional)}
 
 \item{x.lim, y.lim}{Limits for the x and y axes (each a two-element numeric, optional)}
 
@@ -34,8 +34,7 @@ the same length as the labels arguments}
 
 \item{facet.scales}{Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales}
 
-\item{legend.position}{Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
-on both scales/x only/y only on each ribbon}
+\item{legend.position}{Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector}
 }
 \value{
 A ggplot
