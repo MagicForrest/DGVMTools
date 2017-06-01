@@ -5,7 +5,7 @@
 \title{Plot a meridional mean with ggplot2}
 \usage{
 plotGGMeridional(input, column = "value", what = list(center = "mn", var =
-  "sd"), alpha = c(0.8, 0.1), colors = NA, long.title = TRUE,
+  "sd"), alpha = c(0.8, 0.1), colours = NA, long.title = TRUE,
   plot = TRUE, ...)
 }
 \arguments{
@@ -17,7 +17,7 @@ plotGGMeridional(input, column = "value", what = list(center = "mn", var =
 
 \item{alpha}{Vector of two elements: Transparency values for the line (first) and background polygon (second).}
 
-\item{colors}{Colors for the diffent VegSpatial objects.}
+\item{colours}{colours for the diffent VegSpatial objects.}
 
 \item{long.title}{If the description (default) should be used as titles or the shorter id.}
 

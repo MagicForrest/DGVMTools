@@ -113,20 +113,20 @@ dgvm.ggplot.theme <- function(x) {
   }
 
   if (length(lab)<n.min || length(lab)>n.max)
-    warning(paste("Did not find suitable levels between ", n.min, " and ", n.max, ", used ", length(lab), " instead.", sep=""))
+    warning(paste0("Did not find suitable levels between ", n.min, " and ", n.max, ", used ", length(lab), " instead."))
 
   if (!is.na(label)) {
     if (tolower(label)=="lon" || label=="long" || label=="longitude") {
       ## sprintf("%X", as.integer(charToRaw("-was a degree sign-"))) => [1] "C2" "B0"
       ## paste0("\u00B0") => "-was a degree sign-"
       names.lab <- lab
-      names.lab[lab < 0]  = paste(abs(lab[lab < 0]), "\u00B0W", sep="")
-      names.lab[lab >= 0] = paste(abs(lab[lab >= 0]), "\u00B0E", sep="")
+      names.lab[lab < 0]  = paste0(abs(lab[lab < 0]), "\u00B0W")
+      names.lab[lab >= 0] = paste0(abs(lab[lab >= 0]), "\u00B0E")
       names(lab) <- names.lab
     } else if (tolower(label)=="lat" || label=="latitude") {
       names.lab <- lab
-      names.lab[lab < 0]  = paste(abs(lab[lab < 0]), "\u00B0S", sep="")
-      names.lab[lab >= 0] = paste(abs(lab[lab >= 0]), "\u00B0N", sep="")
+      names.lab[lab < 0]  = paste0(abs(lab[lab < 0]), "\u00B0S")
+      names.lab[lab >= 0] = paste0(abs(lab[lab >= 0]), "\u00B0N")
       names(lab) <- names.lab
     }
   }
@@ -148,8 +148,8 @@ dgvm.ggplot.theme <- function(x) {
   return(df)
 }
 
-## from http://stackoverflow.com/questions/13289009/check-if-character-string-is-a-valid-color-representation
-.is.color <- function(x) {
+## from http://stackoverflow.com/questions/13289009/check-if-character-string-is-a-valid-colour-representation
+.is.colour <- function(x) {
   sapply(x, function(X) {
     tryCatch(is.matrix(grDevices::col2rgb(X)), 
              error = function(e) FALSE)
@@ -163,12 +163,12 @@ dgvm.ggplot.theme <- function(x) {
 #' 
 #' Plots a map (or a set of maps) using the geom_raster from the ggplot2 library
 #' 
-#' @param input A VegSpatial or a list of VegSpatial objects.
-#' @param column Name of the column(s) in the data slot of input, which should be plotted. Several columns can only be supplied with a single VegSpatial. Default: 'value'.
-#' @param colors A (named) vector of colors or a data.frame with the columns 'color' and ('name' or 'value'), to be used for plotting.
-#' @param sym.col boolean, if the colors should be distributed symetrically around 0.
+#' @param input A temporally averaged ModelObject or a list of them.
+#' @param column Name of the column(s) in the data slot of input, which should be plotted. Several columns can only be supplied with a single ModelObject. Default: 'value'.
+#' @param colours A (named) vector of colours or a data.frame with the columns 'colour' and ('name' or 'value'), to be used for plotting.
+#' @param sym.col boolean, if the colours should be distributed symetrically around 0.
 #' @param wrap a single number of facet_wrap columns or a vector/list with the run, VegSpatial name, column and optionally ncol (number of columns), which is used to split the data in different panels. Only valid when a vector of column names or a list of VegSpatial was given as input. Otherwise it is ignored.
-#' @param terr.bg which colour should be used for missing terrestial pixels (e.g. Greenland)
+#' @param miss.bg which colour should be used for missing pixels if wraped by another ModelObject or column.
 #' @param map.overlay if set to 'lowres' or 'highres' national borders are included (uses package maps). It can also be a data.frame as returned by \code{ggplot2::fortify}.
 #' @param long.title If the description (default) should be used as titles or the shorter id.
 #' @param plot If FALSE only the data is returned, without drawing the map.
@@ -177,20 +177,19 @@ dgvm.ggplot.theme <- function(x) {
 #' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @importFrom raster raster projectRaster as.data.frame
-#' @import sp maps ggplot2 data.table
 #' @export
-plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=1, terr.bg=NA, map.overlay=NA, long.title=TRUE, plot=TRUE, ...) {
+plotGGSpatial <- function(input, column='value', colours=NA, sym.col=FALSE, wrap=1, miss.bg=NA, map.overlay=NA, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
-  Lon = Lat = group = long = name = value = NULL
+  Lon = Lat = group = long = name = value = sens = NULL
   ## much simpler thant the following ModelObject
   if (is.DataObject(input)) {
-    if (!is.na(column)) {
-      if (length(column)==1 && all(colnames(input@data) != column)) {
-        stop(paste("No column named '",column,"' present!", sep=""))
+    if (!all(is.na(column))) {
+      if (length(column) == 1 && all(colnames(input@data) != column)) {
+        stop(paste0("No column named '",column,"' present!"))
       } else {
         for (cn in column) {
           if (all(colnames(input@data)!=cn))
-            stop(paste("No column named '", cn, "' present!", sep=""))
+            stop(paste0("No column named '", cn, "' present!"))
         }
       }
     } else {
@@ -207,7 +206,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
       dt <- data.table::melt(dt, key(dt), column)
       setnames(dt, "variable", "sens")
       dt <- dt[, sens:=factor(sens, column)]
-      if (length(wrap)>1 || !is.numeric(wrap))
+      if (length(wrap) > 1 || !is.numeric(wrap))
         wrap <- ceiling(sqrt(length(column)))
     }
 
@@ -215,15 +214,15 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
   } else if (is.ModelObject(input, spatial=TRUE)) {
-    if (is.na(column) && all(colnames(input@data) != "value"))
+    if (all(is.na(column)) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
-    if (!is.na(column) && length(column)>1) {
+    if (!all(is.na(column)) && length(column) > 1) {
       for (cn in column) {
-        if (all(colnames(input@data)!=cn))
-          stop(paste("No column named '", cn, "' present!", sep=""))
+        if (all(colnames(input@data) != cn))
+          stop(paste0("No column named '", cn, "' present!"))
       }
     } else if (all(colnames(input@data) != column)) {
-      stop(paste("No column named '",column,"' present!", sep=""))
+      stop(paste0("No column named '",column,"' present!"))
     }
     london.centre <- input@run@london.centre
     ##if (is.character(input@run@map.overlay)) {
@@ -235,34 +234,34 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
     ##                                               data.frame(ID=getSLLinesIDSlots(input@run@map.overlay[[2]]))))
     ##}
     dt <- input@data[, c("Lon", "Lat", column), with = FALSE]
-    if (length(column)==1) {
+    if (length(column) == 1) {
       setnames(dt, column, "value")
     } else {
       dt <- data.table::melt(dt, key(dt), column)
       setnames(dt, "variable", "sens")
       dt <- dt[, sens:=factor(sens, column)]
-      if (length(wrap)>1 || !is.numeric(wrap))
+      if (length(wrap) > 1 || !is.numeric(wrap))
         wrap <- ceiling(sqrt(length(column)))
     }
-    if (length(wrap)>1) {
+    if (length(wrap) > 1) {
       if (!is.list(wrap))
-        wrap <- list(run=wrap[1], name=wrap[2], column=wrap[3],
-                    ncol={if (length(wrap)>=4) wrap[4] else 1},
+        wrap <- list(name=wrap[1], column=wrap[2],
+                    ncol={if (length(wrap) >=3 ) wrap[3] else 1},
                      map=NA, stringsAsFactors=FALSE)
     
-      if (!eval(parse(text=paste("is.ModelObject(",wrap$run, "@objects[['", wrap$name,"']]",", spatial=TRUE)", sep=""))))
-        stop(paste("'", wrap$run, "@objects[['", wrap$name, "']] is not a spatial ModelObject", sep=""))
+      if (!eval(parse(text=paste0("is.ModelObject(",wrap$name, ", spatial=TRUE)"))))
+        stop(paste0("'", wrap$name, "' is not a spatial ModelObject"))
     
-      dt.wrap <- eval(parse(text=paste(wrap$run, "@objects[['", wrap$name, "']]@data[, c('Lon', 'Lat', '", wrap$column,"'), with=FALSE]", sep="")))
+      dt.wrap <- eval(parse(text=paste0(wrap$name, "@data[, c('Lon', 'Lat', '", wrap$column,"'), with=FALSE]")))
       setnames(dt.wrap, wrap$column, "wrap.tmp")
       dt <- dt[dt.wrap]
     
       ## if wrap$map is a valid named vector the names are used for x-labels
       if (!any(is.na(wrap$map))) {
         if (is.vector(wrap$map) && !is.null(names(wrap$map))) {
-          eval(parse(text=paste('dt[, name:=names(wrap$map)[wrap.tmp], ]', sep="")))
+          eval(parse(text=paste0('dt[, name:=names(wrap$map)[wrap.tmp], ]')))
         } else if (is.vector(wrap$map)) {
-          eval(parse(text=paste('dt[, name:=wrap$map[wrap.tmp], ]', sep="")))
+          eval(parse(text=paste0('dt[, name:=wrap$map[wrap.tmp], ]')))
         }
         setnames(dt, "name", "sens")
       } else {
@@ -280,14 +279,14 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
       if (!is.ModelObject(input[[i]], spatial=TRUE))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
       
-      if (is.na(column) && all(colnames(input[[i]]@data) != "value"))
+      if (all(is.na(column)) && all(colnames(input[[i]]@data) != "value"))
         stop("No column name given and no column named 'value' present!")
-      if (!is.na(column) && length(column)>1) {
+      if (!all(is.na(column)) && length(column) > 1) {
         warning("Several column names are supplied. Will only use the first one!")
         column <- column[1]
       }
       if (all(colnames(input[[i]]@data) != column)) {
-        stop(paste("No column named '",column,"' present!", sep=""))
+        stop(paste0("No column named '",column,"' present!"))
       }
       
       if (i==1) {
@@ -328,15 +327,15 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
     stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
   }
 
-  ## if colors is a valid named vector or a data.frame with columns 'color' and 'name'
+  ## if colours is a valid named vector or a data.frame with columns 'colour' and 'name'
   ## plot discrete values instead of continuous
   discrete <- FALSE
-  if (!any(is.na(colors))) {
-    if (is.vector(colors) && !is.null(names(colors))) {
-      dt[, name:=names(colors)[value], ]
+  if (!any(is.na(colours))) {
+    if (is.vector(colours) && !is.null(names(colours))) {
+      dt[, name:=names(colours)[value], ]
       discrete <- TRUE
-    } else if  (is.data.frame(colors) && any(names(colors)=="color") && any(names(colors)=="name")) {
-      dt[, name:=colors$name[value], ]
+    } else if  (is.data.frame(colours) && any(names(colours)=="colour") && any(names(colours)=="name")) {
+      dt[, name:=colours$name[value], ]
       discrete <- TRUE
     }
   }
@@ -354,30 +353,30 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   lon.limit <- c(min(lon) - res/2, max(lon) + res/2)
   lat.limit <- c(min(lat) - res/2, max(lat) + res/2)
 
-  ## if a valid color for the land is requested
-  if (!is.na(terr.bg) && .is.color(terr.bg)) {
-    to <- raster::raster(nrows=length(lat), ncols=length(lon),
-                 xmn=min(lon) - res/2, xmx=max(lon) + res/2,
-                 ymn=min(lat) - res/2, ymx=max(lat) + res/2,
-                 crs=CRS("+proj=longlat +ellps=WGS84"))
-    utils::data(slm, envir = environment())
-    slm <- raster::projectRaster(slm, to, "nbg")
-    slm <- as.data.frame(slm, xy=TRUE)
-    colnames(slm) <- c("Lon", "Lat", "value")
-    slm <- subset(slm, value>0)
-    if (any(colnames(dt)=="sens")) {
-      for (sens in levels(dt$sens)) {
-        if (!any(colnames(slm)=="sens")) {
-          slm$sens = sens
-        } else {
-          slm <- rbind(slm, data.frame(slm[c("Lon","Lat","value")], sens=sens))
-        }
+  ## if a valid colour for the land is requested
+  if (!is.na(miss.bg) && .is.colour(miss.bg)) {
+    if (any(colnames(dt) == "sens")) {
+      slm <- data.table(Lon=dt$Lon, Lat=dt$Lat)
+      setkey(slm, Lon, Lat)
+      slm = unique(slm, by=c("Lon", "Lat"))
+      setkey(slm, Lon, Lat)
+      slm.grd = copy(slm)
+      nonsense = as.character(unique(dt$sens))
+      slm$sens = nonsense[1]
+      for (i in 2:length(nonsense)) {
+        slm = rbind(slm, slm.grd[, sens := nonsense[i]])
       }
+      rm(nonsense, slm.grd)
+    } else {
+      slm <- data.table(Lon=dt$Lon, Lat=dt$Lat)
+      setkey(slm, Lon, Lat)
+      slm = unique(slm, by=c("Lon", "Lat"))
     }
+    slm$value = 1
   } else {
-    terr.bg <- NA
+    miss.bg <- NA
   }
-  
+
   ## If map.overlay is not yet defined properly, use
   ## either highres/lowres, otherwise assume a country name was given
   if (is.character(map.overlay)) {
@@ -421,15 +420,15 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   p <- ggplot(dt, aes(y=Lat, x=Lon))
   p <- p + .dgvm.spatial_theme
 
-  if (!is.na(terr.bg))
-    p <- p + geom_raster(data=slm, fill=terr.bg)
+  if (!is.na(miss.bg))
+    p <- p + geom_raster(data=slm, fill=miss.bg)
 
   if (discrete) {
     p <- p + geom_raster(aes(fill=name))
-    if (is.vector(colors)) {
-      p <- p + scale_fill_manual(values=colors, breaks=names(colors), na.value="grey", guide=guide_legend(ncol=3))
-    } else if (is.data.frame(colors)) {
-      p <- p + scale_fill_manual(values=colors$color, breaks=colors$name, na.value="grey", guide=guide_legend(ncol=3))
+    if (is.vector(colours)) {
+      p <- p + scale_fill_manual(values=colours, breaks=names(colours), na.value="grey", guide=guide_legend(ncol=3))
+    } else if (is.data.frame(colours)) {
+      p <- p + scale_fill_manual(values=colours$colour, breaks=colours$name, na.value="grey", guide=guide_legend(ncol=3))
     }
     p <- p + theme(legend.key.width  = unit(0.03, "npc"))
   } else {
@@ -438,16 +437,16 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
       p <- p + expand_limits(fill = c(-max(abs(dt$value), na.rm=TRUE), max(abs(dt$value), na.rm=TRUE)))
     }
 
-    if (any(colnames(colors)=="color") && any(colnames(colors)=="value")) {
-      p <- p + scale_fill_gradientn(colors=colors$color, values=colors$value, expand=c(0, 0))
-      p <- p + guides(fill=guide_colorbar(nbin = 101, expand=c(0, 0)))
-    } else if (!any(is.na(colors))) {
-      p <- p + scale_fill_gradientn(colors=colors, expand=c(0, 0))
-      p <- p + guides(fill=guide_colorbar(nbin = 101, expand=c(0, 0)))
+    if (any(colnames(colours)=="colour") && any(colnames(colours)=="value")) {
+      p <- p + scale_fill_gradientn(colours=colours$colour, values=colours$value, expand=c(0, 0))
+      p <- p + guides(fill=guide_colourbar(nbin = 101, expand=c(0, 0)))
+    } else if (!any(is.na(colours))) {
+      p <- p + scale_fill_gradientn(colours=colours, expand=c(0, 0))
+      p <- p + guides(fill=guide_colourbar(nbin = 101, expand=c(0, 0)))
     }
   }
   if (is.data.frame(map.overlay))
-    p <- p + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group=group))
+    p <- p + geom_path(data=map.overlay, size=0.1, colour = "black", aes(x=long, y=lat, group=group))
   p <- p + scale_x_continuous(breaks=lon, labels=names(lon), expand=c(0, 0))
   p <- p + scale_y_continuous(breaks=lat, labels=names(lat), expand=c(0, 0)) 
   p <- p + coord_fixed(xlim=lon.limit, ylim=lat.limit)
@@ -455,7 +454,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
   p <- p + ylab("Latitude")
 
   if (any(colnames(dt)=="sens")) {
-    p <- eval(parse(text=paste("p + facet_wrap(~sens, ncol=",wrap,")", sep="")))
+    p <- eval(parse(text=paste0("p + facet_wrap(~sens, ncol=",wrap,")")))
   } else if (long.title && is.DataObject(input)) {
     p <- p + labs(title=input@name)
   } else if (long.title) {
@@ -482,7 +481,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 #' @param column Name of the column(s) in the data slot of input, which should be plotted. Several columns can only be supplied with a single VegSpatial. Default: 'value'.
 #' @param what A list with the elements 'center' and 'var'. 'center' can be one of 'mn', 'mean', 'md', 'median' for the line. 'var' is for the variability polygon drawn in the background. 'var' can be 'sd' (sandard deviation), 'se' (standard error), 'mm'/'minmax', a numeric value (0-1) of quantile to be shown arround the central line or a vector specifying the upper and lower quantile.
 #' @param alpha Vector of two elements: Transparency values for the line (first) and background polygon (second).
-#' @param colors Colors for the diffent VegSpatial objects.
+#' @param colours colours for the diffent VegSpatial objects.
 #' @param long.title If the description (default) should be used as titles or the shorter id.
 #' @param plot If FALSE only the data is returned, without drawing the map.
 #' @param ... Ignored further parameters
@@ -492,7 +491,7 @@ plotGGSpatial <- function(input, column='value', colors=NA, sym.col=FALSE, wrap=
 #' @export
 #' @import ggplot2 data.table
 #' @importFrom RColorBrewer RColorBrewer::brewer.pal
-plotGGMeridional <- function(input, column='value', what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colors=NA, long.title=TRUE, plot=TRUE, ...) {
+plotGGMeridional <- function(input, column='value', what=list(center="mn", var="sd"), alpha=c(0.8, 0.1), colours=NA, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lat = sens = value = value.center = value.sd = value.se = value.max = value.min = NULL
 
@@ -504,16 +503,16 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
   ## check if a VegObj or a list of VegObj is given as input
   ## check data column names for given column name or column name 'value'
   if (is.ModelObject(input, spatial=TRUE)) {
-    if (is.na(column) && all(colnames(input@data) != "value"))
+    if (all(is.na(column)) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
     
-    if (!is.na(column) && length(column)>1) {
+    if (!all(is.na(column)) && length(column) > 1) {
       for (cn in column) {
         if (all(colnames(input@data)!=cn))
-          stop(paste("No column named '", cn, "' present!", sep=""))
+          stop(paste0("No column named '", cn, "' present!"))
       }
     } else if (all(colnames(input@data) != column)) {
-      stop(paste("No column named '",column,"' present!", sep=""))
+      stop(paste0("No column named '",column,"' present!"))
     }
     
     units <- input@quant@units
@@ -602,8 +601,8 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
                       value.min=stats::quantile(value, qt[1]),
                       value.max=stats::quantile(value, qt[2])), by = c("Lat")]
     }
-    if (!is.character(colors) || !.is.color(colors)) {
-      colors="black"
+    if (!is.character(colours) || !.is.colour(colours)) {
+      colours="black"
     } 
     p <- ggplot(md, aes(x=Lat, y=value.center))
   }
@@ -632,30 +631,30 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
       if (tolower(what[["var"]])=="sd") {
         p <- p + geom_ribbon(aes(ymax = value.center + value.sd,
                                  ymin = value.center - value.sd),
-                             color=colors, fill=colors, alpha = alpha[2])
+                             colour=colours, fill=colours, alpha = alpha[2])
       } else if (tolower(what[["var"]])=="se") {
         p <- p + geom_ribbon(aes(ymax = value.center + value.se,
                                  ymin = value.center - value.se),
-                             color=colors, fill=colors, alpha = alpha[2])
+                             colour=colours, fill=colours, alpha = alpha[2])
       } else if (tolower(what[["var"]])=="mm" || tolower(what[["var"]])=="minmax") {
         p <- p + geom_ribbon(aes(ymax = value.max, ymin = value.min),
-                             color=colors, fill=colors, alpha = alpha[2])
+                             colour=colours, fill=colours, alpha = alpha[2])
       }
     }
   }
   if (!any(colnames(dt)=="sens")) {
-    p <- p + geom_line(size=1, alpha=alpha[1], color=colors)
+    p <- p + geom_line(size=1, alpha=alpha[1], colour=colours)
   } else {
     p <- p + geom_line(size=1, alpha=alpha[1])
   }
   lat <- .ll.breaks(c(min(dt$Lat), max(dt$Lat)), label="lat", n.min=4, n.max=9)
   p <- p + scale_x_continuous(breaks=lat, labels=names(lat), expand=c(0,0))
-  if (!is.na(colors) && any(colnames(dt)=="sens")) {
-    p <- p + scale_fill_manual(values=colors, guide=guide_legend(ncol=3))
-    p <- p + scale_color_manual(values=colors, guide=guide_legend(ncol=3))
+  if (!is.na(colours) && any(colnames(dt)=="sens")) {
+    p <- p + scale_fill_manual(values=colours, guide=guide_legend(ncol=3))
+    p <- p + scale_colour_manual(values=colours, guide=guide_legend(ncol=3))
   } else {
     p <- p + scale_fill_manual(values=RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1"), guide=guide_legend(ncol=3))
-    p <- p + scale_color_manual(values=RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1"), guide=guide_legend(ncol=3))
+    p <- p + scale_colour_manual(values=RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1"), guide=guide_legend(ncol=3))
   }
   p <- p + xlab("Latitude")
   
@@ -671,161 +670,104 @@ plotGGMeridional <- function(input, column='value', what=list(center="mn", var="
 #' 
 #' Plots vertical lines as average over latitudinal bands.
 #' 
-#' @param input A VegSpatial or a list of VegSpatial objects.
-#' @param targets data.frame/list, either specifying x/y columns as c('VegSpatial name', 'column name') or slot/column columns as c('x', 'y').
-#' @param name.map a named vector, to translate numerical y-data into human understandable names
+#' @param x A ModelObject or a list of them.
+#' @param cat A ModelObject containing the categories to summarize 'x' or a list of them.
+#' @param x.col.name The column name of 'x' data.table to use. Default: 'value'.
+#' @param cat.col.name The column name of the grouping variable. Should be either of type character, factor or integer.
+#' @param name.map a named vector, to translate numerical category-data into human understandable names.
 #' @param area.weighted weight the mean by the gridcell area (default: TRUE) or not.
-#' @param long.title If the description (default) should be used as titles or the shorter id.
 #' @param vertical boolean: values on the y-axis, categories on the x-axis
-#' @param bar boolean: use bars instead of points
+#' @param bar boolean: use bars instead of points.
 #' @param plot If FALSE only the data is returned, without drawing the map.
-#' @param ... Ignored further parameters
+#' @param ... Ignored further parameters.
 #' @return A ggplot object, which can either be printed directly or further modified, or a data.table if plot is FALSE.
 #' @examples message("See templates/Example.ggplot.R")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
 #' @import ggplot2 data.table
 #' @importFrom RColorBrewer RColorBrewer::brewer.pal
-plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.weighted=TRUE, long.title=TRUE, vertical=FALSE, bar=FALSE, plot=TRUE, ...) {
+## TODO: Calculate not only means but also sums (with and without area)
+plotGGCategorialAggregated <- function(x, cat, x.col.name="value", cat.col.name="category", name.map=NA, area.weighted=TRUE, vertical=FALSE, bar=FALSE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
-  sens = value = name = category = NULL
-  if (is.null(targets)) {
+  Lon = Lat = sens = value = name = category = NULL
+  if (missing(x) && missing(cat))
     stop("Don't know what to do, if you are not telling me!")
-  } else if (is.list(targets)) {
-    targets <- as.data.frame(targets, stringsAsFactors=FALSE)
-  }
-
-  if (colnames(targets)[1] == "x" && colnames(targets)[2] == "y")
-    targets <- .transpose.df(targets)
-
-  if (ncol(targets)==2 && ncol(targets)==2) {
-    colnames(targets) <- c("slot", "column")
-    rownames(targets) <- c("x", "y")
-  } else {
-    stop("Don't know what to do, if you are not telling me!")
-  }
-
-  ## make sure to have chars instead of factors
-  for (i in 1:2)
-    targets[, i] = as.character(targets[, i])  
-  
-  if (is.ModelRun(input)) {
-    ## include is.ModelObject(.. Spatial=TRUE) check
-    if (all(names(input@objects) != targets$slot[1]))
-      stop(paste("No VegSpatial object'", targets$slot[1], "' present in input!"))
-    if (all(names(input@objects) != targets$slot[2]))
-      stop(paste("No VegSpatial object'", targets$slot[2], "' present in input!"))
-
-    vsx <- eval(parse(text=paste("input@objects[['",targets$slot[1],"']]", sep="")))
-    if (all(colnames(vsx@data) != targets$column[1]))
-      stop(paste("No column named '",targets$column[1],"' present in VegSpatial ",targets$slot[1]," of input run!", sep=""))
-    units <- vsx@quant@units
-    vsy <- eval(parse(text=paste("input@objects[['",targets$slot[2],"']]", sep="")))
-    if (all(colnames(vsy@data) != targets$column[2]))
-      stop(paste("No column named '",targets$column[2],"' present in VegSpatial ",targets$slot[2]," of input run!", sep=""))
-
-    if (area.weighted && any(colnames(vsx@data) == "area")) {
-      dx <- vsx@data[, c("Lon", "Lat", targets$column[1], "area"), with = FALSE]
-      dy <- vsy@data[, c("Lon", "Lat", targets$column[2]), with = FALSE]
-    } else if (area.weighted && any(colnames(vsy@data) == "area")) {
-      dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
-      dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
-    } else if (area.weighted) {
-      vsy <- addArea(vsy)
-      dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
-      dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
-    }
-
-    dt <- dy[dx]
-    setnames(dt, targets$column[1], "value")
-    setnames(dt, targets$column[2], "category")
-    if (area.weighted) {
-      dt <- eval(parse(text=paste("dt[, list(value=stats::weighted.mean(value, area, na.rm=TRUE)), by=list(category)]", sep="")))
-    } else {
-      dt <- eval(parse(text=paste("dt[, list(value=mean(value, na.rm=TRUE)), by=list(category)]", sep="")))
-    }
-  } else if (is.list(input)) {
-    for (n in 1:length(input)) {
-      if (is.ModelRun(input[[n]])) {
-        if (all(names(input[[n]]@objects) != targets$slot[1]))
-          stop(paste("No VegSpatial object'", targets$slot[1], "' present in input ", n, "!", sep=""))
-        if (all(names(input[[n]]@objects) != targets$slot[2]))
-          stop(paste("No VegSpatial object'", targets$slot[2], "' present in input ", n, "!", sep=""))
-    
-        vsx <- eval(parse(text=paste("input[[n]]@objects[['",targets$slot[1],"']]", sep="")))
-        if (all(colnames(vsx@data) != targets$column[1]))
-          stop(paste("No column named '",targets$column[1],"' present in VegSpatial ",targets$slot[1]," of input run ", n,"!", sep=""))
-        units <- vsx@quant@units
-    
-        vsy <- eval(parse(text=paste("input[[n]]@objects[['",targets$slot[2],"']]", sep="")))
-        if (all(colnames(vsy@data) != targets$column[2]))
-          stop(paste("No column named '",targets$column[2],"' present in VegSpatial ",targets$slot[2]," of input run ", n, "!", sep=""))
-
-        if (n==1) {
-          if (area.weighted && any(colnames(vsx@data) == "area")) {
-            dx <- vsx@data[, c("Lon", "Lat", targets$column[1], "area"), with = FALSE]
-            dy <- vsy@data[, c("Lon", "Lat", targets$column[2]), with = FALSE]
-          } else if (area.weighted && any(colnames(vsy@data) == "area")) {
-            dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
-            dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
-          } else if (area.weighted) {
-            vsy <- addArea(vsy)
-            dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
-            dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
-          }
-          dt <- dy[dx]
-          if (long.title) {
-            dt[, sens:=vsx@run@name, ]
-            titles <- vsx@run@name
+ 
+  melt.dt <- function(x, col.name, vn) {
+    if (is.ModelObject(x)) {
+      if (all(colnames(x@data) != col.name))
+        stop(paste0("No column named '", col.name, "' present in ModelObject '", vn, "'!"))
+      if (area.weighted && any(colnames(x@data) == "area")) {
+        dx <- x@data[, c("Lon", "Lat", col.name, "area"), with = FALSE]
+      } else {
+        dx <- x@data[, c("Lon", "Lat", col.name), with = FALSE]
+      }
+      setkey(dx, Lon, Lat)
+    } else if (is.list(x)){ 
+      for (n in 1:length(x)) {
+        if (is.ModelObject(x[[n]])) {
+          if (all(colnames(x[[n]]@data) != col.name))
+            stop(paste0("No column named '", col.name, "' in input ", n, " of '", vn, "'!"))
+          if (n == 1) {
+            if (area.weighted && any(colnames(x[[n]]@data) == "area")) {
+              dx <- x[[n]]@data[, c("Lon", "Lat", col.name, "area"), with = FALSE]
+            } else {
+              dx <- x[[n]]@data[, c("Lon", "Lat", col.name), with = FALSE]
+            }
+            dx[, sens := x[[n]]@run@id]
           } else {
-            dt[, sens:=vsx@run@id, ]
-            titles <- vsx@run@id
+            if (area.weighted && any(colnames(x[[n]]@data) == "area")) {
+              dx.tmp <- x[[n]]@data[, c("Lon", "Lat", col.name, "area"), with = FALSE]
+            } else {
+              dx.tmp <- x[[n]]@data[, c("Lon", "Lat", col.name), with = FALSE]
+            }
+            dx.tmp[, sens := x[[n]]@run@id]
+            dx = rbind(dx, dx.tmp)
           }
         } else {
-          if (area.weighted && any(colnames(vsx@data) == "area")) {
-            dx <- vsx@data[, c("Lon", "Lat", targets$column[1], "area"), with = FALSE]
-            
-            dy <- vsy@data[, c("Lon", "Lat", targets$column[2]), with = FALSE]
-          } else if (area.weighted && any(colnames(vsy@data) == "area")) {
-            dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
-            dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
-          } else if (area.weighted) {
-            vsy <- addArea(vsy)
-            dx <- vsx@data[, c("Lon", "Lat", targets$column[1]), with = FALSE]
-            dy <- vsy@data[, c("Lon", "Lat", targets$column[2], "area"), with = FALSE]
-          }
-          dt.tmp <- dy[dx]
-          if (long.title) {
-            dt.tmp[, sens:=vsx@run@name, ]
-            titles <- append(titles, vsx@run@name)
-          } else {
-            dt.tmp[, sens:=vsx@run@id, ]
-            titles <- append(titles, vsx@run@id)
-          }
-          dt <- rbindlist(list(dt, dt.tmp))
-          rm(dt.tmp)
+          stop(paste0("Element ", n, " is not a ModelObject in list '", vn, "'!"))
         }
-      }     
+      }
+      setkey(dx, Lon, Lat, sens)
     }
-    dt <- dt[, sens:=factor(sens, titles)]
-    setnames(dt, targets$column[1], "value")
-    setnames(dt, targets$column[2], "category")
-    if (area.weighted) {
-      dt <- eval(parse(text=paste("dt[, list(value=stats::weighted.mean(value, area)), by=list(category, sens)]", sep="")))
-    } else {
-      dt <- eval(parse(text=paste("dt[, list(value=mean(value)), by=list(category, sens)]", sep="")))
-    }
-  } else {
-    stop("'input' must either be a RCVTools::ModelRun or a list of them!")
+    return(dx)
   }
-  rm(dx, dy)
+  dx <- melt.dt(x, x.col.name, "x")
+  setnames(dx, x.col.name, "value")
+  dcat <- melt.dt(cat, cat.col.name, "cat")
+  setnames(dcat, cat.col.name, "category")
+
+  if (is.list(x)) {
+    dt = dx[dcat]
+  } else {
+    dt <- dcat[dx]
+  }
+
+  if (is.ModelObject(x)) {
+    units = x@quant@units
+  } else if (is.list(x)) {
+    units = x[[1]]@quant@units
+  }
   
-  ## if name.map is a valid named vector the names are used for x-labels
+  if (any(colnames(dt) == "sens")) {
+    class.cols = c("category", "sens")
+  } else {
+    class.cols = c("category")
+  }
+  
+  if (area.weighted) {
+    if (all(colnames(dt) != "area"))
+      dt = addArea(dt)
+    dt <- eval(parse(text=paste0("dt[, list(value=stats::weighted.mean(value, area, na.rm=TRUE)), by=list(", paste(class.cols, collapse = ", "), ")]")))
+  } else {
+    dt <- eval(parse(text=paste0("dt[, list(value=mean(value, na.rm=TRUE)), by=list(", paste(class.cols, collapse = ", "), ")]")))
+  }
+
   if (!any(is.na(name.map))) {
     if (is.vector(name.map) && !is.null(names(name.map))) {
-      eval(parse(text=paste("dt[, name:=names(name.map)[category], ]", sep="")))
+      eval(parse(text=paste0("dt[, name := names(name.map)[category], ]")))
     } else if (is.vector(name.map)) {
-      eval(parse(text=paste("dt[, name:=name.map[category], ]", sep="")))
+      eval(parse(text=paste0("dt[, name := name.map[category], ]")))
     }
   }
 
@@ -840,7 +782,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
         p <- ggplot(dt, aes(x=value, y=category, col=sens))
       }
       p <- p + geom_point(size=2.5, position = position_jitter(width = 0, height = 0.2))
-      p <- p + scale_color_manual(values=RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1"),
+      p <- p + scale_colour_manual(values=RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1"),
                                   na.value="grey", guide=guide_legend(ncol=2))
     } else {
       if (any(colnames(dt) == "name")) {
@@ -899,11 +841,11 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @param flip Should x and y be on the other axis. Default TRUE, means x is on the y-axis and y on the x-axis.
 #' @param density Use a ggplot density_2d function instead of a point cloud. Values: 'polygon', 'raster' and everything else than FALSE will result in 'hexagonal'.
 #' @param wrap.column A column name in x, which should be used for faceting.
-#' @param color.column A column name for coloring the points (NOT working currently).
-#' @param colors A data.frame for colors to use mandatory column names: XXX
-#' @param sym.col Should the colors be symmetrical (NOT working currently).
+#' @param colour.column A column name for colouring the points (NOT working currently).
+#' @param colours A data.frame for colours to use mandatory column names: XXX
+#' @param sym.col Should the colours be symmetrical (NOT working currently).
 #' @param alpha transparency value for points (ignored in density mode).
-#' @param lines Character vector of any of '1:1', 'lm' and/or 'gam'. Or a data.frame with the columns 'lines', 'color', 'type', 'width'.
+#' @param lines Character vector of any of '1:1', 'lm' and/or 'gam'. Or a data.frame with the columns 'lines', 'colour', 'type', 'width'.
 #' @param labels Character string of metrics to be added. Possible values 'mae', 'rmsd', 'nme', 'nmse', 'me', 'eq', 'rsq', 'rmse'
 #' @param label.pos Position of the labels as character consiting 'top' or 'bottom' and 'left', 'center', 'right'
 #' @param equal.axis Should the x and y- axis be scaled equally.
@@ -923,7 +865,7 @@ plotGGCategorialAggregated <- function(input, targets=NULL, name.map=NA, area.we
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
                           flip=TRUE, density=FALSE, wrap.column=NULL,
-                          color.column=NULL, colors="orange", sym.col=FALSE, alpha=0.1,
+                          colour.column=NULL, colours="orange", sym.col=FALSE, alpha=0.1,
                           lines=NA,
                           labels=NA, label.pos="bottomright",
                           equal.axis=TRUE,
@@ -941,14 +883,14 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
       if (all(colnames(x[[i]]@data) != x.column))
         stop(paste0("'", x.column, "' not present in list object no. ", i, "!"))
       if (any(colnames(x[[i]]@data) == "Lon") && any(colnames(x[[i]]@data) == "Year")) {
-        DT.tmp <- x[[i]]@data[, c("Lon", "Lat", "Year", x.column, wrap.column, color.column), with=FALSE]
+        DT.tmp <- x[[i]]@data[, c("Lon", "Lat", "Year", x.column, wrap.column, colour.column), with=FALSE]
         spatial  <- TRUE
         temporal <- TRUE
       } else if (any(colnames(x[[i]]@data) == "Lon")) {
-        DT.tmp <- x[[i]]@data[, c("Lon", "Lat", x.column, wrap.column, color.column), with=FALSE]
+        DT.tmp <- x[[i]]@data[, c("Lon", "Lat", x.column, wrap.column, colour.column), with=FALSE]
         spatial <- TRUE
       } else if (any(colnames(x[[i]]@data) == "Year")) {
-        DT.tmp <- x[[i]]@data[, c("Year", x.column, wrap.column, color.column), with=FALSE]
+        DT.tmp <- x[[i]]@data[, c("Year", x.column, wrap.column, colour.column), with=FALSE]
         temporal <- TRUE
       } else {
         stop("No column named 'Lon'/'Lat' and/or 'Year' present!")
@@ -962,13 +904,13 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     if (any(colnames(x@data) == "Lon") && any(colnames(x@data) == "Year")) {
       spatial  <- TRUE
       temporal <- TRUE
-      DT <- x@data[, c("Lon", "Lat", "Year", x.column, wrap.column, color.column), with=FALSE]
+      DT <- x@data[, c("Lon", "Lat", "Year", x.column, wrap.column, colour.column), with=FALSE]
     } else if (any(colnames(x@data) == "Lon")) {
       spatial <- TRUE
-      DT <- x@data[, c("Lon", "Lat", x.column, wrap.column, color.column), with=FALSE]
+      DT <- x@data[, c("Lon", "Lat", x.column, wrap.column, colour.column), with=FALSE]
     } else if (any(colnames(x@data) == "Year")) {
       temporal <- TRUE
-      DT <- x@data[, c("Year", x.column, wrap.column, color.column), with=FALSE]
+      DT <- x@data[, c("Year", x.column, wrap.column, colour.column), with=FALSE]
     } else {
       stop("No column named 'Lon'/'Lat' and/or 'Year' present!")
     }
@@ -982,8 +924,8 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     setnames(DT, x.column, "x.value")
   }
     
-  if (!is.null(color.column))
-    setnames(DT, color.column, "c.value")
+  if (!is.null(colour.column))
+    setnames(DT, colour.column, "c.value")
   if (!is.null(wrap.column))
     setnames(DT, wrap.column, "w.value")
   
@@ -1110,9 +1052,9 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
     } else {
       p <- p + geom_hex()
     }
-  } else if (is.null(color.column)) {
+  } else if (is.null(colour.column)) {
     p <- ggplot(DT, aes(x=x.value, y=y.value))
-    p <- p + geom_point(alpha=alpha, size=1.5, shape=16, col=colors)
+    p <- p + geom_point(alpha=alpha, size=1.5, shape=16, col=colours)
   } else {
     p <- ggplot(DT, aes(x=x.value, y=y.value, col=c.value))
     p <- p + geom_point(alpha=alpha, size=1.5, shape=16)
@@ -1132,21 +1074,21 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
   }
 
   ## not tested yet!
-  if (is.data.frame(colors)) {
-    warning("JS_DEBUG: Coloring not tested yet.")
-    message("JS_DEBUG: Coloring not tested yet.")
-    if (any(colnames(colors)=="value") && any(colnames(colors)=="color")) {
-      p <- p + scale_colour_gradientn(colours=colors$color, values=colors$value)
-      p <- p + scale_fill_gradientn(colours=colors$color, values=colors$value)
+  if (is.data.frame(colours)) {
+    warning("JS_DEBUG: colouring not tested yet.")
+    message("JS_DEBUG: colouring not tested yet.")
+    if (any(colnames(colours)=="value") && any(colnames(colours)=="colour")) {
+      p <- p + scale_colour_gradientn(colours=colours$colour, values=colours$value)
+      p <- p + scale_fill_gradientn(colours=colours$colour, values=colours$value)
       if (sym.col && !density)
         p <- p + expand_limits(colour = c(-max(abs(DT$c.value)), max(abs(DT$c.value))))
-    } else if (any(colnames(colors)=="name") && any(colnames(colors)=="color")) {
-      colors <- eval(parse(text=paste0("c('",paste0(colors$name, colors$color, sep="'='", collapse="','"),"')")))
-      p <- p + scale_fill_manual(values=colors, na.value="grey", guide=guide_legend(ncol=4))
-      p <- p + scale_colour_manual(values=colors, na.value="grey", guide=guide_legend(ncol=4))
+    } else if (any(colnames(colours)=="name") && any(colnames(colours)=="colour")) {
+      colours <- eval(parse(text=paste0("c('",paste0(colours$name, colours$colour, sep="'='", collapse="','"),"')")))
+      p <- p + scale_fill_manual(values=colours, na.value="grey", guide=guide_legend(ncol=4))
+      p <- p + scale_colour_manual(values=colours, na.value="grey", guide=guide_legend(ncol=4))
       p <- p + theme(legend.key.width  = unit(0.03, "npc"))
     } else {
-      warning(paste("'colors' has wrong column names:", paste(colnames(colors), collapse=", ")))
+      warning(paste("'colours' has wrong column names:", paste(colnames(colours), collapse=", ")))
     }
   }
 
@@ -1154,7 +1096,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
   if (!all(is.na(lines))) {
     if (is.data.frame(lines)) {
       if (all(colnames(lines) != "method"))
-        stop(paste("No column named 'method' present in data.frame 'lines'!", sep=""))
+        stop(paste0("No column named 'method' present in data.frame 'lines'!"))
       if (all(colnames(lines) != "se"))
         lines$se=FALSE
       if (all(colnames(lines) != "col"))
@@ -1328,10 +1270,10 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
 #' Plot a timeseries with ggplot. Either as line default, overlaying area,
 #' applicable p.e. for height or stacked polygons (e.g. for succession).
 #' 
-#' @param input a VegTemporal object or a list of several.
+#' @param input a ModelObject or a list of several.
 #' @param columns The column(s) to display. Default: 'value'.
 #' @param scale a scaling factor for multiplication
-#' @param colors Colors for the diffent VegSpatial objects or columns. Must have the same length otherwise colors are choosing automatically.
+#' @param colours colours for the diffent VegSpatial objects or columns. Must have the same length otherwise colours are choosing automatically.
 #' @param type "line", overlayed "area" or "stack"ed area
 #' @param wrap if input is a list and columns has more than one element use "sens" or "column" fro wrapping intp several panels.
 #' @param long.title If the description (default) should be used as titles or the shorter id.
@@ -1343,20 +1285,20 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
 #' @export
 #' @import ggplot2 
 #' @importFrom RColorBrewer RColorBrewer::brewer.pal
-plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="line", wrap=NA, long.title=TRUE, lty="sens", alpha=NA, plot=TRUE, ...) {
+plotGGTemporal <- function(input, columns='value', scale=1., colours=NA, type="line", wrap=NA, long.title=TRUE, lty="sens", alpha=NA, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Year = sens = value = variable = NULL
   if (is.ModelObject(input, temporal=TRUE)) {
-    if (is.na(columns) && all(colnames(input@data) != "value"))
+    if (all(is.na(columns)) && all(colnames(input@data) != "value"))
       stop("No columns name given and no column named 'value' present!")
 
-    if (!is.na(columns) && length(columns)>1) {
+    if (!all(is.na(columns)) && length(columns) > 1) {
       for (cn in columns) {
         if (all(colnames(input@data)!=cn))
-          stop(paste("No column named '", cn, "' present!", sep=""))
+          stop(paste0("No column named '", cn, "' present!"))
       }
     } else if (all(colnames(input@data) != columns)) {
-      stop(paste("No column named '",columns,"' present!", sep=""))
+      stop(paste0("No column named '",columns,"' present!"))
     }
     dt <- input@data[, c("Year", columns), with = FALSE]
     dt <- data.table::melt(dt, "Year", columns)
@@ -1370,13 +1312,13 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
       if (!is.ModelObject(input[[i]], temporal=TRUE))
         stop("'input' must either be a temporal RCVTools::ModelObject or a list of them!")
       if (i==1) {
-        if (is.na(columns) && all(colnames(input[[i]]@data) != "value")) {
+        if (all(is.na(columns)) && all(colnames(input[[i]]@data) != "value")) {
           stop("No column name given and no column named 'value' present!")
           columns <- "value"
         } else {
           for (cn in columns) {
             if (all(colnames(input[[i]]@data)!=cn))
-              stop(paste("No column named '", cn, "' present!", sep=""))
+              stop(paste0("No column named '", cn, "' present!"))
           }
         }
         dt <- input[[i]]@data[, c("Year", columns), with = FALSE]
@@ -1391,7 +1333,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
       } else {
         for (cn in columns) {
           if (all(colnames(input[[i]]@data)!=cn))
-            stop(paste("No column named '", cn, "' present!", sep=""))
+            stop(paste0("No column named '", cn, "' present!"))
         }
         dt.tmp <- input[[i]]@data[, c("Year", columns), with = FALSE]
         if (long.title) {
@@ -1423,49 +1365,49 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
   if (any(!is.finite(dt$value)))
     warning("Data contains infinite values. This might mess up the plot!")
   
-  if (any(!.is.color(colors)) || any(is.na(colors)))
-    colors="black"
+  if (any(!.is.colour(colours)) || any(is.na(colours)))
+    colours="black"
 
   p <- ggplot(dt, aes(x=Year, y=value))
   p <- p + .dgvm.temporal_theme
   if (grepl("^l", type)) {
     if (!is.numeric(alpha))
       alpha=1
-    if (length(columns)==1 && length(input)==1) {
-      p <- p + geom_line(color=colors, size=1)
+    if (length(columns) == 1 && length(input) == 1) {
+      p <- p + geom_line(colour=colours, size=1)
     } else {
-      if (length(columns)>1 && length(input)==1) {
+      if (length(columns) > 1 && length(input) == 1) {
         p <- p + geom_line(aes(col=variable), alpha=alpha, size=1)
-        if (length(colors)!=length(unique(dt$variable)))
-          colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
-      } else if (length(columns)==1 && length(input)>1) {
+        if (length(colours) != length(unique(dt$variable)))
+          colours <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
+      } else if (length(columns) == 1 && length(input) > 1) {
         p <- p + geom_line(aes(col=sens), alpha=alpha, size=1)
-        if (length(colors)!=length(unique(dt$sens)))
-          colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
+        if (length(colours) != length(unique(dt$sens)))
+          colours <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
       } else {
         if (grepl("^c", wrap) || grepl("^v", wrap)) {
           p <- p + geom_line(aes(col=sens), alpha=alpha, size=1)
           p <- p + facet_wrap(~variable, ncol=1) 
-          if (length(colors)!=length(unique(dt$sens)))
-            colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
+          if (length(colours) != length(unique(dt$sens)))
+            colours <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
         } else if (grepl("^r", wrap) || grepl("^s", wrap)) {
           p <- p + geom_line(aes(col=variable), alpha=alpha)
           p <- p + facet_wrap(~sens, ncol=1)
-          if (length(colors)!=length(unique(dt$variable)))
-            colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
+          if (length(colours) != length(unique(dt$variable)))
+            colours <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
         } else {
           if (grepl("^v", lty) || grepl("^c", lty)) {
             p <- p + geom_line(aes(col=sens, lty=variable), alpha=alpha)
-            if (length(colors)!=length(unique(dt$sens)))
-              colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
+            if (length(colours) != length(unique(dt$sens)))
+              colours <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
           } else {
             p <- p + geom_line(aes(col=variable, lty=sens), alpha=alpha)
-            if (length(colors)!=length(unique(dt$variable)))
-              colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
+            if (length(colours) != length(unique(dt$variable)))
+              colours <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
           }
         }
       }
-      p <- p + scale_color_manual(values=colors, guide=guide_legend(title="", ncol=length(columns), override.aes=list(size=2)))
+      p <- p + scale_colour_manual(values=colours, guide=guide_legend(title="", ncol=length(columns), override.aes=list(size=2)))
     }
   } else {
     if (grepl("^a", type)) {
@@ -1475,45 +1417,45 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
       if (!is.numeric(alpha))
         alpha=1
     }
-    if (length(input)==1 && length(columns)==1) {
-      p <- p + geom_area(alpha=alpha, fill=colors, position="stack")
+    if (length(input) == 1 && length(columns) == 1) {
+      p <- p + geom_area(alpha=alpha, fill=colours, position="stack")
     } else {
-      if (length(input)==1 && length(columns)>1) {
+      if (length(input) == 1 && length(columns) > 1) {
         if (grepl("^a", type)) {
           p <- p + geom_area(aes(fill=variable), alpha=alpha, position = position_dodge(width=0))
         } else {
           p <- p + geom_area(aes(fill=variable), alpha=alpha, position = "stack")
         }
-        if (length(colors)!=length(unique(dt$variable)))
-          colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
-      } else if (length(input)>1 && length(columns)==1) {
+        if (length(colours) != length(unique(dt$variable)))
+          colours <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
+      } else if (length(input) > 1 && length(columns) == 1) {
         if (grepl("^a", type)) {
           p <- p + geom_area(aes(fill=sens), alpha=alpha, position = position_dodge(width=0))
         } else {
           warning("Stacking runs above each other. Is this really what you want?")
           p <- p + geom_area(aes(fill=sens), alpha=alpha, position = "stack")
         }
-        if (length(colors)!=length(unique(dt$sens)))
-          colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
+        if (length(colours) != length(unique(dt$sens)))
+          colours <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
       } else {
         if (grepl("^c", wrap) || grepl("^v", wrap)) {
           if (grepl("^a", type)) {
             p <- p + geom_area(aes(fill=sens), alpha=alpha, position = position_dodge(width=0))
           } else {
-            if (length(input)>1)
+            if (length(input) > 1)
               warning("Stacking runs above each other. Is this really what you want?")
             p <- p + geom_area(aes(fill=sens), alpha=alpha, position = "stack")
           }
-          if (length(colors)!=length(unique(dt$sens)))
-            colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
+          if (length(colours) != length(unique(dt$sens)))
+            colours <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
         } else {
           if (grepl("^a", type)) {
             p <- p + geom_area(aes(fill=variable), alpha=alpha, position = position_dodge(width=0))
           } else {
             p <- p + geom_area(aes(fill=variable), alpha=alpha, position = "stack")
           }
-          if (length(colors)!=length(unique(dt$variable)))
-            colors <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
+          if (length(colours) != length(unique(dt$variable)))
+            colours <- RColorBrewer::brewer.pal(length(unique(dt$variable)), "Set1")
         }
         if (grepl("^c", wrap) || grepl("^v", wrap)) {
           p <- p + facet_wrap(~variable, ncol=1) 
@@ -1521,14 +1463,14 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
           p <- p + facet_wrap(~sens, ncol=1)
         }
       }
-      p <- p + scale_fill_manual(values=colors, guide=guide_legend(title=""))
+      p <- p + scale_fill_manual(values=colours, guide=guide_legend(title=""))
     }
   }
 
   p <- p + scale_x_continuous(expand=c(0, 0))
   if (grepl("^s", type) || grepl("^a", type)) 
     p <- p + scale_y_continuous(limits=c(0, NA), expand=c(0, 0))
-  p <- p + ylab(paste(quant@name, " [", quant@units,"]", sep=""))
+  p <- p + ylab(paste0(quant@name, " [", quant@units,"]"))
 
   return(p)
 }
@@ -1539,7 +1481,7 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
 #' 
 #' @param input a VegSpatial object or a list of several.
 #' @param column The column(s) to display. Default: 'value'.
-#' @param colors Colors for the diffent VegSpatial objects or columns. Must have the same length otherwise colors are choosing automatically.
+#' @param colours colours for the diffent VegSpatial objects or columns. Must have the same length otherwise colours are choosing automatically.
 #' @param bins number of bins for histogram (default: 25)
 #' @param bars draw bars of counted occurence (default TRUE).
 #' @param lines also draw density lines (default FALSE).
@@ -1549,21 +1491,21 @@ plotGGTemporal <- function(input, columns='value', scale=1., colors=NA, type="li
 #' @export
 #' @import ggplot2
 #' @importFrom RColorBrewer RColorBrewer::brewer.pal
-plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE, bins=10, long.title=TRUE, plot=TRUE, ...) {
+plotGGHist <- function(input, column='value', colours=NA, bars=TRUE, lines=FALSE, bins=10, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   sens = bin = value = N = NULL
   ## check if a VegSpatial or a list of VegSpatial is given as input
   ## check data column names for given column name or column name 'value'
   if (is.ModelObject(input, spatial=TRUE)) {
-    if (is.na(column) && all(colnames(input@data) != "value"))
+    if (all(is.na(column)) && all(colnames(input@data) != "value"))
       stop("No column name given and no column named 'value' present!")
-    if (!is.na(column) && length(column)>1) {
+    if (!all(is.na(column)) && length(column)>1) {
       for (cn in column) {
         if (all(colnames(input@data)!=cn))
-          stop(paste("No column named '", cn, "' present!", sep=""))
+          stop(paste0("No column named '", cn, "' present!"))
       }
     } else if (all(colnames(input@data) != column)) {
-      stop(paste("No column named '",column,"' present!", sep=""))
+      stop(paste0("No column named '",column,"' present!"))
     }
     dt <- input@data[, c("Lon", "Lat", column), with = FALSE]
     if (length(column)==1) {
@@ -1578,14 +1520,14 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
       if (!is.ModelObject(input[[i]], spatial=TRUE))
         stop("'input' must either be a RCVTools::VegSpatial or a list of them!")
       
-      if (is.na(column) && all(colnames(input[[i]]@data) != "value"))
+      if (all(is.na(column)) && all(colnames(input[[i]]@data) != "value"))
         stop("No column name given and no column named 'value' present!")
-      if (!is.na(column) && length(column)>1) {
+      if (!all(is.na(column)) && length(column) > 1) {
         warning("Several column names are supplied. Will only use the first one!")
         column <- column[1]
       }
       if (all(colnames(input[[i]]@data) != column)) {
-        stop(paste("No column named '",column,"' present!", sep=""))
+        stop(paste0("No column named '",column,"' present!"))
       }
       
       if (i==1) {
@@ -1619,12 +1561,12 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
   if (is.na(bins))
     bins=10
 
-  if (any(colnames(dt)=="sens") && is.na(colors))  {
-    colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
-  } else if (any(colnames(dt)=="sens") && length(colors)!=length(unique(dt$sens))) {
-    colors <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
-  } else if (is.na(colors)) {
-    colors="#333333"
+  if (any(colnames(dt)=="sens") && is.na(colours))  {
+    colours <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
+  } else if (any(colnames(dt)=="sens") && length(colours)!=length(unique(dt$sens))) {
+    colours <- RColorBrewer::brewer.pal(length(unique(dt$sens)), "Set1")
+  } else if (is.na(colours)) {
+    colours="#333333"
   }
 
   warning("Finding breaks is currently not properly implemented!")
@@ -1636,7 +1578,7 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
   if (any(colnames(dt)=="sens")) {
     binned.dt <- dt[, list("N"), by=c("bin", "sens")]
     p <- ggplot(binned.dt, aes(x=bin, y=N, fill=sens))
-    p <- p + scale_fill_manual(values=colors)
+    p <- p + scale_fill_manual(values=colours)
   } else {
     binned.dt <- dt[, list("N"), by="bin"]
     p <- ggplot(binned.dt, aes(x=bin, y=N))
@@ -1649,10 +1591,10 @@ plotGGHist <- function(input, column='value', colors=NA, bars=TRUE, lines=FALSE,
   if (bars)
     p <- p + geom_bar(stat="identity", position="dodge")
   if (any(colnames(dt)=="sens") && lines) {
-    p <- p + geom_line(aes(color=sens), size=1)
-    p <- p + scale_color_manual(values=colors)
+    p <- p + geom_line(aes(colour=sens), size=1)
+    p <- p + scale_colour_manual(values=colours)
   } else if (lines) {
-    p <- p + geom_line(color=colors, size=1)
+    p <- p + geom_line(colour=colours, size=1)
   }
   p <- p + xlab("")
   p <- p + scale_x_continuous(breaks=seq(0.5, bins+0.5, 1), labels=brks, expand=c(0.01,0))

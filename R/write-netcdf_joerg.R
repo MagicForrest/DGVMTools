@@ -1,5 +1,3 @@
-
-
 #' Create a NetCDF4 file from a \code{\linkS4class{ModelObject}}.
 #'
 #' @param filename output file name

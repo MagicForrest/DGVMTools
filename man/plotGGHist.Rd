@@ -4,7 +4,7 @@
 \alias{plotGGHist}
 \title{Plot a histogram}
 \usage{
-plotGGHist(input, column = "value", colors = NA, bars = TRUE,
+plotGGHist(input, column = "value", colours = NA, bars = TRUE,
   lines = FALSE, bins = 10, long.title = TRUE, plot = TRUE, ...)
 }
 \arguments{
@@ -12,7 +12,7 @@ plotGGHist(input, column = "value", colors = NA, bars = TRUE,
 
 \item{column}{The column(s) to display. Default: 'value'.}
 
-\item{colors}{Colors for the diffent VegSpatial objects or columns. Must have the same length otherwise colors are choosing automatically.}
+\item{colours}{colours for the diffent VegSpatial objects or columns. Must have the same length otherwise colours are choosing automatically.}
 
 \item{bars}{draw bars of counted occurence (default TRUE).}
 
