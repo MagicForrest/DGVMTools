@@ -336,6 +336,9 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
   nyears <- 3
   t_seq <- seq( len_tt-(nyears*12), len_tt, by=12 )
 
+  # number of years used to calculate fire return interval  
+  years_fire <- 20
+
   biomass_conversion <- 1/20  # convert from t/ha to kgC/m^2
   
   cnames  <- c( "Lon", "Lat", "Year", "Tr", "C4G", "C3G", "Total")
@@ -368,6 +371,23 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
           tmp.tr <- ncvar_get( d, "MeanLai", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
           tmp.g4 <- ncvar_get( d, "MeanLai", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
           tmp.g3 <- ncvar_get( d, "MeanLai", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+        	
+          #            Lon      Lat    Year            Tr      C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "aGPP"){
+          tmp.tr <- ncvar_get( d, "MeanCGain", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          tmp.g4 <- ncvar_get( d, "MeanCGain", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+          tmp.g3 <- ncvar_get( d, "MeanCGain", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+          ind.tr <- ncvar_get( d, "nind_alive", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          ind.g4 <- ncvar_get( d, "nind_alive", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+          ind.g3 <- ncvar_get( d, "nind_alive", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+
+          tmp.tr <- tmp.tr*30.42*ind.tr/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
+          tmp.g4 <- tmp.g4*30.42*ind.g4/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
+          tmp.g3 <- tmp.g3*30.42*ind.g3/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
         
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
           out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
@@ -394,8 +414,60 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
           out.all <- rbind( out.all, out.vec )
         }
 
+        if(variable@id == "basalarea"){
+          tmp.tr <- ncvar_get( d, "SumBasalArea", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          tmp.g4 <- ncvar_get( d, "SumBasalArea", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+          tmp.g3 <- ncvar_get( d, "SumBasalArea", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+          
+          #            Lon      Lat    Year            Tr      C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
 
+        if(variable@id == "pind"){
+          tmp.tr <- ncvar_get( d, "nind_alive", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          tmp.g4 <- ncvar_get( d, "nind_alive", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+          tmp.g3 <- ncvar_get( d, "nind_alive", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+          
+          ind_tot <- tmp.tr+tmp.g4+tmp.g3
+          tmp.tr  <- tmp.tr/ind_tot
+          tmp.g4  <- tmp.g4/ind_tot
+          tmp.g3  <- tmp.g3/ind_tot
+                    
+          #            Lon      Lat    Year            Tr      C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "vegcover"){
+          tmp.tr <- ncvar_get( d, "SumCanopyArea0", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+          tmp.g4 <- ncvar_get( d, "SumCanopyArea0", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+          tmp.g3 <- ncvar_get( d, "SumCanopyArea0", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+          
+          ind_tot <- tmp.tr+tmp.g4+tmp.g3
+          tmp.tr  <- tmp.tr/ind_tot*100  # *100 to convert to %
+          tmp.g4  <- tmp.g4/ind_tot*100  # *100 to convert to %
+          tmp.g3  <- tmp.g3/ind_tot*100  # *100 to convert to %
+                    
+          #            Lon      Lat    Year            Tr      C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+      }  # end z in t_seq loop
+
+      if(variable@id == "firefreq"){
+        tmp <- ncvar_get( d, "firecount", start=c( x,y,len_tt-(years_fire*12)+1 ), count=c( 1,1,years_fire*12 ) )
+        fir <- matrix( tmp, ncol=12, byrow=T )[,12]
+        tmp.fi <- sum(fir)/length(fir)
+		
+		z <- max(t_seq)
+        #            Lon      Lat    Year            Tr      C4G     C3G     Total
+        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.fi, tmp.fi, tmp.fi, tmp.fi )
+        out.all <- rbind( out.all, out.vec )
       }
+
+
     }
   }
   cat("\n") 
@@ -475,11 +547,23 @@ getQuantity_aDGVM_Scheme2 <- function(run, period, variable)
         }
 
         if(variable@id == "lai"){
-          lai.all  <- ncvar_get( d, "Lai", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          tmp.te   <- mean(lai.all[ind.te])*(length(ind.te)/length(alive))
-          tmp.td   <- mean(lai.all[ind.td])*(length(ind.td)/length(alive))
-          tmp.g4   <- mean(lai.all[ind.g4])*(length(ind.g4)/length(alive))
-          tmp.g3   <- mean(lai.all[ind.g3])*(length(ind.g3)/length(alive))
+          tmp.all  <- ncvar_get( d, "Lai", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+          tmp.te   <- mean(tmp.all[ind.te])*(length(ind.te)/length(alive))
+          tmp.td   <- mean(tmp.all[ind.td])*(length(ind.td)/length(alive))
+          tmp.g4   <- mean(tmp.all[ind.g4])*(length(ind.g4)/length(alive))
+          tmp.g3   <- mean(tmp.all[ind.g3])*(length(ind.g3)/length(alive))
+            
+          #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "basalarea"){
+          tmp.all  <- ncvar_get( d, "StemDiamTot", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+          tmp.te   <- sum(tmp.all[ind.te])
+          tmp.td   <- sum(tmp.all[ind.td])
+          tmp.g4   <- sum(tmp.all[ind.g4])
+          tmp.g3   <- sum(tmp.all[ind.g3])
             
           #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
           out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.g4+tmp.g3 )
@@ -504,6 +588,41 @@ getQuantity_aDGVM_Scheme2 <- function(run, period, variable)
           tmp.g4   <- mean(tmp.all[ind.g4])
           tmp.g3   <- mean(tmp.all[ind.g3])
             
+          #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.g4, tmp.g3, mean(tmp.te+tmp.td+tmp.g4+tmp.g3) )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "pind"){
+          tmp.te   <- length(ind.te)
+          tmp.td   <- length(ind.td)
+          tmp.g4   <- length(ind.g4)
+          tmp.g3   <- length(ind.g3)
+          
+          ind.tot  <- tmp.te+tmp.td+tmp.g4+tmp.g3
+          tmp.te   <- tmp.te/ind.tot
+          tmp.td   <- tmp.td/ind.tot
+          tmp.g4   <- tmp.g4/ind.tot
+          tmp.g3   <- tmp.g3/ind.tot
+          
+          #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
+          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+
+        if(variable@id == "vegcover"){
+          tmp.all  <- ncvar_get( d, "CrownArea", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+          tmp.te   <- sum(tmp.all[ind.te])
+          tmp.td   <- sum(tmp.all[ind.td])
+          tmp.g4   <- sum(tmp.all[ind.g4])
+          tmp.g3   <- sum(tmp.all[ind.g3])
+            
+          ind.tot  <- tmp.te+tmp.td+tmp.g4+tmp.g3
+          tmp.te   <- tmp.te/ind.tot*100  # *100 to convert to %
+          tmp.td   <- tmp.td/ind.tot*100  # *100 to convert to %
+          tmp.g4   <- tmp.g4/ind.tot*100  # *100 to convert to %
+          tmp.g3   <- tmp.g3/ind.tot*100  # *100 to convert to %
+
           #            Lon      Lat    Year            TrBE    TrBR    C4G     C3G     Total
           out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.g4, tmp.g3, mean(tmp.te+tmp.td+tmp.g4+tmp.g3) )
           out.all <- rbind( out.all, out.vec )
