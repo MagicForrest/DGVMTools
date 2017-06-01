@@ -172,3 +172,26 @@ setMethod("crop", signature(x="data.table", y = "ANY"), function(x, y) {
   return(x)
   
 })
+
+
+#' @rdname crop-methods
+setMethod("crop", signature(x="SpatialExtent", y = "ANY"), function(x, y) {
+  
+  y <- try ( extent(y), silent=TRUE )
+  if (class(y) == "try-error") {
+    stop('Cannot get an Extent object from argument y')
+  }
+  methods::validObject(y)
+  
+  # xmin
+  x@xmin <- max(x@xmin, y@xmin)
+  x@xmax <- min(x@xmax, y@xmax)
+  x@ymin <- max(x@ymin, y@ymin)
+  x@ymax <- min(x@ymax, y@ymax)
+  
+  if(x@xmin > x@xmax) {warning("Cropped to create a non-physical extent (x)")} 
+  if(x@ymin > x@ymax) {warning("Cropped to create a non-physical extent (y)")} 
+  
+  return(x)
+  
+})

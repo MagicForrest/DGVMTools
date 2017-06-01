@@ -83,6 +83,8 @@ plotTemporal <- function(input.data,
       
       plotting.data.dt <- data.table()
       PFTs <- list()
+      
+      
       for(x.object in input.data){
         
         if(!(is.DataObject(x.object) || is.ModelObject(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  ModelObject") }
@@ -104,7 +106,7 @@ plotTemporal <- function(input.data,
   # if it is a single DataObject or ModelObject, pull out the data (and PFTs if present)
   else if(is.DataObject(input.data) || is.ModelObject(input.data)){
     plotting.data.dt <- input.data@data
-    if(is.ModelObject(x.object)) PFTs <- x.object@run@pft.set
+    if(is.ModelObject(input.data)) PFTs <- input.data@run@pft.set
   }
   
   # if it is a data.table then we just use that straight

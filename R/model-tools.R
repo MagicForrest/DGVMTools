@@ -448,7 +448,7 @@ getModelObject <- function(run,
   
   ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(spatially.average){
-    this.dt <- doSpatialAverage(this.dt, verbose, area.weighted)
+    this.dt <- averageSpatial(this.dt, verbose, area.weighted)
     if(verbose) {
       message("Head of spatially averaged data.table:")
       print(utils::head(this.dt))
@@ -458,7 +458,7 @@ getModelObject <- function(run,
   
   ###  DO TIME AVERAGE
   if(temporally.average){
-    this.dt <- doTemporalAverage(this.dt, verbose)
+    this.dt <- averageTemporal(this.dt, verbose)
     if(verbose) {
       message("Head of time averaged data.table:")
       print(utils::head(this.dt))

@@ -5,7 +5,7 @@
 \alias{SpatialExtent-class}
 \title{Spatial extent for defining the spatial area covered by model output or other spatial data.}
 \description{
-A simple S4 class to define a spatial extent.
+A simple S4 class to define a spatial extent.  It contains a raster::Extent object
 }
 \section{Slots}{
 
@@ -14,9 +14,17 @@ A simple S4 class to define a spatial extent.
 
 \item{\code{name}}{A character string to describe the spatial extent. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.}
 
-\item{\code{extent}}{Currently can be a raster \code{Extent} object, but should be expanded to include a raster mask (to define an irregularly shaped spatial extent), or a c(Lon,Lat) coordinate to define a site.}
+\item{\code{xmin}}{Minimum x (longitude) of this extent (inherited from raster::Extent)}
+
+\item{\code{xmax}}{Maximum x (longitude) of this extent (inherited from raster::Extent)}
+
+\item{\code{ymin}}{Minimum y (latitude) of this extent (inherited from raster::Extent)}
+
+\item{\code{ymax}}{Maximum y (latitude) of this extent (inherited from raster::Extent)}
 }}
 
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
+
+llal
 }
