@@ -7,7 +7,7 @@
 AGBtoTotalCarbon(AGB)
 }
 \arguments{
-\item{AGB}{ABive ground biomass (carbon)}
+\item{AGB}{Above ground biomass (carbon)}
 }
 \description{
 Equation from Baccini et al . 2012. 

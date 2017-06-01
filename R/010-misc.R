@@ -39,6 +39,7 @@ setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b
   return(FALSE)
 })
 
+
 ## print an experimental summary of the class ModelRun.
 ##
 ## Don't know, which were the really important information to return,
@@ -99,13 +100,6 @@ setMethod("summary", signature("ModelRun"), function(object, ...) {
   return(ret)
 })
 
-
-
-setMethod("is.equal", signature("Quantity", "Quantity"), function(a, b) {
-  if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)
-    return(TRUE)
-  return(FALSE)
-})
 
 
 
