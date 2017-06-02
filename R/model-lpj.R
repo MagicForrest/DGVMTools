@@ -186,13 +186,46 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   }
   
   
-  # mGPP_std 
+  # mNPP_std 
   else if(quant@id == "aNPP_std") {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     this.dt <- openLPJOutputFile(run, "mnpp", verbose = TRUE)
     this.dt <- newLayer(this.dt, "Annual")
+     
+    
+    return(this.dt)
+    
+  }
+  
+  # mNPP_std 
+  else if(quant@id == "aNEE_global_std") {
+    
+    # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
+    # newer versions have the agpp output variable which has the per PFT version
+    this.dt <- openLPJOutputFile(run, "mnee", verbose = TRUE)
+    
+    # make the annual total and remove ditch the rest
+    this.dt <- newLayer(this.dt, "Annual", method = "sum")
+    this.dt <- this.dt[, c("Lon", "Lat", "Year", "Annual"), with = FALSE]
+
+    # add the area to the data.table 
+    this.dt <- addArea(this.dt, verbose=verbose)
+
+    
+    # multiply by the area and remove the area
+    this.dt <- this.dt[, Annual := Annual * area]
+    this.dt <- this.dt[,area := NULL]
+    print(this.dt)
+    
+    # sum across all gridcells for each year
+    this.dt <- this.dt[, lapply(.SD, sum), by=list(Year), .SDcols = "Annual"]
+    
+    # divide to get GtC
+    this.dt <- this.dt[, Annual := Annual / 1E12]
+    
+    print(this.dt)
     
     return(this.dt)
     

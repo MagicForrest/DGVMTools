@@ -130,6 +130,14 @@ dgvm.quantities <- list(
       colours = veg.palette,
       model = c("Standard")),
   
+  new("Quantity",
+      id = "landsink",
+      name = "Annual land sink (NEE)",
+      type = "annual",
+      units = "GtC/year",
+      colours = veg.palette,
+      model = c("Standard")),
+  
   
   ### NITROGEN QUANTITES
   
