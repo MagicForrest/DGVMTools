@@ -342,13 +342,13 @@ getModelObject <- function(run,
     # If model is aDGVM and the required Quantity is defined for aDGVM
     else if(run@model == "aDGVM") {
 
-      if("aDGVM" %in% quant@model) {
+      if("aDGVM" %in% quant@model | "Standard" == quant@model) {
         if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
         if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
       }
-      else if(quant@model == "Standard") {
-        stop("Standard quantities nor currently defined for aDGVM")
-      }
+      #else if(quant@model == "Standard") {
+      #  stop("Standard quantities nor currently defined for aDGVM")
+      #}
       else {
         stop(paste("Quantity", var.string, "doesn't seem to be defined for aDGVM"))
       }
