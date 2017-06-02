@@ -10,7 +10,7 @@ subsetGridlist(gridlist.file, subset.extent, file.name = NULL,
 \arguments{
 \item{gridlist.file}{A character string giving the location of the original gridlist}
 
-\item{subset.extent}{A raster Extent object specifying the geograpical sub-domain required}
+\item{subset.extent}{A raster::Extent or a SpatialExtent object specifying the geograpical sub-domain required}
 
 \item{file.name}{A character string specifying a path to write the new gridlist (can be ignored to write no file)}
 

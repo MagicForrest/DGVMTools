@@ -67,7 +67,7 @@ lpj.global.PFTs <- list(
   
   TeBE = new("PFT",
              id = "TeBE",
-             name = "Temperate B/leaved Evergreen Tree",
+             name = "Temperate Broadleaved Evergreen Tree",
              lifeform = "Tree",
              leafform = "Broadleaved",
              phenology = "Evergreen",
@@ -160,8 +160,16 @@ lpj.global.PFTs <- list(
             combine = "None"
   ),
   
- 
-  
+  None = new("PFT",
+             id = "None",
+             name = "None",
+             lifeform = "NA",
+             leafform = "NA",
+             phenology = "NA",
+             zone = "NA",
+             colour = "grey80",
+             combine = "None"
+  ),
   
   Total = new("PFT",
               id = "Total",
@@ -181,7 +189,7 @@ lpj.global.PFTs <- list(
              leafform = "NA",
              phenology = "NA",
              zone = "NA",
-             colour = "grey50",
+             colour = "grey80",
              combine = "None"
   )
   
@@ -465,7 +473,18 @@ lpj.euro.PFTs <- list(
              leafform = "NA",
              phenology = "NA",
              zone = "NA",
-             colour = "grey50",
+             colour = "grey80",
+             combine = "None"
+  ),
+  
+  None = new("PFT",
+             id = "None",
+             name = "Nothing here",
+             lifeform = "NA",
+             leafform = "NA",
+             phenology = "NA",
+             zone = "NA",
+             colour = "grey80",
              combine = "None"
   ),
   

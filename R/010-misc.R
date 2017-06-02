@@ -30,14 +30,15 @@ setMethod("is.equal", signature("TemporalExtent", "TemporalExtent"), function(a,
 
 #' @describeIn is.equal Checks two SpatialExtent objects for equality
 setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b) {
-  if (all(!is.finite(c(a@extent@xmin, b@extent@xmin, a@extent@xmax, b@extent@xmax, 
-                       a@extent@ymin, b@extent@ymin, a@extent@ymax, b@extent@ymax))))
+  if (all(!is.finite(c(a@xmin, b@xmin, a@xmax, b@xmax, 
+                       a@ymin, b@ymin, a@ymax, b@ymax))))
     return(TRUE)
-  if (a@extent@xmin==b@extent@xmin && a@extent@xmax==b@extent@xmax && 
-      a@extent@ymin==b@extent@ymin && a@extent@ymax==b@extent@ymax)
+  if (a@xmin==b@xmin && a@xmax==b@xmax && 
+      a@ymin==b@ymin && a@ymax==b@ymax)
     return(TRUE)
   return(FALSE)
 })
+
 
 ## print an experimental summary of the class ModelRun.
 ##
@@ -99,13 +100,6 @@ setMethod("summary", signature("ModelRun"), function(object, ...) {
   return(ret)
 })
 
-
-
-setMethod("is.equal", signature("Quantity", "Quantity"), function(a, b) {
-  if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)
-    return(TRUE)
-  return(FALSE)
-})
 
 
 
@@ -439,7 +433,7 @@ convertToMatrix <- function(input, Lons = NULL, Lats = NULL, gap.fill = TRUE, la
 #' Crop a gridlist (taken as a file in the form of a two-columned table to a smaller subset provided by an Extent object
 #' 
 #' @param gridlist.file A character string giving the location of the original gridlist
-#' @param subset.extent  A raster Extent object specifying the geograpical sub-domain required
+#' @param subset.extent  A raster::Extent or a SpatialExtent object specifying the geograpical sub-domain required
 #' @param file.name A character string specifying a path to write the new gridlist (can be ignored to write no file)
 #' @param header Logical, whether or not the original file has a header
 #' @param offset A two-member numeric vector specifying the longitude-latitude offset from the given coordinates 
@@ -476,196 +470,7 @@ subsetGridlist <- function(gridlist.file, subset.extent, file.name = NULL, heade
   
 }
 
-############### SUB ANNUAL PERIODS
 
-#' @rdname Period-class
-all.periods <- list(Jan = new("Period",
-                              id = "Jan",
-                              name = "January",
-                              abbreviation = "Jan",
-                              index = 1,
-                              padded.index = "01",
-                              contains = "Jan",
-                              days = 31,
-                              days.leap = 31,
-                              col = fields::tim.colors(12)[1]),
-                    Feb = new("Period",
-                              id = "Feb",
-                              name = "February",
-                              abbreviation = "Feb",
-                              index = 2,
-                              padded.index = "02",
-                              contains = "Feb",
-                              days = 28,
-                              days.leap = 29,
-                              col = fields::tim.colors(12)[2]),
-                    Mar = new("Period",
-                              id = "Mar",
-                              name = "March",
-                              abbreviation = "Mar",
-                              index = 3,
-                              padded.index = "03",
-                              contains = "Mar",
-                              days = 31,
-                              days.leap = 31,
-                              col = fields::tim.colors(12)[3]),
-                    Apr = new("Period",
-                              id = "Apr",
-                              name = "April",
-                              abbreviation = "Apr",
-                              index = 4,
-                              padded.index = "04",
-                              contains = "Apr",
-                              days = 30,
-                              days.leap = 30,
-                              col = fields::tim.colors(12)[4]),
-                    May = new("Period",
-                              id = "May",
-                              name = "May",
-                              abbreviation = "May",
-                              index = 5,
-                              padded.index = "05",
-                              contains = "May",
-                              days = 31,
-                              days.leap = 31,
-                              col = fields::tim.colors(12)[5]),
-                    Jun = new("Period",
-                              id = "Jun",
-                              name = "June",
-                              abbreviation = "Jun",
-                              index = 6,
-                              padded.index = "06",
-                              contains = "Jun",
-                              days = 30,
-                              days.leap = 30,
-                              col = fields::tim.colors(12)[6]),
-                    Jul = new("Period",
-                              id ="Jul",
-                              name = "July",
-                              abbreviation = "Jul",
-                              index = 7,
-                              padded.index = "07",
-                              contains = "Jul",
-                              days = 31,
-                              days.leap = 31,
-                              col = fields::tim.colors(12)[7]),
-                    Aug = new("Period",
-                              id = "Aug",
-                              name = "August",
-                              abbreviation = "Aug",
-                              index = 8,
-                              padded.index = "08",
-                              contains = "Aug",
-                              days = 31,
-                              days.leap = 31,
-                              col = fields::tim.colors(12)[8]),
-                    Sep = new("Period",
-                              id = "Sep",
-                              name = "September",
-                              abbreviation = "Sep",
-                              index = 9,
-                              padded.index = "09",
-                              contains = "Sep",
-                              days = 30,
-                              days.leap = 30,
-                              col = fields::tim.colors(12)[9]),
-                    Oct = new("Period",
-                              id = "Oct",
-                              name = "October",
-                              abbreviation = "Oct",
-                              index = 10,
-                              padded.index = "10",
-                              contains = "Oct",
-                              days = 31,
-                              days.leap = 31,
-                              col = fields::tim.colors(12)[10]),
-                    Nov = new("Period",
-                              id = "Nov",
-                              name = "November",
-                              abbreviation = "Nov",
-                              index = 11,
-                              padded.index = "11",
-                              contains = "Nov",
-                              days = 30,
-                              days.leap = 30,
-                              col = fields::tim.colors(12)[11]),
-                    Dec = new("Period",
-                              id = "Dec",
-                              name = "December",
-                              abbreviation = "Dec",
-                              index = 12,
-                              padded.index = "12",
-                              contains = "Dec",
-                              days = 31,
-                              days.leap = 31,
-                              col = "maroon4"),
-                    DJF = new("Period",
-                              id = "DJF",
-                              name = "Winter",
-                              abbreviation = "DJF",
-                              index = c(12,1,2),
-                              padded.index = c("12", "01", "02"),
-                              contains = c("Dec", "Jan", "Feb"),
-                              days = 60,
-                              days.leap = 61,
-                              col = fields::tim.colors(4)[1]),
-                    MAM = new("Period",
-                              id = "MAM",
-                              name = "Spring",
-                              abbreviation = "MAM",
-                              index = c(3,4,5),
-                              padded.index = c("03", "04", "05"),
-                              contains = c("Mar", "Apr", "May"),
-                              days = 62,
-                              days.leap = 62,
-                              col = fields::tim.colors(4)[2]),
-                    JJA = new("Period",
-                              id = "JJA",
-                              name = "Summer",
-                              abbreviation = "JJA",
-                              index = c(6,7,8),
-                              padded.index = c("07", "08", "09"),
-                              contains = c("Jun", "Jul", "Aug"),
-                              days = 62,
-                              days.leap = 62,
-                              col = fields::tim.colors(4)[3]),          
-                    SON = new("Period",
-                              id = "SON",
-                              name = "Autumn",
-                              abbreviation = "SON",
-                              index = c(9,10,11),
-                              padded.index = c("09", "10", "11"),
-                              contains = c("Sep", "Oct", "Nov"),
-                              days = 61,
-                              days.leap = 61,
-                              col = fields::tim.colors(4)[4]),
-                    Annual = new("Period",
-                                 id = "Annual",
-                                 name = "Annual",
-                                 abbreviation = "Ann",
-                                 index = seq(1,12,1),
-                                 padded.index = "Annual",
-                                 contains = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug","Sep", "Oct", "Nov", "Dec"), 
-                                 days = 365,
-                                 days.leap = 366,
-                                 col = "black"
-                    )
-                    
-)
-
-# subsets of periods
-#' @rdname Period-class
-#' @format List of\code{Period} objects
-periods <- all.periods
-
-#' @rdname Period-class
-months <- all.periods[1:12]
-
-#' @rdname Period-class
-seasons <- all.periods[13:16]
-
-#' @rdname Period-class
-annual <- all.periods[17]
 
 
 
@@ -781,7 +586,7 @@ reversed.tim.colors = function(n) rev(fields::tim.colors(n))
 #' Equation from Baccini et al . 2012. 
 #' Used when reading the original Baccini et al. 2012 and Avitabile et al. 2015 dataset
 #' 
-#' @param AGB ABive ground biomass (carbon)
+#' @param AGB Above ground biomass (carbon)
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 AGBtoTotalCarbon <- function(AGB){
@@ -792,30 +597,6 @@ AGBtoTotalCarbon <- function(AGB){
   
 }
 
-
-
-
-#' Continental extents
-#'
-#' These were just defined by the author for studying different regions of the world.  Maybe also be handy for other people.
-#' 
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-standard.continental.extents <- list(Global = new("SpatialExtent", id = "Global", name = "Global", extent = raster::extent(-180, 180, -90, 90)),
-                                     Africa = new("SpatialExtent", id = "Africa", name = "Africa", extent =  raster::extent(-20, 55, -30, 36)),
-                                     Europe = new("SpatialExtent", id = "Europe", name = "Europe", extent =  raster::extent(-30, 40, 36, 70)),
-                                     Asia = new("SpatialExtent", id = "Asia", name = "Asia", extent =  raster::extent(40, 180, -10, 80)),
-                                     NorthAmerica = new("SpatialExtent", id = "NorthAmerica", name = "North America", extent =  raster::extent(-170, -70, 25, 75)),
-                                     SouthAmerica = new("SpatialExtent", id = "SouthAmerica", name = "South America", extent = raster::extent(-180, -50, -60, 25)),
-                                     Australia = new("SpatialExtent", id = "Australia", name = "Australia", extent = raster::extent(110, 160, -45 ,10)),
-                                     Mediterranean = new("SpatialExtent", id = "Med", name = "Mediterranean", extent = raster::extent(10, 40, 28 ,48)),
-                                     CentralAsia = new("SpatialExtent", id = "CentralAsia", name = "Central Asia", extent = raster::extent(25, 140, 40, 55)),
-                                     SouthEastAsia = new("SpatialExtent", id = "SouthEastAsia", name = "South East Asia", extent = raster::extent(90, 140, 10, 40)),
-                                     CentralNorthAmerica = new("SpatialExtent", id = "CentralNorthAmerica", name = "Central North America", extent = raster::extent(-110, -85, 30, 50)),
-                                     Boreal = new("SpatialExtent", id = "Boreal", name = "Boreal", extent = raster::extent(-180, 180, 60, 90)),
-                                     NHAfrica = new("SpatialExtent", id = "NHAfrica", name = "Northern Hemisphere Africa", extent = raster::extent(-20, 50, 0, 25)),
-                                     SHAfrica = new("SpatialExtent", id = "SHAfrica", name = "Southern Hemisphere Africa", extent = raster::extent(5, 50, -30, 0))
-                                     
-)
 
 
 

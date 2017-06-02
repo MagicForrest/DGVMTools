@@ -55,10 +55,10 @@ setMethod("print", signature(x="SpatialExtent"), function(x) {
   cat(paste0("Spatial Extent:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  cat(paste0("extent: xmin = ", x@extent@xmin, "\n"))
-  cat(paste0("        xmax = ", x@extent@xmax, "\n"))
-  cat(paste0("        ymin = ", x@extent@ymin, "\n"))
-  cat(paste0("        ymax = ", x@extent@ymax, "\n"))
+  cat(paste0("extent: xmin = ", x@xmin, "\n"))
+  cat(paste0("        xmax = ", x@xmax, "\n"))
+  cat(paste0("        ymin = ", x@ymin, "\n"))
+  cat(paste0("        ymax = ", x@ymax, "\n"))
   
 })
 

@@ -5,24 +5,31 @@
 ###############################################################################################################################
 
 
-######################### TIME AVERAGE A DATA.TABLE  ##############################
+######################### TIME AVERAGE A DATA.TABLE OR DGVMTOOLS OBJECT  ##############################
 #
 #' Time average a data.table
 #' 
 #' Time average all availables years (denoted by column "Years") or a data.table object
 #'
-#' @param input.dt data.table  
+#' @param input.obj data.table, ModelObject or DataObject  
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A data.table
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-doTemporalAverage.uncompiled <- function(input.dt,
+averageTemporal.uncompiled <- function(input.obj,
                                          verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
   Year = Lat = Lon = NULL
+  
+  
+  # sort out the input object class
+  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {input.dt <- input.obj@data}
+  else if(is.data.table(input.obj)) {input.dt <- input.obj}
+  
+  
   
   # Do the averaging
   if(verbose) message("Temporally averaging ...")
@@ -40,8 +47,16 @@ doTemporalAverage.uncompiled <- function(input.dt,
   
   # Set keys and return the averaged table
   setKeyDGVM(output.dt)
-  return(output.dt)
   
+  # sort out the input object class
+  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
+    input.obj@data <- output.dt
+    input.obj@is.temporally.averaged <- TRUE
+    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent, spatial.extent = input.obj@spatial.extent, temporally.averaged = input.obj@is.temporally.averaged, spatially.averaged = TRUE)
+    return(input.obj)
+  }
+  else if(is.data.table(input.obj)) {return(output.dt)}
+
 }
 
 
@@ -56,7 +71,7 @@ doTemporalAverage.uncompiled <- function(input.dt,
 #' @keywords export
 #' @import  compiler cmpfun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-doTemporalAverage <- compiler::cmpfun(doTemporalAverage.uncompiled)
+averageTemporal <- compiler::cmpfun(averageTemporal.uncompiled)
 
 
 
@@ -93,7 +108,7 @@ doTemporalAverage <- compiler::cmpfun(doTemporalAverage.uncompiled)
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-doSpatialAverage.uncompiled <- function(input.obj,
+averageSpatial.uncompiled <- function(input.obj,
                                         verbose = FALSE,
                                         area.weighted=TRUE){
   
@@ -167,4 +182,4 @@ doSpatialAverage.uncompiled <- function(input.obj,
 #' @keywords internal
 #' @import  compiler cmpfun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-doSpatialAverage <- compiler::cmpfun(doSpatialAverage.uncompiled)
+averageSpatial <- compiler::cmpfun(averageSpatial.uncompiled)

@@ -411,7 +411,7 @@ getModelObject <- function(run,
                                spatial.extent = new("SpatialExtent",
                                                     id = "FullDomain",
                                                     name = "Full simulation extent",
-                                                    extent =  extent(this.dt)),
+                                                    extent(this.dt)),
                                temporal.extent = new("TemporalExtent",
                                                      id = "FullTS",
                                                      name = "Full simulation duration",
@@ -448,7 +448,7 @@ getModelObject <- function(run,
   
   ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(spatially.average){
-    this.dt <- doSpatialAverage(this.dt, verbose, area.weighted)
+    this.dt <- averageSpatial(this.dt, verbose, area.weighted)
     if(verbose) {
       message("Head of spatially averaged data.table:")
       print(utils::head(this.dt))
@@ -458,7 +458,7 @@ getModelObject <- function(run,
   
   ###  DO TIME AVERAGE
   if(temporally.average){
-    this.dt <- doTemporalAverage(this.dt, verbose)
+    this.dt <- averageTemporal(this.dt, verbose)
     if(verbose) {
       message("Head of time averaged data.table:")
       print(utils::head(this.dt))
@@ -485,9 +485,9 @@ getModelObject <- function(run,
     spatial.extent <- new("SpatialExtent",
                           id = "FullDomain",
                           name = "Full simulation extent",
-                          extent =  temp.extent)
+                          temp.extent)
     
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@xmin, ",", spatial.extent@xmax, "), Lat = (" ,  spatial.extent@ymin, ",", spatial.extent@ymax, ").", sep = ""))
     
   }
   
