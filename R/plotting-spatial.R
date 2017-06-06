@@ -659,7 +659,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
   }
   if(discrete) {
-    print(breaks)
     mp <- mp + scale_fill_manual(values = override.cols, 
                                  breaks = breaks,
                                  labels = categorical.legend.labels)

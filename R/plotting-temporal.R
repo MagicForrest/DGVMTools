@@ -102,7 +102,6 @@ plotTemporal <- function(input.data,
     
     # assume Quantity is the same for each facet
     if(is.null(quant)) quant <- input.data[[1]]@quant
-    print(quant)
     
   }
   
@@ -250,7 +249,6 @@ plotTemporal <- function(input.data,
   p <- p + theme(plot.title = element_text(hjust = 0.5))
   
   # set limits
-  print(y.label)
   if(!is.null(x.lim)) p <- p + scale_x_continuous(limits = x.lim)
   if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
   p <- p + labs(y = y.label)
