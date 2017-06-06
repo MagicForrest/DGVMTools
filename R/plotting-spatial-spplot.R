@@ -129,7 +129,7 @@ plotSpatial_sp <- function(x, # can be a data.table, a SpatialPixelsDataFrame, o
   ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
   if(is.ModelObject(x)){
     
-    if(x@is.temporally.averaged){
+    if(x@temporal.aggregate.method){
       run <- x@run
       run.id <- run@id
       period <- x@temporal.extent
@@ -143,7 +143,7 @@ plotSpatial_sp <- function(x, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   else if(is.DataObject(x)){
     
-    #if(x@is.temporally.averaged){
+    #if(x@temporal.aggregate.method){
     if(is.null(quant)) quant <- x@quant
     #} 
     #else {

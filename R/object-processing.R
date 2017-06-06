@@ -12,17 +12,31 @@
 #' Time average all availables years (denoted by column "Years") or a data.table object
 #'
 #' @param input.obj data.table, ModelObject or DataObject  
+#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
+#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A data.table
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 averageTemporal.uncompiled <- function(input.obj,
-                                         verbose = FALSE){
+                                       method = "mean",
+                                       verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
   Year = Lat = Lon = NULL
+  
+  
+  ### SET UP THE AGGREGATE METHOD 
+  method <- match.arg(method, c("mean", "sum", "max", "min", "sd", "var"))
+  method.function <- switch(method,
+                            mean = mean,
+                            sum = sum,
+                            max = max,
+                            min = min,
+                            sd = sd,
+                            var = var)
   
   
   # sort out the input object class
@@ -33,8 +47,8 @@ averageTemporal.uncompiled <- function(input.obj,
   
   # Do the averaging
   if(verbose) message("Temporally averaging ...")
-  if("Lon" %in% names(input.dt))  output.dt <- input.dt[,lapply(.SD, mean), by=list(Lon, Lat)]
-  else output.dt <- input.dt[,lapply(.SD, mean)]
+  if("Lon" %in% names(input.dt))  output.dt <- input.dt[,lapply(.SD, method.function), by=list(Lon, Lat)]
+  else output.dt <- input.dt[,lapply(.SD, method)]
   if(verbose) message("...done.")
   
   # remove the Year 'cos it dun' make so much sense no mo'
@@ -51,12 +65,12 @@ averageTemporal.uncompiled <- function(input.obj,
   # sort out the input object class
   if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
     input.obj@data <- output.dt
-    input.obj@is.temporally.averaged <- TRUE
-    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent, spatial.extent = input.obj@spatial.extent, temporally.averaged = input.obj@is.temporally.averaged, spatially.averaged = TRUE)
+    input.obj@temporal.aggregate.method <- method
+    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent, spatial.extent = input.obj@spatial.extent, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}
-
+  
 }
 
 
@@ -74,25 +88,6 @@ averageTemporal.uncompiled <- function(input.obj,
 averageTemporal <- compiler::cmpfun(averageTemporal.uncompiled)
 
 
-
-
-.selectYears <- function(input, temporal.extent){
-  
-  # To stop compiler NOTES
-  Year = NULL
-  
-  # Warning if a certain year is not present
-  years.present <- unique(input[["Year"]])
-  for(year in temporal.extent@start:temporal.extent@end){
-    if(!(year %in% years.present)) warning(paste("Year", year, "requested, but it is not in the data!", sep = " "))
-  }
-  
-  # return the subsetted data.table
-  return(subset(input, Year >= temporal.extent@start & Year <= temporal.extent@end))    
-  
-}
-
-
 ######################### SPATIALLY AVERAGE ##############################
 #
 #' Spatially average a ModelObject, DataObject or data.table 
@@ -102,19 +97,37 @@ averageTemporal <- compiler::cmpfun(averageTemporal.uncompiled)
 #'
 #'
 #' @param A ModelObject, DataObject or data.table to be averaged  
-#' @param area.weighted If TRUE area-weight the gridcells
+#' @param mean
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A data.table
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 averageSpatial.uncompiled <- function(input.obj,
-                                        verbose = FALSE,
-                                        area.weighted=TRUE){
+                                      method = "mean",
+                                      verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
-  # Possible can solve this by replace the subset function
   Year = Lat = Lon = area = NULL
+  
+  ### SET UP THE AGGREGATE METHOD 
+  print(method)
+  method <- match.arg(method, c("weighted.mean", "w.mean", "mean", "weighted.sum", "w.sum", "sum", "max", "min", "sd", "var"))
+
+  method.function <- switch(method,
+                            weighted.mean = stats::weighted.mean,
+                            w.mean = stats::weighted.mean,
+                            mean = mean,
+                            weighted.sum = sum,
+                            w.sum = sum,
+                            sum = sum,
+                            max = max,
+                            min = min,
+                            sd = sd,
+                            var = var)
+ 
+  if(method == "weighted.mean") method = "w.mean"
+  if(method == "weighted.sum") method = "w.sum"
   
   # sort out the input object class
   if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {input.dt <- input.obj@data}
@@ -122,25 +135,54 @@ averageSpatial.uncompiled <- function(input.obj,
   
   
   
-  # Do the averaging
-  if (area.weighted) {
+  # Do the aggregating
+  if (method == "w.mean") {
     if (!any(colnames(input.dt)=="area")) {
       if (verbose) message("Add column area.")
       input.dt <- addArea(input.dt, verbose=verbose)
     }
-    if(verbose) message(paste("Spatially averaging (area weighted) whole domain...", sep = ""))
-    # check to see if Year is still a clomun name (it might have been averaged away)
-    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, stats::weighted.mean, w=area), by=list(Year)]
-    else {
-      output.dt <- input.dt[,lapply(.SD, stats::weighted.mean, w=area)]
-    }
+    if(verbose) message(paste("Spatially averaging (with area weighting) ...", sep = ""))
     
+    # check to see if Year is still a colmun name (it might have been averaged away)
+    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, method.function, w=area), by=list(Year)]
+    else {
+      output.dt <- input.dt[,lapply(.SD, method.function, w=area)]
+    }
     output.dt[,area:=NULL]
-  } else {
-    if(verbose) message(paste("Spatially averaging (not area weighted) whole domain...", sep = ""))
-    # check to see if Year is still a clomun name (it might have been averaged away)
-    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, mean), by=list(Year)]
-    else output.dt <- input.dt[,lapply(.SD, mean)]
+  } 
+  else if (method == "w.sum") {
+    if (!any(colnames(input.dt)=="area")) {
+      if (verbose) message("Add column area.")
+      input.dt <- addArea(input.dt, verbose=verbose)
+    }
+    if(verbose) message(paste("Spatially summing (with area weighting) ...", sep = ""))
+    
+   
+    
+    # get all column names, remove the spatial and temporal and return
+    remove <- c("Lon", "Lat", "Year", "Month", "Day", "area")
+    col.names <- names(input.dt)
+    col.names <- col.names[!col.names %in% remove]
+
+    # check to see if Year is still a column name (it might have been averaged away)
+    input.dt[, (col.names) := lapply(.SD, function(x) x * input.dt[['area']] ), .SDcols = col.names]
+
+    if("Year" %in% names(input.dt)) {
+      output.dt <- input.dt[, lapply(.SD, method.function), by=list(Year)]
+    }
+    else {
+      output.dt <- input.dt[, (col.names) := lapply(.SD, method.function)]
+    }
+    output.dt[,area:=NULL]
+    
+  } 
+  
+  # if not weighted
+  else {
+    if(verbose) message(paste("Spatially aggregating with function", method," and no area-weighting ...", sep = ""))
+    # check to see if Year is still a clomun name (it might already have been averaged away)
+    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, method.function), by=list(Year)]
+    else output.dt <- input.dt[,lapply(.SD, method.function)]
   }
   
   # remove the Lon and Lat columns 'cos they dun' make so much sense no mo'
@@ -159,8 +201,8 @@ averageSpatial.uncompiled <- function(input.obj,
   # sort out the input object class
   if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
     input.obj@data <- output.dt
-    input.obj@is.spatially.averaged <- TRUE
-    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent, spatial.extent = input.obj@spatial.extent, temporally.averaged = input.obj@is.temporally.averaged, spatially.averaged = TRUE)
+    input.obj@spatial.aggregate.method <- method
+    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent, spatial.extent = input.obj@spatial.extent, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}

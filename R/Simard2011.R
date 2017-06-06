@@ -26,7 +26,7 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution =
                          end.year = NULL,
                          temporally.average = TRUE,
                          verbose = FALSE)
-  
+
   # set the name to something equivalent in the model
   setnames(Simard.dt, c("DATALAYER"), c("CanHght"))
   
@@ -40,9 +40,9 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution =
                          temporal.extent = new("TemporalExtent", name = "Simard Period", start = 2003, end = 2009),
                          data = Simard.dt,
                          quant = lookupQuantity("canopyheight_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "SimardExtent", name = "Simard extent", extent = extent(Simard.dt)),
+                         spatial.extent = new("SpatialExtent", id = "SimardExtent", name = "Simard extent", extent(Simard.dt)),
                          correction.layer =  "")
-  
+
   return(Simard.dataset)
   
   
@@ -54,6 +54,9 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution =
     stop("Simard 2011 data not currently available at original resolution")
     
   }
+  else if(resolution == "1D"){
+    dataset.raster <- raster::raster(file.path(location, "Simard2011.1D.nc"))
+  }
   else if(resolution == "HD"){
     dataset.raster <- raster::raster(file.path(location, "Simard2011.HD.nc"))
   }
@@ -61,9 +64,11 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution =
     stop("Simard 2011 data not currently available at T63 resolution")
   }
   
+  print(dataset.raster)
   
   dataset.dt <- data.table(as.data.frame(dataset.raster,xy = TRUE))
   dataset.dt <- stats::na.omit(dataset.dt)
+  print(dataset.dt)
   setnames(dataset.dt, c("Lon", "Lat", "CanHght"))
   setkey(dataset.dt, Lon, Lat)
 
@@ -75,7 +80,7 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution =
                          temporal.extent = new("TemporalExtent", name = "Simard Period", start = 2003, end = 2009),
                          data = dataset.dt,
                          quant = lookupQuantity("canopyheight_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "SimardExtent", name = "Simard extent", extent = extent(dataset.dt)),
+                         spatial.extent = new("SpatialExtent", id = "SimardExtent", name = "Simard extent", extent(dataset.dt)),
                          correction.layer =  "")
   
   

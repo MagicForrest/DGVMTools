@@ -341,8 +341,8 @@ setClass("Quantity",
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this ModelObject.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
 #' @slot is.site Set to TRUE is this ModelObject describes a single site
-#' @slot is.spatially.averaged Set to TRUE is this ModelObject has been spatially averaged
-#' @slot is.temporally.averaged Set to TRUE is this ModelObject has been temporally averaged
+#' @slot spatial.aggregate.method Set to TRUE is this ModelObject has been spatially averaged
+#' @slot temporal.aggregate.method Set to TRUE is this ModelObject has been temporally averaged
 #' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.
 #' @exportClass ModelObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -355,8 +355,8 @@ setClass("ModelObject",
                    spatial.extent = "SpatialExtent",
                    temporal.extent = "TemporalExtent",
                    is.site = "logical",
-                   is.spatially.averaged = "logical",
-                   is.temporally.averaged = "logical",
+                   spatial.aggregate.method = "character",
+                   temporal.aggregate.method = "character",
                    run = "ModelRunInfo"
          )
 )
@@ -549,8 +549,8 @@ setClass("SpatialComparison",
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ComparisonLayer.  Particularly useful if the data has been temporally averaged.
 #' @slot is.site Set to TRUE is this ComparisonLayer describes a single site
-#' @slot is.spatially.averaged Set to TRUE is this ComparisonLayer has been spatially averaged
-#' @slot is.temporally.averaged Set to TRUE is this ComparisonLayer has been temporally averaged
+#' @slot spatial.aggregate.method Set to TRUE is this ComparisonLayer has been spatially averaged
+#' @slot temporal.aggregate.method Set to TRUE is this ComparisonLayer has been temporally averaged
 #' @exportClass ComparisonLayer
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -565,8 +565,8 @@ setClass("ComparisonLayer",
                    spatial.extent = "SpatialExtent",
                    temporal.extent = "TemporalExtent",
                    is.site = "logical",
-                   is.spatially.averaged = "logical",
-                   is.temporally.averaged = "logical"
+                   spatial.aggregate.method = "logical",
+                   temporal.aggregate.method = "logical"
                    
          )#,
          #validity = checkComparison

@@ -70,12 +70,12 @@ setMethod("summary", signature("ModelRun"), function(object, ...) {
   temporal=NULL
   full=NULL
   for (n in names(object@objects)) {
-    if (object@objects[[n]]@is.spatially.averaged) {
+    if (object@objects[[n]]@spatial.aggregate.method) {
       temporal[[n]]=list(name=n,
                          description=object@objects[[n]]@quant@name,
                          units=object@objects[[n]]@quant@units,
                          colnames=colnames(object@objects[[n]]@data))
-    } else if (object@objects[[n]]@is.temporally.averaged) {
+    } else if (object@objects[[n]]@temporal.aggregate.method) {
       spatial[[n]]=list(name=n,
                         description=object@objects[[n]]@quant@name,
                         units=object@objects[[n]]@quant@units,

@@ -125,11 +125,15 @@ plotTemporal <- function(input.data,
     plotting.data.dt[, Lat := NULL]
   }
   
-  
+  print(plotting.data.dt)
   
   
   # Select the layers 
   if(!is.null(layers)) {
+    
+    print(plotting.data.dt)
+    plotting.data.dt <- plotting.data.dt[, append(layers, c("Year", "Source")), with = FALSE]
+    print(plotting.data.dt)
     
     # select the layers you want
     
@@ -141,7 +145,7 @@ plotTemporal <- function(input.data,
       title <- makePlotTitle(quant@name, layer = NULL, source = input.data, extent = input.data@spatial.extent) 
     }
     else {
-      title <- makePlotTitle(quant@name, layer = NULL) 
+      title <- "cheese" #makePlotTitle(quant@name, layer = NULL) 
     }
   }
   
@@ -227,8 +231,11 @@ plotTemporal <- function(input.data,
   
   
   # now make the plot
-  if(is.null(group)) p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", colour = "variable")) + geom_line(aes_string(linetype="variable"), size = 1)
-  else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", group = "Source", colour = "Source")) + geom_line(aes_string(linetype="Source"), size = 1)
+  print(group)
+  print(id.vars)
+  print(plotting.data.dt.melted)
+  if(is.null(group)) p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Year", y = "value", colour = "variable")) + geom_line(aes_string(linetype="variable"), size = 1)
+  else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Year", y = "value", group = "Source", colour = "Source")) + geom_line(aes_string(linetype="Source"), size = 1)
  
   
   #else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", group = "Source", colour = "Source")) + geom_line(size = 1)

@@ -7,7 +7,7 @@
 getSTInfo(x, info = "names")
 }
 \arguments{
-\item{x}{A DataObject or ModelObject}
+\item{x}{A DataObject, ModelObject, ComparisonLayer or data.tables}
 
 \item{info}{A character string to define what info you want.  Can be "names" to give the names of the spatio-temporal dimensions or ... (to be defined)}
 }
@@ -15,7 +15,7 @@ getSTInfo(x, info = "names")
 A ModelObject or DataObject
 }
 \description{
-This function returns information about the spacio-temporal dimensions of a DataObject, ModelObject or data.table
+This function returns information about the spacio-temporal dimensions of a DataObject, ModelObject, ComparisonLayer or data.table
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

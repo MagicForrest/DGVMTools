@@ -131,7 +131,7 @@ dgvm.quantities <- list(
       model = c("Standard")),
   
   new("Quantity",
-      id = "landsink",
+      id = "aNEE_std",
       name = "Annual land sink (NEE)",
       type = "annual",
       units = "GtC/year",

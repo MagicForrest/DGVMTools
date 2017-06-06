@@ -173,14 +173,14 @@ calcBiomes <-function(input, scheme){
   
   # now make a new ModelObject and return
   biomes <- new("ModelObject",
-                id = makeModelObjectID(scheme@id, input@temporal.extent, input@spatial.extent, input@is.temporally.averaged, input@is.spatially.averaged),
+                id = makeModelObjectID(scheme@id, input@temporal.extent, input@spatial.extent, input@temporal.aggregate.method, input@spatial.aggregate.method),
                 data = biome.dt,
                 quant = as(scheme, "Quantity"),
                 spatial.extent = input@spatial.extent,
                 temporal.extent = input@temporal.extent,
                 is.site = input@is.site,
-                is.spatially.averaged = input@is.spatially.averaged,
-                is.temporally.averaged = input@is.temporally.averaged,
+                spatial.aggregate.method = input@spatial.aggregate.method,
+                temporal.aggregate.method = input@temporal.aggregate.method,
                 run = input@run)
   
   return(biomes)
@@ -490,9 +490,9 @@ divideLayers <- function(input, layers, denominators = list("Total"), aggregate.
 
 #' Returns the spatio-temporal information 
 #' 
-#' This function returns information about the spacio-temporal dimensions of a DataObject, ModelObject or data.table
+#' This function returns information about the spacio-temporal dimensions of a DataObject, ModelObject, ComparisonLayer or data.table
 #' 
-#' @param x A DataObject or ModelObject
+#' @param x A DataObject, ModelObject, ComparisonLayer or data.tables
 #' @param info A character string to define what info you want.  Can be "names" to give the names of the spatio-temporal dimensions or ... (to be defined)
 #'
 #' @return A ModelObject or DataObject

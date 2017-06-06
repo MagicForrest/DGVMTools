@@ -4,10 +4,11 @@
 \alias{getModelObject}
 \title{Get a \code{ModelObject}, optionally with spatial/temporal averaging/cropping}
 \usage{
-getModelObject(run, var, temporal.extent = NULL, temporally.average = FALSE,
-  spatial.extent = NULL, spatially.average = FALSE, area.weighted = TRUE,
-  write = FALSE, read.full = TRUE, verbose = TRUE,
-  store.internally = FALSE, store.full = FALSE, adgvm.scheme = 1)
+getModelObject(run, var, temporal.extent = NULL,
+  temporal.aggregate.method = "none", spatial.extent = NULL,
+  spatial.aggregate.method = "none", area.weighted = TRUE, write = FALSE,
+  read.full = TRUE, verbose = TRUE, store.internally = FALSE,
+  store.full = FALSE, adgvm.scheme = 1)
 }
 \arguments{
 \item{run}{The \code{ModelRun} object for which the spatially-averaged \code{ModelObject} should be built (eg. "lai")}
@@ -16,11 +17,7 @@ getModelObject(run, var, temporal.extent = NULL, temporally.average = FALSE,
 
 \item{temporal.extent}{The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)}
 
-\item{temporally.average}{Whether or not to temporally average (logical)}
-
 \item{spatial.extent}{The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)}
-
-\item{spatially.average}{Whether or not to spatially average (logical)}
 
 \item{area.weighted}{If TRUE, perform weighting by gridcell area when doing spatial averaging}
 
@@ -35,6 +32,10 @@ getModelObject(run, var, temporal.extent = NULL, temporally.average = FALSE,
 \item{store.full}{If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{ModelObjects} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!}
 
 \item{adgvm.scheme}{In the case of analysing an aDGVM run, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.}
+
+\item{temporally.average}{Whether or not to temporally average (logical)}
+
+\item{spatially.average}{Whether or not to spatially average (logical)}
 }
 \value{
 A spatially averaged\code{ModelObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
