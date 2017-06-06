@@ -36,7 +36,7 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution =
   # build the DataObject with the metadata
   Simard.dataset <- new("DataObject",
                          id = "Simard2011",
-                         name = "Simard et al. 2011 Canopy Height",
+                         name = "Simard et al. 2011",
                          temporal.extent = new("TemporalExtent", name = "Simard Period", start = 2003, end = 2009),
                          data = Simard.dt,
                          quant = lookupQuantity("canopyheight_std", "Standard"),

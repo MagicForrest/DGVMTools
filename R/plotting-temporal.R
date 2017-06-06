@@ -74,7 +74,7 @@ plotTemporal <- function(input.data,
         if(is.ModelObject(x.object)) PFTs <- append(PFTs, x.object@run@pft.set)
         
       }
-      
+     
     }
     
     # POSSIBILITY 2- facet per object
@@ -99,7 +99,11 @@ plotTemporal <- function(input.data,
       }
       
     }
-
+    
+    # assume Quantity is the same for each facet
+    if(is.null(quant)) quant <- input.data[[1]]@quant
+    print(quant)
+    
   }
   
   # if it is a single DataObject or ModelObject, pull out the data (and PFTs if present)
@@ -125,18 +129,12 @@ plotTemporal <- function(input.data,
     plotting.data.dt[, Lat := NULL]
   }
   
-  print(plotting.data.dt)
-  
-  
+
   # Select the layers 
   if(!is.null(layers)) {
     
-    print(plotting.data.dt)
     plotting.data.dt <- plotting.data.dt[, append(layers, c("Year", "Source")), with = FALSE]
-    print(plotting.data.dt)
-    
-    # select the layers you want
-    
+
   }
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
@@ -145,14 +143,14 @@ plotTemporal <- function(input.data,
       title <- makePlotTitle(quant@name, layer = NULL, source = input.data, extent = input.data@spatial.extent) 
     }
     else {
-      title <- "cheese" #makePlotTitle(quant@name, layer = NULL) 
+      title <- element_blank()
     }
   }
   
   # make y label
   if(is.null(y.label)) {
     y.label <- element_blank()
-    if(!is.null(quant)) y.label  <- quant@name
+    if(!is.null(quant)) y.label  <- paste0(quant@name, " (", quant@units, ")")
   }
   
   
@@ -231,9 +229,6 @@ plotTemporal <- function(input.data,
   
   
   # now make the plot
-  print(group)
-  print(id.vars)
-  print(plotting.data.dt.melted)
   if(is.null(group)) p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Year", y = "value", colour = "variable")) + geom_line(aes_string(linetype="variable"), size = 1)
   else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Year", y = "value", group = "Source", colour = "Source")) + geom_line(aes_string(linetype="Source"), size = 1)
  
@@ -248,15 +243,17 @@ plotTemporal <- function(input.data,
 
   
   # labels and positioning
-  p <- p + labs(title = title,  y = y.label)
+  p <- p + labs(title = title, y = y.label)
   p <- p + theme(legend.title=element_blank())
   p <- p + theme(text = element_text(size=30))
   p <- p + theme(legend.position = legend.position, legend.key.size = unit(2, 'lines'))
   p <- p + theme(plot.title = element_text(hjust = 0.5))
   
   # set limits
+  print(y.label)
   if(!is.null(x.lim)) p <- p + scale_x_continuous(limits = x.lim)
-  if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim)
+  if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
+  p <- p + labs(y = y.label)
   
   # if facet
   if(!is.null(facet)){

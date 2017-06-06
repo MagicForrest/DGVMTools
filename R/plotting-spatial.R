@@ -98,6 +98,9 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   continuous <- FALSE
   single.object <- FALSE
   
+  # very special case 
+  dont.wrap.comparison.layer.only <- FALSE
+  
   ### CASE 1 - A single ModelObject or DataObject
   if(is.ModelObject(data) || is.DataObject(data)) {
     
@@ -126,9 +129,13 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     quant <- data@quant
     temporal.extent <- data@temporal.extent
     
+    # for later (handling wrap/grid and plot titles)
+    multiple.sources <- FALSE
+    multiple.layers <- length(layers) > 1
+    
   }
   
-  ### CASE 2 - A single ComparisionLayer
+  ### CASE 2 - A single ComparisonLayer
   else if(is.ComparisonLayer(data)) {
     
     single.object <- TRUE
@@ -196,6 +203,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
     }
     
+    # for later (handling wrap/grid and plot titles)
+    multiple.sources <- FALSE
+    multiple.layers <- FALSE
+    if(tolower(original.layers) == "absolute") multiple.sources <- TRUE
+    
   }
   
   
@@ -259,6 +271,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         first <- FALSE
         
       }
+      
+      # for later (handling wrap/grid and plot titles)
+      multiple.sources <- TRUE
+      multiple.layers <- length(layers) > 1
+      
     }
     
     
@@ -341,6 +358,14 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         
       } # if special case
       
+      # for later (handling wrap/grid and plot titles)
+      multiple.sources <- TRUE
+      multiple.layers <- FALSE
+      if(tolower(original.layers) == "absolute") {
+        multiple.layers <- TRUE
+        dont.wrap.comparison.layer.only <- TRUE
+      }
+
     } # for each ComparisonLayer in the list
     
     
@@ -431,7 +456,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     if(tolower(map.overlay)=="world" && gt.180) map.overlay <- "world2"
     else if(tolower(map.overlay)=="worldHires" && gt.180) map.overlay <- "worldHires2"
     else if(tolower(map.overlay)=="world2" && !gt.180) map.overlay <- "world"
-    else if(tolower(map.overlay)=="world2ires" && !gt.180) map.overlay <- "worldHires"
+    else if(tolower(map.overlay)=="world2Hires" && !gt.180) map.overlay <- "worldHires"
     
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
     proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
@@ -547,18 +572,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   
   ### HANDLE THE FACET GRID/WRAP ISSUE
-  multiple.sources <- FALSE
-  multiple.layers <- FALSE
-  
-  # Do we have multiple sources?
-  if("Source" %in% names(data.toplot)) {
-    multiple.sources <- TRUE
-  }
-  
-  # Do we have multiple layers?
-  if(length(unique(data.toplot[["Layer"]])) > 1) {
-    multiple.layers <- TRUE
-  }
+  # note that multiple.layers and multiple.sources should have been defined about
   
   #  CASE 1 - single source and single layer 
   #           ie. one map so don't wrap or grid
@@ -590,6 +604,14 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       grid <- TRUE
       wrap <- FALSE
       facet.string <- "Layer~Source"
+      
+      # very special case form comparison layers side-by-side (this is just to avoid one stupid extra label)
+      if(dont.wrap.comparison.layer.only){
+        grid <- FALSE
+        wrap <- TRUE
+        facet.string <- "~Source"
+      }
+
     }
     else {
       stop("If you want some 'dont.grid' option action then code it up!")
@@ -605,20 +627,15 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(is.null(title)) {
-    if(single.object) {
-      if(length(unique(data.toplot[["Layer"]])) > 1) {
-        title <- makePlotTitle(quant@name, layer = NULL, source = data, period = data@temporal.extent) 
-      }
-      else {
-        title <- makePlotTitle(quant@name, layer = layers, source = data, period = data@temporal.extent) 
-      }
-    }
-    else {
-      if(length(unique(data.toplot[["Layer"]])) > 1) title <- makePlotTitle(quant@name, layer = NULL, source = NULL, period = temporal.extent) 
-      else {
-        title <- makePlotTitle(quant@name, layer = layers, source = NULL, period = temporal.extent) 
-      }
-    }
+   
+    layer.string <- NULL
+    # only use the layer string for the title if we are only plotting one layer
+    if(!multiple.layers) layer.string <- layers
+   
+    # also only use the 'source' argument in the title if we are plotting only data from only one source 
+    if(multiple.sources)  title <- makePlotTitle(quant@name, layer = layer.string, source = NULL, period = temporal.extent) 
+    else title <- makePlotTitle(quant@name, layer = layer.string, source = data, period = data@temporal.extent)
+    
   }
   
   ### BUILD THE PLOT

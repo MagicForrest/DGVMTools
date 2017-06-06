@@ -43,20 +43,23 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
   layers.to.add.dt <- from@data[, append(common.layers, layer.names), with=FALSE]
   if(!is.null(new.layer.names)) setnames(layers.to.add.dt, append(common.layers, new.layer.names))
   if(!is.null(dec.places)) {
-
+    
     to.dt <- copy(to@data)
     to.dt[, Lon := round(Lon, dec.places)]
     to.dt[, Lat := round(Lat, dec.places)]
-
+    
     setKeyDGVM(to.dt)
     layers.to.add.dt[, Lon := round(Lon, dec.places)]
     layers.to.add.dt[, Lat := round(Lat, dec.places)]
-
-    Temp.dt <- merge(x = to.dt, y =layers.to.add.dt,  all.y = keep.all.from, all.x = keep.all.to)
- 
+    
+    Temp.dt <- merge(x = to.dt, y = layers.to.add.dt,  all.y = keep.all.from, all.x = keep.all.to)
+    
+    
   }
   else {
+    
     Temp.dt <- merge(x = to@data, y = layers.to.add.dt, all.y = keep.all.from, all.x = keep.all.to)
+    
   }
   to@data <- Temp.dt
   return(to)
@@ -345,16 +348,16 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   ### This is often the case with model runs and if it is true, maybe the whole procedure much faster and easier
   same.domain <- FALSE
   if(identical(getSTInfo(object1, "full"), getSTInfo(object2, "full")))  same.domain <- TRUE
- 
+  
   ### Easy-life case, both objects are on exactly the same domain
   if(same.domain) {
-
+    
     new.data <- layer.object1@data[layer.object2@data] 
-
+    
   }
   ### Else, not-so-easy-life is having to check the domains and keeping points or not
   else {
-
+    
     new.data <- copyLayers(from = layer.object2, 
                            to = layer.object1, 
                            layer.names = new.id2, 
@@ -362,15 +365,16 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
                            dec.places = dec.places)@data
-
+    
+    
   }
-
+  
   # match NAs if necessary
   if(match.NAs) {
     
     are.NAs <- which(is.na(new.data[[new.id1]] * new.data[[new.id2]]))
     new.data[are.NAs, (c(new.id1, new.id2)) := .SD[NA], .SDcols =c(new.id1, new.id2)]
-
+    
   }
   
   # make meta-data for the ComparisonLayer
@@ -381,7 +385,7 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   else {
     te <- object1@temporal.extent
   }
-  se <- new("SpatialExtent", id = id, name = id, extent = extent(new.data))
+  se <- new("SpatialExtent", id = id, name = id, extent(new.data))
   if(!identical(object1@quant, object1@quant)) {
     if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", object1@quant@id, " and ", object2@quant@id, "), proceeding using quantity", object1@quant@id))
     else stop("Comparing different Quantity")
@@ -525,7 +529,7 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
     
   }
   
-
+  
   # make meta-data for the ComparisonLayer
   id <- paste0(id1, "-", id2)
   if(object1@temporal.extent@start == object2@temporal.extent@start & object1@temporal.extent@end == object2@temporal.extent@end){
@@ -534,7 +538,7 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
   else {
     te <- NULL
   }
-  se <- new("SpatialExtent", id = id, name = id, extent = extent(new.data))
+  se <- new("SpatialExtent", id = id, name = id, extent(new.data))
   if(!identical(object1@quant, object1@quant)) {
     if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", object1@quant@id, " and ", object2@quant@id, "), proceeding using quantity", object1@quant@id))
     else  stop("Comapring different Qunatit")
@@ -545,7 +549,7 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
   # make data.table of values
   dt1 <- new.data[,new.ids1,with=FALSE]
   dt2 <- new.data[,new.ids2,with=FALSE]
- 
+  
   # Calculate Manhattan Metric and Squared Chord Distance
   stats <- proportionsComparison(dt1 =dt1, dt2 = dt2, name1 = info1@name, name2 = info2@name, verbose = verbose)
   

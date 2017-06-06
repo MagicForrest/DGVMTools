@@ -37,7 +37,7 @@ getSaatchi2011 <- function(location = "/data/forrest/Biomass/", resolution = "HD
   # build the DataObject with the metadata
   Saatchi.dataset <- new("DataObject",
                          id = "Saatchi2011",
-                         name = "Saatchi et al. 2011 Biomass",
+                         name = "Saatchi et al. 2011",
                          temporal.extent = new("TemporalExtent", name = "Saatchi Period", start = 1999, end = 2001),
                          data = Saatchi.dt,
                          quant = lookupQuantity("vegC_std", "Standard"),

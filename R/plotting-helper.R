@@ -47,7 +47,7 @@ correct.map.offset <- function(spl) {
 #' @export 
 makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NULL, extent = NULL){
   
-  # Quantity.str must be supplied
+  # quantity.str must be supplied
   string <- quantity.str
   
   # A layer name may be supplied

@@ -37,7 +37,7 @@ getAvitabile2015 <- function(location = "/data/forrest/Biomass/", resolution = "
   # build the DataObject with the metadata
   Avitabile.dataset <- new("DataObject",
                            id = "Avitabile2015",
-                           name = "Avitabile et al. 2015 Biomass",
+                           name = "Avitabile et al. 2015",
                            temporal.extent = new("TemporalExtent", name = "Avitabile Period", start = 2000, end = 2010),
                            data = Avitabile.dt,
                            quant = lookupQuantity("vegC_std", "Standard"),

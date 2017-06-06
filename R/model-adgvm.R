@@ -339,7 +339,9 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
   # number of years used to calculate fire return interval  
   years_fire <- 20
 
-  cnames  <- c( "Lon", "Lat", "Year", "Tr", "C4G", "C3G", "Total")
+  if(variable@id == "canopyheight_std") cnames  <- c( "Lon", "Lat", "Year", "CanHght")
+  else cnames <- c( "Lon", "Lat", "Year", "Tr", "C4G", "C3G", "Total")
+  
   out.all <- matrix(0, ncol=length(cnames), nrow=0)
   colnames(out.all) <- cnames
   
@@ -361,7 +363,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
           tmp.g3 <- tmp.g3/2
         
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
           out.all <- rbind( out.all, out.vec )
         }
         
@@ -388,17 +390,17 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
           tmp.g3 <- tmp.g3/2
         
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
           out.all <- rbind( out.all, out.vec )
         }
 
-        if(variable@id == "LAI_std"){
+        if(variable@id == "LAI_std" | variable@id == "lai"){
           tmp.tr <- ncvar_get( d, "MeanLai", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
           tmp.g4 <- ncvar_get( d, "MeanLai", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
           tmp.g3 <- ncvar_get( d, "MeanLai", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
         	
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
           out.all <- rbind( out.all, out.vec )
         }
 
@@ -415,7 +417,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
           tmp.g3 <- tmp.g3*30.42*ind.g3/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
         
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
           out.all <- rbind( out.all, out.vec )
         }
 
@@ -425,17 +427,25 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
           tmp.g3 <- ncvar_get( d, "nind_alive", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
         
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
           out.all <- rbind( out.all, out.vec )
         }
 
-        if(variable@id == "meanheight" | variable@id == "canopyheight_std"){
+        if(variable@id == "meanheight"){
           tmp.tr <- ncvar_get( d, "MeanHeight", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
           tmp.g4 <- ncvar_get( d, "MeanHeight", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
           tmp.g3 <- ncvar_get( d, "MeanHeight", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
         
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.all <- rbind( out.all, out.vec )
+        }
+        
+        if(variable@id == "canopyheight_std"){
+          tmp.tr <- ncvar_get( d, "MeanHeight", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
+         
+          #            Lon      Lat    Year            CanHght
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr)
           out.all <- rbind( out.all, out.vec )
         }
 
@@ -445,7 +455,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
           tmp.g3 <- ncvar_get( d, "SumBasalArea", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
           
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
           out.all <- rbind( out.all, out.vec )
         }
 
@@ -460,7 +470,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
           tmp.g3  <- tmp.g3/ind_tot
                     
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
           out.all <- rbind( out.all, out.vec )
         }
 
@@ -474,7 +484,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
           tmp.tr  <- min( tmp.tr/20000*100, 100-(tmp.g4+tmp.g3))  # *100 to convert to %
 
           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
+          out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
           out.all <- rbind( out.all, out.vec )
         }
 
@@ -487,7 +497,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
 		
 		z <- max(t_seq)
         #            Lon      Lat    Year            Tr      C4G     C3G     Total
-        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.fi, tmp.fi, tmp.fi, tmp.fi )
+        out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.fi, tmp.fi, tmp.fi, tmp.fi )
         out.all <- rbind( out.all, out.vec )
       }
 

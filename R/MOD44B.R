@@ -37,10 +37,10 @@ getMOD44B <- function(location = "/data/forrest/TreeCover/", resolution = "HD") 
   # build the DataObject with the metadata
   MOD44B.dataset <- new("DataObject",
                            id = "MOD44B",
-                           name = "MOD44B Treecover",
+                           name = "MOD44B",
                            temporal.extent = new("TemporalExtent", name = "Avitabile Period", start = 2000, end = 2015),
                            data = MOD44B.dt,
-                           quant = lookupQuantity("vegC_std", "Standard"),
+                           quant = lookupQuantity("vegcover_std", "Standard"),
                            spatial.extent = new("SpatialExtent", id = "MODISExtent", name = "MODIS extent", extent(MOD44B.dt)),
                            correction.layer =  "")
   

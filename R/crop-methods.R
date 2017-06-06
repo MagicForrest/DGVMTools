@@ -168,7 +168,9 @@ setMethod("crop", signature(x="data.table", y = "ANY"), function(x, y) {
   methods::validObject(y)
   
   Lon = Lat = NULL
-  x[Lat < y@ymax & Lat > y@ymin & Lon < y@xmax & Lon > y@xmin,]
+
+  x <- x[Lat < y@ymax & Lat > y@ymin & Lon < y@xmax & Lon > y@xmin,]
+
   return(x)
   
 })
