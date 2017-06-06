@@ -757,8 +757,6 @@ averageModelObjects <- function(list.of.model.objects, run = NULL, method = mean
   }
   
 }
-<<<<<<< HEAD
-
 
 .selectYears <- function(input, temporal.extent){
   
@@ -775,5 +773,3 @@ averageModelObjects <- function(list.of.model.objects, run = NULL, method = mean
   return(subset(input, Year >= temporal.extent@start & Year <= temporal.extent@end))    
   
 }
-=======
->>>>>>> b70664539e1bea0a63cb394daf30c73ee8bafe8b

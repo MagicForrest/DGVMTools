@@ -11,11 +11,11 @@ getQuantity_aDGVM_Scheme1(run, period, variable)
 
 \item{period}{A \code{TemporalExtent} object to define the period over which to average.}
 
-\item{variable}{A character string specifying which variable to get, can be "lai" or "agb"}
+\item{variable}{A character string specifying which variable to get, can be "agb","nind","meanheight","basalarea","pind","firefreq","vegcover_std","vegC_std","LAI_std","aGPP_std","canopyheight_std","burntfraction_std"}
 }
 \description{
 Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
-Simple scheme, classifies only as tree or grass based on only the pop file, doesn't open the trait file.
+Simple scheme, classifies only as tree, C4 grass or C3 grass based on only the pop file, doesn't open the trait file.
 }
 \seealso{
 \code{getQuantity_aDGVM_Scheme2}
