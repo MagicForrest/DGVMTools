@@ -2,18 +2,18 @@
 if("package:DGVMTools" %in% search()) detach(name = "package:DGVMTools", unload = TRUE)
 suppressMessages(library(DGVMTools))
 library(RColorBrewer)
+library(viridis)
 
-## Define a TIME PERIOD over which to average
-period = new("TemporalExtent", id = "Reference", name = "Reference", start = 1981, end = 2010)
+data.dir <- "/media/jsteinkamp/FAT/DGVMTools/data"
 
 ## Define the simulation runs
 runs.def <- data.frame(id=c("base", "daily", "cryptCover"),
                        name=c("base run with conservative N fixation",
                               "sensitivity run with conservative quasi daily N fixation",
                               "sensitivity run with conservative N fixation elevated to cryptogamic N fixation"),
-                       dir=c("/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons",
-                             "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons_daily",
-                             "/senckenberg.de/cub/bigdata/LPJ/output/global/Nfix/Cleveland_cons_CC"),
+                       dir=c(file.path(data.dir, "guess", "Cleveland_cons"),
+                             file.path(data.dir, "guess", "Cleveland_cons_daily"),
+                             file.path(data.dir, "guess", "Cleveland_cons_CC")),
                        stringsAsFactors = FALSE)
 
 runs <- list()
@@ -35,6 +35,9 @@ for (i in 1:nrow(runs.def)) {
 ### default behaviour.
 ########################################################################
 
+## Define a TIME PERIOD over which to average
+period = new("TemporalExtent", id = "Reference", name = "Reference", start = 1981, end = 2010)
+
 ### Spatial plots
 
 ## Fill the runs with time averaged spatial data
@@ -43,10 +46,10 @@ biomes.sp <- list()
 gpp.sp    <- list()
 cpool.sp  <- list()
 for (run in runs) {
-  lai.sp[[run@id]] = getModelObject(run, 'lai', period, temporally.average=TRUE, write=TRUE)
+  lai.sp[[run@id]] = getModelObject(run, 'lai', period, temporally.average=TRUE, read.full=FALSE)
   biomes.sp[[run@id]] <- calcBiomes(lai.sp[[run@id]], Smith2014.scheme)
-  gpp.sp[[run@id]] = getModelObject(run, 'agpp', period, temporally.average=TRUE, write=TRUE)
-  cpool.sp[[run@id]] = getModelObject(run, 'cpool', period, temporally.average=TRUE, write=TRUE)
+  gpp.sp[[run@id]] = getModelObject(run, 'agpp', period, temporally.average=TRUE, read.full=FALSE)
+  cpool.sp[[run@id]] = getModelObject(run, 'cpool', period, temporally.average=TRUE, read.full=FALSE)
 }
 
 ## single panel without title
@@ -55,7 +58,7 @@ plotGGSpatial(lai.sp[[runs.def$id[1]]], "Total", colours=brewer.pal(9, "YlGn"), 
 ## 2 panels with overriding the default number of legend columns
 cols <- Smith2014.scheme@colours(length(Smith2014.scheme@units))
 names(cols) <- Smith2014.scheme@units
-p <- plotGGSpatial(biomes.sp, "Smith2014", colours=cols, terr.bg="white")
+p <- plotGGSpatial(biomes.sp, "Smith2014", colours=cols)
 p <- p + guides(fill = guide_legend(ncol = 2))
 print(p)
 
@@ -63,9 +66,9 @@ print(p)
 plotGGSpatial(gpp.sp[[runs.def$id[1]]], c("BNE", "BNS", "TeBS", "TrBE", "C3G", "Total"), colours=brewer.pal(9, "YlGn"), wrap=3)
 
 ## split into different panels by another spatial data
-plotGGSpatial(gpp.sp[[runs.def$id[1]]], "Total", wrap=c("biomes.sp[[1]]", "Smith2014", 4), colours=brewer.pal(9, "YlGn"), long.title=FALSE)
+plotGGSpatial(gpp.sp[[runs.def$id[1]]], "Total", wrap=c("biomes.sp[[1]]", "Smith2014", 4), colours=brewer.pal(9, "YlGn"))
 
-plotGGSpatial(gpp.sp[[runs.def$id[1]]], "Total", wrap=c("biomes.sp[[1]]", "Smith2014", 4), colours=brewer.pal(9, "YlGn"), long.title=FALSE, miss.bg = "white")
+plotGGSpatial(gpp.sp[[runs.def$id[1]]], "Total", wrap=c("biomes.sp[[1]]", "Smith2014", 4), colours=brewer.pal(9, "YlGn"), miss.bg = "white")
 
 ## 2 panels of different runs (dataset also possible, but use the same colorbar)
 plotGGSpatial(gpp.sp, "Total", colours=brewer.pal(9, "YlGn"))
@@ -120,8 +123,8 @@ period = new("TemporalExtent", id = "Reference", name = "Reference", start = 195
 gpp.ts   <- list()
 cflux.ts <- list()
 for (run in runs) {
-  cflux.ts[[run@id]] = getModelObject(run, 'cflux', period, temporally.average=FALSE, spatially.average=TRUE, write=TRUE)
-  gpp.ts[[run@id]] = getModelObject(run, 'agpp', period, temporally.average=FALSE, spatially.average=TRUE, write=TRUE)
+  cflux.ts[[run@id]] = getModelObject(run, 'cflux', period, temporally.average=FALSE, spatially.average=TRUE, read.full=FALSE)
+  gpp.ts[[run@id]] = getModelObject(run, 'agpp', period, temporally.average=FALSE, spatially.average=TRUE, read.full=FALSE)
 }
 
 ## plot several columns together
@@ -138,7 +141,7 @@ print(p)
 
 ## adding Le Quere land sink data
 library(xlsx)
-LeQuere2015 <- read.xlsx("/home/jsteinkamp/Cloud/Dropbox/WIP/Establishment/Global_Carbon_Budget_2015_v1.1.xlsx", sheetName = "Global Carbon Budget", startRow=22, endRow=78, header=TRUE)
+LeQuere2015 <- read.xlsx(file.path(data.dir, "external", "Global_Carbon_Budget_2015_v1.1.xlsx"), sheetName = "Global Carbon Budget", startRow=22, endRow=78, header=TRUE)
 LeQuere2015$land.sink <- -1 * LeQuere2015$land.sink 
 p <- plotGGTemporal(cflux.ts, "NEE", scale=land.area)
 p = p + guides(col = guide_legend(title="", ncol = 1))
@@ -181,4 +184,57 @@ for (run in runs) {
 p <- plotGGTemporal(rt.ts, "Total")
 p <- p + guides(col = guide_legend(title="", ncol = 1))
 print(p)
+
+## Define a TIME PERIOD over which to average
+period = new("TemporalExtent", id = "Reference", name = "Reference", start = 1981, end = 2010)
+
+## Fill the runs with time averaged spatial data
+dens.sp <- list()
+cmass.sp  <- list()
+for (run in runs) {
+  dens.sp[[run@id]] = getModelObject(run, 'dens', period, temporally.average=TRUE, read.full=FALSE)
+  cmass.sp[[run@id]] = getModelObject(run, 'cmass', period, temporally.average=TRUE, read.full=FALSE)
+  biomes.sp[[run@id]] <- calcBiomes(lai.sp[[run@id]], Forrest2015.scheme)
+  biomes.sp[[run@id]]@data[, Forrest2015.name := Forrest2015.scheme@units[Forrest2015]]
+  dens.sp[[run@id]]@data <- dens.sp[[run@id]]@data[biomes.sp[[run@id]]@data]
+}
+
+saatchi   <- getSaatchi2011(file.path(data.dir, "external"), "HD")
+avitabile <- getAvitabile2015(file.path(data.dir, "external"), "HD")
+baccini   <- getBaccini2012(file.path(data.dir, "external"), "HD")
+crowther  <- getCrowther2015(file.path(data.dir, "external"), "HD")
+
+colours <- data.frame(colour=viridis(100), value=seq(0, 1, length.out=100)^2)
+lines <- data.frame(method=c("1:1"),
+                    col=c("red"),
+                    type=c("solid"),
+                    size=c(0.5))
+
+## removed options density="hex", colors=colors,
+gg <- plotGGScatter(cmass.sp, x.column="Total", y=avitabile@data, y.column="Tree",
+                    lines=lines, labels=c("mae", "rmsd", "nme"), label.pos="topright", wrap=3)
+print(gg)
+
+gg <- plotGGScatter(cmass.sp, x.column="Total", y=baccini@data, y.column="Tree",density="hex", colours=colours,
+                    lines=lines, labels=c("mae", "rmsd", "nme"), label.pos="topright", wrap=3)
+print(gg)
+
+colours <- data.frame(colour=rev(viridis(100)), value=seq(0, 1, length.out=100)^2)
+gg <- plotGGScatter(cmass.sp, x.column="Total", y=saatchi@data, y.column="Tree", density="raster", colours=colours,
+                    lines=lines, labels=c("mae", "rmsd", "nme"), label.pos="topright", wrap=3)
+print(gg)
+
+gg <- plotGGScatter(dens.sp[[1]], x.column="Total", y=crowther@data, y.column="Tree",
+                    lines=lines, density="hex", colours=colours)#, #limit=list(min=0))
+print(gg)
+
+gg <- plotGGScatter(dens.sp[[1]], x.column="Total", y=crowther@data, y.column="Tree",
+                    wrap.column="Forrest2015.name", lines=lines, density="hex", colours=colours, wrap = 4)
+print(gg) # + scale_x_log10() + scale_y_log10()
+
+
+gg <- plotGGScatter(dens.sp[[1]], x.column="Total", y=crowther@data, y.column="Tree",
+                    wrap.column="Forrest2015.name", lines=lines, density="hex", colours=colours, wrap=4)
+gg + scale_x_log10() + scale_y_log10()
+
 

@@ -10,8 +10,10 @@
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' 
 getCrowther2015 <- function(location="", resolution="HD") {
-  Lat=Lon=NULL
+  Lat=Lon=Tree=NULL
 
+  location=file.path(location, "Crowther2015")
+  
   if(resolution == "original") {
     warning("Reading a very big file. Be patient!")
     message("Reading a very big file. Be patient!")
@@ -20,17 +22,22 @@ getCrowther2015 <- function(location="", resolution="HD") {
     Crowther.raster <- raster::raster(file.path(location, paste0("Crowther2015.", resolution, ".nc")))
   }
 
-  Crowther.dt <- data.table(as.data.frame(Crowther.raster,xy = TRUE))
-  setnames(Crowther.dt, c("Lon", "Lat", "Crowther2015"))
+  Crowther.extent <- extent(Crowther.raster)
+  Crowther.dt <- data.table(raster::as.data.frame(Crowther.raster, xy = TRUE))
+  setnames(Crowther.dt, c("Lon", "Lat", "Tree"))
   setkey(Crowther.dt, Lon, Lat)
 
+  Crowther.dt[, Tree := Tree/10000.0]
+  
   Crowther.dataset <- new("DataObject",
                          id = "Crowther2015",
                          name = "Crowther et al. 2015 Tree density",
                          temporal.extent = new("TemporalExtent", name = "Crowther Period", start = 2006, end = 2008),
                          data = Crowther.dt,
-                         quant = lookupQuantity("vegC_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "CrowtherExtent", name = "Crowther extent", extent = extent(Crowther.dt)),
+                         quant = lookupQuantity("dens", "Standard"),
+                         spatial.extent = new("SpatialExtent", id = "CrowtherExtent", name = "Crowther extent", 
+                                              xmin = Crowther.extent@xmin, xmax = Crowther.extent@xmax,
+                                              ymin = Crowther.extent@ymin, ymax = Crowther.extent@ymax),
                          correction.layer =  "")
   return(Crowther.dataset)
 }

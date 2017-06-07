@@ -408,7 +408,7 @@ plotGGSpatial <- function(input, column='value', colours=NA, sym.col=FALSE, wrap
   fr_lat <- length(lat) / max(c(length(lat) + length(lon))) 
   fr_lon <- length(lon) / max(c(length(lat) + length(lon))) 
 
-  if (wrap==1) {
+  if (wrap == 1) {
     lon <- .ll.breaks(lon[2:(length(lon)-1)], label="lon", n.min=4, n.max=3+ceiling(fr_lon*4))
     lat <- .ll.breaks(lat[2:(length(lat)-1)], label="lat", n.min=4, n.max=3+ceiling(fr_lat*4))
   } else {
@@ -1285,6 +1285,7 @@ plotGGScatter <- function(x, y, x.column="value", y.column="value", limit=NULL,
 #' @export
 #' @import ggplot2 
 #' @importFrom RColorBrewer RColorBrewer::brewer.pal
+## TODO Implement monthly data (input@quant@type == "monthly")
 plotGGTemporal <- function(input, columns='value', scale=1., colours=NA, type="line", wrap=NA, long.title=TRUE, lty="sens", alpha=NA, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Year = sens = value = variable = NULL
