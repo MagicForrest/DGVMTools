@@ -1312,13 +1312,13 @@ plotGGTemporal <- function(input, columns='value', scale=1., colours=NA, type="l
     for (i in 1:length(input)) {
       if (!is.ModelObject(input[[i]], temporal=TRUE))
         stop("'input' must either be a temporal RCVTools::ModelObject or a list of them!")
-      if (i==1) {
+      if (i == 1) {
         if (all(is.na(columns)) && all(colnames(input[[i]]@data) != "value")) {
           stop("No column name given and no column named 'value' present!")
           columns <- "value"
         } else {
           for (cn in columns) {
-            if (all(colnames(input[[i]]@data)!=cn))
+            if (all(colnames(input[[i]]@data) != cn))
               stop(paste0("No column named '", cn, "' present!"))
           }
         }
@@ -1369,11 +1369,15 @@ plotGGTemporal <- function(input, columns='value', scale=1., colours=NA, type="l
   if (any(!.is.colour(colours)) || any(is.na(colours)))
     colours="black"
 
+  print(length(columns))
+  print(length(input))
+  print(type)  
+  
   p <- ggplot(dt, aes(x=Year, y=value))
   p <- p + .dgvm.temporal_theme
   if (grepl("^l", type)) {
     if (!is.numeric(alpha))
-      alpha=1
+      alpha = 1
     if (length(columns) == 1 && length(input) == 1) {
       p <- p + geom_line(colour=colours, size=1)
     } else {

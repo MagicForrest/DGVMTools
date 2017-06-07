@@ -84,7 +84,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
     setkey(landid.dt, Lon, Lat)
     mo@data = mo@data[landid.dt]    
   } else {
-    if (!mo@spatial.aggregate.method) {
+    if (mo@spatial.aggregate.method == "none") {
       lon <- extract.seq(mo@data$Lon)
       dims[['lon']] <- ncdim_def("lon", "degrees_east", lon, unlim=FALSE, create_dimvar=TRUE, longname="longitude")
       if (invert.lat) {
@@ -111,14 +111,14 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
   ##       and temporal averaging is on or off respectivly
   ##       Usefull combinations:
   ##       annually:
-  ##       !mo@temporal.aggregate.method && !monthly && !daily   ok (normal & reduced)
-  ##       !mo@temporal.aggregate.method && monthly && !daily    ok (normal & reduced)
-  ##       !mo@temporal.aggregate.method && !monthly && daily
+  ##       mo@temporal.aggregate.method == "none" && !monthly && !daily   ok (normal & reduced)
+  ##       mo@temporal.aggregate.method != "none" && monthly && !daily    ok (normal & reduced)
+  ##       mo@temporal.aggregate.method != "none" && !monthly && daily
   ##       multi-annual averages:
-  ##       mo@temporal.aggregate.method && !monthly && !daily    ok (normal & reduced)
-  ##       mo@temporal.aggregate.method && monthly && !daily     ok (normal & reduced)
+  ##       mo@temporal.aggregate.method != "none && !monthly && !daily    ok (normal & reduced)
+  ##       mo@temporal.aggregate.method != "none" && monthly && !daily     ok (normal & reduced)
   ##       daily makes not really sense, or does it?
-  if (!mo@temporal.aggregate.method) {
+  if (mo@temporal.aggregate.method == "none") {
     years <- sort(unique(mo@data$Year))
     if (leap) {
       time <- is.leapyear(years, doy=TRUE)
@@ -285,7 +285,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
     if (verbose)
       message(paste0(" * Writing '", mo@quant@id,"'."))
     if (reduce) {
-      if (mo@temporal.aggregate.method) {
+      if (mo@temporal.aggregate.method != "none") {
         data <- data.table::melt(mo@data, id.vars=c("landid"), measure.vars=month.abb)
         data <- array(data$value, c(nlandid, length(time)))
         if (as.flux)
@@ -313,7 +313,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
       if (verbose)
         message(paste0(" * Writing '", name,"'."))
       if (reduce) {
-        if (mo@temporal.aggregate.method) {
+        if (mo@temporal.aggregate.method != "none") {
           data <- eval(parse(text=paste0("mo@data$", name)))
           if (as.flux)
             data <- data / (time * as.flux)
@@ -327,7 +327,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
         }
       } else {
         data <- modelObject2Array(mo@data, name, invert.lat, verbose=verbose)
-        if (as.flux && mo@temporal.aggregate.method) {
+        if (as.flux && mo@temporal.aggregate.method != "none") {
           data <- data / time
         } else if (as.flux) {
           data <- data / array(rep(time * as.flux, each=length(lon) * length(lat)), dim(data))
@@ -345,7 +345,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
   ncatt_put(ncout, "lat" , "standard_name", "latitude")
   ncatt_put(ncout, "lon" , "axis", "X")
   ncatt_put(ncout, "lat" , "axis", "Y")
-  if (!mo@temporal.aggregate.method) {
+  if (mo@temporal.aggregate.method == "none") {
     ncatt_put(ncout, "time" , "standard_name", "time")
     ncatt_put(ncout, "time" , "axis", "T")
     if (leap) {
