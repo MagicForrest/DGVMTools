@@ -129,7 +129,7 @@ plotSpatial_sp <- function(x, # can be a data.table, a SpatialPixelsDataFrame, o
   ### IF IS VEGOBJECT MANY THINGS ARE AVAILABLE FROM IT
   if(is.ModelObject(x)){
     
-    if(x@is.temporally.averaged){
+    if(x@temporal.aggregate.method){
       run <- x@run
       run.id <- run@id
       period <- x@temporal.extent
@@ -143,7 +143,7 @@ plotSpatial_sp <- function(x, # can be a data.table, a SpatialPixelsDataFrame, o
   }
   else if(is.DataObject(x)){
     
-    #if(x@is.temporally.averaged){
+    #if(x@temporal.aggregate.method){
     if(is.null(quant)) quant <- x@quant
     #} 
     #else {
@@ -633,7 +633,7 @@ plotSpatial_sp <- function(x, # can be a data.table, a SpatialPixelsDataFrame, o
 makeStatsOverlay <- function(stat.results, stats = "NME", panel = NULL, plot.extent, x.pos.frac = 0.15, y.pos.frac = 0.15, cex = 1.5, digits = 3) {
   
   # position
-  if(class(plot.extent) == "SpatialExtent") plot.extent <- plot.extent@extent
+  if(class(plot.extent) == "SpatialExtent") plot.extent <- extent(plot.extent)
   stats.pos.x <- (plot.extent@xmax-plot.extent@xmin) * x.pos.frac + plot.extent@xmin
   stats.pos.y <- (plot.extent@ymax-plot.extent@ymin) * y.pos.frac + plot.extent@ymin
   kappa.position <- c(stats.pos.x, stats.pos.y)

@@ -130,6 +130,14 @@ dgvm.quantities <- list(
       colours = veg.palette,
       model = c("Standard")),
   
+  new("Quantity",
+      id = "aNEE_std",
+      name = "Annual land sink (NEE)",
+      type = "annual",
+      units = "GtC/year",
+      colours = veg.palette,
+      model = c("Standard")),
+  
   
   ### NITROGEN QUANTITES
   
@@ -606,6 +614,13 @@ dgvm.quantities <- list(
       colours = fields::tim.colors,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
+  new("Quantity",
+      id = "bioclim_mtemps",
+      name = "Bioclimactic Temperatures",
+      type = "annual",
+      units = "deg C",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   
   #############################################################################################
@@ -980,15 +995,41 @@ dgvm.quantities <- list(
       model = c("aDGVM")),
 
   new("Quantity",
+      id = "basalarea",
+      name = "Basal Area",
+      type = "PFT",
+      units = "m^2/ha",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("aDGVM")),
+
+  new("Quantity",
       id = "nind",
       name = "Number of individuals",
       type = "PFT",
       units = "plants",
-      colours = cmass.palette,
+      colours = veg.palette,
       aggregate.method = "sum",
-      model = c("aDGVM"))
+      model = c("aDGVM")),
   
+  new("Quantity",
+      id = "pind",
+      name = "Fraction of individuals",
+      type = "PFT",
+      units = "",
+      colours = veg.palette,
+      aggregate.method = "sum",
+      model = c("aDGVM")),
+      
+  new("Quantity",
+      id = "firefreq",
+      name = "Fire Frequency",
+      type = "annual",
+      units = "",
+      colours = reversed.fire.palette,
+      model = c("aDGVM"))
  
+
 )
 
 

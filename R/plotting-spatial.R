@@ -24,14 +24,15 @@
 #' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
 #' @param plot.bg.col Colour string for the plot background.
-#' @param useLongnames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENLTLY IMPLEMENTED!!
+#' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param ylim An optional vector of two numerics to specify the y/latitude range of the plot.
 #' @param xlim An optional vector of two numerics to specify the x/longitude range of the plot.
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param override.cols A colour palette function to override the defaults.
-#' @param override.cuts Cut ranges (a numeric vector) to override the defaults.
+#' @param override.cuts Cut ranges (a numeric vector) to override the default colour delimitation
+#' @param discretise Boolen, if true, but the discretise the data according the override.cuts argument above
 #' @param dont.grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
 #' @param return.data Return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
@@ -66,13 +67,14 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         facet.labels =  NULL,
                         facet.order = NULL,
                         plot.bg.col =  "white",
-                        useLongnames = FALSE,
+                        useLongNames = FALSE,
                         text.multiplier = NULL,
                         xlim = NULL,
                         ylim = NULL,
                         limits = NULL,
                         override.cols = NULL,
                         override.cuts = NULL,
+                        discretise = FALSE,
                         map.overlay = NULL,
                         dont.grid = FALSE,
                         return.data = FALSE,
@@ -82,9 +84,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
-
+  
   ### CHECK FOR MISSIGN ARGUMENTS AND INITILIASE WHERE APPROPRIATE
   # ????    
+  
+  categorical.legend.labels <- waiver()
   
   
   ### PREPARE DATA FOR PLOTTING
@@ -94,9 +98,12 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   continuous <- FALSE
   single.object <- FALSE
   
+  # very special case 
+  dont.wrap.comparison.layer.only <- FALSE
+  
   ### CASE 1 - A single ModelObject or DataObject
   if(is.ModelObject(data) || is.DataObject(data)) {
-
+    
     single.object <- TRUE
     grid <- FALSE
     
@@ -122,11 +129,15 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     quant <- data@quant
     temporal.extent <- data@temporal.extent
     
+    # for later (handling wrap/grid and plot titles)
+    multiple.sources <- FALSE
+    multiple.layers <- length(layers) > 1
+    
   }
   
-  ### CASE 2 - A single ComparisionLayer
+  ### CASE 2 - A single ComparisonLayer
   else if(is.ComparisonLayer(data)) {
-   
+    
     single.object <- TRUE
     grid <- FALSE
     original.layers <- layers # this is needed to keep track of the plotting mode since 'layers' is changed
@@ -192,12 +203,17 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
     }
     
+    # for later (handling wrap/grid and plot titles)
+    multiple.sources <- FALSE
+    multiple.layers <- FALSE
+    if(tolower(original.layers) == "absolute") multiple.sources <- TRUE
+    
   }
   
   
   ### CASE 3- A list, hopefully made exclusively of ModelObjects/DataObjects xor ComparisonLayers
   else if(class(data)[1] == "list") {
-
+    
     # PREAMBLE - first determine if the list contains consistent types and then fail if it does not
     only.data.or.model.objects <- TRUE
     only.comparison.layers <- TRUE
@@ -245,7 +261,9 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         }
         else {
           # check for consistent temporal extent
-          if(temporal.extent@start != object@temporal.extent@start || temporal.extent@end != object@temporal.extent@end) temporal.extent <- NULL
+          if(!is.null(temporal.extent)){
+            if(temporal.extent@start != object@temporal.extent@start || temporal.extent@end != object@temporal.extent@end) temporal.extent <- NULL
+          }
           # check for consistent Quantity
           if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
         }
@@ -253,6 +271,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         first <- FALSE
         
       }
+      
+      # for later (handling wrap/grid and plot titles)
+      multiple.sources <- TRUE
+      multiple.layers <- length(layers) > 1
+      
     }
     
     
@@ -335,6 +358,14 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         
       } # if special case
       
+      # for later (handling wrap/grid and plot titles)
+      multiple.sources <- TRUE
+      multiple.layers <- FALSE
+      if(tolower(original.layers) == "absolute") {
+        multiple.layers <- TRUE
+        dont.wrap.comparison.layer.only <- TRUE
+      }
+
     } # for each ComparisonLayer in the list
     
     
@@ -349,7 +380,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     stop("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects")
     
   }
-
+  
   ### Rename "variable" to "Layer" which makes more conceptual sense
   setnames(data.toplot, "variable", "Layer")
   setnames(data.toplot, "value", "Value")
@@ -364,10 +395,21 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### APPLY CUSTOM CUTS TO DISCRETISE IF NECESSARY
   if(continuous & !is.null(override.cuts)) {
-    data.toplot[,Value:= cut(Value, override.cuts, right = FALSE, include.lowest = TRUE)]
-    discrete <- TRUE
-    continuous <- FALSE
-    breaks <- waiver()
+    if(discretise) {
+      data.toplot[,Value:= cut(Value, override.cuts, right = FALSE, include.lowest = TRUE)]
+      discrete <- TRUE
+      continuous <- FALSE
+      breaks <- waiver()
+      if(length(override.cols) != length(override.cuts)){
+        override.cols <- grDevices::colorRampPalette(override.cols)(length(override.cuts))
+      }
+    }
+    else{
+      
+    }
+  }
+  else{
+    override.cuts <- waiver()
   }
   
   
@@ -414,8 +456,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     if(tolower(map.overlay)=="world" && gt.180) map.overlay <- "world2"
     else if(tolower(map.overlay)=="worldHires" && gt.180) map.overlay <- "worldHires2"
     else if(tolower(map.overlay)=="world2" && !gt.180) map.overlay <- "world"
-    else if(tolower(map.overlay)=="world2ires" && !gt.180) map.overlay <- "worldHires"
-
+    else if(tolower(map.overlay)=="world2Hires" && !gt.180) map.overlay <- "worldHires"
+    
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
     proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
     map.sp.lines <- map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = CRS(proj4str))
@@ -425,13 +467,13 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
     map.overlay <- fortify(map.sp.lines.df)
     rm(df, map.sp.lines, map.sp.lines.df)   
-
+    
   }
   else if(!is.null(map.overlay)) {
     stop("Some other overlay type...")
   }
-
-    ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
+  
+  ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
   if(discrete & is.null(override.cols)){
     
     # make a list of all the unique values (factors), each of these will need a colour
@@ -444,7 +486,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     ###  If the Quantity if specifically defined as categorical then use the colours defined in the Quantity's units slot
     if(tolower(quant@type) == "categorical") {
-
+      
       legend.title = NULL
       
       # reverse engineer colours from palette
@@ -466,10 +508,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
     }
     
-    ### Else check if the factors are PFTs 
+    ### Else data is categorical, but not explicitly defined as so in the Quantity, so we need to scan the names to identify the PFTs or months
+    # check if the factors are PFTs 
     # TODO - implement months below!!
     else {
-
+      
       # check if the factors are PFTs, and if so assign them their meta-data colour
       pft.superset <- NULL
       if(is.ModelObject(data)) {
@@ -508,6 +551,17 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       if(is.null(override.cols)) override.cols <- cols
       legend.title <- "PFT"
       breaks <- sort(names(override.cols))
+      if(useLongNames) {
+        categorical.legend.labels <- c()
+        for(this.break in breaks){
+          
+          for(PFT in pft.superset) {
+            if(this.break == PFT@id) categorical.legend.labels <- append(categorical.legend.labels, PFT@name)
+          }   
+          
+          
+        }
+      }
     }
     else if(is.categorical) {
       if(is.null(override.cols)) override.cols <- cols
@@ -516,20 +570,9 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     }
     
   }
-
+  
   ### HANDLE THE FACET GRID/WRAP ISSUE
-  multiple.sources <- FALSE
-  multiple.layers <- FALSE
-  
-  # Do we have multiple sources?
-  if("Source" %in% names(data.toplot)) {
-    multiple.sources <- TRUE
-  }
-  
-  # Do we have multiple layers?
-  if(length(unique(data.toplot[["Layer"]])) > 1) {
-    multiple.layers <- TRUE
-  }
+  # note that multiple.layers and multiple.sources should have been defined about
   
   #  CASE 1 - single source and single layer 
   #           ie. one map so don't wrap or grid
@@ -561,6 +604,14 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       grid <- TRUE
       wrap <- FALSE
       facet.string <- "Layer~Source"
+      
+      # very special case form comparison layers side-by-side (this is just to avoid one stupid extra label)
+      if(dont.wrap.comparison.layer.only){
+        grid <- FALSE
+        wrap <- TRUE
+        facet.string <- "~Source"
+      }
+
     }
     else {
       stop("If you want some 'dont.grid' option action then code it up!")
@@ -576,20 +627,15 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(is.null(title)) {
-    if(single.object) {
-      if(length(unique(data.toplot[["Layer"]])) > 1) {
-        title <- makePlotTitle(quant@name, layer = NULL, source = data, period = data@temporal.extent) 
-      }
-      else {
-        title <- makePlotTitle(quant@name, layer = layers, source = data, period = data@temporal.extent) 
-      }
-    }
-    else {
-      if(length(unique(data.toplot[["Layer"]])) > 1) title <- makePlotTitle(quant@name, layer = NULL, source = NULL, period = temporal.extent) 
-      else {
-        title <- makePlotTitle(quant@name, layer = layers, source = NULL, period = temporal.extent) 
-      }
-    }
+   
+    layer.string <- NULL
+    # only use the layer string for the title if we are only plotting one layer
+    if(!multiple.layers) layer.string <- layers
+   
+    # also only use the 'source' argument in the title if we are plotting only data from only one source 
+    if(multiple.sources)  title <- makePlotTitle(quant@name, layer = layer.string, source = NULL, period = temporal.extent) 
+    else title <- makePlotTitle(quant@name, layer = layer.string, source = data, period = data@temporal.extent)
+    
   }
   
   ### BUILD THE PLOT
@@ -605,12 +651,18 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   # colour bar
   if(continuous)  {
-    mp <- mp + scale_fill_gradientn(name = legend.title, limits = limits, colors = override.cols, na.value="grey75")
+    mp <- mp + scale_fill_gradientn(name = legend.title, 
+                                    limits = limits, 
+                                    colors = override.cols, 
+                                    breaks = override.cuts,
+                                    na.value="grey75")
     mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
   }
   if(discrete) {
-    mp <- mp + scale_fill_manual(values = override.cols, breaks = breaks)
-    mp <- mp + guides(fill = guide_legend(keyheight = 2))
+    mp <- mp + scale_fill_manual(values = override.cols, 
+                                 breaks = breaks,
+                                 labels = categorical.legend.labels)
+    # mp <- mp + guides(fill = guide_legend(keyheight = 1))
   }
   
   # crop to xlim and ylim as appropriate and fix the aspect ratio 
@@ -630,8 +682,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   # overall text multiplier
   if(!missing(text.multiplier)) mp <- mp + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
-
-    # set background colour of panel
+  
+  # set background colour of panel
   mp <- mp + theme(
     panel.background = element_rect(fill = plot.bg.col), # bg of the panel
     plot.background = element_rect(fill = plot.bg.col), # bg of the plot
@@ -672,66 +724,3 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
 }
 
-
-######################### CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED #####################################################################
-#' 
-#' Fixes a spatial lines object where some of eastern Russia transposed to the other side of the world
-#' 
-#' 
-#' @param spl SpatialLines object to fix
-#' @return a the SpatialLines object 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @import raster
-correct.map.offset <- function(spl) {
-
-  we <- raster::crop(spl, raster::extent(-180, 180, -90, 90))
-  ww <- raster::crop(spl, raster::extent(179.999, 200, -90, 90))
-
-  if(!is.null(ww) & !is.null(we)) {
-
-    ww <- raster::shift(ww, -360)
-    spl <- raster::bind(we, ww)  
-
-  }
-  return(spl)
-}
-
-
-#######################################################################################################################################
-################### HELPER FUNCTIONS FOR MAKING PLOT TITLES, FILENAMES ETC... #########################################################
-#######################################################################################################################################
-
-#' Make a plot title
-#' 
-#' Build an appropriate plot title from some possibly relevant variables.  
-#' It will use a string to represent the quantity (obligatory), and optionally a period and an ID.
-#' 
-#' @param quantity.str Character string for the quantity plotted
-#' @param layer The names of the layer (or another identifier)
-#' @param source The ModelObject, DataObject or ComparisonLayer that is being plotted
-#' @param period The time period plotted as TemporalExtent (optional)
-#' @return A character string for use as a plot title
-#'  
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#'
-#' @export 
-makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NULL){
-  
-  # Quantity.str must be supplied
-  string <- quantity.str
-  
-  # A layer name may be supplied
-  if(!is.null(layer)) string <- paste(string, layer, sep = " ")
-  
-  # A source may be supplied (either a DataObject, ModelObject or ComparisonLayer)
-  if(!is.null(source)) {
-    if(is.ModelObject(source)) string <- paste(string, source@run@name, sep = " ")
-    if(is.DataObject(source)) string <- paste(string, source@name, sep = " ")
-    if(is.ComparisonLayer(source)) string <- paste(string, source@name, sep = " ")
-  }
-  
-  # Ands a period may be suppled  
-  if(!is.null(period)) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
-  return(string)
-  
-}

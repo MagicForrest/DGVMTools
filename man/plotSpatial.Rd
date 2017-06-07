@@ -6,11 +6,11 @@
 \usage{
 plotSpatial(data, layers = NULL, title = NULL, layout.objs = NULL,
   facet.labels = NULL, facet.order = NULL, plot.bg.col = "white",
-  useLongnames = FALSE, text.multiplier = NULL, xlim = NULL,
+  useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
   ylim = NULL, limits = NULL, override.cols = NULL,
-  override.cuts = NULL, map.overlay = NULL, dont.grid = FALSE,
-  return.data = FALSE, tile = TRUE, interpolate = FALSE,
-  interior.lines = TRUE)
+  override.cuts = NULL, discretise = FALSE, map.overlay = NULL,
+  dont.grid = FALSE, return.data = FALSE, tile = TRUE,
+  interpolate = FALSE, interior.lines = TRUE)
 }
 \arguments{
 \item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
@@ -31,7 +31,7 @@ in this function).}
 
 \item{plot.bg.col}{Colour string for the plot background.}
 
-\item{useLongnames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENLTLY IMPLEMENTED!!}
+\item{useLongNames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}
@@ -44,7 +44,9 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 
 \item{override.cols}{A colour palette function to override the defaults.}
 
-\item{override.cuts}{Cut ranges (a numeric vector) to override the defaults.}
+\item{override.cuts}{Cut ranges (a numeric vector) to override the default colour delimitation}
+
+\item{discretise}{Boolen, if true, but the discretise the data according the override.cuts argument above}
 
 \item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.}
 

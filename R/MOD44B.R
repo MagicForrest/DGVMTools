@@ -1,4 +1,4 @@
-#' Read Saatchi et al. 2015 total biomass map
+#' Read Avitabile et al. 2015 total biomass map
 #' 
 #' Total biomass across the tropics.  
 #' Original dataset is 1km, also provided here at 0.5 degrees or T63.
@@ -13,14 +13,13 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import raster
 
-getSaatchi2011 <- function(location = "/data/forrest/Biomass/", resolution = "HD") {
+getMOD44B <- function(location = "/data/forrest/TreeCover/", resolution = "HD") {
   
-  Lon = Lat = NULL
   
   #### NEW ORDER, CODE BELOW NOW REDUNDANT
   
   # read the standard dataset
-  Saatchi.dt <- readData("Saatchi2011",
+  MOD44B.dt <- readData("MOD44B",
                          location = location,
                          resolution = resolution,
                          start.year = NULL,
@@ -28,24 +27,25 @@ getSaatchi2011 <- function(location = "/data/forrest/Biomass/", resolution = "HD
                          temporally.average = TRUE,
                          verbose = FALSE)
   
+  
   # set the name to something equivalent in the model
-  setnames(Saatchi.dt, c("DATALAYER"), c("Tree"))
+  setnames(MOD44B.dt, c("DATALAYER"), c("Tree"))
   
   # also set the key 
-  setkey(Saatchi.dt, Lon, Lat)
+  setkey(MOD44B.dt, Lon, Lat)
   
   # build the DataObject with the metadata
-  Saatchi.dataset <- new("DataObject",
-                         id = "Saatchi2011",
-                         name = "Saatchi et al. 2011",
-                         temporal.extent = new("TemporalExtent", name = "Saatchi Period", start = 1999, end = 2001),
-                         data = Saatchi.dt,
-                         quant = lookupQuantity("vegC_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "SaatchiExtent", name = "Saatchi extent", extent(Saatchi.dt)),
-                         correction.layer =  "")
+  MOD44B.dataset <- new("DataObject",
+                           id = "MOD44B",
+                           name = "MOD44B",
+                           temporal.extent = new("TemporalExtent", name = "Avitabile Period", start = 2000, end = 2015),
+                           data = MOD44B.dt,
+                           quant = lookupQuantity("vegcover_std", "Standard"),
+                           spatial.extent = new("SpatialExtent", id = "MODISExtent", name = "MODIS extent", extent(MOD44B.dt)),
+                           correction.layer =  "")
   
   
   
-  return(Saatchi.dataset)
+  return(MOD44B.dataset)
   
 }

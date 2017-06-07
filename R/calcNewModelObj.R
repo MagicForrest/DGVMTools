@@ -38,8 +38,8 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     stop(paste("Operator '", op, "' not implemented (yet)!", sep=""))
   }
 
-  if (x@is.temporally.averaged != y@is.temporally.averaged ||
-      x@is.spatially.averaged != y@is.spatially.averaged ||
+  if (x@temporal.aggregate.method != y@temporal.aggregate.method ||
+      x@spatial.aggregate.method != y@spatial.aggregate.method ||
       x@is.site != y@is.site)
     stop("'x' and 'y' are averaged differently.")
 
@@ -93,9 +93,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     setnames(y.dt, val.names, paste("y.", val.names, sep=""))
 
     list.str <- paste(val.names, "=x.",val.names, op, "y.", val.names, sep="", collapse=", ")
-    if (x@is.temporally.averaged) {
+    if (x@temporal.aggregate.method) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
-    } else if (x@is.spatially.averaged) {
+    } else if (x@spatial.aggregate.method) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
@@ -108,8 +108,8 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                spatial.extent = x.sp.extent,
                temporal.extent = x.t.extent,
                is.site = x@is.site,
-               is.temporally.averaged = x@is.temporally.averaged,
-               is.spatially.averaged = x@is.spatially.averaged,
+               temporal.aggregate.method = x@temporal.aggregate.method,
+               spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "ModelRunInfo")))      
 
   } else if (is.null(x.col) && !is.null(y.col)) {
@@ -119,9 +119,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     setnames(x.dt, val.names, paste("x.", val.names, sep=""))
     
     list.str <- paste(val.names, "=x.", val.names, op, y.col, sep="", collapse=", ")
-    if (x@is.temporally.averaged) {
+    if (x@temporal.aggregate.method) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
-    } else if (x@is.spatially.averaged) {
+    } else if (x@spatial.aggregate.method) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
@@ -133,8 +133,8 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                spatial.extent = x.sp.extent,
                temporal.extent = x.t.extent,
                is.site = x@is.site,
-               is.temporally.averaged = x@is.temporally.averaged,
-               is.spatially.averaged = x@is.spatially.averaged,
+               temporal.aggregate.method = x@temporal.aggregate.method,
+               spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "ModelRunInfo")))      
     
   } else if (!is.null(x.col) && is.null(y.col)) {
@@ -144,9 +144,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     setnames(y.dt, val.names, paste0("y.", val.names))
     
     list.str <- paste(val.names, "=", x.col, op, "y.", val.names, sep="", collapse=", ")
-    if (x@is.temporally.averaged) {
+    if (x@temporal.aggregate.method) {
       new.dt <- eval(parse(text=paste0("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]")))
-    } else if (x@is.spatially.averaged) {
+    } else if (x@spatial.aggregate.method) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
@@ -158,8 +158,8 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                spatial.extent = x.sp.extent,
                temporal.extent = x.t.extent,
                is.site = x@is.site,
-               is.temporally.averaged = x@is.temporally.averaged,
-               is.spatially.averaged = x@is.spatially.averaged,
+               temporal.aggregate.method = x@temporal.aggregate.method,
+               spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "ModelRunInfo")))      
   } else {
     key.names <- key(x.dt)
@@ -176,9 +176,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     } else {
       list.str <- paste0("value=x.", x.col, op, "y.", y.col)
     }
-    if (x@is.temporally.averaged) {
+    if (x@temporal.aggregate.method) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
-    } else if (x@is.spatially.averaged) {
+    } else if (x@spatial.aggregate.method) {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
@@ -190,8 +190,8 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                spatial.extent = x.sp.extent,
                temporal.extent = x.t.extent,
                is.site = x@is.site,
-               is.temporally.averaged = x@is.temporally.averaged,
-               is.spatially.averaged = x@is.spatially.averaged,
+               temporal.aggregate.method = x@temporal.aggregate.method,
+               spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "ModelRunInfo")))      
   }
   stop("MISSING: Not implemented yet.")

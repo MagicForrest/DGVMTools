@@ -15,7 +15,7 @@ getQuantity_aDGVM_Scheme2(run, period, variable)
 }
 \description{
 Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
-Classifies as evergreen tree, deciduous tree or grass based on the pop file and the trait file.
+Classifies as evergreen tree, deciduous tree, evergreen shrub, deciduous shrub, C3 grass, C4 grass.
 }
 \seealso{
 \code{getQuantity_aDGVM_Scheme1}

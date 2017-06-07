@@ -25,10 +25,10 @@ is.DataObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
     if (class.def[1] == "DataObject" && attr(class.def, "package")=="DGVMTools") {
       ## JS: check more carefully if this if structure makes sense
       if (spatial && !temporal && !site) {
-        if (!input@is.site && !input@is.spatially.averaged)
+        if (!input@is.site && !input@spatial.aggregate.method)
           return(TRUE)
       } else if (!spatial && temporal) {
-        if (!input@is.temporally.averaged)
+        if (!input@temporal.aggregate.method)
           return(TRUE)
       } else if (site) {
         if (input@is.site)
@@ -51,10 +51,10 @@ is.ModelObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
     if (class.def[1] == "ModelObject" && attr(class.def, "package")=="DGVMTools") {
       ## JS: check more carefully if this if structure makes sense
       if (spatial && !temporal && !site) {
-        if (!input@is.site && !input@is.spatially.averaged)
+        if (!input@is.site && !input@spatial.aggregate.method)
           return(TRUE)
       } else if (!spatial && temporal) {
-        if (!input@is.temporally.averaged)
+        if (!input@temporal.aggregate.method)
           return(TRUE)
       } else if (site) {
         if (input@is.site)

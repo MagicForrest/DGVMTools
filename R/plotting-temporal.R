@@ -2,7 +2,7 @@
 #' 
 #' Makes a line plot graphing the temporal evolution of data (using ggplot2).  Full functionality not implemented, or even defined...  
 #'
-#' @param input.data The data to be plotted, either as a ModelObject, DataObject or a data.table.  
+#' @param input.data The data to be plotted, either as a ModelObject, DataObject or a list of Model/DataObjects.  
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
 #' @param title Main plot title (character string)
@@ -10,12 +10,11 @@
 #' @param cols,types Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
 #' the same length as the labels arguments
 #' @param labels A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)
-#' @param x.label,y.label Character strings for the x and y axes (optional)
+#' @param x.label, y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
 #' @param facet Character string. If specified, split the data (ie melt) the data by the column specified in the argument, and then split the plot into ribbons accordingly.  
 #' @param facet.scales Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
-#' on both scales/x only/y only on each ribbon 
 #' 
 #' @details
 #' This function is WORK IN PROGRESS!!  For questions about functionality or feature requests contact the author
@@ -46,7 +45,7 @@ plotTemporal <- function(input.data,
   
   # whether to to use the a grouping (ie plot many objects on one plot)
   group <- NULL  
-  
+  single.object <- FALSE
   
   # Deal with class action and organise into a data.table for further manipulations and plotting
   
@@ -75,7 +74,7 @@ plotTemporal <- function(input.data,
         if(is.ModelObject(x.object)) PFTs <- append(PFTs, x.object@run@pft.set)
         
       }
-      
+     
     }
     
     # POSSIBILITY 2- facet per object
@@ -83,6 +82,8 @@ plotTemporal <- function(input.data,
       
       plotting.data.dt <- data.table()
       PFTs <- list()
+      
+      
       for(x.object in input.data){
         
         if(!(is.DataObject(x.object) || is.ModelObject(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  ModelObject") }
@@ -98,25 +99,20 @@ plotTemporal <- function(input.data,
       }
       
     }
-
+    
+    # assume Quantity is the same for each facet
+    if(is.null(quant)) quant <- input.data[[1]]@quant
+    
   }
   
   # if it is a single DataObject or ModelObject, pull out the data (and PFTs if present)
   else if(is.DataObject(input.data) || is.ModelObject(input.data)){
     plotting.data.dt <- input.data@data
-    if(is.ModelObject(x.object)) PFTs <- x.object@run@pft.set
+    if(is.ModelObject(input.data)) PFTs <- input.data@run@pft.set
+    if(is.null(quant)) quant <- input.data@quant
+    single.object <- TRUE
   }
-  
-  # if it is a data.table then we just use that straight
-  else if(is.data.table(input.data)) {
-    plotting.data.dt <- copy(input.data)
-  }
-  
-  # if it is a data.frame convert it to a data.table
-  else if(is.data.frame(input.data)) {
-    plotting.data.dt <- as.data.frame(input.data)
-  }
-  
+
   # else fail
   else{
     stop(paste("Don't know how to make temporal plot for object of class", class(input.data), sep = " "))
@@ -125,27 +121,35 @@ plotTemporal <- function(input.data,
   
   
   # Check for Lon and Lat (and remove 'em)
-  if("Lon" %in% names(plotting.data.dt)) plotting.data.dt[, Lon := NULL]
-  if("Lat" %in% names(plotting.data.dt)) plotting.data.dt[, Lat := NULL]
+  if("Lon" %in% names(plotting.data.dt)) {
+    plotting.data.dt[, Lon := NULL]
+  }
+  if("Lat" %in% names(plotting.data.dt)) {
+    plotting.data.dt[, Lat := NULL]
+  }
   
-  
-  
-  
+
   # Select the layers 
   if(!is.null(layers)) {
     
-    # select the layers you want
-    
+    plotting.data.dt <- plotting.data.dt[, append(layers, c("Year", "Source")), with = FALSE]
+
   }
   
-  # make title
+  ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(is.null(title)) {
-    title <- ""
+    if(single.object) {
+      title <- makePlotTitle(quant@name, layer = NULL, source = input.data, extent = input.data@spatial.extent) 
+    }
+    else {
+      title <- element_blank()
+    }
   }
   
   # make y label
   if(is.null(y.label)) {
-    y.label <- ""
+    y.label <- element_blank()
+    if(!is.null(quant)) y.label  <- paste0(quant@name, " (", quant@units, ")")
   }
   
   
@@ -160,7 +164,7 @@ plotTemporal <- function(input.data,
   plotting.data.dt.melted <- melt(plotting.data.dt, id.vars = id.vars)
   
   # helpful check here
-  if(nrow(plotting.data.dt.melted) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are slecting a site that isn't there?")
+  if(nrow(plotting.data.dt.melted) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are selecting a site that isn't there?")
   
   # Now that the data is melted into the final form, set the colours if not already specified and if enough meta-data is available
   if(is.null(cols) && is.null(types)){
@@ -224,8 +228,8 @@ plotTemporal <- function(input.data,
   
   
   # now make the plot
-  if(is.null(group)) p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", colour = "variable")) + geom_line(aes_string(linetype="variable"), size = 1)
-  else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", group = "Source", colour = "Source")) + geom_line(aes_string(linetype="Source"), size = 1)
+  if(is.null(group)) p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Year", y = "value", colour = "variable")) + geom_line(aes_string(linetype="variable"), size = 1)
+  else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Year", y = "value", group = "Source", colour = "Source")) + geom_line(aes_string(linetype="Source"), size = 1)
  
   
   #else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", group = "Source", colour = "Source")) + geom_line(size = 1)
@@ -238,14 +242,16 @@ plotTemporal <- function(input.data,
 
   
   # labels and positioning
-  p <- p + labs(title = title,  y = y.label)
+  p <- p + labs(title = title, y = y.label)
   p <- p + theme(legend.title=element_blank())
   p <- p + theme(text = element_text(size=30))
   p <- p + theme(legend.position = legend.position, legend.key.size = unit(2, 'lines'))
+  p <- p + theme(plot.title = element_text(hjust = 0.5))
   
   # set limits
   if(!is.null(x.lim)) p <- p + scale_x_continuous(limits = x.lim)
-  if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim)
+  if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
+  p <- p + labs(y = y.label)
   
   # if facet
   if(!is.null(facet)){

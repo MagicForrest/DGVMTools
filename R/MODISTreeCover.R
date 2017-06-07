@@ -40,6 +40,7 @@ getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collect
   
   
   dt <- data.table(as.data.frame(raster,xy = TRUE))
+  print(dt)
   setnames(dt, c("Lon", "Lat", "Tree"))
   dt[,Lon:= round(Lon, 3)]
   dt[,Lat:= round(Lat, 3)]
@@ -57,7 +58,7 @@ getMODISTreeCover <- function(location = "/data/forrest/TreeCover/MOD44B/Collect
                          temporal.extent = t.extent,
                          data = dt,
                          quant = quant,
-                         spatial.extent = new("SpatialExtent",  id  = s.extent.id, name = s.extent.name, extent = extent(dt)),
+                         spatial.extent = new("SpatialExtent",  id  = s.extent.id, name = s.extent.name, extent(dt)),
                          correction.layer =  "")
   
   

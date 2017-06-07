@@ -186,13 +186,31 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   }
   
   
-  # mGPP_std 
+  # mNPP_std 
   else if(quant@id == "aNPP_std") {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     this.dt <- openLPJOutputFile(run, "mnpp", verbose = TRUE)
     this.dt <- newLayer(this.dt, "Annual")
+     
+    
+    return(this.dt)
+    
+  }
+  
+  # mNPP_std 
+  else if(quant@id == "aNEE_std") {
+    
+    # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
+    # newer versions have the agpp output variable which has the per PFT version
+    this.dt <- openLPJOutputFile(run, "cflux", verbose = TRUE)
+    
+    # make the annual total and remove ditch the rest
+    this.dt <- this.dt[, c("Lon", "Lat", "Year","NEE"), with = FALSE]
+
+   
+    print(this.dt)
     
     return(this.dt)
     

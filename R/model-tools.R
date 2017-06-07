@@ -179,13 +179,13 @@ removeFromModelRun <- function(object.id, run){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 
-makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent = NULL, temporally.averaged = FALSE, spatially.averaged = FALSE){
+makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent = NULL, temporal.aggregate.method = "none", spatial.aggregate.method = "none"){
   
   
   model.object.id <- var.string
-  if(spatially.averaged)  model.object.id <- paste(model.object.id, "SA", sep = ".")
+  if(tolower(spatial.aggregate.method) != "none")  model.object.id <- paste(model.object.id, "spatial", spatial.aggregate.method, sep = ".")
   if(!is.null(spatial.extent)) model.object.id <- paste(model.object.id, spatial.extent@id, sep = ".")
-  if(temporally.averaged)  model.object.id <- paste(model.object.id, "TA", sep = ".")
+  if(tolower(temporal.aggregate.method) != "none")  model.object.id <- paste(model.object.id, "temporal", temporal.aggregate.method, sep = ".")
   if(!is.null(temporal.extent)) model.object.id <- paste(model.object.id, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep =".")
   
   return(model.object.id)
@@ -226,9 +226,9 @@ makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent
 getModelObject <- function(run, 
                            var, 
                            temporal.extent = NULL, 
-                           temporally.average = FALSE, 
+                           temporal.aggregate.method = "none", 
                            spatial.extent = NULL, 
-                           spatially.average = FALSE,
+                           spatial.aggregate.method = "none",
                            area.weighted=TRUE,
                            write = FALSE, 
                            read.full = TRUE, 
@@ -251,8 +251,8 @@ getModelObject <- function(run,
     var.string <- quant@id
   }
   
-  ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally averaged and reduced in extent
-  model.object.id <- makeModelObjectID(var.string, temporal.extent, spatial.extent, temporally.average, spatially.average)
+  ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally aggregated and reduced in extent
+  model.object.id <- makeModelObjectID(var.string, temporal.extent, spatial.extent, temporal.aggregate.method, spatial.aggregate.method)
   file.name <- file.path(run@run.dir, paste(model.object.id, "DGVMData", sep = "."))
   if(verbose) message(paste("Seeking ModelObject with id = ", model.object.id, sep = ""))
   
@@ -342,13 +342,13 @@ getModelObject <- function(run,
     # If model is aDGVM and the required Quantity is defined for aDGVM
     else if(run@model == "aDGVM") {
 
-      if("aDGVM" %in% quant@model) {
+      if("aDGVM" %in% quant@model | "Standard" == quant@model) {
         if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
         if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
       }
-      else if(quant@model == "Standard") {
-        stop("Standard quantities nor currently defined for aDGVM")
-      }
+      #else if(quant@model == "Standard") {
+      #  stop("Standard quantities nor currently defined for aDGVM")
+      #}
       else {
         stop(paste("Quantity", var.string, "doesn't seem to be defined for aDGVM"))
       }
@@ -411,15 +411,15 @@ getModelObject <- function(run,
                                spatial.extent = new("SpatialExtent",
                                                     id = "FullDomain",
                                                     name = "Full simulation extent",
-                                                    extent =  extent(this.dt)),
+                                                    extent(this.dt)),
                                temporal.extent = new("TemporalExtent",
                                                      id = "FullTS",
                                                      name = "Full simulation duration",
                                                      start = year.range[1],
                                                      end = year.range[length(year.range)]),
                                is.site = FALSE,
-                               is.spatially.averaged = FALSE,
-                               is.temporally.averaged = FALSE,
+                               spatial.aggregate.method = FALSE,
+                               temporal.aggregate.method = FALSE,
                                run = as(run, "ModelRunInfo"))
       
       # name and store
@@ -432,7 +432,7 @@ getModelObject <- function(run,
   
   
   ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
-  if(!is.null(spatial.extent))  this.dt <- raster::crop(this.dt, spatial.extent)      
+  if(!is.null(spatial.extent))  this.dt <- crop(this.dt, spatial.extent)   
   if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
   
   
@@ -446,21 +446,21 @@ getModelObject <- function(run,
   
   
   
-  ###  DO SPATIAL AVERAGE - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
-  if(spatially.average){
-    this.dt <- doSpatialAverage(this.dt, verbose, area.weighted)
+  ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
+  if(tolower(spatial.aggregate.method) != "none"){
+    this.dt <- averageSpatial(this.dt, method = spatial.aggregate.method, verbose = verbose)
     if(verbose) {
-      message("Head of spatially averaged data.table:")
+      message("Head of spatially aggregated data.table:")
       print(utils::head(this.dt))
     }
   }
   
   
-  ###  DO TIME AVERAGE
-  if(temporally.average){
-    this.dt <- doTemporalAverage(this.dt, verbose)
+  ###  DO TIME AGGREGATATION
+  if(tolower(temporal.aggregate.method) != "none"){
+    this.dt <- averageTemporal(this.dt, method = temporal.aggregate.method, verbose = verbose)
     if(verbose) {
-      message("Head of time averaged data.table:")
+      message("Head of time aggregated data.table:")
       print(utils::head(this.dt))
     }
   }
@@ -485,13 +485,11 @@ getModelObject <- function(run,
     spatial.extent <- new("SpatialExtent",
                           id = "FullDomain",
                           name = "Full simulation extent",
-                          extent =  temp.extent)
+                          temp.extent)
     
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@extent@xmin, ",", spatial.extent@extent@xmax, "), Lat = (" ,  spatial.extent@extent@ymin, ",", spatial.extent@extent@ymax, ").", sep = ""))
+    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@xmin, ",", spatial.extent@xmax, "), Lat = (" ,  spatial.extent@ymin, ",", spatial.extent@ymax, ").", sep = ""))
     
   }
-  
-  
   
   ### BUILD THE FINAL VEGOBJECT, STORE IT IF REQUESTED AND RETURN IT
   model.object <- new("ModelObject",
@@ -501,11 +499,11 @@ getModelObject <- function(run,
                       spatial.extent = spatial.extent,
                       temporal.extent = temporal.extent,
                       is.site = is.site,
-                      is.spatially.averaged = spatially.average,
-                      is.temporally.averaged = temporally.average,
+                      spatial.aggregate.method = spatial.aggregate.method,
+                      temporal.aggregate.method = temporal.aggregate.method,
                       run = as(run, "ModelRunInfo"))
   
-  
+
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMData object...")}
@@ -757,5 +755,21 @@ averageModelObjects <- function(list.of.model.objects, run = NULL, method = mean
     
     return(new.ModelObject)
   }
+  
+}
+
+.selectYears <- function(input, temporal.extent){
+  
+  # To stop compiler NOTES
+  Year = NULL
+  
+  # Warning if a certain year is not present
+  years.present <- unique(input[["Year"]])
+  for(year in temporal.extent@start:temporal.extent@end){
+    if(!(year %in% years.present)) warning(paste("Year", year, "requested, but it is not in the data!", sep = " "))
+  }
+  
+  # return the subsetted data.table
+  return(subset(input, Year >= temporal.extent@start & Year <= temporal.extent@end))    
   
 }

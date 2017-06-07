@@ -5,7 +5,7 @@
 \title{Make an ID string for a \code{ModelObject}}
 \usage{
 makeModelObjectID(var.string, temporal.extent = NULL, spatial.extent = NULL,
-  temporally.averaged = FALSE, spatially.averaged = FALSE)
+  temporal.aggregate.method = "none", spatial.aggregate.method = "none")
 }
 \arguments{
 \item{var.string}{Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"}

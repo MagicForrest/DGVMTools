@@ -26,9 +26,9 @@ Generally these are not created directly by the user, but rather by functions li
 
 \item{\code{is.site}}{Set to TRUE is this ModelObject describes a single site}
 
-\item{\code{is.spatially.averaged}}{Set to TRUE is this ModelObject has been spatially averaged}
+\item{\code{spatial.aggregate.method}}{Set to TRUE is this ModelObject has been spatially averaged}
 
-\item{\code{is.temporally.averaged}}{Set to TRUE is this ModelObject has been temporally averaged}
+\item{\code{temporal.aggregate.method}}{Set to TRUE is this ModelObject has been temporally averaged}
 
 \item{\code{run}}{A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.}
 }}

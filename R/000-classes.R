@@ -28,22 +28,26 @@ setClass("TemporalExtent",
 
 #' Spatial extent for defining the spatial area covered by model output or other spatial data.
 #' 
-#' A simple S4 class to define a spatial extent.
+#' A simple S4 class to define a spatial extent.  It contains a raster::Extent object
 #' 
 #' @slot id A unique character string to identify this particular spatial extent.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string to describe the spatial extent. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
-#' @slot extent Currently can be a raster \code{Extent} object, but should be expanded to include a raster mask (to define an irregularly shaped spatial extent), or a c(Lon,Lat) coordinate to define a site.
+#' @slot xmin Minimum x (longitude) of this extent (inherited from raster::Extent)
+#' @slot xmax Maximum x (longitude) of this extent (inherited from raster::Extent)
+#' @slot ymin Minimum y (latitude) of this extent (inherited from raster::Extent)
+#' @slot ymax Maximum y (latitude) of this extent (inherited from raster::Extent)
 #' @exportClass SpatialExtent
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
+#' llal
+#' 
+
 setClass("SpatialExtent",
          slots = c(id = "character",
-                   name = "character",
-                   extent = "ANY"
+                   name = "character"
+                   #extent = "Extent"
          ),
-         prototype= c(id = "Global",
-                      name = "Global",
-                      extent = raster::extent(-180, 180, -90 ,90)
-         )
+         contains = "Extent"
 )
 
 #' Time periods - eg. a month or a season or a year.
@@ -337,11 +341,13 @@ setClass("Quantity",
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this ModelObject.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
 #' @slot is.site Set to TRUE is this ModelObject describes a single site
-#' @slot is.spatially.averaged Set to TRUE is this ModelObject has been spatially averaged
-#' @slot is.temporally.averaged Set to TRUE is this ModelObject has been temporally averaged
+#' @slot spatial.aggregate.method Set to TRUE is this ModelObject has been spatially averaged
+#' @slot temporal.aggregate.method Set to TRUE is this ModelObject has been temporally averaged
 #' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.
 #' @exportClass ModelObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
+
 setClass("ModelObject", 
          slots = c(id = "character",
                    data = "data.table",
@@ -349,11 +355,10 @@ setClass("ModelObject",
                    spatial.extent = "SpatialExtent",
                    temporal.extent = "TemporalExtent",
                    is.site = "logical",
-                   is.spatially.averaged = "logical",
-                   is.temporally.averaged = "logical",
+                   spatial.aggregate.method = "character",
+                   temporal.aggregate.method = "character",
                    run = "ModelRunInfo"
          )
-         
 )
 
 
@@ -544,8 +549,8 @@ setClass("SpatialComparison",
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ComparisonLayer.  Particularly useful if the data has been temporally averaged.
 #' @slot is.site Set to TRUE is this ComparisonLayer describes a single site
-#' @slot is.spatially.averaged Set to TRUE is this ComparisonLayer has been spatially averaged
-#' @slot is.temporally.averaged Set to TRUE is this ComparisonLayer has been temporally averaged
+#' @slot spatial.aggregate.method Set to TRUE is this ComparisonLayer has been spatially averaged
+#' @slot temporal.aggregate.method Set to TRUE is this ComparisonLayer has been temporally averaged
 #' @exportClass ComparisonLayer
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -560,8 +565,8 @@ setClass("ComparisonLayer",
                    spatial.extent = "SpatialExtent",
                    temporal.extent = "TemporalExtent",
                    is.site = "logical",
-                   is.spatially.averaged = "logical",
-                   is.temporally.averaged = "logical"
+                   spatial.aggregate.method = "logical",
+                   temporal.aggregate.method = "logical"
                    
          )#,
          #validity = checkComparison

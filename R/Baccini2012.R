@@ -38,11 +38,11 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
   # build the DataObject with the metadata
   Baccini.dataset <- new("DataObject",
                          id = "Baccini2012",
-                         name = "Baccini et al. 2012 Biomass",
+                         name = "Baccini et al. 2012",
                          temporal.extent = new("TemporalExtent", name = "Baccini Period", start = 2006, end = 2008),
                          data = Baccini.dt,
                          quant = lookupQuantity("vegC_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "BacciniExtent", name = "Baccini extent", extent = extent(Baccini.dt)),
+                         spatial.extent = new("SpatialExtent", id = "BacciniExtent", name = "Baccini extent", extent(Baccini.dt)),
                          correction.layer =  "")
   
   
@@ -106,7 +106,7 @@ getBaccini2012 <- function(location = "/data/forrest/Biomass", resolution = "HD"
                          temporal.extent = new("TemporalExtent", name = "Baccini Period", start = 2006, end = 2008),
                          data = Baccini.dt,
                          quant = lookupQuantity("vegC_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "BacciniExtent", name = "Baccini extent", extent = extent(Baccini.dt)),
+                         spatial.extent = new("SpatialExtent", id = "BacciniExtent", name = "Baccini extent", extent(Baccini.dt)),
                          correction.layer =  "")
   
   

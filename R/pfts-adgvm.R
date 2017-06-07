@@ -71,6 +71,27 @@ aDGVM.PFTs <- list(
              combine = "None"
   ),
   
+  TrBES = new("PFT",
+             id = "TrBE",
+             name = "Tropical Broadleaved Evergreen Shrub",
+             lifeform = "Shrub",
+             leafform = "Broadleaved",
+             phenology = "Evergreen",
+             zone = "Tropical",
+             colour = "orchid4",
+             combine = "None"
+  ),
+  
+  TrBRS = new("PFT",
+             id = "TrBR",
+             name = "Tropical Broadleaved Raingreen Shrub",
+             lifeform = "Shrub",
+             leafform = "Broadleaved",
+             phenology = "Raingreen",
+             zone = "Tropical",
+             colour = "palevioletred",
+             combine = "None"
+  ),
   
   Total = new("PFT",
               id = "Total",
