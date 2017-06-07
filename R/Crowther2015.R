@@ -22,6 +22,7 @@ getCrowther2015 <- function(location="", resolution="HD") {
     Crowther.raster <- raster::raster(file.path(location, paste0("Crowther2015.", resolution, ".nc")))
   }
 
+  Crowther.extent <- extent(Crowther.raster)
   Crowther.dt <- data.table(raster::as.data.frame(Crowther.raster, xy = TRUE))
   setnames(Crowther.dt, c("Lon", "Lat", "Tree"))
   setkey(Crowther.dt, Lon, Lat)
@@ -34,7 +35,9 @@ getCrowther2015 <- function(location="", resolution="HD") {
                          temporal.extent = new("TemporalExtent", name = "Crowther Period", start = 2006, end = 2008),
                          data = Crowther.dt,
                          quant = lookupQuantity("dens", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "CrowtherExtent", name = "Crowther extent", extent = extent(Crowther.dt)),
+                         spatial.extent = new("SpatialExtent", id = "CrowtherExtent", name = "Crowther extent", 
+                                              xmin = Crowther.extent@xmin, xmax = Crowther.extent@xmax,
+                                              ymin = Crowther.extent@ymin, ymax = Crowther.extent@ymax),
                          correction.layer =  "")
   return(Crowther.dataset)
 }
