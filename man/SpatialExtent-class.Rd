@@ -25,6 +25,4 @@ A simple S4 class to define a spatial extent.  It contains a raster::Extent obje
 
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
-
-llal
 }

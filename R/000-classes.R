@@ -308,6 +308,14 @@ setClass("Quantity",
                    colours = "function",
                    aggregate.method = "character",
                    model = "character"
+         ),
+         prototype = c(id = "UnknownID",
+                        name = "UnknownString",
+                        type = "UnknownType",
+                        units = "-",
+                        colours = fields::tim.colors,
+                        aggregate.method = "sum",
+                        model = "Standard"
          )
 )
 
