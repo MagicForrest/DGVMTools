@@ -139,13 +139,13 @@ plotResidualsHisto <- function(input.CLayers,
   
   
   # Standard titles, labels etc...
-  histo.plot <- histo.plot + ggtitle(title) + theme(plot.title = element_text(lineheight=.8, face="bold"))
+  histo.plot <- histo.plot + ggtitle(title) + theme(plot.title = element_text(lineheight=.8, face="bold", hjust = 0.5))
   histo.plot <- histo.plot + xlab(xlab)   
   histo.plot <- histo.plot + ylab(ylab)   
   histo.plot <- histo.plot + theme(text = element_text(size=30), legend.position=c(0.2,0.85))
   histo.plot <- histo.plot + geom_vline(xintercept = 0, size = 1, colour = "black")
   
-  
+
   # consider implementing automatic faceting
   #histo.plot <- histo.plot + facet_grid( Run ~ ., labeller = as_labeller(labeller))
   
