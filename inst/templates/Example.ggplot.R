@@ -5,15 +5,16 @@ library(RColorBrewer)
 library(viridis)
 
 data.dir <- "/media/jsteinkamp/FAT/DGVMTools/data"
+##data.dir <- "/senckenberg.de/cub/bigdata/LPJ/output/global"
 
 ## Define the simulation runs
 runs.def <- data.frame(id=c("base", "daily", "cryptCover"),
                        name=c("base run with conservative N fixation",
                               "sensitivity run with conservative quasi daily N fixation",
                               "sensitivity run with conservative N fixation elevated to cryptogamic N fixation"),
-                       dir=c(file.path(data.dir, "guess", "Cleveland_cons"),
-                             file.path(data.dir, "guess", "Cleveland_cons_daily"),
-                             file.path(data.dir, "guess", "Cleveland_cons_CC")),
+                       dir=c(file.path(data.dir, "Nfix", "Cleveland_cons"),
+                             file.path(data.dir, "Nfix", "Cleveland_cons_daily"),
+                             file.path(data.dir, "Nfix", "Cleveland_cons_CC")),
                        stringsAsFactors = FALSE)
 
 runs <- list()
@@ -25,8 +26,7 @@ for (i in 1:nrow(runs.def)) {
                                           name = runs.def$name[i],
                                           driving.data = "PGF",
                                           lonlat.offset = c(0,0),
-                                          year.offset = 0
-  )
+                                          year.offset = 0)
 }
 
 ########################################################################
@@ -46,10 +46,10 @@ biomes.sp <- list()
 gpp.sp    <- list()
 cpool.sp  <- list()
 for (run in runs) {
-  lai.sp[[run@id]] = getModelObject(run, 'lai', period, temporally.average=TRUE, read.full=FALSE)
+  lai.sp[[run@id]] = getModelObject(run, 'lai', period, temporal.aggregate.method = "mean", read.full=FALSE)
   biomes.sp[[run@id]] <- calcBiomes(lai.sp[[run@id]], Smith2014.scheme)
-  gpp.sp[[run@id]] = getModelObject(run, 'agpp', period, temporally.average=TRUE, read.full=FALSE)
-  cpool.sp[[run@id]] = getModelObject(run, 'cpool', period, temporally.average=TRUE, read.full=FALSE)
+  gpp.sp[[run@id]] = getModelObject(run, 'agpp', period, temporal.aggregate.method = "mean", read.full=FALSE)
+  cpool.sp[[run@id]] = getModelObject(run, 'cpool', period, temporal.aggregate.method = "mean", read.full=FALSE)
 }
 
 ## single panel without title
@@ -82,7 +82,7 @@ print(p)
 plotGGMeridional(gpp.sp[[1]], "Total", what=list(center="md", var=c(0.25, 0.75)), colors="red")
 
 ## multiple columns
-plotGGMeridional(gpp.sp[[1]], c("BNE", "TeBS", "TrBE", "Total"), what=list(center="mn", var="sd"))
+#plotGGMeridional(gpp.sp[[1]], c("BNE", "TeBS", "TrBE", "Total"), what=list(center="mn", var="sd"))
 
 
 ## several sensitivity runs with short names
@@ -122,9 +122,11 @@ period = new("TemporalExtent", id = "Reference", name = "Reference", start = 195
 ## Fill the runs with time averaged spatial data
 gpp.ts   <- list()
 cflux.ts <- list()
+cpool.ts <- list()
 for (run in runs) {
-  cflux.ts[[run@id]] = getModelObject(run, 'cflux', period, temporally.average=FALSE, spatially.average=TRUE, read.full=FALSE)
-  gpp.ts[[run@id]] = getModelObject(run, 'agpp', period, temporally.average=FALSE, spatially.average=TRUE, read.full=FALSE)
+  cflux.ts[[run@id]] = getModelObject(run, 'cflux', period, spatial.aggregate.method = "w.mean", read.full=FALSE)
+  cpool.ts[[run@id]] = getModelObject(run, 'cpool', period, spatial.aggregate.method = "w.mean", read.full=FALSE)
+  gpp.ts[[run@id]] = getModelObject(run, 'agpp', period, spatial.aggregate.method = "w.mean", read.full=FALSE)
 }
 
 ## plot several columns together
@@ -185,6 +187,10 @@ p <- plotGGTemporal(rt.ts, "Total")
 p <- p + guides(col = guide_legend(title="", ncol = 1))
 print(p)
 
+
+## Scatter
+
+
 ## Define a TIME PERIOD over which to average
 period = new("TemporalExtent", id = "Reference", name = "Reference", start = 1981, end = 2010)
 
@@ -192,8 +198,8 @@ period = new("TemporalExtent", id = "Reference", name = "Reference", start = 198
 dens.sp <- list()
 cmass.sp  <- list()
 for (run in runs) {
-  dens.sp[[run@id]] = getModelObject(run, 'dens', period, temporally.average=TRUE, read.full=FALSE)
-  cmass.sp[[run@id]] = getModelObject(run, 'cmass', period, temporally.average=TRUE, read.full=FALSE)
+  dens.sp[[run@id]] = getModelObject(run, 'dens', period, temporal.aggregate.method = "mean", read.full=FALSE)
+  cmass.sp[[run@id]] = getModelObject(run, 'cmass', period, temporal.aggregate.method = "mean", read.full=FALSE)
   biomes.sp[[run@id]] <- calcBiomes(lai.sp[[run@id]], Forrest2015.scheme)
   biomes.sp[[run@id]]@data[, Forrest2015.name := Forrest2015.scheme@units[Forrest2015]]
   dens.sp[[run@id]]@data <- dens.sp[[run@id]]@data[biomes.sp[[run@id]]@data]
@@ -238,3 +244,40 @@ gg <- plotGGScatter(dens.sp[[1]], x.column="Total", y=crowther@data, y.column="T
 gg + scale_x_log10() + scale_y_log10()
 
 
+
+
+
+
+
+
+
+location.map=c(LUZ="Soppensee", CHD="Aegelsee", ABO="Hinterburgseeli")
+
+runs <- list()
+lai.ts <- list()
+cmass.ts <- list()
+for (s in c("invade", "present")) {
+  for (l in names(location.map)) {
+    id <- paste(s, l, sep=".")
+    runs[[id]] = defineModelRun(run.dir       = file.path(data.dir, "TGisecke", paste0("output.bc.", s), location.map[l]),
+                                model         = "LPJ-GUESS",
+                                pft.set       = lpj.global.PFTs,
+                                id            = id,
+                                name          = id,
+                                driving.data  = "CRUNCEP",
+                                lonlat.offset = c(0,0),
+                                year.offset   = 0)
+
+    lai.ts[[id]] <- getModelObject(runs[[id]], 'lai', verbose=FALSE )
+    cmass.ts[[id]] <- getModelObject(runs[[id]], 'cmass', verbose=FALSE )
+  }  
+}
+p <- plotGGTemporal(lai.ts, columns=c("BES","Bet_pen", "Bet_pub", "Cor_ave", "Fra_exc", "Pin_syl", "Que_rob", "Til_cor", "Ulm_gla"), type="stack")
+print(p)
+
+p <- plotGGTemporal(lai.ts, columns=c("BES","Bet_pen", "Bet_pub", "Cor_ave", "Fra_exc", "Pin_syl", "Que_rob", "Til_cor", "Ulm_gla"), type="stack", wrap="sens")
+print(p)
+
+p <- plotGGTemporal(lai.ts, columns=c("BES","Bet_pen", "Bet_pub", "Cor_ave", "Fra_exc", "Pin_syl", "Que_rob", "Til_cor", "Ulm_gla"), type="stack")
+p <- p + facet_wrap(~sens, ncol=2)
+print(p)

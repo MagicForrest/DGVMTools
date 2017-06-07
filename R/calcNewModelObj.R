@@ -93,9 +93,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     setnames(y.dt, val.names, paste("y.", val.names, sep=""))
 
     list.str <- paste(val.names, "=x.",val.names, op, "y.", val.names, sep="", collapse=", ")
-    if (x@temporal.aggregate.method) {
+    if (x@temporal.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
-    } else if (x@spatial.aggregate.method) {
+    } else if (x@spatial.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
@@ -119,9 +119,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     setnames(x.dt, val.names, paste("x.", val.names, sep=""))
     
     list.str <- paste(val.names, "=x.", val.names, op, y.col, sep="", collapse=", ")
-    if (x@temporal.aggregate.method) {
+    if (x@temporal.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
-    } else if (x@spatial.aggregate.method) {
+    } else if (x@spatial.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
@@ -144,9 +144,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     setnames(y.dt, val.names, paste0("y.", val.names))
     
     list.str <- paste(val.names, "=", x.col, op, "y.", val.names, sep="", collapse=", ")
-    if (x@temporal.aggregate.method) {
+    if (x@temporal.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste0("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]")))
-    } else if (x@spatial.aggregate.method) {
+    } else if (x@spatial.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
@@ -176,9 +176,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     } else {
       list.str <- paste0("value=x.", x.col, op, "y.", y.col)
     }
-    if (x@temporal.aggregate.method) {
+    if (x@temporal.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
-    } else if (x@spatial.aggregate.method) {
+    } else if (x@spatial.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
