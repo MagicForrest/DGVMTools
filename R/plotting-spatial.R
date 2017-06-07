@@ -184,6 +184,13 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # now melt the layers
     data.toplot <- melt(data.toplot, measure.vars = layers)
     
+    if(!tolower(original.layers) == "absolute") { data.toplot[, Source := comp.layer@name] }
+    else {
+      setnames(data.toplot, "variable", "Source")
+      data.toplot[, variable := "Absolute"]
+    }
+    
+    
     if(is.null(override.cols) & continuous) override.cols <- data@quant@colours(20)
     legend.title <- data@quant@units
     quant <- data@quant
