@@ -39,14 +39,10 @@ setClass("TemporalExtent",
 #' @exportClass SpatialExtent
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
-#' llal
-#' 
 
 setClass("SpatialExtent",
          slots = c(id = "character",
-                   name = "character"
-                   #extent = "Extent"
-         ),
+                   name = "character"),
          contains = "Extent"
 )
 
@@ -313,17 +309,7 @@ setClass("Quantity",
                    colours = "function",
                    aggregate.method = "character",
                    model = "character"
-         ),
-         prototype = c(id = "UnknownID",
-                       name = "UnknownString",
-                       type = "UnknownType",
-                       units = "-",
-                       colours = fields::tim.colors,
-                       aggregate.method = "sum",
-                       model = "Standard"
          )
-         
-         
 )
 
 
