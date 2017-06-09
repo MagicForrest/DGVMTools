@@ -107,10 +107,13 @@ plotTemporal <- function(input.data,
   
   # if it is a single DataObject or ModelObject, pull out the data (and PFTs if present)
   else if(is.DataObject(input.data) || is.ModelObject(input.data)){
+    
+    if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
     plotting.data.dt <- input.data@data
     if(is.ModelObject(input.data)) PFTs <- input.data@run@pft.set
     if(is.null(quant)) quant <- input.data@quant
     single.object <- TRUE
+    
   }
 
   # else fail
@@ -127,15 +130,8 @@ plotTemporal <- function(input.data,
   if("Lat" %in% names(plotting.data.dt)) {
     plotting.data.dt[, Lat := NULL]
   }
-  
 
-  # Select the layers 
-  if(!is.null(layers)) {
-    
-    plotting.data.dt <- plotting.data.dt[, append(layers, c("Year", "Source")), with = FALSE]
 
-  }
-  
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(is.null(title)) {
     if(single.object) {

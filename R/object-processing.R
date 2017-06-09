@@ -97,7 +97,8 @@ averageTemporal <- compiler::cmpfun(averageTemporal.uncompiled)
 #'
 #'
 #' @param A ModelObject, DataObject or data.table to be averaged  
-#' @param mean
+#' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
+#' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A data.table
 #' @keywords internal
@@ -218,7 +219,8 @@ averageSpatial.uncompiled <- function(input.obj,
 #'
 #'
 #' @param input.obj A ModelObject, DataObject or data.table to be averaged 
-#' @param area.weighted If TRUE area-weight the gridcells
+#' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
+#' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A data.table
 #' @keywords internal
