@@ -446,7 +446,7 @@ getModelObject <- function(run,
   
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(tolower(spatial.aggregate.method) != "none"){
-    this.dt <- averageSpatial(this.dt, method = spatial.aggregate.method, verbose = verbose)
+    this.dt <- aggregateSpatial(this.dt, method = spatial.aggregate.method, verbose = verbose)
     if(verbose) {
       message("Head of spatially aggregated data.table:")
       print(utils::head(this.dt))
@@ -456,7 +456,7 @@ getModelObject <- function(run,
   
   ###  DO TIME AGGREGATATION
   if(tolower(temporal.aggregate.method) != "none"){
-    this.dt <- averageTemporal(this.dt, method = temporal.aggregate.method, verbose = verbose)
+    this.dt <- aggregateTemporal(this.dt, method = temporal.aggregate.method, verbose = verbose)
     if(verbose) {
       message("Head of time aggregated data.table:")
       print(utils::head(this.dt))
