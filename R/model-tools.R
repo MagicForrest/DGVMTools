@@ -4,7 +4,7 @@
 ######## SET KEY ON DATA TABLE USED TO STORE VEG INFORMATION
 #### PUT THIS HANDY HELPER FUNCTION FIRST TO AVOID NOTES
 
-#' Sets keys on data.table in order Lon, Lat, Year (if present)
+#' Sets keys on data.table based in the spatial (Lon, Lat) and temporal (Year, Month, Day), present. 
 #' 
 #' Keys should be set on all data.table object for sorts, joins, DGVMTool-defined operators etc.  
 #'  This function should be called on a data.table stored in a ModelObject after it has been created,
@@ -17,12 +17,8 @@
 
 setKeyDGVM <- function(dt){
   
-  keys.present <- c()
-  
-  if("Lon" %in% names(dt)) keys.present <- append(keys.present, "Lon")
-  if("Lat" %in% names(dt)) keys.present <- append(keys.present, "Lat")
-  if("Year" %in% names(dt)) keys.present <- append(keys.present, "Year")
-  
+  keys.present <- getSTInfo(dt)
+
   if(length(keys.present) > 0) setkeyv(dt, keys.present)
   
 }

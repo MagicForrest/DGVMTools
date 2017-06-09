@@ -2,7 +2,7 @@
 % Please edit documentation in R/model-tools.R
 \name{setKeyDGVM}
 \alias{setKeyDGVM}
-\title{Sets keys on data.table in order Lon, Lat, Year (if present)}
+\title{Sets keys on data.table based in the spatial (Lon, Lat) and temporal (Year, Month, Day), present.}
 \usage{
 setKeyDGVM(dt)
 }
