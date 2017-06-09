@@ -29,7 +29,7 @@ Sensible titles will be constructed if this is not specified.}
 and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
 in this function).}
 
-\item{plot.bg.col}{Colour string for the plot background.}
+\item{plot.bg.col}{Colour string for the plot background.  "white"}
 
 \item{useLongNames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!}
 

@@ -23,7 +23,7 @@
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "return.data=TRUE"
 #' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
-#' @param plot.bg.col Colour string for the plot background.
+#' @param plot.bg.col Colour string for the plot background.  "white"
 #' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
@@ -290,6 +290,10 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       
       # This follows Case 2 above
       original.layers <- layers # this is needed to keep track of the plotting mode since 'layers' is changed
+      
+      # special case to allow limits to expand for difference plot if they are not provided
+      free.limits <- !is.null(limits)
+      
       for(comp.layer in data){  
         
         # first check if discrete or continuous
@@ -351,7 +355,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       } # for each ComparisonLayer
       
       # special case for difference plots, make limits symmetric around 0
-      if(is.null(limits) & (layers == "Difference" || layers == "Percentage Difference")){
+      if(free.limits & (layers == "Difference" || layers == "Percentage Difference")){
         
         min.value <- min(data.toplot[["value"]], na.rm = TRUE)
         max.value <- max(data.toplot[["value"]], na.rm = TRUE)
@@ -360,7 +364,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
           abs.max <- min(abs.max, 300)
           legend.title <- "%"
         }
-        limits <- c(-abs.max, abs.max)
+        if(is.null(limits)) limits <- c(-abs.max, abs.max)
+        else if(abs.max > limits[2]) limits <- c(-abs.max, abs.max)
         
       } # if special case
       
@@ -371,7 +376,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         multiple.layers <- TRUE
         dont.wrap.comparison.layer.only <- TRUE
       }
-
+      
     } # for each ComparisonLayer in the list
     
     
@@ -465,6 +470,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else if(tolower(map.overlay)=="world2Hires" && !gt.180) map.overlay <- "worldHires"
     
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
+
     proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
     map.sp.lines <- map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = CRS(proj4str))
     suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
@@ -617,7 +623,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         wrap <- TRUE
         facet.string <- "~Source"
       }
-
+      
     }
     else {
       stop("If you want some 'dont.grid' option action then code it up!")
@@ -633,11 +639,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(is.null(title)) {
-   
+    
     layer.string <- NULL
     # only use the layer string for the title if we are only plotting one layer
     if(!multiple.layers) layer.string <- layers
-   
+    
     # also only use the 'source' argument in the title if we are plotting only data from only one source 
     if(multiple.sources)  title <- makePlotTitle(quant@name, layer = layer.string, source = NULL, period = temporal.extent) 
     else title <- makePlotTitle(quant@name, layer = layer.string, source = data, period = data@temporal.extent)
@@ -691,14 +697,14 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   # set background colour of panel
   mp <- mp + theme(
-    panel.background = element_rect(fill = plot.bg.col), # bg of the panel
     plot.background = element_rect(fill = plot.bg.col), # bg of the plot
-    #, panel.grid.major = element_blank() # get rid of major grid
-    #, panel.grid.minor = element_blank() # get rid of minor grid
+    panel.background = element_rect(fill = "#cae1ff"), # bg of the panel
+    #panel.grid.major = element_blank(), # get rid of major grid
+    #panel.grid.minor = element_blank(), # get rid of minor grid
     legend.background = element_rect(fill = "transparent"), #, # get rid of legend bg
     #legend.box.background = element_rect(fill = "transparent") # get rid of legend panel bg
     panel.border = element_rect(colour = "black", fill=NA),
-    strip.background  = element_rect(colour = "black")
+    strip.background  = element_rect(fill=NA)
   )
   
   
@@ -722,8 +728,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   
-  # map overlay
-  if(!is.null(map.overlay)) mp <- mp + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group = group))
+  # map overlay - suppress warning about missing values
+  
+  if(!is.null(map.overlay)) {
+    suppressWarnings( mp <- mp + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group = group)))
+  }
   
   return(mp)
   
