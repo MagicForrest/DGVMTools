@@ -1,11 +1,19 @@
 #!/usr/bin/Rscript
 
+#' Read the GCP data
+#' 
+#' @description Quick and dirty function to read the Global Carbon Project Carbon Budget (2016)
+#' 
+#' @param location Location of the data file on disk
+#' 
+#' 
+
 getGCP <- function(location = "/home/forrest/Data/Productivity/GCP/2016/") {
   
   
   filepath <- file.path(location, "Global_Carbon_Budget_2016.txt")
   
-  GCP.data <- read.table(filepath, header = TRUE)
+  GCP.data <- utils::read.table(filepath, header = TRUE)
   
   GCP.data <- data.table(GCP.data)
   

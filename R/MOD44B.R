@@ -16,8 +16,8 @@
 getMOD44B <- function(location = "/data/forrest/TreeCover/", resolution = "HD") {
   
   
-  #### NEW ORDER, CODE BELOW NOW REDUNDANT
-  
+  Lon = Lat = NULL
+ 
   # read the standard dataset
   MOD44B.dt <- readData("MOD44B",
                          location = location,

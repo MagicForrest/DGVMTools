@@ -206,9 +206,11 @@ makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent
 #' @param run The \code{ModelRun} object for which the spatially-averaged \code{ModelObject} should be built (eg. "lai")
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param temporal.extent The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)
-#' @param temporally.average Whether or not to temporally average (logical)
+#' @param temporal.aggregate.method A character string describing the method by which to temporally aggregate the data.  Leave blank or use "none" to apply no temporal aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
+#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
-#' @param spatially.average Whether or not to spatially average (logical)
+#' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank or use "none" to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
+#' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param area.weighted If TRUE, perform weighting by gridcell area when doing spatial averaging
@@ -217,10 +219,8 @@ makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent
 #' @param store.full If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{ModelObjects} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!
 #' @param adgvm.scheme In the case of analysing an aDGVM run, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.
 #' 
-#' @return A spatially averaged\code{ModelObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
+#' @return A \code{ModelObject}. 
 #' @export
-#' @import data.table raster
-#' @seealso \code{getModelObject}, \code{getVegspatial}
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 getModelObject <- function(run, 

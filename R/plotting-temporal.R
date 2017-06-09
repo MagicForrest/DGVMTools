@@ -10,7 +10,7 @@
 #' @param cols,types Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
 #' the same length as the labels arguments
 #' @param labels A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)
-#' @param x.label, y.label Character strings for the x and y axes (optional)
+#' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
 #' @param facet Character string. If specified, split the data (ie melt) the data by the column specified in the argument, and then split the plot into ribbons accordingly.  
 #' @param facet.scales Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales

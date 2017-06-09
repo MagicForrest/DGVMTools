@@ -17,7 +17,13 @@ getModelObject(run, var, temporal.extent = NULL,
 
 \item{temporal.extent}{The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)}
 
+\item{temporal.aggregate.method}{A character string describing the method by which to temporally aggregate the data.  Leave blank or use "none" to apply no temporal aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
+For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!}
+
 \item{spatial.extent}{The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)}
+
+\item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank or use "none" to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
+"weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!}
 
 \item{area.weighted}{If TRUE, perform weighting by gridcell area when doing spatial averaging}
 
@@ -32,13 +38,9 @@ getModelObject(run, var, temporal.extent = NULL,
 \item{store.full}{If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{ModelObjects} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!}
 
 \item{adgvm.scheme}{In the case of analysing an aDGVM run, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.}
-
-\item{temporally.average}{Whether or not to temporally average (logical)}
-
-\item{spatially.average}{Whether or not to spatially average (logical)}
 }
 \value{
-A spatially averaged\code{ModelObject} but with no temporal averaging or cropping (ie. include complete original simulation duration). In other words, a time-series!
+A \code{ModelObject}.
 }
 \description{
 Given a \code{ModelRun} object a \code{Quantity} object, return an appropriate spatially-averaged \code{ModelObject} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
@@ -46,9 +48,6 @@ Given a \code{ModelRun} object a \code{Quantity} object, return an appropriate s
 \details{
 Note that because there are two types of averaging available, the resulting \code{ModelRun} object can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
 Also not that the data is stored internal as a data.table object, but this is mostly not important to the user.
-}
-\seealso{
-\code{getModelObject}, \code{getVegspatial}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

@@ -15,7 +15,7 @@
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A data.table
+#' @return A ModelObject, DataObject or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -35,8 +35,8 @@ averageTemporal.uncompiled <- function(input.obj,
                             sum = sum,
                             max = max,
                             min = min,
-                            sd = sd,
-                            var = var)
+                            sd = stats::sd,
+                            var = stats::var)
   
   
   # sort out the input object class
@@ -77,13 +77,15 @@ averageTemporal.uncompiled <- function(input.obj,
 
 #' Time average a data.table
 #' 
-#' Time average all availables years (denoted by column "Years") of a data.table object.  This function does not select the years, that should be done first.
+#' Time average all availables years (denoted by column "Years") or a data.table object
 #'
-#' @param input.dt data.table  
+#' @param input.obj data.table, ModelObject or DataObject  
+#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
+#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A data.table
-#' @keywords export
-#' @import  compiler cmpfun
+#' @return A ModelObject, DataObject or data.table depending on the input object
+#' @keywords internal
+#' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 averageTemporal <- compiler::cmpfun(averageTemporal.uncompiled)
 
@@ -96,11 +98,11 @@ averageTemporal <- compiler::cmpfun(averageTemporal.uncompiled)
 #' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
 #'
 #'
-#' @param A ModelObject, DataObject or data.table to be averaged  
+#' @param input.obj ModelObject, DataObject or data.table to be averaged  
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A data.table
+#' @return A ModelObject, DataObject or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -124,8 +126,8 @@ averageSpatial.uncompiled <- function(input.obj,
                             sum = sum,
                             max = max,
                             min = min,
-                            sd = sd,
-                            var = var)
+                            sd = stats::sd,
+                            var = stats::var)
  
   if(method == "weighted.mean") method = "w.mean"
   if(method == "weighted.sum") method = "w.sum"
@@ -222,7 +224,7 @@ averageSpatial.uncompiled <- function(input.obj,
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A data.table
+#' @return A ModelObject, DataObject or data.table depending on the input object
 #' @keywords internal
 #' @import  compiler cmpfun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
