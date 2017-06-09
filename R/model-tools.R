@@ -431,9 +431,11 @@ getModelObject <- function(run,
   } # end option 4
   
   
-  ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED
+  ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED, AND CHECK THAT WE HAVE A VALID DATA.TABLE
   if(!is.null(spatial.extent))  this.dt <- crop(this.dt, spatial.extent)   
   if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
+  if(length(this.dt) == 0) stop("getModelObject() has produced an empty data.table, so subsequent code will fail.  Please check your input data and the TemporalExtent and SpatialExtent that you have requested.")
+  
   
   
   ### GET THE SPATAIAL AND TEMPORAL EXTENTS BEFORE THEY MAY BE AVERAGED AWAY
