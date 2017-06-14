@@ -10,21 +10,26 @@
 #' @return A \code{Quantity} object if it finds the right one.  Otherwise the code halts.
 lookupQuantity <- function(quant.id, model.str = "Standard"){
   
-  for(quant in dgvm.quantities){
-    
-    if(quant.id == quant@id & model.str %in% quant@model) return(quant)
-    
+  # this code will make the function first check for a user-defined dgvm.quantities list
+  local.dgvm.quantities <- get('dgvm.quantities', envir=.GlobalEnv)
+ 
+  # First look for the exact quant.id model combination
+  for(quant in local.dgvm.quantities){
+     if(quant.id == quant@id & model.str %in% quant@model) return(quant)
   }
   
-  if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std") warning(paste0("Can find a quantity with id = ", quant.id, " and model = ", model.str, " in dgvm.quantities, now searching only on the quant.id."))
-  
-  for(quant in dgvm.quantities){
-    
-    if(quant.id == quant@id) return(quant)
-    
+  # if can't find that then warn
+  if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std") {
+    warning(paste0("Can't find a quantity with id = ", quant.id, " and model = ", model.str, " in dgvm.quantities, now searching only on the quant.id."))
   }
   
-  stop(paste0("Can find a quantity with id = ", quant.id, " anywhere in dgvm.quantities"))
+  # then look for a match on the name only
+  for(quant in local.dgvm.quantities){
+        if(quant.id == quant@id) return(quant)
+  }
+
+  # fail because can't find the quantity
+  stop(paste0("Can't find a quantity with id = ", quant.id, " anywhere in dgvm.quantities (either the version in the package, or a user-extend vertsion"))
   
 }
 
