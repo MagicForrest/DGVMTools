@@ -414,8 +414,8 @@ getModelObject <- function(run,
                                                      start = year.range[1],
                                                      end = year.range[length(year.range)]),
                                is.site = FALSE,
-                               spatial.aggregate.method = FALSE,
-                               temporal.aggregate.method = FALSE,
+                               spatial.aggregate.method = "none",
+                               temporal.aggregate.method = "none",
                                run = as(run, "ModelRunInfo"))
       
       # name and store
