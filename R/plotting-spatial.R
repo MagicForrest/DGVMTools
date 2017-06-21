@@ -101,6 +101,9 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   # very special case 
   dont.wrap.comparison.layer.only <- FALSE
   
+  # this is needed to keep track of the plotting mode since 'layers' may be changed below
+  original.layers <- layers 
+  
   ### CASE 1 - A single ModelObject or DataObject
   if(is.ModelObject(data) || is.DataObject(data)) {
     
@@ -108,7 +111,10 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     grid <- FALSE
     
     # if layers not specified, assume all
-    if(is.null(layers)) layers <- names(data)
+    if(is.null(layers)) {
+      layers <- names(data)
+      original.layers <- layers 
+    }
     
     # check if layers are all continuous or discrete
     for(layer in layers) {
@@ -140,7 +146,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     single.object <- TRUE
     grid <- FALSE
-    original.layers <- layers # this is needed to keep track of the plotting mode since 'layers' is changed
     
     # first check if discrete or continuous
     for(layer in names(data)[1:2]) {
@@ -287,10 +292,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     ### CASE 3B - Plotting a bunch of ComparisonLayers
     else if(only.comparison.layers) {
-      
-      # This follows Case 2 above
-      original.layers <- layers # this is needed to keep track of the plotting mode since 'layers' is changed
-      
+    
       # special case to allow limits to expand for difference plot if they are not provided
       free.limits <- !is.null(limits)
       
@@ -642,7 +644,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     layer.string <- NULL
     # only use the layer string for the title if we are only plotting one layer
-    if(!multiple.layers) layer.string <- layers
+    if(!multiple.layers & tolower(original.layers) != "absolute") layer.string <- layers
     
     # also only use the 'source' argument in the title if we are plotting only data from only one source 
     if(multiple.sources)  title <- makePlotTitle(quant@name, layer = layer.string, source = NULL, period = temporal.extent) 
@@ -687,7 +689,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   mp <- mp + coord_fixed()
   
   # labels and positioning
-  mp <- mp + labs(title = title, y = "Latitude", x = "Longitude")
+  mp <- mp + labs(title = title)
+  mp <- mp + labs(y = "Latitude", x = "Longitude")
   if(!is.null(legend.title)) {mp <- mp + labs(fill=legend.title) }
   else { mp <- mp + theme(legend.title = element_blank()) }
   mp <- mp + theme(plot.title = element_text(hjust = 0.5))

@@ -83,10 +83,10 @@ getHandPBiomes <- function(location = "/data/forrest/Biomes/", resolution = "HD"
   # build the DataObject with the metadata
   HandPBiomes.dataset <- new("DataObject",
       id =  paste("HandPBiomes", classification, sep = "."),
-      name = paste("H&P PNV Biomes classified as in", classification, sep = " "),
+      name = paste("H&P PNV Biomes classified as in", classification.str, sep = " "),
       data = HandPBiomes.dt,
       quant = as(byIDfromList(classification, supported.biome.schemes), "Quantity"),
-      spatial.extent = new("SpatialExtent", id = "PNVExtent", name = "PNV Extent", extent = extent(HandPBiomes.dt)),
+      spatial.extent = new("SpatialExtent", id = "PNVExtent", name = "PNV Extent", extent(HandPBiomes.dt)),
       temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990),
       correction.layer =  ""
   )
