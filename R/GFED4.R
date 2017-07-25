@@ -57,7 +57,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
   
   # If no spatial extent is specified use a global extent
   if(is.null(list.of.spatial.extents)){
-    list.of.spatial.extents <- new("SpatialExtent", id = "Global", name = "Global", extent = extent(c(-180,180,-90,90)))
+    list.of.spatial.extents <- new("SpatialExtent", id = "Global", name = "Global", extent(c(-180,180,-90,90)))
   }
   
   
@@ -100,7 +100,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       
       for(month in months){
 
-        BA.thisyear <- raster::addLayer(BA.thisyear, raster::raster(paste("HDF4_SDS:UNKNOWN:", location, "original/GFED4.0_MQ_", year, month@padded.index, "_BA.hdf:0", sep = "")))
+        BA.thisyear <- raster::addLayer(BA.thisyear, raster::raster(paste("HDF4_SDS:UNKNOWN:", location, "/original/GFED4.0_MQ_", year, month@padded.index, "_BA.hdf:0", sep = "")))
         names(BA.thisyear) <- append(names(BA.thisyear)[1:length(names(BA.thisyear))-1], paste(datset.id.string, year, month@padded.index, sep = "_"))
 
       }
@@ -131,7 +131,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       
       for(day.str in day.strings){
         print(day.str)
-        BA.thisyear <- raster::addLayer(BA.thisyear, raster::raster(paste("HDF4_SDS:UNKNOWN:", location, "original/", year, "/GFED4.0_DQ_", year, day.str, "_BA.hdf:0", sep = "")))
+        BA.thisyear <- raster::addLayer(BA.thisyear, raster::raster(paste("HDF4_SDS:UNKNOWN:", location, "/original/", year, "/GFED4.0_DQ_", year, day.str, "_BA.hdf:0", sep = "")))
       }
       
     }
@@ -262,7 +262,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
                                            name = "GFED4 Burnt Area",
                                            temporal.extent = temporal.extent,
                                            data = GFED4.TS.data,
-                                           spatial.extent = new("SpatialExtent", id = "GFED4Extent", name = "GFED4 extent", extent = extent(GFED4.data.cropped)),
+                                           spatial.extent = new("SpatialExtent", id = "GFED4Extent", name = "GFED4 extent", extent(GFED4.data.cropped)),
                                            correction.layer =  "")  
       
       
@@ -271,7 +271,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
       
       if(raster::nlayers(GFED4.data.cropped) == 1) {
         
-        dataset.dt <- data.table(as.data.frame(GFED4.data.cropped,xy = TRUE))
+        dataset.dt <- data.table(raster::as.data.frame(GFED4.data.cropped,xy = TRUE))
         dataset.dt <- stats::na.omit(dataset.dt)
         setnames(dataset.dt, c("Lon", "Lat", "Annual"))
         setkey(dataset.dt, Lon, Lat)
@@ -293,7 +293,7 @@ readGFED4 <-function(location = "/data/forrest/Fire/GFED4/",
                                            temporal.extent = temporal.extent,
                                            data = dataset.dt,
                                            quant = lookupQuantity("burntfraction_std", "Standard"),
-                                           spatial.extent = new("SpatialExtent", id = "GFED4Extent", name = "GFED4 extent", extent = extent(GFED4.data.cropped)),
+                                           spatial.extent = new("SpatialExtent", id = "GFED4Extent", name = "GFED4 extent", extent(GFED4.data.cropped)),
                                            correction.layer =  "")  
       
     

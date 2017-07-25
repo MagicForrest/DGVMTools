@@ -66,7 +66,7 @@ getSimard2011 <- function(location = "/data/forrest/CanopyHeight/", resolution =
   
   print(dataset.raster)
   
-  dataset.dt <- data.table(as.data.frame(dataset.raster,xy = TRUE))
+  dataset.dt <- data.table(raster::as.data.frame(dataset.raster,xy = TRUE))
   dataset.dt <- stats::na.omit(dataset.dt)
   print(dataset.dt)
   setnames(dataset.dt, c("Lon", "Lat", "CanHght"))
