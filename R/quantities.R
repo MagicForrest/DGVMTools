@@ -1027,9 +1027,15 @@ dgvm.quantities <- list(
       type = "annual",
       units = "",
       colours = reversed.fire.palette,
-      model = c("aDGVM"))
+      model = c("aDGVM")),
  
-
+  new("Quantity",
+      id = "evap",
+      name = "Monthly Potential Evapotranspiration",
+      type = "monthly",
+      units = "mm/month",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS"))
 )
 
 

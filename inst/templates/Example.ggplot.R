@@ -1,11 +1,11 @@
-#detach('package:DGVMTools', unload=TRUE)
-if("package:DGVMTools" %in% search()) detach(name = "package:DGVMTools", unload = TRUE)
-suppressMessages(library(DGVMTools))
+if("package:DGVMTools" %in% search()) detach("package:DGVMTools", unload = TRUE)
+#suppressMessages(library(DGVMTools))
+library(DGVMTools)
 library(RColorBrewer)
 library(viridis)
 
-data.dir <- "/media/jsteinkamp/FAT/DGVMTools/data"
-##data.dir <- "/senckenberg.de/cub/bigdata/LPJ/output/global"
+data.dir <- "/Volumes/FAT/DGVMTools/data"
+##data.dir <- "/media/jsteinkamp/FAT/DGVMTools/data"
 
 ## Define the simulation runs
 runs.def <- data.frame(id=c("base", "daily", "cryptCover"),
@@ -46,10 +46,10 @@ biomes.sp <- list()
 gpp.sp    <- list()
 cpool.sp  <- list()
 for (run in runs) {
-  lai.sp[[run@id]] = getModelObject(run, 'lai', period, temporal.aggregate.method = "mean", read.full=FALSE)
-  biomes.sp[[run@id]] <- calcBiomes(lai.sp[[run@id]], Smith2014.scheme)
-  gpp.sp[[run@id]] = getModelObject(run, 'agpp', period, temporal.aggregate.method = "mean", read.full=FALSE)
-  cpool.sp[[run@id]] = getModelObject(run, 'cpool', period, temporal.aggregate.method = "mean", read.full=FALSE)
+  lai.sp[[run@id]]    = getModelObject(run, 'lai', period, temporal.aggregate.method = "mean", read.full=FALSE)
+  biomes.sp[[run@id]] = calcBiomes(lai.sp[[run@id]], Smith2014.scheme)
+  gpp.sp[[run@id]]    = getModelObject(run, 'agpp', period, temporal.aggregate.method = "mean", read.full=FALSE)
+  cpool.sp[[run@id]]  = getModelObject(run, 'cpool', period, temporal.aggregate.method = "mean", read.full=FALSE)
 }
 
 ## single panel without title
@@ -82,7 +82,7 @@ print(p)
 plotGGMeridional(gpp.sp[[1]], "Total", what=list(center="md", var=c(0.25, 0.75)), colors="red")
 
 ## multiple columns
-#plotGGMeridional(gpp.sp[[1]], c("BNE", "TeBS", "TrBE", "Total"), what=list(center="mn", var="sd"))
+plotGGMeridional(gpp.sp[[1]], c("BNE", "TeBS", "TrBE", "Total"), what=list(center="mn", var="sd"))
 
 
 ## several sensitivity runs with short names
@@ -245,14 +245,35 @@ gg + scale_x_log10() + scale_y_log10()
 
 
 
+## write NetCDF
+globalAttr <- c(version="3.1",
+                title="Impact model output for ISI-MIP2b",
+                contact="joerg.steinkamp@senckenberg.de",
+                address="Frankfurt/Main, Germany",
+                institution="Senckenberg Biodiversity and Climate Research Centre")
 
+run <- defineModelRun(run.dir = runs.def$dir[1],
+                                         model = "LPJ-GUESS",
+                                         pft.set = lpj.global.PFTs,
+                                         id = runs.def$id[1],
+                                         name = runs.def$name[1],
+                                         driving.data = "PGF",
+                                         lonlat.offset = c(0,0),
+                                         year.offset = 0)
 
+cmass = getModelObject(run, 'cmass', period, read.full=FALSE, write=TRUE)
+
+write.nc(file.path(data.dir, "cmass.nc"), cmass, fill.value=1e+20, time.unit="years", invert.lat=TRUE, compress=4, globalAttr=globalAttr)
+write.nc(file.path(data.dir, "cmass_total.nc"), cmass, "Total", fill.value=1e+20, time.unit="years", invert.lat=TRUE, compress=4, globalAttr=globalAttr)
+
+mnee = getModelObject(run, 'mnee', period, read.full=FALSE, write=TRUE)
+write.nc(file.path(data.dir, "mnee.nc"), mnee, fill.value=1e+20, time.unit="months", invert.lat=TRUE, compress=4, globalAttr=globalAttr)
 
 
 
 
 location.map=c(LUZ="Soppensee", CHD="Aegelsee", ABO="Hinterburgseeli")
-
+ 
 runs <- list()
 lai.ts <- list()
 cmass.ts <- list()

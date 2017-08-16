@@ -154,8 +154,9 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
       } else {
         stop(paste0("time.unit '", time.unit, "' not compatible with annual data."))
       }
+      ## f_js_20170728: added "-1" so it starts counting with 0 instead of 1 
       dims[['time']] <- ncdim_def("time", paste0(time.unit, " since ", start.year, "-01-01 00:00:00"),
-                                  cumsum(nc.time) + nc.time.offset, unlim=TRUE, create_dimvar=TRUE)
+                                  cumsum(nc.time) + nc.time.offset - 1, unlim=TRUE, create_dimvar=TRUE)
     } else if (monthly) {
       if (verbose)
         message("Monthly data.")
@@ -189,8 +190,9 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
       } else {
         stop(paste0("time.unit '", time.unit, "' not compatible with monthly data."))
       }
+      ## f_js_20170728: added "-1" so it starts counting with 0 instead of 1 
       dims[['time']] <- ncdim_def("time", paste0(time.unit, " since ", start.year, "-01-01 00:00:00"),
-                                  cumsum(nc.time) + nc.time.offset, unlim=TRUE, create_dimvar=TRUE)
+                                  cumsum(nc.time) + nc.time.offset - 1, unlim=TRUE, create_dimvar=TRUE)
     } else if (daily) {
       if (verbose)
         message("Daily data.")
@@ -211,8 +213,9 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
     } else {
       time <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     }
+    ## f_js_20170728: added "-1" so it starts counting with 0 instead of 1 
     dims[['time']] <- ncdim_def("time", paste0("days since ", mo@temporal.extent@end, "-01-01 00:00:00"),
-                                cumsum(time), unlim=TRUE, create_dimvar=TRUE)
+                                cumsum(time) - 1, unlim=TRUE, create_dimvar=TRUE)
   } else if (daily) {
     stop("Daily data as multi-annual average does not really make sense!")
   }
