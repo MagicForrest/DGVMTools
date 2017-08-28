@@ -76,7 +76,7 @@ dgvm.quantities <- list(
       name = "Vegetation Carbon Mass",
       type = "PFT",
       units = "kgC/m^2",
-      colours = cmass.palette,
+      colours = viridis::magma,
       model = c("Standard")),
   
   new("Quantity",
@@ -84,7 +84,7 @@ dgvm.quantities <- list(
       name = "LAI",
       type = "PFT",
       units = "m^2/m^2",
-      colours = lai.palette,
+      colours = viridis::viridis,
       model = c("Standard")),
   
   new("Quantity",
@@ -194,7 +194,7 @@ dgvm.quantities <- list(
       name = "LAI",
       type = "PFT",
       units = "m^2/m^2",
-      colours = lai.palette,
+      colours = viridis::viridis,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")),
   
   new("Quantity",
@@ -202,7 +202,7 @@ dgvm.quantities <- list(
       name = "Monthly LAI",
       type = "monthly",
       units = "m^2/m^2",
-      colours = lai.palette,
+      colours = viridis::viridis,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -242,7 +242,7 @@ dgvm.quantities <- list(
       name = "Vegetation Carbon Mass",
       type = "PFT",
       units = "kgC/m^2",
-      colours = cmass.palette,
+      colours = viridis::magma,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -258,7 +258,7 @@ dgvm.quantities <- list(
       name = "Above Ground Biomass",
       type = "PFT",
       units = "tonnes/hectare",
-      colours = cmass.palette,
+      colours = viridis::magma,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -535,7 +535,7 @@ dgvm.quantities <- list(
       name = "Vegetation Nitrogen Mass",
       type = "PFT",
       units = "gN/m^2",
-      colours = cmass.palette,
+      colours = viridis::magma,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -987,7 +987,7 @@ dgvm.quantities <- list(
       name = "Above Ground Biomass",
       type = "PFT",
       units = "kgC/m^2",
-      colours = cmass.palette,
+      colours = viridis::magma,
       aggregate.method = "sum",
       model = c("aDGVM")),
   
