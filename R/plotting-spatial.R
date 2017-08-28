@@ -85,9 +85,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
   
-  ### CHECK FOR MISSIGN ARGUMENTS AND INITILIASE WHERE APPROPRIATE
-  # ????    
-  
+  ### CHECK FOR MISSING ARGUMENTS AND INITILIASE WHERE APPROPRIATE
   categorical.legend.labels <- waiver()
   
   
@@ -103,6 +101,10 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   # this is needed to keep track of the plotting mode since 'layers' may be changed below
   original.layers <- layers 
+  
+  # special flag to make symmetric difference limits about zero 
+  # (only in the case that no limits are defined and the layers to be plotted are "Difference" or "Percentage Difference")
+  symmetric.diff.limits <- FALSE
   
   ### CASE 1 - A single ModelObject or DataObject
   if(is.ModelObject(data) || is.DataObject(data)) {
@@ -201,17 +203,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     temporal.extent <- data@temporal.extent
     
     # special case for difference plots, make limits symmetric around 0
-    if(is.null(limits) & (layers == "Difference" || layers == "Percentage Difference")){
-      
-      min.value <- min(data.toplot[["value"]], na.rm = TRUE)
-      max.value <- max(data.toplot[["value"]], na.rm = TRUE)
-      abs.max <- max(abs(min.value),abs(max.value))
-      if(layers == "Percentage Difference") {
-        abs.max <- min(abs.max, 300)
-        legend.title <- "%"
-      }
-      limits <- c(-abs.max, abs.max)
-      
+    if(missing(limits) & (layers == "Difference" || layers == "Percentage Difference")){
+      symmetric.diff.limits <- TRUE
     }
     
     # for later (handling wrap/grid and plot titles)
@@ -292,10 +285,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     ### CASE 3B - Plotting a bunch of ComparisonLayers
     else if(only.comparison.layers) {
-    
-      # special case to allow limits to expand for difference plot if they are not provided
-      free.limits <- !is.null(limits)
-      
+ 
       for(comp.layer in data){  
         
         # first check if discrete or continuous
@@ -357,19 +347,9 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
       } # for each ComparisonLayer
       
       # special case for difference plots, make limits symmetric around 0
-      if(free.limits & (layers == "Difference" || layers == "Percentage Difference")){
-        
-        min.value <- min(data.toplot[["value"]], na.rm = TRUE)
-        max.value <- max(data.toplot[["value"]], na.rm = TRUE)
-        abs.max <- max(abs(min.value),abs(max.value))
-        if(layers == "Percentage Difference") {
-          abs.max <- min(abs.max, 300)
-          legend.title <- "%"
-        }
-        if(is.null(limits)) limits <- c(-abs.max, abs.max)
-        else if(abs.max > limits[2]) limits <- c(-abs.max, abs.max)
-        
-      } # if special case
+      if(missing(limits) & (layers == "Difference" || layers == "Percentage Difference")){
+        symmetric.diff.limits <- TRUE
+      }
       
       # for later (handling wrap/grid and plot titles)
       multiple.sources <- TRUE
@@ -385,6 +365,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # finally mash them all togther to make the final data.table to plot
     data.toplot <- rbindlist(data.toplot.list)
     rm(data.toplot.list)
+  
+    
     
   } 
   
@@ -393,6 +375,20 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     stop("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects")
     
   }
+  
+  # Once got all data to plot,
+  # check special case for difference plots, make limits symmetric around 0
+  if(symmetric.diff.limits){
+    min.value <- min(data.toplot[["value"]], na.rm = TRUE)
+    max.value <- max(data.toplot[["value"]], na.rm = TRUE)
+    abs.max <- max(abs(min.value),abs(max.value))
+    if(layers == "Percentage Difference") {
+      abs.max <- min(abs.max, 300)
+      legend.title <- "%"
+    }
+    limits <- c(-abs.max, abs.max)
+  } # if special case
+  
   
   ### Rename "variable" to "Layer" which makes more conceptual sense
   setnames(data.toplot, "variable", "Layer")
@@ -472,7 +468,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     else if(tolower(map.overlay)=="world2Hires" && !gt.180) map.overlay <- "worldHires"
     
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
-
+    
     proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
     map.sp.lines <- map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = CRS(proj4str))
     suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))

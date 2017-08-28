@@ -70,6 +70,15 @@ writeNetCDF <- function(data.in,
       time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
       
     }
+    # faily - format as "days since YYYY-MM-DD HH:MM:SS"
+    else if(tolower(time.resolution) == "daily"){
+      
+      time.list <- seq(from = 0, to = raster::nlayers(data.in)-1, by = 1)*365
+      # FUDGE - if time units explicitly provided then use them
+      if(!is.null(time.vals)) time.list <- time.vals
+      time.dim <- ncdim_def("Time", time.units.string, time.list, unlim=FALSE, create_dimvar=TRUE)
+      
+    }
     else if(tolower(time.resolution) == "none"){
       # if we have a third dimension but no time resolution we have a multivariable netCDF file
       # in this case check that the var.name matches 

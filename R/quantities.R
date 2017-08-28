@@ -872,7 +872,8 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "ign/day",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      model = c("LPJ-GUESS-SPITFIRE"),
+      aggregate.method = "mean"),
   
   new("Quantity",
       id = "mfireday_duration",

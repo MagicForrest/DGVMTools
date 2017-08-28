@@ -178,9 +178,17 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
-    this.dt <- openLPJOutputFile(run, "mgpp", verbose = TRUE)
-    this.dt <- newLayer(this.dt, "Annual")
-    
+    if(file.exists(file.path(run@run.dir, "agpp.out"))){
+      this.dt <- openLPJOutputFile(run, "agpp", verbose = TRUE)
+      this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
+    }
+    else {
+      this.dt <- openLPJOutputFile(run, "mgpp", verbose = TRUE)
+      this.dt <- newLayer(this.dt, "Annual") 
+      this.dt <- this.dt[, c("Lon", "Lat", "Year","Annual"), with = FALSE]
+      this.dt <- this.dt[, Total := Annual]
+      this.dt <- this.dt[, Annual := NULL]
+    }
     return(this.dt)
     
   }
@@ -191,8 +199,15 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
-    this.dt <- openLPJOutputFile(run, "mnpp", verbose = TRUE)
-    this.dt <- newLayer(this.dt, "Annual")
+    
+    if(file.exists(file.path(run@run.dir, "anpp.out"))){
+      this.dt <- openLPJOutputFile(run, "anpp", verbose = TRUE)
+      this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
+    }
+    else{
+       this.dt <- openLPJOutputFile(run, "mnpp", verbose = TRUE)
+       this.dt <- newLayer(this.dt, "Annual")
+    }
      
     
     return(this.dt)
