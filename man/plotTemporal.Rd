@@ -8,7 +8,7 @@ plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
   title = NULL, quant = NULL, cols = NULL, types = NULL,
   labels = NULL, y.label = NULL, y.lim = NULL, x.label = NULL,
   x.lim = NULL, facet = NULL, facet.scales = "fixed",
-  legend.position = "bottom")
+  legend.position = "bottom", text.multiplier = NULL)
 }
 \arguments{
 \item{input.data}{The data to be plotted, either as a ModelObject, DataObject or a list of Model/DataObjects.}
