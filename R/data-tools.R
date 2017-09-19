@@ -5,7 +5,12 @@
 #' gridcell.
 #' 
 #' @param original.data A raster containing the original categorical data (integer values)
-#' @param output.raster A raster used to specify the resolution and extent of the returned data.
+#' @param overlay.objects A list of "overlay objects" for which the contributing pixels should be coounted.  An "overlay object"  is itself a list
+#' with entries "lon" (longitude of centre of the overlay obect ), "lat" (similar) and "extent" which can be a Raster Extent object, or a SpatialObject or
+#' anything else which can be used with raster::extract to extract data.  There is a further special case, one can use a Raster object used to specify the 
+#' gridcells/pixles in which the categorical data are counted.
+#' @param return.type A character string specifying the form of the output.  Default is "data.table", but "raster" can also be attempted although this will give unpredicatble results 
+#' if the "overlay.objects" argument does not define a regular grid.
 #' @param categories A numeric vector of the integer codes defining the categories in the original data.  
 #' Can be calculated automatically if not supplied, but can be very slow so it is recommended to supply this meta data 
 #' for large input rasters.
@@ -23,7 +28,7 @@
 #' @export   
 #'  
 
-countCategoricalData <- function(original.data, overlay.objects, return.type = "raster", categories = NULL){
+countCategoricalData <- function(original.data, overlay.objects, return.type = "data.table", categories = NULL){
 
   if(is.null(categories)) categories <- unique(original.data)
   
@@ -123,10 +128,10 @@ countCategoricalData <- function(original.data, overlay.objects, return.type = "
   # fix names and return as a raster
   names(output.df) <- c("Lon", "Lat",  paste("Class", categories, sep = "."))           
   
-  if(return.type == "data.table") {
+  if(tolower(return.type) == "data.table") {
     return(data.table(output.df))  
   }
-  else if(to.lower(return.type) == "raster") {
+  else if(tolower(return.type) == "raster") {
     final.output <- promoteToRaster(data.table(output.df), paste("Class", categories, sep = "."))
     return(final.output)
   }

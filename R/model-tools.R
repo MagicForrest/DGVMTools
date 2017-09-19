@@ -37,7 +37,6 @@ setKeyDGVM <- function(dt){
 #' @param pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @param name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @param run.dir The location of this run on the file system (Mandatory)
-#' @param driving.data A character string identifying the climate or other data used to produce this model run
 #' @param lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @param year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @param tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
@@ -46,6 +45,7 @@ setKeyDGVM <- function(dt){
 #' @param line.col  A string to define an R colour used when plotting this runs as a line graph
 #' @param line.width A numeric to define the width of a line representing this model run
 #' @param line.type A numeric to define the line style representing this model run
+#' @param driving.data A character string identifying the climate or other data used to produce this model run
 #' @param landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @param contact Name and email address of responsible person (default to OS username).
 #' @param institute Name of the institute (default "none").
@@ -57,10 +57,43 @@ setKeyDGVM <- function(dt){
 #' @seealso ModelRun, ModelRunInfo 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
-defineModelRun <- function(...){
+defineModelRun <- function(id,
+                           name,
+                           run.dir,
+                           model,
+                           pft.set,
+                           lonlat.offset = c(0,0),
+                           year.offset = 0,
+                           tolerance = 0.001,
+                           london.centre = TRUE,
+                           fill.col = "transparent",
+                           line.col = "green",
+                           line.width = 1,
+                           line.type = 1,
+                           driving.data = "No forceing data set",
+                           landuseSimulated = "FALSE",
+                           contact = "",
+                           institute = ""){
   
   # make a ModelRunInfo object from the supplied meta data
-  info <- new("ModelRunInfo", ...)
+  info <- new("ModelRunInfo",
+              id = id,
+              model = model,
+              pft.set = pft.set,
+              name = name,
+              run.dir = run.dir,                              
+              driving.data = driving.data,
+              lonlat.offset = lonlat.offset,
+              year.offset = year.offset,
+              tolerance = tolerance,
+              london.centre = london.centre,
+              fill.col = fill.col, # not commonly needed, only for more complex run comparisons
+              line.col = line.col, # # not commonly needed, only for more complex run comparisons
+              line.width = line.width, # not commonly needed, only for more complex run comparisons
+              line.type = line.type, #numeric", # not commonly needed, only for more complex run comparisons
+              landuseSimulated = landuseSimulated,
+              contact = contact,
+              institute = institute)
   
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
   if(length(info@pft.set) == 0) info@pft.set <- NULL

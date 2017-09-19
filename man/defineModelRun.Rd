@@ -4,20 +4,22 @@
 \alias{defineModelRun}
 \title{Define a ModelRun object, setting up all the required metadata (only).}
 \usage{
-defineModelRun(...)
+defineModelRun(id, name, run.dir, model, pft.set, lonlat.offset = c(0, 0),
+  year.offset = 0, tolerance = 0.001, london.centre = TRUE,
+  fill.col = "transparent", line.col = "green", line.width = 1,
+  line.type = 1, driving.data = "No forceing data set",
+  landuseSimulated = "FALSE", contact = "", institute = "")
 }
 \arguments{
 \item{id}{A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)}
-
-\item{model}{A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)}
-
-\item{pft.set}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
 
 \item{name}{A character string describing this run, ie. "LPJ-GUESS v3.1"}
 
 \item{run.dir}{The location of this run on the file system (Mandatory)}
 
-\item{driving.data}{A character string identifying the climate or other data used to produce this model run}
+\item{model}{A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)}
+
+\item{pft.set}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
 
 \item{lonlat.offset}{A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.}
 
@@ -35,17 +37,19 @@ defineModelRun(...)
 
 \item{line.type}{A numeric to define the line style representing this model run}
 
+\item{driving.data}{A character string identifying the climate or other data used to produce this model run}
+
 \item{landuseSimulated}{If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.}
 
 \item{contact}{Name and email address of responsible person (default to OS username).}
 
 \item{institute}{Name of the institute (default "none").
 
-The parameters are the slots of a ModelRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
-compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.}
+The parameters are the slots of a ModelRunInfo object. Note that that \code{id}, \code{model}, \code{pft.set} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
+Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS configurations.}
 }
 \value{
-A ModelRun object, with metadata defined by empty data slots.s
+A ModelRun object, with metadata defined by empty data slots
 }
 \description{
 This function is preferred to a \code{new("ModelRunInfo",...)} initialisation followed by  \code{new("ModelRun",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.

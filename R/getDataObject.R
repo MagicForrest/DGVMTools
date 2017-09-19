@@ -1,13 +1,22 @@
 #' Read standardised data from disk
 #' 
 #' This function reads some of the standard data from disk that has already been saved as a netCDF file
+#' 
 #' @param dataset.id Character string specifying which dataset you want
+#' @param quantity The quantity (as a \code{Quantity} or a string containing its \code{id}) to be retrieved
+#' @param layers The layers to be retrieved from the dataset
 #' @param location Character string specifying where the dataset is stored (in a subfolder named by the dataset.id)
 #' @param resolution Character string specifying the resolution.  Can be "HD" (half degree), "QD" (quarter degree), "1D" (one degree), "2D" (two degree), 
 #' "T42" (T42 spectral resoltion) or "T63" (T63 spectral reolution) 
+#' @param spatial.extent.id A character string to describe the spatial extent of the data to be read
+#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param start.year Numeric for the first year of data, currently ignored
 #' @param end.year Numeric for the last year of data, currently ignored
-#' @param temporally.average Boolean for whether or not to aferaget the years of data (currently ignored)
+#### @param temporal.extent The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)
+#' @param temporal.aggregate.method A character string describing the method by which to temporally aggregate the data.  Leave blank or use "none" to apply no temporal aggregation. 
+#### @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
+#' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank or use "none" to apply no spatially aggregation., 
+#' @param filename Optional character string.  If supplied it, the code reads this exact file and ignores the other options.
 #' @param verbose Boolean, if TRUE write out the blurb from the netCDF opening commands
 #' 
 #' This function is only useful if you have the directory with all the pre-processed datasets on your sysem.  Contact the author for this!
@@ -31,10 +40,10 @@ getDataObject <- function(dataset.id = NULL,
                           spatial.extent.id = NULL,
                           end.year = NULL,
                           temporal.aggregate.method = "none",
-                          spatial.aggregate.method = "bilinear",
+                          spatial.aggregate.method = "none",
                           verbose = FALSE) {
   
-  Lon = NULL
+  Lon = Lat = NULL
   
   # sort out quantity
   if(class(quantity) == "Quantity") {
