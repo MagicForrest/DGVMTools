@@ -37,7 +37,8 @@ plotTemporal <- function(input.data,
                          x.lim = NULL,
                          facet = NULL,
                          facet.scales = "fixed",
-                         legend.position = "bottom"
+                         legend.position = "bottom",
+                         text.multiplier = NULL
 ){
   
   
@@ -240,9 +241,11 @@ plotTemporal <- function(input.data,
   # labels and positioning
   p <- p + labs(title = title, y = y.label)
   p <- p + theme(legend.title=element_blank())
-  p <- p + theme(text = element_text(size=30))
   p <- p + theme(legend.position = legend.position, legend.key.size = unit(2, 'lines'))
   p <- p + theme(plot.title = element_text(hjust = 0.5))
+  
+  # overall text multiplier
+  if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
   # set limits
   if(!is.null(x.lim)) p <- p + scale_x_continuous(limits = x.lim)
