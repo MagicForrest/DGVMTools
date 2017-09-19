@@ -23,70 +23,117 @@
 #' @export   
 #'  
 
-countCategoricalData <- function(original.data, output.raster, categories = NULL){
-  
-  
+countCategoricalData <- function(original.data, overlay.objects, return.type = "raster", categories = NULL){
+
   if(is.null(categories)) categories <- unique(original.data)
   
   # the dataframe
   output.df <- data.frame()
   
-  # get the resolution 
-  lon.res.div.2 <- raster::xres(output.raster)/2
-  lat.res.div.2 <- raster::yres(output.raster)/2
-  
-  t1 <- Sys.time()
-  for(cell in 1:raster::ncell(output.raster)) {
-    #for(cell in 1:1000) {
+  ### Make a list of the cells of the output grid that we want to produce
+  if(class(overlay.objects)[1] == "Raster") {
     
-    # look up lon and lat
-    coords <- raster::xyFromCell(output.raster,cell)
-    lon <- coords[1]
-    lat <- coords[2]
+    temp.list <- list()
     
-    # get the frequency table (as a data.table) for this extent
-    this.extent <- raster::extent(lon-lon.res.div.2,lon+lon.res.div.2, lat-lat.res.div.2,lat+lat.res.div.2)
+    # get the resolution 
+    lon.res.div.2 <- raster::xres(overlay.objects)/2
+    lat.res.div.2 <- raster::yres(overlay.objects)/2
     
-    # check for non-NULL extent which will cause the code to fail.
-    if(!is.null(raster::intersect(this.extent, original.data))) {
+    
+    for(cell in 1:raster::ncell(overlay.objects)) {
+      #for(cell in 1:1000) {
       
+      # look up lon and lat
+      coords <- raster::xyFromCell(overlay.objects,cell)
+      lon <- coords[1]
+      lat <- coords[2]
       
-      # make a frequency table for the data in the extent.  
-      # This is the rate limiting step (by about one of order of magnitude), so if anyone can optimise this it would be great.
-      #freq1 <- Sys.time()
-      this.freq.df <- data.frame(table(raster::extract(original.data, this.extent)))
-      #freq2 <- Sys.time()
-      #print("Extract")
-      #print(freq2-freq1)
+      # get the frequency table (as a data.table) for this extent
+      this.extent <- raster::extent(lon-lon.res.div.2,lon+lon.res.div.2, lat-lat.res.div.2,lat+lat.res.div.2)
       
-      # convert the frequency table into a vector and slot it into the overall raster
-      temp.vector <- rep(0, 23)
-      for(entry in 1:nrow(this.freq.df)){
-        temp.vector[which(categories == this.freq.df$Var1[entry])] <- this.freq.df$Freq[entry]
-      }
-      output.df  <- rbind(output.df, c(lon, lat, temp.vector))
-      
-      # remove unused stuff to save memory
-      rm(coords, lat, lon, this.freq.df, temp.vector)
+      # add this extent to the list
+      temp.list[[length(temp.list + 1)]] <- list("lon" = lon, "lat" = lat, extent = list(this.extent)) 
       
     }
     
-    rm(this.extent)
+    overlay.objects <- temp.list
     
+  }
+  
+  
+  
+  t1 <- Sys.time()
+  
+  counter <- 1
+  for(overlay.object in overlay.objects) {
+    
+    counter <- counter + 1
+    
+    lat <- overlay.object$lat
+    lon <- overlay.object$lon
+    all.extents <- overlay.object$extent
+    
+    # vector to store the extracted numbers of cells
+    temp.vector <- rep(0, length(categories))
+    
+    for(this.extent in all.extents) {
+     
+      # check for non-NULL extent which will cause the code to fail.
+      if(!is.null(raster::intersect(this.extent, original.data))) {
+        
+        
+        # make a frequency table for the data in the extent.  
+        # This is the rate limiting step (by about one of order of magnitude), so if anyone can optimise this it would be great.
+        #freq1 <- Sys.time()
+        this.freq.df <- data.frame(table(raster::extract(original.data, this.extent)))
+        #freq2 <- Sys.time()
+        #print("Extract")
+        #print(freq2-freq1)
+        
+        #print(this.freq.df)
+        
+        # add the frequency table to the vector of numbers of cells
+        #print(paste0("lon = ", lon, " lat = ", lat))
+        for(entry in 1:nrow(this.freq.df)){
+          temp.vector[which(categories == this.freq.df$Var1[entry])] <- temp.vector[which(categories == this.freq.df$Var1[entry])] + this.freq.df$Freq[entry]
+          #print(temp.vector)
+        }
+        
+      }
+      
+      rm(this.extent)
+      
+    }
+    
+    # add to the output data.frame
+    output.df  <- rbind(output.df, c(lon, lat, temp.vector))
+    
+    # remove unused stuff to save memory
+    rm(coords, lat, lon, this.freq.df, temp.vector)
+  
     # show progress and garbage collect every so often
-    if(cell %% 10 == 0) {
-      print(paste("Progress: ", signif(cell/raster::ncell(output.raster),3) * 100, "%, time elapsed:", sep = ""))
+    if(counter %% 10 == 0) {
+      print(paste("Progress: ", signif(counter/length(overlay.objects),3) * 100, "%, time elapsed:", sep = ""))
       print(Sys.time()-t1)
       gc()
     }
     
-  }
+  } # for each overlay.object loop
   
   # fix names and return as a raster
   names(output.df) <- c("Lon", "Lat",  paste("Class", categories, sep = "."))           
-  final.output <- promoteToRaster(data.table(output.df), paste("Class", categories, sep = "."))
   
-  return(final.output)
+  if(return.type == "data.table") {
+    return(data.table(output.df))  
+  }
+  else if(to.lower(return.type) == "raster") {
+    final.output <- promoteToRaster(data.table(output.df), paste("Class", categories, sep = "."))
+    return(final.output)
+  }
+  else {
+    warning("Unknown return type, returning a data.table")
+    return(data.table(output.df))
+  }
   
 }
 

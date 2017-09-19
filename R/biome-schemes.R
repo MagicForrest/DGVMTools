@@ -340,58 +340,58 @@ Hickler2012.scheme <- new("BiomeScheme",
 Forrest2015MegaBiomeRules <- function(lai){
   
   # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['MaxTree']] == "TrBE") {return(1)}
+  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['MaxTree']] == "TrBE") {return("Tropical Forest")}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(5)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return("Savanna and Dry Woodlands")}
   
   # BIOME 3 - Tropical Seasonal Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['MaxTree']] == "TrBE" | lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return(1)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['MaxTree']] == "TrBE" | lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return("Tropical Forest")}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return(4)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return("Boreal Forest")}
   
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['MaxTree']] == "BNS") {return(4)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['MaxTree']] == "BNS") {return("Boreal Forest")}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return(2)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return("Temperate Evergeen Forest")}
   
   # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBS") {return(3)}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBS") {return("Temperate Deciduous Forest")}
   
   # BIOME 8 - Temperate/Boreal Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return(3) }
+  else if(as.numeric(lai[['Tree']]) > 2.5) {return("Temperate Deciduous Forest") }
   
   # BIOME 9 - Temperate Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return(3)}
+  else if(as.numeric(lai[['Tree']]) > 2.5) {return("Temperate Deciduous Forest")}
   
   # BIOME 10 - Xeric Woodland/Shrubland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return(5)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return("Savanna and Dry Woodlands")}
   
   # BIOME 11 - Moist Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return(5)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return("Savanna and Dry Woodlands")}
   
   # BIOME 12 - Dry Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return(6)}
+  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & as.numeric(lai[['Lat']]) >= 54) {return(7)}
+  else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & as.numeric(lai[['Lat']]) >= 54) {return("Tundra")}
   
   # BIOME 14 - Tall Grassland
-  else if(as.numeric(lai[['Grass']]) > 2.0) {return(6)}
+  else if(as.numeric(lai[['Grass']]) > 2.0) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 16 (1) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Tree']]) > 0.2 & as.numeric(lai[['Grass']]) < 1.0) {return(6)}
+  else if(as.numeric(lai[['Tree']]) > 0.2 & as.numeric(lai[['Grass']]) < 1.0) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 15 - Dry Grassland
-  else if(as.numeric(lai[['Grass']]) > 0.2) {return(6)}
+  else if(as.numeric(lai[['Grass']]) > 0.2) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 16 (2) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Total']]) > 0.2) {return(6)}
+  else if(as.numeric(lai[['Total']]) > 0.2) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 17 - Desert
-  else if(as.numeric(lai[['Total']]) < 0.2) {return(8)}
+  else if(as.numeric(lai[['Total']]) < 0.2) {return("Desert")}
   
   # REMAINDER
   else {

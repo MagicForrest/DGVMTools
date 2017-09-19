@@ -7,7 +7,41 @@
 defineModelRun(...)
 }
 \arguments{
-\item{...}{The parameters are the slots of a ModelRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
+\item{id}{A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)}
+
+\item{model}{A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)}
+
+\item{pft.set}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
+
+\item{name}{A character string describing this run, ie. "LPJ-GUESS v3.1"}
+
+\item{run.dir}{The location of this run on the file system (Mandatory)}
+
+\item{driving.data}{A character string identifying the climate or other data used to produce this model run}
+
+\item{lonlat.offset}{A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.}
+
+\item{year.offset}{A numeric of length 1 to match be added to the simulation years to convert them to calendar years}
+
+\item{tolerance}{The tolerance arguement when converting uneven spaced grids to regular rasters for plotting}
+
+\item{london.centre}{If TRUE, ensure that the longitudes are (-180,180) instead of (0,360)}
+
+\item{fill.col}{A string to define an R colour used when plotting this run as a histogram or scatter plot or so}
+
+\item{line.col}{A string to define an R colour used when plotting this runs as a line graph}
+
+\item{line.width}{A numeric to define the width of a line representing this model run}
+
+\item{line.type}{A numeric to define the line style representing this model run}
+
+\item{landuseSimulated}{If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.}
+
+\item{contact}{Name and email address of responsible person (default to OS username).}
+
+\item{institute}{Name of the institute (default "none").
+
+The parameters are the slots of a ModelRunInfo object. Note that that \code{id} and \code{run.dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 compulsory.  Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS confgurations.}
 }
 \value{

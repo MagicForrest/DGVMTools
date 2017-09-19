@@ -4,12 +4,11 @@
 \alias{countCategoricalData}
 \title{Aggregate categorical data to a larger resolution by counting the number of small gridcells in a larger gridcell.}
 \usage{
-countCategoricalData(original.data, output.raster, categories = NULL)
+countCategoricalData(original.data, overlay.objects, return.type = "raster",
+  categories = NULL)
 }
 \arguments{
 \item{original.data}{A raster containing the original categorical data (integer values)}
-
-\item{output.raster}{A raster used to specify the resolution and extent of the returned data.}
 
 \item{categories}{A numeric vector of the integer codes defining the categories in the original data.
 Can be calculated automatically if not supplied, but can be very slow so it is recommended to supply this meta data 
@@ -19,6 +18,8 @@ Uncertainty in this method will be zero if the gridlines in the larger output ra
 Otherwise it will be low if resolution oforiginal.data is very much lower than the output.raster, and will increase 
 This is because the gridcells in the original raster which stradle two output grid cells are placed into a gridcell in the 
 closer output raster cell, not divided with weighted contributions to each}
+
+\item{output.raster}{A raster used to specify the resolution and extent of the returned data.}
 }
 \value{
 A RasterStack recording (one layer for each category in the original data) how many of the original data gridcells with a particular

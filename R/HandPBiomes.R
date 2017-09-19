@@ -57,8 +57,26 @@ getHandPBiomes <- function(location = "/data/forrest/Biomes/", resolution = "HD"
     classification.str <- "Smith et al. 2014"
   }
   else if(classification == "Forrest2015"){
-    subs.rules <- c(4,4,3,3,3,2,3,1,1,5,5,6,6,6,5,6,8,7)
-    classification.str <- "Forrest et al. 2015"
+    subs.rules <- c("Boreal Forest",
+                    "Boreal Forest",
+                    "Temperate Deciduous Forest",
+                    "Temperate Deciduous Forest",
+                    "Temperate Deciduous Forest",
+                    "Temperate Evergeen Forest",
+                    "Temperate Deciduous Forest",
+                    "Tropical Forest",
+                    "Tropical Forest",
+                    "Savanna and Dry Woodlands",
+                    "Savanna and Dry Woodlands",
+                    "Grasslands and Dry Shrublands",
+                    "Grasslands and Dry Shrublands",
+                    "Grasslands and Dry Shrublands",
+                    "Savanna and Dry Woodlands",
+                    "Grasslands and Dry Shrublands",
+                    "Desert",
+                    "Tundra")
+ 
+     classification.str <- "Forrest et al. 2015"
   }
   # MF: Note: This is a potentially useful Megabiomes scheme 
   else if(classification == "Megabiomes_dev"){
