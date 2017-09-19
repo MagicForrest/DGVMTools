@@ -1033,7 +1033,7 @@ dgvm.quantities <- list(
       id = "evap",
       name = "Monthly Potential Evapotranspiration",
       type = "monthly",
-      units = "mm/month",
+      units = "kg m-2",
       colours = fields::tim.colors,
       model = c("LPJ-GUESS"))
 )
