@@ -113,4 +113,97 @@ getGlobcover2009HDCorrection <- function() {
   
 }
 
+#' Read Globcover2009 correction data
+#' 
+#' This function simply returns the correction factor (at 0.5 degrees) to take into account the precentage of each gridcell which is not natural vegetation.  
+#' 
+#' @return DataObject object
+#'  
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import raster
+#'
+#' No arguments, this is very quick and dirty
+#'
+#' @seealso code{processGlobcover2009}, \code{countCategoricalData} 
+getGlobcover2009Correction <- function(resolution = "HD") {
+  
+  
+  
+  if(resolution == "HD"){
+  
+  Lon = Lat = NULL
+  
+  # do class 40 first to set up the raster
+  natural.raster <- raster::raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 40, "HD.nc", sep = ".")))
+  
+  # note that is list doesn't include class 40
+  natural.landcover.classes <- c(50, 60, 70, 90, 100, 110, 120, 130, 140)
+  
+  for(lc.class in natural.landcover.classes){
+    natural.raster <- natural.raster + raster::raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", lc.class, "HD.nc", sep = ".")))
+  }
+  
+  # Also add the semi-natural mosaic pixels 
+  natural.raster <- natural.raster + raster::raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 20, "HD.nc", sep = "."))) * 0.35
+  natural.raster <- natural.raster + raster::raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 30, "HD.nc", sep = "."))) * 0.65
+  
+  # Make into a data.table
+  correction.dt  <- data.table(raster::as.data.frame(natural.raster,xy = TRUE))
+  setnames(correction.dt , c("Lon", "Lat", "Correction"))
+  setkey(correction.dt , Lon, Lat)
+  
+  }
+  
+  else {
+    
+    if(resolution == "T63") {
+      
+      all.dt <- data.table(read.table("/home/forrest/Data/LandUseLandCover/Globcover2009/PixelsCounts.T63.txt", header = TRUE))
+      
+    }
+    
+    else if(resolution == "T42") {
+      
+      all.dt <- data.table(read.table("/home/forrest/Data/LandUseLandCover/Globcover2009/PixelsCounts.T42.txt", header = TRUE))
+      
+    }
+      
+      # add sum of all classes 
+      all.classes = c(11,14,20,30,40,50,60,70,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230)
+      allClassesToSum <- paste0("Class.", all.classes)
+      all.dt[, Sum := rowSums(.SD), .SDcols=allClassesToSum]
+      
+      # add fully natural classes
+      natural.landcover.classes <- c(40, 50, 60, 70, 90, 100, 110, 120, 130, 140)
+      colsToSum <- paste0("Class.",  natural.landcover.classes )
+      all.dt[, Correction := rowSums(.SD), .SDcols=colsToSum]
+      
+      # add mosaic classes
+      all.dt[, Correction := Correction + (Class.20 * 0.35)]
+      all.dt[, Correction := Correction + (Class.30 * 0.65)]
+      
+      # now make the correction
+      all.dt[, Correction := Correction/Sum]
+      correction.dt <- na.omit(all.dt[, list(Lon, Lat, Correction)])
+  
+    
+  }
+  
+  Globcover2009.DObj <- new("DataObject",
+                            id = "Globcover2009",
+                            name = "Globcover2009-derived LU correction",
+                            temporal.extent = new("TemporalExtent", id = "Globcover2009", name = "Globcover2009", start = 2009, end = 2009),
+                            data = correction.dt,
+                            quant = lookupQuantity("fraction"),
+                            spatial.extent = new("SpatialExtent", id = "Global", name = "Global", extent(correction.dt)),
+                            correction.layer =  "")
+  
+  
+  return(Globcover2009.DObj)  
+  
+}
+
+
+
+
 
