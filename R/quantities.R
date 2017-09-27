@@ -76,7 +76,7 @@ dgvm.quantities <- list(
       name = "Vegetation Carbon Mass",
       type = "PFT",
       units = "kgC/m^2",
-      colours = viridis::magma,
+      colours = viridis::viridis,
       model = c("Standard")),
   
   new("Quantity",
@@ -242,7 +242,7 @@ dgvm.quantities <- list(
       name = "Vegetation Carbon Mass",
       type = "PFT",
       units = "kgC/m^2",
-      colours = viridis::magma,
+      colours = viridis::viridis,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -258,7 +258,7 @@ dgvm.quantities <- list(
       name = "Above Ground Biomass",
       type = "PFT",
       units = "tonnes/hectare",
-      colours = viridis::magma,
+      colours = viridis::viridis,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -535,7 +535,7 @@ dgvm.quantities <- list(
       name = "Vegetation Nitrogen Mass",
       type = "PFT",
       units = "gN/m^2",
-      colours = viridis::magma,
+      colours = viridis::viridis,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
@@ -987,7 +987,7 @@ dgvm.quantities <- list(
       name = "Above Ground Biomass",
       type = "PFT",
       units = "kgC/m^2",
-      colours = viridis::magma,
+      colours = viridis::viridis,
       aggregate.method = "sum",
       model = c("aDGVM")),
   
