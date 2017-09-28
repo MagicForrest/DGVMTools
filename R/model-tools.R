@@ -320,7 +320,7 @@ getModelObject <- function(run,
   
   ### CASE 2 - USE THE PREAVERAGED/CROPPED VEGOBJECT FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
   if(file.exists(paste(file.name)) & !read.full){
-    
+
     # get the object from disk
     if(verbose) {message(paste("File",  file.name, "found in",  run@run.dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
     model.object <- readRDS(file.name)
@@ -332,16 +332,14 @@ getModelObject <- function(run,
     
     # Check that the spatial extent matches before returning
     # Note that there are various cases to check here (the full spatial extent and specifically defined extents)
-    
-    if(is.null(spatial.extent) & model.object@spatial.extent@id == "FullDomain"
+      if(is.null(spatial.extent) & model.object@spatial.extent.id == "Full"
        | identical(spatial.extent, model.object@spatial.extent)){
       if(store.internally) {run <<- addToModelRun(model.object, run)}
       return(model.object)
-      
     }  
-    
+
     # Otherwise we must discard this ModelObject and we need to re-average (and maybe also re-read) using the cases below 
-    message(paste("Details of SpatialExtent",  spatial.extent@id, "didn't match.  So file on disk ignored and the original data is being re-read"))
+    message(paste("Details of SpatialExtent",  spatial.extent.id, "didn't match.  So file on disk ignored and the original data is being re-read"))
     rm(model.object)
     gc()
     
@@ -428,10 +426,7 @@ getModelObject <- function(run,
       
     }
     
-    
-    
-    
-    
+   
     
     else {
       
@@ -461,11 +456,13 @@ getModelObject <- function(run,
                                                     id = "FullDomain",
                                                     name = "Full simulation extent",
                                                     extent(this.dt)),
+                               spatial.extent.id = "Full",
                                temporal.extent = new("TemporalExtent",
                                                      id = "FullTS",
                                                      name = "Full simulation duration",
                                                      start = year.range[1],
                                                      end = year.range[length(year.range)]),
+                               temporal.extent.id = "Full",
                                spatial.aggregate.method = "none",
                                temporal.aggregate.method = "none",
                                run = as(run, "ModelRunInfo"))
@@ -486,17 +483,28 @@ getModelObject <- function(run,
     possible.error <- try ( extent(spatial.extent), silent=TRUE )
     if (class(possible.error) != "try-error") {
       this.dt <- crop(this.dt, spatial.extent)  
+      this.spatial.extent <- extent(spatial.extent)
+      if(missing(spatial.extent.id)) spatial.extent.id <- "CroppedToExtent"
     }
     
     # else check if some gridcells to be selected with getGridcells
     else if(is.data.frame(spatial.extent) || is.data.table(spatial.extent) || is.numeric(spatial.extent) || is.list(spatial.extent)){
       this.dt <- selectGridcells(this.dt, spatial.extent)
+      this.spatial.extent <- spatial.extent
+      if(missing(spatial.extent.id)) spatial.extent.id <- "SubsetOfGridcells"
     }
     
     # else fail with error message
     else {
       stop(paste("Trying to select a spatial extent using an object of class", class(spatial.extent)[1], "which isn't really working for me right now.  If this a Spatial* class, contact the authors and they might implement it"))
     }
+
+  }
+  else {
+    
+    this.spatial.extent <- extent(this.dt)
+    
+    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  this.spatial.extent@xmin, ",", this.spatial.extent@xmax, "), Lat = (" ,  this.spatial.extent@ymin, ",", this.spatial.extent@ymax, ").", sep = ""))
 
   }
   
@@ -507,7 +515,6 @@ getModelObject <- function(run,
   
   
   ### GET THE SPATAIAL AND TEMPORAL EXTENTS BEFORE THEY MAY BE AVERAGED AWAY
-  temp.extent <- extent(this.dt)
   ordered.years = NULL
   if("Year" %in% names(this.dt)) { 
     ordered.years <- sort(unique(this.dt[,Year]))
@@ -547,26 +554,18 @@ getModelObject <- function(run,
     )
     if(verbose) message(paste("No temporal extent specified, setting temporal extent to whole simulation duration (",  temporal.extent@start, "-", temporal.extent@end, ")", sep = ""))
   }
-  
-  # SPATIAL
-  if(is.null(spatial.extent)) {
-    
-    spatial.extent <- new("SpatialExtent",
-                          id = "FullDomain",
-                          name = "Full simulation extent",
-                          temp.extent)
-    
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent@xmin, ",", spatial.extent@xmax, "), Lat = (" ,  spatial.extent@ymin, ",", spatial.extent@ymax, ").", sep = ""))
-    
-  }
+ 
+ 
   
   ### BUILD THE FINAL VEGOBJECT, STORE IT IF REQUESTED AND RETURN IT
   model.object <- new("ModelObject",
                       id = model.object.id,
                       data = this.dt,
                       quant = quant,
-                      spatial.extent = spatial.extent,
+                      spatial.extent = this.spatial.extent,
                       temporal.extent = temporal.extent,
+                      spatial.extent.id = spatial.extent.id,
+                      temporal.extent.id = temporal.extent.id,
                       spatial.aggregate.method = spatial.aggregate.method,
                       temporal.aggregate.method = temporal.aggregate.method,
                       run = as(run, "ModelRunInfo"))
