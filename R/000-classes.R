@@ -331,8 +331,11 @@ setClass("Quantity",
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant A Quantity object to define what output this ModelObject contains
-#' @slot spatial.extent A SpatialExtent object which describes the area covered by this ModelObject.  Particularly useful if the data has been spatially averaged.
-#' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
+#' @slot spatial.extent An object which can be used to crop or subselect gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
+#' used) or a list of gridcells used by DGVMTools::selectGridcels (see that documentation for how to format the gridcell list).
+#' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
+#' @slot spatial.extent.id A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever
+#' @slot temporal.extent.id A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.aggregate.method Set to TRUE is this ModelObject has been spatially averaged
 #' @slot temporal.aggregate.method Set to TRUE is this ModelObject has been temporally averaged
 #' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.

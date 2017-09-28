@@ -1,20 +1,45 @@
 
+#' Plots sub-annual cycles
+#' 
+#' For a list of Runs and a list of Quantities, plots the sub-annual cycles.  Note this function actually reads the data, 
+#' so might not be too efficient unless the arguments which are passes through to getModelObject() via the "..." argument are optimised.  
+#' For example, by using "store.full = TRUE" and the combination "write = TRUE" and "read.full = FALSE".
+#' 
+#' @param runs A list of ModelRun objects to plot
+#' @param quants A list of Quantity objects to plot
+#' @param title A character string to override the default title.
+#' @param spatial.extent For which spatial extent to plot the seasonal cycle.  For details of how to make this selection see the documnetation for getModelObject().
+#' @param spatial.aggregate.method Charatacer string specifgin how to spatially aggregate if more than one gridcell are included in the spatial.extent.  Again, see documentation getModelObject for  details.
+#' The default is "mean", simply straight averaging.
+#' @param plotAverage Boolean, if TRUE plot the mean of all years
+#' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
+#' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
+#' Make it bigger if the text is too small on large plots and vice-versa.
+#' @param ... Arguments passed to getModelObject().  Of particular relevance are \code{spatial.extent} and \code{spatial.aggregate.method} (to determine over 
+#' which spatial extent to plot the seasonal cycle and, if that extent includes more that one gridcell, how to aggregate across that extent)
+#' 
+#' @return Returns either a ggplot2 object or a data.table (depending on the 'plot' argument)
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 
 
 plotSeasonal <- function(runs, 
                          quants, 
                          title = NULL,
-                         lon,
-                         lat,
                          spatial.extent = NULL, 
-                         spatial.aggregate.method = "none", 
-                         temporal.extent = NULL,
+                         spatial.aggregate.method = "mean", 
                          plotAverage = TRUE,
-                         text.multiplier = NULL) {
+                         text.multiplier = NULL,
+                         plot = TRUE,
+                         ...) {
   
+  
+  Quantity = Type = Month = Source = Value = Year = NULL
   
   ###### PREAMBLE ######
+  
+  # check 
+  
   
   # Take the meta-data from the first 
   
@@ -36,10 +61,13 @@ plotSeasonal <- function(runs,
       # sort out quantities    
       if(class(quant)[1] == "character") {quant <- lookupQuantity(quant, run@model)  }
       
-      # open the site and pull out the site we want
-      this.ModelObject <- getModelObject(run, quant@id, verbose = FALSE, temporal.extent = temporal.extent)
+      # open the and pull out the data that we want
+      this.ModelObject <- getModelObject(run, 
+                                         quant@id, 
+                                         spatial.extent = spatial.extent,
+                                         spatial.aggregate.method = spatial.aggregate.method,
+                                         ...)
       this.dt <-this.ModelObject@data
-      this.dt <- this.dt[abs(this.dt[["Lon"]]- lon) < 0.00001 & abs(this.dt[["Lat"]]- lat) < 0.00001,] 
       this.dt <- melt(this.dt, id.vars = c("Lon", "Lat", "Year"), variable.name = "Month", value.name = "Value")
       this.dt <- this.dt[, Quantity := quant@name]
       this.dt <- this.dt[, Type := "Single Year"]

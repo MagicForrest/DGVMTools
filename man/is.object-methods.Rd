@@ -28,8 +28,6 @@ is.SpatialComparison(input)
 \item{spatial}{check if input is a spatial object}
 
 \item{temporal}{check if input is a temporal object}
-
-\item{site}{check if input is a site object}
 }
 \value{
 logical

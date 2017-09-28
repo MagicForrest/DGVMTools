@@ -15,7 +15,9 @@
 #' @param facet Character string. If specified, split the data (ie melt) the data by the column specified in the argument, and then split the plot into ribbons accordingly.  
 #' @param facet.scales Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
-#' 
+#' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
+#' Make it bigger if the text is too small on large plots and vice-versa.
+#'  
 #' @details
 #' This function is WORK IN PROGRESS!!  For questions about functionality or feature requests contact the author
 #' 

@@ -9,8 +9,8 @@ plotSpatial(data, layers = NULL, title = NULL, layout.objs = NULL,
   useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
   ylim = NULL, limits = NULL, override.cols = NULL,
   override.cuts = NULL, discretise = FALSE, map.overlay = NULL,
-  dont.grid = FALSE, return.data = FALSE, tile = TRUE,
-  interpolate = FALSE, interior.lines = TRUE)
+  dont.grid = FALSE, plot = TRUE, tile = TRUE, interpolate = FALSE,
+  interior.lines = TRUE)
 }
 \arguments{
 \item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
@@ -25,7 +25,7 @@ Note that using these, especially "worldHires", can add quite a bit off time.}
 \item{facet.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
 Sensible titles will be constructed if this is not specified.}
 
-\item{facet.order}{A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "return.data=TRUE"
+\item{facet.order}{A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
 and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
 in this function).}
 
@@ -53,7 +53,7 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 \item{dont.grid}{Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().
 Useful when not all combinations of Sources x Layers exist which would leave blank panels.}
 
-\item{return.data}{Return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
+\item{plot}{Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
 
 \item{tile}{Boolean If true use the ggplot function geom_tile() instead of the function geom_raster().}
 

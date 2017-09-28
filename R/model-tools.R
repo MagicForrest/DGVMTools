@@ -253,9 +253,11 @@ makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent
 #' @param run The \code{ModelRun} object for which the spatially-averaged \code{ModelObject} should be built (eg. "lai")
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param temporal.extent The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)
+#' @param temporal.extent.id A character string to give an identifier for the temporal period this ModelObject covers.
 #' @param temporal.aggregate.method A character string describing the method by which to temporally aggregate the data.  Leave blank or use "none" to apply no temporal aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
+#' @param spatial.extent.id A character string to give an identifier for the spatial extent this ModelObject covers.
 #' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank or use "none" to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)

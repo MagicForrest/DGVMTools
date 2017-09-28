@@ -20,9 +20,14 @@ Generally these are not created directly by the user, but rather by functions li
 
 \item{\code{quant}}{A Quantity object to define what output this ModelObject contains}
 
-\item{\code{spatial.extent}}{A SpatialExtent object which describes the area covered by this ModelObject.  Particularly useful if the data has been spatially averaged.}
+\item{\code{spatial.extent}}{An object which can be used to crop or subselect gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
+used) or a list of gridcells used by DGVMTools::selectGridcels (see that documentation for how to format the gridcell list).}
 
-\item{\code{temporal.extent}}{A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.}
+\item{\code{temporal.extent}}{A TemporalExtent object which describes the time period covered by this ModelObject.  Particularly useful if the data has been temporally averaged.}
+
+\item{\code{spatial.extent.id}}{A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever}
+
+\item{\code{temporal.extent.id}}{A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.}
 
 \item{\code{spatial.aggregate.method}}{Set to TRUE is this ModelObject has been spatially averaged}
 

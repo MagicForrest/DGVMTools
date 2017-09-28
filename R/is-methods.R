@@ -8,7 +8,6 @@
 #' @param input Any R object to be checked
 #' @param spatial check if input is a spatial object
 #' @param temporal check if input is a temporal object
-#' @param site check if input is a site object
 #' @return logical
 #' @name is.object-methods
 #' @rdname is.object-methods

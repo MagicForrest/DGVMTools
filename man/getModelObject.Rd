@@ -18,10 +18,14 @@ getModelObject(run, var, temporal.extent = NULL,
 
 \item{temporal.extent}{The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)}
 
+\item{temporal.extent.id}{A character string to give an identifier for the temporal period this ModelObject covers.}
+
 \item{temporal.aggregate.method}{A character string describing the method by which to temporally aggregate the data.  Leave blank or use "none" to apply no temporal aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!}
 
 \item{spatial.extent}{The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)}
+
+\item{spatial.extent.id}{A character string to give an identifier for the spatial extent this ModelObject covers.}
 
 \item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank or use "none" to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
 "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!}

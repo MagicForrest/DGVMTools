@@ -117,21 +117,19 @@ getGlobcover2009HDCorrection <- function() {
 #' 
 #' This function simply returns the correction factor (at 0.5 degrees) to take into account the precentage of each gridcell which is not natural vegetation.  
 #' 
+#' @param resolution A character string specifying the resolution desired.  Can currently be "HD", "T42" or "T63".
 #' @return DataObject object
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import raster
-#'
-#' No arguments, this is very quick and dirty
 #'
 #' @seealso code{processGlobcover2009}, \code{countCategoricalData} 
 getGlobcover2009Correction <- function(resolution = "HD") {
   
-  
+  Lon = Lat = Sum = Correction = Class.20 = Class.30 = NULL
   
   if(resolution == "HD"){
   
-  Lon = Lat = NULL
+ 
   
   # do class 40 first to set up the raster
   natural.raster <- raster::raster(file.path("/home/forrest/Data/LandUseLandCover/Globcover2009/processed", paste("Globcover2009.Class", 40, "HD.nc", sep = ".")))
@@ -158,13 +156,13 @@ getGlobcover2009Correction <- function(resolution = "HD") {
     
     if(resolution == "T63") {
       
-      all.dt <- data.table(read.table("/home/forrest/Data/LandUseLandCover/Globcover2009/PixelsCounts.T63.txt", header = TRUE))
+      all.dt <- data.table(utils::read.table("/home/forrest/Data/LandUseLandCover/Globcover2009/PixelsCounts.T63.txt", header = TRUE))
       
     }
     
     else if(resolution == "T42") {
       
-      all.dt <- data.table(read.table("/home/forrest/Data/LandUseLandCover/Globcover2009/PixelsCounts.T42.txt", header = TRUE))
+      all.dt <- data.table(utils::read.table("/home/forrest/Data/LandUseLandCover/Globcover2009/PixelsCounts.T42.txt", header = TRUE))
       
     }
       
@@ -184,7 +182,7 @@ getGlobcover2009Correction <- function(resolution = "HD") {
       
       # now make the correction
       all.dt[, Correction := Correction/Sum]
-      correction.dt <- na.omit(all.dt[, list(Lon, Lat, Correction)])
+      correction.dt <- stats::na.omit(all.dt[, list(Lon, Lat, Correction)])
   
     
   }

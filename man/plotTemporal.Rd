@@ -35,6 +35,9 @@ the same length as the labels arguments}
 \item{facet.scales}{Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales}
 
 \item{legend.position}{Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector}
+
+\item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
+Make it bigger if the text is too small on large plots and vice-versa.}
 }
 \value{
 A ggplot

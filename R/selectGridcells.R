@@ -1,4 +1,15 @@
-
+#' Select gridcells from a Data/ModelObject
+#' 
+#' 
+#' @param x The ModelObject, DataObject, data.table or data.frame from which the gridcells should be selected.  Note that a data.table or data.frame 
+#' should have columns "Lon" and "Lat" included.
+#' @param gridcells The gridcells to be extracted.  Can either be a simple two-element numeric to pull out one gridcell (ordering is lon, lat), or it can be a data.frame or data.table
+#' in which the first two columns are assumed to be longitude and latitude.
+#' @param tolerance A single numeric specifying how close a required gridcell in gridcells must be to one in x.  Doesn't currently work, non-exact matching is not implemented.
+#'  
+#' 
+#' @return A ModelObject, DataObject, data.table or data.frame depending on the type of the input x.
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 selectGridcells <- function(x, gridcells, tolerance = NULL) {
   
@@ -68,7 +79,7 @@ selectGridcells <- function(x, gridcells, tolerance = NULL) {
   
   # CASE 2: Inexact matching - much less efficient
   else if(is.numeric(tolerance) && length(tolerance) == 1) {
-    final.dt <- dt[abs(dt[["Lon"]] - lon) < tolerance & abs(dt[["Lat"]]- lat) < tolerence,]
+    #final.dt <- dt[abs(dt[["Lon"]] - lon) < tolerance & abs(dt[["Lat"]]- lat) < tolerence,]
   }
   
   # OTHERWISE: badly specified tolerance

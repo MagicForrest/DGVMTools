@@ -20,7 +20,7 @@
 #' Note that using these, especially "worldHires", can add quite a bit off time. 
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
-#' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "return.data=TRUE"
+#' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
 #' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
 #' @param plot.bg.col Colour string for the plot background.  "white"
@@ -35,7 +35,7 @@
 #' @param discretise Boolen, if true, but the discretise the data according the override.cuts argument above
 #' @param dont.grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
-#' @param return.data Return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
+#' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
 #' @param tile Boolean If true use the ggplot function geom_tile() instead of the function geom_raster().
 #' @param interpolate Boolean, whether or not to use interpolation in the case of a call to geom_raster().  Probably not a good idea, results tend to hurt my eyes. 
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
@@ -77,7 +77,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         discretise = FALSE,
                         map.overlay = NULL,
                         dont.grid = FALSE,
-                        return.data = FALSE,
+                        plot = TRUE,
                         tile = TRUE,
                         interpolate = FALSE,
                         interior.lines = TRUE){
@@ -423,7 +423,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   
   
   ### RETURN DATA ONLY IF REQUESTED
-  if(return.data) return(data.toplot)
+  if(!plot) return(data.toplot)
   
   
   ### CALCULATE THE RANGE OF LONGITUDE AND LATITUDE TO BE PLOTTED AND CROP
