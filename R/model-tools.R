@@ -147,7 +147,7 @@ addToModelRun <- function(object, run){
   # Add a ModelObject to the list in the objects slot 
   else if(is.ModelObject(object)) {
     
-    # Check that run ids match, if not, stop becuase something is really wrong
+    # Check that run ids match, if not, stop because something is really wrong
     if(run@id != object@run@id){
       stop(paste("Adding ModelObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". If you are doing something funky, like averaging ModelObjects from different runs to make a a ModelRun representing an ensemble mean, then make sure that the ids match. Otherwise you will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrong to you." , sep = ""))
     }
@@ -231,9 +231,9 @@ makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent
   
   model.object.id <- var.string
   if(tolower(spatial.aggregate.method) != "none")  model.object.id <- paste(model.object.id, "spatial", spatial.aggregate.method, sep = ".")
-  if(!is.null(spatial.extent)) model.object.id <- paste(model.object.id, spatial.extent@id, sep = ".")
+  if(!is.null(spatial.extent)) model.object.id <- paste(model.object.id, spatial.extent, sep = ".")
   if(tolower(temporal.aggregate.method) != "none")  model.object.id <- paste(model.object.id, "temporal", temporal.aggregate.method, sep = ".")
-  if(!is.null(temporal.extent)) model.object.id <- paste(model.object.id, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep =".")
+  if(!is.null(temporal.extent)) model.object.id <- paste(model.object.id, temporal.extent, sep =".")
   
   return(model.object.id)
   
@@ -273,8 +273,10 @@ makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent
 getModelObject <- function(run, 
                            var, 
                            temporal.extent = NULL, 
+                           temporal.extent.id = "Full",
                            temporal.aggregate.method = "none", 
                            spatial.extent = NULL, 
+                           spatial.extent.id = "Full", 
                            spatial.aggregate.method = "none",
                            area.weighted=TRUE,
                            write = FALSE, 
@@ -299,7 +301,7 @@ getModelObject <- function(run,
   }
   
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally aggregated and reduced in extent
-  model.object.id <- makeModelObjectID(var.string, temporal.extent, spatial.extent, temporal.aggregate.method, spatial.aggregate.method)
+  model.object.id <- makeModelObjectID(var.string, temporal.extent.id, spatial.extent.id, temporal.aggregate.method, spatial.aggregate.method)
   file.name <- file.path(run@run.dir, paste(model.object.id, "DGVMData", sep = "."))
   if(verbose) message(paste("Seeking ModelObject with id = ", model.object.id, sep = ""))
   

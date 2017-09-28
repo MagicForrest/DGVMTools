@@ -5,7 +5,8 @@
 \title{Get a \code{ModelObject}, optionally with spatial/temporal averaging/cropping}
 \usage{
 getModelObject(run, var, temporal.extent = NULL,
-  temporal.aggregate.method = "none", spatial.extent = NULL,
+  temporal.extent.id = "Full", temporal.aggregate.method = "none",
+  spatial.extent = NULL, spatial.extent.id = "Full",
   spatial.aggregate.method = "none", area.weighted = TRUE, write = FALSE,
   read.full = TRUE, verbose = TRUE, store.internally = FALSE,
   store.full = FALSE, adgvm.scheme = 1)
