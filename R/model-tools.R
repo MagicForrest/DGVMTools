@@ -490,7 +490,7 @@ getModelObject <- function(run,
     
     # else check if some gridcells to be selected with getGridcells
     else if(is.data.frame(spatial.extent) || is.data.table(spatial.extent) || is.numeric(spatial.extent) || is.list(spatial.extent)){
-      this.dt <- getGridcells(this.dt, spatial.extent)
+      this.dt <- selectGridcells(this.dt, spatial.extent)
     }
     
     # else fail with error message

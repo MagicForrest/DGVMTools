@@ -1,6 +1,6 @@
 
 
-getGridcells <- function(x, gridcells, tolerance = NULL) {
+selectGridcells <- function(x, gridcells, tolerance = NULL) {
   
   # deal with the class of x,
   isDataTable <- FALSE
