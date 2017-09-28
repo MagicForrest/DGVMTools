@@ -479,9 +479,29 @@ getModelObject <- function(run,
   
   
   ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED, AND CHECK THAT WE HAVE A VALID DATA.TABLE
-  if(!is.null(spatial.extent))  this.dt <- crop(this.dt, spatial.extent)   
-  if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)     
-  if(length(this.dt) == 0) stop("getModelObject() has produced an empty data.table, so subsequent code will fail.  Please check your input data and the TemporalExtent and SpatialExtent that you have requested.")
+  if(!is.null(spatial.extent))  {
+    
+    # if the provided spatial yields a valid extent, use the crop function
+    possible.error <- try ( extent(spatial.extent), silent=TRUE )
+    if (class(possible.error) != "try-error") {
+      this.dt <- crop(this.dt, spatial.extent)  
+    }
+    
+    # else check if some gridcells to be selected with getGridcells
+    else if(is.data.frame(spatial.extent) || is.data.table(spatial.extent) || is.numeric(spatial.extent) || is.list(spatial.extent)){
+      this.dt <- getGridcells(this.dt, spatial.extent)
+    }
+    
+    # else fail with error message
+    else {
+      stop(paste("Trying to select a spatial extent using an object of class", class(spatial.extent)[1], "which isn't really working for me right now.  If this a Spatial* class, contact the authors and they might implement it"))
+    }
+
+  }
+  
+  if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)   
+  
+  if(length(this.dt) == 0) stop("getModelObject() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the temporal.exent and spatial.extent that you have requested.")
   
   
   
