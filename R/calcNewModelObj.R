@@ -39,8 +39,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
   }
 
   if (x@temporal.aggregate.method != y@temporal.aggregate.method ||
-      x@spatial.aggregate.method != y@spatial.aggregate.method ||
-      x@is.site != y@is.site)
+      x@spatial.aggregate.method != y@spatial.aggregate.method)
     stop("'x' and 'y' are averaged differently.")
 
   if (verbose)
@@ -107,7 +106,6 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                quant = quant,
                spatial.extent = x.sp.extent,
                temporal.extent = x.t.extent,
-               is.site = x@is.site,
                temporal.aggregate.method = x@temporal.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "ModelRunInfo")))      
@@ -132,7 +130,6 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                quant = quant,
                spatial.extent = x.sp.extent,
                temporal.extent = x.t.extent,
-               is.site = x@is.site,
                temporal.aggregate.method = x@temporal.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "ModelRunInfo")))      
@@ -157,7 +154,6 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                quant = quant,
                spatial.extent = x.sp.extent,
                temporal.extent = x.t.extent,
-               is.site = x@is.site,
                temporal.aggregate.method = x@temporal.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "ModelRunInfo")))      
@@ -189,7 +185,6 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                quant = quant,
                spatial.extent = x.sp.extent,
                temporal.extent = x.t.extent,
-               is.site = x@is.site,
                temporal.aggregate.method = x@temporal.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "ModelRunInfo")))      

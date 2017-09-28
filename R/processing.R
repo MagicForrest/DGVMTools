@@ -178,7 +178,6 @@ calcBiomes <-function(input, scheme){
                 quant = as(scheme, "Quantity"),
                 spatial.extent = input@spatial.extent,
                 temporal.extent = input@temporal.extent,
-                is.site = input@is.site,
                 spatial.aggregate.method = input@spatial.aggregate.method,
                 temporal.aggregate.method = input@temporal.aggregate.method,
                 run = input@run)

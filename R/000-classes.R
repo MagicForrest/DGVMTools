@@ -333,7 +333,6 @@ setClass("Quantity",
 #' @slot quant A Quantity object to define what output this ModelObject contains
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this ModelObject.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
-#' @slot is.site Set to TRUE is this ModelObject describes a single site
 #' @slot spatial.aggregate.method Set to TRUE is this ModelObject has been spatially averaged
 #' @slot temporal.aggregate.method Set to TRUE is this ModelObject has been temporally averaged
 #' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.
@@ -345,9 +344,10 @@ setClass("ModelObject",
          slots = c(id = "character",
                    data = "data.table",
                    quant = "Quantity",
-                   spatial.extent = "SpatialExtent",
-                   temporal.extent = "TemporalExtent",
-                   is.site = "logical",
+                   spatial.extent = "ANY",
+                   spatial.extent.id = "character",
+                   temporal.extent = "ANY",
+                   temporal.extent.id = "character",
                    spatial.aggregate.method = "character",
                    temporal.aggregate.method = "character",
                    run = "ModelRunInfo"
@@ -541,7 +541,6 @@ setClass("SpatialComparison",
 #' @slot info2 Either a ModeulRunInfo object or a DatasetInfo object describing the source of the second layer in the comparison
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ComparisonLayer.  Particularly useful if the data has been temporally averaged.
-#' @slot is.site Set to TRUE is this ComparisonLayer describes a single site
 #' @slot spatial.aggregate.method Set to TRUE is this ComparisonLayer has been spatially averaged
 #' @slot temporal.aggregate.method Set to TRUE is this ComparisonLayer has been temporally averaged
 #' @exportClass ComparisonLayer
@@ -557,7 +556,6 @@ setClass("ComparisonLayer",
                    info2 = "ANY",
                    spatial.extent = "SpatialExtent",
                    temporal.extent = "TemporalExtent",
-                   is.site = "logical",
                    spatial.aggregate.method = "logical",
                    temporal.aggregate.method = "logical"
                    

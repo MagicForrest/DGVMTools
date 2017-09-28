@@ -426,7 +426,6 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
                           info1 = info1,
                           info2 = info2,
                           stats = stats,
-                          is.site = FALSE,
                           spatial.aggregate.method = FALSE,
                           temporal.aggregate.method = FALSE
   )
@@ -565,7 +564,6 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
                           info1 = info1,
                           info2 = info2,
                           stats = stats,
-                          is.site = FALSE,
                           spatial.aggregate.method = FALSE,
                           temporal.aggregate.method = FALSE
   )

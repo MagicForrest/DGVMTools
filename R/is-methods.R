@@ -19,21 +19,18 @@ NULL
 
 #' @rdname is.object-methods
 #' @export
-is.DataObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
+is.DataObject <- function(input, spatial=FALSE, temporal=FALSE) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package"))) {
     if (class.def[1] == "DataObject" && attr(class.def, "package") == "DGVMTools") {
       ## JS: check more carefully if this if structure makes sense
-      if (spatial && !temporal && !site) {
-        if (!input@is.site && input@spatial.aggregate.method == "none")
+      if (spatial && !temporal) {
+        if (input@spatial.aggregate.method == "none")
           return(TRUE)
       } else if (!spatial && temporal) {
         if (input@temporal.aggregate.method == "none")
           return(TRUE)
-      } else if (site) {
-        if (input@is.site)
-          return(TRUE)
-      } else if (!spatial && !temporal && !site) {
+      } else if (!spatial && !temporal) {
         return(TRUE)
       } else {
         return(FALSE)
@@ -45,21 +42,18 @@ is.DataObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
 
 #' @rdname is.object-methods
 #' @export
-is.ModelObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
+is.ModelObject <- function(input, spatial=FALSE, temporal=FALSE) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package"))) {
     if (class.def[1] == "ModelObject" && attr(class.def, "package")=="DGVMTools") {
       ## JS: check more carefully if this if structure makes sense
-      if (spatial && !temporal && !site) {
-        if (!input@is.site && input@spatial.aggregate.method == "none")
+      if (spatial && !temporal) {
+        if (input@spatial.aggregate.method == "none")
           return(TRUE)
       } else if (!spatial && temporal) {
         if (input@temporal.aggregate.method == "none")
           return(TRUE)
-      } else if (site) {
-        if (input@is.site)
-          return(TRUE)
-      } else if (!spatial && !temporal && !site) {
+      } else if (!spatial && !temporal) {
         return(TRUE)
       } else {
         return(FALSE)

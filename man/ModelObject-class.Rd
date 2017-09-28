@@ -24,8 +24,6 @@ Generally these are not created directly by the user, but rather by functions li
 
 \item{\code{temporal.extent}}{A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.}
 
-\item{\code{is.site}}{Set to TRUE is this ModelObject describes a single site}
-
 \item{\code{spatial.aggregate.method}}{Set to TRUE is this ModelObject has been spatially averaged}
 
 \item{\code{temporal.aggregate.method}}{Set to TRUE is this ModelObject has been temporally averaged}

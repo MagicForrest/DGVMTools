@@ -464,7 +464,6 @@ getModelObject <- function(run,
                                                      name = "Full simulation duration",
                                                      start = year.range[1],
                                                      end = year.range[length(year.range)]),
-                               is.site = FALSE,
                                spatial.aggregate.method = "none",
                                temporal.aggregate.method = "none",
                                run = as(run, "ModelRunInfo"))
@@ -506,7 +505,6 @@ getModelObject <- function(run,
   
   
   ### GET THE SPATAIAL AND TEMPORAL EXTENTS BEFORE THEY MAY BE AVERAGED AWAY
-  is.site <- FALSE
   temp.extent <- extent(this.dt)
   ordered.years = NULL
   if("Year" %in% names(this.dt)) { 
@@ -567,7 +565,6 @@ getModelObject <- function(run,
                       quant = quant,
                       spatial.extent = spatial.extent,
                       temporal.extent = temporal.extent,
-                      is.site = is.site,
                       spatial.aggregate.method = spatial.aggregate.method,
                       temporal.aggregate.method = temporal.aggregate.method,
                       run = as(run, "ModelRunInfo"))

@@ -10,9 +10,9 @@
 \alias{is.SpatialComparison}
 \title{Check if an object is a particular type of DGVMTools object.}
 \usage{
-is.DataObject(input, spatial = FALSE, temporal = FALSE, site = FALSE)
+is.DataObject(input, spatial = FALSE, temporal = FALSE)
 
-is.ModelObject(input, spatial = FALSE, temporal = FALSE, site = FALSE)
+is.ModelObject(input, spatial = FALSE, temporal = FALSE)
 
 is.ComparisonLayer(input)
 
