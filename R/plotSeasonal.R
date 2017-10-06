@@ -38,11 +38,47 @@ plotSeasonal <- function(runs,
   
   ###### PREAMBLE ######
   
-  # check 
+  ### Sort out quantities    
+  
+  quants.temp <- list()
+  unit.str <- list()
+  quant.str <- list()
+  id.str <- list()
+  for(quant in quants) {
+    
+    # at this stage rebuild the list so it has proper Quantity objects rather than shorthand strings
+    if(class(quant)[1] == "character") {
+      quant <- lookupQuantity(quant, run@model)  
+    }
+    quants.temp <- append(quants.temp, quant)
+    
+    # pull out the unit string, id and long name string
+    unit.str <- append(unit.str, quant@units)
+    quant.str <- append(quant.str, quant@name)
+    id.str <- append(id.str, quant@id)
+  }
+  
+  # update the quants list
+  quants <- quants.temp
+  
+  # check the units
+  if(length(unique(unit.str)) == 1){ 
+    unit.str <- unique(unit.str) 
+  }  
+  else {
+    warning("Quants to be plotted have non-identical units in plotSeasonal(). Using the first only for the axis, label.")
+  }   
   
   
-  # Take the meta-data from the first 
+  # check the strings
+  if(length(unique(quant.str)) == 1){ 
+    quant.str <- unique(quant.str) 
+  }  
+  else {
+    quant.str <- paste(id.str, sep = ", ", collapse = ", ")
+  }   
   
+  print(quant.str)
   
   
   
@@ -57,9 +93,6 @@ plotSeasonal <- function(runs,
     ## for all quants
     quants.dts <- list()
     for(quant in quants) {
-      
-      # sort out quantities    
-      if(class(quant)[1] == "character") {quant <- lookupQuantity(quant, run@model)  }
       
       # open the and pull out the data that we want
       this.ModelObject <- getModelObject(run, 
@@ -125,7 +158,7 @@ plotSeasonal <- function(runs,
   
   # basic plot
   p <- ggplot(as.data.frame(all.dt), aes(Month, Value, colour = Quantity, group = interaction(Year, Quantity)), alpha = 0.1) + geom_line(alpha = 0.1)
- 
+  
   # add average line if chosen
   if(plotAverage) p <- p + stat_summary(aes(group=Quantity), fun.y=mean, geom="line", size = 1)
   
@@ -133,7 +166,7 @@ plotSeasonal <- function(runs,
   p <- p + scale_x_continuous(breaks = 1:12,labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep","Oct","Nov","Dec"))
   
   # set the title
-  p <- p + labs(title = title, y = paste("Dummy Quant", " (", "Dummy Unit", ")", sep = ""), x = "Month")
+  p <- p + labs(title = title, y = paste(quant.str, " (", unit.str, ")", sep = ""), x = "Month")
   p <- p + theme(plot.title = element_text(hjust = 0.5))
   
   # set legend 
