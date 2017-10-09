@@ -70,10 +70,10 @@ defineModelRun <- function(id,
                            line.col = "green",
                            line.width = 1,
                            line.type = 1,
-                           driving.data = "No forceing data set",
-                           landuseSimulated = "FALSE",
-                           contact = "",
-                           institute = ""){
+                           driving.data = "Not specified",
+                           landuseSimulated = FALSE,
+                           contact = "Not specified",
+                           institute = "Not specified"){
   
   # make a ModelRunInfo object from the supplied meta data
   info <- new("ModelRunInfo",

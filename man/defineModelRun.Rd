@@ -8,7 +8,7 @@ defineModelRun(id, name, run.dir, model, pft.set, lonlat.offset = c(0, 0),
   year.offset = 0, tolerance = 0.001, london.centre = TRUE,
   fill.col = "transparent", line.col = "green", line.width = 1,
   line.type = 1, driving.data = "No forceing data set",
-  landuseSimulated = "FALSE", contact = "", institute = "")
+  landuseSimulated = FALSE, contact = "", institute = "")
 }
 \arguments{
 \item{id}{A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)}
