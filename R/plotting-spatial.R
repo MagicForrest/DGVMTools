@@ -9,7 +9,7 @@
 #' Plot maps from a temporally-averaged \code{ModelObject}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
 #' 
 #' This is a heavy lifting function for plotting maps from ModelObjects, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
-#' As a consequence, iIt has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
+#' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
 #' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
 #'
@@ -82,12 +82,12 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         interpolate = FALSE,
                         interior.lines = TRUE){
   
+  print(data)
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
   
   ### CHECK FOR MISSING ARGUMENTS AND INITILIASE WHERE APPROPRIATE
   categorical.legend.labels <- waiver()
-  
   
   ### PREPARE DATA FOR PLOTTING
   
@@ -285,7 +285,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     
     ### CASE 3B - Plotting a bunch of ComparisonLayers
     else if(only.comparison.layers) {
- 
+      
       for(comp.layer in data){  
         
         # first check if discrete or continuous
@@ -365,7 +365,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     # finally mash them all togther to make the final data.table to plot
     data.toplot <- rbindlist(data.toplot.list)
     rm(data.toplot.list)
-  
+    
     
     
   } 
@@ -597,7 +597,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     grid <- FALSE
     wrap <- TRUE
     facet.string <- "~Layer"
-  }
+   }
   
   # CASE 3 - multiple sources and single layer (opposite of case 2)
   #          then wrap, gridding doesn't make sense
@@ -605,6 +605,15 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     grid <- FALSE
     wrap <- TRUE
     facet.string <- "~Source"
+    
+    # also set the facet order if not defined
+    if(missing(facet.order)) {
+      facet.order <- character(0)
+      for(this.object in data) {
+          facet.order <- append(facet.order, this.object@run@name)
+      }
+    }
+    
   }
   
   # CASE 4 - multiple sources and multiple layers

@@ -67,7 +67,7 @@ Returns a plot object (from spplot)
 }
 \description{
 This is a heavy lifting function for plotting maps from ModelObjects, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
-As a consequence, iIt has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
+As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
 It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 using further ggplot2 commands.
 }
