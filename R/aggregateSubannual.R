@@ -41,6 +41,18 @@ aggregateSubannual.uncompiled <- function(input.obj,
     
   }
   
+  # Function for weighting months by their number of days
+  addSeasonalWeights <- function(x){
+    
+    days.in.season <- c()
+    for(season in seasons) {
+      days.in.season <- append(days.in.season, season@days)
+    }
+    
+    return(days.in.season[x])
+    
+  }
+  
   
   ### SET UP THE AGGREGATE METHOD 
   method <- match.arg(method, c("mean", "sum", "max", "min", "sd", "var"))
@@ -67,12 +79,11 @@ aggregateSubannual.uncompiled <- function(input.obj,
     if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
   }
   
+ 
   
+  ###### DO THE AGGREGATION
   
-  
-  ### CHECK TARGET ARGUMENTS WITH RESPECT TO INPUT DATA
-  
-  # AGGREGATION TO ANNUAL
+  ### AGGREGATION TO ANNUAL
   if(tolower(target) == "annual"){
     
     # FROM DAILY
@@ -94,8 +105,8 @@ aggregateSubannual.uncompiled <- function(input.obj,
       }
       # else use the weighted mean, weighted by the days in the month
       else{
-        input.dt <- input.dt[, Weight := lapply(.SD, addMonthlyWeights), .SDcols = c("Month")]
-        output.dt <- input.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
+        output.dt <- input.dt[, Weight := lapply(.SD, addMonthlyWeights), .SDcols = c("Month")]
+        output.dt <- output.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
         output.dt[,Month:=NULL]
         output.dt[,Weight:=NULL]
       }
@@ -104,25 +115,46 @@ aggregateSubannual.uncompiled <- function(input.obj,
     
     # FROM SEASONAL
     else if("Season" %in% avail.dims) {
-      # TODO Seasonal to annual aggregation
-      stop("Seasonal to annual aggregration not yet implemented")
+      
+      if(verbose) message("Sub-annual aggregation from seasonal to annual")
+      
+      # if not doing mean, simply apply the required function
+      if(!identical(method.function, mean)){
+        output.dt <- copy(input.dt)[,lapply(.SD, method.function), by=by.dims]
+        output.dt[,Season:=NULL]
+      }
+      # else use the weighted mean by days in the season
+      else {
+        
+        #  calculate weights
+        output.dt <- copy(input.dt)[, Weight := lapply(.SD, addSeasonalWeights), .SDcols = c("Season")]
+        print(str(output.dt))
+        
+        output.dt <- output.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
+        output.dt[,Season:=NULL]
+        output.dt[,Weight:=NULL]
+        
+      }
+    
     }
+    
     else if("Year" %in% avail.dims) {
-      warning("Aggregation to Annual requested but data already are annual so no avergaing done and returning original data!")
+      warning("Aggregation to Annual requested but data already are annual so no averaging done and returning original data!")
       return(input.obj)
     }
+    
     else{
       stop("Subannual aggregation requested but not time dimensions present.  Exiting...")
     }
   }
   
-  # Aggregation to seasonal
+  ### AGGREGATION TO SEASONAL
   else if(tolower(target) == "season"){
     
     # FROM DAILY
     if("Day" %in% avail.dims) {
       # TODO Daily to seasonal aggregation
-      stop("Seasonal to annual aggregration not yet implemented")
+      stop("Daily to seasonal aggregration not yet implemented")
     }
     
     # FROM MONTHLY
@@ -133,19 +165,18 @@ aggregateSubannual.uncompiled <- function(input.obj,
       # set the season 
       # this function is a bit dirty, but okay for now
       monthToSeason <- function(x){
-        month.to.season <- c("DJF","DJF", "MAM","MAM","MAM","JJA","JJA","JJA","SOM","SOM","SOM","DJF")
-        return(month.to.season[x])
+        month.to.season <- c("1","1","2","2","2","3","3","3","4","4","4","1")
+        return(as.numeric(month.to.season[x]))
       }
-      input.dt <- input.dt[, Season := lapply(.SD, monthToSeason), .SDcols = c("Month")]
+      output.dt <- copy(input.dt)[, Season := lapply(.SD, monthToSeason), .SDcols = c("Month")]
       by.dims <- append(by.dims, "Season")
       
-      
-      
+    
       # if not doing mean, simply apply the required function
       if(!identical(method.function, mean)){
         
-        input.dt <- input.dt[, Month:=NULL]
-        output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
+        output.dt <- output.dt[, Month:=NULL]
+        output.dt <- output.dt[,lapply(.SD, method.function), by=by.dims]
 
       }
       
@@ -153,17 +184,14 @@ aggregateSubannual.uncompiled <- function(input.obj,
       else{
         
         # calculate the weights
-        input.dt <- input.dt[, Weight := lapply(.SD, addMonthlyWeights), .SDcols = c("Month")]
-        input.dt <- input.dt[, Month:=NULL]
+        output.dt <- output.dt[, Weight := lapply(.SD, addMonthlyWeights), .SDcols = c("Month")]
+        output.dt <- output.dt[, Month:=NULL]
         
         # do weighted mean
-        output.dt <- input.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
+        output.dt <- output.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
         output.dt[,Weight:=NULL]
 
       }
-      
-      
-      
       
     }
     
@@ -177,17 +205,19 @@ aggregateSubannual.uncompiled <- function(input.obj,
     }
   }
   
-  # Aggregate to month
+  ### AGGREGATE TO MONTHLY
   else if(tolower(target) == "month"){
 
+    # FROM DAILY
     if("Day" %in% avail.dims) { 
-      stop("Daill to monthly aggregration not yet implemented")
+      stop("Daily to monthly aggregration not yet implemented")
     }
     else if("Month" %in% avail.dims) {warning("Aggregation to monthly requested but data already are already monthly, so no averging done and returning original data!")
       return(input.obj)}
     else{
       stop("Subannual aggregation to Month requested but sub-monthly time dimension not present.  Exiting...")
     }
+    
   }
   
   # Else fail
@@ -198,11 +228,6 @@ aggregateSubannual.uncompiled <- function(input.obj,
   
   if(verbose) message("...done.")
   
-  
-  # Delete the full dataset to free up memory - necessary??
-  rm(input.dt)
-  gc()
-  
   # Set keys and return the averaged table
   setKeyDGVM(output.dt)
   
@@ -210,7 +235,6 @@ aggregateSubannual.uncompiled <- function(input.obj,
   if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
     input.obj@data <- output.dt
     input.obj@temporal.aggregate.method <- method
-    print(input.obj@spatial.extent)
     input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent.id, spatial.extent = input.obj@spatial.extent.id, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
     return(input.obj)
   }
