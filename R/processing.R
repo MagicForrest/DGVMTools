@@ -161,10 +161,7 @@ calcBiomes <-function(input, scheme){
   if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
   
   # get spatial and temporal columns
-  st.cols <- c()
-  for(st.colname in c("Lon", "Lat", "Year", "Month", "Day")){
-    if(st.colname %in% names(dt)) st.cols <- append(st.cols, st.colname)
-  }
+  st.cols <- getSTInfo(st.cols)
   
   # calculate the biomes (first add it to the existing data.table then subset to make a new data.table and then delete the column from the original)
   suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
@@ -520,7 +517,7 @@ getSTInfo <- function(x, info = "names") {
   }
   
   all.cols <- names(x)
-  for(dim in c("Lon", "Lat", "Year", "Month", "Day")) {
+  for(dim in c("Lon", "Lat", "Year", "Season", "Month", "Day")) {
     
     if(dim %in% all.cols) {
       

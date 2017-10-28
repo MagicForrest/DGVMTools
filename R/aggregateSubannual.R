@@ -1,0 +1,235 @@
+#!/usr/bin/Rscript
+
+
+#############################################################################
+######################### SUBANNUAL AGGREGATION ##############################
+#############################################################################
+
+#
+#' Time average a data.table
+#' 
+#' Time average all availables years (denoted by column "Years") or a data.table object
+#'
+#' @param input.obj data.table, ModelObject or DataObject  
+#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
+#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Annual" (default)  
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A ModelObject, DataObject or data.table depending on the input object
+#' @keywords internal
+#' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+aggregateSubannual.uncompiled <- function(input.obj,
+                                          method = "mean",
+                                          target = "Annual",
+                                          verbose = FALSE){
+  
+  # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
+  # Possible can solve this by replace the subset function
+  Year = Lat = Lon = NULL
+  
+  
+  # Function for weighting months by their number of days
+  addMonthlyWeights <- function(x){
+    
+    days.in.month <- c()
+    for(month in months) {
+      days.in.month <- append(days.in.month, month@days)
+    }
+    
+    return(days.in.month[x])
+    
+  }
+  
+  
+  ### SET UP THE AGGREGATE METHOD 
+  method <- match.arg(method, c("mean", "sum", "max", "min", "sd", "var"))
+  method.function <- switch(method,
+                            mean = mean,
+                            sum = sum,
+                            max = max,
+                            min = min,
+                            sd = stats::sd,
+                            var = stats::var)
+  
+  
+  # sort out the input object class
+  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {input.dt <- input.obj@data}
+  else if(is.data.table(input.obj)) {input.dt <- input.obj}
+  
+  
+  ### Get the spatial-temporal dimensions present
+  avail.dims <- getSTInfo(input.obj)
+  
+  ### Check the 'by' dims
+  by.dims <- c()
+  for(possible.dim in list("Lon","Lat","Year")){
+    if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
+  }
+  
+  
+  
+  
+  ### CHECK TARGET ARGUMENTS WITH RESPECT TO INPUT DATA
+  
+  # AGGREGATION TO ANNUAL
+  if(tolower(target) == "annual"){
+    
+    # FROM DAILY
+    if("Day" %in% avail.dims) {
+      if(verbose) message("Sub-annual aggregation from daily to annual")
+      output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
+      output.dt[,Day:=NULL]
+    }
+    
+    # FROM MONTHLY
+    else if("Month" %in% avail.dims) {
+      
+      if(verbose) message("Sub-annual aggregation from monthly to annual")
+      
+      # if not doing mean, simply apply the required function
+      if(!identical(method.function, mean)){
+        output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
+        output.dt[,Month:=NULL]
+      }
+      # else use the weighted mean, weighted by the days in the month
+      else{
+        input.dt <- input.dt[, Weight := lapply(.SD, addMonthlyWeights), .SDcols = c("Month")]
+        output.dt <- input.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
+        output.dt[,Month:=NULL]
+        output.dt[,Weight:=NULL]
+      }
+      
+    }
+    
+    # FROM SEASONAL
+    else if("Season" %in% avail.dims) {
+      # TODO Seasonal to annual aggregation
+      stop("Seasonal to annual aggregration not yet implemented")
+    }
+    else if("Year" %in% avail.dims) {
+      warning("Aggregation to Annual requested but data already are annual so no avergaing done and returning original data!")
+      return(input.obj)
+    }
+    else{
+      stop("Subannual aggregation requested but not time dimensions present.  Exiting...")
+    }
+  }
+  
+  # Aggregation to seasonal
+  else if(tolower(target) == "season"){
+    
+    # FROM DAILY
+    if("Day" %in% avail.dims) {
+      # TODO Daily to seasonal aggregation
+      stop("Seasonal to annual aggregration not yet implemented")
+    }
+    
+    # FROM MONTHLY
+    else if("Month" %in% avail.dims) {
+      
+      if(verbose) message("Sub-annual aggregation from monthly to seasonal")
+      
+      # set the season 
+      # this function is a bit dirty, but okay for now
+      monthToSeason <- function(x){
+        month.to.season <- c("DJF","DJF", "MAM","MAM","MAM","JJA","JJA","JJA","SOM","SOM","SOM","DJF")
+        return(month.to.season[x])
+      }
+      input.dt <- input.dt[, Season := lapply(.SD, monthToSeason), .SDcols = c("Month")]
+      by.dims <- append(by.dims, "Season")
+      
+      
+      
+      # if not doing mean, simply apply the required function
+      if(!identical(method.function, mean)){
+        
+        input.dt <- input.dt[, Month:=NULL]
+        output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
+
+      }
+      
+      # else use the weighted mean, weighted by the days in the month
+      else{
+        
+        # calculate the weights
+        input.dt <- input.dt[, Weight := lapply(.SD, addMonthlyWeights), .SDcols = c("Month")]
+        input.dt <- input.dt[, Month:=NULL]
+        
+        # do weighted mean
+        output.dt <- input.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
+        output.dt[,Weight:=NULL]
+
+      }
+      
+      
+      
+      
+    }
+    
+    # IF ALREADY SEASONAL
+    else if("Season" %in% avail.dims) {warning("Aggregation to Season requested but data already are already Seasonal, so no averging done and returning original data!")
+      return(input.obj)}
+    
+    # ELSE FAIL
+    else{
+      stop("Subannual aggregation to Season requested but sub-seasonal time dimension not present.  Exiting...")
+    }
+  }
+  
+  # Aggregate to month
+  else if(tolower(target) == "month"){
+
+    if("Day" %in% avail.dims) { 
+      stop("Daill to monthly aggregration not yet implemented")
+    }
+    else if("Month" %in% avail.dims) {warning("Aggregation to monthly requested but data already are already monthly, so no averging done and returning original data!")
+      return(input.obj)}
+    else{
+      stop("Subannual aggregation to Month requested but sub-monthly time dimension not present.  Exiting...")
+    }
+  }
+  
+  # Else fail
+  else{
+    stop(paste("Unknown target for sub-annual aggregation \"", target, "\" found. Exiting..."))
+  }
+  
+  
+  if(verbose) message("...done.")
+  
+  
+  # Delete the full dataset to free up memory - necessary??
+  rm(input.dt)
+  gc()
+  
+  # Set keys and return the averaged table
+  setKeyDGVM(output.dt)
+  
+  # sort out the input object class
+  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
+    input.obj@data <- output.dt
+    input.obj@temporal.aggregate.method <- method
+    print(input.obj@spatial.extent)
+    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent.id, spatial.extent = input.obj@spatial.extent.id, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
+    return(input.obj)
+  }
+  else if(is.data.table(input.obj)) {return(output.dt)}
+  
+}
+
+
+
+#' Time average a data.table
+#' 
+#' Time average all availables years (denoted by column "Years") or a data.table object
+#'
+#' @param input.obj data.table, ModelObject or DataObject  
+#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
+#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' @param verbose If TRUE give some progress update about the averaging.
+#' @return A ModelObject, DataObject or data.table depending on the input object
+#' @keywords internal
+#' @import data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+aggregateSubannual <- compiler::cmpfun(aggregateSubannual.uncompiled)
