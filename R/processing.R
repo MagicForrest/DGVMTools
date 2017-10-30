@@ -334,7 +334,8 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
       # if not requiring the maximum or minimum
       if(!identical(method, max.layer) & !identical(method, min.layer)) {
         
-        if(!is.null(layer.cols)) suppressWarnings(dt[, eval(this.layer) := method(.SD), .SDcols = layer.cols])
+        if(!is.null(layer.cols)) { suppressWarnings(dt[, eval(this.layer) := method(.SD), .SDcols = layer.cols]) }
+        else { suppressWarnings(dt[, eval(this.layer) := 0])}
         
       }
       

@@ -13,8 +13,9 @@
 #' The default is "mean", simply straight averaging.
 #' @param plotAverage Boolean, if TRUE plot the mean of all years
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
-#' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
 #' Make it bigger if the text is too small on large plots and vice-versa.
+#' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
+#' @param facet.scales Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales
 #' @param ... Arguments passed to getModelObject().  Of particular relevance are \code{spatial.extent} and \code{spatial.aggregate.method} (to determine over 
 #' which spatial extent to plot the seasonal cycle and, if that extent includes more that one gridcell, how to aggregate across that extent)
 #' 
@@ -31,6 +32,7 @@ plotSeasonal <- function(runs,
                          plotAverage = TRUE,
                          text.multiplier = NULL,
                          plot = TRUE,
+                         facet.scales = "fixed",
                          ...) {
   
   
@@ -157,7 +159,7 @@ plotSeasonal <- function(runs,
   ###### MAKE THE PLOT ######
   
   # basic plot
-  p <- ggplot(as.data.frame(all.dt), aes(Month, Value, colour = Quantity, group = interaction(Year, Quantity)), alpha = 0.1) + geom_line(alpha = 0.1)
+  p <- ggplot(as.data.frame(all.dt), aes(Month, Value, colour = Quantity, group = interaction(Year, Quantity)), alpha = 0.2) + geom_line(alpha = 0.2)
   
   # add average line if chosen
   if(plotAverage) p <- p + stat_summary(aes(group=Quantity), fun.y=mean, geom="line", size = 1)
@@ -174,7 +176,7 @@ plotSeasonal <- function(runs,
   p <- p + theme(legend.position = "right", legend.key.size = unit(2, 'lines'))
   
   # wrap to split by source
-  p <- p + facet_wrap(~Source, ncol = 1, scales = "free")
+  p <- p + facet_wrap(~Source, ncol = 1, scales = facet.scales)
   
   # overall text multiplier
   if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))

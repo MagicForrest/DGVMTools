@@ -82,7 +82,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         interpolate = FALSE,
                         interior.lines = TRUE){
   
-  print(data)
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
   
@@ -607,7 +606,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     facet.string <- "~Source"
     
     # also set the facet order if not defined
-    if(missing(facet.order)) {
+    if(missing(facet.order) && !only.comparison.layers) {
       facet.order <- character(0)
       for(this.object in data) {
           facet.order <- append(facet.order, this.object@run@name)
