@@ -91,10 +91,10 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
 #' @export
 #' @return data.frame of gridcells with columns c("Lon", "Lat", "area")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
+extract.seq <- function(x, force.regular=FALSE, descending=FALSE, ...) {
   x <- sort(unique(x))
-  d <- x[2:length(x)] - x[1:(length(x)-1)]
-  if (length(unique(d)) > length(x)/2 && !force.regular) {
+  d <- diff(x)
+  if (length(unique(d)) > length(x) / 2 && !force.regular) {
     warning("Irregular steps return just sorted values!")
     if (descending) {
       return(x[length(x):1])
@@ -102,10 +102,12 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
       return(x)
     }
   }
+  if (is.logical(force.regular) || force.regular==0)
+    force.regular = min(d)
   if (descending) {
-    x <- seq(max(x), min(x), -min(d))
+    x <- seq(max(x), min(x), -force.regular)
   } else {
-    x <- seq(min(x), max(x), min(d))
+    x <- seq(min(x), max(x), force.regular)
   }
   return(x)
 }
@@ -121,7 +123,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' @export
 #' @return same class as input
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
+addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lat = Lon = NULL
   if (is.na(unit))
@@ -135,13 +137,13 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
   if (is.data.table(input) || is.data.frame(input)) {
     if (verbose)
       message("Input is a data.table or data.frame.")
-    lon <- extract.seq(input$Lon)
-    lat <- extract.seq(input$Lat)
+    lon <- extract.seq(input$Lon, ...)
+    lat <- extract.seq(input$Lat, ...)
   } else if (is.ModelObject(input, spatial=TRUE)) {
     if (verbose)
       message("Input is a spatial ModelObject.")
-    lon <- extract.seq(input@data$Lon)
-    lat <- extract.seq(input@data$Lat)
+    lon <- extract.seq(input@data$Lon, ...)
+    lat <- extract.seq(input@data$Lat, ...)
   } else {
     stop(paste("addArea: Don't know what to to with class", class(input)))
   }
