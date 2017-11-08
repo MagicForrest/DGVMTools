@@ -173,7 +173,7 @@ calcBiomes <-function(input, scheme){
   
   # now make a new ModelObject and return
   biomes <- new("ModelObject",
-                id = makeModelObjectID(scheme@id, input@temporal.extent, input@spatial.extent, input@temporal.aggregate.method, input@spatial.aggregate.method),
+                id = makeModelObjectID(scheme@id, paste(input@temporal.extent@start,input@temporal.extent@start, sep = "-"), input@spatial.extent.id, input@temporal.aggregate.method, input@spatial.aggregate.method),
                 data = biome.dt,
                 quant = as(scheme, "Quantity"),
                 spatial.extent = input@spatial.extent,

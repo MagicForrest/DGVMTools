@@ -609,7 +609,8 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     if(missing(facet.order) && !only.comparison.layers) {
       facet.order <- character(0)
       for(this.object in data) {
-          facet.order <- append(facet.order, this.object@run@name)
+          if(is.ModelObject(this.object)) facet.order <- append(facet.order, this.object@run@name)
+          else if(is.DataObject(this.object)) facet.order <- append(facet.order, this.object@name)
       }
     }
     

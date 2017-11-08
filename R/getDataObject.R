@@ -65,15 +65,14 @@ getDataObject <- function(dataset.id = NULL,
     }
     
     temporal.extent <- NULL
-    if(!is.null(start.year) &&!is.null(start.year)) temporal.extent <- new("TemporalExtent", id = "Dummy", name = "Dummy", start = start.year, end  = end.year)
-    
+    if(!is.null(start.year) &&!is.null(start.year)) temporal.extent.id <- paste(start = start.year, end  = end.year, sep = "-")
     full.id <- makeModelObjectID(var.string = quantity.str,
-                                 temporal.extent = temporal.extent, 
-                                 spatial.extent = new("SpatialExtent", id = spatial.extent.id, name = spatial.extent.id, xmin = 0, ymin = 0, xmax = 1, ymax = 1), 
+                                 temporal.extent = temporal.extent.id, 
+                                 spatial.extent = spatial.extent.id, 
                                  temporal.aggregate.method = temporal.aggregate.method,
                                  spatial.aggregate.method = spatial.aggregate.method
     )
-    
+
     file.string <- file.path(location, dataset.id, paste(full.id, resolution, "nc", sep = "."))
     
   }
