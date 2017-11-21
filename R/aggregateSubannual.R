@@ -105,7 +105,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
       }
       # else use the weighted mean, weighted by the days in the month
       else{
-        output.dt <- input.dt[, Weight := lapply(.SD, addMonthlyWeights), .SDcols = c("Month")]
+        output.dt <- copy(input.dt)[, Weight := lapply(.SD, addMonthlyWeights), .SDcols = c("Month")]
         output.dt <- output.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
         output.dt[,Month:=NULL]
         output.dt[,Weight:=NULL]
@@ -130,7 +130,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
         output.dt <- copy(input.dt)[, Weight := lapply(.SD, addSeasonalWeights), .SDcols = c("Season")]
         print(str(output.dt))
         
-        output.dt <- output.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
+        output.dt <-copy(output.dt)[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
         output.dt[,Season:=NULL]
         output.dt[,Weight:=NULL]
         
