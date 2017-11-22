@@ -16,7 +16,6 @@
 #' @param sources The data to plot. Can be a ModelObject, a DataObject, or a list of including both
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.
-#' @param layout.objs A character string name of a map overlay from the \code{maps} or \code{mapdata} packages. For example, "world" or "worldHires".  
 #' Note that using these, especially "worldHires", can add quite a bit off time. 
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
@@ -33,7 +32,7 @@
 #' @param override.cols A colour palette function to override the defaults.
 #' @param override.cuts Cut ranges (a numeric vector) to override the default colour delimitation
 #' @param discretise Boolen, if true, but the discretise the data according the override.cuts argument above
-#' @param dont.grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
+#' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
 #' @param tile Boolean If true use the ggplot function geom_tile() instead of the function geom_raster().
@@ -63,7 +62,6 @@
 plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
                          layers = NULL,
                          title = NULL,
-                         layout.objs = NULL, 
                          facet.labels =  NULL,
                          facet.order = NULL,
                          plot.bg.col =  "white",
@@ -80,7 +78,7 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
                          override.cuts = NULL,
                          discretise = FALSE,
                          map.overlay = NULL,
-                         dont.grid = FALSE,
+                         grid = FALSE,
                          plot = TRUE,
                          tile = TRUE,
                          interpolate = FALSE,
@@ -112,9 +110,9 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     num.sources <- 1
     sources<- list(sources)
   }
-  else if(class(source)[1] == "list") {
+  else if(class(sources)[1] == "list") {
     num.sources <- 0
-    for(object in source){ 
+    for(object in sources){ 
       if(is.ModelObject(object) || is.DataObject(object)) {
         num.sources <- num.sources +1
       }
@@ -238,7 +236,6 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     
   }
   
-  print(years.all)
   
   
   
@@ -295,295 +292,9 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
   multiple.sources <- TRUE
   multiple.layers <- length(layers) > 1
   
-  print(data.toplot.list)
   
   
   
-
-  # # some flags tonote what type of data we have been handed
-  # discrete <- FALSE
-  # continuous <- FALSE
-  # single.object <- FALSE
-  # 
-  # # very special case 
-  # dont.wrap.comparison.layer.only <- FALSE
-  # 
-  # # this is needed to keep track of the plotting mode since 'layers' may be changed below
-  # original.layers <- layers 
-  # 
-  # # special flag to make symmetric difference limits about zero 
-  # # (only in the case that no limits are defined and the layers to be plotted are "Difference" or "Percentage Difference")
-  # symmetric.diff.limits <- FALSE
-  # 
-  # ### CASE 1 - A single ModelObject or DataObject
-  # if(is.ModelObject(sources) || is.DataObject(sources)) {
-  #   
-  #   single.object <- TRUE
-  #   grid <- FALSE
-  #   
-  #   # if layers not specified, assume all
-  #   if(is.null(layers)) {
-  #     layers <- names(sources)
-  #     original.layers <- layers 
-  #   }
-  #   
-  #   # check if layers are all continuous or discrete
-  #   for(layer in layers) {
-  #     if(class(source@data[[layer]]) == "factor") discrete <- TRUE
-  #     if(class(source@data[[layer]]) == "numeric") continuous <- TRUE
-  #   }
-  #   if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers")    
-  #   
-  #   # select layers and convert to a data,table
-  #   data.toplot <- selectLayers(sources, layers)
-  #   data.toplot <- as.data.table(data.toplot)
-  #   
-  #   # now melt the layers
-  #   data.toplot <- melt(data.toplot, measure.vars = layers)
-  #   
-  #   if(is.null(override.cols) & continuous) override.cols <- source@quant@colours(20)
-  #   legend.title <- source@quant@units
-  #   quant <- source@quant
-  #   temporal.extent <- source@temporal.extent
-  #   
-  #   # for later (handling wrap/grid and plot titles)
-  #   multiple.sources <- FALSE
-  #   multiple.layers <- length(layers) > 1
-  #   
-  # }
-  # 
-  # ### CASE 2 - A single ComparisonLayer
-  # else if(is.ComparisonLayer(sources)) {
-  #   
-  #   single.object <- TRUE
-  #   grid <- FALSE
-  #   
-  #   # first check if discrete or continuous
-  #   for(layer in names(sources)[1:2]) {
-  #     if(class(source@data[[layer]]) == "factor") discrete <- TRUE
-  #     if(class(source@data[[layer]]) == "numeric") continuous <- TRUE
-  #   }
-  #   if(discrete & continuous) stop("plotSpatial ComparisonObject does not seem to be consistenly defined")    
-  #   
-  #   
-  #   # if layers not specified, assume "Difference"
-  #   if(is.null(layers)  || tolower(layers) == "difference") {
-  #     layers <- "Difference" 
-  #     original.layers <- "Difference"
-  #     if(is.null(override.cols) & continuous) override.cols <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
-  #   }
-  #   else if(tolower(layers) == "absolute") {
-  #     # put side by side
-  #     layers <- names(sources)[1:2]
-  #   }
-  #   else if(tolower(layers) == "percentage.difference" || tolower(layers) == "percentagedifference"){
-  #     
-  #     layers <- "Percentage Difference"
-  #     data.temp <- source@data[, "Percentage Difference" := (get(paste("Difference")) %/0% get(names(sources)[2])) * 100]
-  #     source@data <- data.temp
-  #     if(is.null(override.cols) & continuous) override.cols <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
-  #     
-  #   }
-  #   
-  #   # select layers and convert to a data,table
-  #   data.toplot <- selectLayers(sources, layers)
-  #   data.toplot <- as.data.table(data.toplot)
-  #   
-  #   
-  #   # in the special case of absolute, change the layer names at this point from the ugly ids to the nice names
-  #   if(tolower(original.layers) == "absolute") {
-  #     new.layer.names <- c(source@info1@name, source@info2@name)
-  #     setnames(data.toplot, layers, new.layer.names)
-  #     layers <- new.layer.names
-  #   }
-  #   
-  #   # now melt the layers
-  #   data.toplot <- melt(data.toplot, measure.vars = layers)
-  #   
-  #   if(tolower(original.layers) == "absolute") {
-  #     setnames(data.toplot, "variable", "Source")
-  #     data.toplot[, variable := "Absolute"]
-  #   }
-  #   
-  #   
-  #   if(is.null(override.cols) & continuous) override.cols <- source@quant@colours(20)
-  #   legend.title <- source@quant@units
-  #   quant <- source@quant
-  #   temporal.extent <- source@temporal.extent
-  #   
-  #   # special case for difference plots, make limits symmetric around 0
-  #   if(missing(limits) & (layers == "Difference" || layers == "Percentage Difference")){
-  #     symmetric.diff.limits <- TRUE
-  #   }
-  #   
-  #   # for later (handling wrap/grid and plot titles)
-  #   multiple.sources <- FALSE
-  #   multiple.layers <- FALSE
-  #   if(tolower(original.layers) == "absolute") multiple.sources <- TRUE
-  #   
-  # }
-  # 
-  # 
-  # ### CASE 3- A list, hopefully made exclusively of ModelObjects/DataObjects xor ComparisonLayers
-  # else if(class(sources)[1] == "list") {
-  #   
-  #   # PREAMBLE - first determine if the list contains consistent types and then fail if it does not
-  #   only.data.or.model.objects <- TRUE
-  #   only.comparison.layers <- TRUE
-  #   for(object in sources){ 
-  #     if(!(is.ModelObject(object) || is.DataObject(object))) only.data.or.model.objects <- FALSE
-  #     if(!is.ComparisonLayer(object)) only.comparison.layers <- FALSE
-  #   }
-  #   
-  #   if(!xor(only.data.or.model.objects, only.comparison.layers)) {
-  #     stop("You have passed me a list of items to plot but the items are exclusively of ModelObjects/DataObjects or ComparisonLayers (note you cannot mix those two types)")
-  #   }
-  #   
-  #   # list of all data.tables to be rbinded at the end
-  #   data.toplot.list <- list()
-  #   
-  #   ### CASE 3A - Plotting a bunch of ModelObjects/DataObjects
-  #   if(only.data.or.model.objects) {
-  #     
-  #     # Loop through the objects and pull layers from each one into a large data.table for plotting
-  #     
-  #     temporal.extent <- NULL
-  #     first <- TRUE
-  #     for(object in sources){
-  #       
-  #       # select the layers and mash the data into shape
-  #       these.layers <- selectLayers(object, layers)
-  #       these.layers.melted <- melt(these.layers@data, measure.vars = layers)
-  #       if(is.DataObject(object)) these.layers.melted[, Source := object@name]
-  #       else  these.layers.melted[, Source := object@run@name]
-  #       data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
-  #       
-  #       # check if layers are all continuous or discrete
-  #       for(layer in layers) {
-  #         if(class(object@data[[layer]]) == "factor") discrete <- TRUE
-  #         if(class(object@data[[layer]]) == "numeric") continuous <- TRUE
-  #       }
-  #       if(discrete & continuous) stop("plotSpatial canot simultaneously plot discrete and continuous layers, check your layers")   
-  #       
-  #       # check for meta-data to automagic the plots a little bit if possble
-  #       if(first) {
-  #         if(is.null(override.cols) & continuous) override.cols <- object@quant@colours(20)
-  #         legend.title <- object@quant@units
-  #         quant <- object@quant
-  #         temporal.extent <- object@temporal.extent
-  #       }
-  #       else {
-  #         # check for consistent temporal extent
-  #         if(!is.null(temporal.extent)){
-  #           if(temporal.extent@start != object@temporal.extent@start || temporal.extent@end != object@temporal.extent@end) temporal.extent <- NULL
-  #         }
-  #         # check for consistent Quantity
-  #         if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
-  #       }
-  #       
-  #       first <- FALSE
-  #       
-  #     }
-  #     
-  #     # for later (handling wrap/grid and plot titles)
-  #     multiple.sources <- TRUE
-  #     multiple.layers <- length(layers) > 1
-  #     
-  #   }
-  #   
-  #   
-  #   ### CASE 3B - Plotting a bunch of ComparisonLayers
-  #   else if(only.comparison.layers) {
-  #     
-  #     for(comp.layer in sources){  
-  #       
-  #       # first check if discrete or continuous
-  #       for(layer in names(comp.layer)[1:2]) {
-  #         if(class(comp.layer@data[[layer]]) == "factor") discrete <- TRUE
-  #         if(class(comp.layer@data[[layer]]) == "numeric") continuous <- TRUE
-  #       }
-  #       if(discrete & continuous) stop("plotSpatial ComparisonObject does not seem to be consistenly defined")    
-  #       
-  #       
-  #       # if layers not specified, assume "Difference"
-  #       if(is.null(original.layers)  || tolower(original.layers) == "difference") {
-  #         layers <- "Difference" 
-  #         original.layers <- layers
-  #         if(is.null(override.cols) & continuous) override.cols <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
-  #       }
-  #       else if(tolower(original.layers) == "absolute") {
-  #         # changes the names of the ComparisonLayer 
-  #         
-  #         layers <- names(comp.layer)[1:2]
-  #       }
-  #       else if(tolower(original.layers) == "percentage.difference" || tolower(original.layers) == "percentagedifference"){
-  #         
-  #         layers <- "Percentage Difference"
-  #         comp.layer.temp <- comp.layer@data[, "Percentage Difference" := (get(paste("Difference")) %/0% get(names(comp.layer)[2])) * 100]
-  #         comp.layer@data <- comp.layer.temp
-  #         if(is.null(override.cols) & continuous) override.cols <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
-  #         
-  #       }
-  #       
-  #       # select layers and convert to a data,table
-  #       data.toplot <- selectLayers(comp.layer, layers)
-  #       data.toplot <- as.data.table(data.toplot)
-  #       
-  #       # in the special case of absolute, change the layer names at this point from the ugly ids to the nice names
-  #       if(tolower(original.layers) == "absolute") {
-  #         new.layer.names <- c(comp.layer@info1@name, comp.layer@info2@name)
-  #         setnames(data.toplot, layers, new.layer.names)
-  #         layers <- new.layer.names
-  #       }
-  #       
-  #       # now melt the layers and add the Source
-  #       data.toplot <- melt(data.toplot, measure.vars = layers)
-  #       if(!tolower(original.layers) == "absolute") { data.toplot[, Source := comp.layer@name] }
-  #       else {
-  #         setnames(data.toplot, "variable", "Source")
-  #         data.toplot[, variable := "Absolute"]
-  #       }
-  #       
-  #       # save 
-  #       data.toplot.list[[length(data.toplot.list)+1]] <- data.toplot
-  #       
-  #       
-  #       if(is.null(override.cols) & continuous) override.cols <- comp.layer@quant@colours(20)
-  #       legend.title <- comp.layer@quant@units
-  #       quant <- comp.layer@quant
-  #       temporal.extent <- comp.layer@temporal.extent
-  #       
-  #     } # for each ComparisonLayer
-  #     
-  #     # special case for difference plots, make limits symmetric around 0
-  #     if(missing(limits) & (layers == "Difference" || layers == "Percentage Difference")){
-  #       symmetric.diff.limits <- TRUE
-  #     }
-  #     
-  #     # for later (handling wrap/grid and plot titles)
-  #     multiple.sources <- TRUE
-  #     multiple.layers <- FALSE
-  #     if(tolower(original.layers) == "absolute") {
-  #       multiple.layers <- TRUE
-  #       dont.wrap.comparison.layer.only <- TRUE
-  #     }
-  #     
-  #   } # for each ComparisonLayer in the list
-  #   
-  #   
-  #   # finally mash them all togther to make the final data.table to plot
-  #   data.toplot <- rbindlist(data.toplot.list)
-  #   rm(data.toplot.list)
-  #   
-  #   
-  #   
-  # } 
-  # 
-  # else {
-  #   
-  #   stop("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects")
-  #   
-  # }
   
   # finally mash them all togther to make the final data.table to plot
   data.toplot <- rbindlist(data.toplot.list)
@@ -794,70 +505,123 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
   ### HANDLE THE FACET GRID/WRAP ISSUE
   
   # first determine how many facet "dimensions" we have
-  n.sources <- length
+  # num.sources de
+  num.layers <- length(layers)
+  if(!is.null(years)) num.years <- length(years)
+  else num.years <- 0
   
+  multiple.sources <- num.sources > 1
+  multiple.layers <- num.layers > 1
+  multiple.years <- num.years > 1
+ 
   
+  total.panels <- num.layers.x.sources * num.years
   
-  # note that multiple.layers and multiple.sources should have been defined about
-  
-  #  CASE 1 - single source and single layer 
-  #           ie. one map so don't wrap or grid
-  if(!multiple.layers & !multiple.sources) {
-    grid <- FALSE
+  # if got a single source, layer and year facetting is impossible/unnecessary 
+  if(sum(multiple.sources, multiple.layers, multiple.years) == 0) {
+    facet <- FALSE
     wrap <- FALSE
-  }
-  
-  # CASE 2 - single source and multiple layers
-  #          then wrap, gridding doesn't make sense
-  else if(multiple.layers & !multiple.sources) {
+    if(grid) warning("Option grid is TRUE, but there is only one panel to plot so using facet_grid seems silly.  I am ignoring the grid option.")
     grid <- FALSE
-    wrap <- TRUE
-    facet.string <- "~Layer"
   }
-  
-  # CASE 3 - multiple sources and single layer (opposite of case 2)
-  #          then wrap, gridding doesn't make sense
-  else if(!multiple.layers & multiple.sources) {
+  # if got exactly one or two multiples of source, layer or year facetting is necessary and gridding is possible
+  else if(sum(multiple.sources, multiple.layers, multiple.years) == 1 || sum(multiple.sources, multiple.layers, multiple.years) == 2) {
+    facet <- TRUE
+    if(!grid) wrap <- TRUE
+    else wrap <- FALSE
+  }
+  # else if got more that two of multiple sources, layers or years then gridding is impossible, must use facet_wrap()
+  else if(sum(multiple.sources, multiple.layers, multiple.years) > 2){
+    facet <- TRUE
+    wrap <- TRUE
+    if(grid) warning("Option grid is TRUE, but there are too many plot 'dimensions' to make a 2D grid of panels so I am ignoring the grid option.")
     grid <- FALSE
-    wrap <- TRUE
-    facet.string <- "~Source"
-    
-    # also set the facet order if not defined
-    if(missing(facet.order)) {
-      facet.order <- character(0)
-      for(this.object in sources) {
-        facet.order <- append(facet.order, this.object@run@name)
-      }
-    }
-    
   }
   
-  # CASE 4 - multiple sources and multiple layers
-  #          the grid (unless special instructions not to)
-  else if(multiple.layers & multiple.sources) {
-    if(!dont.grid) {
-      grid <- TRUE
-      wrap <- FALSE
-      facet.string <- "Layer~Source"
-      
-      # very special case form comparison layers side-by-side (this is just to avoid one stupid extra label)
-      #if(dont.wrap.comparison.layer.only){
-      #  grid <- FALSE
-      #  wrap <- TRUE
-      #  facet.string <- "~Source"
-      #}
-      
-    }
-    else {
-      stop("If you want some 'dont.grid' option action then code it up!")
-    }
+  
+  
+  # if wrapping, add a new column to uniquely describe each facet
+  if(wrap){
+    data.toplot[, Facet := ""]
+    if(multiple.layers) { data.toplot[, Facet := paste(Facet, Layer)] }
+    if(multiple.sources) { data.toplot[, Facet := paste(Facet, Source)] }
+    if(multiple.years) { data.toplot[, Facet := paste(Facet, Year)] }
+    data.toplot[, Facet := trimws(Facet)]
+  }
+
+  # if gridding get the columns to grid by
+  if(grid){
+    grid.columns <- c()
+    if(multiple.layers) grid.columns <- append(grid.columns, "Layer")
+    if(multiple.sources) grid.columns <- append(grid.columns, "Source")
+    if(multiple.years) grid.columns <- append(grid.columns, "Year")
+    grid.string <- paste(grid.columns, collapse = "~")
+    print(grid.string)
   }
   
-  # if wrapping and facet order has been provided in facet.order, re-order the factor to re-order the facets
-  if(wrap & !is.null(facet.order)) {
-    if(multiple.layers & !multiple.sources) data.toplot[, Layer := factor(Layer, facet.order)]
-    else  if(!multiple.layers & multiple.sources) data.toplot[, Source := factor(Source, levels = facet.order)]
-  }
+  
+  
+  
+  # # note that multiple.layers and multiple.sources should have been defined about
+  # 
+  # #  CASE 1 - single source and single layer 
+  # #           ie. one map so don't wrap or grid
+  # if(!multiple.layers & !multiple.sources) {
+  #   grid <- FALSE
+  #   wrap <- FALSE
+  # }
+  # 
+  # # CASE 2 - single source and multiple layers
+  # #          then wrap, gridding doesn't make sense
+  # else if(multiple.layers & !multiple.sources) {
+  #   grid <- FALSE
+  #   wrap <- TRUE
+  #   facet.string <- "~Layer"
+  # }
+  # 
+  # # CASE 3 - multiple sources and single layer (opposite of case 2)
+  # #          then wrap, gridding doesn't make sense
+  # else if(!multiple.layers & multiple.sources) {
+  #   grid <- FALSE
+  #   wrap <- TRUE
+  #   facet.string <- "~Source"
+  #   
+  #   # also set the facet order if not defined
+  #   if(missing(facet.order)) {
+  #     facet.order <- character(0)
+  #     for(this.object in sources) {
+  #       facet.order <- append(facet.order, this.object@run@name)
+  #     }
+  #   }
+  #   
+  # }
+  # 
+  # # CASE 4 - multiple sources and multiple layers
+  # #          the grid (unless special instructions not to)
+  # else if(multiple.layers & multiple.sources) {
+  #   # if(!dont.grid) {
+  #   #   grid <- TRUE
+  #   #   wrap <- FALSE
+  #   #   facet.string <- "Layer~Source"
+  #   #   
+  #   #   # very special case form comparison layers side-by-side (this is just to avoid one stupid extra label)
+  #   #   #if(dont.wrap.comparison.layer.only){
+  #   #   #  grid <- FALSE
+  #   #   #  wrap <- TRUE
+  #   #   #  facet.string <- "~Source"
+  #   #   #}
+  #   #   
+  #   # }
+  #   # else {
+  #   #   stop("If you want some 'dont.grid' option action then code it up!")
+  #   # }
+  # }
+  # 
+  # # if wrapping and facet order has been provided in facet.order, re-order the factor to re-order the facets
+  # if(wrap & !is.null(facet.order)) {
+  #   if(multiple.layers & !multiple.sources) data.toplot[, Layer := factor(Layer, facet.order)]
+  #   else  if(!multiple.layers & multiple.sources) data.toplot[, Source := factor(Source, levels = facet.order)]
+  # }
   
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
@@ -877,13 +641,28 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
   
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
-  if(tile) mp <- mp + geom_tile(aes_string(x = "Lon", y = "Lat", fill = "Value"))
-  else mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "Value"), interpolate = interpolate)
+  #if(tile) mp <- mp + geom_tile(aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  #else mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "Value"), interpolate = interpolate)
   
   # facet with grid or wrap 
-  if(grid) mp <- mp + facet_grid(stats::as.formula(paste(facet.string)), switch = "y", labeller = as_labeller(facet.labels))
-  else if(wrap) mp <- mp + facet_wrap(stats::as.formula(facet.string), labeller = as_labeller(facet.labels))
-  
+  if(facet){
+    
+    # note that we add each facet as an individual layer to support multiple resolutions
+    if(wrap){
+      for(facet in unique(data.toplot[["Facet"]])){ mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) }
+      mp <- mp + facet_wrap(~ Facet)      
+    }
+    if(grid){
+      for(col1 in unique(data.toplot[[grid.columns[1]]])){ 
+        for(col2 in unique(data.toplot[[grid.columns[2]]])){ 
+             mp <- mp + geom_raster(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+        }
+      }
+      mp <- mp + facet_grid(stats::as.formula(paste(grid.string)), switch = "y")    
+    }
+
+  }
+
   # colour bar
   if(continuous)  {
     mp <- mp + scale_fill_gradientn(name = legend.title, 
