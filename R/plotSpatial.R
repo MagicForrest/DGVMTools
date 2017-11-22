@@ -48,7 +48,7 @@
 #' 
 #' The function works best for \code{ModelObjects} (which contain a lot of useful metadata).   
 #' 
-#' @return Returns a plot object (from spplot)
+#' @return Returns a ggplot object
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ggplot2 data.table
@@ -91,7 +91,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
-  # 1. SOURCES - check the number of sources
+  ### 1. SOURCES - check the number of sources
   if(is.ModelObject(data) || is.DataObject(data)) {
     num.sources <- 1
     data <- list(data)
@@ -113,7 +113,8 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   
   print(paste0("Num sources = ", num.sources))
   
-  # 2. LAYERS - check the number of layers
+  
+  ### 2. LAYERS - check the number of layers
   
   layers.superset <- c()
   num.layers.x.sources <- 0
@@ -161,7 +162,19 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   
   print(paste0("Number of layers x sources present ", num.layers.x.sources))
   print(paste("Layers to plot:", paste(layers, collapse = " "), sep = " "))
-
+  
+  ### 3. SPATIOTEMPORAL Info  - check the dimensions 
+  
+  for(object in data){
+    
+    this.stinfo.names <- getSTInfo(object, info = "names")
+    if(!"Lon" %in% this.stinfo.names || !"Lat" %in% this.stinfo.names) {
+      warning("Lon (longitude) and/or Lat (latitude) missing from a Model/DataObject for which a map is tried to be plotted.  Obviously this won't work, returning NULL.")
+    }
+    
+     
+  }
+  
   
   
   stop()

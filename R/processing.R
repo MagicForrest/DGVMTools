@@ -148,7 +148,7 @@ calcBiomes <-function(input, scheme){
   
   # Get the totals required
   input <- newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
-
+  
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
@@ -220,7 +220,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   ### HANDLE CLASS OF INPUT OBJECT
   # Here allow the possibility to handle both ModelObjects and data.tables directly (for internal calculations)
- 
+  
   # if it is a ModelObject 
   if(is.ModelObject(input)) {
     # We get a warning about a shallow copy here, suppress it
@@ -296,7 +296,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   # expands layer
   layers <- expandLayers(layers, dt, PFT.data)
-
+  
   # remove PFTs from layers since a layer for a PFT is already the sum/avg/min/max for that particular PFT
   for(PFT in all.PFTs){ if(PFT@id %in% layers) layers <- layers[-which(layers == PFT@id)]}
   
@@ -325,7 +325,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
         # Special case for Total and PFT
         if(this.layer == "Total" | this.layer == "PFT") {layer.cols <- append(layer.cols, PFT@id)}
       }
-
+      
       # now combine the relevant columns
       
       # if not requiring the maximum or minimum
@@ -484,63 +484,4 @@ divideLayers <- function(input, layers, denominators = list("Total"), aggregate.
 }
 
 
-#' Returns the spatio-temporal information 
-#' 
-#' This function returns information about the spacio-temporal dimensions of a DataObject, ModelObject, ComparisonLayer or data.table
-#' 
-#' @param x A DataObject, ModelObject, ComparisonLayer or data.tables
-#' @param info A character string to define what info you want.  Can be "names" to give the names of the spatio-temporal dimensions or ... (to be defined)
-#'
-#' @return A ModelObject or DataObject
-#' @import data.table
-#' @export
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-
-
-getSTInfo <- function(x, info = "names") {
-  
-  
-  
-  # sort classes
-  if(is.ModelObject(x) | is.DataObject(x) | is.ComparisonLayer(x)) x <- x@data
-  else if(class(x)[1] != "data.table" ) stop(paste("Cant get spatio-temporal info from class", class(x)[1], sep = " "))
-  
-  # set up list and vector/columns present
-  if(info == "names") {
-    st.info <- c()
-  }
-  else if(info == "full") {
-    st.info <- "dummy"
-  }
-  else {
-    st.info <- c()
-  }
-  
-  all.cols <- names(x)
-  for(dim in c("Lon", "Lat", "Year", "Season", "Month", "Day")) {
-    
-    if(dim %in% all.cols) {
-      
-      # case = names only
-      if(info == "names") st.info <- append(st.info, dim)
-      # case = full 
-      if(info == "full") {
-        if(class(st.info)[1] == "character") {
-          st.info <- data.table(dim = x[[dim]])
-          setnames(st.info, "dim", dim)
-        }
-        else {
-          st.info[,dim := x[[dim]]]
-          setnames(st.info, "dim", dim)
-        }
-      }  
-      
-      
-      
-    }
-  }
-  
-  return(st.info)
-  
-}
 
