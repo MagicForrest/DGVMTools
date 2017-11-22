@@ -71,6 +71,10 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
                          text.multiplier = NULL,
                          xlim = NULL,
                          ylim = NULL,
+                         years = NULL,
+                         days = NULL,
+                         months = NULL,
+                         seasons = NULL,
                          limits = NULL,
                          override.cols = NULL,
                          override.cuts = NULL,
@@ -81,11 +85,23 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
                          tile = TRUE,
                          interpolate = FALSE,
                          interior.lines = TRUE){
-   
+  
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
   
-  ### CHECK FOR MISSING ARGUMENTS AND INITILIASE WHERE APPROPRIATE
+  ### CHECK FOR MISSING OR INCONSISTENT ARGUMENTS AND INITIALISE STUFF WHERE APPROPRIATE
   categorical.legend.labels <- waiver()
+  
+  plot.seasons = !(missing(seasons) || is.null(seasons))
+  plot.days = !(missing(days) || is.null(days))
+  plot.months =!(missing(months) || is.null(months))
+  plot.years = !(missing(years) || is.null(years))
+  
+  # require that only one of seasons/months/days be specified
+  if(sum(plot.months, plot.seasons, plot.days ) > 1){
+    warning("More than one of days/months/seasons specified for plotting. I can't handle this, returning NULL")
+    return(NULL)
+  }
+  
   
   
   
@@ -121,7 +137,7 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   
   # if no layers argument supplied make a list of all layers present (in any object)
   if(is.null(layers) || missing(layers)){
-
+    
     for(object in data){
       temp.layers <- names(object)
       num.layers.x.sources <- num.layers.x.sources + length(temp.layers)
@@ -134,9 +150,9 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   
   # else if layers have been specified check that we have some of the requested layers present
   else{
-
+    
     for(object in data){
-
+      
       layers.present <- intersect(names(object), layers)
       num.layers.x.sources <- num.layers.x.sources + length(layers.present)
       
@@ -163,24 +179,127 @@ plotSpatial2 <- function(data, # can be a data.table, a SpatialPixelsDataFrame, 
   print(paste0("Number of layers x sources present ", num.layers.x.sources))
   print(paste("Layers to plot:", paste(layers, collapse = " "), sep = " "))
   
-  ### 3. SPATIOTEMPORAL Info  - check the dimensions 
+  ### 3. SPATIOTEMPORAL - check the dimensions etc.
   
   for(object in data){
     
     this.stinfo.names <- getSTInfo(object, info = "names")
+    years.all <- c()
+    days.all <- c()
+    
+    # return NULL if lon and lat are not available for every object to be plotted
     if(!"Lon" %in% this.stinfo.names || !"Lat" %in% this.stinfo.names) {
       warning("Lon (longitude) and/or Lat (latitude) missing from a Model/DataObject for which a map is tried to be plotted.  Obviously this won't work, returning NULL.")
+      return(NULL)
     }
     
-     
+    
+    # check if individual years are present
+    if(plot.years) {
+      
+      if("Year" %in% this.stinfo.names) {
+        years.all <- append(years.all, getSTInfo(object, info = "values")$Year)
+      }
+      else{
+        warning("Plotting of individual years requested, but they are not avialable in at least one of the object to be plotted, returning NULL plot.")
+        return(NULL)
+      }
+      
+    }
+    else{
+      
+      if("Year" %in% this.stinfo.names){
+        warning("Plotting of individual years not requested, but individual years are present in the data to be plotted!  In the future average the Object first or select the years, for now returning NULL plot.")
+        return(NULL)
+      }
+      
+    }
+    
+    # now check the subannual dimensions
+    
+    # first check if the data is somehow corrupted with (ie has more than one of Season/Day/Month)
+    if(sum("Month" %in% this.stinfo.names, "Season" %in% this.stinfo.names, "Day" %in% this.stinfo.names) > 1) {
+      warning("At least one object to plot has more than one of Day/Month/Season present so would seem to be corrupted or strangely constructed.  Don't know how to interpret this, so returning NULL plot.")
+      return(NULL)
+    }
+    
+    
+    if(plot.days){
+      
+      if(!"Day" %in% this.stinfo.names){
+        warning("Plotting of days requested but not present in at least one input object, so returning NULL.")
+        return(NULL)
+      }
+      else{
+        
+      }
+      
+    }
+    
   }
+  
+  print(years.all)
+  
+  
+  
+  ### PREPARE DATA FOR PLOTTING
+  # Here we extract the data.table from the object to be plotted and melt it as appropriate
+  
+  data.toplot.list <- list()
+  
+  # Loop through the objects and pull layers from each one into a large data.table for plotting
+  
+  temporal.extent <- NULL
+  discrete <- FALSE
+  continuous <- FALSE
+  first <- TRUE
+  for(object in data){
+    
+    # select the layers and time periods required and mash the data into shape
+    these.layers <- selectLayers(object, layers)
+    these.layers <- .selectYears(these.layer, years)
+    
+    these.layers.melted <- melt(these.layers@data, measure.vars = layers)
+    if(is.DataObject(object)) these.layers.melted[, Source := object@name]
+    else  these.layers.melted[, Source := object@run@name]
+    data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
+    
+    # check if layers are all continuous or discrete
+    for(layer in layers) {
+      if(class(object@data[[layer]]) == "factor") discrete <- TRUE
+      if(class(object@data[[layer]]) == "numeric") continuous <- TRUE
+    }
+    if(discrete & continuous) stop("plotSpatial canot simultaneously plot discrete and continuous layers, check your layers")   
+    
+    # check for meta-data to automagic the plots a little bit if possble
+    if(first) {
+      if(is.null(override.cols) & continuous) override.cols <- object@quant@colours(20)
+      legend.title <- object@quant@units
+      quant <- object@quant
+      temporal.extent <- object@temporal.extent
+    }
+    else {
+      # check for consistent temporal extent
+      if(!is.null(temporal.extent)){
+        if(temporal.extent@start != object@temporal.extent@start || temporal.extent@end != object@temporal.extent@end) temporal.extent <- NULL
+      }
+      # check for consistent Quantity
+      if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
+    }
+    
+    first <- FALSE
+    
+  }
+  
+  # for later (handling wrap/grid and plot titles)
+  multiple.sources <- TRUE
+  multiple.layers <- length(layers) > 1
+  
+  print(data.toplot.list)
   
   
   
   stop()
-  
-  ### PREPARE DATA FOR PLOTTING
-  
   # some flags tonote what type of data we have been handed
   discrete <- FALSE
   continuous <- FALSE

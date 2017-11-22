@@ -19,7 +19,7 @@
 #' @import data.table
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-
+#TODO Guess resolutions
 
 getSTInfo <- function(x, info = "names") {
   
