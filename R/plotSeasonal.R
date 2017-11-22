@@ -141,7 +141,7 @@ plotSeasonal <- function(runs,
   
   ## swap Jan,Feb,Mar,... for simple 1,2,3...
   month.list <- c()
-  for(month in months) {
+  for(month in all.months) {
     month.list <- append(month.list, month@id)
   }
   get.pos <- function(x, v){

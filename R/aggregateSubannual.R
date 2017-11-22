@@ -33,7 +33,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
   addMonthlyWeights <- function(x){
     
     days.in.month <- c()
-    for(month in months) {
+    for(month in all.months) {
       days.in.month <- append(days.in.month, month@days)
     }
     
@@ -45,7 +45,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
   addSeasonalWeights <- function(x){
     
     days.in.season <- c()
-    for(season in seasons) {
+    for(season in all.seasons) {
       days.in.season <- append(days.in.season, season@days)
     }
     

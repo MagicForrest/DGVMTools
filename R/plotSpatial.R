@@ -94,7 +94,7 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
   plot.months =!(missing(months) || is.null(months))
   plot.years = !(missing(years) || is.null(years))
   
-  # require that only one of seasons/months/days be specified
+  # require that at most only one of seasons/months/days be specified
   if(sum(plot.months, plot.seasons, plot.days ) > 1){
     warning("More than one of days/months/seasons specified for plotting. I can't handle this, returning NULL")
     return(NULL)
@@ -105,27 +105,21 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
   
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
-  ### 1. SOURCES - check the number of sources
+  ### 1. SOURCES - check the sources
   if(is.ModelObject(sources) || is.DataObject(sources)) {
-    num.sources <- 1
     sources<- list(sources)
   }
   else if(class(sources)[1] == "list") {
-    num.sources <- 0
     for(object in sources){ 
-      if(is.ModelObject(object) || is.DataObject(object)) {
-        num.sources <- num.sources +1
-      }
-      else{
-        stop("You have passed me a list of items to plot but the items are not exclusively of ModelObjects/DataObjects")
+      if(!(is.ModelObject(object) || is.DataObject(object))) {
+        warning("You have passed me a list of items to plot but the items are not exclusively of ModelObjects/DataObjects.  Returning NULL")
+        return(NULL)
       }
     }
   }
   else{
-    stop(paste("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects can't plot an object of type", class(source)[1], sep = " "))
+    stop(paste("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects can't plot an object of type", class(sources)[1], sep = " "))
   }
-  
-  print(paste0("Num sources = ", num.sources))
   
   
   ### 2. LAYERS - check the number of layers
@@ -136,7 +130,7 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
   # if no layers argument supplied make a list of all layers present (in any object)
   if(is.null(layers) || missing(layers)){
     
-    for(object in source){
+    for(object in sources){
       temp.layers <- names(object)
       num.layers.x.sources <- num.layers.x.sources + length(temp.layers)
       layers.superset <- append(layers.superset, temp.layers)
@@ -174,8 +168,6 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     
   }
   
-  print(paste0("Number of layers x sources present ", num.layers.x.sources))
-  print(paste("Layers to plot:", paste(layers, collapse = " "), sep = " "))
   
   ### 3. SPATIOTEMPORAL - check the dimensions etc.
   
@@ -225,6 +217,30 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     if(plot.days){
       
       if(!"Day" %in% this.stinfo.names){
+        warning("Plotting of days requested but not present in at least one input object, so returning NULL.")
+        return(NULL)
+      }
+      else{
+        
+      }
+      
+    }
+    
+    if(plot.months){
+      
+      if(!"Month" %in% this.stinfo.names){
+        warning("Plotting of days requested but not present in at least one input object, so returning NULL.")
+        return(NULL)
+      }
+      else{
+        
+      }
+      
+    }
+    
+    if(plot.seasons){
+      
+      if(!"Season" %in% this.stinfo.names){
         warning("Plotting of days requested but not present in at least one input object, so returning NULL.")
         return(NULL)
       }
@@ -288,31 +304,10 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     
   }
   
-  # for later (handling wrap/grid and plot titles)
-  multiple.sources <- TRUE
-  multiple.layers <- length(layers) > 1
-  
-  
-  
-  
   
   # finally mash them all togther to make the final data.table to plot
   data.toplot <- rbindlist(data.toplot.list)
   
-  
-  
-  # # Once got all data to plot,
-  # # check special case for difference plots, make limits symmetric around 0
-  # if(symmetric.diff.limits){
-  #   min.value <- min(data.toplot[["value"]], na.rm = TRUE)
-  #   max.value <- max(data.toplot[["value"]], na.rm = TRUE)
-  #   abs.max <- max(abs(min.value),abs(max.value))
-  #   if(layers == "Percentage Difference") {
-  #     abs.max <- min(abs.max, 300)
-  #     legend.title <- "%"
-  #   }
-  #   limits <- c(-abs.max, abs.max)
-  # } # if special case
   
   
   ### Rename "variable" to "Layer" which makes more conceptual sense
@@ -502,36 +497,53 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     
   }
   
+  ### Swap 1,2,3... for Jan,Feb,Mar...
+  
+  # make a list of months from the meta data
+  month.list <- c()
+  for(this.month in all.months) { month.list <- append(month.list, paste0("%^&", this.month@padded.index, "%^&", this.month@id)) }
+  
+  # simple replacement function
+  get.pos <- function(x, v){ return(v[x]) }
+
+  # apply replacement function
+  data.toplot[, Month := unlist(lapply(data.toplot[["Month"]], FUN = get.pos, month.list))]
+  setKeyDGVM(data.toplot)
+  
+  
+  
   ### HANDLE THE FACET GRID/WRAP ISSUE
   
   # first determine how many facet "dimensions" we have
-  # num.sources de
-  num.layers <- length(layers)
-  if(!is.null(years)) num.years <- length(years)
-  else num.years <- 0
+  multiple.years = multiple.days =  multiple.months = multiple.seasons = FALSE
+  if(!is.null(years)) multiple.years <- length(years) > 1
+  if(!is.null(days)) multiple.days <- length(days) > 1
+  if(!is.null(months)) multiple.months <- length(months) > 1
+  if(!is.null(seasons)) multiple.seasons <- length(seasons) > 1
   
-  multiple.sources <- num.sources > 1
-  multiple.layers <- num.layers > 1
-  multiple.years <- num.years > 1
- 
+  multiple.sources <- length(sources) > 1
+  multiple.layers <- length(layers) > 1
   
-  total.panels <- num.layers.x.sources * num.years
+  
+  
+  num.panel.dimensions <- sum(multiple.sources, multiple.layers, multiple.years, multiple.days, multiple.months, multiple.seasons)
+  
   
   # if got a single source, layer and year facetting is impossible/unnecessary 
-  if(sum(multiple.sources, multiple.layers, multiple.years) == 0) {
+  if(num.panel.dimensions == 0) {
     facet <- FALSE
     wrap <- FALSE
     if(grid) warning("Option grid is TRUE, but there is only one panel to plot so using facet_grid seems silly.  I am ignoring the grid option.")
     grid <- FALSE
   }
   # if got exactly one or two multiples of source, layer or year facetting is necessary and gridding is possible
-  else if(sum(multiple.sources, multiple.layers, multiple.years) == 1 || sum(multiple.sources, multiple.layers, multiple.years) == 2) {
+  else if(num.panel.dimensions == 1 || num.panel.dimensions == 2) {
     facet <- TRUE
     if(!grid) wrap <- TRUE
     else wrap <- FALSE
   }
   # else if got more that two of multiple sources, layers or years then gridding is impossible, must use facet_wrap()
-  else if(sum(multiple.sources, multiple.layers, multiple.years) > 2){
+  else if(num.panel.dimensions > 2){
     facet <- TRUE
     wrap <- TRUE
     if(grid) warning("Option grid is TRUE, but there are too many plot 'dimensions' to make a 2D grid of panels so I am ignoring the grid option.")
@@ -546,96 +558,40 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     if(multiple.layers) { data.toplot[, Facet := paste(Facet, Layer)] }
     if(multiple.sources) { data.toplot[, Facet := paste(Facet, Source)] }
     if(multiple.years) { data.toplot[, Facet := paste(Facet, Year)] }
+    if(multiple.days) { data.toplot[, Facet := paste(Facet, Day)] }
+    if(multiple.months) { data.toplot[, Facet := paste(Facet, Month)] }
+    if(multiple.seasons) { data.toplot[, Facet := paste(Facet, Season)] }
     data.toplot[, Facet := trimws(Facet)]
   }
-
+  
   # if gridding get the columns to grid by
   if(grid){
     grid.columns <- c()
     if(multiple.layers) grid.columns <- append(grid.columns, "Layer")
     if(multiple.sources) grid.columns <- append(grid.columns, "Source")
     if(multiple.years) grid.columns <- append(grid.columns, "Year")
+    if(multiple.days) grid.columns <- append(grid.columns, "Day")
+    if(multiple.months) grid.columns <- append(grid.columns, "Month")
+    if(multiple.seasons) grid.columns <- append(grid.columns, "Season")
     grid.string <- paste(grid.columns, collapse = "~")
-    print(grid.string)
   }
   
   
   
-  
-  # # note that multiple.layers and multiple.sources should have been defined about
-  # 
-  # #  CASE 1 - single source and single layer 
-  # #           ie. one map so don't wrap or grid
-  # if(!multiple.layers & !multiple.sources) {
-  #   grid <- FALSE
-  #   wrap <- FALSE
-  # }
-  # 
-  # # CASE 2 - single source and multiple layers
-  # #          then wrap, gridding doesn't make sense
-  # else if(multiple.layers & !multiple.sources) {
-  #   grid <- FALSE
-  #   wrap <- TRUE
-  #   facet.string <- "~Layer"
-  # }
-  # 
-  # # CASE 3 - multiple sources and single layer (opposite of case 2)
-  # #          then wrap, gridding doesn't make sense
-  # else if(!multiple.layers & multiple.sources) {
-  #   grid <- FALSE
-  #   wrap <- TRUE
-  #   facet.string <- "~Source"
-  #   
-  #   # also set the facet order if not defined
-  #   if(missing(facet.order)) {
-  #     facet.order <- character(0)
-  #     for(this.object in sources) {
-  #       facet.order <- append(facet.order, this.object@run@name)
-  #     }
-  #   }
-  #   
-  # }
-  # 
-  # # CASE 4 - multiple sources and multiple layers
-  # #          the grid (unless special instructions not to)
-  # else if(multiple.layers & multiple.sources) {
-  #   # if(!dont.grid) {
-  #   #   grid <- TRUE
-  #   #   wrap <- FALSE
-  #   #   facet.string <- "Layer~Source"
-  #   #   
-  #   #   # very special case form comparison layers side-by-side (this is just to avoid one stupid extra label)
-  #   #   #if(dont.wrap.comparison.layer.only){
-  #   #   #  grid <- FALSE
-  #   #   #  wrap <- TRUE
-  #   #   #  facet.string <- "~Source"
-  #   #   #}
-  #   #   
-  #   # }
-  #   # else {
-  #   #   stop("If you want some 'dont.grid' option action then code it up!")
-  #   # }
-  # }
-  # 
-  # # if wrapping and facet order has been provided in facet.order, re-order the factor to re-order the facets
-  # if(wrap & !is.null(facet.order)) {
-  #   if(multiple.layers & !multiple.sources) data.toplot[, Layer := factor(Layer, facet.order)]
-  #   else  if(!multiple.layers & multiple.sources) data.toplot[, Source := factor(Source, levels = facet.order)]
-  # }
   
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
-  if(is.null(title)) {
-    
-    layer.string <- NULL
-    # only use the layer string for the title if we are only plotting one layer
-    if(!multiple.layers & tolower(layers) != "absolute") layer.string <- layers
-    
-    # also only use the 'source' argument in the title if we are plotting only data from only one source 
-    if(multiple.sources)  title <- makePlotTitle(quant@name, layer = layer.string, source = NULL, period = temporal.extent) 
-    else title <- makePlotTitle(quant@name, layer = layer.string, source = sources, period = source@temporal.extent)
-    
-  }
+  # if(is.null(title)) {
+  #   
+  #   layer.string <- NULL
+  #   # only use the layer string for the title if we are only plotting one layer
+  #   if(!multiple.layers & tolower(layers) != "absolute") layer.string <- layers
+  #   
+  #   # also only use the 'source' argument in the title if we are plotting only data from only one source 
+  #   if(multiple.sources)  title <- makePlotTitle(quant@name, layer = layer.string, source = NULL, period = temporal.extent) 
+  #   else title <- makePlotTitle(quant@name, layer = layer.string, source = sources, period = source@temporal.extent)
+  #   
+  # }
   
   ### BUILD THE PLOT
   
@@ -655,14 +611,14 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     if(grid){
       for(col1 in unique(data.toplot[[grid.columns[1]]])){ 
         for(col2 in unique(data.toplot[[grid.columns[2]]])){ 
-             mp <- mp + geom_raster(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+          mp <- mp + geom_raster(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
         }
       }
       mp <- mp + facet_grid(stats::as.formula(paste(grid.string)), switch = "y")    
     }
-
+    
   }
-
+  
   # colour bar
   if(continuous)  {
     mp <- mp + scale_fill_gradientn(name = legend.title, 

@@ -283,12 +283,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   # for special case of methods "max" and "min", do not expand "months" and "PFTs" because in these cases we want to provide one layer with the min/max
   # of all months/PFT, not seperate layers for each month/PFTs
-  month.present <- FALSE
   PFT.present <- FALSE
-  if("Month" %in% layers) {
-    layers <- layers[-which(layers == "Month")]
-    month.present <- TRUE
-  }
   if("PFT" %in% layers) {
     layers <- layers[-which(layers == "PFT")]
     PFT.present <- TRUE
@@ -301,7 +296,6 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   for(PFT in all.PFTs){ if(PFT@id %in% layers) layers <- layers[-which(layers == PFT@id)]}
   
   # add back in "Month" and "PFT
-  if(month.present) layers <- append(layers, "Month")
   if(PFT.present) layers <- append(layers, "PFT")
   
   # DEFINE STRING FOR MIN/MAX
@@ -349,48 +343,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
     
   } # for each layer
   
-  
-  ### FOR MONTHLY FILES
-  # Loop through all layers to pick out the seasons/annual and make them 
-  for(layer in layers){
-    
-    # special case to get min/max of all months
-    if(layer == "Month" & (identical(method, max.layer) | identical(method, min.layer))) {
-      
-      # make a vector of all months
-      layer.cols <- c()
-      for(month in months){
-        layer.cols <- append(layer.cols, month@id)
-      }
-      
-      # now calculate the maximum month
-      suppressWarnings(dt[, eval(paste0(method.string, layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
-      
-      # Now, calculate annual total, if this is zero, set it to max or min to "None"
-      suppressWarnings(dt[, TempTotal := sum(.SD), .SDcols = layer.cols])
-      dt[TempTotal == 0.0, eval(quote(paste0(method.string, this.layer))) := "None"]
-      
-      # set the variable to factors in a sensible order (consecutive months) for plotting nicely
-      factor.order <- c()
-      for(month in months) {factor.order<- append(factor.order, month@id)}
-      
-      dt[, eval(quote(paste0(method.string, this.layer))) := factor(get(paste0(method.string, this.layer)), levels = factor.order)]
-      dt[,TempTotal := NULL]
-      
-      
-    }
-    
-    # for other layers
-    else {
-      for(period in all.periods){
-        if(layer == period@id){
-          total.str <- quote(paste(layer, sep = ""))
-          suppressWarnings(dt[, eval(total.str) := method(.SD), .SDcols = period@contains])
-        }
-      }
-    }
-  } 
-  
+ 
   if(is.ModelObject(input)) {
     input@data <- dt
     return(input)
