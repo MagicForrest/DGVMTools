@@ -18,6 +18,7 @@
 #' @import data.table
 #' @import ncdf4
 ## TODO: Add daily data compatibility
+##       Add multi-annual mean functionality
 write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=FALSE, invert.lat=FALSE, 
                      globalAttr=NULL, compress=NA, chunks=NA, reduce=FALSE,
                      leap=FALSE, start.year=NA, time.unit="days",

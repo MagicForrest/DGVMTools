@@ -24,16 +24,23 @@
 #' dlon <- 0.5
 #' lat <- seq(-89.75,89.75,0.5)
 #' sum(gridarea1d(lat,dlon))*720*1.e-12
-gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
+gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE, force.regular=FALSE, ...) {
   nlat <- length(lat)
   area <- array(0.0, nlat)
 
+  print(force.regular)
+  
   lat.border <- array(0.0, nlat+1)
-  lat.border[1] = lat[1] - (lat[2] -lat[1])/2.
-  for (i in 2:nlat) {
-    lat.border[i] = lat[i] - (lat[i] - lat[i-1])/2.
+  if (!force.regular) {
+    lat.border[1] = lat[1] - (lat[2] - lat[1]) / 2.
+    for (i in 2:nlat) {
+      lat.border[i] = lat[i] - (lat[i] - lat[i-1]) / 2.
+    }
+    lat.border[nlat+1] = lat[nlat] + (lat[nlat] - lat[nlat-1])/2.
+  } else {
+    lat.border[1:nlat] = lat[1:nlat] - force.regular / 2.
+    lat.border[nlat+1] = lat[nlat] + force.regular / 2.
   }
-  lat.border[nlat+1] = lat[nlat] + (lat[nlat] - lat[nlat-1])/2.
   
   for (i in 1:nlat) {
 # this causes a negligible difference (510.068 compared to 510.1013 10^6 km^2 @ 0.5 degree resolution globally).
@@ -67,12 +74,12 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
 #' lat <- seq(89.75,-89.75,-0.5) 
 #' sum(gridarea2d(lon,lat, scale=1.e-12)$area)
 #' sum(gridarea2d(lon,lat, scale=1.e-12, ellipse=TRUE)$area)
-gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
+gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE, ...) {
   nlon   <- length(lon)
   nlat   <- length(lat)
   lon2d  <- array(rep(lon, times=nlat), c(nlon, nlat))
   lat2d  <- array(rep(lat, each=nlon), c(nlon, nlat))
-  area1d <- gridarea1d(lat, min(lon[2:length(lon)] - lon[1:(length(lon)-1)]), scale=scale, ellipse=ellipse)
+  area1d <- gridarea1d(lat, min(lon[2:length(lon)] - lon[1:(length(lon)-1)]), scale=scale, ellipse=ellipse, ...)
   area2d <- array(rep(area1d, each=length(lon)), c(length(lon), length(lat)))
   area   <- data.frame(Lon=as.vector(lon2d),
                        Lat=as.vector(lat2d),
@@ -148,7 +155,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, ...) {
     stop(paste("addArea: Don't know what to to with class", class(input)))
   }
 
-  area <- gridarea2d(lon, lat, ellipse=ellipse)
+  area <- gridarea2d(lon, lat, ellipse=ellipse, ...)
   if (is.data.table(input) || is.ModelObject(input)) {
     area <- as.data.table(area)
     if (is.data.table(input)) {
