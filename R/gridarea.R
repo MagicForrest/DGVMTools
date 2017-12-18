@@ -28,8 +28,6 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE, force.regular=FALSE
   nlat <- length(lat)
   area <- array(0.0, nlat)
 
-  print(force.regular)
-  
   lat.border <- array(0.0, nlat+1)
   if (!force.regular) {
     lat.border[1] = lat[1] - (lat[2] - lat[1]) / 2.
