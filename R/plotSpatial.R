@@ -497,20 +497,21 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     
   }
   
-  ### Swap 1,2,3... for Jan,Feb,Mar...
-  
-  # make a list of months from the meta data
-  month.list <- c()
-  for(this.month in all.months) { month.list <- append(month.list, paste0("%^&", this.month@padded.index, "%^&", this.month@id)) }
-  
-  # simple replacement function
-  get.pos <- function(x, v){ return(v[x]) }
-
-  # apply replacement function
-  data.toplot[, Month := unlist(lapply(data.toplot[["Month"]], FUN = get.pos, month.list))]
-  setKeyDGVM(data.toplot)
-  
-  
+  ### Swap 1,2,3... for Jan,Feb,Mar... if plotting months
+  if(plot.months) {
+    
+    # make a list of months from the meta data
+    month.list <- c()
+    for(this.month in all.months) { month.list <- append(month.list, paste0("%^&", this.month@padded.index, "%^&", this.month@id)) }
+    
+    # simple replacement function
+    get.pos <- function(x, v){ return(v[x]) }
+    
+    # apply replacement function
+    data.toplot[, Month := unlist(lapply(data.toplot[["Month"]], FUN = get.pos, month.list))]
+    setKeyDGVM(data.toplot)
+    
+  }
   
   ### HANDLE THE FACET GRID/WRAP ISSUE
   
@@ -617,6 +618,10 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
       mp <- mp + facet_grid(stats::as.formula(paste(grid.string)), switch = "y")    
     }
     
+  }
+  # else simple case with no facetting
+  else {
+    mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value")) 
   }
   
   # colour bar

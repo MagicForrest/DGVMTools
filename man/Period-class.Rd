@@ -5,8 +5,8 @@
 \alias{Period-class}
 \alias{all.periods}
 \alias{periods}
-\alias{months}
-\alias{seasons}
+\alias{all.months}
+\alias{all.seasons}
 \alias{annual}
 \title{Time periods - eg. a month or a season or a year.}
 \format{An object of class \code{list} of length 17.}
@@ -15,9 +15,9 @@ all.periods
 
 periods
 
-months
+all.months
 
-seasons
+all.seasons
 
 annual
 }
