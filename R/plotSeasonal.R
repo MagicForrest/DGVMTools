@@ -5,7 +5,7 @@
 #' so might not be too efficient unless the arguments which are passes through to getModelObject() via the "..." argument are optimised.  
 #' For example, by using "store.full = TRUE" and the combination "write = TRUE" and "read.full = FALSE".
 #' 
-#' @param runs A list of ModelRun objects to plot
+#' @param runs A ModelRun or a list of ModelRuns to plot
 #' @param quants A list of Quantity objects to plot
 #' @param title A character string to override the default title.
 #' @param spatial.extent For which spatial extent to plot the seasonal cycle.  For details of how to make this selection see the documnetation for getModelObject().
@@ -38,6 +38,33 @@ plotSeasonal <- function(runs,
   
   Quantity = Type = Month = Source = Value = Year = NULL
   
+  ###### 
+  getQuant_local <- function(quant.str, list.of.runs){
+    
+    for(run in list.of.runs){
+      result = tryCatch({ return(lookupQuantity(quant, run@model)) })
+    }
+    
+  }
+  
+  ### SOURCES - check the sources
+  if(is.ModelRun(runs)) {
+    runs<- list(runs)
+  }
+  else if(class(runs)[1] == "list") {
+    for(object in runs){ 
+      if(!(is.ModelRun(object) || is.DataObject(object))) {
+        warning("You have passed me a list of items to plot but the items are not exclusively of ModelRun/DataObjects.  Returning NULL")
+        return(NULL)
+      }
+    }
+  }
+  else{
+    stop(paste("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects can't plot an object of type", class(sources)[1], sep = " "))
+  }
+  
+  
+  
   ###### PREAMBLE ######
   
   ### Sort out quantities    
@@ -50,7 +77,7 @@ plotSeasonal <- function(runs,
     
     # at this stage rebuild the list so it has proper Quantity objects rather than shorthand strings
     if(class(quant)[1] == "character") {
-      quant <- lookupQuantity(quant, run@model)  
+      quant <- getQuant_local(quant, runs) 
     }
     quants.temp <- append(quants.temp, quant)
     
@@ -73,17 +100,8 @@ plotSeasonal <- function(runs,
   
   
   # check the strings
-  if(length(unique(quant.str)) == 1){ 
-    quant.str <- unique(quant.str) 
-  }  
-  else {
-    quant.str <- paste(id.str, sep = ", ", collapse = ", ")
-  }   
-  
-  print(quant.str)
-  
-  
-  
+  if(length(unique(quant.str)) == 1){ quant.str <- unique(quant.str) }  
+  else{ quant.str <- paste(id.str, sep = ", ", collapse = ", ") }   
   
   
   ###### PREPARE THE DATA FOR PLOTTING ######
@@ -103,21 +121,12 @@ plotSeasonal <- function(runs,
                                          spatial.aggregate.method = spatial.aggregate.method,
                                          ...)
       this.dt <-this.ModelObject@data
-      this.dt <- melt(this.dt, id.vars = c("Lon", "Lat", "Year"), variable.name = "Month", value.name = "Value")
+      setnames(this.dt, quant@id, "Value")
       this.dt <- this.dt[, Quantity := quant@name]
       this.dt <- this.dt[, Type := "Single Year"]
       setKeyDGVM(this.dt)
       
       quants.dts[[length(quants.dts)+1]] <- this.dt
-      
-      # also maybe plot average
-      if(plotAverage) {
-        average.dt <- this.dt[,lapply(.SD, mean), by=Month, .SDcols = c("Value")]
-        average.dt[, Type := "Average"]
-        average.dt[, Quantity := quant@name]
-        quants.dts[[length(quants.dts)+1]] <- average.dt
-        rm(average.dt)
-      }
       
       rm(this.dt)
       
@@ -139,20 +148,8 @@ plotSeasonal <- function(runs,
   
   ## combine all runs
   all.dt <- rbindlist(run.dts, fill = FALSE)
-  rm(run.dts)
-  
-  ## swap Jan,Feb,Mar,... for simple 1,2,3...
-  month.list <- c()
-  for(month in months) {
-    month.list <- append(month.list, month@id)
-  }
-  get.pos <- function(x, v){
-    return(which(x == v))
-  }
-  all.dt[, Month := unlist(lapply(all.dt[["Month"]], FUN = get.pos, month.list))]
   setKeyDGVM(all.dt)
-  
-  
+  rm(run.dts)
   
   
   
@@ -181,9 +178,6 @@ plotSeasonal <- function(runs,
   # overall text multiplier
   if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
-  
-  
   return(p)
-  
   
 }

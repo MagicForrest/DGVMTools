@@ -510,7 +510,7 @@ getModelObject <- function(run,
 
   }
   
-  if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)   
+  if(!is.null(temporal.extent))  this.dt <- selectYears(this.dt, temporal.extent)   
   
   if(length(this.dt) == 0) stop("getModelObject() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the temporal.exent and spatial.extent that you have requested.")
   
@@ -824,21 +824,5 @@ averageModelObjects <- function(list.of.model.objects, run = NULL, method = mean
     
     return(new.ModelObject)
   }
-  
-}
-
-.selectYears <- function(input, temporal.extent){
-  
-  # To stop compiler NOTES
-  Year = NULL
-  
-  # Warning if a certain year is not present
-  years.present <- unique(input[["Year"]])
-  for(year in temporal.extent@start:temporal.extent@end){
-    if(!(year %in% years.present)) warning(paste("Year", year, "requested, but it is not in the data!", sep = " "))
-  }
-  
-  # return the subsetted data.table
-  return(subset(input, Year >= temporal.extent@start & Year <= temporal.extent@end))    
   
 }

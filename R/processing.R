@@ -148,7 +148,7 @@ calcBiomes <-function(input, scheme){
   
   # Get the totals required
   input <- newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
-
+  
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
   input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
@@ -161,10 +161,7 @@ calcBiomes <-function(input, scheme){
   if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
   
   # get spatial and temporal columns
-  st.cols <- c()
-  for(st.colname in c("Lon", "Lat", "Year", "Month", "Day")){
-    if(st.colname %in% names(dt)) st.cols <- append(st.cols, st.colname)
-  }
+  st.cols <- getSTInfo(st.cols)
   
   # calculate the biomes (first add it to the existing data.table then subset to make a new data.table and then delete the column from the original)
   suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
@@ -223,7 +220,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   ### HANDLE CLASS OF INPUT OBJECT
   # Here allow the possibility to handle both ModelObjects and data.tables directly (for internal calculations)
- 
+  
   # if it is a ModelObject 
   if(is.ModelObject(input)) {
     # We get a warning about a shallow copy here, suppress it
@@ -286,12 +283,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   # for special case of methods "max" and "min", do not expand "months" and "PFTs" because in these cases we want to provide one layer with the min/max
   # of all months/PFT, not seperate layers for each month/PFTs
-  month.present <- FALSE
   PFT.present <- FALSE
-  if("Month" %in% layers) {
-    layers <- layers[-which(layers == "Month")]
-    month.present <- TRUE
-  }
   if("PFT" %in% layers) {
     layers <- layers[-which(layers == "PFT")]
     PFT.present <- TRUE
@@ -299,12 +291,11 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   
   # expands layer
   layers <- expandLayers(layers, dt, PFT.data)
-
+  
   # remove PFTs from layers since a layer for a PFT is already the sum/avg/min/max for that particular PFT
   for(PFT in all.PFTs){ if(PFT@id %in% layers) layers <- layers[-which(layers == PFT@id)]}
   
   # add back in "Month" and "PFT
-  if(month.present) layers <- append(layers, "Month")
   if(PFT.present) layers <- append(layers, "PFT")
   
   # DEFINE STRING FOR MIN/MAX
@@ -328,7 +319,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
         # Special case for Total and PFT
         if(this.layer == "Total" | this.layer == "PFT") {layer.cols <- append(layer.cols, PFT@id)}
       }
-
+      
       # now combine the relevant columns
       
       # if not requiring the maximum or minimum
@@ -353,48 +344,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
     
   } # for each layer
   
-  
-  ### FOR MONTHLY FILES
-  # Loop through all layers to pick out the seasons/annual and make them 
-  for(layer in layers){
-    
-    # special case to get min/max of all months
-    if(layer == "Month" & (identical(method, max.layer) | identical(method, min.layer))) {
-      
-      # make a vector of all months
-      layer.cols <- c()
-      for(month in months){
-        layer.cols <- append(layer.cols, month@id)
-      }
-      
-      # now calculate the maximum month
-      suppressWarnings(dt[, eval(paste0(method.string, layer) ) := apply(dt[,layer.cols,with=FALSE],FUN=method,MARGIN=1)])
-      
-      # Now, calculate annual total, if this is zero, set it to max or min to "None"
-      suppressWarnings(dt[, TempTotal := sum(.SD), .SDcols = layer.cols])
-      dt[TempTotal == 0.0, eval(quote(paste0(method.string, this.layer))) := "None"]
-      
-      # set the variable to factors in a sensible order (consecutive months) for plotting nicely
-      factor.order <- c()
-      for(month in months) {factor.order<- append(factor.order, month@id)}
-      
-      dt[, eval(quote(paste0(method.string, this.layer))) := factor(get(paste0(method.string, this.layer)), levels = factor.order)]
-      dt[,TempTotal := NULL]
-      
-      
-    }
-    
-    # for other layers
-    else {
-      for(period in all.periods){
-        if(layer == period@id){
-          total.str <- quote(paste(layer, sep = ""))
-          suppressWarnings(dt[, eval(total.str) := method(.SD), .SDcols = period@contains])
-        }
-      }
-    }
-  } 
-  
+ 
   if(is.ModelObject(input)) {
     input@data <- dt
     return(input)
@@ -488,63 +438,4 @@ divideLayers <- function(input, layers, denominators = list("Total"), aggregate.
 }
 
 
-#' Returns the spatio-temporal information 
-#' 
-#' This function returns information about the spacio-temporal dimensions of a DataObject, ModelObject, ComparisonLayer or data.table
-#' 
-#' @param x A DataObject, ModelObject, ComparisonLayer or data.tables
-#' @param info A character string to define what info you want.  Can be "names" to give the names of the spatio-temporal dimensions or ... (to be defined)
-#'
-#' @return A ModelObject or DataObject
-#' @import data.table
-#' @export
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-
-
-getSTInfo <- function(x, info = "names") {
-  
-  
-  
-  # sort classes
-  if(is.ModelObject(x) | is.DataObject(x) | is.ComparisonLayer(x)) x <- x@data
-  else if(class(x)[1] != "data.table" ) stop(paste("Cant get spatio-temporal info from class", class(x)[1], sep = " "))
-  
-  # set up list and vector/columns present
-  if(info == "names") {
-    st.info <- c()
-  }
-  else if(info == "full") {
-    st.info <- "dummy"
-  }
-  else {
-    st.info <- c()
-  }
-  
-  all.cols <- names(x)
-  for(dim in c("Lon", "Lat", "Year", "Month", "Day")) {
-    
-    if(dim %in% all.cols) {
-      
-      # case = names only
-      if(info == "names") st.info <- append(st.info, dim)
-      # case = full 
-      if(info == "full") {
-        if(class(st.info)[1] == "character") {
-          st.info <- data.table(dim = x[[dim]])
-          setnames(st.info, "dim", dim)
-        }
-        else {
-          st.info[,dim := x[[dim]]]
-          setnames(st.info, "dim", dim)
-        }
-      }  
-      
-      
-      
-    }
-  }
-  
-  return(st.info)
-  
-}
 

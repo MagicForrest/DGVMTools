@@ -154,14 +154,6 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
         type <- "pft"
       }
     }
-    else{
-      type <- "monthly"
-      for(month in months) {
-        if(!(month@id %in% header)){
-          type <- "unknown"
-        }
-      }
-    }
   }
   
   if(tolower(type) == "pft") {
@@ -243,33 +235,6 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
       
     }
     
-    
-  }
-  
-  else if(tolower(type) == "monthly"){
-    
-    # Expand seasons
-    if("seasons" %in% tolower(layers) | "season" %in% tolower(layers) | "seasonal" %in% tolower(layers)){
-      
-      layers <- append(layers, c("DJF", "MAM", "JJA", "SON"))
-      
-      if("seasons" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "seasons")]
-      if("season" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "season")] 
-      if("seasonal" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "seasonal")] 
-      
-    }
-    
-    # Expand months/monthly
-    if("months" %in% tolower(layers) | "monthly" %in% tolower(layers)){
-      
-      for(month in months) {
-        layers <- append(layers, month@id)
-      }
-      
-      if("months" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "months")]
-      if("monthly" %in% tolower(layers)) layers <- layers[-which(tolower(layers) == "monthly")] 
-      
-    }
     
   }
   

@@ -21,8 +21,8 @@
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateSpatial.uncompiled <- function(input.obj,
-                                      method = "mean",
-                                      verbose = FALSE){
+                                        method = "mean",
+                                        verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   Year = Lat = Lon = area = NULL
@@ -30,7 +30,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   ### SET UP THE AGGREGATE METHOD 
   print(method)
   method <- match.arg(method, c("weighted.mean", "w.mean", "mean", "weighted.sum", "w.sum", "sum", "max", "min", "sd", "var"))
-
+  
   method.function <- switch(method,
                             weighted.mean = stats::weighted.mean,
                             w.mean = stats::weighted.mean,
@@ -42,7 +42,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
                             min = min,
                             sd = stats::sd,
                             var = stats::var)
- 
+  
   if(method == "weighted.mean") method = "w.mean"
   if(method == "weighted.sum") method = "w.sum"
   
@@ -74,16 +74,16 @@ aggregateSpatial.uncompiled <- function(input.obj,
     }
     if(verbose) message(paste("Spatially summing (with area weighting) ...", sep = ""))
     
-   
+    
     
     # get all column names, remove the spatial and temporal and return
     remove <- c("Lon", "Lat", "Year", "Month", "Day", "area")
     col.names <- names(input.dt)
     col.names <- col.names[!col.names %in% remove]
-
+    
     # check to see if Year is still a column name (it might have been averaged away)
     input.dt[, (col.names) := lapply(.SD, function(x) x * input.dt[['area']] ), .SDcols = col.names]
-
+    
     if("Year" %in% names(input.dt)) {
       output.dt <- input.dt[, lapply(.SD, method.function), by=list(Year)]
     }
@@ -97,9 +97,16 @@ aggregateSpatial.uncompiled <- function(input.obj,
   # if not weighted
   else {
     if(verbose) message(paste("Spatially aggregating with function", method," and no area-weighting ...", sep = ""))
-    # check to see if Year is still a clomun name (it might already have been averaged away)
-    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, method.function), by=list(Year)]
-    else output.dt <- input.dt[,lapply(.SD, method.function)]
+    
+    # Check the 'by' dims
+    by.dims <- c()
+    avail.dims <- getSTInfo(input.obj)
+    for(possible.dim in list("Year","Season","Month","Day")){
+      if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
+    }
+    
+    output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
+    
   }
   
   # remove the Lon and Lat columns 'cos they dun' make so much sense no mo'
@@ -119,7 +126,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
     input.obj@data <- output.dt
     input.obj@spatial.aggregate.method <- method
-    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent, spatial.extent = input.obj@spatial.extent, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
+    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent.id, spatial.extent.id = input.obj@spatial.extent, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}

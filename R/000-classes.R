@@ -353,6 +353,8 @@ setClass("ModelObject",
                    temporal.extent.id = "character",
                    spatial.aggregate.method = "character",
                    temporal.aggregate.method = "character",
+                   subannual.aggregate.method = "character",
+                   subannual.original = "character",
                    run = "ModelRunInfo"
          )
 )
