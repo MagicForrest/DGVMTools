@@ -28,6 +28,10 @@
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param ylim An optional vector of two numerics to specify the y/latitude range of the plot.
 #' @param xlim An optional vector of two numerics to specify the x/longitude range of the plot.
+#' @param years An optional numeric vector specifying which years to plot  
+#' @param days An optional numeric vector specifying which days to plot
+#' @param months An optional numeric vector specifying which months to plot
+#' @param seasons An optional character vector specifying which seasons to plot (any or all of "DJF", "MAM, "JJA", "SON")  
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param override.cols A colour palette function to override the defaults.
 #' @param override.cuts Cut ranges (a numeric vector) to override the default colour delimitation
@@ -84,7 +88,8 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
                          interpolate = FALSE,
                          interior.lines = TRUE){
   
-  Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
+  Source = Value = Lat = Lon = Layer = long = lat = group = NULL
+  Day = Month = Year = Season = NULL
   
   ### CHECK FOR MISSING OR INCONSISTENT ARGUMENTS AND INITIALISE STUFF WHERE APPROPRIATE
   categorical.legend.labels <- waiver()

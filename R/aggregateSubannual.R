@@ -26,7 +26,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
-  Year = Lat = Lon = NULL
+  Year = Season = Month = Day = Lat = Lon = Weight = NULL
   
   
   # Function for weighting months by their number of days
@@ -106,7 +106,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
       # else use the weighted mean, weighted by the days in the month
       else{
         output.dt <- copy(input.dt)[, Weight := lapply(.SD, addMonthlyWeights), .SDcols = c("Month")]
-        output.dt <- output.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
+        output.dt <- output.dt[,lapply(.SD, stats::weighted.mean, w = Weight), by=by.dims]
         output.dt[,Month:=NULL]
         output.dt[,Weight:=NULL]
       }
@@ -128,9 +128,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
         
         #  calculate weights
         output.dt <- copy(input.dt)[, Weight := lapply(.SD, addSeasonalWeights), .SDcols = c("Season")]
-        print(str(output.dt))
-        
-        output.dt <-copy(output.dt)[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
+        output.dt <- copy(output.dt)[,lapply(.SD, stats::weighted.mean, w = Weight), by=by.dims]
         output.dt[,Season:=NULL]
         output.dt[,Weight:=NULL]
         
@@ -188,7 +186,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
         output.dt <- output.dt[, Month:=NULL]
         
         # do weighted mean
-        output.dt <- output.dt[,lapply(.SD, weighted.mean, w = Weight), by=by.dims]
+        output.dt <- output.dt[,lapply(.SD, stats::weighted.mean, w = Weight), by=by.dims]
         output.dt[,Weight:=NULL]
 
       }

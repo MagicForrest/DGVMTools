@@ -14,9 +14,9 @@ makeModelObjectID(var.string, temporal.extent = NULL, spatial.extent = NULL,
 
 \item{spatial.extent}{The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL}
 
-\item{temporally.averaged}{Logical, should be TRUE if temporal averaging has been done}
+\item{temporal.aggregate.method}{Character, method by which this ModelObject was temporally aggregated (if not temporally averaged leave blank of use "none")}
 
-\item{spatially.averaged}{Logical, should be TRUE if spatial averaging has been done}
+\item{spatial.aggregate.method}{Character, method by which this ModelObject was spatially aggregated (if not spatially averaged leave blank of use "none")}
 }
 \value{
 A character string

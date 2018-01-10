@@ -25,7 +25,7 @@ openLPJOutputFile <- function(run,
                               verbose = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Year = NULL
+  Lon = Lat = Year = Month = NULL
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
   file.string = file.path(run@run.dir, paste(variable, ".out", sep=""))
@@ -200,7 +200,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
-    if(file.exists(file.path(run@run.dir, "agpp.out"))){
+    if(file.exists(file.path(run@run.dir, "agpp.out")) || file.exists(file.path(run@run.dir, "agpp.out.gz"))){
       this.dt <- openLPJOutputFile(run, "agpp", verbose = TRUE)
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
@@ -222,7 +222,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     
-    if(file.exists(file.path(run@run.dir, "anpp.out"))){
+    if(file.exists(file.path(run@run.dir, "anpp.out") || file.path(run@run.dir, "anpp.out.gz"))){
       this.dt <- openLPJOutputFile(run, "anpp", verbose = TRUE)
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }

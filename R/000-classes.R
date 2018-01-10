@@ -336,8 +336,10 @@ setClass("Quantity",
 #' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.extent.id A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever
 #' @slot temporal.extent.id A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
-#' @slot spatial.aggregate.method Set to TRUE is this ModelObject has been spatially averaged
-#' @slot temporal.aggregate.method Set to TRUE is this ModelObject has been temporally averaged
+#' @slot spatial.aggregate.method The method by which this ModelObject has been spatially aggregated
+#' @slot temporal.aggregate.method The method by which this ModelObject has been temporally aggregated
+#' @slot subannual.aggregate.method The method by which this ModelObject has been subannually aggregated
+#' @slot subannual.original The original subannual resolution of this ModelObject
 #' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.
 #' @exportClass ModelObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}

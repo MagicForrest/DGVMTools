@@ -1,3 +1,13 @@
+#' Select years from a Data/ModelObject
+#' 
+#' 
+#' @param x The ModelObject or DataObject, data.table or data.frame from which the years should be selected.  Note that a data.table or data.frame 
+#' should have columns "Lon" and "Lat" included.
+#' @param temporal.extent The years to be extracted.  Can either be a TemporalExtent or a list of years (as a numeric vector)
+#' 
+#' @return A ModelObject, DataObject, data.table or data.frame depending on the type of the input x.
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+
 selectYears <- function(x, temporal.extent){
   
   # To stop compiler NOTES

@@ -60,7 +60,7 @@ plotSeasonal <- function(runs,
     }
   }
   else{
-    stop(paste("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects can't plot an object of type", class(sources)[1], sep = " "))
+    stop(paste("plotSpatial can only handle single a ModelRun or DataObject, or a list of ModelRun/DataObjects can't plot an object of type", class(runs)[1], sep = " "))
   }
   
   
