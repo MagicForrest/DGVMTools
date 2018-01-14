@@ -6,6 +6,8 @@
 \alias{is.ModelObject}
 \alias{is.ComparisonLayer}
 \alias{is.ModelRun}
+\alias{is.ModelRunInfo}
+\alias{is.DatasetInfo}
 \alias{is.Quantity}
 \alias{is.SpatialComparison}
 \title{Check if an object is a particular type of DGVMTools object.}
@@ -17,6 +19,10 @@ is.ModelObject(input, spatial = FALSE, temporal = FALSE)
 is.ComparisonLayer(input)
 
 is.ModelRun(input)
+
+is.ModelRunInfo(input)
+
+is.DatasetInfo(input)
 
 is.Quantity(input)
 
