@@ -42,6 +42,7 @@
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
 #' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
+#' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
 #' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
@@ -61,69 +62,113 @@
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
-plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
-                         layers = NULL,
+plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
+                         type = c("difference", "percentage.difference", "values", "nme"),
                          title = NULL,
-                         facet.labels =  NULL,
-                         facet.order = NULL,
-                         plot.bg.col =  "white",
-                         useLongNames = FALSE,
-                         text.multiplier = NULL,
-                         xlim = NULL,
-                         ylim = NULL,
-                         years = NULL,
-                         days = NULL,
-                         months = NULL,
-                         seasons = NULL,
                          limits = NULL,
                          override.cols = NULL,
-                         override.cuts = NULL,
-                         discretise = FALSE,
-                         map.overlay = NULL,
-                         grid = FALSE,
-                         plot = TRUE,
-                         interior.lines = TRUE){
+                         symmetric.scale = TRUE,
+                         percentage.difference.limit = 300,
+                         ...){
   
   Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = NULL
   
-  ### CHECK FOR MISSING OR INCONSISTENT ARGUMENTS AND INITIALISE STUFF WHERE APPROPRIATE
-  categorical.legend.labels <- waiver()
   
-  plot.seasons = !(missing(seasons) || is.null(seasons))
-  plot.days = !(missing(days) || is.null(days))
-  plot.months =!(missing(months) || is.null(months))
-  plot.years = !(missing(years) || is.null(years))
+  # sort type argument
+  type <- match.arg(type)
+ 
   
-  # require that at most only one of seasons/months/days be specified
-  if(sum(plot.months, plot.seasons, plot.days ) > 1){
-    warning("More than one of days/months/seasons specified for plotting. I can't handle this, returning NULL")
-    return(NULL)
-  }
+  if(!missing(limits)) symmetric.scale <- FALSE
   
-  
-  
-  
+ 
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
   ### 1. SOURCES - check the sources
-  if(is.ModelObject(sources) || is.DataObject(sources)) {
+  if(is.ComparisonLayer(sources)) {
     sources<- list(sources)
   }
   else if(class(sources)[1] == "list") {
     for(object in sources){ 
-      if(!(is.ModelObject(object) || is.DataObject(object))) {
-        warning("You have passed me a list of items to plot but the items are not exclusively of ModelObjects/DataObjects.  Returning NULL")
+      if(!is.ComparisonLayer(object)) {
+        warning("You have passed me a list of items to plot but the items are not exclusively of ComparisonLayers.  Returning NULL")
         return(NULL)
       }
     }
   }
   else{
-    stop(paste("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects can't plot an object of type", class(sources)[1], sep = " "))
+    stop(paste("plotSpatialComparison can only handle single a ComparisonLayer, or a list of ComparisonLayers can't plot an object of type", class(sources)[1], sep = " "))
   }
   
   
-  ### 2. LAYERS - check the number of layers
+  ### 2. LAYERS - the layers to plot are defined by the plot type
+ 
+ 
+  # relatively simple case, just plot the absolute or percentage difference
+  if(type == "difference" || type == "percentage.difference") {
+    
+    # convert the ComparisonLayers into a ModelObjects  for plotting 
+    objects.to.plot <- list()
+    max.for.scale <- 0
+    for(object in sources){ 
+  
+      if(type == "difference") {
+        layer.to.plot <- "Difference"
+      }
+      else {
+        layer.to.plot <- "Percentage.Difference"
+        temp.dt <- object@data
+        layers.names <- names(object)
+        temp.dt[ , Percentage.Difference := Difference %/0% get(layers.names[2]) * 100 ]
+        object@data <- temp.dt
+      }
+      new.object <- selectLayers(object, layer.to.plot)
+      
+      new.field <- new("ModelObject",
+                       id = object@id,
+                       data = new.object@data,
+                       quant = object@quant,
+                       spatial.extent = object@spatial.extent,
+                       spatial.extent.id = object@spatial.extent.id,
+                       temporal.extent = object@temporal.extent,
+                       temporal.extent.id = object@temporal.extent.id,
+                       spatial.aggregate.method = object@spatial.aggregate.method,
+                       temporal.aggregate.method = object@temporal.aggregate.method,
+                       subannual.aggregate.method = object@ subannual.aggregate.method,
+                       subannual.original = object@subannual.original,
+                       run = object@info1)
+      
+      objects.to.plot[[length(objects.to.plot)+1]] <- new.field
+ 
+      # get max value for making the scale symmetric
+      if(symmetric.scale && missing(limits)) {
+        max.for.scale <- max(max.for.scale, max(abs(object@data[[layer.to.plot]])))
+      }
+      
+    }
+    
+    # set the colours
+    if(missing(override.cols)) override.cols <-  rev(RColorBrewer::brewer.pal(11, "RdBu"))
+    
+    # set a symmetric scale (so zero always white/centre colour)
+    if(symmetric.scale) limits <- c(-max.for.scale, max.for.scale)
+     
+    # make an appropriate title if not provided
+    #if(missing(title)) title <- paste()
+    
+    return(plotSpatial2(objects.to.plot,
+                 layers = layer.to.plot,
+                 override.cols = override.cols,
+                 limits = limits,
+                 title = title,
+                 ...))
+    
+    
+  }
+  
+  
+  
+ 
   
   layers.superset <- c()
   num.layers.x.sources <- 0
@@ -599,7 +644,9 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
   
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
- 
+  #if(tile) mp <- mp + geom_tile(aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  #else mp <- mp + geom_raster(aes_string(x = "Lon", y = "Lat", fill = "Value"), interpolate = interpolate)
+  
   # facet with grid or wrap 
   if(facet){
     

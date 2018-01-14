@@ -561,10 +561,14 @@ setClass("ComparisonLayer",
                    stats = "SpatialComparison",
                    info1 = "ANY",
                    info2 = "ANY",
-                   spatial.extent = "SpatialExtent",
-                   temporal.extent = "TemporalExtent",
-                   spatial.aggregate.method = "logical",
-                   temporal.aggregate.method = "logical"
+                   spatial.extent = "ANY",
+                   spatial.extent.id = "character",
+                   temporal.extent = "ANY",
+                   temporal.extent.id = "character",
+                   spatial.aggregate.method = "character",
+                   temporal.aggregate.method = "character",
+                   subannual.aggregate.method = "character",
+                   subannual.original = "character"
                    
          )#,
          #validity = checkComparison
