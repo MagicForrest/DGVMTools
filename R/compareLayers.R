@@ -48,12 +48,9 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   setnames(layer.object2@data, layer2, new.id2) 
   
   ### Check the case that the longitudes, latitudes and years are identical
-  ### This is often the case with model runs and if it is true, maybe the whole procedure much faster and easier
-  same.domain <- FALSE
-  if(identical(getSTInfo(object1, "full"), getSTInfo(object2, "full")))  same.domain <- TRUE
   
   ### Easy-life case, both objects are on exactly the same domain
-  if(same.domain) {
+  if(identical(getSTInfo(object1, "full"), getSTInfo(object2, "full"))) {
     
     new.data <- layer.object1@data[layer.object2@data] 
     
@@ -67,17 +64,15 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
                            new.layer.names = NULL, 
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
-                           dec.places = dec.places)
+                           dec.places = dec.places)@data
     
     
   }
   
   # match NAs if necessary
   if(match.NAs) {
-    
     are.NAs <- which(is.na(new.data[[new.id1]] * new.data[[new.id2]]))
     new.data[are.NAs, (c(new.id1, new.id2)) := .SD[NA], .SDcols =c(new.id1, new.id2)]
-    
   }
   
   # make meta-data for the ComparisonLayer
