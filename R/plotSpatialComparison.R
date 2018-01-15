@@ -180,158 +180,81 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     for(object in sources){ 
       
       
-      # first check the first contributing object/field
+      # FIRST INFO
       if(tolower(object@info1@type == "model")){
-        
         if(!object@info1@id %in%  model.layers){
-          
           model.layers[[length(model.layers) + 1]] <- object@info1@id
-          new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
-          setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
           
-          objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
-                                                             id = object@id,
-                                                             data = new.dt,
-                                                             quant = object@quant,
-                                                             spatial.extent = object@spatial.extent,
-                                                             spatial.extent.id = object@spatial.extent.id,
-                                                             temporal.extent = object@temporal.extent,
-                                                             temporal.extent.id = object@temporal.extent.id,
-                                                             spatial.aggregate.method = object@spatial.aggregate.method,
-                                                             temporal.aggregate.method = object@temporal.aggregate.method,
-                                                             subannual.aggregate.method = object@ subannual.aggregate.method,
-                                                             subannual.original = object@subannual.original,
-                                                             source = object@info1)
         }
       }
       else if(tolower(object@info1@type == "data")){
-        
         if(!object@info1@id %in%  data.layers){
-          
           data.layers[[length(data.layers) + 1]] <- object@info1@id
-          new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
-          setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
-          
-          objects.to.plot[[length(objects.to.plot)+1]] <- new("DataObject",
-                                                              id = object@id,
-                                                              data = new.dt,
-                                                              quant = object@quant,
-                                                              spatial.extent = object@spatial.extent,
-                                                              spatial.extent.id = object@spatial.extent.id,
-                                                              temporal.extent = object@temporal.extent,
-                                                              temporal.extent.id = object@temporal.extent.id,
-                                                              spatial.aggregate.method = object@spatial.aggregate.method,
-                                                              temporal.aggregate.method = object@temporal.aggregate.method,
-                                                              subannual.aggregate.method = object@ subannual.aggregate.method,
-                                                              subannual.original = object@subannual.original,
-                                                              source = object@info1)
-          }
+        }
       }
       
-      # then check the second contributing object/field
-      if(tolower(object@info1@type == "model")){
-        
+      new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
+      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
+      objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
+                                                          id = object@id,
+                                                          data = new.dt,
+                                                          quant = object@quant,
+                                                          spatial.extent = object@spatial.extent,
+                                                          spatial.extent.id = object@spatial.extent.id,
+                                                          temporal.extent = object@temporal.extent,
+                                                          temporal.extent.id = object@temporal.extent.id,
+                                                          spatial.aggregate.method = object@spatial.aggregate.method,
+                                                          temporal.aggregate.method = object@temporal.aggregate.method,
+                                                          subannual.aggregate.method = object@ subannual.aggregate.method,
+                                                          subannual.original = object@subannual.original,
+                                                          source = object@info1)
+      
+      # SECOND INFO
+      if(tolower(object@info2@type == "model")){
         if(!object@info2@id %in%  model.layers){
-          
           model.layers[[length(model.layers) + 1]] <- object@info2@id
-          new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
-          setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
           
-          objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
-                                                              id = object@id,
-                                                              data = new.dt,
-                                                              quant = object@quant,
-                                                              spatial.extent = object@spatial.extent,
-                                                              spatial.extent.id = object@spatial.extent.id,
-                                                              temporal.extent = object@temporal.extent,
-                                                              temporal.extent.id = object@temporal.extent.id,
-                                                              spatial.aggregate.method = object@spatial.aggregate.method,
-                                                              temporal.aggregate.method = object@temporal.aggregate.method,
-                                                              subannual.aggregate.method = object@ subannual.aggregate.method,
-                                                              subannual.original = object@subannual.original,
-                                                              source = object@info2)
         }
       }
-     else if(tolower(object@info1@type == "data")){
-        
+      else if(tolower(object@info2@type == "data")){
         if(!object@info2@id %in%  data.layers){
-          
           data.layers[[length(data.layers) + 1]] <- object@info2@id
-          new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
-          setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
-          
-          objects.to.plot[[length(objects.to.plot)+1]] <- new("DataObject",
-                                                              id = object@id,
-                                                              data = new.dt,
-                                                              quant = object@quant,
-                                                              spatial.extent = object@spatial.extent,
-                                                              spatial.extent.id = object@spatial.extent.id,
-                                                              temporal.extent = object@temporal.extent,
-                                                              temporal.extent.id = object@temporal.extent.id,
-                                                              spatial.aggregate.method = object@spatial.aggregate.method,
-                                                              temporal.aggregate.method = object@temporal.aggregate.method,
-                                                              subannual.aggregate.method = object@ subannual.aggregate.method,
-                                                              subannual.original = object@subannual.original,
-                                                              source = object@info2)
         }
       }
       
-      
+      new.dt <- object@data[, append(getSTInfo(object), names(object)[2]), with=FALSE]
+      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
+      objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
+                                                          id = object@id,
+                                                          data = new.dt,
+                                                          quant = object@quant,
+                                                          spatial.extent = object@spatial.extent,
+                                                          spatial.extent.id = object@spatial.extent.id,
+                                                          temporal.extent = object@temporal.extent,
+                                                          temporal.extent.id = object@temporal.extent.id,
+                                                          spatial.aggregate.method = object@spatial.aggregate.method,
+                                                          temporal.aggregate.method = object@temporal.aggregate.method,
+                                                          subannual.aggregate.method = object@ subannual.aggregate.method,
+                                                          subannual.original = object@subannual.original,
+                                                          source = object@info2)
       
     }
     
-    #   
-    #   if(type == "difference") {
-    #     layer.to.plot <- "Difference"
-    #   }
-    #   else {
-    #     layer.to.plot <- "Percentage.Difference"
-    #     temp.dt <- object@data
-    #     layers.names <- names(object)
-    #     temp.dt[ , Percentage.Difference := Difference %/0% get(layers.names[2]) * 100 ]
-    #     object@data <- temp.dt
-    #   }
-    #   new.object <- selectLayers(object, layer.to.plot)
-    #   
-    #   new.field <- new("Field",
-    #                    id = object@id,
-    #                    data = new.object@data,
-    #                    quant = object@quant,
-    #                    spatial.extent = object@spatial.extent,
-    #                    spatial.extent.id = object@spatial.extent.id,
-    #                    temporal.extent = object@temporal.extent,
-    #                    temporal.extent.id = object@temporal.extent.id,
-    #                    spatial.aggregate.method = object@spatial.aggregate.method,
-    #                    temporal.aggregate.method = object@temporal.aggregate.method,
-    #                    subannual.aggregate.method = object@ subannual.aggregate.method,
-    #                    subannual.original = object@subannual.original,
-    #                    run = object@info1)
-    #   
-    #   objects.to.plot[[length(objects.to.plot)+1]] <- new.field
-    #   
-    #   # get max value for making the scale symmetric
-    #   if(symmetric.scale && missing(limits)) {
-    #     max.for.scale <- max(max.for.scale, max(abs(object@data[[layer.to.plot]])))
-    #   }
-    #   
-    # }
-    # 
-    # # set the colours
-    # if(missing(override.cols)) override.cols <-  rev(RColorBrewer::brewer.pal(11, "RdBu"))
-    # 
-    # # set a symmetric scale (so zero always white/centre colour)
-    # if(symmetric.scale) limits <- c(-max.for.scale, max.for.scale)
-    # 
-    # # make an appropriate title if not provided
-    # #if(missing(title)) title <- paste()
-    # 
-    # return(plotSpatial2(objects.to.plot,
-    #                     layers = layer.to.plot,
-    #                     override.cols = override.cols,
-    #                     limits = limits,
-    #                     title = title,
-    #                     ...))
     
+    # set the colours
+    #if(missing(override.cols)) override.cols <-  rev(RColorBrewer::brewer.pal(11, "RdBu"))
+
+    # make an appropriate title if not provided
+    #if(missing(title)) title <- paste()
+
+   
+    return(plotSpatial2(objects.to.plot,
+                        layers =  object@quant@id,
+                        override.cols = override.cols,
+                        limits = limits,
+                        title = title,
+                        ...))
+
     
     
   }
