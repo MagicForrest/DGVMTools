@@ -5,16 +5,12 @@
 \alias{resample}
 \alias{resample.DGVM}
 \alias{resample.DGVM,Field,Raster,character,character-method}
-\alias{resample.DGVM,DataObject,Raster,character,character-method}
 \alias{resample.DGVM,Field,character,character,character-method}
 \title{Resample methods}
 \usage{
 resample.DGVM(x, y, method, filename)
 
 \S4method{resample.DGVM}{Field,Raster,character,character}(x, y, method,
-  filename)
-
-\S4method{resample.DGVM}{DataObject,Raster,character,character}(x, y, method,
   filename)
 
 \S4method{resample.DGVM}{Field,character,character,character}(x, y, method,
@@ -35,7 +31,7 @@ resample.DGVM(x, y, method, filename)
 A vector of character strings of the names of the layers
 }
 \description{
-Methods for resampling Fields and Data objects to other resolutions based on Raster* objects or netCDF files on disk 
+Methods for resampling Fields to other resolutions based on Raster* objects or netCDF files on disk 
 (especially useful for guassian grids with irregularly spaced latitudes)
 }
 \author{

@@ -24,18 +24,7 @@ setMethod("names", signature(x="Field"), function(x) {
   
 })
 
-#' @rdname names
-setMethod("names", signature(x="DataObject"), function(x) {
-  
-  # columns to be removed because they contain spatial and temporal information rather than actual data layers
-  remove <- c("Lon", "Lat", "Year", "Month", "Day")
-  
-  # get all column names, remove the spatial and temporal and return
-  col.names <- names(x@data)
-  col.names <- col.names[!col.names %in% remove]
-  return(col.names)
-  
-})
+
 
 #' @rdname names
 setMethod("names", signature(x="ComparisonLayer"), function(x) {

@@ -53,10 +53,9 @@ makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NU
   # A layer name may be supplied
   if(!is.null(layer)) string <- paste(string, layer, sep = " ")
   
-  # A source may be supplied (either a DataObject, Field or ComparisonLayer)
+  # A source may be supplied (either a Field or ComparisonLayer)
   if(!is.null(source)) {
     if(is.Field(source)) string <- paste(string, source@source@name, sep = " ")
-    if(is.DataObject(source)) string <- paste(string, source@name, sep = " ")
     if(is.ComparisonLayer(source)) string <- paste(string, source@name, sep = " ")
   }
   

@@ -141,25 +141,6 @@ setMethod("print", signature(x="Field"), function(x) {
 })
 
 
-#' @rdname print
-#' @export
-setMethod("print", signature(x="DataObject"), function(x) {
-  
-  cat(paste0("DataObject:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", x@name, "\"", "\n"))
-  print(x@quant)
-  #cat(paste0("Spatially Averaged =  ",  x@spatial.aggregate.method, "\n"))
-  print(x@spatial.extent)
-  #cat(paste0("Temporally Averaged =  ",  x@temporal.aggregate.method, "\n"))
-  print(x@temporal.extent)
-  cat("Data:")
-  print(x@data)
-  if(x@correction.layer == "") cat("No correction layer has been defined")
-  else cat(paste0("Correction layer is \"", x@correction.layer, "\""))
-
-})
-
 
 #' @rdname print
 #' @export

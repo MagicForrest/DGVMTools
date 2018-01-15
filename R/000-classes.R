@@ -323,33 +323,33 @@ setClass("Quantity",
 
 
 
-#### DATA OBJECT CLASS
-
-#' Contains one dataset (ie. measured, not model-generated).
+#' #### DATA OBJECT CLASS
 #' 
-#' A key class of the package.  A \code{DataObject} stores the data and metadata for one dataset (temporal or spatial).
-#' For example 
-#' 
-#' Generally these are not created directly by the user, but rather by functions like \code{getMODISTreecover} or \code{getSaatchi2011} or so, but the use can create them directly if desired.
-#' 
-#' @slot id A unique character string to identify this particular DataObject.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot name A character string to more fully describe this DataObject
-#' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A Quantity object to define what output this DataObject contains
-#' @slot spatial.extent A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.
-#' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.
-#' @slot correction.layer A character string defining a multiplicative corection layer that can be used for the data set
-#' @exportClass DataObject
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("DataObject", 
-         slots = c(data = "data.table",
-                   spatial.extent = "SpatialExtent",
-                   temporal.extent = "TemporalExtent",
-                   correction.layer =  "character"
-         ),
-         contains = "SourceInfo" 
-         
-)
+#' #' Contains one dataset (ie. measured, not model-generated).
+#' #' 
+#' #' A key class of the package.  A \code{DataObject} stores the data and metadata for one dataset (temporal or spatial).
+#' #' For example 
+#' #' 
+#' #' Generally these are not created directly by the user, but rather by functions like \code{getMODISTreecover} or \code{getSaatchi2011} or so, but the use can create them directly if desired.
+#' #' 
+#' #' @slot id A unique character string to identify this particular DataObject.  Recommended to be alphanumeric because it is used to construct file names.
+#' #' @slot name A character string to more fully describe this DataObject
+#' #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
+#' #' @slot quant A Quantity object to define what output this DataObject contains
+#' #' @slot spatial.extent A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.
+#' #' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.
+#' #' @slot correction.layer A character string defining a multiplicative corection layer that can be used for the data set
+#' #' @exportClass DataObject
+#' #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' setClass("DataObject", 
+#'          slots = c(data = "data.table",
+#'                    spatial.extent = "SpatialExtent",
+#'                    temporal.extent = "TemporalExtent",
+#'                    correction.layer =  "character"
+#'          ),
+#'          contains = "SourceInfo" 
+#'          
+#' )
 
 
 #' Result of comparing a model raster to a data raster

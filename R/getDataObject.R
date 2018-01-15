@@ -154,7 +154,7 @@ getDataObject <- function(dataset.id = NULL,
                          end = ncatt_get(this.nc, 0, attname="DGVMTools_DataObject_temporal.extent.end", verbose=FALSE)$value
   )
   
-  this.DataObject <- new("DataObject",
+  this.Field <- new("Field",
                          id = dataset.id ,
                          name = dataset.name,
                          temporal.extent = temporal.extent,
@@ -163,7 +163,7 @@ getDataObject <- function(dataset.id = NULL,
                          spatial.extent = spatial.extent,
                          correction.layer =  "")
   
-  return(this.DataObject)
+  return(this.Field)
   
   
 }

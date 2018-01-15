@@ -181,8 +181,8 @@ dgvm.ggplot.theme <- function(x) {
 plotGGSpatial <- function(input, column='value', colours=NA, sym.col=FALSE, wrap=1, miss.bg=NA, map.overlay=NA, long.title=TRUE, plot=TRUE, ...) {
   ## to avoid "no visible binding for global variable" during check
   Lon = Lat = group = long = name = value = sens = NULL
-  ## much simpler thant the following Field
-  if (is.DataObject(input)) {
+  ## much simpler than the following Field
+  if (is.Field(input)) {
     if (!all(is.na(column))) {
       if (length(column) == 1 && all(colnames(input@data) != column)) {
         stop(paste0("No column named '",column,"' present!"))
@@ -455,8 +455,6 @@ plotGGSpatial <- function(input, column='value', colours=NA, sym.col=FALSE, wrap
 
   if (any(colnames(dt)=="sens")) {
     p <- eval(parse(text=paste0("p + facet_wrap(~sens, ncol=",wrap,")")))
-  } else if (long.title && is.DataObject(input)) {
-    p <- p + labs(title=input@name)
   } else if (long.title) {
     p <- p + labs(title=input@source@name)
   }

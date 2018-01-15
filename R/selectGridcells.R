@@ -24,7 +24,7 @@ selectGridcells <- function(x, gridcells, tolerance = NULL) {
     isDataFrame <- TRUE
     dt <- data.table(x)
   }
-  else if(is.Field(x) || is.DataObject(x)) {
+  else if(is.Field(x)) {
     dt <- x@data
   }
   else {

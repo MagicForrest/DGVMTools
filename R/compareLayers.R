@@ -38,25 +38,13 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   
   ###  Set the names by appending the id so that they are not identical
   # object 1
-  if(is.DataObject(layer.object1)) {
-    new.id1 <- paste(layer1, object1@id, sep = ".")
-    info1 <- as(object1, "SourceInfo")
-  }
-  else {
-    new.id1 <- paste(object1@source@id, layer1, object1@id, sep = ".")
-    info1 <- as(object1@source, "SourceInfo")
-  }  
+  new.id1 <- paste(object1@source@id, layer1, object1@id, sep = ".")
+  info1 <- as(object1@source, "SourceInfo")
   setnames(layer.object1@data, layer1, new.id1) 
   
   # object 2
-  if(is.DataObject(layer.object2)) {
-    new.id2 <- paste(layer2, object2@id, sep = ".")
-    info2 <- as(object2, "SourceInfo")
-  }
-  else {
-    new.id2 <- paste(object2@source@id, layer2, object2@id, sep = ".")
-    info2 <- as(object2@source, "SourceInfo")
-  }  
+  new.id2 <- paste(object2@source@id, layer2, object2@id, sep = ".")
+  info2 <- as(object2@source, "SourceInfo")
   setnames(layer.object2@data, layer2, new.id2) 
   
   ### Check the case that the longitudes, latitudes and years are identical

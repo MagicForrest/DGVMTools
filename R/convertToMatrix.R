@@ -82,7 +82,7 @@ convertToMatrix <- function(input, Lons = NULL, Lats = NULL, gap.fill = TRUE, la
   ### MAKE THE MATRIX
   
   # input data type
-  if(is.Field(input) || is.DataObject(input)) input <- input@data
+  if(is.Field(input)) input <- input@data
   
   # dcast the data so that columns at longitudes and rows are latitudes and then convert to matrix
   input.dcasted <- dcast(input, formula = Lat ~ Lon, value.var = layer, drop = FALSE)

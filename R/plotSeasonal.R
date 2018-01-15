@@ -48,12 +48,12 @@ plotSeasonal <- function(runs,
   }
   
   ### SOURCES - check the sources
-  if(is.Field(runs)) {
-    runs<- list(runs)
+  if(is.Source(runs)) {
+    runs <- list(runs)
   }
   else if(class(runs)[1] == "list") {
     for(object in runs){ 
-      if(!(is.Field(object) || is.DataObject(object))) {
+      if(!is.Source(object)) {
         warning("You have passed me a list of items to plot but the items are not exclusively of Source/DataObjects.  Returning NULL")
         return(NULL)
       }

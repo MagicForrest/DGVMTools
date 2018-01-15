@@ -14,7 +14,7 @@ selectYears <- function(x, temporal.extent){
   Year = NULL
   
   # check input class
-  if(is.Field(x) || is.DataObject(x)) input.dt <- x@data 
+  if(is.Field(x)) input.dt <- x@data 
   else if(is.data.table(x))  input.dt <- x
   else stop("Called for an object which is not a Data/Model object or a data.table.  Exiting...")
   
@@ -37,7 +37,7 @@ selectYears <- function(x, temporal.extent){
   else output.dt <- subset(input.dt, Year %in% temporal.extent)   
   
   # and return
-  if(is.Field(x) || is.DataObject(x)) {
+  if(is.Field(x)) {
     x@data <- output.dt
     return(x)
   }

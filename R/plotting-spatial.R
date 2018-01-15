@@ -106,7 +106,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
   symmetric.diff.limits <- FALSE
   
   ### CASE 1 - A single Field or DataObject
-  if(is.Field(data) || is.DataObject(data)) {
+  if(is.Field(data)) {
     
     single.object <- TRUE
     grid <- FALSE
@@ -221,12 +221,12 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     only.data.or.model.objects <- TRUE
     only.comparison.layers <- TRUE
     for(object in data){ 
-      if(!(is.Field(object) || is.DataObject(object))) only.data.or.model.objects <- FALSE
+      if(!is.Field(object)) only.data.or.model.objects <- FALSE
       if(!is.ComparisonLayer(object)) only.comparison.layers <- FALSE
     }
     
     if(!xor(only.data.or.model.objects, only.comparison.layers)) {
-      stop("You have passed me a list of items to plot but the items are exclusively of Fields/DataObjects or ComparisonLayers (note you cannot mix those two types)")
+      stop("You have passed me a list of items to plot but the items are exclusively of Fields or ComparisonLayers (note you cannot mix those two types)")
     }
     
     # list of all data.tables to be rbinded at the end
@@ -244,8 +244,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         # select the layers and mash the data into shape
         these.layers <- selectLayers(object, layers)
         these.layers.melted <- melt(these.layers@data, measure.vars = layers)
-        if(is.DataObject(object)) these.layers.melted[, Source := object@name]
-        else  these.layers.melted[, Source := object@source@name]
+        these.layers.melted[, Source := object@source@name]
         data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
         
         # check if layers are all continuous or discrete
@@ -609,8 +608,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     if(missing(facet.order) && !only.comparison.layers) {
       facet.order <- character(0)
       for(this.object in data) {
-          if(is.Field(this.object)) facet.order <- append(facet.order, this.object@source@name)
-          else if(is.DataObject(this.object)) facet.order <- append(facet.order, this.object@name)
+          facet.order <- append(facet.order, this.object@source@name)
       }
     }
     

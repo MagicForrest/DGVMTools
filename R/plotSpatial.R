@@ -107,13 +107,13 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
   ### 1. SOURCES - check the sources
-  if(is.Field(sources) || is.DataObject(sources)) {
+  if(is.Field(sources)) {
     sources<- list(sources)
   }
   else if(class(sources)[1] == "list") {
     for(object in sources){ 
-      if(!(is.Field(object) || is.DataObject(object))) {
-        warning("You have passed me a list of items to plot but the items are not exclusively of Fields/DataObjects.  Returning NULL")
+      if(!is.Field(object)) {
+        warning("You have passed me a list of items to plot but the items are not exclusively Fields.  Returning NULL")
         return(NULL)
       }
     }
@@ -274,8 +274,7 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     if(!is.null(years)) these.layers <- selectYears(these.layers, years)
     
     these.layers.melted <- melt(these.layers@data, measure.vars = layers)
-    if(is.DataObject(object)) these.layers.melted[, Source := object@name]
-    else  these.layers.melted[, Source := object@source@name]
+    these.layers.melted[, Source := object@source@name]
     data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
     
     # check if layers are all continuous or discrete

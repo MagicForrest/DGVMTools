@@ -41,17 +41,6 @@ as.data.frame.Field = function(x, row.names, optional, ...) as(x, "data.frame")
 
 #' @name export-methods
 #' @export
-setAs("DataObject", "data.frame", function(from) as.data.frame(from@data))
-
-
-#' @rdname export-methods
-#' @method as.data.frame DataObject
-#' @export
-as.data.frame.DataObject = function(x, row.names, optional, ...) as(x, "data.frame") 
-
-
-#' @name export-methods
-#' @export
 setAs("ComparisonLayer", "data.frame", function(from) as.data.frame(from@data))
 
 
@@ -72,15 +61,6 @@ as.data.table.Field = function(x, keep.rownames, ...) as(x, "data.table")
 
 #' @name export-methods
 #' @export
-setAs("DataObject", "data.table", function(from) from@data)
-
-#' @rdname export-methods
-#' @export
-as.data.table.DataObject = function(x, keep.rownames, ...) as(x, "data.table") 
-
-
-#' @name export-methods
-#' @export
 setAs("ComparisonLayer", "data.table", function(from) from@data)
 
 #' @rdname export-methods
@@ -96,10 +76,6 @@ setAs("Field", "Raster", function(from) promoteToRaster(from@data))
 
 #' @name export-methods
 #' @export
-setAs("DataObject", "Raster", function(from) promoteToRaster(from@data))
-
-#' @name export-methods
-#' @export
 setAs("ComparisonLayer", "Raster", function(from) promoteToRaster(from@data))
 
 
@@ -112,11 +88,6 @@ setAs("ComparisonLayer", "Raster", function(from) promoteToRaster(from@data))
 setGeneric("as.Raster", function(x) {
   standardGeneric("as.Raster")
 })
-
-#' @rdname export-methods
-#' @export
-#' @exportMethod as.Raster
-setMethod("as.Raster", signature("DataObject"), function(x)  promoteToRaster(x@data))
 
 #' @rdname export-methods
 #' @export

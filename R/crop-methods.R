@@ -75,48 +75,6 @@ setMethod("crop", signature(x="Field", y = "ANY"), function(x, y) {
 
 
 #' @rdname crop-methods
-setMethod("crop", signature(x="DataObject", y = "ANY"), function(x, y) {
-  
-  Lon = Lat = NULL
-  
-  original.y <- y
-  
-  y <- try ( extent(y), silent=TRUE )
-  if (class(y) == "try-error") {
-    stop('Cannot get an Extent object from argument y')
-  }
-  methods::validObject(y)
-  
-  # crop the data
-  dt <- x@data
-  x@data <- dt[Lat < y@ymax & Lat > y@ymin & Lon < y@xmax & Lon > y@xmin,]
-  
-  # adjust the meta-data
-  new.sp.ex <- x@spatial.extent
-  #new.sp.ex@extent <- extent(x@data)
-  new.sp.ex@xmin <- extent(x@data)@xmin
-  new.sp.ex@xmax <- extent(x@data)@xmax
-  new.sp.ex@ymin <- extent(x@data)@ymin
-  new.sp.ex@ymax <- extent(x@data)@ymax
-  
-  # If y was a SpatialExtent object it has a handy name and id which can be used to indicate the spatial domain
-  if(class(original.y)[1] == "SpatialExtent") {
-    new.sp.ex@name <- original.y@name
-    new.sp.ex@id <-original.y@id
-  }
-  # else simply indicate that this has been cropped from the original
-  else {
-    new.sp.ex@name <- paste0(new.sp.ex@name, " (cropped)")
-    new.sp.ex@id <- paste0(new.sp.ex@id, ".cropped")
-  }
- 
-  x@spatial.extent <- new.sp.ex
-  
-  return(x)
-  
-})
-
-#' @rdname crop-methods
 setMethod("crop", signature(x="ComparisonLayer", y = "ANY"), function(x, y) {
   
   Lon = Lat = NULL

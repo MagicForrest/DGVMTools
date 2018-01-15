@@ -30,7 +30,6 @@ getPFTs <- function(input, PFT.data){
   # Allow for rasters, Veg Objects and data.tables
   input.class <- class(input)[1]
   if(is.Field(input)) suppressWarnings(input.names <- names(input@data))
-  else if(is.DataObject(input)) suppressWarnings(input.names <- names(input@data))
   else if(input.class == "data.table" | input.class == "RasterLayer" | input.class == "RasterBrick" | input.class == "RasterStack") input.names <- names(input)
   else stop(paste("Can't get PFTs from object of class", input.class, sep = " "))
   

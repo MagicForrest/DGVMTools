@@ -18,29 +18,6 @@ NULL
 
 #' @rdname is.object-methods
 #' @export
-is.DataObject <- function(input, spatial=FALSE, temporal=FALSE) {
-  class.def <- class(input)
-  if (!is.null(attr(class.def, "package"))) {
-    if (class.def[1] == "DataObject" && attr(class.def, "package") == "DGVMTools") {
-      ## JS: check more carefully if this if structure makes sense
-      if (spatial && !temporal) {
-        if (input@spatial.aggregate.method == "none")
-          return(TRUE)
-      } else if (!spatial && temporal) {
-        if (input@temporal.aggregate.method == "none")
-          return(TRUE)
-      } else if (!spatial && !temporal) {
-        return(TRUE)
-      } else {
-        return(FALSE)
-      }
-    }
-  }
-  return(FALSE)
-}
-
-#' @rdname is.object-methods
-#' @export
 is.Field <- function(input, spatial=FALSE, temporal=FALSE) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package"))) {

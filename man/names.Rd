@@ -4,13 +4,10 @@
 \name{names-methods}
 \alias{names-methods}
 \alias{names,Field-method}
-\alias{names,DataObject-method}
 \alias{names,ComparisonLayer-method}
 \title{Names methods}
 \usage{
 \S4method{names}{Field}(x)
-
-\S4method{names}{DataObject}(x)
 
 \S4method{names}{ComparisonLayer}(x)
 }

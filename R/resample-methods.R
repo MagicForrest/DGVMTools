@@ -1,6 +1,6 @@
 #' Resample methods
 #' 
-#' Methods for resampling Fields and Data objects to other resolutions based on Raster* objects or netCDF files on disk 
+#' Methods for resampling Fields to other resolutions based on Raster* objects or netCDF files on disk 
 #' (especially useful for guassian grids with irregularly spaced latitudes)
 #' 
 #' @param x A Field or DataObject to be resample
@@ -20,20 +20,6 @@ setGeneric("resample.DGVM", function(x,y,method,filename) standardGeneric("resam
 
 #' @rdname resample
 setMethod("resample.DGVM", signature(x="Field", y="Raster", method = "character", filename="character"), function(x,y,method,filename) {
-  
-  # first convert the x to be resample to a raster
-  x.raster <- as.Raster(x)
-  
-  # second do the resampling
-  x.resampled <- raster::resample(x.raster, y, method, filename)
-  
-  # finally resample and return
-  return(x.resampled)
-  
-})
-
-#' @rdname resample
-setMethod("resample.DGVM", signature(x="DataObject", y="Raster", method = "character", filename="character"), function(x,y,method,filename) {
   
   # first convert the x to be resample to a raster
   x.raster <- as.Raster(x)

@@ -2,7 +2,6 @@
 % Please edit documentation in R/is-methods.R
 \name{is.object-methods}
 \alias{is.object-methods}
-\alias{is.DataObject}
 \alias{is.Field}
 \alias{is.ComparisonLayer}
 \alias{is.Source}
@@ -11,8 +10,6 @@
 \alias{is.SpatialComparison}
 \title{Check if an object is a particular type of DGVMTools object.}
 \usage{
-is.DataObject(input, spatial = FALSE, temporal = FALSE)
-
 is.Field(input, spatial = FALSE, temporal = FALSE)
 
 is.ComparisonLayer(input)

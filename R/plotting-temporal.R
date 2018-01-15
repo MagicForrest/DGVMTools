@@ -66,10 +66,9 @@ plotTemporal <- function(input.data,
       PFTs <- list()
       for(x.object in input.data){
         
-        if(!(is.DataObject(x.object) || is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  Field") }
+        if(!(is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a Field") }
         temp.dt <- copy(x.object@data)
-        if(is.Field(x.object)) temp.dt[,"Source" := x.object@source@name]
-        if(is.DataObject(x.object)) temp.dt[,"Source" := x.object@name]
+        temp.dt[,"Source" := x.object@source@name]
         plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
         rm(temp.dt)
         
@@ -89,10 +88,9 @@ plotTemporal <- function(input.data,
       
       for(x.object in input.data){
         
-        if(!(is.DataObject(x.object) || is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  Field") }
+        if(!(is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a Field") }
         temp.dt <- copy(x.object@data)
-        if(is.Field(x.object)) temp.dt[,"Source" := x.object@source@name]
-        if(is.DataObject(x.object)) temp.dt[,"Source" := x.object@name]
+        temp.dt[,"Source" := x.object@source@name]
         plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
         rm(temp.dt)
         
@@ -109,7 +107,7 @@ plotTemporal <- function(input.data,
   }
   
   # if it is a single DataObject or Field, pull out the data (and PFTs if present)
-  else if(is.DataObject(input.data) || is.Field(input.data)){
+  else if(is.Field(input.data)){
     
     if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
     plotting.data.dt <- input.data@data

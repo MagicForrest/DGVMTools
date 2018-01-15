@@ -39,7 +39,7 @@ aggregateTemporal.uncompiled <- function(input.obj,
   
   
   # sort out the input object class
-  if(is.DataObject(input.obj) | is.Field(input.obj)) {input.dt <- input.obj@data}
+  if(is.Field(input.obj)) {input.dt <- input.obj@data}
   else if(is.data.table(input.obj)) {input.dt <- input.obj}
   
   
@@ -69,7 +69,7 @@ aggregateTemporal.uncompiled <- function(input.obj,
   setKeyDGVM(output.dt)
   
   # sort out the input object class
-  if(is.DataObject(input.obj) | is.Field(input.obj)) {
+  if(is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@temporal.aggregate.method <- method
     input.obj@id <- makeFieldID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent.id, spatial.extent = input.obj@spatial.extent.id, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)

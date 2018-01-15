@@ -6,39 +6,27 @@
 \alias{export-methods}
 \alias{as.data.frame.Field}
 \alias{export-methods}
-\alias{as.data.frame.DataObject}
-\alias{export-methods}
 \alias{as.data.frame.ComparisonLayer}
 \alias{export-methods}
 \alias{as.data.table.Field}
 \alias{export-methods}
-\alias{as.data.table.DataObject}
-\alias{export-methods}
 \alias{as.data.table.ComparisonLayer}
 \alias{export-methods}
 \alias{export-methods}
-\alias{export-methods}
 \alias{as.Raster}
-\alias{as.Raster,DataObject-method}
 \alias{as.Raster,Field-method}
 \alias{as.Raster,ComparisonLayer-method}
 \title{Coerce from Fields and DataObjects}
 \usage{
 \method{as.data.frame}{Field}(x, row.names, optional, ...)
 
-\method{as.data.frame}{DataObject}(x, row.names, optional, ...)
-
 \method{as.data.frame}{ComparisonLayer}(x, row.names, optional, ...)
 
 \method{as.data.table}{Field}(x, keep.rownames, ...)
 
-\method{as.data.table}{DataObject}(x, keep.rownames, ...)
-
 \method{as.data.table}{ComparisonLayer}(x, keep.rownames, ...)
 
 as.Raster(x)
-
-\S4method{as.Raster}{DataObject}(x)
 
 \S4method{as.Raster}{Field}(x)
 

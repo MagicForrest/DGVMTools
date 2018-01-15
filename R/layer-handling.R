@@ -294,29 +294,17 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
   id1 <- ""
   id2 <- ""
   for(layer in layers) {
+    
     # object 1
-    if(is.DataObject(layers.object1)) {
-      new.ids1 <- append(new.ids1, paste(layer, object1@id, sep = "."))
-      info1 <- as(object1, "SourceInfo")
-      id1 <- object1@id
-    }
-    else {
-      new.ids1 <- append(new.ids1, paste(object1@source@id, layer, object1@id, sep = "."))
-      info1 <- as(object1@source, "SourceInfo")
-      id1 <- object1@source@id
-    }  
+    new.ids1 <- append(new.ids1, paste(object1@source@id, layer, object1@id, sep = "."))
+    info1 <- as(object1@source, "SourceInfo")
+    id1 <- object1@source@id
     
     # object 2
-    if(is.DataObject(layers.object2)) {
-      new.ids2 <- append(new.ids2, paste(layer, object2@id, sep = "."))
-      info2 <- as(object2, "SourceInfo")
-      id2 <- object2@id
-    }
-    else {
-      new.ids2 <- append(new.ids2, paste(object2@source@id, layer, object2@id, sep = "."))
-      info2 <- as(object2@source, "SourceInfo")
-      id2 <- object2@source@id
-    }  
+    new.ids2 <- append(new.ids2, paste(object2@source@id, layer, object2@id, sep = "."))
+    info2 <- as(object2@source, "SourceInfo")
+    id2 <- object2@source@id
+    
   }
   
   setnames(layers.object1@data, layers, new.ids1) 
