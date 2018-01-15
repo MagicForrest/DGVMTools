@@ -162,13 +162,15 @@ checkSourceInfo <- function(object){
   errors <- character()
   
   # Check model types is supported
-  if (!length(object@model) > 0) {
-    msg <- "Error defining Source, you must define a model type!"
-    errors <- c(errors, msg)
-  }
-  else if (!(object@model  %in% supported.models)) {
-    msg <- paste("Unsupported model type", object@model, sep = " ")
-    errors <- c(errors, msg)
+  if(tolower(object@type)  == "model"){
+    if (!length(object@model) > 0) {
+      msg <- "Error defining Source, you must define a model type!"
+      errors <- c(errors, msg)
+    }
+    else if (!(object@model  %in% supported.models)) {
+      msg <- paste("Unsupported model type", object@model, sep = " ")
+      errors <- c(errors, msg)
+    }
   }
   
   # Check dir exists
@@ -206,10 +208,6 @@ checkSourceInfo <- function(object){
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
 #' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
-#' @slot fill.col A string to define an R colour used when plotting this run as a histogram or scatter plot or so
-#' @slot line.col  A string to define an R colour used when plotting this runs as a line graph
-#' @slot line.width A numeric to define the width of a line representing this model run
-#' @slot line.type A numeric to define the line style representing this model run
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @slot contact Name and email address of responsible person (default to OS username).
 #' @slot institute Name of the institute (default "none").
@@ -267,12 +265,12 @@ setClass("Quantity",
                    model = "character"
          ),
          prototype = c(id = "UnknownID",
-                        name = "UnknownString",
-                        type = "UnknownType",
-                        units = "-",
-                        colours = fields::tim.colors,
-                        aggregate.method = "sum",
-                        model = "Standard"
+                       name = "UnknownString",
+                       type = "UnknownType",
+                       units = "-",
+                       colours = fields::tim.colors,
+                       aggregate.method = "sum",
+                       model = "Standard"
          )
 )
 
@@ -322,37 +320,6 @@ setClass("Quantity",
 #          )
 # )
 
-##########################################################################################
-########  BENCHMARKING DATASET SPECIFIC CLASSES ##########################################
-##########################################################################################
-
-#' Class to hold the metadata for a dataset
-#' 
-#' This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
-#' It is not primarily intended to be used by itself. Instead it is inherited by \code{Source} object (due to this inheritance the slots can be accessed directly)
-#' and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
-#' 
-#' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
-#' @slot name A character string giving the name of this dataset (eg MODIS GPP). (Mandatory)
-#' @slot quant A Quantity object describing the physical quantity thatthe dataset describes
-#' @slot fill.col A string to define an R colour used when plotting this run as a histogram or scatter plot or so
-#' @slot line.col  A string to define an R colour used when plotting this runs as a line graph
-#' @slot line.width A numeric to define the width of a line representing this model run
-#' @slot line.type A numeric to define the line style representing this model run
-#' @exportClass DatasetInfo
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("DatasetInfo", 
-         slots = c(id = "character",
-                   name = "character",
-                   quant = "Quantity",
-                   fill.col = "character", # not commonly needed, only for more complex run comparisons
-                   line.col = "character", # # not commonly needed, only for more complex run comparisons
-                   line.width = "numeric", # not commonly needed, only for more complex run comparisons
-                   line.type = "numeric" # not commonly needed, only for more complex run comparisons
-         )
-         
-)
-
 
 
 
@@ -380,7 +347,7 @@ setClass("DataObject",
                    temporal.extent = "TemporalExtent",
                    correction.layer =  "character"
          ),
-         contains = "DatasetInfo" 
+         contains = "SourceInfo" 
          
 )
 
@@ -459,8 +426,8 @@ setClass("SpatialComparison",
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant A Quantity object to define what output this.Field contains
 #' @slot stats An SpatialComaprison object giving ther statistical comparison metric between these two layers
-#' @slot info1 Either a ModeulRunInfo object or a DatasetInfo object describing the source of the first layer in the comparison
-#' @slot info2 Either a ModeulRunInfo object or a DatasetInfo object describing the source of the second layer in the comparison
+#' @slot info1 A SourceInfo object describing the source of the first layer in the comparison
+#' @slot info2 A SourceInfo object describing the source of the second layer in the comparison
 #' @slot spatial.extent A SpatialExtent object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ComparisonLayer.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.aggregate.method Set to TRUE is this ComparisonLayer has been spatially averaged

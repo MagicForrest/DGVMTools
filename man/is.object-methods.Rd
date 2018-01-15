@@ -7,7 +7,6 @@
 \alias{is.ComparisonLayer}
 \alias{is.Source}
 \alias{is.SourceInfo}
-\alias{is.DatasetInfo}
 \alias{is.Quantity}
 \alias{is.SpatialComparison}
 \title{Check if an object is a particular type of DGVMTools object.}
@@ -21,8 +20,6 @@ is.ComparisonLayer(input)
 is.Source(input)
 
 is.SourceInfo(input)
-
-is.DatasetInfo(input)
 
 is.Quantity(input)
 

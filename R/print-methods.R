@@ -140,17 +140,6 @@ setMethod("print", signature(x="Field"), function(x) {
   
 })
 
-#' @rdname print
-#' @export
-setMethod("print", signature(x="DatasetInfo"), function(x) {
-  
-  cat(paste0("DatasetInfo:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  print(x@quant)
- 
-  
-})
 
 #' @rdname print
 #' @export

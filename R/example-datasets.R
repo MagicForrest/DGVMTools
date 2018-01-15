@@ -23,6 +23,25 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   dataset.id = "HandPBiomes"
   
+  source.info <- new("SourceInfo",
+                     id = dataset.id,
+                     type = "data",
+                     model = "none",
+                     pft.set = list(),
+                     name = "Haxeltine and Prentice global biomes",
+                     dir = getwd(),                              
+                     driving.data = "NA",
+                     lonlat.offset =  c(0,0),
+                     year.offset = 0,
+                     tolerance = 0.00001,
+                     london.centre = TRUE,
+                     landuseSimulated = FALSE,
+                     contact = "lost in the sands of time",
+                     institute = "lost in the sands of time"
+  )
+  
+  
+  
   Lon = Lat = Year = NULL
   
   original.data <- system.file("extdata", "vegmap18_fromTH_Hickler2006.out", package = "DGVMTools")
@@ -43,13 +62,13 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   # Return half degree data from netCDF file (probably slightly faster)
   else if(resolution == "HD"){
     PNV.raster <- raster::raster(HD.data)
-    PNV.dt <- data.table(as.data.frame(PNV.raster,xy = TRUE))
+    PNV.dt <- data.table(raster::as.data.frame(PNV.raster,xy = TRUE))
   }
   # Return T63 data from netCDF file 
   else if(resolution == "T63"){
     PNV.raster <- raster::raster(T63.data)
     PNV.raster <- raster::rotate(PNV.raster)
-    PNV.dt <- data.table(as.data.frame(PNV.raster,xy = TRUE))
+    PNV.dt <- data.table(raster::as.data.frame(PNV.raster,xy = TRUE))
   }
   # Else default to original resolution
   else{
@@ -172,22 +191,24 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   PNV.dt[, paste(classification) := as.factor(plyr::mapvalues(PNV.dt[[classification]], from = 1:18, to = subs.rules))]
   PNV.dt <- stats::na.omit(PNV.dt)
-
- 
+  
+  
   return(
-    new("DataObject",
+    new("Field",
         id =  paste(dataset.id, classification, sep = "."),
-        name = paste("H&P PNV Biomes classified as in", classification.str, sep = " "),
         data = PNV.dt,
         quant = as(byIDfromList(classification, supported.biome.schemes), "Quantity"),
-        spatial.extent = new("SpatialExtent", id = "PNVExtent", name = "PNV Extent", extent = extent(PNV.dt)),
+        spatial.extent = extent(PNV.dt),
         temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990),
-        correction.layer =  ""
-    )
+        spatial.extent.id = "Global",
+        temporal.extent.id = "1961-1990",
+        spatial.aggregate.method = "none",
+        temporal.aggregate.method = "mean",
+        subannual.aggregate.method = "none",
+        subannual.original = "annual",
+        source = source.info)
+    
   )
-  
-  
-  
 }
 
 ############# EXAMPLE DATA SET TWO - TROPICAL BIOMASS
@@ -209,6 +230,25 @@ getSaatchi2011_example <- function(resolution = "HD"){
   
   Lat = Lon = NULL
   
+  
+  source.info <- new("SourceInfo",
+                     id = "Saatchi2011",
+                     type = "data",
+                     model = "NA",
+                     pft.set = list(),
+                     name = "Saatchi et al. Veg Carbon",
+                     dir = getwd(),                              
+                     driving.data = "NA",
+                     lonlat.offset =  c(0,0),
+                     year.offset = 0,
+                     tolerance = 0.00001,
+                     london.centre = TRUE,
+                     landuseSimulated = FALSE,
+                     contact = "lost in the sands of time",
+                     institute = "lost in the sands of time"
+  )
+  
+  
   if(resolution == "T63"){
     Saatchi.raster <- raster::trim(raster::rotate(raster::raster(system.file("extdata", "Saatchi2011.T63.nc", package = "DGVMTools"))/10))
   }
@@ -216,22 +256,28 @@ getSaatchi2011_example <- function(resolution = "HD"){
     Saatchi.raster <- raster::trim(raster::raster(system.file("extdata", "Saatchi2011.HD.nc", package = "DGVMTools"))/10)
   }
   
-  Saatchi.dt <- data.table(as.data.frame(Saatchi.raster,xy = TRUE))
+  Saatchi.dt <- data.table(raster::as.data.frame(Saatchi.raster,xy = TRUE))
   setnames(Saatchi.dt, c("Lon", "Lat", "Tree"))
   setkey(Saatchi.dt, Lon, Lat)
   Saatchi.dt <- stats::na.omit(Saatchi.dt)
   
   
-  Saatchi.dataset <- new("DataObject",
-                         id = "Saatchi2011",
-                         name = "Saatchi et al. 2011 Biomass",
-                         temporal.extent = new("TemporalExtent", name = "Saatchi Period", start = 1999, end = 2001),
+  Saatchi.dataset <- new("Field",
+                         id =  "Saatchi2011",
                          data = Saatchi.dt,
                          quant = lookupQuantity("vegC_std", "Standard"),
-                         spatial.extent = new("SpatialExtent", id = "SaatchiExtent", name = "Saatchi extent", extent = extent(Saatchi.dt)),
-                         correction.layer =  "")
+                         spatial.extent = extent(Saatchi.dt),
+                         temporal.extent = new("TemporalExtent", name = "Saatchi Period", start = 1999, end = 2001),
+                         spatial.extent.id = "SaatchiTropics",
+                         temporal.extent.id = "1999-2001",
+                         spatial.aggregate.method = "none",
+                         temporal.aggregate.method = "mean",
+                         subannual.aggregate.method = "none",
+                         subannual.original = "annual",
+                         source = source.info)
   
   
+ 
   return(Saatchi.dataset)
   
 }

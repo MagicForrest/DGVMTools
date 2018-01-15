@@ -95,15 +95,6 @@ is.SourceInfo <- function(input) {
   return(FALSE)
 }
 
-#' @rdname is.object-methods
-#' @export
-is.DatasetInfo <- function(input) {
-  class.def <- class(input)
-  if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "DatasetInfo" && attr(class.def, "package")=="DGVMTools")
-      return(TRUE)
-  return(FALSE)
-}
 
 
 #' @rdname is.object-methods

@@ -176,7 +176,7 @@ calcBiomes <-function(input, scheme){
                 temporal.extent = input@temporal.extent,
                 spatial.aggregate.method = input@spatial.aggregate.method,
                 temporal.aggregate.method = input@temporal.aggregate.method,
-                run = input@source)
+                source = input@source)
   
   return(biomes)
   
