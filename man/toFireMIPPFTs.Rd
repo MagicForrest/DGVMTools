@@ -7,15 +7,15 @@
 toFireMIPPFTs(input.data, remove.agriculture = FALSE)
 }
 \arguments{
-\item{input.data}{A ModelObject from a FireMIP model}
+\item{input.data}{A Field from a FireMIP model}
 
 \item{remove.agriculture}{Logical, if TRUE, remove the cropland PFT and scale up the rest to compensate}
 }
 \value{
-A ModelObject with the standard FireMIP PFTs
+A Field with the standard FireMIP PFTs
 }
 \description{
-Aggregates the PFTs in a FireMIP ModelObject to a standard set of PFTs
+Aggregates the PFTs in a FireMIP Field to a standard set of PFTs
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

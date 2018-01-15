@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting-spatial.R
 \name{plotSpatial}
 \alias{plotSpatial}
-\title{Plot maps from a temporally-averaged \code{ModelObject}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)}
+\title{Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)}
 \usage{
 plotSpatial(data, layers = NULL, title = NULL, layout.objs = NULL,
   facet.labels = NULL, facet.order = NULL, plot.bg.col = "white",
@@ -13,7 +13,7 @@ plotSpatial(data, layers = NULL, title = NULL, layout.objs = NULL,
   interior.lines = TRUE)
 }
 \arguments{
-\item{data}{The data to plot. Can be a ModelObject, data.table, a SpatialPixelsDataFrame or a Raster* object.}
+\item{data}{The data to plot. Can be a Field, data.table, a SpatialPixelsDataFrame or a Raster* object.}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
@@ -26,7 +26,7 @@ Note that using these, especially "worldHires", can add quite a bit off time.}
 Sensible titles will be constructed if this is not specified.}
 
 \item{facet.order}{A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
-and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
+and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 in this function).}
 
 \item{plot.bg.col}{Colour string for the plot background.  "white"}
@@ -66,7 +66,7 @@ Other things can be overlain on the resulting plot with further ggplot2 commands
 Returns a plot object (from spplot)
 }
 \description{
-This is a heavy lifting function for plotting maps from ModelObjects, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
+This is a heavy lifting function for plotting maps from Fields, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
 As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
 It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 using further ggplot2 commands.
@@ -76,7 +76,7 @@ This function is heavily used by the benchmarking functions and can be very usef
 in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
 However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
 
-The function works best for \code{ModelObjects} (which contain a lot of useful metadata).
+The function works best for \code{Fields} (which contain a lot of useful metadata).
 }
 \seealso{
 \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}

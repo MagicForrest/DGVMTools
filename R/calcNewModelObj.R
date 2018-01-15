@@ -1,18 +1,18 @@
 ######################################################################
-### simple arithmetics with ModelRun data slots ######################
+### simple arithmetics with Source data slots ######################
 ######################################################################
-#' Simple calculation of new ModelObjects
+#' Simple calculation of new Fields
 #' 
-#' Basic calculation of new ModelObjects by operation '+', '-', '*' or '/'
+#' Basic calculation of new Fields by operation '+', '-', '*' or '/'
 #' 
-#' @param x The first \code{\linkS4class{ModelObject}}
-#' @param y The second \code{\linkS4class{ModelObject}}
+#' @param x The first \code{\linkS4class{Field}}
+#' @param y The second \code{\linkS4class{Field}}
 #' @param x.col the column of the first ModelObect. If empty or NULL all columns are used.
 #' @param y.col the column of the second ModelObect. If empty or NULL all columns are used.
 #' @param op which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/').
 #' @param quant new Quantity definition to use, if NULL it will be guessed.
 #' @param verbose print some messages.
-#' @return hopefully a new ModelObject.
+#' @return hopefully a new Field.
 #' @export
 #' @import data.table
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
@@ -21,10 +21,10 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
   if (missing(x) || missing(y) || missing(op))
     stop("Missing values for 'x', 'y' and/or 'op'!")
 
-  if (!is.ModelObject(x))
-    stop(paste("'x' is not a ModelObject!", sep=""))
-  if (!is.ModelObject(y))
-    stop(paste("'y' is not a ModelObject!", sep=""))
+  if (!is.Field(x))
+    stop(paste("'x' is not a Field!", sep=""))
+  if (!is.Field(y))
+    stop(paste("'y' is not a Field!", sep=""))
   
   if (grepl("^a", op, ignore.case=TRUE) || op == "+") {
     op = "+"
@@ -52,7 +52,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
   x.quant     <- x@quant
   x.t.extent  <- x@temporal.extent
   x.sp.extent <- x@spatial.extent
-  x.run       <- x@run
+  x.run       <- x@source
   x.dt        <- copy(x@data)
   y.quant     <- y@quant
   y.t.extent  <- y@temporal.extent
@@ -100,7 +100,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
 
-    return(new("ModelObject",
+    return(new("Field",
                id = paste0(x@id, op, y@id),
                data = new.dt,
                quant = quant,
@@ -124,7 +124,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
-    return(new("ModelObject",
+    return(new("Field",
                id = paste0(x@id, op, y@id, "_", y.col, "_"),
                data = new.dt,
                quant = quant,
@@ -148,7 +148,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
-    return(new("ModelObject",
+    return(new("Field",
                id = paste0(x@id, "_", x.col, "_", op, y@id),
                data = new.dt,
                quant = quant,
@@ -179,7 +179,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     } else {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, Year=Year, ", list.str,")]", sep="")))
     }
-    return(new("ModelObject",
+    return(new("Field",
                id = paste0(x.col, op, y.col),
                data = new.dt,
                quant = quant,

@@ -9,7 +9,7 @@ plotGGTemporal(input, columns = "value", scale = 1, colours = NA,
   alpha = NA, plot = TRUE, ...)
 }
 \arguments{
-\item{input}{a ModelObject or a list of several.}
+\item{input}{a Field or a list of several.}
 
 \item{columns}{The column(s) to display. Default: 'value'.}
 

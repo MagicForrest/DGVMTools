@@ -1,11 +1,11 @@
-#' Copy layers from one VegObject or ModelObject to another
+#' Copy layers from one VegObject or Field to another
 #' 
-#' This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one ModelObject/DataObject to another.  
+#' This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one Field/DataObject to another.  
 #' This is particularly useful for colouring or facetting a plot of one variable by another one say.  To give a more concrete example, one could use a biome classification 
 #' to split (facet) a data-vs-model scatter plot.
 #' 
-#' @param from The ModelObject/DataObject that the layers are to be copied from.
-#' @param to The ModelObject/DataObject that the layers are to be copied to.
+#' @param from The Field/DataObject that the layers are to be copied from.
+#' @param to The Field/DataObject that the layers are to be copied to.
 #' @param layer.names The layers to be copied from the "from" argument
 #' @param new.layer.names The new names that the layers should have in the 'to' object. Use this to avoid naming conflict whereby, for 
 #' example, if a layer "Total" is copied to an object which already has a "Total" layer then they layers will be names "Total.x" and "Total.y".  
@@ -17,7 +17,7 @@
 #' @description This function does not check the Lon, Lat and Year columns are identical.  Any points in the 'from' object which are not in the 'to' object are ignored, 
 #' and any points in the 'to' object which don't have corresponding points in the 'from' object are assigned NA, unless keep.all.to is set to FALSE .
 #'
-#' @return A ModelObject (or data.table) comprising the 'to' object with the new layers added
+#' @return A Field (or data.table) comprising the 'to' object with the new layers added
 #' @import data.table
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -66,15 +66,15 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
   
 }
 
-#' Select a subset of layers from a DataObject or ModelObject
+#' Select a subset of layers from a DataObject or Field
 #' 
-#' This function returns a copy of a DataObject or ModelObject containing only a selected subset of layers
+#' This function returns a copy of a DataObject or Field containing only a selected subset of layers
 #' 
-#' @param x A DataObject or ModelObject
+#' @param x A DataObject or Field
 #' @param layers A vector of characters strings specifying the layers to be selected
 #' 
 #'
-#' @return A ModelObject or DataObject
+#' @return A Field or DataObject
 #' @import data.table
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -118,9 +118,9 @@ selectLayers <- function(x, layers) {
 #' 
 #' 
 #' @param layers Character vector of layers to expand
-#' @param input.data The data to which the layers will be applied, may be a \code{ModelObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame. 
-#' @param PFT.set List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{ModelObject}).
-#' @param type Character string identifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{ModelObjects} which supply this data themselves.
+#' @param input.data The data to which the layers will be applied, may be a \code{Field}, a Raster* object, data.table or data.frame, a Spatial*DataFrame. 
+#' @param PFT.set List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{Field}).
+#' @param type Character string identifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{Fields} which supply this data themselves.
 #' The function attempts to determine this argument if it is not provided.  
 #' @param include.woody If TRUE and "lifeform" is included in the layer list "Woody" is also returned
 #' @return A list of layers
@@ -133,10 +133,10 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
     if(remove.header.from.header %in% layers) layers <- layers[-which(layers == remove.header.from.header)]
   }
   
-  # read meta-data form ModelObject if possible
-  if(is.ModelObject(input.data)) {
+  # read meta-data form Field if possible
+  if(is.Field(input.data)) {
     type <- input.data@quant@type
-    if(is.null(PFT.set)) PFT.set <- input.data@run@pft.set
+    if(is.null(PFT.set)) PFT.set <- input.data@source@pft.set
     header <- names(input.data@data)
   }
   else{
@@ -255,13 +255,13 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
 
 #' Compare relative abundances
 #' 
-#' Compare two datasets (each from a ModelObject or DataObject) of relative abundances to calculate statistical metrics which is returned as a ComparisonLayer object.   
+#' Compare two datasets (each from a Field or DataObject) of relative abundances to calculate statistical metrics which is returned as a ComparisonLayer object.   
 #' Whereas the \code{compareLayers()} function is for comparing two layers of data, this function is for comparing multiple layers, which each layer representing the fraction of some particualar class 
 #' and so much sum to unity.  For example the classes could be tree cover, low vegetation cover and bare ground.
 #'
 #' 
-#' @param object1 A ModelObject or DataObject from which to get the first layer for comparison
-#' @param object2 A ModelObject or DataObject from which to get the second layer for comparison
+#' @param object1 A Field or DataObject from which to get the first layer for comparison
+#' @param object2 A Field or DataObject from which to get the second layer for comparison
 #' @param layers The name of the layers with the relative abundances (must be present in both object1 and object2)
 #' @param keepall1 Boolean, keep all data points in layer1 even if there is not corresponding data in layer2 
 #' @param keepall2 Boolean, keep all data points in layer2 even if there is not corresponding data in layer2 
@@ -301,9 +301,9 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
       id1 <- object1@id
     }
     else {
-      new.ids1 <- append(new.ids1, paste(object1@run@id, layer, object1@id, sep = "."))
-      info1 <- as(object1@run, "SourceInfo")
-      id1 <- object1@run@id
+      new.ids1 <- append(new.ids1, paste(object1@source@id, layer, object1@id, sep = "."))
+      info1 <- as(object1@source, "SourceInfo")
+      id1 <- object1@source@id
     }  
     
     # object 2
@@ -313,9 +313,9 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
       id2 <- object2@id
     }
     else {
-      new.ids2 <- append(new.ids2, paste(object2@run@id, layer, object2@id, sep = "."))
-      info2 <- as(object2@run, "SourceInfo")
-      id2 <- object2@run@id
+      new.ids2 <- append(new.ids2, paste(object2@source@id, layer, object2@id, sep = "."))
+      info2 <- as(object2@source, "SourceInfo")
+      id2 <- object2@source@id
     }  
   }
   

@@ -163,7 +163,7 @@ checkSourceInfo <- function(object){
   
   # Check model types is supported
   if (!length(object@model) > 0) {
-    msg <- "Error defining ModelRun, you must define a model type!"
+    msg <- "Error defining Source, you must define a model type!"
     errors <- c(errors, msg)
   }
   else if (!(object@model  %in% supported.models)) {
@@ -183,7 +183,7 @@ checkSourceInfo <- function(object){
     errors <- c(errors, msg)
   }
   
-  # Other things are set to sensible/empty defaults in defineModelRun()
+  # Other things are set to sensible/empty defaults in defineSource()
   
   if (length(errors) == 0) TRUE else errors
   
@@ -193,8 +193,8 @@ checkSourceInfo <- function(object){
 #' Class to hold the metadata for a vegetation model run
 #' 
 #' This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
-#' It is not primarily intended to be used by itself. Instead it is inherited by \code{ModelRun} object (due to this inheritance the slots can be accessed directly)
-#' and included in a \code{ModelObject} in the \code{run} slot (not inherited, so needs to be access be \code{@@run}).
+#' It is not primarily intended to be used by itself. Instead it is inherited by \code{Source} object (due to this inheritance the slots can be accessed directly)
+#' and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
 #' 
 #' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
@@ -238,47 +238,6 @@ setClass("SourceInfo",
 
 
 
-
-
-#' An S4 class to contain metadata and, optionally, data and benchmarks for a single vegetation run
-#' 
-#' A \code{ModelRun} object contains the metadata concerning the an inherited \code{SourceInfo} object
-#'  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
-#'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-#' Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj},
-#'  and \code{compareBiomes()}, and saved to the \code{ModelRun} using \code{addToModelRun()}. 
-#'  
-#' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
-#' 
-#' @slot objects List of \code{ModelObjects} saved in this run
-#' @slot id A unique character string to identify this particular model run.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
-#' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "FireMIP" or "aDGVM". (Mandatory)
-#' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
-#' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
-#' @slot dir The location of this run on the file system (Mandatory)
-#' @slot driving.data A character string identifying the climate or other data used to produce this model run
-#' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
-#' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
-#' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
-#' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
-#' @slot fill.col A string to define an R colour used when plotting this run as a histogram or scatter plot or so
-#' @slot line.col  A string to define an R colour used when plotting this runs as a line graph
-#' @slot line.width A numeric to define the width of a line representing this model run
-#' @slot line.type A numeric to define the line style representing this model run
-#' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
-#' @exportClass ModelRun
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("ModelRun", 
-         slots = c(objects = "list"
-         ),
-         prototype = c(objects = list()
-         ),
-         contains = "SourceInfo"
-         
-)
-
-
-
 #' Class to hold meta-data for a vegetation quantity
 #' 
 #' This class hold meta-data for specific vegetation or land surface quantities like "lai" (LAI) or "mwcont_upper" (mean monthly water).  
@@ -314,49 +273,6 @@ setClass("Quantity",
                         colours = fields::tim.colors,
                         aggregate.method = "sum",
                         model = "Standard"
-         )
-)
-
-
-
-
-#' Contains one aspect of the model output, eg. LAI
-#' 
-#' A key class of the package.  A \code{ModelObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
-#' For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
-#' 
-#' Generally these are not created directly by the user, but rather by functions like \code{getModelObject}.
-#' 
-#' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A Quantity object to define what output this ModelObject contains
-#' @slot spatial.extent An object which can be used to crop or subselect gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
-#' used) or a list of gridcells used by DGVMTools::selectGridcels (see that documentation for how to format the gridcell list).
-#' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
-#' @slot spatial.extent.id A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever
-#' @slot temporal.extent.id A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
-#' @slot spatial.aggregate.method The method by which this ModelObject has been spatially aggregated
-#' @slot temporal.aggregate.method The method by which this ModelObject has been temporally aggregated
-#' @slot subannual.aggregate.method The method by which this ModelObject has been subannually aggregated
-#' @slot subannual.original The original subannual resolution of this ModelObject
-#' @slot run A SourceInfo object which contains the metadata about the run which this ModelObject belongs too.
-#' @exportClass ModelObject
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-
-
-setClass("ModelObject", 
-         slots = c(id = "character",
-                   data = "data.table",
-                   quant = "Quantity",
-                   spatial.extent = "ANY",
-                   spatial.extent.id = "character",
-                   temporal.extent = "ANY",
-                   temporal.extent.id = "character",
-                   spatial.aggregate.method = "character",
-                   temporal.aggregate.method = "character",
-                   subannual.aggregate.method = "character",
-                   subannual.original = "character",
-                   run = "SourceInfo"
          )
 )
 
@@ -413,8 +329,8 @@ setClass("ModelObject",
 #' Class to hold the metadata for a dataset
 #' 
 #' This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
-#' It is not primarily intended to be used by itself. Instead it is inherited by \code{ModelRun} object (due to this inheritance the slots can be accessed directly)
-#' and included in a \code{ModelObject} in the \code{run} slot (not inherited, so needs to be access be \code{@@run}).
+#' It is not primarily intended to be used by itself. Instead it is inherited by \code{Source} object (due to this inheritance the slots can be accessed directly)
+#' and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
 #' 
 #' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot name A character string giving the name of this dataset (eg MODIS GPP). (Mandatory)
@@ -536,12 +452,12 @@ setClass("SpatialComparison",
 #' 
 #' It can be plotted by functions like   
 #'    
-#' Generally these are not created directly by the user, but rather by functions like \code{getModelObject}.
+#' Generally these are not created directly by the user, but rather by functions like \code{getField}.
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string describing this comaprison layer, is automatically generated
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A Quantity object to define what output this ModelObject contains
+#' @slot quant A Quantity object to define what output this.Field contains
 #' @slot stats An SpatialComaprison object giving ther statistical comparison metric between these two layers
 #' @slot info1 Either a ModeulRunInfo object or a DatasetInfo object describing the source of the first layer in the comparison
 #' @slot info2 Either a ModeulRunInfo object or a DatasetInfo object describing the source of the second layer in the comparison
@@ -630,15 +546,15 @@ setClass("BiomeScheme",
 
 #' An S4 class to contain metadata and, optionally, data and benchmarks for a single vegetation run
 #' 
-#' A \code{ModelRun} object contains the metadata concerning the an inherited \code{SourceInfo} object
-#'  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
+#' A \code{Source} object contains the metadata concerning the an inherited \code{SourceInfo} object
+#'  and the actual model data run as \code{Fields} in a list in slot \code{objects} and comparisions to datasets 
 #'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-#' Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj},
-#'  and \code{compareBiomes()}, and saved to the \code{ModelRun} using \code{addToModelRun()}. 
+#' Such objects can be built by calls to \code{getField()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj},
+#'  and \code{compareBiomes()}, and saved to the \code{Source} using \code{addToSource()}. 
 #'  
 #' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
 #' 
-#' @slot objects List of \code{ModelObjects} saved in this run
+#' @slot objects List of \code{Fields} saved in this run
 #' @slot id A unique character string to identify this particular model run.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "FireMIP" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
@@ -654,7 +570,7 @@ setClass("BiomeScheme",
 #' @slot line.width A numeric to define the width of a line representing this model run
 #' @slot line.type A numeric to define the line style representing this model run
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
-#' @exportClass ModelRun
+#' @exportClass Source
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("Source", 
          slots = c(objects = "list"
@@ -668,23 +584,23 @@ setClass("Source",
 
 #' Contains one aspect of the model output, eg. LAI
 #' 
-#' A key class of the package.  A \code{ModelObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
+#' A key class of the package.  A \code{Field} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
 #' For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
 #' 
-#' Generally these are not created directly by the user, but rather by functions like \code{getModelObject}.
+#' Generally these are not created directly by the user, but rather by functions like \code{getField}.
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A Quantity object to define what output this ModelObject contains
+#' @slot quant A Quantity object to define what output this.Field contains
 #' @slot spatial.extent An object which can be used to crop or subselect gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
 #' used) or a list of gridcells used by DGVMTools::selectGridcels (see that documentation for how to format the gridcell list).
-#' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
+#' @slot temporal.extent A TemporalExtent object which describes the time period covered by this.Field.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.extent.id A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever
-#' @slot temporal.extent.id A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
-#' @slot spatial.aggregate.method Set to TRUE is this ModelObject has been spatially averaged
-#' @slot temporal.aggregate.method Set to TRUE is this ModelObject has been temporally averaged
-#' @slot run A SourceInfo object which contains the metadata about the run which this ModelObject belongs too.
-#' @exportClass ModelObject
+#' @slot temporal.extent.id A TemporalExtent object which describes the time periog covered by this.Field.  Particularly useful if the data has been temporally averaged.
+#' @slot spatial.aggregate.method Set to TRUE is this.Field has been spatially averaged
+#' @slot temporal.aggregate.method Set to TRUE is this.Field has been temporally averaged
+#' @slot run A SourceInfo object which contains the metadata about the run which this.Field belongs too.
+#' @exportClass Field
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 setClass("Field", 
@@ -697,6 +613,8 @@ setClass("Field",
                    temporal.extent.id = "character",
                    spatial.aggregate.method = "character",
                    temporal.aggregate.method = "character",
+                   subannual.aggregate.method = "character",
+                   subannual.original = "character",
                    source = "SourceInfo"
          )
 )

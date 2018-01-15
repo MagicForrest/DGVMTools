@@ -17,9 +17,9 @@ sep.char = ""
 ############# EXTRACT THE PFTS PRESENT IN A RUN USING THE DATA.TABLE HEADER
 #' Get the PFTs present in a run
 #' 
-#' Extract the PFTs present in some data, given the set of possible PFTs.  The data can be represented as a data.table, ModelObject, or Raster*-object.  The 
+#' Extract the PFTs present in some data, given the set of possible PFTs.  The data can be represented as a data.table, Field, or Raster*-object.  The 
 #' It does thsi based on the names of the layers/columns of the data 
-#' @param input The data from which to retrieve the PFTs present (data.table, ModelObject, or Raster*-object)
+#' @param input The data from which to retrieve the PFTs present (data.table, Field, or Raster*-object)
 #' @param PFT.data A list of PFTs which might be present (ie. a superset of those actually present)
 #' @return A list of PFT object which are actually present 
 #' @export
@@ -29,7 +29,7 @@ getPFTs <- function(input, PFT.data){
   
   # Allow for rasters, Veg Objects and data.tables
   input.class <- class(input)[1]
-  if(is.ModelObject(input)) suppressWarnings(input.names <- names(input@data))
+  if(is.Field(input)) suppressWarnings(input.names <- names(input@data))
   else if(is.DataObject(input)) suppressWarnings(input.names <- names(input@data))
   else if(input.class == "data.table" | input.class == "RasterLayer" | input.class == "RasterBrick" | input.class == "RasterStack") input.names <- names(input)
   else stop(paste("Can't get PFTs from object of class", input.class, sep = " "))
@@ -60,15 +60,15 @@ getPFTs <- function(input, PFT.data){
 #' The effects of this depend on the shade-tolerant cousin PFTs being defined in the PFT list.
 #' 
 #' 
-#' @param input The ModelObject which is to have the shade tolerance classes combined.
-#' @return A ModelObject with the data for the shade-intolerant PFTs set to zero but their values added to the shade-tolerant versions
+#' @param input The Field which is to have the shade tolerance classes combined.
+#' @return A Field with the data for the shade-intolerant PFTs set to zero but their values added to the shade-tolerant versions
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 combineShadeTolerance <- function(input){
   
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
-  PFT.data <- input@run@pft.set
+  PFT.data <- input@source@pft.set
   
   for(colname in names(dt)){
     
@@ -103,15 +103,15 @@ combineShadeTolerance <- function(input){
 ###################################################################################################
 ######### BIOME CLASSIFICATION
 #'
-#' Perform biome classification using this ModelObject
+#' Perform biome classification using this.Field
 #' 
 #' This is very inflexible as it only allows the calcualtion of biomes with only one Quantity.  This is not suitable for many biomes schemes, 
 #' so this will need to be re-written
 #' 
 #' 
-#' @param input The ModelObject for which to calculate the biomes.
+#' @param input The Field for which to calculate the biomes.
 #' @param scheme The biome scheme to use.
-#' @return A new ModelObject with the biomes
+#' @return A new Field with the biomes
 #' @export
 #' @import data.table
 #' @seealso BiomeScheme-class
@@ -129,8 +129,8 @@ calcBiomes <-function(input, scheme){
   #if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
   # get gdd5
   if(scheme@needGDD5){
-    temp.model.run <- new("ModelRun", input@run)
-    gdd5 <- getModelObject(temp.model.run, "gdd5", input@temporal.extent, read.full = FALSE)
+    temp.model.run <- new("Field", input@source)
+    gdd5 <- getField(temp.model.run, "gdd5", input@temporal.extent, read.full = FALSE)
     dt <- input@data
     dt.gdd5 <- gdd5@data
     dt <- dt[dt.gdd5]
@@ -167,16 +167,16 @@ calcBiomes <-function(input, scheme){
   biome.dt <- dt[,append(st.cols, scheme@id), with = FALSE]
   dt[, scheme@id := NULL]
   
-  # now make a new ModelObject and return
-  biomes <- new("ModelObject",
-                id = makeModelObjectID(scheme@id, paste(input@temporal.extent@start,input@temporal.extent@start, sep = "-"), input@spatial.extent.id, input@temporal.aggregate.method, input@spatial.aggregate.method),
+  # now make a new Field and return
+  biomes <- new("Field",
+                id = makeFieldID(scheme@id, paste(input@temporal.extent@start,input@temporal.extent@start, sep = "-"), input@spatial.extent.id, input@temporal.aggregate.method, input@spatial.aggregate.method),
                 data = biome.dt,
                 quant = as(scheme, "Quantity"),
                 spatial.extent = input@spatial.extent,
                 temporal.extent = input@temporal.extent,
                 spatial.aggregate.method = input@spatial.aggregate.method,
                 temporal.aggregate.method = input@temporal.aggregate.method,
-                run = input@run)
+                run = input@source)
   
   return(biomes)
   
@@ -185,30 +185,30 @@ calcBiomes <-function(input, scheme){
 ###################################################################################
 ##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, SEASONAL ETC...)
 #'
-#' Combine layers of a ModelObject (or a data.table)
+#' Combine layers of a Field (or a data.table)
 #' 
 #' This is very useful and important function.  It aggregates different layers 
-#' of a ModelObject according the the desired method (or a sensible default).  Please note some special features of the arguments, designed for convenience, which are described below.
+#' of a Field according the the desired method (or a sensible default).  Please note some special features of the arguments, designed for convenience, which are described below.
 #' 
-#' @param input The ModelObject for which to aggregate layers.
+#' @param input The Field for which to aggregate layers.
 #' @param layers The new layers to produce
 #' @param method The method to use to aggregate the layers ie. "mean" or "sum".  However, it is often most sensible to leave it unspecified and use the default (see below)
-#' @param PFT.data If calling the function on a data.table, it is neccessary to specify a PFT set here.  Normally this function will be called on  ModelObject so it is not neccessary. 
+#' @param PFT.data If calling the function on a data.table, it is neccessary to specify a PFT set here.  Normally this function will be called on  Field so it is not neccessary. 
 #'
 #' @details
 #' Whilst the \code{method} argument can be specified for maximum flexibility, the recommended usage is not specify this argument.
-#' In this case, the function uses the default of the Quantity object of the ModelObject, which should be the sensible option.  
+#' In this case, the function uses the default of the Quantity object of the Field, which should be the sensible option.  
 #' For example, per-PFT variables (such as lai or cmass) should typically be summed, 
 #' but monthly variables (such as soil water content) should be average to calculate the seasonal means.
 #' 
 #' For convenience, both \code{layers} will be expanded using \code{expandLayers}.
-#' This allows all lifeforms totals in a ModelObject to be calculated using a simple call such as
+#' This allows all lifeforms totals in a Field to be calculated using a simple call such as
 #' 
 #'  \code{veg.obj <- newLayer(veg.obj, c("lifeforms"))}
 #'  
 #' See documention of \code{expandLayers} for details.
 #' 
-#' @return A ModelObject (or data.table) with the new layers added
+#' @return A Field (or data.table) with the new layers added
 #' @import data.table
 #' @export
 #' @seealso expandLayers getVegFractions
@@ -218,14 +218,14 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   Woody = Total = TempTotal = NULL
   
   ### HANDLE CLASS OF INPUT OBJECT
-  # Here allow the possibility to handle both ModelObjects and data.tables directly (for internal calculations)
+  # Here allow the possibility to handle both Fields and data.tables directly (for internal calculations)
   
-  # if it is a ModelObject 
-  if(is.ModelObject(input)) {
+  # if it is a Field 
+  if(is.Field(input)) {
     # We get a warning about a shallow copy here, suppress it
     suppressWarnings(dt <- input@data)
-    PFT.data <- input@run@pft.set
-    # also if no specfic method specified, pull it from the the ModelObject
+    PFT.data <- input@source@pft.set
+    # also if no specfic method specified, pull it from the the Field
     if(is.null(method)) method <- input@quant@aggregate.method
   }
   # Else assume it is a data.table
@@ -344,7 +344,7 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
   } # for each layer
   
  
-  if(is.ModelObject(input)) {
+  if(is.Field(input)) {
     input@data <- dt
     return(input)
   }
@@ -363,12 +363,12 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
 ##### MAKE PFT, LIFEFORM, PHENOLOGY ETC FRACTIONS
 # TODO:  Maybe take a look at the horrible "eval(quote(paste(" syntax below
 #'
-#' Calculate fractions from the layers of a ModelObject with respect to other layers
+#' Calculate fractions from the layers of a Field with respect to other layers
 #' 
 #' This is very useful and important function.  It is fully flexible  -both the numerator and denominator can be specified (although the denominator defaults to "Total").
 #' Note that if a layer doesn't exist it will be created if possible.
 #' 
-#' @param input The ModelObject for which to calculate the new fractional layers
+#' @param input The Field for which to calculate the new fractional layers
 #' @param layers The layers to be divided ie. the numerators (will be calculated by \code{getVegTotals} if the don't exist)
 #' @param denominators The denominator layers (will be calculated by \code{getVegTotals} if the don't exist) (defaults to just "Total")
 #' @param aggregate.method If the denominators need to be made, which method should be used to make them, "sum" or "mean", defaults to "sum".
@@ -378,13 +378,13 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
 #' Division is safe with respect to a zero denominator, the results of dividing by zero is, in this case, zero.
 #' 
 #' For convenience, both \code{layers} and \code{denominators} will be expanded using \code{expandLayers}.
-#' This allows all lifeforms fractions in a ModelObject to be calculated using a simple call such as
+#' This allows all lifeforms fractions in a Field to be calculated using a simple call such as
 #' 
 #'  \code{veg.obj <- divideLayers(veg.obj, c("lifeforms")}
 #'  
 #' See documention of \code{expandLayers} for details. 
 #' 
-#' @return A ModelObject (or data.table) with the new layers added
+#' @return A Field (or data.table) with the new layers added
 #' @import data.table
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -397,8 +397,8 @@ divideLayers <- function(input, layers, denominators = list("Total"), aggregate.
   
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
-  PFT.data <- input@run@pft.set
-  PFTs <- getPFTs(dt, input@run@pft.set)
+  PFT.data <- input@source@pft.set
+  PFTs <- getPFTs(dt, input@source@pft.set)
   
   # First, expand denominator layers and make what aren't available
   denominators <- expandLayers(denominators, dt, PFT.data)

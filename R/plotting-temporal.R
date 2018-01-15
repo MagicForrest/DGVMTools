@@ -2,7 +2,7 @@
 #' 
 #' Makes a line plot graphing the temporal evolution of data (using ggplot2).  Full functionality not implemented, or even defined...  
 #'
-#' @param input.data The data to be plotted, either as a ModelObject, DataObject or a list of Model/DataObjects.  
+#' @param input.data The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.  
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
 #' @param title Main plot title (character string)
@@ -52,7 +52,7 @@ plotTemporal <- function(input.data,
   
   # Deal with class action and organise into a data.table for further manipulations and plotting
   
-  # If we get a list it should be a list of ModelObjects and/or DataObjects.  Here we check that, and mangle it in to a data.table
+  # If we get a list it should be a list of Fields and/or DataObjects.  Here we check that, and mangle it in to a data.table
   if(class(input.data) == "list") {
     
     # if a list of objects are supplied there are two possibilites:  facet the plot, one facet (ribbon) for each object or plot the same layers in one plot or   
@@ -66,15 +66,15 @@ plotTemporal <- function(input.data,
       PFTs <- list()
       for(x.object in input.data){
         
-        if(!(is.DataObject(x.object) || is.ModelObject(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  ModelObject") }
+        if(!(is.DataObject(x.object) || is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  Field") }
         temp.dt <- copy(x.object@data)
-        if(is.ModelObject(x.object)) temp.dt[,"Source" := x.object@run@name]
+        if(is.Field(x.object)) temp.dt[,"Source" := x.object@source@name]
         if(is.DataObject(x.object)) temp.dt[,"Source" := x.object@name]
         plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
         rm(temp.dt)
         
         # also make a superset of all the PFTs
-        if(is.ModelObject(x.object)) PFTs <- append(PFTs, x.object@run@pft.set)
+        if(is.Field(x.object)) PFTs <- append(PFTs, x.object@source@pft.set)
         
       }
      
@@ -89,15 +89,15 @@ plotTemporal <- function(input.data,
       
       for(x.object in input.data){
         
-        if(!(is.DataObject(x.object) || is.ModelObject(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  ModelObject") }
+        if(!(is.DataObject(x.object) || is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a DataObject or a  Field") }
         temp.dt <- copy(x.object@data)
-        if(is.ModelObject(x.object)) temp.dt[,"Source" := x.object@run@name]
+        if(is.Field(x.object)) temp.dt[,"Source" := x.object@source@name]
         if(is.DataObject(x.object)) temp.dt[,"Source" := x.object@name]
         plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
         rm(temp.dt)
         
         # also make a superset of all the PFTs
-        if(is.ModelObject(x.object)) PFTs <- append(PFTs, x.object@run@pft.set)
+        if(is.Field(x.object)) PFTs <- append(PFTs, x.object@source@pft.set)
         
       }
       
@@ -108,12 +108,12 @@ plotTemporal <- function(input.data,
     
   }
   
-  # if it is a single DataObject or ModelObject, pull out the data (and PFTs if present)
-  else if(is.DataObject(input.data) || is.ModelObject(input.data)){
+  # if it is a single DataObject or Field, pull out the data (and PFTs if present)
+  else if(is.DataObject(input.data) || is.Field(input.data)){
     
     if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
     plotting.data.dt <- input.data@data
-    if(is.ModelObject(input.data)) PFTs <- input.data@run@pft.set
+    if(is.Field(input.data)) PFTs <- input.data@source@pft.set
     if(is.null(quant)) quant <- input.data@quant
     single.object <- TRUE
     

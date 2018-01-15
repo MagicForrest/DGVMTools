@@ -9,11 +9,11 @@
 #' Open an LPJ-GUESS .out file
 #'
 #' \code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity 
-#' from the run (eg. "lai", to read the file "lai.out") and  \code{ModelRun} object which defines where the run is on disk and the offsets to apply
+#' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \code{ModelRun} containing the meta-data about the LPJ-GUESS run
+#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
 #' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
@@ -120,9 +120,9 @@ openLPJOutputFile <- function(run,
 #' 
 #' 
 #' output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
-#' \code{ModelRun} object, it will return that to save time.
+#' \code{Source} object, it will return that to save time.
 #' 
-#' @param run A \code{ModelRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
+#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)

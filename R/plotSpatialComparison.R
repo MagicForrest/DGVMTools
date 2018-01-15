@@ -6,21 +6,21 @@
 ##########################################################################################################################################
 
 
-#' Plot maps from a temporally-averaged \code{ModelObject}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
+#' Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
 #' 
-#' This is a heavy lifting function for plotting maps from ModelObjects, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
+#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
 #' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
 #'
-#' @param sources The data to plot. Can be a ModelObject, a DataObject, or a list of including both
+#' @param sources The data to plot. Can be a Field, a DataObject, or a list of including both
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.
 #' Note that using these, especially "worldHires", can add quite a bit off time. 
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
-#' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
+#' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
 #' @param plot.bg.col Colour string for the plot background.  "white"
 #' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!
@@ -48,7 +48,7 @@
 #' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
 #' However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
 #' 
-#' The function works best for \code{ModelObjects} (which contain a lot of useful metadata).   
+#' The function works best for \code{Fields} (which contain a lot of useful metadata).   
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -62,7 +62,7 @@
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
-plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
+plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
                                   type = c("difference", "percentage.difference", "values", "nme"),
                                   title = NULL,
                                   limits = NULL,
@@ -107,7 +107,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   #### DIFFERENCE OR PERCENTAGE DIFFERENCE
   if(type == "difference" || type == "percentage.difference") {
     
-    # convert the ComparisonLayers into a ModelObjects  for plotting 
+    # convert the ComparisonLayers into a Fields  for plotting 
     objects.to.plot <- list()
     max.for.scale <- 0
     for(object in sources){ 
@@ -124,7 +124,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
       }
       new.object <- selectLayers(object, layer.to.plot)
       
-      new.field <- new("ModelObject",
+      new.field <- new("Field",
                        id = object@id,
                        data = new.object@data,
                        quant = object@quant,
@@ -136,7 +136,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                        temporal.aggregate.method = object@temporal.aggregate.method,
                        subannual.aggregate.method = object@ subannual.aggregate.method,
                        subannual.original = object@subannual.original,
-                       run = object@info1)
+                       source = object@info1)
       
       objects.to.plot[[length(objects.to.plot)+1]] <- new.field
       
@@ -169,7 +169,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   ### VALUES 
   else if(type == "values") {
     
-    # convert the ComparisonLayers into a ModelObjects  for plotting 
+    # convert the ComparisonLayers into a Fields  for plotting 
     objects.to.plot <- list()
     
     
@@ -189,7 +189,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
           new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
           setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
           
-          objects.to.plot[[length(objects.to.plot)+1]] <- new("ModelObject",
+          objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
                                                              id = object@id,
                                                              data = new.dt,
                                                              quant = object@quant,
@@ -201,7 +201,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                              temporal.aggregate.method = object@temporal.aggregate.method,
                                                              subannual.aggregate.method = object@ subannual.aggregate.method,
                                                              subannual.original = object@subannual.original,
-                                                             run = object@info1)
+                                                             source = object@info1)
         }
       }
       else if(is.DatasetInfo(object@info1)){
@@ -224,7 +224,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                               temporal.aggregate.method = object@temporal.aggregate.method,
                                                               subannual.aggregate.method = object@ subannual.aggregate.method,
                                                               subannual.original = object@subannual.original,
-                                                              run = object@info1)
+                                                              source = object@info1)
           }
       }
       
@@ -237,7 +237,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
           new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
           setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
           
-          objects.to.plot[[length(objects.to.plot)+1]] <- new("ModelObject",
+          objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
                                                               id = object@id,
                                                               data = new.dt,
                                                               quant = object@quant,
@@ -249,7 +249,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                               temporal.aggregate.method = object@temporal.aggregate.method,
                                                               subannual.aggregate.method = object@ subannual.aggregate.method,
                                                               subannual.original = object@subannual.original,
-                                                              run = object@info2)
+                                                              source = object@info2)
         }
       }
      else if(is.DatasetInfo(object@info2)){
@@ -272,7 +272,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                               temporal.aggregate.method = object@temporal.aggregate.method,
                                                               subannual.aggregate.method = object@ subannual.aggregate.method,
                                                               subannual.original = object@subannual.original,
-                                                              run = object@info2)
+                                                              source = object@info2)
         }
       }
       
@@ -293,7 +293,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     #   }
     #   new.object <- selectLayers(object, layer.to.plot)
     #   
-    #   new.field <- new("ModelObject",
+    #   new.field <- new("Field",
     #                    id = object@id,
     #                    data = new.object@data,
     #                    quant = object@quant,

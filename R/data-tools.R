@@ -144,10 +144,10 @@ countCategoricalData <- function(original.data, overlay.objects, return.type = "
 
 ############################## MAKE THE 'id' STRING FOR A DATASET 
 #
-#' Make an ID string for a \code{ModelObject}
+#' Make an ID string for a \code{Field}
 #' 
 #' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-#' for use in the \code{id} slot of a \code{ModelObject} and for filenames etc.
+#' for use in the \code{id} slot of a \code{Field} and for filenames etc.
 #' 
 #' @param data.string Character string to describe the dataset
 #' @param units Character string to describe the units in which the data are measured

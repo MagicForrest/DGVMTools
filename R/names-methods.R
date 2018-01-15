@@ -1,8 +1,8 @@
 #' Names methods
 #' 
-#' Methods for returning the names of the layers in a ModelObject or a DataObject.
+#' Methods for returning the names of the layers in a Field or a DataObject.
 #' 
-#' @param x A ModelObject or DataObject 
+#' @param x A Field or DataObject 
 #' @param ... Other arguments, not currently used
 #' @return A vector of character strings of the names of the layers
 #' @name names-methods
@@ -12,7 +12,7 @@
 NULL
 
 #' @rdname names 
-setMethod("names", signature(x="ModelObject"), function(x) {
+setMethod("names", signature(x="Field"), function(x) {
 
   # columns to be removed because they contain spatial and temporal information rather than actual data layers
   remove <- c("Lon", "Lat", "Year", "Month", "Day")

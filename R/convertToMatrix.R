@@ -1,10 +1,10 @@
-#' Convert a ModelObject, DataObject or data.table to a matrix
+#' Convert a Field, DataObject or data.table to a matrix
 #' 
 #' This function is useful for making a matrix of data (particularly for writing to disk as a netCDF file) whilst maintain the original longitudes and latitudes.  
 #' The longitudes and latitudes are stored as the column and row names respectively. 
 #' This is necessary because making a Raster objects converts unevenly spaced coordinates to evenly spaced ones.
 #' 
-#' @param input The input data, either as a ModelObject, DataObject or data.table
+#' @param input The input data, either as a Field, DataObject or data.table
 #' @param Lons A numeric vector of longitude value, used for gap-filling and ensuring that the longitudes are exactly what you want them to be.
 #' @param Lats A numeric vector of latitude value, used for gap-filling and ensuring that the latitudes are exactly what you want them to be. 
 #' @param gap.fill Logical, if true use fill in missing longitide columns and latitudes rows using either the provide Lons and Lats, or by filling in spaces if the grid spacing is regular.
@@ -82,7 +82,7 @@ convertToMatrix <- function(input, Lons = NULL, Lats = NULL, gap.fill = TRUE, la
   ### MAKE THE MATRIX
   
   # input data type
-  if(is.ModelObject(input) || is.DataObject(input)) input <- input@data
+  if(is.Field(input) || is.DataObject(input)) input <- input@data
   
   # dcast the data so that columns at longitudes and rows are latitudes and then convert to matrix
   input.dcasted <- dcast(input, formula = Lat ~ Lon, value.var = layer, drop = FALSE)

@@ -2,13 +2,13 @@
 % Please edit documentation in R/convertToMatrix.R
 \name{convertToMatrix}
 \alias{convertToMatrix}
-\title{Convert a ModelObject, DataObject or data.table to a matrix}
+\title{Convert a Field, DataObject or data.table to a matrix}
 \usage{
 convertToMatrix(input, Lons = NULL, Lats = NULL, gap.fill = TRUE, layer,
   tol = 1e-10)
 }
 \arguments{
-\item{input}{The input data, either as a ModelObject, DataObject or data.table}
+\item{input}{The input data, either as a Field, DataObject or data.table}
 
 \item{Lons}{A numeric vector of longitude value, used for gap-filling and ensuring that the longitudes are exactly what you want them to be.}
 

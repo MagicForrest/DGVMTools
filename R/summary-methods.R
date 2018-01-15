@@ -1,6 +1,6 @@
 
 
-## print an experimental summary of the class ModelRun.
+## print an experimental summary of the class Field.
 ##
 ## Don't know, which were the really important information to return,
 ## therfore this is just a template.
@@ -23,7 +23,7 @@ setGeneric("summary", function(object,...) standardGeneric("summary"))
 
 #' @rdname Summary-methods
 #' @aliases summary
-setMethod("summary", signature("ModelRun"), function(object, ...) {
+setMethod("summary", signature("Field"), function(object, ...) {
   ret <- list(id=object@id, name=object@name, model=object@model)
   
   spatial=NULL

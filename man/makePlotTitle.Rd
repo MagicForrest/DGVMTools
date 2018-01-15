@@ -12,7 +12,7 @@ makePlotTitle(quantity.str, layer = NULL, source = NULL, period = NULL,
 
 \item{layer}{The names of the layer (or another identifier)}
 
-\item{source}{The ModelObject, DataObject or ComparisonLayer that is being plotted}
+\item{source}{The Field, DataObject or ComparisonLayer that is being plotted}
 
 \item{period}{The time period plotted as TemporalExtent (optional)}
 

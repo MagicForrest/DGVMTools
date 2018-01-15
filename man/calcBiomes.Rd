@@ -2,17 +2,17 @@
 % Please edit documentation in R/processing.R
 \name{calcBiomes}
 \alias{calcBiomes}
-\title{Perform biome classification using this ModelObject}
+\title{Perform biome classification using this.Field}
 \usage{
 calcBiomes(input, scheme)
 }
 \arguments{
-\item{input}{The ModelObject for which to calculate the biomes.}
+\item{input}{The Field for which to calculate the biomes.}
 
 \item{scheme}{The biome scheme to use.}
 }
 \value{
-A new ModelObject with the biomes
+A new Field with the biomes
 }
 \description{
 This is very inflexible as it only allows the calcualtion of biomes with only one Quantity.  This is not suitable for many biomes schemes, 

@@ -107,10 +107,10 @@ setMethod("print", signature(x="SourceInfo"), function(x) {
 
 #' @rdname print
 #' @export
-setMethod("print", signature(x="ModelRun"), function(x) {
+setMethod("print", signature(x="Source"), function(x) {
   
   print(as(x, "SourceInfo"))
-  cat("The following ModelObjects have been stored internally in this ModelRun:\n")
+  cat("The following Fields have been stored internally in this.Field:\n")
   if(length(x@objects) > 0){
     for(object in x@objects) cat(paste0(object@id, "\n"))
   }
@@ -123,7 +123,7 @@ setMethod("print", signature(x="ModelRun"), function(x) {
 
 #' @rdname print
 #' @export
-setMethod("print", signature(x="ModelObject"), function(x) {
+setMethod("print", signature(x="Field"), function(x) {
   
   cat(paste0("Model object:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -135,8 +135,8 @@ setMethod("print", signature(x="ModelObject"), function(x) {
   print(x@temporal.extent)
   cat(paste0("Data: ",  "\n"))
   print(x@data)
-  cat(paste0("Model Run = ", "\"", x@run@name, "\"", "\n"))
-  cat("For full ModelRun metadata type \"print(X@run)\", where X is this ModelObject\n")
+  cat(paste0("Model Run = ", "\"", x@source@name, "\"", "\n"))
+  cat("For full Source metadata type \"print(X@source)\", where X is this.Field\n")
   
 })
 

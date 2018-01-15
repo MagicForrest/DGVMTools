@@ -11,7 +11,7 @@ plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
   legend.position = "bottom", text.multiplier = NULL)
 }
 \arguments{
-\item{input.data}{The data to be plotted, either as a ModelObject, DataObject or a list of Model/DataObjects.}
+\item{input.data}{The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 

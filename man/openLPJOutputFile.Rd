@@ -7,7 +7,7 @@
 openLPJOutputFile(run, variable, verbose = FALSE)
 }
 \arguments{
-\item{run}{A \code{ModelRun} containing the meta-data about the LPJ-GUESS run}
+\item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
 
 \item{variable}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
 
@@ -18,7 +18,7 @@ a data.table (with the correct tear offset and lon-lat offsets applied)
 }
 \description{
 \code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity 
-from the run (eg. "lai", to read the file "lai.out") and  \code{ModelRun} object which defines where the run is on disk and the offsets to apply
+from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
 }
 \details{
 Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.

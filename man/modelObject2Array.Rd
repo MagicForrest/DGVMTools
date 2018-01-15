@@ -2,12 +2,12 @@
 % Please edit documentation in R/unsorted.R
 \name{modelObject2Array}
 \alias{modelObject2Array}
-\title{Convert a ModelObject to a multi-dimensional array}
+\title{Convert a Field to a multi-dimensional array}
 \usage{
 modelObject2Array(d, cname = FALSE, invertlat = FALSE, verbose = FALSE)
 }
 \arguments{
-\item{d}{the data.table of a \code{\linkS4class{ModelObject}}}
+\item{d}{the data.table of a \code{\linkS4class{Field}}}
 
 \item{cname}{the column name to convert, if not set a list is returned}
 
@@ -19,7 +19,7 @@ modelObject2Array(d, cname = FALSE, invertlat = FALSE, verbose = FALSE)
 a array or a list or arrays
 }
 \description{
-Convert a ModelObject to a multi-dimensional array
+Convert a Field to a multi-dimensional array
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

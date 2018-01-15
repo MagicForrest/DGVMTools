@@ -3,19 +3,19 @@
 \docType{methods}
 \name{names-methods}
 \alias{names-methods}
-\alias{names,ModelObject-method}
+\alias{names,Field-method}
 \alias{names,DataObject-method}
 \alias{names,ComparisonLayer-method}
 \title{Names methods}
 \usage{
-\S4method{names}{ModelObject}(x)
+\S4method{names}{Field}(x)
 
 \S4method{names}{DataObject}(x)
 
 \S4method{names}{ComparisonLayer}(x)
 }
 \arguments{
-\item{x}{A ModelObject or DataObject}
+\item{x}{A Field or DataObject}
 
 \item{...}{Other arguments, not currently used}
 }
@@ -23,7 +23,7 @@
 A vector of character strings of the names of the layers
 }
 \description{
-Methods for returning the names of the layers in a ModelObject or a DataObject.
+Methods for returning the names of the layers in a Field or a DataObject.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

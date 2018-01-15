@@ -1,14 +1,14 @@
-#' Select gridcells from a Data/ModelObject
+#' Select gridcells from a Data/Field
 #' 
 #' 
-#' @param x The ModelObject, DataObject, data.table or data.frame from which the gridcells should be selected.  Note that a data.table or data.frame 
+#' @param x The Field, DataObject, data.table or data.frame from which the gridcells should be selected.  Note that a data.table or data.frame 
 #' should have columns "Lon" and "Lat" included.
 #' @param gridcells The gridcells to be extracted.  Can either be a simple two-element numeric to pull out one gridcell (ordering is lon, lat), or it can be a data.frame or data.table
 #' in which the first two columns are assumed to be longitude and latitude.
 #' @param tolerance A single numeric specifying how close a required gridcell in gridcells must be to one in x.  Doesn't currently work, non-exact matching is not implemented.
 #'  
 #' 
-#' @return A ModelObject, DataObject, data.table or data.frame depending on the type of the input x.
+#' @return A Field, DataObject, data.table or data.frame depending on the type of the input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 selectGridcells <- function(x, gridcells, tolerance = NULL) {
@@ -24,7 +24,7 @@ selectGridcells <- function(x, gridcells, tolerance = NULL) {
     isDataFrame <- TRUE
     dt <- data.table(x)
   }
-  else if(is.ModelObject(x) || is.DataObject(x)) {
+  else if(is.Field(x) || is.DataObject(x)) {
     dt <- x@data
   }
   else {

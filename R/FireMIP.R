@@ -1,10 +1,10 @@
 #' Open a FireMIP output file
 #' 
 #' Opens a .nc file from the FireMIP output and sorts out the meta-data and dimensions and all that messy stuff.  
-#' Returns a data.table, because it is intended to be called by getModelObject(), but of course the data.table could be used directly if you wish
+#' Returns a data.table, because it is intended to be called by getField(), but of course the data.table could be used directly if you wish
 #' 
 #' 
-#' @param run A ModelRun object to define the run we want to open.
+#' @param run A Source object to define the run we want to open.
 #' @param quantity A Quantity object to define which variable we want to look up
 #' @param temporal.extent A TemporalExtent object to define which years we want to read
 #' @param spatial.extent A SpatialExtent object to define the spatial extent we want to read
@@ -395,12 +395,12 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
 
 #' Aggregate to FireMIP PFTs
 #' 
-#' Aggregates the PFTs in a FireMIP ModelObject to a standard set of PFTs
+#' Aggregates the PFTs in a FireMIP Field to a standard set of PFTs
 #' 
-#' @param input.data A ModelObject from a FireMIP model
+#' @param input.data A Field from a FireMIP model
 #' @param remove.agriculture Logical, if TRUE, remove the cropland PFT and scale up the rest to compensate
 #' 
-#' @return A ModelObject with the standard FireMIP PFTs
+#' @return A Field with the standard FireMIP PFTs
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #'
@@ -412,7 +412,7 @@ toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
   Lat = NS = BS = BR = NULL
   
   # get the name of the model
-  model.string <- gsub("-FireMIP", "", input.data@run@model)
+  model.string <- gsub("-FireMIP", "", input.data@source@model)
   print(paste0("Standardising to FireMIP PFTs: ", model.string))
   
   # retrieve the data.table

@@ -6,8 +6,8 @@
 \title{Class to hold the metadata for a dataset}
 \description{
 This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
-It is not primarily intended to be used by itself. Instead it is inherited by \code{ModelRun} object (due to this inheritance the slots can be accessed directly)
-and included in a \code{ModelObject} in the \code{run} slot (not inherited, so needs to be access be \code{@run}).
+It is not primarily intended to be used by itself. Instead it is inherited by \code{Source} object (due to this inheritance the slots can be accessed directly)
+and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@source}).
 }
 \section{Slots}{
 

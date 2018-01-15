@@ -3,16 +3,16 @@
 \docType{methods}
 \name{Array-methods}
 \alias{Array-methods}
-\alias{as.array,ModelObject-method}
+\alias{as.array,Field-method}
 \alias{as.array}
 \title{Array methods}
 \usage{
 as.array(x, ...)
 
-\S4method{as.array}{ModelObject}(x, ...)
+\S4method{as.array}{Field}(x, ...)
 }
 \arguments{
-\item{x}{\code{\linkS4class{ModelObject}}}
+\item{x}{\code{\linkS4class{Field}}}
 
 \item{...}{Other arguments, not currently used}
 }
@@ -20,7 +20,7 @@ as.array(x, ...)
 an lon/lat(/time) array - or a list of arrays - of the modelObjects input data.table.
 }
 \description{
-Converts a \code{\linkS4class{ModelObject}} to multi-dimensional array(s) all parameters are passed along to \code{\link{modelObject2Array}}.
+Converts a \code{\linkS4class{Field}} to multi-dimensional array(s) all parameters are passed along to \code{\link{modelObject2Array}}.
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

@@ -2,12 +2,12 @@
 % Please edit documentation in R/gridarea.R
 \name{addArea}
 \alias{addArea}
-\title{Adds the gridcell area to a spatial ModelObject or data.table/data.frame}
+\title{Adds the gridcell area to a spatial Field or data.table/data.frame}
 \usage{
 addArea(input, unit = "m^2", ellipse = FALSE, verbose = TRUE)
 }
 \arguments{
-\item{input}{a spatial ModelObject or a data.frame/data.table with at least the columns Lon and Lat.}
+\item{input}{a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.}
 
 \item{unit}{area unit. Default m^2, if something else is spefified udunits2 must be installed. If udunits2 is not installed this option is ignored.}
 
@@ -19,7 +19,7 @@ addArea(input, unit = "m^2", ellipse = FALSE, verbose = TRUE)
 same class as input
 }
 \description{
-Adds the gridcell area to a spatial ModelObject or data.table/data.frame.
+Adds the gridcell area to a spatial Field or data.table/data.frame.
 For unit conversion it makes use of \code{\link[udunits2]{ud.convert}}, if installed. If udunits2 is not installed the option is ignored and the returned unit is m^2.
 }
 \author{

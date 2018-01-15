@@ -2,15 +2,15 @@
 % Please edit documentation in R/calcNewModelObj.R
 \name{calcNewModelObj}
 \alias{calcNewModelObj}
-\title{Simple calculation of new ModelObjects}
+\title{Simple calculation of new Fields}
 \usage{
 calcNewModelObj(x, y, op, x.col = NULL, y.col = NULL, quant = NULL,
   verbose = TRUE)
 }
 \arguments{
-\item{x}{The first \code{\linkS4class{ModelObject}}}
+\item{x}{The first \code{\linkS4class{Field}}}
 
-\item{y}{The second \code{\linkS4class{ModelObject}}}
+\item{y}{The second \code{\linkS4class{Field}}}
 
 \item{op}{which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/').}
 
@@ -23,10 +23,10 @@ calcNewModelObj(x, y, op, x.col = NULL, y.col = NULL, quant = NULL,
 \item{verbose}{print some messages.}
 }
 \value{
-hopefully a new ModelObject.
+hopefully a new Field.
 }
 \description{
-Basic calculation of new ModelObjects by operation '+', '-', '*' or '/'
+Basic calculation of new Fields by operation '+', '-', '*' or '/'
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

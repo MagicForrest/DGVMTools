@@ -3,13 +3,13 @@
 \docType{methods}
 \name{Summary-methods}
 \alias{Summary-methods}
-\alias{summary,ModelRun-method}
+\alias{summary,Field-method}
 \alias{summary}
 \title{Summary methods}
 \usage{
 summary(object, ...)
 
-\S4method{summary}{ModelRun}(object, ...)
+\S4method{summary}{Field}(object, ...)
 }
 \arguments{
 \item{object}{a DGVMTools object}

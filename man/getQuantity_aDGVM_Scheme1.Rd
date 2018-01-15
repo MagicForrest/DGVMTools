@@ -7,7 +7,7 @@
 getQuantity_aDGVM_Scheme1(run, period, variable)
 }
 \arguments{
-\item{run}{A \code{ModelRun}}
+\item{run}{A \code{Source}}
 
 \item{period}{A \code{TemporalExtent} object to define the period over which to average.}
 

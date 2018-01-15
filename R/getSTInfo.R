@@ -1,8 +1,8 @@
 #' Returns the spatio-temporal information 
 #' 
-#' This function returns information about the spacio-temporal dimensions of a DataObject, ModelObject, ComparisonLayer or data.table
+#' This function returns information about the spacio-temporal dimensions of a DataObject, Field, ComparisonLayer or data.table
 #' 
-#' @param x A DataObject, ModelObject, ComparisonLayer or data.tables
+#' @param x A DataObject, Field, ComparisonLayer or data.tables
 #' @param info A character string to define what spatio-temporal info you want.  Can be:
 #' 
 #' \describe{
@@ -25,7 +25,7 @@ getSTInfo <- function(x, info = "names") {
   
   
   # sort classes
-  if(is.ModelObject(x) | is.DataObject(x) | is.ComparisonLayer(x)) x <- x@data
+  if(is.Field(x) | is.DataObject(x) | is.ComparisonLayer(x)) x <- x@data
   else if(class(x)[1] != "data.table" ) stop(paste("Cant get spatio-temporal info from class", class(x)[1], sep = " "))
   
   # set up list and vector/columns present

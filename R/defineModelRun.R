@@ -1,10 +1,10 @@
 ######## DEFINE A MODELRUN OBJECT 
 
-#' Define a ModelRun object, setting up all the required metadata (only). 
+#' Define a Source object, setting up all the required metadata (only). 
 #' 
-#' This function is preferred to a \code{new("SourceInfo",...)} initialisation followed by  \code{new("ModelRun",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
+#' This function is preferred to a \code{new("SourceInfo",...)} initialisation followed by  \code{new("Source",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
 #'
-#' Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as ModelObjects and added to a ModelRun object, are added built with later with other commands and added to \code{ModelRun} command using \code{addToModelRun}
+#' Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as Fields and added to a Source object, are added built with later with other commands and added to \code{Source} command using \code{addToSource}
 #'
 #' @param id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @param model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
@@ -26,9 +26,9 @@
 #' 
 #' The parameters are the slots of a SourceInfo object. Note that that \code{id}, \code{model}, \code{pft.set} and \code{dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 #' Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS configurations.
-#' @return A ModelRun object, with metadata defined by empty data slots
+#' @return A Source object, with metadata defined by empty data slots
 #' @export
-#' @seealso ModelRun, SourceInfo 
+#' @seealso Source, SourceInfo 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 defineModelRun <- function(id,
@@ -75,8 +75,8 @@ defineModelRun <- function(id,
   if(length(info@contact) == 0)  info@contact <- Sys.getenv("USER")
   if(length(info@institute) == 0)  info@institute <- "none"
   
-  # return a ModelRun object with empty data fields but meta data filled  
-  return(new("ModelRun",
+  # return a Source object with empty data fields but meta data filled  
+  return(new("Source",
              info))
   
   

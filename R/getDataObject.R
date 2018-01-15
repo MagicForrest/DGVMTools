@@ -66,7 +66,7 @@ getDataObject <- function(dataset.id = NULL,
     
     temporal.extent <- NULL
     if(!is.null(start.year) &&!is.null(start.year)) temporal.extent.id <- paste(start = start.year, end  = end.year, sep = "-")
-    full.id <- makeModelObjectID(var.string = quantity.str,
+    full.id <- makeFieldID(var.string = quantity.str,
                                  temporal.extent = temporal.extent.id, 
                                  spatial.extent = spatial.extent.id, 
                                  temporal.aggregate.method = temporal.aggregate.method,

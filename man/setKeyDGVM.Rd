@@ -14,7 +14,7 @@ Returns nothing because changes the original data.table by reference (this is th
 }
 \description{
 Keys should be set on all data.table object for sorts, joins, DGVMTool-defined operators etc.  
- This function should be called on a data.table stored in a ModelObject after it has been created,
+ This function should be called on a data.table stored in a Field after it has been created,
  including if it was created by avergaing another data.table because it seems as keys are not conserved.
 }
 \author{

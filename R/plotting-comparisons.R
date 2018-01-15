@@ -159,7 +159,7 @@ plotResidualsHisto <- function(input.CLayers,
 
 #' Plot scatter of model vs data
 #' 
-#' Function will makes multiple scatter plots on one page if more than one ModelRun has been compared to the the DataObject.  
+#' Function will makes multiple scatter plots on one page if more than one Source has been compared to the the DataObject.  
 #' 
 #' @param input.CLayers The DataObject for which to plot the residual
 #' @param run.ids The character vector of run ids of the runs to scatter against the data (must be a vector, not a list).  Leave blank to compare all runs that have been previouslty compared to this dataset.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/write-netcdf_joerg.R
 \name{write.nc}
 \alias{write.nc}
-\title{Create a NetCDF4 file from a \code{\linkS4class{ModelObject}}.}
+\title{Create a NetCDF4 file from a \code{\linkS4class{Field}}.}
 \usage{
 write.nc(filename = NA, mo = NA, columns = NA, as.flux = FALSE,
   fill.value = FALSE, invert.lat = FALSE, globalAttr = NULL,
@@ -12,7 +12,7 @@ write.nc(filename = NA, mo = NA, columns = NA, as.flux = FALSE,
 \arguments{
 \item{filename}{output file name}
 
-\item{mo}{the \code{\linkS4class{ModelObject}}.}
+\item{mo}{the \code{\linkS4class{Field}}.}
 
 \item{columns}{which colums to write as variable (TODO: option as dimension)}
 
@@ -39,5 +39,5 @@ write.nc(filename = NA, mo = NA, columns = NA, as.flux = FALSE,
 \item{verbose}{print some information}
 }
 \description{
-Create a NetCDF4 file from a \code{\linkS4class{ModelObject}}.
+Create a NetCDF4 file from a \code{\linkS4class{Field}}.
 }

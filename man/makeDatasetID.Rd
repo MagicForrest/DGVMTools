@@ -2,7 +2,7 @@
 % Please edit documentation in R/data-tools.R
 \name{makeDatasetID}
 \alias{makeDatasetID}
-\title{Make an ID string for a \code{ModelObject}}
+\title{Make an ID string for a \code{Field}}
 \usage{
 makeDatasetID(data.string, units = NULL, temporal.resolution = NULL,
   spatial.resolution = NULL, temporal.extent = NULL,
@@ -31,7 +31,7 @@ A character string
 }
 \description{
 Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-for use in the \code{id} slot of a \code{ModelObject} and for filenames etc.
+for use in the \code{id} slot of a \code{Field} and for filenames etc.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

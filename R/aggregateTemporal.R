@@ -10,11 +10,11 @@
 #' 
 #' Time average all availables years (denoted by column "Years") or a data.table object
 #'
-#' @param input.obj data.table, ModelObject or DataObject  
+#' @param input.obj data.table, Field or DataObject  
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A ModelObject, DataObject or data.table depending on the input object
+#' @return A Field, DataObject or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -39,7 +39,7 @@ aggregateTemporal.uncompiled <- function(input.obj,
   
   
   # sort out the input object class
-  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {input.dt <- input.obj@data}
+  if(is.DataObject(input.obj) | is.Field(input.obj)) {input.dt <- input.obj@data}
   else if(is.data.table(input.obj)) {input.dt <- input.obj}
   
   
@@ -69,10 +69,10 @@ aggregateTemporal.uncompiled <- function(input.obj,
   setKeyDGVM(output.dt)
   
   # sort out the input object class
-  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
+  if(is.DataObject(input.obj) | is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@temporal.aggregate.method <- method
-    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent.id, spatial.extent = input.obj@spatial.extent.id, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
+    input.obj@id <- makeFieldID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent.id, spatial.extent = input.obj@spatial.extent.id, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}
@@ -85,11 +85,11 @@ aggregateTemporal.uncompiled <- function(input.obj,
 #' 
 #' Time average all availables years (denoted by column "Years") or a data.table object
 #'
-#' @param input.obj data.table, ModelObject or DataObject  
+#' @param input.obj data.table, Field or DataObject  
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A ModelObject, DataObject or data.table depending on the input object
+#' @return A Field, DataObject or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}

@@ -3,9 +3,9 @@
 \name{is.object-methods}
 \alias{is.object-methods}
 \alias{is.DataObject}
-\alias{is.ModelObject}
+\alias{is.Field}
 \alias{is.ComparisonLayer}
-\alias{is.ModelRun}
+\alias{is.Source}
 \alias{is.SourceInfo}
 \alias{is.DatasetInfo}
 \alias{is.Quantity}
@@ -14,11 +14,11 @@
 \usage{
 is.DataObject(input, spatial = FALSE, temporal = FALSE)
 
-is.ModelObject(input, spatial = FALSE, temporal = FALSE)
+is.Field(input, spatial = FALSE, temporal = FALSE)
 
 is.ComparisonLayer(input)
 
-is.ModelRun(input)
+is.Source(input)
 
 is.SourceInfo(input)
 

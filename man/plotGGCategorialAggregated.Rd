@@ -9,9 +9,9 @@ plotGGCategorialAggregated(x, cat, x.col.name = "value",
   vertical = FALSE, bar = FALSE, plot = TRUE, ...)
 }
 \arguments{
-\item{x}{A ModelObject or a list of them.}
+\item{x}{A Field or a list of them.}
 
-\item{cat}{A ModelObject containing the categories to summarize 'x' or a list of them.}
+\item{cat}{A Field containing the categories to summarize 'x' or a list of them.}
 
 \item{x.col.name}{The column name of 'x' data.table to use. Default: 'value'.}
 

@@ -22,9 +22,9 @@ is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
   return(leap)
 }
 
-#' Convert a ModelObject to a multi-dimensional array
+#' Convert a Field to a multi-dimensional array
 #' 
-#' @param d the data.table of a \code{\linkS4class{ModelObject}}
+#' @param d the data.table of a \code{\linkS4class{Field}}
 #' @param cname the column name to convert, if not set a list is returned
 #' @param invertlat start in the north
 #' @param verbose print some information
@@ -113,9 +113,9 @@ modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
 
 #' Array methods
 #' 
-#' Converts a \code{\linkS4class{ModelObject}} to multi-dimensional array(s) all parameters are passed along to \code{\link{modelObject2Array}}.
+#' Converts a \code{\linkS4class{Field}} to multi-dimensional array(s) all parameters are passed along to \code{\link{modelObject2Array}}.
 #' 
-#' @param x \code{\linkS4class{ModelObject}}
+#' @param x \code{\linkS4class{Field}}
 #' @param ... Other arguments, not currently used
 #' @return an lon/lat(/time) array - or a list of arrays - of the modelObjects input data.table.
 #' @name Array-methods
@@ -126,6 +126,6 @@ setGeneric("as.array", function(x,...) standardGeneric("as.array"))
 
 #' @rdname Array-methods
 #' @aliases as.array
-setMethod("as.array", signature("ModelObject"), function(x, ...) {
+setMethod("as.array", signature("Field"), function(x, ...) {
   modelObject2Array(x@data, ...)
 })

@@ -6,21 +6,21 @@
 ##########################################################################################################################################
 
 
-#' Plot maps from a temporally-averaged \code{ModelObject}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
+#' Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
 #' 
-#' This is a heavy lifting function for plotting maps from ModelObjects, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
+#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
 #' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
 #'
-#' @param sources The data to plot. Can be a ModelObject, a DataObject, or a list of including both
+#' @param sources The data to plot. Can be a Field, a DataObject, or a list of including both
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.
 #' Note that using these, especially "worldHires", can add quite a bit off time. 
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
-#' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/ModelObjects and/or the layers (as layers plotted as defined by the layers arguments 
+#' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
 #' @param plot.bg.col Colour string for the plot background.  "white"
 #' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!
@@ -47,7 +47,7 @@
 #' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
 #' However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
 #' 
-#' The function works best for \code{ModelObjects} (which contain a lot of useful metadata).   
+#' The function works best for \code{Fields} (which contain a lot of useful metadata).   
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -61,7 +61,7 @@
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
-plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a ModelObject
+plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
                          layers = NULL,
                          title = NULL,
                          facet.labels =  NULL,
@@ -107,19 +107,19 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
   ### 1. SOURCES - check the sources
-  if(is.ModelObject(sources) || is.DataObject(sources)) {
+  if(is.Field(sources) || is.DataObject(sources)) {
     sources<- list(sources)
   }
   else if(class(sources)[1] == "list") {
     for(object in sources){ 
-      if(!(is.ModelObject(object) || is.DataObject(object))) {
-        warning("You have passed me a list of items to plot but the items are not exclusively of ModelObjects/DataObjects.  Returning NULL")
+      if(!(is.Field(object) || is.DataObject(object))) {
+        warning("You have passed me a list of items to plot but the items are not exclusively of Fields/DataObjects.  Returning NULL")
         return(NULL)
       }
     }
   }
   else{
-    stop(paste("plotSpatial can only handle single a DataObject or ModelObject, or a list of Data/ModelObjects can't plot an object of type", class(sources)[1], sep = " "))
+    stop(paste("plotSpatial can only handle single a DataObject or Field, or a list of Data/Fields can't plot an object of type", class(sources)[1], sep = " "))
   }
   
   
@@ -149,7 +149,7 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
       layers.present <- intersect(names(object), layers)
       num.layers.x.sources <- num.layers.x.sources + length(layers.present)
       
-      if(length(layers.present) == 0) {warning("Some Data/ModelObjects to plot don't have all the layers that were requested to plot")}
+      if(length(layers.present) == 0) {warning("Some Data/Fields to plot don't have all the layers that were requested to plot")}
       layers.superset <- append(layers.superset, layers.present)
       
     } 
@@ -275,7 +275,7 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
     
     these.layers.melted <- melt(these.layers@data, measure.vars = layers)
     if(is.DataObject(object)) these.layers.melted[, Source := object@name]
-    else  these.layers.melted[, Source := object@run@name]
+    else  these.layers.melted[, Source := object@source@name]
     data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
     
     # check if layers are all continuous or discrete
@@ -442,14 +442,14 @@ plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFram
       
       # check if the factors are PFTs, and if so assign them their meta-data colour
       pft.superset <- NULL
-      if(is.ModelObject(sources)) {
-        pft.superset <- source@run@pft.set 
+      if(is.Field(sources)) {
+        pft.superset <- source@source@pft.set 
       }
       else {
         
         for(object in sources) {
-          if(is.ModelObject(object)) {
-            pft.superset <- append(pft.superset, object@run@pft.set)
+          if(is.Field(object)) {
+            pft.superset <- append(pft.superset, object@source@pft.set)
           }
           
         }

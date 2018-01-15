@@ -2,13 +2,13 @@
 % Please edit documentation in R/processing.R
 \name{divideLayers}
 \alias{divideLayers}
-\title{Calculate fractions from the layers of a ModelObject with respect to other layers}
+\title{Calculate fractions from the layers of a Field with respect to other layers}
 \usage{
 divideLayers(input, layers, denominators = list("Total"),
   aggregate.method = "sum")
 }
 \arguments{
-\item{input}{The ModelObject for which to calculate the new fractional layers}
+\item{input}{The Field for which to calculate the new fractional layers}
 
 \item{layers}{The layers to be divided ie. the numerators (will be calculated by \code{getVegTotals} if the don't exist)}
 
@@ -18,7 +18,7 @@ divideLayers(input, layers, denominators = list("Total"),
 parame}
 }
 \value{
-A ModelObject (or data.table) with the new layers added
+A Field (or data.table) with the new layers added
 }
 \description{
 This is very useful and important function.  It is fully flexible  -both the numerator and denominator can be specified (although the denominator defaults to "Total").
@@ -28,7 +28,7 @@ Note that if a layer doesn't exist it will be created if possible.
 Division is safe with respect to a zero denominator, the results of dividing by zero is, in this case, zero.
 
 For convenience, both \code{layers} and \code{denominators} will be expanded using \code{expandLayers}.
-This allows all lifeforms fractions in a ModelObject to be calculated using a simple call such as
+This allows all lifeforms fractions in a Field to be calculated using a simple call such as
 
  \code{veg.obj <- divideLayers(veg.obj, c("lifeforms")}
  

@@ -2,11 +2,11 @@
 
 #' Compare single layers to each other
 #' 
-#' Compare two layers (each from a ModelObject or DataObject) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a ComparisonLayer object. 
+#' Compare two layers (each from a Field or DataObject) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a ComparisonLayer object. 
 #'
 #' 
-#' @param object1 A ModelObject or DataObject from which to get the first layer for comparison
-#' @param object2 A ModelObject or DataObject from which to get the second layer for comparison
+#' @param object1 A Field or DataObject from which to get the first layer for comparison
+#' @param object2 A Field or DataObject from which to get the second layer for comparison
 #' @param layer1 The name of the first layer (character string)
 #' @param layer2 The name of the first layer (character string).  If not defined taken to the be the same as layer1
 #' @param keepall1 Boolean, keep all data points in layer1 even if there is not corresponding data in layer2 
@@ -43,8 +43,8 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
     info1 <- as(object1, "DatasetInfo")
   }
   else {
-    new.id1 <- paste(object1@run@id, layer1, object1@id, sep = ".")
-    info1 <- as(object1@run, "SourceInfo")
+    new.id1 <- paste(object1@source@id, layer1, object1@id, sep = ".")
+    info1 <- as(object1@source, "SourceInfo")
   }  
   setnames(layer.object1@data, layer1, new.id1) 
   
@@ -54,8 +54,8 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
     info2 <- as(object2, "DatasetInfo")
   }
   else {
-    new.id2 <- paste(object2@run@id, layer2, object2@id, sep = ".")
-    info2 <- as(object2@run, "SourceInfo")
+    new.id2 <- paste(object2@source@id, layer2, object2@id, sep = ".")
+    info2 <- as(object2@source, "SourceInfo")
   }  
   setnames(layer.object2@data, layer2, new.id2) 
   
@@ -79,7 +79,7 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
                            new.layer.names = NULL, 
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
-                           dec.places = dec.places)@data
+                           dec.places = dec.places)
     
     
   }

@@ -26,8 +26,8 @@ exportClasses(TemporalExtent,
               SpatialExtent, 
               Period, 
               PFT, 
-              ModelRun, 
-              ModelObject, 
+              Source, 
+              Field, 
               Quantity,  
               DataObject,
               ComparisonLayer,
@@ -35,9 +35,9 @@ exportClasses(TemporalExtent,
 
 S3method(as.data.frame, ComparisonLayer)
 S3method(as.data.frame, DataObject)
-S3method(as.data.frame, ModelObject)
+S3method(as.data.frame, Field)
 
 S3method(as.data.table, ComparisonLayer)
 S3method(as.data.table, DataObject)
-S3method(as.data.table, ModelObject)
+S3method(as.data.table, Field)
 

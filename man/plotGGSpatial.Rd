@@ -9,9 +9,9 @@ plotGGSpatial(input, column = "value", colours = NA, sym.col = FALSE,
   plot = TRUE, ...)
 }
 \arguments{
-\item{input}{A temporally averaged ModelObject or a list of them.}
+\item{input}{A temporally averaged Field or a list of them.}
 
-\item{column}{Name of the column(s) in the data slot of input, which should be plotted. Several columns can only be supplied with a single ModelObject. Default: 'value'.}
+\item{column}{Name of the column(s) in the data slot of input, which should be plotted. Several columns can only be supplied with a single Field. Default: 'value'.}
 
 \item{colours}{A (named) vector of colours or a data.frame with the columns 'colour' and ('name' or 'value'), to be used for plotting.}
 
@@ -19,7 +19,7 @@ plotGGSpatial(input, column = "value", colours = NA, sym.col = FALSE,
 
 \item{wrap}{a single number of facet_wrap columns or a vector/list with the run, VegSpatial name, column and optionally ncol (number of columns), which is used to split the data in different panels. Only valid when a vector of column names or a list of VegSpatial was given as input. Otherwise it is ignored.}
 
-\item{miss.bg}{which colour should be used for missing pixels if wraped by another ModelObject or column.}
+\item{miss.bg}{which colour should be used for missing pixels if wraped by another Field or column.}
 
 \item{map.overlay}{if set to 'lowres' or 'highres' national borders are included (uses package maps). It can also be a data.frame as returned by \code{ggplot2::fortify}.}
 

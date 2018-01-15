@@ -1,9 +1,9 @@
 #' Extent methods
 #' 
-#' Methods for returning a raster::extent object from a ModelObject, DataObject or a data.table.  The data.table, or the data.table in the "data" slot of the ModelObject and DataObject, 
+#' Methods for returning a raster::extent object from a Field, DataObject or a data.table.  The data.table, or the data.table in the "data" slot of the Field and DataObject, 
 #' must have columns named "Lon" and "Lat" otherwise these methods fail.  
 #' 
-#' @param x A ModelObject, DataObject or a data.table.
+#' @param x A Field, DataObject or a data.table.
 #' @param ... Other arguments, not currently used
 #' @return A raster::extent
 #' @name extent-methods
@@ -62,16 +62,16 @@ setMethod("extent", signature(x="data.table"), function(x) {
 })
 
 #' @rdname extent-methods
-setMethod("extent", signature(x="ModelObject"), function(x) {
+setMethod("extent", signature(x="Field"), function(x) {
   
   
   Lon = Lat = NULL
   
   # Get an ordered list of lons and lats
   if("Lat" %in% names(x@data)) { ordered.lats <- sort(unique(x@data[,Lat]))}
-  else {stop("No column called \"Lat\" in the data.table in the data slot of the ModelObject")}
+  else {stop("No column called \"Lat\" in the data.table in the data slot of the Field")}
   if("Lon" %in% names(x@data)) { ordered.lons <- sort(unique(x@data[,Lon]))}
-  else {stop("No column called \"Lon\" in the data.table in the data slot of the ModelObject")}
+  else {stop("No column called \"Lon\" in the data.table in the data slot of the Field")}
   
   
   # Now build the spatial extent depending on if it is a single site or not

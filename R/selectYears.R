@@ -1,11 +1,11 @@
-#' Select years from a Data/ModelObject
+#' Select years from a Data/Field
 #' 
 #' 
-#' @param x The ModelObject or DataObject, data.table or data.frame from which the years should be selected.  Note that a data.table or data.frame 
+#' @param x The Field or DataObject, data.table or data.frame from which the years should be selected.  Note that a data.table or data.frame 
 #' should have columns "Lon" and "Lat" included.
 #' @param temporal.extent The years to be extracted.  Can either be a TemporalExtent or a list of years (as a numeric vector)
 #' 
-#' @return A ModelObject, DataObject, data.table or data.frame depending on the type of the input x.
+#' @return A Field, DataObject, data.table or data.frame depending on the type of the input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 selectYears <- function(x, temporal.extent){
@@ -14,7 +14,7 @@ selectYears <- function(x, temporal.extent){
   Year = NULL
   
   # check input class
-  if(is.ModelObject(x) || is.DataObject(x)) input.dt <- x@data 
+  if(is.Field(x) || is.DataObject(x)) input.dt <- x@data 
   else if(is.data.table(x))  input.dt <- x
   else stop("Called for an object which is not a Data/Model object or a data.table.  Exiting...")
   
@@ -37,7 +37,7 @@ selectYears <- function(x, temporal.extent){
   else output.dt <- subset(input.dt, Year %in% temporal.extent)   
   
   # and return
-  if(is.ModelObject(x) || is.DataObject(x)) {
+  if(is.Field(x) || is.DataObject(x)) {
     x@data <- output.dt
     return(x)
   }

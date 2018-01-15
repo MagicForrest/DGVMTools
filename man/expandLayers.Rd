@@ -10,11 +10,11 @@ expandLayers(layers, input.data, PFT.set = NULL, type = "unknown",
 \arguments{
 \item{layers}{Character vector of layers to expand}
 
-\item{input.data}{The data to which the layers will be applied, may be a \code{ModelObject}, a Raster* object, data.table or data.frame, a Spatial*DataFrame.}
+\item{input.data}{The data to which the layers will be applied, may be a \code{Field}, a Raster* object, data.table or data.frame, a Spatial*DataFrame.}
 
-\item{PFT.set}{List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{ModelObject}).}
+\item{PFT.set}{List of a superset of PFTs that might be found in this run (only necessary if *not* passing a \code{Field}).}
 
-\item{type}{Character string identifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{ModelObjects} which supply this data themselves.
+\item{type}{Character string identifying if this is a monthly  (= "monthly") or per PFT (="pft") variable.  Ignored for \code{Fields} which supply this data themselves.
 The function attempts to determine this argument if it is not provided.}
 
 \item{include.woody}{If TRUE and "lifeform" is included in the layer list "Woody" is also returned}

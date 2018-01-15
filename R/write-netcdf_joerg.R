@@ -1,7 +1,7 @@
-#' Create a NetCDF4 file from a \code{\linkS4class{ModelObject}}.
+#' Create a NetCDF4 file from a \code{\linkS4class{Field}}.
 #'
 #' @param filename output file name
-#' @param mo the \code{\linkS4class{ModelObject}}.
+#' @param mo the \code{\linkS4class{Field}}.
 #' @param columns which colums to write as variable (TODO: option as dimension)
 #' @param as.flux Converts the data to fluxes by dividing by the respective number of days, if TRUE or "day[s]". If set to "^s*", the divided by 86400 additionally.
 #' @param fill.value value to use for _FillValue variable attribute.
@@ -36,8 +36,8 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
   ## check mandatory input
   if (is.na(filename))
     stop("No filename given!")
-  if (class(mo) != "ModelObject" && attr(class(mo), "package") != "DGVMTools")
-    stop("'mo' is not a DGVMTools::ModelObject!")
+  if (class(mo) != "Field" && attr(class(mo), "package") != "DGVMTools")
+    stop("'mo' is not a DGVMTools::Field!")
 
   ## set compression
   if (!is.na(compress)) {
@@ -359,13 +359,13 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
   if (!is.null(globalAttr)) {
     if (length(globalAttr)==1 && is.logical(globalAttr)) {
       if (globalAttr) {
-        ncatt_put(ncout, 0, "Model", mo@run@model)
-        ncatt_put(ncout, 0, "Name", mo@run@name)
-        ncatt_put(ncout, 0, "Driving_data", mo@run@driving.data)
-        if (mo@run@contact != "")
-          ncatt_put(ncout, 0, "Contact", mo@run@contact)
-        if (mo@run@institute != "" || mo@run@institute != "none")
-          ncatt_put(ncout, 0, "Institute", mo@run@institute)
+        ncatt_put(ncout, 0, "Model", mo@source@model)
+        ncatt_put(ncout, 0, "Name", mo@source@name)
+        ncatt_put(ncout, 0, "Driving_data", mo@source@driving.data)
+        if (mo@source@contact != "")
+          ncatt_put(ncout, 0, "Contact", mo@source@contact)
+        if (mo@source@institute != "" || mo@source@institute != "none")
+          ncatt_put(ncout, 0, "Institute", mo@source@institute)
       }
     } else if (is.vector(globalAttr)) {
       for (name in names(globalAttr))

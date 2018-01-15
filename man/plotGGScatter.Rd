@@ -11,9 +11,9 @@ plotGGScatter(x, y, x.column = "value", y.column = "value", limit = NULL,
   equal.axis = TRUE, wrap = 2, plot = TRUE, verbose = TRUE)
 }
 \arguments{
-\item{x}{A ModelObject or a list of them.}
+\item{x}{A Field or a list of them.}
 
-\item{y}{A ModelObject, dataframe/data.table or raster.}
+\item{y}{A Field, dataframe/data.table or raster.}
 
 \item{x.column}{Column name of x to use for the scatter.}
 

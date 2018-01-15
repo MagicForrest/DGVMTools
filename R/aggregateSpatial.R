@@ -6,17 +6,17 @@
 ############################################################################
 
 
-#' Spatially average a ModelObject, DataObject or data.table 
+#' Spatially average a Field, DataObject or data.table 
 #' 
-#' Spatially average all gridcells of a ModelObject, DataObject or data.table (assuming the data.table has columns "Lon" and "Lat"). 
+#' Spatially average all gridcells of a Field, DataObject or data.table (assuming the data.table has columns "Lon" and "Lat"). 
 #' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
 #'
 #'
-#' @param input.obj ModelObject, DataObject or data.table to be averaged  
+#' @param input.obj Field, DataObject or data.table to be averaged  
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A ModelObject, DataObject or data.table depending on the input object
+#' @return A Field, DataObject or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -47,7 +47,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   if(method == "weighted.sum") method = "w.sum"
   
   # sort out the input object class
-  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {input.dt <- input.obj@data}
+  if(is.DataObject(input.obj) | is.Field(input.obj)) {input.dt <- input.obj@data}
   else if(is.data.table(input.obj)) {input.dt <- input.obj}
   
   
@@ -123,10 +123,10 @@ aggregateSpatial.uncompiled <- function(input.obj,
   setKeyDGVM(output.dt)
   
   # sort out the input object class
-  if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
+  if(is.DataObject(input.obj) | is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@spatial.aggregate.method <- method
-    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent.id, spatial.extent = input.obj@spatial.extent, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
+    input.obj@id <- makeFieldID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent.id, spatial.extent = input.obj@spatial.extent, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}
@@ -135,17 +135,17 @@ aggregateSpatial.uncompiled <- function(input.obj,
 
 ######################### SPATIALLY AVERAGE ##############################
 #
-#' Spatially average a ModelObject, DataObject or data.table 
+#' Spatially average a Field, DataObject or data.table 
 #' 
-#' Spatially average all gridcells of a ModelObject, DataObject or data.table (assuming the data.table has columns "Lon" and "Lat"). 
+#' Spatially average all gridcells of a Field, DataObject or data.table (assuming the data.table has columns "Lon" and "Lat"). 
 #' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)  
 #'
 #'
-#' @param input.obj A ModelObject, DataObject or data.table to be averaged 
+#' @param input.obj A Field, DataObject or data.table to be averaged 
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A ModelObject, DataObject or data.table depending on the input object
+#' @return A Field, DataObject or data.table depending on the input object
 #' @keywords internal
 #' @import  compiler cmpfun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}

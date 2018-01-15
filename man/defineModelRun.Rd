@@ -2,7 +2,7 @@
 % Please edit documentation in R/defineModelRun.R
 \name{defineModelRun}
 \alias{defineModelRun}
-\title{Define a ModelRun object, setting up all the required metadata (only).}
+\title{Define a Source object, setting up all the required metadata (only).}
 \usage{
 defineModelRun(id, name, dir, model, pft.set, lonlat.offset = c(0, 0),
   year.offset = 0, tolerance = 0.001, london.centre = TRUE,
@@ -37,7 +37,7 @@ defineModelRun(id, name, dir, model, pft.set, lonlat.offset = c(0, 0),
 The parameters are the slots of a SourceInfo object. Note that that \code{id}, \code{model}, \code{pft.set} and \code{dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS configurations.}
 
-\item{run.dir}{The location of this run on the file system (Mandatory)}
+\item{run}{The location of this run on the file system (Mandatory)}
 
 \item{fill.col}{A string to define an R colour used when plotting this run as a histogram or scatter plot or so}
 
@@ -48,16 +48,16 @@ Take care with \code{lon.lat.offset} and \code{year.offset} which are initialise
 \item{line.type}{A numeric to define the line style representing this model run}
 }
 \value{
-A ModelRun object, with metadata defined by empty data slots
+A Source object, with metadata defined by empty data slots
 }
 \description{
-This function is preferred to a \code{new("SourceInfo",...)} initialisation followed by  \code{new("ModelRun",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
+This function is preferred to a \code{new("SourceInfo",...)} initialisation followed by  \code{new("Source",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
 }
 \details{
-Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as ModelObjects and added to a ModelRun object, are added built with later with other commands and added to \code{ModelRun} command using \code{addToModelRun}
+Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as Fields and added to a Source object, are added built with later with other commands and added to \code{Source} command using \code{addToSource}
 }
 \seealso{
-ModelRun, SourceInfo
+Source, SourceInfo
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

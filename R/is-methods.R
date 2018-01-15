@@ -41,10 +41,10 @@ is.DataObject <- function(input, spatial=FALSE, temporal=FALSE) {
 
 #' @rdname is.object-methods
 #' @export
-is.ModelObject <- function(input, spatial=FALSE, temporal=FALSE) {
+is.Field <- function(input, spatial=FALSE, temporal=FALSE) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package"))) {
-    if (class.def[1] == "ModelObject" && attr(class.def, "package")=="DGVMTools") {
+    if (class.def[1] == "Field" && attr(class.def, "package")=="DGVMTools") {
       ## JS: check more carefully if this if structure makes sense
       if (spatial && !temporal) {
         if (input@spatial.aggregate.method == "none")
@@ -77,10 +77,10 @@ is.ComparisonLayer <- function(input) {
 
 #' @rdname is.object-methods
 #' @export
-is.ModelRun <- function(input) {
+is.Source<- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "ModelRun" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "Source" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }

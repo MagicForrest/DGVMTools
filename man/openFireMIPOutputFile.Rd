@@ -8,7 +8,7 @@ openFireMIPOutputFile(run, quantity, temporal.extent = NULL,
   spatial.extent = NULL, verbose = TRUE)
 }
 \arguments{
-\item{run}{A ModelRun object to define the run we want to open.}
+\item{run}{A Source object to define the run we want to open.}
 
 \item{quantity}{A Quantity object to define which variable we want to look up}
 
@@ -23,7 +23,7 @@ A data.table
 }
 \description{
 Opens a .nc file from the FireMIP output and sorts out the meta-data and dimensions and all that messy stuff.  
-Returns a data.table, because it is intended to be called by getModelObject(), but of course the data.table could be used directly if you wish
+Returns a data.table, because it is intended to be called by getField(), but of course the data.table could be used directly if you wish
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

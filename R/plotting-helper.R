@@ -37,7 +37,7 @@ correct.map.offset <- function(spl) {
 #' 
 #' @param quantity.str Character string for the quantity plotted
 #' @param layer The names of the layer (or another identifier)
-#' @param source The ModelObject, DataObject or ComparisonLayer that is being plotted
+#' @param source The Field, DataObject or ComparisonLayer that is being plotted
 #' @param period The time period plotted as TemporalExtent (optional)
 #' @param extent The spatial extent plotted as SpatialExtent (optional)
 #' @return A character string for use as a plot title
@@ -53,9 +53,9 @@ makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NU
   # A layer name may be supplied
   if(!is.null(layer)) string <- paste(string, layer, sep = " ")
   
-  # A source may be supplied (either a DataObject, ModelObject or ComparisonLayer)
+  # A source may be supplied (either a DataObject, Field or ComparisonLayer)
   if(!is.null(source)) {
-    if(is.ModelObject(source)) string <- paste(string, source@run@name, sep = " ")
+    if(is.Field(source)) string <- paste(string, source@source@name, sep = " ")
     if(is.DataObject(source)) string <- paste(string, source@name, sep = " ")
     if(is.ComparisonLayer(source)) string <- paste(string, source@name, sep = " ")
   }

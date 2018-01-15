@@ -5,7 +5,7 @@
 \alias{extent-methods}
 \alias{extent}
 \alias{extent,data.table-method}
-\alias{extent,ModelObject-method}
+\alias{extent,Field-method}
 \alias{extent,DataObject-method}
 \alias{extent,ComparisonLayer-method}
 \alias{extent,SpatialExtent-method}
@@ -13,7 +13,7 @@
 \usage{
 \S4method{extent}{data.table}(x)
 
-\S4method{extent}{ModelObject}(x)
+\S4method{extent}{Field}(x)
 
 \S4method{extent}{DataObject}(x)
 
@@ -22,7 +22,7 @@
 \S4method{extent}{SpatialExtent}(x)
 }
 \arguments{
-\item{x}{A ModelObject, DataObject or a data.table.}
+\item{x}{A Field, DataObject or a data.table.}
 
 \item{...}{Other arguments, not currently used}
 }
@@ -30,7 +30,7 @@
 A raster::extent
 }
 \description{
-Methods for returning a raster::extent object from a ModelObject, DataObject or a data.table.  The data.table, or the data.table in the "data" slot of the ModelObject and DataObject, 
+Methods for returning a raster::extent object from a Field, DataObject or a data.table.  The data.table, or the data.table in the "data" slot of the Field and DataObject, 
 must have columns named "Lon" and "Lat" otherwise these methods fail.
 }
 \author{

@@ -7,7 +7,7 @@
 #' Sets keys on data.table based in the spatial (Lon, Lat) and temporal (Year, Month, Day), present. 
 #' 
 #' Keys should be set on all data.table object for sorts, joins, DGVMTool-defined operators etc.  
-#'  This function should be called on a data.table stored in a ModelObject after it has been created,
+#'  This function should be called on a data.table stored in a Field after it has been created,
 #'  including if it was created by avergaing another data.table because it seems as keys are not conserved.
 #'
 #' @param dt The data.table for which to set the key
@@ -27,18 +27,18 @@ setKeyDGVM <- function(dt){
 
 ############# ADD AN OBJECT TO A MODELRUN ######################################
 
-#' Add an object (either a \code{ModelObject} or a  \code{SpatialComparison}) to a \code{ModelRun} object to be use later.  
+#' Add an object (either a \code{Field} or a  \code{SpatialComparison}) to a \code{Source} object to be use later.  
 #' 
 #' Stores an object in its run for later calculations, plotting, comparisons.
 #' 
-#' @param object Object to add to the \code{ModelRun}.
-#' @param run The \code{ModelRun} object to which the object argument should be added
-#' @return A ModelRun object the the object argument added
+#' @param object Object to add to the \code{Source}.
+#' @param run The \code{Source} object to which the object argument should be added
+#' @return A Source object the the object argument added
 #' @export
-#' @seealso ModelRun, SourceInfo 
+#' @seealso Source, SourceInfo 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
-addToModelRun <- function(object, run){
+addToSource <- function(object, run){
   
   # Add a BiomeComaprison or RasterComparison to the list in the benchmarks slot 
   if(is.SpatialComparison(object)) {
@@ -50,12 +50,12 @@ addToModelRun <- function(object, run){
     
   }
   
-  # Add a ModelObject to the list in the objects slot 
-  else if(is.ModelObject(object)) {
+  # Add a Field to the list in the objects slot 
+  else if(is.Field(object)) {
     
     # Check that run ids match, if not, stop because something is really wrong
-    if(run@id != object@run@id){
-      stop(paste("Adding ModelObject ", object@id, " which comes from run with id = ",  object@run@id, " to run with id = ", run@id, ". If you are doing something funky, like averaging ModelObjects from different runs to make a a ModelRun representing an ensemble mean, then make sure that the ids match. Otherwise you will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrong to you." , sep = ""))
+    if(run@id != object@source@id){
+      stop(paste("Adding Field ", object@id, " which comes from run with id = ",  object@source@id, " to run with id = ", run@id, ". If you are doing something funky, like averaging Fields from different runs to make a a Source representing an ensemble mean, then make sure that the ids match. Otherwise you will break the internal logic of DGVMTools so aborting. Contact the package creator if this seems wrong to you." , sep = ""))
     }
     
     model.objects.list <- run@objects
@@ -67,7 +67,7 @@ addToModelRun <- function(object, run){
   
   else{
     
-    warning(paste("Cannot add object of class", class(object), "to a ModelRun object", sep = " "))
+    warning(paste("Cannot add object of class", class(object), "to a Source object", sep = " "))
     
   }
   
@@ -78,19 +78,19 @@ addToModelRun <- function(object, run){
 
 ############# REMOVE AN OBJECT FROM A MODELRUN ######################################
 
-#' Remove an object (either a \code{ModelObject} from a \code{ModelRun} object to reclaim memory.  
+#' Remove an object (either a \code{Field} from a \code{Source} object to reclaim memory.  
 #' 
-#' Processing a lot of different files and storing the full output internally (in the ModelRun) may use too much memory. You can get around this by not storing them internally, 
-#' but if you need to do this, for example because you want to average many spatial or temporal extents from one output file, this function lets you remove ModelObject to free the space again.  
+#' Processing a lot of different files and storing the full output internally (in the Source) may use too much memory. You can get around this by not storing them internally, 
+#' but if you need to do this, for example because you want to average many spatial or temporal extents from one output file, this function lets you remove Field to free the space again.  
 #' 
-#' @param object.id The id of the object to remove  to the \code{ModelRun},   
-#' @param run The \code{ModelRun} object to which the object argument should be added
-#' @return A ModelRun with the object removed
+#' @param object.id The id of the object to remove  to the \code{Source},   
+#' @param run The \code{Source} object to which the object argument should be added
+#' @return A Source with the object removed
 #' @export
-#' @seealso ModelRun, SourceInfo 
+#' @seealso Source, SourceInfo 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
-removeFromModelRun <- function(object.id, run){
+removeFromSource <- function(object.id, run){
   
   
   if(object.id %in% names(run@objects)) {
@@ -104,7 +104,7 @@ removeFromModelRun <- function(object.id, run){
   }
   
   else{
-    warning(paste("Can't remove ModelObject with id ", object.id, " from run ", run@id, " because I can't find it in the run!"))
+    warning(paste("Can't remove Field with id ", object.id, " from run ", run@id, " because I can't find it in the run!"))
   }
   
   
@@ -116,23 +116,23 @@ removeFromModelRun <- function(object.id, run){
 
 ############################## MAKE THE 'id' STRING FOR A MODELOBJECT
 #
-#' Make an ID string for a \code{ModelObject}
+#' Make an ID string for a \code{Field}
 #' 
 #' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-#' for use in the \code{id} slot of a \code{ModelObject} and for filenames etc.
+#' for use in the \code{id} slot of a \code{Field} and for filenames etc.
 #' 
 #' @param var.string Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"
 #' @param temporal.extent The temporal extent of this object if it has been cropped from the orginal duration, otherwise NULL
 #' @param spatial.extent The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL
-#' @param temporal.aggregate.method Character, method by which this ModelObject was temporally aggregated (if not temporally averaged leave blank of use "none")
-#' @param spatial.aggregate.method Character, method by which this ModelObject was spatially aggregated (if not spatially averaged leave blank of use "none")
+#' @param temporal.aggregate.method Character, method by which this.Field was temporally aggregated (if not temporally averaged leave blank of use "none")
+#' @param spatial.aggregate.method Character, method by which this.Field was spatially aggregated (if not spatially averaged leave blank of use "none")
 #' @return A character string 
 #' @export
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 
-makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent = NULL, temporal.aggregate.method = "none", spatial.aggregate.method = "none"){
+makeFieldID <- function(var.string, temporal.extent = NULL, spatial.extent = NULL, temporal.aggregate.method = "none", spatial.aggregate.method = "none"){
   
   
   model.object.id <- var.string
@@ -151,12 +151,12 @@ makeModelObjectID <- function(var.string, temporal.extent = NULL, spatial.extent
 #
 #' Prepares data as a raster object for plotting.
 #' 
-#' Converts a data.table, ModelObject or an Spatial*-object to Raster object, also subsetting the requested layers.  
+#' Converts a data.table, Field or an Spatial*-object to Raster object, also subsetting the requested layers.  
 #' It can also handle a RasterLayber/Stack/Brick, in which case the only processing done is the subsetting since the data is already in Raster form.
 #' This is generally called in the \code{plotSpatial} function (or potentially before any use of the raster::spplot and raster::plot functions),
 #' but can be useful in and of itself.
 #'   
-#' @param input.data data.table, ModelObject or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
+#' @param input.data data.table, Field or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
 #' @param layers The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.
 #' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats,  when converting gridded table to a raster, in the case the the gridded data is not commatters for uneven
 #' @param grid.topology A character string defining the grid topology when going from a table to raster, used in a call to SpatialPixels 
@@ -169,8 +169,8 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   this.class = class(input.data)[1]
   
   ###  Define the layers we are pulling out
-  # for ModelObject - note could define a methods "names" do cover this exception
-  if((is.ModelObject(input.data) || is.DataObject(input.data) || is.ComparisonLayer(input.data) ) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
+  # for Field - note could define a methods "names" do cover this exception
+  if((is.Field(input.data) || is.DataObject(input.data) || is.ComparisonLayer(input.data) ) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
   # for data.table or rasters
   else if(is.null(layers) | layers[1] == "all") {
     layers = names(input.data)
@@ -189,15 +189,15 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
     print("If error check here: promoteToRaster in veg-runtools.R")
     data.raster <- raster::brick(input.data, layers)
   }
-  ### If data.table or ModelObject (which contains a data.table) 
+  ### If data.table or Field (which contains a data.table) 
   # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table" | is.ModelObject(input.data) |  is.DataObject(input.data) | is.ComparisonLayer(input.data)) {
+  else if(this.class == "data.table" | is.Field(input.data) |  is.DataObject(input.data) | is.ComparisonLayer(input.data)) {
     # first make a SpatialPointsDataFrame
     if(this.class == "data.table") {
       data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = grid.topology)
     }
     
-    if(is.ModelObject(input.data) | is.DataObject(input.data) | is.ComparisonLayer(input.data)) {
+    if(is.Field(input.data) | is.DataObject(input.data) | is.ComparisonLayer(input.data)) {
       data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
     }
     
@@ -311,34 +311,34 @@ LondonCentre <- function(lon) {
 }
 
 
-#' Average ModelObjects provided as a list
+#' Average Fields provided as a list
 #' 
 #' Useful for averaging model ensembles, replicate simulations etc.  
 #' Note that since you can supply the function, you don't actually need to average, you can also do, for example, \code{max}, \code{min}, \code{sd}, etc.  
-#' Fails with an error message if the supplied ModelObjects don't have the same fields
+#' Fails with an error message if the supplied Fields don't have the same fields
 #' 
-#' @param list.of.model.objects The ModelObjects that you want to average, stored in a list.
-#' @param run Either a ModelRun object which provides the metadata about the newly created "run" (representing, say, the ensemble mean) or \code{NULL}, 
+#' @param list.of.model.objects The Fields that you want to average, stored in a list.
+#' @param run Either a Source object which provides the metadata about the newly created "run" (representing, say, the ensemble mean) or \code{NULL}, 
 #' in which case the function just returns a data.table with the average values.
 #' @param method The function which you want to use.  Is \code{mean} by default, but it can be anything that operates on a vector of numbers.  
 #' Useful options might be \code{max},  \code{min} and \code{sd}.  
 #'  
 #'@details  
-#' The function currently does no checks that the spatial extent, temporal extent and Quantity are consistent between runs.  The resulting ModelObject simple takes these things
+#' The function currently does no checks that the spatial extent, temporal extent and Quantity are consistent between runs.  The resulting Field simple takes these things
 #' from the first object from list.of.vegruns.  It is therefore up to the user not do anything silly and average quantites, or spatial or temporal extents that don't makes sense.
 #'          
 #' @export
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @return Either a ModelObject (if a ModelRun has been supplied to provide the necessary meta-data), or a data.table (if no meta-data has been supplies in the form of a ModelRun)
+#' @return Either a Field (if a Source has been supplied to provide the necessary meta-data), or a data.table (if no meta-data has been supplies in the form of a Source)
 #' 
-averageModelObjects <- function(list.of.model.objects, run = NULL, method = mean) {
+averageFields <- function(list.of.model.objects, run = NULL, method = mean) {
   
   
   # make lists of what is to be processed, and check that the columns are the same (if not fail!)
   list.of.dts <- list()
   for(object in list.of.model.objects){
-    list.of.dts[[paste(object@run@id, object@id, sep = ".")]] <- object@data
+    list.of.dts[[paste(object@source@id, object@id, sep = ".")]] <- object@data
   }
   for(this.dt in list.of.dts) {
     if(!identical(names(this.dt), names(list.of.dts[[1]]))) stop("You are trying to average model.objects with different layers, this won't work!")
@@ -360,26 +360,26 @@ averageModelObjects <- function(list.of.model.objects, run = NULL, method = mean
   gc()
   
   
-  # if no run is supplied then cannot construct a full ModelObject, therefore just return the data.table
+  # if no run is supplied then cannot construct a full Field, therefore just return the data.table
   if(is.null(run)) {
     return(output.dt)
   }
   
-  # else, if a run was provided, make a ModelObject and return that
+  # else, if a run was provided, make a Field and return that
   else {
     
-    #  MF TODO: check that the ModelObjects we just averaged have the same spatial and temporal properties 
+    #  MF TODO: check that the Fields we just averaged have the same spatial and temporal properties 
     # if they don't, drop an error message
     
     
-    # construct a new ModelObject for the average data that we have just calculated based on the first on in the list
+    # construct a new Field for the average data that we have just calculated based on the first on in the list
     # but put in the new run and data
-    new.ModelObject <- list.of.model.objects[[1]]
-    new.ModelObject@data <- output.dt
-    new.ModelObject@run <- as(run, "SourceInfo")
+    new.Field <- list.of.model.objects[[1]]
+    new.Field@data <- output.dt
+    new.Field@source <- as(run, "SourceInfo")
     
     
-    return(new.ModelObject)
+    return(new.Field)
   }
   
 }

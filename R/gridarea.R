@@ -109,12 +109,12 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   }
   return(x)
 }
-#' Adds the gridcell area to a spatial ModelObject or data.table/data.frame
+#' Adds the gridcell area to a spatial Field or data.table/data.frame
 #' 
-#' Adds the gridcell area to a spatial ModelObject or data.table/data.frame.
+#' Adds the gridcell area to a spatial Field or data.table/data.frame.
 #' For unit conversion it makes use of \code{\link[udunits2]{ud.convert}}, if installed. If udunits2 is not installed the option is ignored and the returned unit is m^2.
 #' 
-#' @param input a spatial ModelObject or a data.frame/data.table with at least the columns Lon and Lat.
+#' @param input a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.
 #' @param unit area unit. Default m^2, if something else is spefified udunits2 must be installed. If udunits2 is not installed this option is ignored.
 #' @param ellipse If the eath should be assumed to be a ellipsoid instead of a sphere.
 #' @param verbose print some information.
@@ -137,9 +137,9 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
       message("Input is a data.table or data.frame.")
     lon <- extract.seq(input$Lon)
     lat <- extract.seq(input$Lat)
-  } else if (is.ModelObject(input, spatial=TRUE)) {
+  } else if (is.Field(input, spatial=TRUE)) {
     if (verbose)
-      message("Input is a spatial ModelObject.")
+      message("Input is a spatial Field.")
     lon <- extract.seq(input@data$Lon)
     lat <- extract.seq(input@data$Lat)
   } else {
@@ -147,7 +147,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
   }
 
   area <- gridarea2d(lon, lat, ellipse=ellipse)
-  if (is.data.table(input) || is.ModelObject(input)) {
+  if (is.data.table(input) || is.Field(input)) {
     area <- as.data.table(area)
     if (is.data.table(input)) {
       setkey(area, Lon, Lat)

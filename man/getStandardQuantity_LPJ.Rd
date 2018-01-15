@@ -7,7 +7,7 @@
 getStandardQuantity_LPJ(run, quant, verbose = FALSE)
 }
 \arguments{
-\item{run}{A \code{ModelRun} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.}
+\item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.}
 
 \item{quant}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
 
@@ -23,7 +23,7 @@ for each and every model to to ensure completeness.
 }
 \details{
 output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
-\code{ModelRun} object, it will return that to save time.
+\code{Source} object, it will return that to save time.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
