@@ -181,10 +181,10 @@ all.periods <- list(Jan = new("Period",
 periods <- all.periods
 
 #' @rdname Period-class
-months <- all.periods[1:12]
+all.months <- all.periods[1:12]
 
 #' @rdname Period-class
-seasons <- all.periods[13:16]
+all.seasons <- all.periods[13:16]
 
 #' @rdname Period-class
 annual <- all.periods[17]

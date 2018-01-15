@@ -1,0 +1,39 @@
+
+## check if two classes are comparable
+#' Checks two DGVMTools metadata objects for equality
+#' 
+#' @description checks if two objects have the same quantity, spatial or temporal extent
+#' 
+#' @param a a DGVMTools metadata object
+#' @param b another DGVMTools metadata object of the same type
+#' @return logical
+#' @name is.equal
+#' @rdname is.equal
+#' @exportMethod 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+setGeneric("is.equal", function(a, b) standardGeneric("is.equal"))
+
+#' @describeIn is.equal Checks two Quantity objects for equality
+setMethod("is.equal", signature("Quantity", "Quantity"), function(a, b) {
+  if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)
+    return(TRUE)
+  return(FALSE)
+})
+
+#' @describeIn is.equal Checks two TemoralExtent objects for equality
+setMethod("is.equal", signature("TemporalExtent", "TemporalExtent"), function(a, b) {
+  if (a@start==b@start && a@end==b@end)
+    return(TRUE)
+  return(FALSE)
+})
+
+#' @describeIn is.equal Checks two SpatialExtent objects for equality
+setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b) {
+  if (all(!is.finite(c(a@xmin, b@xmin, a@xmax, b@xmax, 
+                       a@ymin, b@ymin, a@ymax, b@ymax))))
+    return(TRUE)
+  if (a@xmin==b@xmin && a@xmax==b@xmax && 
+      a@ymin==b@ymin && a@ymax==b@ymax)
+    return(TRUE)
+  return(FALSE)
+})

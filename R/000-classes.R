@@ -336,8 +336,10 @@ setClass("Quantity",
 #' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.extent.id A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever
 #' @slot temporal.extent.id A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
-#' @slot spatial.aggregate.method Set to TRUE is this ModelObject has been spatially averaged
-#' @slot temporal.aggregate.method Set to TRUE is this ModelObject has been temporally averaged
+#' @slot spatial.aggregate.method The method by which this ModelObject has been spatially aggregated
+#' @slot temporal.aggregate.method The method by which this ModelObject has been temporally aggregated
+#' @slot subannual.aggregate.method The method by which this ModelObject has been subannually aggregated
+#' @slot subannual.original The original subannual resolution of this ModelObject
 #' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.
 #' @exportClass ModelObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -353,6 +355,8 @@ setClass("ModelObject",
                    temporal.extent.id = "character",
                    spatial.aggregate.method = "character",
                    temporal.aggregate.method = "character",
+                   subannual.aggregate.method = "character",
+                   subannual.original = "character",
                    run = "ModelRunInfo"
          )
 )
@@ -557,10 +561,14 @@ setClass("ComparisonLayer",
                    stats = "SpatialComparison",
                    info1 = "ANY",
                    info2 = "ANY",
-                   spatial.extent = "SpatialExtent",
-                   temporal.extent = "TemporalExtent",
-                   spatial.aggregate.method = "logical",
-                   temporal.aggregate.method = "logical"
+                   spatial.extent = "ANY",
+                   spatial.extent.id = "character",
+                   temporal.extent = "ANY",
+                   temporal.extent.id = "character",
+                   spatial.aggregate.method = "character",
+                   temporal.aggregate.method = "character",
+                   subannual.aggregate.method = "character",
+                   subannual.original = "character"
                    
          )#,
          #validity = checkComparison
@@ -616,6 +624,7 @@ setClass("BiomeScheme",
                    published.reference = "character"
          )
 )
+
 
 
 
@@ -775,6 +784,10 @@ setClass("Source",
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
+
+
+
+
 setClass("Object", 
          slots = c(id = "character",
                    data = "data.table",
@@ -788,3 +801,30 @@ setClass("Object",
                    source = "SourceInfo"
          )
 )
+
+
+
+## define for older R versions, where this function does not exist.
+## Just copied from a recent R version
+if (!exists("OlsonNames")) {
+  OlsonNames <- function()
+  {
+    if (.Platform$OS.type == "windows")
+      tzdir <- Sys.getenv("TZDIR", file.path(R.home("share"),
+                                             "zoneinfo"))
+    else {
+      tzdirs <- c(Sys.getenv("TZDIR"), file.path(R.home("share"),
+                                                 "zoneinfo"), "/usr/share/zoneinfo", "/usr/share/lib/zoneinfo",
+                  "/usr/lib/zoneinfo", "/usr/local/etc/zoneinfo", "/etc/zoneinfo",
+                  "/usr/etc/zoneinfo")
+      tzdirs <- tzdirs[file.exists(tzdirs)]
+      if (!length(tzdirs)) {
+        warning("no Olson database found")
+        return(character())
+      }
+      else tzdir <- tzdirs[1]
+    }
+    x <- list.files(tzdir, recursive = TRUE)
+    grep("^[ABCDEFGHIJKLMNOPQRSTUVWXYZ]", x, value = TRUE)
+  }
+}

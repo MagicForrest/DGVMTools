@@ -134,7 +134,7 @@ setMethod("print", signature(x="ModelObject"), function(x) {
   cat(paste0("Data: ",  "\n"))
   print(x@data)
   cat(paste0("Model Run = ", "\"", x@run@name, "\"", "\n"))
-  cat("For full ModelRun metadata type \"print(X@run)\", where X is this ModelObject")
+  cat("For full ModelRun metadata type \"print(X@run)\", where X is this ModelObject\n")
   
 })
 

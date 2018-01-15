@@ -82,7 +82,6 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
                         interpolate = FALSE,
                         interior.lines = TRUE){
   
-  print(data)
   
   Source = variable = Value = Lat = Lon = Layer = long = lat = group = NULL
   
@@ -305,7 +304,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         else if(tolower(original.layers) == "absolute") {
           # changes the names of the ComparisonLayer 
           
-          layers <- names(comp.layer)[1:2]
+          layers <- names(comp.layer)[2:1]
         }
         else if(tolower(original.layers) == "percentage.difference" || tolower(original.layers) == "percentagedifference"){
           
@@ -322,7 +321,7 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
         
         # in the special case of absolute, change the layer names at this point from the ugly ids to the nice names
         if(tolower(original.layers) == "absolute") {
-          new.layer.names <- c(comp.layer@info1@name, comp.layer@info2@name)
+          new.layer.names <- c(comp.layer@info2@name, comp.layer@info1@name)
           setnames(data.toplot, layers, new.layer.names)
           layers <- new.layer.names
         }
@@ -607,10 +606,11 @@ plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, o
     facet.string <- "~Source"
     
     # also set the facet order if not defined
-    if(missing(facet.order)) {
+    if(missing(facet.order) && !only.comparison.layers) {
       facet.order <- character(0)
       for(this.object in data) {
-          facet.order <- append(facet.order, this.object@run@name)
+          if(is.ModelObject(this.object)) facet.order <- append(facet.order, this.object@run@name)
+          else if(is.DataObject(this.object)) facet.order <- append(facet.order, this.object@name)
       }
     }
     

@@ -25,7 +25,7 @@ openLPJOutputFile <- function(run,
                               verbose = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Year = NULL
+  Lon = Lat = Year = Month = NULL
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
   file.string = file.path(run@run.dir, paste(variable, ".out", sep=""))
@@ -72,6 +72,28 @@ openLPJOutputFile <- function(run,
   
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
   if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  
+  # If data is has monthly or daily columns, melt to long/tidy data where "Month" becomes a column
+  
+  # first get of all the columns which are not spatial-temporal info
+  all.cols <- names(dt)
+  st.cols <- getSTInfo(dt)
+  nonst.cols <- all.cols[!all.cols %in% st.cols]
+  
+  # if monthly then melt
+  standard.monthly.ljp.col.names <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  if(identical(nonst.cols, standard.monthly.ljp.col.names)){
+    
+    # replace column names with 1,2,3.. etc before melting, and then melt
+    setnames(dt, old = standard.monthly.ljp.col.names, new = paste(1:12))
+    dt <- melt(dt, id.vars = st.cols, measure.vars = paste(1:12), variable.name = "Month", value.name = variable)
+    dt <- dt[, Month := as.numeric(Month)]
+    
+  }
+  
+  # if daily then melt
+  # TODO - implement daily melting, follow above for implementation
+
   
   # set some attributes about the file - works!
   attr(dt, "shadeToleranceCombined") <- FALSE
@@ -178,7 +200,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
-    if(file.exists(file.path(run@run.dir, "agpp.out"))){
+    if(file.exists(file.path(run@run.dir, "agpp.out")) || file.exists(file.path(run@run.dir, "agpp.out.gz"))){
       this.dt <- openLPJOutputFile(run, "agpp", verbose = TRUE)
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
@@ -200,15 +222,15 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     
-    if(file.exists(file.path(run@run.dir, "anpp.out"))){
+    if(file.exists(file.path(run@run.dir, "anpp.out") || file.path(run@run.dir, "anpp.out.gz"))){
       this.dt <- openLPJOutputFile(run, "anpp", verbose = TRUE)
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
     else{
-       this.dt <- openLPJOutputFile(run, "mnpp", verbose = TRUE)
-       this.dt <- newLayer(this.dt, "Annual")
+      this.dt <- openLPJOutputFile(run, "mnpp", verbose = TRUE)
+      this.dt <- newLayer(this.dt, "Annual")
     }
-     
+    
     
     return(this.dt)
     
@@ -223,8 +245,8 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # make the annual total and remove ditch the rest
     this.dt <- this.dt[, c("Lon", "Lat", "Year","NEE"), with = FALSE]
-
-   
+    
+    
     print(this.dt)
     
     return(this.dt)

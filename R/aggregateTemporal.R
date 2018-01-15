@@ -19,8 +19,8 @@
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateTemporal.uncompiled <- function(input.obj,
-                                       method = "mean",
-                                       verbose = FALSE){
+                                         method = "mean",
+                                         verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   # Possible can solve this by replace the subset function
@@ -46,8 +46,15 @@ aggregateTemporal.uncompiled <- function(input.obj,
   
   # Do the averaging
   if(verbose) message("Temporally averaging ...")
-  if("Lon" %in% names(input.dt))  output.dt <- input.dt[,lapply(.SD, method.function), by=list(Lon, Lat)]
-  else output.dt <- input.dt[,lapply(.SD, method)]
+  
+  # Check the 'by' dims
+  by.dims <- c()
+  avail.dims <- getSTInfo(input.obj)
+  for(possible.dim in list("Lon","Lat","Season","Month","Day")){
+    if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
+  }
+  
+  output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
   if(verbose) message("...done.")
   
   # remove the Year 'cos it dun' make so much sense no mo'
@@ -65,7 +72,7 @@ aggregateTemporal.uncompiled <- function(input.obj,
   if(is.DataObject(input.obj) | is.ModelObject(input.obj)) {
     input.obj@data <- output.dt
     input.obj@temporal.aggregate.method <- method
-    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent, spatial.extent = input.obj@spatial.extent, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
+    input.obj@id <- makeModelObjectID(input.obj@quant@id, temporal.extent = input.obj@temporal.extent.id, spatial.extent = input.obj@spatial.extent.id, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}

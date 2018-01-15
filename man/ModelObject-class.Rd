@@ -29,9 +29,13 @@ used) or a list of gridcells used by DGVMTools::selectGridcels (see that documen
 
 \item{\code{temporal.extent.id}}{A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.}
 
-\item{\code{spatial.aggregate.method}}{Set to TRUE is this ModelObject has been spatially averaged}
+\item{\code{spatial.aggregate.method}}{The method by which this ModelObject has been spatially aggregated}
 
-\item{\code{temporal.aggregate.method}}{Set to TRUE is this ModelObject has been temporally averaged}
+\item{\code{temporal.aggregate.method}}{The method by which this ModelObject has been temporally aggregated}
+
+\item{\code{subannual.aggregate.method}}{The method by which this ModelObject has been subannually aggregated}
+
+\item{\code{subannual.original}}{The original subannual resolution of this ModelObject}
 
 \item{\code{run}}{A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.}
 }}

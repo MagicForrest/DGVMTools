@@ -218,8 +218,8 @@ removeFromModelRun <- function(object.id, run){
 #' @param var.string Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"
 #' @param temporal.extent The temporal extent of this object if it has been cropped from the orginal duration, otherwise NULL
 #' @param spatial.extent The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL
-#' @param temporally.averaged Logical, should be TRUE if temporal averaging has been done
-#' @param spatially.averaged Logical, should be TRUE if spatial averaging has been done
+#' @param temporal.aggregate.method Character, method by which this ModelObject was temporally aggregated (if not temporally averaged leave blank of use "none")
+#' @param spatial.aggregate.method Character, method by which this ModelObject was spatially aggregated (if not spatially averaged leave blank of use "none")
 #' @return A character string 
 #' @export
 #' @keywords internal
@@ -510,7 +510,7 @@ getModelObject <- function(run,
 
   }
   
-  if(!is.null(temporal.extent))  this.dt <- .selectYears(this.dt, temporal.extent)   
+  if(!is.null(temporal.extent))  this.dt <- selectYears(this.dt, temporal.extent)   
   
   if(length(this.dt) == 0) stop("getModelObject() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the temporal.exent and spatial.extent that you have requested.")
   
@@ -824,21 +824,5 @@ averageModelObjects <- function(list.of.model.objects, run = NULL, method = mean
     
     return(new.ModelObject)
   }
-  
-}
-
-.selectYears <- function(input, temporal.extent){
-  
-  # To stop compiler NOTES
-  Year = NULL
-  
-  # Warning if a certain year is not present
-  years.present <- unique(input[["Year"]])
-  for(year in temporal.extent@start:temporal.extent@end){
-    if(!(year %in% years.present)) warning(paste("Year", year, "requested, but it is not in the data!", sep = " "))
-  }
-  
-  # return the subsetted data.table
-  return(subset(input, Year >= temporal.extent@start & Year <= temporal.extent@end))    
   
 }
