@@ -30,8 +30,8 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
      quantity@id == "theightpft") {
     
     # make the string (note special cases)
-    file.string <- file.path(run@run.dir, paste0(run@id, "_", quantity@id, ".nc"))
-    if(model.string == "Inferno" && quantity@id == "landCoverFrac") { file.string <- file.path(run@run.dir, paste0(run@id, "_", "LandCoverFrac", ".nc")) }
+    file.string <- file.path(run@dir, paste0(run@id, "_", quantity@id, ".nc"))
+    if(model.string == "Inferno" && quantity@id == "landCoverFrac") { file.string <- file.path(run@dir, paste0(run@id, "_", "LandCoverFrac", ".nc")) }
     
     
     # open the netCDF file (not ORCHIDEE! - those are single files, need to open them one by one)
@@ -160,7 +160,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
         this.slice <- ncvar_get(this.nc, start = c(1,1,1, counter+start.index) , count = c(-1,-1,-1, 1))
       }
       else if(model.string == "ORCHIDEE") {
-        file.string <- file.path(run@run.dir, quantity@id, paste0(quantity@id, "_", counter+first.year, ".nc"))
+        file.string <- file.path(run@dir, quantity@id, paste0(quantity@id, "_", counter+first.year, ".nc"))
         this.nc <- nc_open(file.string, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
         this.lat <- ncvar_get(this.nc,"latitude",verbose=verbose)
         this.lon <- ncvar_get(this.nc,"longitude",verbose=verbose)
@@ -209,7 +209,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
      quantity@id == "nbp") {
     
     # make the string (note special cases)
-    file.string <- file.path(run@run.dir, paste0(run@id, "_", quantity@id, ".nc"))
+    file.string <- file.path(run@dir, paste0(run@id, "_", quantity@id, ".nc"))
     
     
     # open the netCDF file (not ORCHIDEE! - those are single files, need to open them one by one)
@@ -339,7 +339,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
         this.slice <- ncvar_get(this.nc, start = c(1,1,1, counter+start.index) , count = c(-1,-1,-1, 1))
       }
       else if(model.string == "ORCHIDEE") {
-        file.string <- file.path(run@run.dir, quantity@id, paste0(quantity@id, "_", counter+first.year, ".nc"))
+        file.string <- file.path(run@dir, quantity@id, paste0(quantity@id, "_", counter+first.year, ".nc"))
         this.nc <- nc_open(file.string, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
         this.lat <- ncvar_get(this.nc,"latitude",verbose=verbose)
         this.lon <- ncvar_get(this.nc,"longitude",verbose=verbose)

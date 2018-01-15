@@ -148,7 +148,7 @@ supported.models <- c("LPJ-GUESS",
 
 #' Checks validity of a \code{SourceInfo}.
 #' 
-#' Called internally as the validity slot of the \code{SourceInfo}.  It checks that the essential slots are filled with sensible values ie a run.dir that
+#' Called internally as the validity slot of the \code{SourceInfo}.  It checks that the essential slots are filled with sensible values ie a dir that
 #' exists on the file system; a model type which is valid and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
 #' 
 #' @param object The \code{SourceInfo} object to check for vailidity.
@@ -255,7 +255,7 @@ setClass("SourceInfo",
 #' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "FireMIP" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
-#' @slot run.dir The location of this run on the file system (Mandatory)
+#' @slot dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
@@ -643,7 +643,7 @@ setClass("BiomeScheme",
 #' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "FireMIP" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
-#' @slot run.dir The location of this run on the file system (Mandatory)
+#' @slot dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years

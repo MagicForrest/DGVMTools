@@ -10,7 +10,7 @@
 #' @param model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
 #' @param pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @param name A character string describing this run, ie. "LPJ-GUESS v3.1"
-#' @param run.dir The location of this run on the file system (Mandatory)
+#' @param run The location of this run on the file system (Mandatory)
 #' @param lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @param year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @param tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
