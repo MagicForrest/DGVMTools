@@ -87,10 +87,10 @@ is.ModelRun <- function(input) {
 
 #' @rdname is.object-methods
 #' @export
-is.ModelRunInfo <- function(input) {
+is.SourceInfo <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "ModelRunInfo" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "SourceInfo" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }

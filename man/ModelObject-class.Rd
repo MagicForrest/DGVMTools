@@ -37,7 +37,7 @@ used) or a list of gridcells used by DGVMTools::selectGridcels (see that documen
 
 \item{\code{subannual.original}}{The original subannual resolution of this ModelObject}
 
-\item{\code{run}}{A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.}
+\item{\code{run}}{A SourceInfo object which contains the metadata about the run which this ModelObject belongs too.}
 }}
 
 \author{

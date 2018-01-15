@@ -181,7 +181,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
       
       
       # first check the first contributing object/field
-      if(is.ModelRunInfo(object@info1)){
+      if(is.SourceInfo(object@info1)){
         
         if(!object@info1@id %in%  model.layers){
           
@@ -229,7 +229,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
       }
       
       # then check the second contributing object/field
-      if(is.ModelRunInfo(object@info2)){
+      if(is.SourceInfo(object@info2)){
         
         if(!object@info2@id %in%  model.layers){
           

@@ -19,7 +19,7 @@ Processing a lot of different files and storing the full output internally (in t
 but if you need to do this, for example because you want to average many spatial or temporal extents from one output file, this function lets you remove ModelObject to free the space again.
 }
 \seealso{
-ModelRun, ModelRunInfo
+ModelRun, SourceInfo
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

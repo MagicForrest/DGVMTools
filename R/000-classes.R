@@ -95,7 +95,7 @@ setClass("Period",
 #' Class to hold the metadata for a Plant Functional Type (PFT)
 #' 
 #' @description   This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their lifeform, phenology, leaftype, climate zone etc, and a default plot colour.
-#' These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a ModelRunInfo object
+#' These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a SourceInfo object
 #' to define which PFTs might be in a run (but they don't all need to be present in a given run)   
 #' 
 #' @slot id A unique character string to identify this particular PFT.  Recommended to be alphanumeric because it is used to construct file names.
@@ -144,22 +144,20 @@ supported.models <- c("LPJ-GUESS",
                       "Inferno-FireMIP",
                       "ORCHIDEE-FireMIP")
 
+########### SourceInfo - class to hold the metadata for an LPJ-GUESS run
 
-
-########### ModelRunInfo - class to hold the metadata for an LPJ-GUESS run
-
-#' Checks validity of a \code{ModelRunInfo}.
+#' Checks validity of a \code{SourceInfo}.
 #' 
-#' Called internally as the validity slot of the \code{ModelRunInfo}.  It checks that the essential slots are filled with sensible values ie a run.dir that
+#' Called internally as the validity slot of the \code{SourceInfo}.  It checks that the essential slots are filled with sensible values ie a run.dir that
 #' exists on the file system; a model type which is valid and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
 #' 
-#' @param object The \code{ModelRunInfo} object to check for vailidity.
+#' @param object The \code{SourceInfo} object to check for vailidity.
 #' @return Empty string if the essential slots are fine, a string containing an error message if not.
 #' @keywords internal
 #'    
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-checkModelRun <- function(object){
+checkSourceInfo <- function(object){
   
   errors <- character()
   
@@ -173,9 +171,9 @@ checkModelRun <- function(object){
     errors <- c(errors, msg)
   }
   
-  # Check run.dir exists
-  if (!utils::file_test("-d", object@run.dir)) {
-    msg <- paste("Run directory not found:", object@run.dir, sep = " ")
+  # Check dir exists
+  if (!utils::file_test("-d", object@dir)) {
+    msg <- paste("Run directory not found:", object@dir, sep = " ")
     errors <- c(errors, msg)
   }
   
@@ -192,7 +190,6 @@ checkModelRun <- function(object){
 }
 
 
-
 #' Class to hold the metadata for a vegetation model run
 #' 
 #' This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
@@ -203,7 +200,7 @@ checkModelRun <- function(object){
 #' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
-#' @slot run.dir The location of this run on the file system (Mandatory)
+#' @slot dir The location of this run on the file system (Mandatory)
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
@@ -216,35 +213,36 @@ checkModelRun <- function(object){
 #' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @slot contact Name and email address of responsible person (default to OS username).
 #' @slot institute Name of the institute (default "none").
-#' @exportClass ModelRunInfo
+#' @exportClass SourceInfo
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("ModelRunInfo", 
+setClass("SourceInfo", 
          slots = c(id = "character",
+                   type = "character",
                    model = "character",
                    pft.set = "list",
                    name = "character",
-                   run.dir = "character",                              
+                   dir = "character",                              
                    driving.data = "character",
                    lonlat.offset = "numeric",
                    year.offset = "numeric",
                    tolerance = "numeric",
                    london.centre = "logical",
-                   fill.col = "character", # not commonly needed, only for more complex run comparisons
-                   line.col = "character", # # not commonly needed, only for more complex run comparisons
-                   line.width = "numeric", # not commonly needed, only for more complex run comparisons
-                   line.type = "ANY", #numeric", # not commonly needed, only for more complex run comparisons
                    landuseSimulated = "logical",
                    contact = "character",
                    institute = "character"
          ),
-         validity = checkModelRun
+         validity = checkSourceInfo
          
 )
 
 
+
+
+
+
 #' An S4 class to contain metadata and, optionally, data and benchmarks for a single vegetation run
 #' 
-#' A \code{ModelRun} object contains the metadata concerning the an inherited \code{ModelRunInfo} object
+#' A \code{ModelRun} object contains the metadata concerning the an inherited \code{SourceInfo} object
 #'  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
 #'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
 #' Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj},
@@ -275,7 +273,7 @@ setClass("ModelRun",
          ),
          prototype = c(objects = list()
          ),
-         contains = "ModelRunInfo"
+         contains = "SourceInfo"
          
 )
 
@@ -321,6 +319,7 @@ setClass("Quantity",
 
 
 
+
 #' Contains one aspect of the model output, eg. LAI
 #' 
 #' A key class of the package.  A \code{ModelObject} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
@@ -340,7 +339,7 @@ setClass("Quantity",
 #' @slot temporal.aggregate.method The method by which this ModelObject has been temporally aggregated
 #' @slot subannual.aggregate.method The method by which this ModelObject has been subannually aggregated
 #' @slot subannual.original The original subannual resolution of this ModelObject
-#' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.
+#' @slot run A SourceInfo object which contains the metadata about the run which this ModelObject belongs too.
 #' @exportClass ModelObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -357,7 +356,7 @@ setClass("ModelObject",
                    temporal.aggregate.method = "character",
                    subannual.aggregate.method = "character",
                    subannual.original = "character",
-                   run = "ModelRunInfo"
+                   run = "SourceInfo"
          )
 )
 
@@ -629,104 +628,9 @@ setClass("BiomeScheme",
 
 
 
-########### ModelRunInfo - class to hold the metadata for an LPJ-GUESS run
-
-#' Checks validity of a \code{ModelRunInfo}.
-#' 
-#' Called internally as the validity slot of the \code{ModelRunInfo}.  It checks that the essential slots are filled with sensible values ie a run.dir that
-#' exists on the file system; a model type which is valid and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
-#' 
-#' @param object The \code{ModelRunInfo} object to check for vailidity.
-#' @return Empty string if the essential slots are fine, a string containing an error message if not.
-#' @keywords internal
-#'    
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-
-checkSourceInfo <- function(object){
-  
-  errors <- character()
-  
-  # Check model types is supported
-  if (!length(object@model) > 0) {
-    msg <- "Error defining ModelRun, you must define a model type!"
-    errors <- c(errors, msg)
-  }
-  else if (!(object@model  %in% supported.models)) {
-    msg <- paste("Unsupported model type", object@model, sep = " ")
-    errors <- c(errors, msg)
-  }
-  
-  # Check run.dir exists
-  if (!utils::file_test("-d", object@run.dir)) {
-    msg <- paste("Run directory not found:", object@run.dir, sep = " ")
-    errors <- c(errors, msg)
-  }
-  
-  # Check id is sensible 
-  if (!length(object@id) > 0 | object@id == "") {
-    msg <- paste("Not a sensible run id:", object@id, sep = " ")
-    errors <- c(errors, msg)
-  }
-  
-  # Other things are set to sensible/empty defaults in defineModelRun()
-  
-  if (length(errors) == 0) TRUE else errors
-  
-}
-
-
-#' Class to hold the metadata for a vegetation model run
-#' 
-#' This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
-#' It is not primarily intended to be used by itself. Instead it is inherited by \code{ModelRun} object (due to this inheritance the slots can be accessed directly)
-#' and included in a \code{ModelObject} in the \code{run} slot (not inherited, so needs to be access be \code{@@run}).
-#' 
-#' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
-#' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
-#' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
-#' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
-#' @slot run.dir The location of this run on the file system (Mandatory)
-#' @slot driving.data A character string identifying the climate or other data used to produce this model run
-#' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
-#' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
-#' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
-#' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
-#' @slot fill.col A string to define an R colour used when plotting this run as a histogram or scatter plot or so
-#' @slot line.col  A string to define an R colour used when plotting this runs as a line graph
-#' @slot line.width A numeric to define the width of a line representing this model run
-#' @slot line.type A numeric to define the line style representing this model run
-#' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
-#' @slot contact Name and email address of responsible person (default to OS username).
-#' @slot institute Name of the institute (default "none").
-#' @exportClass ModelRunInfo
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("SourceInfo", 
-         slots = c(id = "character",
-                   type = "character",
-                   model = "character",
-                   pft.set = "list",
-                   name = "character",
-                   run.dir = "character",                              
-                   driving.data = "character",
-                   lonlat.offset = "numeric",
-                   year.offset = "numeric",
-                   tolerance = "numeric",
-                   london.centre = "logical",
-                   fill.col = "character", # not commonly needed, only for more complex run comparisons
-                   line.col = "character", # # not commonly needed, only for more complex run comparisons
-                   line.width = "numeric", # not commonly needed, only for more complex run comparisons
-                   line.type = "ANY", #numeric", # not commonly needed, only for more complex run comparisons
-                   landuseSimulated = "logical",
-                   contact = "character",
-                   institute = "character"
-         ),
-         validity = checkSourceInfo
-         
-)
-
 #' An S4 class to contain metadata and, optionally, data and benchmarks for a single vegetation run
 #' 
-#' A \code{ModelRun} object contains the metadata concerning the an inherited \code{ModelRunInfo} object
+#' A \code{ModelRun} object contains the metadata concerning the an inherited \code{SourceInfo} object
 #'  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
 #'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
 #' Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj},
@@ -779,16 +683,11 @@ setClass("Source",
 #' @slot temporal.extent.id A TemporalExtent object which describes the time periog covered by this ModelObject.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.aggregate.method Set to TRUE is this ModelObject has been spatially averaged
 #' @slot temporal.aggregate.method Set to TRUE is this ModelObject has been temporally averaged
-#' @slot run A ModelRunInfo object which contains the metadata about the run which this ModelObject belongs too.
+#' @slot run A SourceInfo object which contains the metadata about the run which this ModelObject belongs too.
 #' @exportClass ModelObject
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-
-
-
-
-
-setClass("Object", 
+setClass("Field", 
          slots = c(id = "character",
                    data = "data.table",
                    quant = "Quantity",

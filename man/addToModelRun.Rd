@@ -18,7 +18,7 @@ A ModelRun object the the object argument added
 Stores an object in its run for later calculations, plotting, comparisons.
 }
 \seealso{
-ModelRun, ModelRunInfo
+ModelRun, SourceInfo
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

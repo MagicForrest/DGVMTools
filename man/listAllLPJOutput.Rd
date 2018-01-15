@@ -4,10 +4,10 @@
 \alias{listAllLPJOutput}
 \title{List all LPJ-GUESS *.out files in a run directory}
 \usage{
-listAllLPJOutput(run.directory)
+listAllLPJOutput(directory)
 }
 \arguments{
-\item{run.directory}{A path to a directory on the file system containing some .out files}
+\item{directory}{A path to a directory on the file system containing some .out files}
 }
 \value{
 A list of all the .out files present, with the ".out" removed.

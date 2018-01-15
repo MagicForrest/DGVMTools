@@ -128,7 +128,6 @@ calcBiomes <-function(input, scheme){
   # If GDD5 required for classification
   #if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
   # get gdd5
-  # stop("input@run is not a class 'ModelRun' it is class 'ModelRunInfo'!")
   if(scheme@needGDD5){
     temp.model.run <- new("ModelRun", input@run)
     gdd5 <- getModelObject(temp.model.run, "gdd5", input@temporal.extent, read.full = FALSE)

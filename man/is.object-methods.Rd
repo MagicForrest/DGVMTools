@@ -6,7 +6,7 @@
 \alias{is.ModelObject}
 \alias{is.ComparisonLayer}
 \alias{is.ModelRun}
-\alias{is.ModelRunInfo}
+\alias{is.SourceInfo}
 \alias{is.DatasetInfo}
 \alias{is.Quantity}
 \alias{is.SpatialComparison}
@@ -20,7 +20,7 @@ is.ComparisonLayer(input)
 
 is.ModelRun(input)
 
-is.ModelRunInfo(input)
+is.SourceInfo(input)
 
 is.DatasetInfo(input)
 

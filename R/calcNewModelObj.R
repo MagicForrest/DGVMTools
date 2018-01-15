@@ -108,7 +108,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                temporal.extent = x.t.extent,
                temporal.aggregate.method = x@temporal.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
-               run = as(x.run, "ModelRunInfo")))      
+               run = as(x.run, "SourceInfo")))      
 
   } else if (is.null(x.col) && !is.null(y.col)) {
     key.names <- key(x.dt)
@@ -132,7 +132,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                temporal.extent = x.t.extent,
                temporal.aggregate.method = x@temporal.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
-               run = as(x.run, "ModelRunInfo")))      
+               run = as(x.run, "SourceInfo")))      
     
   } else if (!is.null(x.col) && is.null(y.col)) {
     key.names <- key(y.dt)
@@ -156,7 +156,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                temporal.extent = x.t.extent,
                temporal.aggregate.method = x@temporal.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
-               run = as(x.run, "ModelRunInfo")))      
+               run = as(x.run, "SourceInfo")))      
   } else {
     key.names <- key(x.dt)
     val.names <- names(x.dt)
@@ -187,7 +187,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                temporal.extent = x.t.extent,
                temporal.aggregate.method = x@temporal.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
-               run = as(x.run, "ModelRunInfo")))      
+               run = as(x.run, "SourceInfo")))      
   }
   stop("MISSING: Not implemented yet.")
 }

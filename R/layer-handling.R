@@ -302,7 +302,7 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
     }
     else {
       new.ids1 <- append(new.ids1, paste(object1@run@id, layer, object1@id, sep = "."))
-      info1 <- as(object1@run, "ModelRunInfo")
+      info1 <- as(object1@run, "SourceInfo")
       id1 <- object1@run@id
     }  
     
@@ -314,7 +314,7 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
     }
     else {
       new.ids2 <- append(new.ids2, paste(object2@run@id, layer, object2@id, sep = "."))
-      info2 <- as(object2@run, "ModelRunInfo")
+      info2 <- as(object2@run, "SourceInfo")
       id2 <- object2@run@id
     }  
   }

@@ -80,14 +80,16 @@ setMethod("print", signature(x="Period"), function(x) {
 
 
 
+
 #' @rdname print
 #' @export
-setMethod("print", signature(x="ModelRunInfo"), function(x) {
+setMethod("print", signature(x="SourceInfo"), function(x) {
   
-  cat(paste0("Model run:\n"))
+  cat(paste0("SourceInfo:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
+  cat(paste0("type = ", "\"", x@type, "\"", "\n"))
   cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  cat(paste0("run directory = ", "\"", x@run.dir, "\"", "\n"))
+  cat(paste0("directory = ", "\"", x@dir, "\"", "\n"))
   cat(paste0("driving data = ", "\"", x@driving.data, "\"", "\n"))
   cat(paste0("lon-lat offset = (", x@lonlat.offset[1], ",", x@lonlat.offset[2], ")\n"))
   cat(paste0("year offset = ", x@year.offset, "\n"))
@@ -107,7 +109,7 @@ setMethod("print", signature(x="ModelRunInfo"), function(x) {
 #' @export
 setMethod("print", signature(x="ModelRun"), function(x) {
   
-  print(as(x, "ModelRunInfo"))
+  print(as(x, "SourceInfo"))
   cat("The following ModelObjects have been stored internally in this ModelRun:\n")
   if(length(x@objects) > 0){
     for(object in x@objects) cat(paste0(object@id, "\n"))

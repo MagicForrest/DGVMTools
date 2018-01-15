@@ -28,7 +28,7 @@ openLPJOutputFile <- function(run,
   Lon = Lat = Year = Month = NULL
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
-  file.string = file.path(run@run.dir, paste(variable, ".out", sep=""))
+  file.string = file.path(run@dir, paste(variable, ".out", sep=""))
   if(file.exists(file.string)){ 
     if(verbose) message(paste("Found and opening file", file.string, sep = " "))
     dt <- fread(file.string)
@@ -200,7 +200,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
-    if(file.exists(file.path(run@run.dir, "agpp.out")) || file.exists(file.path(run@run.dir, "agpp.out.gz"))){
+    if(file.exists(file.path(run@dir, "agpp.out")) || file.exists(file.path(run@dir, "agpp.out.gz"))){
       this.dt <- openLPJOutputFile(run, "agpp", verbose = TRUE)
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
@@ -222,7 +222,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     
-    if(file.exists(file.path(run@run.dir, "anpp.out") || file.path(run@run.dir, "anpp.out.gz"))){
+    if(file.exists(file.path(run@dir, "anpp.out") || file.path(run@dir, "anpp.out.gz"))){
       this.dt <- openLPJOutputFile(run, "anpp", verbose = TRUE)
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
@@ -267,7 +267,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   else if(quant@id == "burntfraction_std") {
     
     # if mfirefrac is present the open it and use it
-    if("mfirefrac" %in% listAllLPJOutput(run@run.dir)){
+    if("mfirefrac" %in% listAllLPJOutput(run@dir)){
       this.dt <- openLPJOutputFile(run, "mfirefrac", verbose = TRUE)
       this.dt <- newLayer(this.dt, "Annual")
     }
@@ -302,16 +302,16 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
-#' @param run.directory A path to a directory on the file system containing some .out files
+#' @param directory A path to a directory on the file system containing some .out files
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 
-listAllLPJOutput <- function(run.directory){
+listAllLPJOutput <- function(directory){
   
   # First get the list of *.out files present
-  files.present <- list.files(run.directory, "*.out")
-  files.present <- append(files.present, list.files(run.directory, "*.out.gz"))
+  files.present <- list.files(directory, "*.out")
+  files.present <- append(files.present, list.files(directory, "*.out.gz"))
   
   
   # Now strip the .out file extension out the get the variable name

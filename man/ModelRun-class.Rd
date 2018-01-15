@@ -5,7 +5,7 @@
 \alias{ModelRun-class}
 \title{An S4 class to contain metadata and, optionally, data and benchmarks for a single vegetation run}
 \description{
-A \code{ModelRun} object contains the metadata concerning the an inherited \code{ModelRunInfo} object
+A \code{ModelRun} object contains the metadata concerning the an inherited \code{SourceInfo} object
  and the actual model data run as \code{ModelObjects} in a list in slot \code{objects} and comparisions to datasets 
  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
 Such objects can be built by calls to \code{getModelObject()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj},

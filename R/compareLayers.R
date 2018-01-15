@@ -44,7 +44,7 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   }
   else {
     new.id1 <- paste(object1@run@id, layer1, object1@id, sep = ".")
-    info1 <- as(object1@run, "ModelRunInfo")
+    info1 <- as(object1@run, "SourceInfo")
   }  
   setnames(layer.object1@data, layer1, new.id1) 
   
@@ -55,7 +55,7 @@ compareLayers <- function(object1, object2, layer1, layer2=layer1, keepall1 = FA
   }
   else {
     new.id2 <- paste(object2@run@id, layer2, object2@id, sep = ".")
-    info2 <- as(object2@run, "ModelRunInfo")
+    info2 <- as(object2@run, "SourceInfo")
   }  
   setnames(layer.object2@data, layer2, new.id2) 
   
