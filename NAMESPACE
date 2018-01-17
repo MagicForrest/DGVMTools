@@ -22,8 +22,7 @@ importMethodsFrom("raster")
 
 importFrom(raster, crop, extent)
 
-exportClasses(TemporalExtent, 
-              SpatialExtent, 
+exportClasses(TemporalExtent,
               Period, 
               PFT, 
               Source, 

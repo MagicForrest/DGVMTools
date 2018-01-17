@@ -15,7 +15,7 @@
 #' @param temporal.extent.id A character string to give an identifier for the temporal period this ModelField covers.
 #' @param temporal.aggregate.method A character string describing the method by which to temporally aggregate the data.  Leave blank or use "none" to apply no temporal aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
-#' @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
+#' @param spatial.extent An extent in space to which this Field should be cropped, supplied as a raster::extent object or an object from which a raster::extent object can be derived - eg. a Raster* object or another Field object.
 #' @param spatial.extent.id A character string to give an identifier for the spatial extent this ModelField covers.
 #' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank or use "none" to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
@@ -62,7 +62,12 @@ getModelField <- function(run,
   }
   
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally aggregated and reduced in extent
-  model.field.id <- makeFieldID(var.string, temporal.extent.id, spatial.extent.id, temporal.aggregate.method, spatial.aggregate.method)
+  model.field.id <- makeFieldID(source.info = as(run, "SourceInfo"), 
+                                var.string = var.string, 
+                                temporal.extent.id = temporal.extent.id, 
+                                spatial.extent.id = spatial.extent.id, 
+                                temporal.aggregate.method = temporal.aggregate.method, 
+                                spatial.aggregate.method = spatial.aggregate.method)
   file.name <- file.path(run@dir, paste(model.field.id, "DGVMData", sep = "."))
   if(verbose) message(paste("Seeking ModelField with id = ", model.field.id, sep = ""))
   
@@ -93,14 +98,14 @@ getModelField <- function(run,
     
     # Check that the spatial extent matches before returning
     # Note that there are various cases to check here (the full spatial extent and specifically defined extents)
-    if(is.null(spatial.extent) & model.field@spatial.extent.id == "Full"
+    if(is.null(spatial.extent) & is.null(spatial.extent.id)
        | identical(spatial.extent, model.field@spatial.extent)){
       if(store.internally) {run <<- addToSource(model.field, run)}
       return(model.field)
     }  
     
-    # Otherwise we must discard this ModelField and we need to re-average (and maybe also re-read) using the cases below 
-    message(paste("Details of SpatialExtent",  spatial.extent.id, "didn't match.  So file on disk ignored and the original data is being re-read"))
+    # Otherwise we must discard this Field and we need to re-average (and maybe also re-read) using the cases below 
+    message(paste("Details of the spatial extent",  spatial.extent.id, "didn't match.  So file on disk ignored and the original data is being re-read"))
     rm(model.field)
     gc()
     
@@ -213,10 +218,7 @@ getModelField <- function(run,
                                id = var.string,
                                data = this.dt,
                                quant = quant,
-                               spatial.extent = new("SpatialExtent",
-                                                    id = "FullDomain",
-                                                    name = "Full simulation extent",
-                                                    extent(this.dt)),
+                               spatial.extent = extent(this.dt),
                                spatial.extent.id = "Full",
                                temporal.extent = new("TemporalExtent",
                                                      id = "FullTS",

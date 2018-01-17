@@ -3,36 +3,8 @@
 \docType{class}
 \name{SpatialComparison-class}
 \alias{SpatialComparison-class}
-\title{#### DATA OBJECT CLASS}
+\title{Result of comparing a model raster to a data raster}
 \description{
-#' Contains one dataset (ie. measured, not model-generated).
-#' 
-#' A key class of the package.  A \code{DataObject} stores the data and metadata for one dataset (temporal or spatial).
-#' For example 
-#' 
-#' Generally these are not created directly by the user, but rather by functions like \code{getMODISTreecover} or \code{getSaatchi2011} or so, but the use can create them directly if desired.
-#' 
-#' @slot id A unique character string to identify this particular DataObject.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot name A character string to more fully describe this DataObject
-#' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A Quantity object to define what output this DataObject contains
-#' @slot spatial.extent A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.
-#' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.
-#' @slot correction.layer A character string defining a multiplicative corection layer that can be used for the data set
-#' @exportClass DataObject
-#' @author Matthew Forrest \email{matthew.forrest@senckenberg.de}
-setClass("DataObject", 
-         slots = c(data = "data.table",
-                   spatial.extent = "SpatialExtent",
-                   temporal.extent = "TemporalExtent",
-                   correction.layer =  "character"
-         ),
-         contains = "SourceInfo" 
-         
-)
-Result of comparing a model raster to a data raster
-}
-\details{
 This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToDataObject}
 }
 \section{Slots}{

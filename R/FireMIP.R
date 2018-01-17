@@ -7,7 +7,7 @@
 #' @param run A Source object to define the run we want to open.
 #' @param quantity A Quantity object to define which variable we want to look up
 #' @param temporal.extent A TemporalExtent object to define which years we want to read
-#' @param spatial.extent A SpatialExtent object to define the spatial extent we want to read
+#' @param spatial.extent The spatial extent we want to read (as defined by as raster::extent or an object that can be cast to a raster::extent)
 #' @param verbose Logical, if TRUE spew forth a lot of info.
 #' 
 #' @return A data.table

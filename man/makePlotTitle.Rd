@@ -5,18 +5,18 @@
 \title{Make a plot title}
 \usage{
 makePlotTitle(quantity.str, layer = NULL, source = NULL, period = NULL,
-  extent = NULL)
+  extent.str = NULL)
 }
 \arguments{
 \item{quantity.str}{Character string for the quantity plotted}
 
 \item{layer}{The names of the layer (or another identifier)}
 
-\item{source}{The Field, DataObject or ComparisonLayer that is being plotted}
+\item{source}{The Field or ComparisonLayer that is being plotted}
 
 \item{period}{The time period plotted as TemporalExtent (optional)}
 
-\item{extent}{The spatial extent plotted as SpatialExtent (optional)}
+\item{extent.str}{The spatial extent plotted as described by a character string (optional)}
 }
 \value{
 A character string for use as a plot title

@@ -7,7 +7,6 @@
 \alias{extent,data.table-method}
 \alias{extent,Field-method}
 \alias{extent,ComparisonLayer-method}
-\alias{extent,SpatialExtent-method}
 \title{Extent methods}
 \usage{
 \S4method{extent}{data.table}(x)
@@ -15,8 +14,6 @@
 \S4method{extent}{Field}(x)
 
 \S4method{extent}{ComparisonLayer}(x)
-
-\S4method{extent}{SpatialExtent}(x)
 }
 \arguments{
 \item{x}{A Field, DataObject or a data.table.}

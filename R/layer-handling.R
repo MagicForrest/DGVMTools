@@ -343,7 +343,7 @@ compareRelativeAbundanceLayers <- function(object1, object2, layers, keepall1 = 
   else {
     te <- NULL
   }
-  se <- new("SpatialExtent", id = id, name = id, extent(new.data))
+  se <- extent(new.data)
   if(!identical(object1@quant, object1@quant)) {
     if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", object1@quant@id, " and ", object2@quant@id, "), proceeding using quantity", object1@quant@id))
     else  stop("Comapring different Qunatit")

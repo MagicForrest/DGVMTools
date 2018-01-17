@@ -142,47 +142,4 @@ countCategoricalData <- function(original.data, overlay.objects, return.type = "
   
 }
 
-############################## MAKE THE 'id' STRING FOR A DATASET 
-#
-#' Make an ID string for a \code{Field}
-#' 
-#' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-#' for use in the \code{id} slot of a \code{Field} and for filenames etc.
-#' 
-#' @param data.string Character string to describe the dataset
-#' @param units Character string to describe the units in which the data are measured
-#' @param temporal.resolution Character string to describe the temporal resolution of this data, eg. "Annual" or "Daily"
-#' @param spatial.resolution Character string to describe the spatial resolution of this data eg "HD" (for half degree) or "QD" (for quarter degree)
-#' @param temporal.extent The temporal extent of this object if it has been cropped from the orginal duration, otherwise NULL
-#' @param spatial.extent The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL
-#' @param temporally.averaged Logical, should be TRUE if the data represent a snapshot or data averaged over a time period
-#' @param spatially.averaged Logical, should be TRUE if the data have been averaged over spatial domain 
-#' @return A character string 
-#' @export
-#' @keywords internal
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
-
-
-makeDatasetID <- function(data.string, 
-                          units = NULL, 
-                          temporal.resolution = NULL, 
-                          spatial.resolution = NULL, 
-                          temporal.extent = NULL, 
-                          spatial.extent = NULL, 
-                          temporally.averaged = FALSE, 
-                          spatially.averaged = FALSE){
-  
-  
-  dataset.id <- data.string
-  if(!is.null(units))  dataset.id <- paste(dataset.id, units, sep = ".")
-  if(!is.null(temporal.resolution))  dataset.id <- paste(dataset.id, temporal.resolution, sep = ".")
-  if(!is.null(spatial.resolution))  dataset.id <- paste(dataset.id, spatial.resolution, sep = ".")
-  if(spatially.averaged)  dataset.id <- paste(dataset.id, "SA", sep = ".")
-  if(!is.null(spatial.extent)) dataset.id <- paste(dataset.id, spatial.extent@id, sep = ".")
-  if(temporally.averaged)  datasett.id <- paste(dataset.id, "TA", sep = ".")
-  if(!is.null(temporal.extent)) dataset.id <- paste(dataset.id, paste(temporal.extent@start, temporal.extent@end, sep = "-"), sep =".")
-  
-  return(dataset.id)
-  
-}
 

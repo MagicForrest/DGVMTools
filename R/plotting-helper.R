@@ -37,15 +37,15 @@ correct.map.offset <- function(spl) {
 #' 
 #' @param quantity.str Character string for the quantity plotted
 #' @param layer The names of the layer (or another identifier)
-#' @param source The Field, DataObject or ComparisonLayer that is being plotted
+#' @param source The Field or ComparisonLayer that is being plotted
 #' @param period The time period plotted as TemporalExtent (optional)
-#' @param extent The spatial extent plotted as SpatialExtent (optional)
+#' @param extent.str The spatial extent plotted as described by a character string (optional)
 #' @return A character string for use as a plot title
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #'
 #' @export 
-makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NULL, extent = NULL){
+makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NULL, extent.str = NULL){
   
   # quantity.str must be supplied
   string <- quantity.str
@@ -62,7 +62,7 @@ makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NU
   # And a period and/or spatial extent may be supplied  
   if(!is.null(period) && !is.null(extent)) string <- paste(string, paste("(", extent@name, " ", period@start, "-", period@end, ")", sep = ""), sep = " ")
   else if(!is.null(period) ) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
-  else if(!is.null(extent) ) string <- paste(string, paste("(", extent@name, ")", sep = ""), sep = " ")
+  else if(!is.null(extent.str) ) string <- paste(string, paste("(", extent.str, ")", sep = ""), sep = " ")
   
   return(string)
   

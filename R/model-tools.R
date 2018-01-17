@@ -114,36 +114,6 @@ removeFromSource <- function(object.id, run){
 
 
 
-############################## MAKE THE 'id' STRING FOR A MODELOBJECT
-#
-#' Make an ID string for a \code{Field}
-#' 
-#' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-#' for use in the \code{id} slot of a \code{Field} and for filenames etc.
-#' 
-#' @param var.string Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"
-#' @param temporal.extent The temporal extent of this object if it has been cropped from the orginal duration, otherwise NULL
-#' @param spatial.extent The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL
-#' @param temporal.aggregate.method Character, method by which this.Field was temporally aggregated (if not temporally averaged leave blank of use "none")
-#' @param spatial.aggregate.method Character, method by which this.Field was spatially aggregated (if not spatially averaged leave blank of use "none")
-#' @return A character string 
-#' @export
-#' @keywords internal
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
-
-
-makeFieldID <- function(var.string, temporal.extent = NULL, spatial.extent = NULL, temporal.aggregate.method = "none", spatial.aggregate.method = "none"){
-  
-  
-  model.object.id <- var.string
-  if(tolower(spatial.aggregate.method) != "none")  model.object.id <- paste(model.object.id, "spatial", spatial.aggregate.method, sep = ".")
-  if(!is.null(spatial.extent)) model.object.id <- paste(model.object.id, spatial.extent, sep = ".")
-  if(tolower(temporal.aggregate.method) != "none")  model.object.id <- paste(model.object.id, "temporal", temporal.aggregate.method, sep = ".")
-  if(!is.null(temporal.extent)) model.object.id <- paste(model.object.id, temporal.extent, sep =".")
-  
-  return(model.object.id)
-  
-}
 
 
 

@@ -8,7 +8,7 @@
 
 #' Temporal extent for defining the duration of a model run and selecting time periods 
 #' 
-#' A simple S4 class to define a time period ie 1961-1990, but called here \code{TemporalExtent} to be analagous to \code{SpatialExtent} and distinct from the \code{Period} class (which contains months and seasons)
+#' A simple S4 class to define a time period ie 1961-1990, called here \code{TemporalExtent} and distinct from the \code{Period} class (which contains months and seasons)
 #' 
 #' @slot id A unique character string to identify this particular time period.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string to describe the time period. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
@@ -24,27 +24,6 @@ setClass("TemporalExtent",
          )
 )
 
-
-
-#' Spatial extent for defining the spatial area covered by model output or other spatial data.
-#' 
-#' A simple S4 class to define a spatial extent.  It contains a raster::Extent object
-#' 
-#' @slot id A unique character string to identify this particular spatial extent.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot name A character string to describe the spatial extent. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
-#' @slot xmin Minimum x (longitude) of this extent (inherited from raster::Extent)
-#' @slot xmax Maximum x (longitude) of this extent (inherited from raster::Extent)
-#' @slot ymin Minimum y (latitude) of this extent (inherited from raster::Extent)
-#' @slot ymax Maximum y (latitude) of this extent (inherited from raster::Extent)
-#' @exportClass SpatialExtent
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' 
-
-setClass("SpatialExtent",
-         slots = c(id = "character",
-                   name = "character"),
-         contains = "Extent"
-)
 
 #' Time periods - eg. a month or a season or a year.
 #' 
@@ -323,33 +302,6 @@ setClass("Quantity",
 
 
 
-#' #### DATA OBJECT CLASS
-#' 
-#' #' Contains one dataset (ie. measured, not model-generated).
-#' #' 
-#' #' A key class of the package.  A \code{DataObject} stores the data and metadata for one dataset (temporal or spatial).
-#' #' For example 
-#' #' 
-#' #' Generally these are not created directly by the user, but rather by functions like \code{getMODISTreecover} or \code{getSaatchi2011} or so, but the use can create them directly if desired.
-#' #' 
-#' #' @slot id A unique character string to identify this particular DataObject.  Recommended to be alphanumeric because it is used to construct file names.
-#' #' @slot name A character string to more fully describe this DataObject
-#' #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' #' @slot quant A Quantity object to define what output this DataObject contains
-#' #' @slot spatial.extent A SpatialExtent object which describes the area covered by this DataObject.  Particularly useful if the data has been spatially averaged.
-#' #' @slot temporal.extent A TemporalExtent object which describes the time periog covered by this DataObject.  Particularly useful if the data has been temporally averaged.
-#' #' @slot correction.layer A character string defining a multiplicative corection layer that can be used for the data set
-#' #' @exportClass DataObject
-#' #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' setClass("DataObject", 
-#'          slots = c(data = "data.table",
-#'                    spatial.extent = "SpatialExtent",
-#'                    temporal.extent = "TemporalExtent",
-#'                    correction.layer =  "character"
-#'          ),
-#'          contains = "SourceInfo" 
-#'          
-#' )
 
 
 #' Result of comparing a model raster to a data raster
@@ -428,7 +380,7 @@ setClass("SpatialComparison",
 #' @slot stats An SpatialComaprison object giving ther statistical comparison metric between these two layers
 #' @slot info1 A SourceInfo object describing the source of the first layer in the comparison
 #' @slot info2 A SourceInfo object describing the source of the second layer in the comparison
-#' @slot spatial.extent A SpatialExtent object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
+#' @slot spatial.extent An object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
 #' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ComparisonLayer.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.aggregate.method Set to TRUE is this ComparisonLayer has been spatially averaged
 #' @slot temporal.aggregate.method Set to TRUE is this ComparisonLayer has been temporally averaged

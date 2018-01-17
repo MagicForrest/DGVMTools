@@ -26,14 +26,3 @@ setMethod("is.equal", signature("TemporalExtent", "TemporalExtent"), function(a,
     return(TRUE)
   return(FALSE)
 })
-
-#' @describeIn is.equal Checks two SpatialExtent objects for equality
-setMethod("is.equal", signature("SpatialExtent", "SpatialExtent"), function(a, b) {
-  if (all(!is.finite(c(a@xmin, b@xmin, a@xmax, b@xmax, 
-                       a@ymin, b@ymin, a@ymax, b@ymax))))
-    return(TRUE)
-  if (a@xmin==b@xmin && a@xmax==b@xmax && 
-      a@ymin==b@ymin && a@ymax==b@ymax)
-    return(TRUE)
-  return(FALSE)
-})

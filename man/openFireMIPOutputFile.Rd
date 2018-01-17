@@ -14,7 +14,7 @@ openFireMIPOutputFile(run, quantity, temporal.extent = NULL,
 
 \item{temporal.extent}{A TemporalExtent object to define which years we want to read}
 
-\item{spatial.extent}{A SpatialExtent object to define the spatial extent we want to read}
+\item{spatial.extent}{The spatial extent we want to read (as defined by as raster::extent or an object that can be cast to a raster::extent)}
 
 \item{verbose}{Logical, if TRUE spew forth a lot of info.}
 }

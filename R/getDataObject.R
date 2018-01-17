@@ -14,7 +14,7 @@
 #' @param end.year Numeric for the last year of data, currently ignored
 #### @param temporal.extent The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)
 #' @param temporal.aggregate.method A character string describing the method by which to temporally aggregate the data.  Leave blank or use "none" to apply no temporal aggregation. 
-#### @param spatial.extent The spatial extent (as a \code{SpatialExtent} object over which the data is to be averaged)
+#### @param spatial.extent The spatial extent (as a object over which the data is to be averaged)
 #' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank or use "none" to apply no spatially aggregation., 
 #' @param filename Optional character string.  If supplied it, the code reads this exact file and ignores the other options.
 #' @param verbose Boolean, if TRUE write out the blurb from the netCDF opening commands
@@ -141,10 +141,8 @@ getDataObject <- function(dataset.id = NULL,
   
   # spatial extent
   spatial.extent.id <- ncatt_get(this.nc, 0, attname="DGVMTools_DataObject_spatial.extent.id", verbose=FALSE)$value
-  spatial.extent <- new("SpatialExtent", 
-                        id = paste0(spatial.extent.id, "Extent"), 
-                        name =  paste(spatial.extent.id, "Extent", sep = " "), 
-                        extent(this.slice.dt))
+  # Determine
+  spatial.extent <- extent(this.slice.dt)
   
   # temporal extent
   temporal.extent <- new("TemporalExtent", 

@@ -5,7 +5,7 @@
 \alias{TemporalExtent-class}
 \title{Temporal extent for defining the duration of a model run and selecting time periods}
 \description{
-A simple S4 class to define a time period ie 1961-1990, but called here \code{TemporalExtent} to be analagous to \code{SpatialExtent} and distinct from the \code{Period} class (which contains months and seasons)
+A simple S4 class to define a time period ie 1961-1990, called here \code{TemporalExtent} and distinct from the \code{Period} class (which contains months and seasons)
 }
 \section{Slots}{
 

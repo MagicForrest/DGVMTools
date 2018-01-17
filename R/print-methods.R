@@ -48,19 +48,6 @@ setMethod("print", signature(x="TemporalExtent"), function(x) {
   
 })
 
-#' @rdname print
-#' @export
-setMethod("print", signature(x="SpatialExtent"), function(x) {
-  
-  cat(paste0("Spatial Extent:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  cat(paste0("extent: xmin = ", x@xmin, "\n"))
-  cat(paste0("        xmax = ", x@xmax, "\n"))
-  cat(paste0("        ymin = ", x@ymin, "\n"))
-  cat(paste0("        ymax = ", x@ymax, "\n"))
-  
-})
 
 #' @rdname print
 #' @export
