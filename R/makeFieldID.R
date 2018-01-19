@@ -21,9 +21,8 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 
-makeFieldID <- function(source.info,  
-                        var.string, 
-                        unit.string = NULL,
+makeFieldID <- function(source.info,
+                        var.string,
                         spatial.resolution = NULL, 
                         temporal.resolution = NULL,
                         subannual.resolution = NULL,
@@ -53,19 +52,22 @@ makeFieldID <- function(source.info,
   # quantity
   field.id <- paste(field.id, var.string, sep = sep)
   
-  # units
-  if(!missing(unit.string) && !is.null(unit.string) && tolower(unit.string) != "none")  field.id <- paste(field.id, unit.str, sep = ".")
-  
   # spatial aggregation
-  if(!missing(spatial.aggregate.method) && !is.null(spatial.aggregate.method) && tolower(spatial.aggregate.method) != "none")  field.id <- paste(field.id, "spatial", spatial.aggregate.method, sep = ".")
-  if(!missing(spatial.extent.id) && !is.null(spatial.extent.id) && tolower(spatial.extent.id) != "Full") field.id <- paste(field.id, spatial.extent.id, sep = ".")
+  if((!missing(spatial.aggregate.method) && !is.null(spatial.aggregate.method) && tolower(spatial.aggregate.method) != "none") || (!missing(temporal.aggregate.method) && !is.null(temporal.aggregate.method) && tolower(temporal.aggregate.method) != "none")) {
+    field.id <- paste(field.id, "Spatial", sep = sep)
+    if(!missing(spatial.aggregate.method) && !is.null(spatial.aggregate.method) && tolower(spatial.aggregate.method) != "none")  field.id <- paste(field.id, spatial.aggregate.method, sep = ".")
+    if(!missing(spatial.extent.id) && !is.null(spatial.extent.id) && tolower(spatial.extent.id) != "Full") field.id <- paste(field.id, spatial.extent.id, sep = ".")
+  }
   
   # temporal aggregation
-  if(!missing(temporal.aggregate.method) && !is.null(temporal.aggregate.method) && tolower(temporal.aggregate.method) != "none")  field.id <- paste(field.id, "temporal", temporal.aggregate.method, sep = ".")
-  if(!missing(temporal.extent.id) && !is.null(temporal.extent.id) && tolower(temporal.extent.id) != "Full") field.id <- paste(field.id, temporal.extent.id, sep = ".")
+  if((!missing(temporal.aggregate.method) && !is.null(temporal.aggregate.method) && tolower(temporal.aggregate.method) != "none") || (!missing(temporal.aggregate.method) && !is.null(temporal.aggregate.method) && tolower(temporal.aggregate.method) != "none")) {
+    field.id <- paste(field.id, "temporal", sep = sep)
+    if(!missing(temporal.aggregate.method) && !is.null(temporal.aggregate.method) && tolower(temporal.aggregate.method) != "none")  field.id <- paste(field.id, temporal.aggregate.method, sep = ".")
+    if(!missing(temporal.extent.id) && !is.null(temporal.extent.id) && tolower(temporal.extent.id) != "Full") field.id <- paste(field.id, temporal.extent.id, sep = ".")
+  }
   
   # subannual aggregation
-  if(!missing(subannual.aggregate.method) &&  !is.null(subannual.aggregate.method && !tolower(subannual.aggregate.method) == "none"))  field.id <- paste(field.id, "subannual", subannual.aggregate.method, sep = ".")
+  if(!missing(subannual.aggregate.method) &&  !is.null(subannual.aggregate.method) && !tolower(subannual.aggregate.method) == "none")  field.id <- paste(field.id, subannual.aggregate.method, sep = ".")
   if(!missing(subannual.original) && !is.null(subannual.original) && !tolower(subannual.original) == "none") field.id <- paste(field.id, "of", subannual.original, sep =".")
   
   

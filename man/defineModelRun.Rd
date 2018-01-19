@@ -2,12 +2,12 @@
 % Please edit documentation in R/defineModelRun.R
 \name{defineModelRun}
 \alias{defineModelRun}
-\title{Define a Source object, setting up all the required metadata (only).}
+\title{Define a Source object that represents a model run, setting up all the required metadata (only).}
 \usage{
 defineModelRun(id, name, dir, model, pft.set, lonlat.offset = c(0, 0),
-  year.offset = 0, tolerance = 0.001, london.centre = TRUE,
-  driving.data = "Not specified", landuseSimulated = FALSE,
-  contact = "Not specified", institute = "Not specified")
+  year.offset = 0, london.centre = TRUE, driving.data = "Not specified",
+  land.use.included = FALSE, contact = "Not specified",
+  institute = "Not specified")
 }
 \arguments{
 \item{id}{A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)}
@@ -22,13 +22,11 @@ defineModelRun(id, name, dir, model, pft.set, lonlat.offset = c(0, 0),
 
 \item{year.offset}{A numeric of length 1 to match be added to the simulation years to convert them to calendar years}
 
-\item{tolerance}{The tolerance arguement when converting uneven spaced grids to regular rasters for plotting}
-
 \item{london.centre}{If TRUE, ensure that the longitudes are (-180,180) instead of (0,360)}
 
 \item{driving.data}{A character string identifying the climate or other data used to produce this model run}
 
-\item{landuseSimulated}{If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.}
+\item{land.use.included}{If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.}
 
 \item{contact}{Name and email address of responsible person (default to OS username).}
 
@@ -54,7 +52,7 @@ A Source object, with metadata defined by empty data slots
 This function is preferred to a \code{new("SourceInfo",...)} initialisation followed by  \code{new("Source",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
 }
 \details{
-Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as Fields and added to a Source object, are added built with later with other commands and added to \code{Source} command using \code{addToSource}
+Note that initialliy, no actual data from the run is stored, only metadata. The data, stored as Fields, can be added to a Source object, are added built with later with other commands and added to \code{Source} command using \code{addToSource}
 }
 \seealso{
 Source, SourceInfo

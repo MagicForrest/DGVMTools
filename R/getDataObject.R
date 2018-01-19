@@ -152,14 +152,54 @@ getDataObject <- function(dataset.id = NULL,
                          end = ncatt_get(this.nc, 0, attname="DGVMTools_DataObject_temporal.extent.end", verbose=FALSE)$value
   )
   
+  
+  # build the SourceInfo object
+  
+  
+  source.info <- new("SourceInfo",
+                     id = dataset.id,
+                     type = "data",
+                     model = "none",
+                     pft.set = list(),
+                     name = dataset.name,
+                     dir = location,                              
+                     driving.data = "NA",
+                     lonlat.offset =  c(0,0),
+                     year.offset = 0,
+                     tolerance = 0.00001,
+                     london.centre = TRUE,
+                     land.use.included = FALSE,
+                     contact = "lost in the sands of time",
+                     institute = "lost in the sands of time"
+  )
+  
+  thi.sid <- makeFieldID(source.info, 
+                      quantity@id, 
+                      quantity@units, spatial.resolution = resolution, temporal.resolution = , subannual.resolution = )
+  
+  
   this.Field <- new("Field",
                          id = dataset.id ,
                          name = dataset.name,
                          temporal.extent = temporal.extent,
-                         data = this.slice.dt,
-                         quant = quantity,
+                         data = ,
+                         quant = ,
                          spatial.extent = spatial.extent,
-                         correction.layer =  "")
+                    
+                    
+                  
+                    id = ,
+                    data = this.slice.dt,
+                    quant = quantity,
+                    spatial.extent = extent(PNV.dt),
+                    temporal.extent = new("TemporalExtent", id = "PNVPeriod", name = "PNV Period", start = 1961, end = 1990),
+                    spatial.extent.id = "Global",
+                    temporal.extent.id = "1961-1990",
+                    spatial.aggregate.method = "none",
+                    temporal.aggregate.method = "mean",
+                    subannual.aggregate.method = "none",
+                    subannual.original = "annual",
+                         source.info = source.info)
   
   return(this.Field)
   

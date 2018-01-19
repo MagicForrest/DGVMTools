@@ -33,9 +33,8 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
                      driving.data = "NA",
                      lonlat.offset =  c(0,0),
                      year.offset = 0,
-                     tolerance = 0.00001,
                      london.centre = TRUE,
-                     landuseSimulated = FALSE,
+                     land.use.included = FALSE,
                      contact = "lost in the sands of time",
                      institute = "lost in the sands of time"
   )
@@ -241,9 +240,8 @@ getSaatchi2011_example <- function(resolution = "HD"){
                      driving.data = "NA",
                      lonlat.offset =  c(0,0),
                      year.offset = 0,
-                     tolerance = 0.00001,
                      london.centre = TRUE,
-                     landuseSimulated = FALSE,
+                     land.use.included = FALSE,
                      contact = "lost in the sands of time",
                      institute = "lost in the sands of time"
   )

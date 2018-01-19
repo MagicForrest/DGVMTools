@@ -184,6 +184,14 @@ dgvm.quantities <- list(
       colours = veg.palette, 
       model = "FireMIP"), 
   
+  new("Quantity",
+      id = "burntfraction",
+      type = "monthly",
+      name = "Burnt fraction",
+      units = "-",
+      colours = reversed.fire.palette, 
+      model = "FireMIP"), 
+  
   
   ######################################################################
   ########## LPJ-GUESS QUANTITIES  #####################################

@@ -74,15 +74,15 @@ setMethod("print", signature(x="SourceInfo"), function(x) {
   
   cat(paste0("SourceInfo:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("type = ", "\"", x@type, "\"", "\n"))
   cat(paste0("name = ", "\"", x@name, "\"", "\n"))
+  cat(paste0("type = ", "\"", x@type, "\"", "\n"))
+  cat(paste0("model = ", "\"", x@model, "\"", "\n"))
   cat(paste0("directory = ", "\"", x@dir, "\"", "\n"))
   cat(paste0("driving data = ", "\"", x@driving.data, "\"", "\n"))
   cat(paste0("lon-lat offset = (", x@lonlat.offset[1], ",", x@lonlat.offset[2], ")\n"))
   cat(paste0("year offset = ", x@year.offset, "\n"))
-  cat(paste0("resolution tolerance = ", x@tolerance, "\n"))
   cat(paste0("london.centre = ", x@london.centre, "\n"))
-  cat(paste0("landuseSimulated = ", x@landuseSimulated, "\n"))
+  cat(paste0("land.use.included = ", x@land.use.included, "\n"))
   cat(paste0("institute = ", "\"", x@institute, "\"", "\n"))
   cat(paste0("contact = ", "\"", x@contact, "\"", "\n"))
   cat(paste0("PFT superset (all possible, not just those in the run):", "\n"))
@@ -97,7 +97,7 @@ setMethod("print", signature(x="SourceInfo"), function(x) {
 setMethod("print", signature(x="Source"), function(x) {
   
   print(as(x, "SourceInfo"))
-  cat("The following Fields have been stored internally in this.Field:\n")
+  cat("The following Fields have been stored internally in this Source:\n")
   if(length(x@objects) > 0){
     for(object in x@objects) cat(paste0(object@id, "\n"))
   }
@@ -112,7 +112,7 @@ setMethod("print", signature(x="Source"), function(x) {
 #' @export
 setMethod("print", signature(x="Field"), function(x) {
   
-  cat(paste0("Model object:\n"))
+  cat(paste0("Field:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   #cat(paste0("name = ", x@name, "\"", "\n"))
   print(x@quant)
@@ -122,8 +122,8 @@ setMethod("print", signature(x="Field"), function(x) {
   print(x@temporal.extent)
   cat(paste0("Data: ",  "\n"))
   print(x@data)
-  cat(paste0("Model Run = ", "\"", x@source@name, "\"", "\n"))
-  cat("For full Source metadata type \"print(X@source)\", where X is this.Field\n")
+  cat(paste0("Source = ", "\"", x@source@name, "\"", "\n"))
+  cat("For full Source metadata type \"print(X@source)\", where X is this Field\n")
   
 })
 

@@ -203,7 +203,7 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
   
   
   # MONTHLY, ALL VEGTYPES COMBINED
-  # Any annual, per PFT variable should be manageable here, eg landCoverFrac
+  # Any annual, per PFT variable should be manageable here, eg gpp
   if(quantity@id == "gpp" ||
      quantity@id == "npp" ||
      quantity@id == "nbp") {

@@ -21,7 +21,6 @@
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
-#' @param area.weighted If TRUE, perform weighting by gridcell area when doing spatial averaging
 #' @param write If TRUE, write the data of the \code{ModelField} to disk as text file.
 #' @param store.internally If TRUE store the resulting \code{ModelField} in the \code{Source} for using later
 #' @param store.full If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{ModelFields} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!
@@ -39,7 +38,6 @@ getModelField <- function(run,
                            spatial.extent = NULL, 
                            spatial.extent.id = "Full", 
                            spatial.aggregate.method = "none",
-                           area.weighted=TRUE,
                            write = FALSE, 
                            read.full = TRUE, 
                            verbose = TRUE, 
@@ -178,9 +176,10 @@ getModelField <- function(run,
             run@model == "Inferno-FireMIP"             ||
             run@model == "JSBACH-FireMIP"              ||
             run@model == "ORCHIDEE-FireMIP"               ) {
-      
+      print(quant@model)
       
       if(quant@model == "FireMIP") {
+        print("woohoo")
         this.dt <- openFireMIPOutputFile(run, var.string, quantity = quant, temporal.extent = temporal.extent, verbose = verbose)
       }
       else {
@@ -320,7 +319,7 @@ getModelField <- function(run,
   
   
   
-  ### BUILD THE FINAL VEGOBJECT, STORE IT IF REQUESTED AND RETURN IT
+  ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
   model.field <- new("Field",
                       id = model.field.id,
                       data = this.dt,

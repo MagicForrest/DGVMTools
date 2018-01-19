@@ -74,11 +74,20 @@ cdo <- function(fun, ifile, ofile, grid = NULL, return.raster = FALSE, verbose =
       
       # if target grid not specified
       if(is.null(grid)) {
-        stop("cdo wrapper: for remapping operator", fun, "you must provide a target grid in the \'grid\' argument!")
+        stop(paste("cdo wrapper: for remapping operator", fun, "you must provide a target grid in the \'grid\' argument!", sep = " "))
       }
       
-      command.string <- paste("cdo", paste0(fun,",",grid), ifile, ofile, sep = " ")
-      message(command.string)
+      # if this a grid spcification file do a single CDO command
+      if(file.exists(grid)) {
+        command.string <- paste("cdo", paste0(fun,",",grid), ifile, ofile, sep = " ")
+      }
+      # else grid is a code and compound a sellonlatbox command on there to Africa-centre the map
+      else{
+        command.string <- paste("cdo sellonlatbox,-180,180,-90,90", paste0("-",fun,",",grid), ifile, ofile, sep = " ")
+      }
+      
+      
+
       if(verbose) message(paste0("Performing: ", command.string))
       system(command.string, ignore.stdout = !verbose)
       

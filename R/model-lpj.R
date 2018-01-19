@@ -269,7 +269,8 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     # if mfirefrac is present the open it and use it
     if("mfirefrac" %in% listAllLPJOutput(run@dir)){
       this.dt <- openLPJOutputFile(run, "mfirefrac", verbose = TRUE)
-      this.dt <- newLayer(this.dt, "Annual")
+      this.dt <- aggregateSubannual(this.dt, method = "sum")
+      
     }
     
     # otherwise open firert to get GlobFIRM fire return interval and invert it

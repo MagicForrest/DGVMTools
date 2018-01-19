@@ -60,7 +60,7 @@ makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NU
   }
   
   # And a period and/or spatial extent may be supplied  
-  if(!is.null(period) && !is.null(extent)) string <- paste(string, paste("(", extent@name, " ", period@start, "-", period@end, ")", sep = ""), sep = " ")
+  if(!is.null(period) && !is.null(extent.str)) string <- paste(string, paste("(", extent.str, " ", period@start, "-", period@end, ")", sep = ""), sep = " ")
   else if(!is.null(period) ) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
   else if(!is.null(extent.str) ) string <- paste(string, paste("(", extent.str, ")", sep = ""), sep = " ")
   

@@ -121,7 +121,8 @@ supported.models <- c("LPJ-GUESS",
                       "CTEM-FireMIP",
                       "JSBACH-FireMIP",
                       "Inferno-FireMIP",
-                      "ORCHIDEE-FireMIP")
+                      "ORCHIDEE-FireMIP",
+                      "data")
 
 ########### SourceInfo - class to hold the metadata for an LPJ-GUESS run
 
@@ -154,13 +155,19 @@ checkSourceInfo <- function(object){
   
   # Check dir exists
   if (!utils::file_test("-d", object@dir)) {
-    msg <- paste("Run directory not found:", object@dir, sep = " ")
+    msg <- paste("Directory not found:", object@dir, sep = " ")
     errors <- c(errors, msg)
   }
   
   # Check id is sensible 
   if (!length(object@id) > 0 | object@id == "") {
     msg <- paste("Not a sensible run id:", object@id, sep = " ")
+    errors <- c(errors, msg)
+  }
+  
+  # Check name is sensible 
+  if (!length(object@name) > 0 | object@name == "") {
+    msg <- paste("Not a sensible run name:", object@name, sep = " ")
     errors <- c(errors, msg)
   }
   
@@ -185,9 +192,8 @@ checkSourceInfo <- function(object){
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
-#' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
 #' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
-#' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
+#' @slot land.use.included If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @slot contact Name and email address of responsible person (default to OS username).
 #' @slot institute Name of the institute (default "none").
 #' @exportClass SourceInfo
@@ -202,11 +208,19 @@ setClass("SourceInfo",
                    driving.data = "character",
                    lonlat.offset = "numeric",
                    year.offset = "numeric",
-                   tolerance = "numeric",
                    london.centre = "logical",
-                   landuseSimulated = "logical",
+                   land.use.included = "logical",
                    contact = "character",
                    institute = "character"
+         ),
+         prototype = c(pft.set = list(),
+                       driving.data = "not specified",
+                       lonlat.offset = c(0,0),
+                       year.offset = 0,
+                       london.centre = TRUE,
+                       land.use.included = TRUE,
+                       contact = "not specified",
+                       institute = "not specified"
          ),
          validity = checkSourceInfo
          
@@ -482,13 +496,12 @@ setClass("BiomeScheme",
 #' @slot driving.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
-#' @slot tolerance The tolerance arguement when converting uneven spaced grids to regular rasters for plotting
 #' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
 #' @slot fill.col A string to define an R colour used when plotting this run as a histogram or scatter plot or so
 #' @slot line.col  A string to define an R colour used when plotting this runs as a line graph
 #' @slot line.width A numeric to define the width of a line representing this model run
 #' @slot line.type A numeric to define the line style representing this model run
-#' @slot landuseSimulated If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
+#' @slot land.use.included If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @exportClass Source
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("Source", 
