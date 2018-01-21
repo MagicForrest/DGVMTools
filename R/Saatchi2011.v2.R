@@ -6,6 +6,7 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
   ######## DATA AND METADATA PREPARATION - this will be somewhat dataset specific
   
   # look up the SourceInfo and the Quantity 
+  id = "Saatchi2011"
   source.info <- byIDfromList("Saatchi2011", supported.datasets)
   quantity <- lookupQuantity("vegC_std")
   quantity@units <- "kg m-2"
@@ -66,6 +67,9 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
   
   for(grid in regular.grids) {
     
+    # make the data 'run' id ('run' in this case refers to the spatial and temporal, yearly and temporal resolution that we are preprocessing here)
+    data.run.id <- paste(id, quantity@id, grid$res.code)
+    
     # aggregate to the required resolution (and 'shoogle' the longitudes and latitude so that they line up with a standard grid)
     aggregated.raster <- aggregate(extended.data, grid$agg.number)
     if(plot) plot(aggregated.raster, main = grid$res.code)
@@ -81,41 +85,9 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
       aggregated.dt[, Lat := round(Lat*80,0)/80]
     }
     
+  
     
-    # make the Field ID for saving this data as a Field
-    field.id <-  makeFieldID(source.info = source.info,
-                             var.string = quantity@id, 
-                             spatial.resolution = grid$res.code, 
-                             temporal.resolution = NULL, 
-                             subannual.resolution = NULL, 
-                             spatial.aggregate.method = NULL, 
-                             temporal.aggregate.method = NULL, 
-                             subannual.aggregate.method = NULL, 
-                             temporal.extent.id = NUL, 
-                             spatial.extent.id = NULL, 
-                             subannual.original = NULL)  
-    
-    
-    # make and save the Field object
-    temp.field <- new("Field",
-                      id = field.id,
-                      data = aggregated.dt,
-                      quant = quantity,
-                      spatial.extent = NULL,
-                      spatial.extent.id = "Full",
-                      temporal.extent = NULL,
-                      temporal.extent.id = "Full",
-                      spatial.aggregate.method = "none",
-                      temporal.aggregate.method = "none",
-                      subannual.aggregate.method = "none",
-                      subannual.original = "none",
-                      source = source.info)
-    
-    saveRDS(temp.field, file = file.path(source.info@dir, paste0(field.id, ".DGVMData")))
-    
-    
-    # also save as a netCDF (for some sort of extra flexibility I suppose)
-    
+    # save as a netCDF in 'DGVMData' format
     
     
     # MAKE LONGITUDE AND LATITUDE DIMENSION
@@ -138,9 +110,9 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
                          longname = standard.name)
     
     # CREATE FILE AND ADD THE VARIABLE
-    outfile <- nc_create(file.path(source.info@dir, paste0(field.id, ".nc")), var.out, verbose=FALSE)
+    outfile <- nc_create(file.path(source.info@dir, paste0(data.run.id, ".nc")), var.out, verbose=FALSE)
     ncvar_put(outfile, out.variable.name,  output.array, start=NA, count=NA, verbose=FALSE)
-    print(paste("Saving variable", quantity@id, "to file",  file.path(source.info@dir, paste0(field.id, ".nc")), sep =" " ), quote=FALSE)
+    print(paste("Saving variable", quantity@id, "to file",  file.path(source.info@dir, paste0(data.run.id, ".nc")), sep =" " ), quote=FALSE)
     
     addStandardSpatialAttributes <- function(nc.file) { 
       
@@ -170,7 +142,7 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
     
     # SET SPECIFIC LAYER/VARIABLE ATTRIBUTES
     ncatt_put(outfile, var.out, "DGVMTools_layer.name", layer)
-    ncatt_put(outfile, var.out, "DGVMTools_quant",quantity@id)
+    ncatt_put(outfile, var.out, "DGVMTools_quant", quantity@id)
 
 
     # SET GLOBAL ATTRIBUTES
@@ -197,23 +169,12 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
   # loop for each resolution
   for(grid in gaussian.grids) {
     
+    # make the data 'run' id ('run' in this case refers to the spatial and temporal, yearly and temporal resolution that we are preprocessing here)
+    data.run.id <- paste(id, quantity, grid$res.code)
     
-    # make the Field ID for saving this data as a Field
-    field.id <-  makeFieldID(source.info = source.info,
-                             var.string = quantity@id, 
-                             spatial.resolution = grid$res.code, 
-                             temporal.resolution = NULL, 
-                             subannual.resolution = NULL, 
-                             spatial.aggregate.method = "mean", 
-                             temporal.aggregate.method = NULL, 
-                             subannual.aggregate.method = NULL, 
-                             temporal.extent.id = NULL, 
-                             spatial.extent.id = NULL, 
-                             subannual.original = NULL)  
-    
-    temp.raster <- cdo(fun = method, 
+      temp.raster <- cdo(fun = method, 
                        ifile =  data.intermediate.for.gaussian,
-                       ofile = file.path(source.info@dir, paste0(field.id, ".nc")),
+                       ofile = file.path(source.info@dir, paste0(data.run.id, ".nc")),
                        grid = grid$res.str, 
                        return.raster = TRUE, 
                        verbose = TRUE, 
@@ -221,7 +182,7 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
     
     if(plot) plot(temp.raster, main = grid$res.code)
     
-    temp.nc <- nc_open( file.path(source.info@dir, paste0(field.id, ".nc")), write=TRUE)
+    temp.nc <- nc_open( file.path(source.info@dir, paste0(data.run.id, ".nc")), write=TRUE)
     addStandardSpatialAttributes(temp.nc)
     ncatt_put(temp.nc, layer.name, "units", quantity@units)
     ncatt_put(temp.nc, layer.name, "long_name", standard.name)

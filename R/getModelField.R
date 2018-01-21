@@ -1,15 +1,15 @@
 #!/usr/bin/Rscript
 
-################################# GET MODEL FIELD - Does a lot! #########################################
+################################# GET FIELD - Does a lot! #########################################
 #
-#' Get a \code{ModelField}, optionally with spatial/temporal averaging/cropping 
+#' Get a \code{Field}, optionally with spatial/temporal averaging/cropping 
 #' 
-#' Given a \code{Source} object a \code{Quantity} object, return an appropriate spatially-averaged \code{ModelField} oject for that run and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
+#' Given a \code{Source} object a \code{Quantity} object, return an appropriate spatially-averaged \code{ModelField} oject for that source and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
 #' 
 #' Note that because there are two types of averaging available, the resulting \code{Source} object can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
 #' Also not that the data is stored internal as a data.table object, but this is mostly not important to the user.
 #'   
-#' @param run The \code{Source} object for which the spatially-averaged \code{ModelField} should be built (eg. "lai")
+#' @param source The \code{Source} object for which the spatially-averaged \code{ModelField} should be built (eg. "lai")
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param temporal.extent The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)
 #' @param temporal.extent.id A character string to give an identifier for the temporal period this ModelField covers.
@@ -24,13 +24,13 @@
 #' @param write If TRUE, write the data of the \code{ModelField} to disk as text file.
 #' @param store.internally If TRUE store the resulting \code{ModelField} in the \code{Source} for using later
 #' @param store.full If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{ModelFields} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!
-#' @param adgvm.scheme In the case of analysing an aDGVM run, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.
+#' @param adgvm.scheme In the case of analysing an aDGVM source, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.
 #' 
 #' @return A \code{ModelField}. 
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-getModelField <- function(run, 
+getModelField <- function(source, 
                            var, 
                            temporal.extent = NULL, 
                            temporal.extent.id = "Full",
@@ -51,7 +51,7 @@ getModelField <- function(run,
   
   ### CONVERT STRING TO VEGQUANT
   if(class(var) == "character") {
-    quant <- lookupQuantity(var, run@model)
+    quant <- lookupQuantity(var, source@format)
     var.string <- var
   }
   else {
@@ -60,23 +60,23 @@ getModelField <- function(run,
   }
   
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally aggregated and reduced in extent
-  model.field.id <- makeFieldID(source.info = as(run, "SourceInfo"), 
+  model.field.id <- makeFieldID(source.info = as(source, "SourceInfo"), 
                                 var.string = var.string, 
                                 temporal.extent.id = temporal.extent.id, 
                                 spatial.extent.id = spatial.extent.id, 
                                 temporal.aggregate.method = temporal.aggregate.method, 
                                 spatial.aggregate.method = spatial.aggregate.method)
-  file.name <- file.path(run@dir, paste(model.field.id, "DGVMData", sep = "."))
+  file.name <- file.path(source@dir, paste(model.field.id, "DGVMData", sep = "."))
   if(verbose) message(paste("Seeking ModelField with id = ", model.field.id, sep = ""))
   
   
   
-  ### CASE 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE MODELRUN IN MEMORY
-  if(model.field.id %in% names(run@objects)){
+  ### CASE 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE MODELsource IN MEMORY
+  if(model.field.id %in% names(source@objects)){
     
     # if it is present it in memory then can be returned directly
     if(verbose) message(paste("Exact ModelField (with id = ", model.field.id, ") already found in memory for this.Field, so using that.", sep = ""))
-    return(run@objects[[model.field.id]])
+    return(source@objects[[model.field.id]])
     
   }
   
@@ -86,19 +86,19 @@ getModelField <- function(run,
   if(file.exists(paste(file.name)) & !read.full){
     
     # get the object from disk
-    if(verbose) {message(paste("File",  file.name, "found in",  run@dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
+    if(verbose) {message(paste("File",  file.name, "found in",  source@dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
     model.field <- readRDS(file.name)
     
-    # Update the run object, that might have (legitimately) changed compared to the id that was used when this model.field was created
+    # Update the source object, that might have (legitimately) changed compared to the id that was used when this model.field was created
     # for example it might be assigned a new id.
-    model.field@source <- run
+    model.field@source <- source
     
     
     # Check that the spatial extent matches before returning
     # Note that there are various cases to check here (the full spatial extent and specifically defined extents)
     if(is.null(spatial.extent) & is.null(spatial.extent.id)
        | identical(spatial.extent, model.field@spatial.extent)){
-      if(store.internally) {run <<- addToSource(model.field, run)}
+      if(store.internally) {source <<- addToSource(model.field, source)}
       return(model.field)
     }  
     
@@ -119,10 +119,10 @@ getModelField <- function(run,
   
   
   ### CASE 3 - IF THE WHOLE FILE HAS BEEN READ AND STORED IN MEMORY AS A VEGOBJECT, THEN TAKE THAT AND EXTRACT THE DATA.TABLE AND THEN AVERAGE IT BELOW
-  if(var.string %in% names(run@objects)){
+  if(var.string %in% names(source@objects)){
     
     if(verbose) message(paste(var.string, " is already read, so using that internal copy.", sep = ""))
-    this.dt <- run@objects[[var.string]]@data
+    this.dt <- source@objects[[var.string]]@data
     setKeyDGVM(this.dt)
     
   }
@@ -134,30 +134,37 @@ getModelField <- function(run,
     
     if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
     
-    ### !!! CALL MODEL SPECIFIC FUNTIONS HERE !!!
+    ### !!! CALL FORMAT SPECIFIC FUNTIONS HERE !!!
     
     # If model is LPJ-GUESS(-SPITFIRE) and the required Quantity is defined for LPJ-GUESS(-SPITFIRE)
-    if(run@model == "LPJ-GUESS" | run@model == "LPJ-GUESS-SPITFIRE" ) {
+    if(source@format == "LPJ-GUESS" | source@format == "LPJ-GUESS-SPITFIRE" ) {
       
       
-      if("LPJ-GUESS" %in% quant@model  | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
-        this.dt <- openLPJOutputFile(run, var.string, verbose = verbose)
+      if("LPJ-GUESS" %in% quant@format  | "LPJ-GUESS-SPITFIRE" %in% quant@format) {
+        this.dt <- openLPJOutputFile(source, var.string, verbose = verbose)
       }
-      else if(quant@model == "Standard") {
-        this.dt <- getStandardQuantity_LPJ(run, quant, verbose = verbose)
+      else if(quant@format == "Standard") {
+        this.dt <- getStandardQuantity_LPJ(source, quant, verbose = verbose)
       }
       
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
     
-    # If model is aDGVM and the required Quantity is defined for aDGVM
-    else if(run@model == "aDGVM") {
+    else if(source@format == "DGVMData") {
       
-      if("aDGVM" %in% quant@model | "Standard" == quant@model) {
-        if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(run, temporal.extent, quant))
-        if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(run, temporal.extent, quant))
+      openDGVMDataFile(source, quant, verbose = verbose)
+      
+    }
+    
+    
+    # If model is aDGVM and the required Quantity is defined for aDGVM
+    else if(source@format == "aDGVM") {
+      
+      if("aDGVM" %in% quant@format | "Standard" == quant@format) {
+        if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(source, temporal.extent, quant))
+        if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, temporal.extent, quant))
       }
-      #else if(quant@model == "Standard") {
+      #else if(quant@format == "Standard") {
       #  stop("Standard quantities nor currently defined for aDGVM")
       #}
       else {
@@ -168,19 +175,19 @@ getModelField <- function(run,
     
     
     # If model is from FireMIP
-    else if(run@model == "LPJ-GUESS-SPITFIRE-FireMIP"  ||
-            run@model == "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP"     ||
-            run@model == "LPJ-GUESS-GlobFIRM-FireMIP"  ||
-            run@model == "CLM-FireMIP"                 ||
-            run@model == "CTEM-FireMIP"                ||
-            run@model == "Inferno-FireMIP"             ||
-            run@model == "JSBACH-FireMIP"              ||
-            run@model == "ORCHIDEE-FireMIP"               ) {
-      print(quant@model)
+    else if(source@format == "LPJ-GUESS-SPITFIRE-FireMIP"  ||
+            source@format == "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP"     ||
+            source@format == "LPJ-GUESS-GlobFIRM-FireMIP"  ||
+            source@format == "CLM-FireMIP"                 ||
+            source@format == "CTEM-FireMIP"                ||
+            source@format == "Inferno-FireMIP"             ||
+            source@format == "JSBACH-FireMIP"              ||
+            source@format == "ORCHIDEE-FireMIP"               ) {
+      print(quant@format)
       
-      if(quant@model == "FireMIP") {
+      if(quant@format == "FireMIP") {
         print("woohoo")
-        this.dt <- openFireMIPOutputFile(run, var.string, quantity = quant, temporal.extent = temporal.extent, verbose = verbose)
+        this.dt <- openFireMIPOutputFile(source, var.string, quantity = quant, temporal.extent = temporal.extent, verbose = verbose)
       }
       else {
         
@@ -195,7 +202,7 @@ getModelField <- function(run,
     
     else {
       
-      stop(paste0("The Quantity ", quant@id, " is defined for models ", paste(quant@model, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", run@model, ").  Please check this."))
+      stop(paste0("The Quantity ", quant@id, " is defined for models ", paste(quant@format, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", source@format, ").  Please check this."))
       
       
     }
@@ -227,11 +234,11 @@ getModelField <- function(run,
                                temporal.extent.id = "Full",
                                spatial.aggregate.method = "none",
                                temporal.aggregate.method = "none",
-                               source = as(run, "SourceInfo"))
+                               source = as(source, "SourceInfo"))
       
       # name and store
       #names(model.field.full) <- var.string
-      run <<- addToSource(model.field.full, run)
+      source <<- addToSource(model.field.full, source)
       
     } # end if(store.full)
     
@@ -330,7 +337,7 @@ getModelField <- function(run,
                       temporal.extent.id = temporal.extent.id,
                       spatial.aggregate.method = spatial.aggregate.method,
                       temporal.aggregate.method = temporal.aggregate.method,
-                      source = as(run, "SourceInfo"))
+                      source = as(source, "SourceInfo"))
   
   
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
@@ -340,9 +347,9 @@ getModelField <- function(run,
     if(verbose) {message("...done.")}
   }
   
-  ### ADD TO THE MODELRUN OBJECT IF REQUESTED
+  ### ADD TO THE MODELsource OBJECT IF REQUESTED
   if(store.internally) {
-    run <<- addToSource(model.field, run)
+    source <<- addToSource(model.field, source)
   }
   
   return(model.field)

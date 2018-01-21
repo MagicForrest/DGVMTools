@@ -54,6 +54,15 @@ getDataField <- function(source,
                          store.full = FALSE,
                          adgvm.scheme = 1){
   
+  
+  ######### CHOOSE HERE BASED ON INITIAL RESOLUTION AS CONTAINED IN THE SCOURCE
+  
+  
+  #### NEED A 'makeDataFileName function here'
+  
+  #source.id.quantity.spatial.resolution.spatial.method.temporal.resolution.first.year
+  
+  
   # To avoid annoying NOTES when R CMD CHECK-ing
   Lon = Lat = Year = NULL  
   

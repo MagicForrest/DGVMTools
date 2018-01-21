@@ -104,25 +104,27 @@ setClass("PFT",
          )
 )
 
-#' Supported Veg Models
+#' Supported Rub/Data Formats
 #' 
-#' List of supported vegetation models
+#' List of supported data formats can be either a DGVM models type (say "LPJ-GUESS") or another standardised format 
+#' (for example the "DGVMData" format used by the DGVMData package).  Dev question: Implement CF compliant netCDF as a format??
+#' Possible dev answer, that is covered by the DGVMData package perhaps? 
 #'  
 #' @format A list of character strings for each of the supported vegetation models
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
-supported.models <- c("LPJ-GUESS", 
-                      "LPJ-GUESS-SPITFIRE", 
-                      "aDGVM", 
-                      "LPJ-GUESS-SPITFIRE-FireMIP",
-                      "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP",
-                      "LPJ-GUESS-GlobFIRM-FireMIP",
-                      "CLM-FireMIP",
-                      "CTEM-FireMIP",
-                      "JSBACH-FireMIP",
-                      "Inferno-FireMIP",
-                      "ORCHIDEE-FireMIP",
-                      "data")
+supported.formats <- c("LPJ-GUESS", 
+                       "LPJ-GUESS-SPITFIRE", 
+                       "aDGVM", 
+                       "LPJ-GUESS-SPITFIRE-FireMIP",
+                       "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP",
+                       "LPJ-GUESS-GlobFIRM-FireMIP",
+                       "CLM-FireMIP",
+                       "CTEM-FireMIP",
+                       "JSBACH-FireMIP",
+                       "Inferno-FireMIP",
+                       "ORCHIDEE-FireMIP",
+                       "DGVMData")
 
 ########### SourceInfo - class to hold the metadata for an LPJ-GUESS run
 
@@ -141,17 +143,16 @@ checkSourceInfo <- function(object){
   
   errors <- character()
   
-  # Check model types is supported
-  if(tolower(object@type)  == "model"){
-    if (!length(object@model) > 0) {
-      msg <- "Error defining Source, you must define a model type!"
-      errors <- c(errors, msg)
-    }
-    else if (!(object@model  %in% supported.models)) {
-      msg <- paste("Unsupported model type", object@model, sep = " ")
-      errors <- c(errors, msg)
-    }
+  # Check format type is supported
+  if (!length(object@format) > 0) {
+    msg <- "Error defining Source, you must define a format type!"
+    errors <- c(errors, msg)
   }
+  else if (!(object@format  %in% supported.formats)) {
+    msg <- paste("Unsupported model type", object@format, sep = " ")
+    errors <- c(errors, msg)
+  }
+  
   
   # Check dir exists
   if (!utils::file_test("-d", object@dir)) {
@@ -161,13 +162,13 @@ checkSourceInfo <- function(object){
   
   # Check id is sensible 
   if (!length(object@id) > 0 | object@id == "") {
-    msg <- paste("Not a sensible run id:", object@id, sep = " ")
+    msg <- paste("Not a sensible source id:", object@id, sep = " ")
     errors <- c(errors, msg)
   }
   
   # Check name is sensible 
   if (!length(object@name) > 0 | object@name == "") {
-    msg <- paste("Not a sensible run name:", object@name, sep = " ")
+    msg <- paste("Not a sensible source name:", object@name, sep = " ")
     errors <- c(errors, msg)
   }
   
@@ -200,8 +201,7 @@ checkSourceInfo <- function(object){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("SourceInfo", 
          slots = c(id = "character",
-                   type = "character",
-                   model = "character",
+                   format = "character",
                    pft.set = "list",
                    name = "character",
                    dir = "character",                              
@@ -255,7 +255,8 @@ setClass("Quantity",
                    units = "character",
                    colours = "function",
                    aggregate.method = "character",
-                   model = "character"
+                   model = "character",
+                   cf.name = "character"
          ),
          prototype = c(id = "UnknownID",
                        name = "UnknownString",
@@ -263,55 +264,10 @@ setClass("Quantity",
                        units = "-",
                        colours = fields::tim.colors,
                        aggregate.method = "sum",
-                       model = "Standard"
+                       model = "Standard",
+                       cf.name = "unknown"
          )
 )
-
-
-
-############################################################################
-########  CLIMATE DATASET CLASSES ##########################################
-############################################################################
-
-### MF: NOT CURRENTLY USED, COMMENTED OUT TO AVOID DOCUMENTING!
-
-# ##### ClimDS - class to hold data about a climate dataset
-# setClass("ClimDS", 
-#          slots = c(id = "character",
-#                    longname = "character",
-#                    path = "character",
-#                    filename = "character",
-#                    first.year = "numeric",
-#                    last.year = "numeric",
-#                    type = "character",
-#                    data = "Raster",
-#                    map.overlay = "character",
-#                    var.list = "list",
-#                    kelvin = "logical",
-#                    prec.mode = "character",
-#                    colour = "character"
-#          )
-# )
-# 
-# ##### ClimVar - class to hold data about a climate variable
-# setClass("ClimVar", 
-#          slots = c(id = "character",
-#                    varcode = "character",
-#                    longname = "character",
-#                    unit = "character",
-#                    aggregate.method = "character",
-#                    abs.clrs = "function",
-#                    abs.intervals = "numeric", 
-#                    anom.clrs = "function", 
-#                    anom.intervals = "numeric",
-#                    anom.type = "character",
-#                    anom.min.val = "numeric",
-#                    anom.crit.val = "numeric",
-#                    data.type = "character"
-#                    
-#                    
-#          )
-# )
 
 
 
@@ -497,10 +453,6 @@ setClass("BiomeScheme",
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
-#' @slot fill.col A string to define an R colour used when plotting this run as a histogram or scatter plot or so
-#' @slot line.col  A string to define an R colour used when plotting this runs as a line graph
-#' @slot line.width A numeric to define the width of a line representing this model run
-#' @slot line.type A numeric to define the line style representing this model run
 #' @slot land.use.included If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @exportClass Source
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}

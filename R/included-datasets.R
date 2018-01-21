@@ -9,8 +9,7 @@ supported.datasets <- list(
   
   Saatchi2011 = new("SourceInfo",
                    id = "Saatchi2011",
-                   type = "data",
-                   model = "NA",
+                   format = "DGVMData",
                    pft.set = list(),
                    name = "Saatchi et al. Veg Carbon",
                    dir = "~/DGVMData/Saatchi2011",                              
