@@ -2,19 +2,23 @@
 % Please edit documentation in R/defineModelRun.R
 \name{defineModelRun}
 \alias{defineModelRun}
-\title{Define a Source object that represents a model run, setting up all the required metadata (only).}
+\title{Define a Source object that represents a model run or data set, setting up all the required metadata (only).}
 \usage{
-defineModelRun(id, name, dir, model, pft.set, lonlat.offset = c(0, 0),
-  year.offset = 0, london.centre = TRUE, driving.data = "Not specified",
-  land.use.included = FALSE, contact = "Not specified",
-  institute = "Not specified")
+defineModelRun(id, name, dir, format, pft.set = list(), lonlat.offset = c(0,
+  0), year.offset = 0, london.centre = TRUE,
+  driving.data = "Not specified", land.use.included = FALSE,
+  contact = "Not specified", institute = "Not specified")
 }
 \arguments{
-\item{id}{A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)}
+\item{id}{A unique character string to identify this particular data.  Recommended to be alphanumeric because it is used to construct file names and to use underscores and full stops (periods) 
+for separating characters where need be.   For example, "Standard_v4.0" or "Saatchi2011.HD"  (Mandatory)}
 
 \item{name}{A character string describing this run, ie. "LPJ-GUESS v3.1"}
 
-\item{model}{A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)}
+\item{dir}{The location of this source on the file system (Mandatory)}
+
+\item{format}{A character string to identify the format of the files of this data sorce. This can be anything, but should be in order for "getField()" to work corrected 
+it needs be a \code{supported.format} which is either a supported model that produced this (e.g. "LPJ-GUESS") or "DGVMData" for data files produced by the DGVMData package (Mandatory)}
 
 \item{pft.set}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
 
@@ -34,16 +38,6 @@ defineModelRun(id, name, dir, model, pft.set, lonlat.offset = c(0, 0),
 
 The parameters are the slots of a SourceInfo object. Note that that \code{id}, \code{model}, \code{pft.set} and \code{dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS configurations.}
-
-\item{run}{The location of this run on the file system (Mandatory)}
-
-\item{fill.col}{A string to define an R colour used when plotting this run as a histogram or scatter plot or so}
-
-\item{line.col}{A string to define an R colour used when plotting this runs as a line graph}
-
-\item{line.width}{A numeric to define the width of a line representing this model run}
-
-\item{line.type}{A numeric to define the line style representing this model run}
 }
 \value{
 A Source object, with metadata defined by empty data slots

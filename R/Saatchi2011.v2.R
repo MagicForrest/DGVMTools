@@ -1,7 +1,18 @@
 #!/usr/bin/Rscript
 
-processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
+#' Process Saatchi 2011 data
+#' 
+#' Reads the Saatchi biomass data at 1km and aggregates it to some standard resolutions.
+#' 
+#' @param input.dir The directory directory on disk where the original data input data is stored
+#' @param output.dir The directory on disk where the aggragted data is to be stored (defaults to input.dir)
+#' @param method Method by which to interpolate to the non-regular resolutions.  This should be a cdo "remapxxx" operator.  Default is "remapcon"
+#' @param plot Logical, if TRUE make a .pdf book of all the datasets produced by the function for easy reference.
+
+processSaatchi <- function(input.dir, output.dir = input.dir, method = "remapcon", plot = TRUE){
   
+  
+  Lon = Lat = NULL
   
   ######## DATA AND METADATA PREPARATION - this will be somewhat dataset specific
   
@@ -20,12 +31,12 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
   
   
     # read the original data and extent it to an even number of degrees 
-  original.data <- raster(file.path(source.info@dir, "Saatchi2011.OriginalResolution.nc"))/10
-  super.extent <- extent(c(xmin = -114, xmax = 156, ymin = -58, ymax = 40))
-  extended.data <- extend(original.data, super.extent)
+  original.data <- raster::raster(file.path(source.info@input.dir, "Saatchi2011.OriginalResolution.nc"))/10
+  super.extent <- raster::extent(c(xmin = -114, xmax = 156, ymin = -58, ymax = 40))
+  extended.data <- raster::extend(original.data, super.extent)
   
   # aggregate to an intermediate 10km resolution (still smaller than all the target resolutions here) for the Gaussian
-  data.intermediate.for.gaussian <- aggregate(original.data, fact=10, fun = mean, expand = TRUE, na.rm = TRUE)
+  data.intermediate.for.gaussian <- raster::aggregate(original.data, fact=10, fun = mean, expand = TRUE, na.rm = TRUE)
   names(data.intermediate.for.gaussian) <- layer.name
   
   # define the regular grids
@@ -58,7 +69,7 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
   
   # define a pdf and put the first plots in
   if(plot) {
-    pdf(file = file.path(source.info@dir, paste(source.info@id, "pdf", sep = ".")))
+    dev::pdf(file = file.path(source.info@output.dir, paste(source.info@id, "pdf", sep = ".")))
     plot(original.data, main = "Original Data")
     plot(extended.data, main = "Extended Data")
   }
@@ -71,7 +82,7 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
     data.run.id <- paste(id, quantity@id, grid$res.code)
     
     # aggregate to the required resolution (and 'shoogle' the longitudes and latitude so that they line up with a standard grid)
-    aggregated.raster <- aggregate(extended.data, grid$agg.number)
+    aggregated.raster <- raster::aggregate(extended.data, grid$agg.number)
     if(plot) plot(aggregated.raster, main = grid$res.code)
     
     aggregated.dt <- as.data.table(raster::as.data.frame(aggregated.raster, xy = TRUE))
@@ -110,9 +121,9 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
                          longname = standard.name)
     
     # CREATE FILE AND ADD THE VARIABLE
-    outfile <- nc_create(file.path(source.info@dir, paste0(data.run.id, ".nc")), var.out, verbose=FALSE)
+    outfile <- nc_create(file.path(source.info@output.dir, paste0(data.run.id, ".nc")), var.out, verbose=FALSE)
     ncvar_put(outfile, out.variable.name,  output.array, start=NA, count=NA, verbose=FALSE)
-    print(paste("Saving variable", quantity@id, "to file",  file.path(source.info@dir, paste0(data.run.id, ".nc")), sep =" " ), quote=FALSE)
+    print(paste("Saving variable", quantity@id, "to file",  file.path(source.info@output.dir, paste0(data.run.id, ".nc")), sep =" " ), quote=FALSE)
     
     addStandardSpatialAttributes <- function(nc.file) { 
       
@@ -174,7 +185,7 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
     
       temp.raster <- cdo(fun = method, 
                        ifile =  data.intermediate.for.gaussian,
-                       ofile = file.path(source.info@dir, paste0(data.run.id, ".nc")),
+                       ofile = file.path(source.info@output.dir, paste0(data.run.id, ".nc")),
                        grid = grid$res.str, 
                        return.raster = TRUE, 
                        verbose = TRUE, 
@@ -182,7 +193,7 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
     
     if(plot) plot(temp.raster, main = grid$res.code)
     
-    temp.nc <- nc_open( file.path(source.info@dir, paste0(data.run.id, ".nc")), write=TRUE)
+    temp.nc <- nc_open( file.path(source.info@output.dir, paste0(data.run.id, ".nc")), write=TRUE)
     addStandardSpatialAttributes(temp.nc)
     ncatt_put(temp.nc, layer.name, "units", quantity@units)
     ncatt_put(temp.nc, layer.name, "long_name", standard.name)
@@ -194,7 +205,7 @@ processSaatchi <- function(dir, method = "remapcon", plot = TRUE){
   ######## FINISH AND CLEAN UP 
   rm(original.data, extended.data)
   
-  if(plot) dev.off()
+  if(plot) dev::dev.off()
     
   t2 <- Sys.time()
   print(t2-t1)

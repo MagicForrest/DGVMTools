@@ -73,7 +73,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   
   Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = NULL
-  
+  Difference = Percentage.Difference = NULL
   
   # sort type argument
   type <- match.arg(type)

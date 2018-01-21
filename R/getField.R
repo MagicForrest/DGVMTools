@@ -30,7 +30,7 @@
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-getModelField <- function(source, 
+getField <- function(source, 
                            var, 
                            temporal.extent = NULL, 
                            temporal.extent.id = "Full",

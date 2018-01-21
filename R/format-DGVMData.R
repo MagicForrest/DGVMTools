@@ -29,18 +29,17 @@ openDGVMDataFile <- function(source,
   
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
-  file.name.nc <- file.path(source@dir, paste0(source@id, "nc"))
+  file.name.nc <- file.path(source@dir, paste0(source@id, ".nc"))
   if(file.exists(file.name.nc)){ 
-    if(verbose) message(paste("Found and opening file", file.string, sep = " "))
+    if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
     
   }
-  else if(file.exists(paste(file.string, "gz", sep = "."))){
-    if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
-    #dt <- fread(paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
+  else if(file.exists(paste(file.name.nc, "gz", sep = "."))){
+    #dt <- fread(paste("zcat < ", paste(file.name.nc, "gz", sep = "."), sep = ""))
     stop("Gunzipping not yet supported for DGVMData.")
   }
   else {
-    stop(paste("File (or gzipped file) not found:", file.string))
+    stop(paste("File (or gzipped file) not found:", file.name.nc))
   }
   
   
@@ -150,7 +149,7 @@ openDGVMDataFile <- function(source,
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
-#' @param directory A path to a directory on the file system containing some .out files
+#' @param source A path to a directory on the file system containing some .out files
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
