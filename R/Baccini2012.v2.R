@@ -28,20 +28,20 @@ processBaccini <- function(input.dir, output.dir = input.dir, method = "remapcon
   last.year <-  2008
   
   # reda Baccini and London-centre the data
-  Baccini.data <- read.table(file.path(input.dir, "Baccini_220912.txt"), header = TRUE, stringsAsFactors=FALSE)
+  Baccini.data <- utils::read.table(file.path(input.dir, "Baccini_220912.txt"), header = TRUE, stringsAsFactors=FALSE)
   Baccini.data$Lon <- vapply(Baccini.data$Lon, 1, FUN = LondonCentre)    
   
   # add coordinates, grid it, promote to SPDF and finally convert to a raster
   coordinates(Baccini.data) = ~Lon+Lat
   gridded(Baccini.data) = TRUE
   Baccini.data = as(Baccini.data, "SpatialGridDataFrame") # to full grid
-  Baccini.raster <- brick(Baccini.data)
+  Baccini.raster <- raster::brick(Baccini.data)
   
   # subset to get the mean layer only
   original.data <- raster::subset(Baccini.raster, "MEAN")
   
   # convert from AGB to total
-  original.data <- calc(original.data, AGBtoTotalCarbon)
+  original.data <- raster::calc(original.data, AGBtoTotalCarbon)
   
   # divide by 10 to go from tC/Ha to kgC/m^2
   original.data <-original.data/10
