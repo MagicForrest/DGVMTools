@@ -38,17 +38,8 @@ makeFieldID <- function(source.info,
   sep = "."
   
   # from source.info make the leading part of the id, note the difference between model- and data-derived fields
-  if(tolower(source.info@type) == "model") {
-    field.id <- paste(source.info@model, source.info@id, sep = sep)
-    if(!missing(subannual.resolution) &&  !is.null(subannual.resolution)) field.id <- paste(field.id, subannual.resolution, sep = sep)
-  }
-  else if(tolower(source.info@type) == "data"){
-    field.id <- source.info@id
-    if(!missing(spatial.resolution) && !is.null(spatial.resolution)) field.id <- paste(field.id, spatial.resolution, sep = sep)
-    if(!missing(temporal.resolution) &&  !is.null(temporal.resolution)) field.id <- paste(field.id, temporal.resolution, sep = sep)
-    if(!missing(subannual.resolution) &&  !is.null(subannual.resolution)) field.id <- paste(field.id, subannual.resolution, sep = sep)
-  }
-  
+  field.id <- paste(source.info@format, source.info@id, sep = sep)
+
   # quantity
   field.id <- paste(field.id, var.string, sep = sep)
   

@@ -21,15 +21,15 @@
 #' @import data.table
 #' @export
 openDGVMDataFile <- function(source,
-                              variable,
-                              verbose = FALSE){
+                             variable,
+                             verbose = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Year = Month = NULL
   
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
-  file.name.nc <- file.path(source@dir, paste0(source@id, ".nc"))
+  file.name.nc <- file.path(source@dir, paste(source@id, variable@id, "nc", sep = "."))
   if(file.exists(file.name.nc)){ 
     if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
     
@@ -50,21 +50,21 @@ openDGVMDataFile <- function(source,
   this.lat <- ncdf4::ncvar_get(this.nc,"lat",verbose=verbose)
   this.lon <- ncdf4::ncvar_get(this.nc,"lon",verbose=verbose)
   
+  # look up attributes for meta-data for this layer/variable
+  first.year <- ncatt_get(this.nc, 0, attname="DGVMData_first.year", verbose=FALSE)$value
+  last.year <- ncatt_get(this.nc, 0, attname="DGVMData_last.year", verbose=FALSE)$value
+  year.aggregation.method <- ncatt_get(this.nc, 0, attname="DGVMData_year.aggregation.method", verbose=FALSE)$value
+  
+  
   
   all.vars <- this.nc$var
   
-  
-  print(all.vars)
-  
   dt.list <- list()
-    
-  #all.dt <-  data.table(Lon = numeric(0), Lat = numeric(0), )
-  #setkey(all.dt, Lon, Lat)
   
   for(this.var in all.vars) {
-    
+
     # Get the actual data and set the dimension names    
-    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = c(1,1), count = c(-1,-1))
+    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = c(1,1), count = c(-1,-1), verbose = verbose)
     dimnames(this.slice) <- list(this.lon, this.lat)
     
     # melt to a data.table, via data.frame
@@ -72,8 +72,7 @@ openDGVMDataFile <- function(source,
     
     # remove NAs
     this.slice.dt <- stats::na.omit(this.slice.dt)
-    
-    # # look up attributes for meta-data for this layer/variable
+  
     # 
     # # quantity
     # quant.str <- ncatt_get(this.nc, this.var, attname="DGVMTools_quant", verbose=FALSE)$value
@@ -81,32 +80,40 @@ openDGVMDataFile <- function(source,
     # # set the name to something equivalent in the model
     # layer.name <- ncatt_get(this.nc, this.var, attname="DGVMTools_layer.name", verbose=FALSE)$value
     
-    ################################
+    #################################
     ######### Here do checks ########
     #################################
     
     
-   
-   
     # also set the names and key 
-    setnames(this.slice.dt, c("Lon", "Lat", this.var))
+    setnames(this.slice.dt, c("Lon", "Lat", this.var$name))
+    setKeyDGVM(this.slice.dt)
     
     # now join this to all.dt
     dt.list[[length(dt.list)+1]] <- this.slice.dt
     
   }
   
+  
   # join all together
-  dt <- data.table()
+  dt <- dt.list[[1]]
+  if(length(dt.list) > 1) {
+    for(this.dt in dt.list[[2:length(dt.list)]]) {
+      print(this.dt)
+      merge.data.table(dt, this.dt)
+      print(dt)
+    }
+  }
   dt <- setKeyDGVM(dt)
   
- 
   
+  # STInfo
+  st.info <- getSTInfo(dt)
   
   
   # Correct year, lons and lats
-  if(verbose)message("Correcting years, lons and lats with offsets...")
-  if(source@year.offset != 0) dt[,Year := Year + source@year.offset]
+  if(verbose) message("Correcting years, lons and lats with offsets...")
+  if(source@year.offset != 0 && "Year" %in% st.info) dt[,Year := Year + source@year.offset]
   if(length(source@lonlat.offset) == 2 ){
     if(source@lonlat.offset[1] != 0) dt[, Lon := Lon + source@lonlat.offset[1]]
     if(source@lonlat.offset[2] != 0) dt[, Lat := Lat + source@lonlat.offset[2]]
@@ -130,12 +137,20 @@ openDGVMDataFile <- function(source,
   attr(dt, "shadeToleranceCombined") <- FALSE
   
   # set keys
-  setkey(dt, Lon, Lat, Year)
+  setKeyDGVM(dt)
   
   # remove any NAs
   dt <- stats::na.omit(dt)
   
-  return(dt)
+  return(
+    
+    list(dt = dt,
+         first.year = first.year,
+         last.year = last.year,
+         year.aggregation.method = year.aggregation.method
+    )
+    
+  )
   
 }
 
@@ -166,10 +181,10 @@ listAvailableQuantities_DGVMData <- function(source){
     # and if so, get the part before it
     this.quantity <- "lsls" # TODO
     quantities.present <- append(quantities.present, this.quantity)
-      
+    
     
   }
-
+  
   return(quantities.present)
   
 }

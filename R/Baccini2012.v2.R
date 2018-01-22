@@ -1,6 +1,6 @@
 #!/usr/bin/Rscript
 
-#' Process Saatchi 2011 data
+#' Process Baccini 2012 data
 #' 
 #' Reads the Saatchi biomass data at 1km and aggregates it to some standard resolutions.
 #' 
@@ -9,43 +9,64 @@
 #' @param method Method by which to interpolate to the non-regular resolutions.  This should be a cdo "remapxxx" operator.  Default is "remapcon"
 #' @param plot Logical, if TRUE make a .pdf book of all the datasets produced by the function for easy reference.
 
-processSaatchi <- function(input.dir, output.dir = input.dir, method = "remapcon", plot = TRUE){
+processBaccini <- function(input.dir, output.dir = input.dir, method = "remapcon", plot = TRUE){
   
-  print("Processing Saatchi 2011 Vegetation Carbon")
+  print("Processing Baccini 2012 Vegetation Carbon")
   
   Lon = Lat = NULL
   
   ######## DATA AND METADATA PREPARATION - this will be somewhat dataset specific
   
   # the basic info about this here ting
-  id = "Saatchi2011"
-  name = "Saatch et al. 2011 Vegetation Carbon"
+  id = "Baccini"
+  name = "Baccini et al. 2012 Vegetation Carbon"
   quantity.id <- "vegC_std"
   quantity.units <- "kg m-2"
   layer.name <- "Tree"
   standard.name <- "vegetation_carbon_content"
-  first.year <- 1995
-  last.year <-  2005
+  first.year <- 2006
+  last.year <-  2008
   
+  # reda Baccini and London-centre the data
+  Baccini.data <- read.table(file.path(input.dir, "Baccini_220912.txt"), header = TRUE, stringsAsFactors=FALSE)
+  Baccini.data$Lon <- vapply(Baccini.data$Lon, 1, FUN = LondonCentre)    
   
-  # read the original data and extent it to an even number of degrees 
-  original.data <- raster::raster(file.path(input.dir, "Saatchi2011.OriginalResolution.nc"))/10
-  super.extent <- raster::extent(c(xmin = -114, xmax = 156, ymin = -58, ymax = 40))
+  # add coordinates, grid it, promote to SPDF and finally convert to a raster
+  coordinates(Baccini.data) = ~Lon+Lat
+  gridded(Baccini.data) = TRUE
+  Baccini.data = as(Baccini.data, "SpatialGridDataFrame") # to full grid
+  Baccini.raster <- brick(Baccini.data)
+  
+  # subset to get the mean layer only
+  original.data <- raster::subset(Baccini.raster, "MEAN")
+  
+  # convert from AGB to total
+  original.data <- calc(original.data, AGBtoTotalCarbon)
+  
+  # divide by 10 to go from tC/Ha to kgC/m^2
+  original.data <-original.data/10
+  
+   
+  names(original.data) <- layer.name
+  
+  # extent the original to an even number of degrees 
+
+  super.extent <- raster::extent(c(xmin = -112, xmax = 158, ymin = -24, ymax = 24))
   extended.data <- raster::extend(original.data, super.extent)
   
-  # aggregate to an intermediate 10km resolution (still smaller than all the target resolutions here) for the Gaussian
-  data.intermediate.for.gaussian <- raster::aggregate(original.data, fact=10, fun = mean, expand = TRUE, na.rm = TRUE)
-  names(data.intermediate.for.gaussian) <- layer.name
+  # 0.5 degree raster for interpolating of Gaussina grids
+  data.intermediate.for.gaussian <- original.data
+
   
   print("Read the original data")
   
   # define the regular grids
   grids <- list( 
     
-    "QD" = list(res.code = "QD", type = "regular", agg.number = 30, round.dig = 3, res = 0.25),
-    "HD" = list(res.code = "HD", type = "regular", agg.number = 60, round.dig = 2, res = 0.5),
-    "1D" = list(res.code = "1D", type = "regular", agg.number = 120, round.dig = 1, res = 1),
-    "2D" = list(res.code = "2D", type = "regular", agg.number = 240, round.dig = 0, res = 2),
+    #"QD" = list(res.code = "QD", type = "regular", agg.number = 30, round.dig = 3, res = 0.25),
+    "HD" = list(res.code = "HD", type = "regular", agg.number = 1, round.dig = 2, res = 0.5),
+    "1D" = list(res.code = "1D", type = "regular", agg.number = 2, round.dig = 1, res = 1),
+    "2D" = list(res.code = "2D", type = "regular", agg.number = 4, round.dig = 0, res = 2),
     "T21" = list(res.code = "T21", type = "gaussian", res.str = "n16"),
     "T31" = list(res.code = "T31", type = "gaussian", res.str = "n24"),
     "T42" = list(res.code = "T42", type = "gaussian", res.str = "n32"),
@@ -85,19 +106,15 @@ processSaatchi <- function(input.dir, output.dir = input.dir, method = "remapcon
     if(grid$type == "regular") {
       
       # aggregate to the required resolution (and 'shoogle' the longitudes and latitude so that they line up with a standard grid)
-      aggregated.raster <- raster::aggregate(extended.data, grid$agg.number)
+      if(grid$res.code != "HD") aggregated.raster <- raster::aggregate(extended.data, grid$agg.number)
+      else aggregated.raster <- extended.data
+      print(aggregated.raster)
+      
       if(plot) plot(aggregated.raster, main = grid$res.code)
       
       aggregated.dt <- as.data.table(raster::as.data.frame(aggregated.raster, xy = TRUE))
       setnames(aggregated.dt, c("Lon", "Lat", layer.name))
-      if(grid$res.code != "QD") {
-        aggregated.dt[, Lon := round(Lon,grid$round.dig)]
-        aggregated.dt[, Lat := round(Lat,grid$round.dig)]
-      }
-      else {
-        aggregated.dt[, Lon := round(Lon*80,0)/80]
-        aggregated.dt[, Lat := round(Lat*80,0)/80]
-      }
+      
       
       # save as a netCDF in 'DGVMData' format
       
@@ -166,11 +183,10 @@ processSaatchi <- function(input.dir, output.dir = input.dir, method = "remapcon
                          grid = grid$res.str,
                          return.raster = TRUE,
                          verbose = TRUE,
-                         remove.temps = FALSE)
+                         remove.temps = TRUE)
 
       if(plot) plot(temp.raster, main = grid$res.code)
-
-
+      
       outfile<- nc_open(this.file.nc, write=TRUE)
       addStandardSpatialAttributes(outfile)
 

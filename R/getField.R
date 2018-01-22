@@ -40,7 +40,7 @@ getField <- function(source,
                            spatial.aggregate.method = "none",
                            write = FALSE, 
                            read.full = TRUE, 
-                           verbose = TRUE, 
+                           verbose = FALSE, 
                            store.internally = FALSE,
                            store.full = FALSE,
                            adgvm.scheme = 1){
@@ -58,7 +58,7 @@ getField <- function(source,
     quant <- var
     var.string <- quant@id
   }
-  
+ 
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally aggregated and reduced in extent
   model.field.id <- makeFieldID(source.info = as(source, "SourceInfo"), 
                                 var.string = var.string, 
@@ -152,8 +152,13 @@ getField <- function(source,
     
     else if(source@format == "DGVMData") {
       
-      openDGVMDataFile(source, quant, verbose = verbose)
-      
+         data.list <- openDGVMDataFile(source, quant, verbose = verbose)
+         
+         this.dt <- data.list$dt
+         first.year <-  data.list$first.year
+         last.year <-  data.list$last.year
+         year.aggregation.method <-  data.list$year.aggregation.method
+   
     }
     
     
@@ -219,7 +224,12 @@ getField <- function(source,
     if(store.full){
       
       # Build the full object
-      year.range <- range(this.dt[,Year])
+      if("Year" %in% getSTInfo(this.dt)) {
+        year.range <- range(this.dt[,Year])
+        first.year <- year.range[1]
+        last.year <- year.range[2]
+      }
+      
       model.field.full <- new("Field",
                                id = var.string,
                                data = this.dt,
@@ -229,8 +239,8 @@ getField <- function(source,
                                temporal.extent = new("TemporalExtent",
                                                      id = "FullTS",
                                                      name = "Full simulation duration",
-                                                     start = year.range[1],
-                                                     end = year.range[length(year.range)]),
+                                                     start = first.year,
+                                                     end = last.year),
                                temporal.extent.id = "Full",
                                spatial.aggregate.method = "none",
                                temporal.aggregate.method = "none",
@@ -243,7 +253,6 @@ getField <- function(source,
     } # end if(store.full)
     
   } # end option 4
-  
   
   ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED, AND CHECK THAT WE HAVE A VALID DATA.TABLE
   if(!is.null(spatial.extent))  {
@@ -277,7 +286,11 @@ getField <- function(source,
     
   }
   
-  if(!is.null(temporal.extent))  this.dt <- selectYears(this.dt, temporal.extent)   
+  if(!is.null(temporal.extent))  this.dt <- selectYears(this.dt, new("TemporalExtent",
+                                                                     id = "FullTS",
+                                                                     name = "Full simulation duration",
+                                                                     start = first.year,
+                                                                     end = last.year))   
   
   if(length(this.dt) == 0) stop("getModelField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the temporal.exent and spatial.extent that you have requested.")
   
@@ -318,12 +331,11 @@ getField <- function(source,
     temporal.extent<- new("TemporalExtent",
                           id = "FullTS",
                           name = "Full simulation duration",
-                          start = ordered.years[1],
-                          end = ordered.years[length(ordered.years)]
+                          start = first.year,
+                          end = last.year
     )
     if(verbose) message(paste("No temporal extent specified, setting temporal extent to whole simulation duration (",  temporal.extent@start, "-", temporal.extent@end, ")", sep = ""))
   }
-  
   
   
   ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
@@ -336,7 +348,7 @@ getField <- function(source,
                       spatial.extent.id = spatial.extent.id,
                       temporal.extent.id = temporal.extent.id,
                       spatial.aggregate.method = spatial.aggregate.method,
-                      temporal.aggregate.method = temporal.aggregate.method,
+                      temporal.aggregate.method = year.aggregation.method,
                       source = as(source, "SourceInfo"))
   
   

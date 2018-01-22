@@ -9,29 +9,48 @@
 #' @param method Method by which to interpolate to the non-regular resolutions.  This should be a cdo "remapxxx" operator.  Default is "remapcon"
 #' @param plot Logical, if TRUE make a .pdf book of all the datasets produced by the function for easy reference.
 
-processSaatchi <- function(input.dir, output.dir = input.dir, method = "remapcon", plot = TRUE){
+processAvitabile <- function(input.dir, output.dir = input.dir, method = "remapcon", plot = TRUE){
   
-  print("Processing Saatchi 2011 Vegetation Carbon")
+  print("Processing Avitabile 2015 Vegetation Carbon")
   
   Lon = Lat = NULL
   
   ######## DATA AND METADATA PREPARATION - this will be somewhat dataset specific
   
   # the basic info about this here ting
-  id = "Saatchi2011"
-  name = "Saatch et al. 2011 Vegetation Carbon"
+  id = "Avitabile2015"
+  name = "Avitabile et al. 2015 Vegetation Carbon"
   quantity.id <- "vegC_std"
   quantity.units <- "kg m-2"
   layer.name <- "Tree"
   standard.name <- "vegetation_carbon_content"
-  first.year <- 1995
-  last.year <-  2005
+  first.year <- 2001
+  last.year <-  2010
   
   
   # read the original data and extent it to an even number of degrees 
-  original.data <- raster::raster(file.path(input.dir, "Saatchi2011.OriginalResolution.nc"))/10
+  original.data <- raster::raster(file.path(input.dir, "Avitabile_AGB_Map/Avitabile_AGB_Map.tif"))
+  print("Read original data:")
+  print(original.data)
+  
+  original.data <- calc(original.data, AGBtoTotalCarbon)
+  print("Converted to Total Carbon:")
+  print(original.data)
+  
+  # divide by 10 to go from tC/Ha to kgC/m^2
+  original.data <- original.data/10
+  print("Converted tC/Ha to kgCm^2:")
+  print(original.data)
+  
+  # extend data 
   super.extent <- raster::extent(c(xmin = -114, xmax = 156, ymin = -58, ymax = 40))
+  print("Extending to:")
+  print(super.extent)
+    
   extended.data <- raster::extend(original.data, super.extent)
+  print("Extended data:")
+  print(extended.data)
+
   
   # aggregate to an intermediate 10km resolution (still smaller than all the target resolutions here) for the Gaussian
   data.intermediate.for.gaussian <- raster::aggregate(original.data, fact=10, fun = mean, expand = TRUE, na.rm = TRUE)
@@ -86,6 +105,8 @@ processSaatchi <- function(input.dir, output.dir = input.dir, method = "remapcon
       
       # aggregate to the required resolution (and 'shoogle' the longitudes and latitude so that they line up with a standard grid)
       aggregated.raster <- raster::aggregate(extended.data, grid$agg.number)
+      print(aggregated.raster)
+      print(extent(aggregated.raster))
       if(plot) plot(aggregated.raster, main = grid$res.code)
       
       aggregated.dt <- as.data.table(raster::as.data.frame(aggregated.raster, xy = TRUE))
@@ -166,7 +187,7 @@ processSaatchi <- function(input.dir, output.dir = input.dir, method = "remapcon
                          grid = grid$res.str,
                          return.raster = TRUE,
                          verbose = TRUE,
-                         remove.temps = FALSE)
+                         remove.temps = TRUE)
 
       if(plot) plot(temp.raster, main = grid$res.code)
 

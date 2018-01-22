@@ -77,7 +77,7 @@ dgvm.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = viridis::viridis,
-      model = c("Standard")),
+      model = c("Standard", "DGVMData")),
   
   new("Quantity",
       id = "LAI_std",

@@ -58,7 +58,7 @@ defineModelRun <- function(id,
   
 
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
-  if(length(info@pft.set) == 0) info@pft.set <- NULL
+  if(length(info@pft.set) == 0) info@pft.set <- list()
   if(length(info@name) == 0)  info@name <- info@id
   if(length(info@lonlat.offset) == 0)  info@lonlat.offset <- c(0,0)
   if(length(info@year.offset) == 0)  info@year.offset <- 0
