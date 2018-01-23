@@ -140,12 +140,21 @@ getField <- function(source,
     if(source@format == "LPJ-GUESS" | source@format == "LPJ-GUESS-SPITFIRE" ) {
       
       
-      if("LPJ-GUESS" %in% quant@format  | "LPJ-GUESS-SPITFIRE" %in% quant@format) {
+      if("LPJ-GUESS" %in% quant@model | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
         this.dt <- openLPJOutputFile(source, var.string, verbose = verbose)
       }
-      else if(quant@format == "Standard") {
+      else if("Standard" %in% quant@model) {
         this.dt <- getStandardQuantity_LPJ(source, quant, verbose = verbose)
       }
+      
+      
+      # Meta-data for use later on
+      if("Year" %in% getSTInfo(this.dt)) {
+        year.range <- range(this.dt[,Year])
+        first.year <- year.range[1]
+        last.year <- year.range[2]
+      }
+      year.aggregation.method = "none"
       
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
@@ -222,13 +231,6 @@ getField <- function(source,
     ### STORE THE FULL MODEL OUTPUT AS AN UNAVERAGED VEGOBJECT IF REQUESTED
     # Note we gotta do this now before the cropping and averaging below
     if(store.full){
-      
-      # Build the full object
-      if("Year" %in% getSTInfo(this.dt)) {
-        year.range <- range(this.dt[,Year])
-        first.year <- year.range[1]
-        last.year <- year.range[2]
-      }
       
       model.field.full <- new("Field",
                                id = var.string,

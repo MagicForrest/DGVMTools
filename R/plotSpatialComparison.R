@@ -148,27 +148,9 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     # convert the ComparisonLayers into a Fields  for plotting 
     objects.to.plot <- list()
     
-    
-    #### max.for.scale <- 0
-    data.layers <- list()
-    model.layers <- list()
-    
     for(object in sources){ 
-      
-      
+   
       # FIRST INFO
-      if(tolower(object@info1@type == "model")){
-        if(!object@info1@id %in%  model.layers){
-          model.layers[[length(model.layers) + 1]] <- object@info1@id
-          
-        }
-      }
-      else if(tolower(object@info1@type == "data")){
-        if(!object@info1@id %in%  data.layers){
-          data.layers[[length(data.layers) + 1]] <- object@info1@id
-        }
-      }
-      
       new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
       setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
       objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
@@ -186,18 +168,6 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                           source = object@info1)
       
       # SECOND INFO
-      if(tolower(object@info2@type == "model")){
-        if(!object@info2@id %in%  model.layers){
-          model.layers[[length(model.layers) + 1]] <- object@info2@id
-          
-        }
-      }
-      else if(tolower(object@info2@type == "data")){
-        if(!object@info2@id %in%  data.layers){
-          data.layers[[length(data.layers) + 1]] <- object@info2@id
-        }
-      }
-      
       new.dt <- object@data[, append(getSTInfo(object), names(object)[2]), with=FALSE]
       setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
       objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",

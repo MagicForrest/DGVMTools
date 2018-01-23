@@ -117,7 +117,7 @@ dgvm.quantities <- list(
       type = "-",
       units = "m",
       colours = fields::tim.colors,
-      model = c("Standard")),
+      model = c("Standard", "DGVMData")),
   
   new("Quantity",
       id = "burntfraction_std",

@@ -1,6 +1,6 @@
 #!/usr/bin/Rscript
 
-#' Process Baccini 2012 data
+#' Process Saatchi 2011 data
 #' 
 #' Reads the Saatchi biomass data at 1km and aggregates it to some standard resolutions.
 #' 
@@ -9,64 +9,87 @@
 #' @param method Method by which to interpolate to the non-regular resolutions.  This should be a cdo "remapxxx" operator.  Default is "remapcon"
 #' @param plot Logical, if TRUE make a .pdf book of all the datasets produced by the function for easy reference.
 
-processBaccini <- function(input.dir, output.dir = input.dir, method = "remapcon", plot = TRUE){
+processAvitabileThurner <- function(input.dir.Avitabile, input.dir.Thurner, output.dir = input.dir, method = "remapcon", plot = TRUE){
   
-  print("Processing Baccini 2012 Vegetation Carbon")
+  print("Processing Avitabile + Thurner Vegetation Carbon")
   
   Lon = Lat = NULL
   
   ######## DATA AND METADATA PREPARATION - this will be somewhat dataset specific
   
   # the basic info about this here ting
-  id = "Baccini2012"
-  name = "Baccini et al. 2012 Vegetation Carbon"
+  id = "AvitabileThurner"
+  name = "Combined Avitabile and Thurner 2014 Vegetation Carbon"
   quantity.id <- "vegC_std"
   quantity.units <- "kg m-2"
   layer.name <- "Tree"
   standard.name <- "vegetation_carbon_content"
-  first.year <- 2006
-  last.year <-  2008
+  first.year <- 2007
+  last.year <-  2011
   
-  # reda Baccini and London-centre the data
-  Baccini.data <- utils::read.table(file.path(input.dir, "Baccini_220912.txt"), header = TRUE, stringsAsFactors=FALSE)
-  Baccini.data$Lon <- vapply(Baccini.data$Lon, 1, FUN = LondonCentre)    
   
-  # add coordinates, grid it, promote to SPDF and finally convert to a raster
-  coordinates(Baccini.data) = ~Lon+Lat
-  gridded(Baccini.data) = TRUE
-  Baccini.data = as(Baccini.data, "SpatialGridDataFrame") # to full grid
-  Baccini.raster <- raster::brick(Baccini.data)
   
-  # subset to get the mean layer only
-  original.data <- raster::subset(Baccini.raster, "MEAN")
+  ### THURNER
   
-  # convert from AGB to total
-  original.data <- raster::calc(original.data, AGBtoTotalCarbon)
+  # read the original data (notice the extent is already an even number of degrees)
+  Thurner.data <- raster::raster(file.path(input.dir.Thurner, "original/2013125152231biomass_v3_total.nc"), varname = "biomass_total")
+  
+  # aggragate to 0.05 degrees 
+  Thurner.data <- raster::aggregate(Thurner.data, fact=5, fun = mean, expand = TRUE, na.rm = TRUE)
+  
+  # set NAs to zero to conceptually match the Avitabile
+  Thurner.data[is.na(Thurner.data)] <- 0
+  
+  # extend to global
+  Thurner.data.extended <- raster::extend(Thurner.data, raster::extent(-180, 180, -90, 90))
+  
+  
+  ### AVITABILE
+  
+  # read the original data and extent it to an even number of degrees 
+  Avitabile.data <- raster::raster(file.path(input.dir.Avitabile, "Avitabile_AGB_Map/Avitabile_AGB_Map.tif"))
+  print("Read Avitabile data:")
+  print(Avitabile.data)
+  
+  Avitabile.data <- raster::calc(Avitabile.data, AGBtoTotalCarbon)
+  print("Converted to Total Carbon:")
+  print(Avitabile.data)
   
   # divide by 10 to go from tC/Ha to kgC/m^2
-  original.data <-original.data/10
+  Avitabile.data <- Avitabile.data/10
+  print("Converted tC/Ha to kgCm^2:")
+  print(Avitabile.data)
   
-   
-  names(original.data) <- layer.name
   
-  # extent the original to an even number of degrees 
+  
+  # aggregate to an intermediate 10km resolution (still smaller than all the target resolutions here) for the Gaussian
+  Avitabile.data <- raster::aggregate(Avitabile.data, fact=6, fun = mean, expand = TRUE, na.rm = TRUE)
 
-  super.extent <- raster::extent(c(xmin = -112, xmax = 158, ymin = -24, ymax = 24))
-  extended.data <- raster::extend(original.data, super.extent)
+  # extend to global
+  Avitabile.data.extended <- raster::extend(Avitabile.data, raster::extent(-180, 180, -90, 90))
   
-  # 0.5 degree raster for interpolating of Gaussina grids
-  data.intermediate.for.gaussian <- original.data
+  # 'shoogle' Avitabile data using nearest neighbour on to the Thurner grid
+  Avitabile.data.extended <- raster::resample(Avitabile.data.extended, Thurner.data.extended, "ngb")
+  
+ 
+  combi.stack <- stack(Thurner.data.extended, Avitabile.data.extended)
+  extended.data <- calc(combi.stack, mean, na.rm = TRUE)
+  names(extended.data) <- layer.name
 
+  # make interrmediates for Gaussian grids
+  data.intermediate.for.gaussian <- raster::aggregate(extended.data, fact=2, fun = mean, expand = TRUE, na.rm = TRUE)
+  names(data.intermediate.for.gaussian) <- layer.name
   
-  print("Read the original data")
+  
+  print("Read the original and combined data")
   
   # define the regular grids
   grids <- list( 
     
-    #"QD" = list(res.code = "QD", type = "regular", agg.number = 30, round.dig = 3, res = 0.25),
-    "HD" = list(res.code = "HD", type = "regular", agg.number = 1, round.dig = 2, res = 0.5),
-    "1D" = list(res.code = "1D", type = "regular", agg.number = 2, round.dig = 1, res = 1),
-    "2D" = list(res.code = "2D", type = "regular", agg.number = 4, round.dig = 0, res = 2),
+    "QD" = list(res.code = "QD", type = "regular", agg.number = 5, round.dig = 3, res = 0.25),
+    "HD" = list(res.code = "HD", type = "regular", agg.number = 10, round.dig = 2, res = 0.5),
+    "1D" = list(res.code = "1D", type = "regular", agg.number = 20, round.dig = 1, res = 1),
+    "2D" = list(res.code = "2D", type = "regular", agg.number = 40, round.dig = 0, res = 2),
     "T21" = list(res.code = "T21", type = "gaussian", res.str = "n16"),
     "T31" = list(res.code = "T31", type = "gaussian", res.str = "n24"),
     "T42" = list(res.code = "T42", type = "gaussian", res.str = "n32"),
@@ -85,8 +108,7 @@ processBaccini <- function(input.dir, output.dir = input.dir, method = "remapcon
   # define a pdf and put the first plots in
   if(plot) {
     grDevices::pdf(file = file.path(output.dir, paste(id, "pdf", sep = ".")))
-    plot(original.data, main = "Original Data")
-    plot(extended.data, main = "Extended Data")
+    plot(extended.data, main = "Original Data")
   }
   
   
@@ -106,15 +128,24 @@ processBaccini <- function(input.dir, output.dir = input.dir, method = "remapcon
     if(grid$type == "regular") {
       
       # aggregate to the required resolution (and 'shoogle' the longitudes and latitude so that they line up with a standard grid)
-      if(grid$res.code != "HD") aggregated.raster <- raster::aggregate(extended.data, grid$agg.number)
-      else aggregated.raster <- extended.data
-      print(aggregated.raster)
-      
+      aggregated.raster <- raster::aggregate(extended.data, grid$agg.number)
       if(plot) plot(aggregated.raster, main = grid$res.code)
+      print(extended.data)
+      print(extent(extended.data))
+      print(aggregated.raster)
+      print(extent(aggregated.raster))
+      
       
       aggregated.dt <- as.data.table(raster::as.data.frame(aggregated.raster, xy = TRUE))
       setnames(aggregated.dt, c("Lon", "Lat", layer.name))
-      
+      #if(grid$res.code != "QD") {
+        aggregated.dt[, Lon := round(Lon,grid$round.dig)]
+        aggregated.dt[, Lat := round(Lat,grid$round.dig)]
+      #}
+      #else {
+      #  aggregated.dt[, Lon := round(Lon*100,0)/100]
+      #  aggregated.dt[, Lat := round(Lat*100,0)/100]
+      #}
       
       # save as a netCDF in 'DGVMData' format
       
@@ -183,10 +214,11 @@ processBaccini <- function(input.dir, output.dir = input.dir, method = "remapcon
                          grid = grid$res.str,
                          return.raster = TRUE,
                          verbose = TRUE,
-                         remove.temps = TRUE)
+                         remove.temps = FALSE)
 
       if(plot) plot(temp.raster, main = grid$res.code)
-      
+
+
       outfile<- nc_open(this.file.nc, write=TRUE)
       addStandardSpatialAttributes(outfile)
 

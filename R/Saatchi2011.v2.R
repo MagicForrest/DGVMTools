@@ -19,7 +19,7 @@ processSaatchi <- function(input.dir, output.dir = input.dir, method = "remapcon
   
   # the basic info about this here ting
   id = "Saatchi2011"
-  name = "Saatch et al. 2011 Vegetation Carbon"
+  name = "Saatchi et al. 2011 Vegetation Carbon"
   quantity.id <- "vegC_std"
   quantity.units <- "kg m-2"
   layer.name <- "Tree"
