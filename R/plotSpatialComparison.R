@@ -13,42 +13,18 @@
 #' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
 #'
-#' @param sources The data to plot. Can be a Field, a DataObject, or a list of including both
-#' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
+#' @param sources The data to plot, must be a ComparisonLayer or a list of ComparisonLayers
+#' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
+#' (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)
 #' @param title A character string to override the default title.
 #' Note that using these, especially "worldHires", can add quite a bit off time. 
-#' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
-#' Sensible titles will be constructed if this is not specified.
-#' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
-#' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
-#' in this function). 
-#' @param plot.bg.col Colour string for the plot background.  "white"
-#' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!
-#' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
-#' Make it bigger if the text is too small on large plots and vice-versa.
-#' @param ylim An optional vector of two numerics to specify the y/latitude range of the plot.
-#' @param xlim An optional vector of two numerics to specify the x/longitude range of the plot.
-#' @param years An optional numeric vector specifying which years to plot  
-#' @param days An optional numeric vector specifying which days to plot
-#' @param months An optional numeric vector specifying which months to plot
-#' @param seasons An optional character vector specifying which seasons to plot (any or all of "DJF", "MAM, "JJA", "SON")  
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param override.cols A colour palette function to override the defaults.
-#' @param override.cuts Cut ranges (a numeric vector) to override the default colour delimitation
-#' @param discretise Boolen, if true, but the discretise the data according the override.cuts argument above
-#' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
-#' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
-#' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
-#' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
-#' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
-#' Other things can be overlain on the resulting plot with further ggplot2 commands.
 #' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)
+#' @param percentage.difference.limit If precentage difference to be plotted, what to limit the scale to.
+#' @param ... Parameters passed to \code{plotSpatial()}
 #' 
-#' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
-#' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
-#' However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
-#' 
-#' The function works best for \code{Fields} (which contain a lot of useful metadata).   
+#' @details  A wrapper for around \code{plotSpatial()} to plot the spatial ComparisonLayers as maps.  
 #' 
 #' @return Returns a ggplot object
 #'  

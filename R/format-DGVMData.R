@@ -100,7 +100,7 @@ openDGVMDataFile <- function(source,
   if(length(dt.list) > 1) {
     for(this.dt in dt.list[[2:length(dt.list)]]) {
       print(this.dt)
-      data.table::merge.data.table(dt, this.dt)
+      merge(dt, this.dt)
       print(dt)
     }
   }

@@ -33,7 +33,7 @@ processAvitabile <- function(input.dir, output.dir = input.dir, method = "remapc
   print("Read original data:")
   print(original.data)
   
-  original.data <- calc(original.data, AGBtoTotalCarbon)
+  original.data <- raster::calc(original.data, AGBtoTotalCarbon)
   print("Converted to Total Carbon:")
   print(original.data)
   

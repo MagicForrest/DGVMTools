@@ -186,7 +186,7 @@ checkSourceInfo <- function(object){
 #' and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
 #' 
 #' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
-#' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
+#' @slot format A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot dir The location of this run on the file system (Mandatory)
@@ -243,6 +243,8 @@ setClass("SourceInfo",
 #' @slot colours A function that returns a colour scale suited for plotting this quantity.
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
+#' @slot cf.name A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
+#' but it makes sense to use this where possible.  
 #'
 #' @exportClass Quantity
 #' @name Quantity-class
@@ -351,9 +353,13 @@ setClass("SpatialComparison",
 #' @slot info1 A SourceInfo object describing the source of the first layer in the comparison
 #' @slot info2 A SourceInfo object describing the source of the second layer in the comparison
 #' @slot spatial.extent An object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
+#' @slot spatial.extent.id  Lalala
 #' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ComparisonLayer.  Particularly useful if the data has been temporally averaged.
-#' @slot spatial.aggregate.method Set to TRUE is this ComparisonLayer has been spatially averaged
+#' @slot temporal.extent.id Lalala
+#' @slot spatial.aggregate.method  Set to TRUE is this ComparisonLayer has been spatially averaged
 #' @slot temporal.aggregate.method Set to TRUE is this ComparisonLayer has been temporally averaged
+#' @slot subannual.aggregate.method Lalala
+#' @slot subannual.original Lalala
 #' @exportClass ComparisonLayer
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -445,7 +451,7 @@ setClass("BiomeScheme",
 #' 
 #' @slot objects List of \code{Fields} saved in this run
 #' @slot id A unique character string to identify this particular model run.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
-#' @slot model A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "FireMIP" or "aDGVM". (Mandatory)
+#' @slot format A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "FireMIP" or "aDGVM". (Mandatory)
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot dir The location of this run on the file system (Mandatory)
@@ -454,6 +460,8 @@ setClass("BiomeScheme",
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
 #' @slot land.use.included If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
+#' @slot contact Name and email address of responsible person (default to OS username).
+#' @slot institute Name of the institute (default "none").
 #' @exportClass Source
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("Source", 
@@ -483,7 +491,9 @@ setClass("Source",
 #' @slot temporal.extent.id A TemporalExtent object which describes the time periog covered by this.Field.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.aggregate.method Set to TRUE is this.Field has been spatially averaged
 #' @slot temporal.aggregate.method Set to TRUE is this.Field has been temporally averaged
-#' @slot run A SourceInfo object which contains the metadata about the run which this.Field belongs too.
+#' @slot subannual.aggregate.method Method by which this Field has been subannually aggregated
+#' @slot subannual.original Original subannual resolution of this field
+#' @slot source A SourceInfo object which contains the metadata about the run which this Field belongs too.
 #' @exportClass Field
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 

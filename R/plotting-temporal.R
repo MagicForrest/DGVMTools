@@ -136,7 +136,7 @@ plotTemporal <- function(input.data,
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(is.null(title)) {
     if(single.object) {
-      title <- makePlotTitle(quant@name, layer = NULL, source = input.data, extent = input.data@spatial.extent) 
+      title <- makePlotTitle(quant@name, layer = NULL, source = input.data, extent.str = input.data@spatial.extent) 
     }
     else {
       title <- element_blank()
