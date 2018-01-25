@@ -202,7 +202,7 @@ processThurner <- function(input.dir, output.dir = input.dir, method = "remapcon
   
   
   ######## FINISH AND CLEAN UP 
-  rm(original.data, extended.data)
+  rm(extended.data)
   
   if(plot) grDevices::dev.off()
   

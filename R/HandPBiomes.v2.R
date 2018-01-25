@@ -14,7 +14,7 @@ processHandPBiomes <- function(input.dir, output.dir = input.dir, method = "rema
   
   print("Processing H & P Global Biomes")
   
-  Lon = Lat = NULL
+  Lon = Lat = Biome = NULL
   Sys.setenv("REMAP_EXTRAPOLATE" = "off")
   
   

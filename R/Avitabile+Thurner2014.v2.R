@@ -4,12 +4,13 @@
 #' 
 #' Reads the Saatchi biomass data at 1km and aggregates it to some standard resolutions.
 #' 
-#' @param input.dir The directory directory on disk where the original data input data is stored
-#' @param output.dir The directory on disk where the aggragted data is to be stored (defaults to input.dir)
+#' @param input.dir.Avitabile The directory directory on disk where the original Avitabile input data is stored
+#' @param input.dir.Thurner The directory directory on disk where the original Thurner input data is stored
+#' @param output.dir The directory on disk where the aggragted data is to be stored (note: no default)
 #' @param method Method by which to interpolate to the non-regular resolutions.  This should be a cdo "remapxxx" operator.  Default is "remapcon"
 #' @param plot Logical, if TRUE make a .pdf book of all the datasets produced by the function for easy reference.
 
-processAvitabileThurner <- function(input.dir.Avitabile, input.dir.Thurner, output.dir = input.dir, method = "remapcon", plot = TRUE){
+processAvitabileThurner <- function(input.dir.Avitabile, input.dir.Thurner, output.dir, method = "remapcon", plot = TRUE){
   
   print("Processing Avitabile + Thurner Vegetation Carbon")
   
@@ -72,8 +73,8 @@ processAvitabileThurner <- function(input.dir.Avitabile, input.dir.Thurner, outp
   Avitabile.data.extended <- raster::resample(Avitabile.data.extended, Thurner.data.extended, "ngb")
   
  
-  combi.stack <- stack(Thurner.data.extended, Avitabile.data.extended)
-  extended.data <- calc(combi.stack, mean, na.rm = TRUE)
+  combi.stack <- raster::stack(Thurner.data.extended, Avitabile.data.extended)
+  extended.data <- raster::calc(combi.stack, mean, na.rm = TRUE)
   names(extended.data) <- layer.name
 
   # make interrmediates for Gaussian grids
@@ -248,7 +249,7 @@ processAvitabileThurner <- function(input.dir.Avitabile, input.dir.Thurner, outp
   
   
   ######## FINISH AND CLEAN UP 
-  rm(original.data, extended.data)
+  rm(extended.data)
   
   if(plot) grDevices::dev.off()
   

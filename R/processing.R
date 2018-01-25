@@ -119,7 +119,7 @@ calcBiomes <-function(input, scheme){
   
   message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
   
-  Grass = NULL
+  Grass = Biome = NULL
   
   # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
   if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
