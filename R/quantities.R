@@ -6,9 +6,10 @@
 #' 
 #' @param quant.id String holding the id of the \code{Quantity} you want
 #' @param model.str String holding the name of the model or "Standard"
+#' @param verbose Logical, if TRUE (default) give some extra information
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @return A \code{Quantity} object if it finds the right one.  Otherwise the code halts.
-lookupQuantity <- function(quant.id, model.str = "Standard"){
+lookupQuantity <- function(quant.id, model.str = "Standard", verbose = TRUE){
   
   # this code will make the function first check for a user-defined dgvm.quantities list
   local.dgvm.quantities <- get('dgvm.quantities', envir=.GlobalEnv)
@@ -19,7 +20,7 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
   }
   
   # if can't find that then warn
-  if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std") {
+  if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std" && verbose) {
     warning(paste0("Can't find a quantity with id = ", quant.id, " and model = ", model.str, " in dgvm.quantities, now searching only on the quant.id."))
   }
   
@@ -28,8 +29,20 @@ lookupQuantity <- function(quant.id, model.str = "Standard"){
         if(quant.id == quant@id) return(quant)
   }
 
+  # if can't find that then warn
+  if(verbose) {
+    warning(paste0("Can't find a quantity with id = ", quant.id, " anywhere in dgvm.quantities, now searching the supported.biomes.schemes"))
+  }
+  
+  # this code will make the function first check for a user-defined dgvm.quantities list
+  local.supported.biome.schemes <- get('supported.biome.schemes', envir=.GlobalEnv)
+  
+  for(biome.scheme in local.supported.biome.schemes){
+    if(as(object = biome.scheme, Class = "Quantity")@id == quant.id) return(as(object = biome.scheme, Class = "Quantity"))
+  }
+  
   # fail because can't find the quantity
-  stop(paste0("Can't find a quantity with id = ", quant.id, " anywhere in dgvm.quantities (either the version in the package, or a user-extend vertsion"))
+  stop(paste0("Can't find a quantity with id = ", quant.id, " anywhere in dgvm.quantities or in the supported biome schemes (either the version in the package, or a user-extend vertsion"))
   
 }
 
@@ -61,23 +74,26 @@ dgvm.quantities <- list(
       name = "Fraction",
       units = "",
       colours = grDevices::colorRampPalette(c("grey85", "black")), 
-      model = "Standard"), 
+      model = c("Standard","DGVMData"),
+      cf.name = "area_fraction"), 
  
   new("Quantity",
       id = "vegcover_std",
       type = "",
-      name = "Areal Cover",
+      name = "Area Fraction",
       units = "%",
       colours = veg.palette, 
-      model = "Standard"), 
+      model = c("Standard", "DGVMData"),
+      cf.name = "area_fraction_percent"), 
   
   new("Quantity",
       id = "vegC_std",
       name = "Vegetation Carbon Mass",
       type = "PFT",
-      units = "kgC/m^2",
+      units = "kg m-2",
       colours = viridis::viridis,
-      model = c("Standard", "DGVMData")),
+      model = c("Standard", "DGVMData"),
+      cf.name = "vegetation_carbon_content"),
   
   new("Quantity",
       id = "LAI_std",
@@ -99,9 +115,10 @@ dgvm.quantities <- list(
       id = "aGPP_std",
       name = "Annual GPP",
       type = "PFT",
-      units = "kgC/m^2/year",
+      units = "kgC m-2 year-1",
       colours = fields::tim.colors,
-      model = c("Standard")),
+      model = c("Standard", "DGVMData"),
+      cf.name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
   
   new("Quantity",
       id = "aNPP_std",
@@ -117,7 +134,8 @@ dgvm.quantities <- list(
       type = "-",
       units = "m",
       colours = fields::tim.colors,
-      model = c("Standard", "DGVMData")),
+      model = c("Standard", "DGVMData"),
+      cf.name = "canopy_height"),
   
   new("Quantity",
       id = "burntfraction_std",
@@ -133,7 +151,8 @@ dgvm.quantities <- list(
       type = "annual",
       units = "fraction",
       colours = veg.palette,
-      model = c("Standard")),
+      model = c("Standard", "DGVMData"),
+      cf.name = "fraction_absorbed_of_photosynthetically_active_radiation"),
   
   new("Quantity",
       id = "aNEE_std",

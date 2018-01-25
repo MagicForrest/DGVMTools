@@ -85,9 +85,12 @@ openDGVMDataFile <- function(source,
     #################################
     
     
-    # also set the names and key 
+    # also set the names, key and if categorical, set to factors in the variabl@units slot
     setnames(this.slice.dt, c("Lon", "Lat", this.var$name))
     setKeyDGVM(this.slice.dt)
+    if(variable@type == "categorical") {
+       this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = variable@units)]
+    }
     
     # now join this to all.dt
     dt.list[[length(dt.list)+1]] <- this.slice.dt

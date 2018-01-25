@@ -355,7 +355,7 @@ Forrest2015MegaBiomeRules <- function(lai){
   else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['MaxTree']] == "BNS") {return("Boreal Forest")}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return("Temperate Evergeen Forest")}
+  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return("Temperate Evergreen Forest")}
   
   # BIOME 7 - Temperate Deciduous Forest
   else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBS") {return("Temperate Deciduous Forest")}
@@ -413,7 +413,7 @@ Forrest2015.scheme <- new("BiomeScheme",
                               name = "Forrest et al. 2015", 
                               type = "categorical",
                               colours = grDevices::colorRampPalette(c("Tropical Forest" = "seagreen",                     
-                                                           "Temperate Evergeen Forest"= "dodgerblue3", 
+                                                           "Temperate Evergreen Forest"= "dodgerblue3", 
                                                            "Temperate Deciduous Forest "= "green3", 
                                                            "Boreal Forest" = "turquoise4",
                                                            "Savanna and Dry Woodlands" = "olivedrab2",
@@ -421,7 +421,7 @@ Forrest2015.scheme <- new("BiomeScheme",
                                                            "Tundra" = "mediumpurple1",
                                                            "Desert" = "grey75")),
                               units =  c("Tropical Forest",                     
-                                         "Temperate Evergeen Forest", 
+                                         "Temperate Evergreen Forest", 
                                          "Temperate Deciduous Forest", 
                                          "Boreal Forest",
                                          "Savanna and Dry Woodlands",

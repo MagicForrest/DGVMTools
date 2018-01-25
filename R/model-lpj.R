@@ -258,7 +258,8 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
     this.dt <- openLPJOutputFile(run, "canopyheight", verbose = TRUE)
-    
+    setnames(this.dt, "CanHght", "CanopyHeight")
+
     return(this.dt)
     
   }

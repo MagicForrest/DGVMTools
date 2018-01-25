@@ -162,15 +162,22 @@ calcBiomes <-function(input, scheme){
   st.cols <- getSTInfo(input)
   
   # calculate the biomes (first add it to the existing data.table then subset to make a new data.table and then delete the column from the original)
-  suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
-  biome.dt <- dt[,append(st.cols, scheme@id), with = FALSE]
-  dt[, scheme@id := NULL]
+  suppressWarnings(dt[, Biome := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
+  biome.dt <- dt[,append(st.cols, "Biome"), with = FALSE]
+  dt[, Biome := NULL]
   
   # now make a new Field and return
   biomes <- new("Field",
-                id = makeFieldID(scheme@id, paste(input@temporal.extent@start,input@temporal.extent@start, sep = "-"), input@spatial.extent.id, input@temporal.aggregate.method, input@spatial.aggregate.method),
+                id = makeFieldID(source.info = input@source, 
+                                 var.string = scheme@id, 
+                                 temporal.extent.id = input@temporal.extent.id,
+                                 spatial.extent.id = input@spatial.extent.id, 
+                                 temporal.aggregate.method = input@temporal.aggregate.method, 
+                                 spatial.aggregate.method = input@spatial.aggregate.method),
                 data = biome.dt,
                 quant = as(scheme, "Quantity"),
+                spatial.extent.id = input@spatial.extent.id,
+                temporal.extent.id = input@temporal.extent.id,
                 spatial.extent = input@spatial.extent,
                 temporal.extent = input@temporal.extent,
                 spatial.aggregate.method = input@spatial.aggregate.method,

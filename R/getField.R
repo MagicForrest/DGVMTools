@@ -31,19 +31,19 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 getField <- function(source, 
-                           var, 
-                           temporal.extent = NULL, 
-                           temporal.extent.id = "Full",
-                           temporal.aggregate.method = "none", 
-                           spatial.extent = NULL, 
-                           spatial.extent.id = "Full", 
-                           spatial.aggregate.method = "none",
-                           write = FALSE, 
-                           read.full = TRUE, 
-                           verbose = FALSE, 
-                           store.internally = FALSE,
-                           store.full = FALSE,
-                           adgvm.scheme = 1){
+                     var, 
+                     temporal.extent = NULL, 
+                     temporal.extent.id = "Full",
+                     temporal.aggregate.method = "none", 
+                     spatial.extent = NULL, 
+                     spatial.extent.id = "Full", 
+                     spatial.aggregate.method = "none",
+                     write = FALSE, 
+                     read.full = TRUE, 
+                     verbose = FALSE, 
+                     store.internally = FALSE,
+                     store.full = FALSE,
+                     adgvm.scheme = 1){
   
   # To avoid annoying NOTES when R CMD CHECK-ing
   Lon = Lat = Year = NULL  
@@ -58,7 +58,7 @@ getField <- function(source,
     quant <- var
     var.string <- quant@id
   }
- 
+  
   ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally aggregated and reduced in extent
   model.field.id <- makeFieldID(source.info = as(source, "SourceInfo"), 
                                 var.string = var.string, 
@@ -161,13 +161,13 @@ getField <- function(source,
     
     else if(source@format == "DGVMData") {
       
-         data.list <- openDGVMDataFile(source, quant, verbose = verbose)
-         
-         this.dt <- data.list$dt
-         first.year <-  data.list$first.year
-         last.year <-  data.list$last.year
-         year.aggregation.method <-  data.list$year.aggregation.method
-   
+      data.list <- openDGVMDataFile(source, quant, verbose = verbose)
+      
+      this.dt <- data.list$dt
+      first.year <-  data.list$first.year
+      last.year <-  data.list$last.year
+      year.aggregation.method <-  data.list$year.aggregation.method
+      
     }
     
     
@@ -231,22 +231,22 @@ getField <- function(source,
     ### STORE THE FULL MODEL OUTPUT AS AN UNAVERAGED VEGOBJECT IF REQUESTED
     # Note we gotta do this now before the cropping and averaging below
     if(store.full){
-      
+
       model.field.full <- new("Field",
-                               id = var.string,
-                               data = this.dt,
-                               quant = quant,
-                               spatial.extent = extent(this.dt),
-                               spatial.extent.id = "Full",
-                               temporal.extent = new("TemporalExtent",
-                                                     id = "FullTS",
-                                                     name = "Full simulation duration",
-                                                     start = first.year,
-                                                     end = last.year),
-                               temporal.extent.id = "Full",
-                               spatial.aggregate.method = "none",
-                               temporal.aggregate.method = "none",
-                               source = as(source, "SourceInfo"))
+                              id = var.string,
+                              data = this.dt,
+                              quant = quant,
+                              spatial.extent = extent(this.dt),
+                              spatial.extent.id = "Full",
+                              temporal.extent = new("TemporalExtent",
+                                                    id = "FullTS",
+                                                    name = "Full simulation duration",
+                                                    start = first.year,
+                                                    end = last.year),
+                              temporal.extent.id = "Full",
+                              spatial.aggregate.method = "none",
+                              temporal.aggregate.method = "none",
+                              source = as(source, "SourceInfo"))
       
       # name and store
       #names(model.field.full) <- var.string
@@ -258,7 +258,7 @@ getField <- function(source,
   
   ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED, AND CHECK THAT WE HAVE A VALID DATA.TABLE
   if(!is.null(spatial.extent))  {
-    
+
     # if the provided spatial yields a valid extent, use the crop function
     possible.error <- try ( extent(spatial.extent), silent=TRUE )
     if (class(possible.error) != "try-error") {
@@ -342,16 +342,16 @@ getField <- function(source,
   
   ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
   model.field <- new("Field",
-                      id = model.field.id,
-                      data = this.dt,
-                      quant = quant,
-                      spatial.extent = this.spatial.extent,
-                      temporal.extent = temporal.extent,
-                      spatial.extent.id = spatial.extent.id,
-                      temporal.extent.id = temporal.extent.id,
-                      spatial.aggregate.method = spatial.aggregate.method,
-                      temporal.aggregate.method = year.aggregation.method,
-                      source = as(source, "SourceInfo"))
+                     id = model.field.id,
+                     data = this.dt,
+                     quant = quant,
+                     spatial.extent = this.spatial.extent,
+                     temporal.extent = temporal.extent,
+                     spatial.extent.id = spatial.extent.id,
+                     temporal.extent.id = temporal.extent.id,
+                     spatial.aggregate.method = spatial.aggregate.method,
+                     temporal.aggregate.method = year.aggregation.method,
+                     source = as(source, "SourceInfo"))
   
   
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
