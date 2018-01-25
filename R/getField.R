@@ -318,7 +318,7 @@ getField <- function(source,
   
   ###  DO TIME AGGREGATATION
   if(tolower(temporal.aggregate.method) != "none"){
-    this.dt <- aggregateTemporal(this.dt, method = temporal.aggregate.method, verbose = verbose)
+    this.dt <- aggregateYears(this.dt, method = temporal.aggregate.method, verbose = verbose)
     if(verbose) {
       message("Head of time aggregated data.table:")
       print(utils::head(this.dt))

@@ -5,20 +5,20 @@
 ######################### TEMPORAL AGGREGATION ##############################
 #############################################################################
 
-#
-#' Time average a data.table
+
+#' Aggregate years
 #' 
-#' Time average all availables years (denoted by column "Years") or a data.table object
+#' Aggregated all available years in a Field or a data.table object (with years denoted by column "Years"). 
 #'
-#' @param input.obj data.table, Field or DataObject  
+#' @param input.obj A Field or data.table (with a "Year" column)   
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A Field, DataObject or data.table depending on the input object
+#' @return A Field or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-aggregateTemporal.uncompiled <- function(input.obj,
+aggregateYears.uncompiled <- function(input.obj,
                                          method = "mean",
                                          verbose = FALSE){
   
@@ -81,16 +81,16 @@ aggregateTemporal.uncompiled <- function(input.obj,
 
 
 
-#' Time average a data.table
+#' Aggregate years
 #' 
-#' Time average all availables years (denoted by column "Years") or a data.table object
+#' Aggregated all available years in a Field or a data.table object (with years denoted by column "Years"). 
 #'
-#' @param input.obj data.table, Field or DataObject  
+#' @param input.obj A Field or data.table (with a "Year" column)   
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A Field, DataObject or data.table depending on the input object
-#' @keywords internal
+#' @return A Field or data.table depending on the input object
+#' @export
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-aggregateTemporal <- compiler::cmpfun(aggregateTemporal.uncompiled)
+aggregateYears <- compiler::cmpfun(aggregateYears.uncompiled)
