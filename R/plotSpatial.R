@@ -61,7 +61,7 @@
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
-plotSpatial2 <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
+plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
                          layers = NULL,
                          title = NULL,
                          facet.labels =  NULL,

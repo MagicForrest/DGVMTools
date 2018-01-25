@@ -361,7 +361,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
       if (globalAttr) {
         ncatt_put(ncout, 0, "Model", mo@source@model)
         ncatt_put(ncout, 0, "Name", mo@source@name)
-        ncatt_put(ncout, 0, "Driving_data", mo@source@driving.data)
+        ncatt_put(ncout, 0, "Forcing_data", mo@source@forcing.data)
         if (mo@source@contact != "")
           ncatt_put(ncout, 0, "Contact", mo@source@contact)
         if (mo@source@institute != "" || mo@source@institute != "none")

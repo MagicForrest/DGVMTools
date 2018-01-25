@@ -13,7 +13,7 @@ supported.datasets <- list(
                    pft.set = list(),
                    name = "Saatchi et al. Veg Carbon",
                    dir = "~/DGVMData/Saatchi2011",                              
-                   driving.data = "NA",
+                   forcing.data = "NA",
                    lonlat.offset =  c(0,0),
                    year.offset = 0,
                    london.centre = TRUE,

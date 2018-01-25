@@ -190,7 +190,7 @@ checkSourceInfo <- function(object){
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot dir The location of this run on the file system (Mandatory)
-#' @slot driving.data A character string identifying the climate or other data used to produce this model run
+#' @slot forcing.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
@@ -205,7 +205,7 @@ setClass("SourceInfo",
                    pft.set = "list",
                    name = "character",
                    dir = "character",                              
-                   driving.data = "character",
+                   forcing.data = "character",
                    lonlat.offset = "numeric",
                    year.offset = "numeric",
                    london.centre = "logical",
@@ -214,7 +214,7 @@ setClass("SourceInfo",
                    institute = "character"
          ),
          prototype = c(pft.set = list(),
-                       driving.data = "not specified",
+                       forcing.data = "not specified",
                        lonlat.offset = c(0,0),
                        year.offset = 0,
                        london.centre = TRUE,
@@ -455,7 +455,7 @@ setClass("BiomeScheme",
 #' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot dir The location of this run on the file system (Mandatory)
-#' @slot driving.data A character string identifying the climate or other data used to produce this model run
+#' @slot forcing.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 

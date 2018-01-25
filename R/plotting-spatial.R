@@ -60,7 +60,7 @@
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
-plotSpatial <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
+plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
                         layers = NULL,
                         title = NULL,
                         layout.objs = NULL, 
