@@ -20,6 +20,7 @@
 #' @param land.use.included If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @param contact Name and email address of responsible person (default to OS username).
 #' @param institute Name of the institute (default "none").
+#' @param ... extra arguments for call to listPFTs() to determine the PFTs in a run, for exampel which aDGVM classification scheme to use (normally not needed)
 #' 
 #' The parameters are the slots of a SourceInfo object. Note that that \code{id}, \code{name}, \code{format}, and \code{dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 #' Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS configurations.
@@ -29,17 +30,23 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 defineSource <- function(id,
-                           name,
-                           dir,
-                           format,
-                           pft.set = list(),
-                           lonlat.offset = c(0,0),
-                           year.offset = 0,
-                           london.centre = TRUE,
-                           forcing.data = "Not specified",
-                           land.use.included = FALSE,
-                           contact = "Not specified",
-                           institute = "Not specified"){
+                         name,
+                         dir,
+                         format,
+                         pft.set = list(),
+                         lonlat.offset = c(0,0),
+                         year.offset = 0,
+                         london.centre = TRUE,
+                         forcing.data = "Not specified",
+                         land.use.included = FALSE,
+                         contact = "Not specified",
+                         institute = "Not specified",
+                         ...){
+  
+  
+  
+  
+  
   
   # make SourceInfo object from the supplied meta data
   info <- new("SourceInfo",
@@ -56,7 +63,12 @@ defineSource <- function(id,
               contact = contact,
               institute = institute)
   
+  # look up the PFTs to get the actual PFTs present from the superset
+  if(length(pft.set) > 0) {
+    info@pft.set <- listPFTs(info, ...)
+  }
 
+  
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
   if(length(info@pft.set) == 0) info@pft.set <- list()
   if(length(info@name) == 0)  info@name <- info@id

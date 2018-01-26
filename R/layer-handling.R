@@ -66,15 +66,15 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
   
 }
 
-#' Select a subset of layers from a DataObject or Field
+#' Select a subset of layers from a Field
 #' 
-#' This function returns a copy of a DataObject or Field containing only a selected subset of layers
+#' This function returns a copy of a Field containing only a selected subset of layers
 #' 
-#' @param x A DataObject or Field
+#' @param x A Field
 #' @param layers A vector of characters strings specifying the layers to be selected
 #' 
 #'
-#' @return A Field or DataObject
+#' @return A Field
 #' @import data.table
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}

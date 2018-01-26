@@ -333,6 +333,51 @@ listAllLPJOutput <- function(directory){
 
 
 
+#' Detemine PFTs present in an LPJ-GUESS run
+
+listPFTs_LPJ <- function(x, variables) {
+  
+  # first get a list of all avaiable variables
+  available.vars <- listAllLPJOutput(x@dir)
+  
+  # check for the presence the following variables (in order)
+  possible.vars <- c("lai", "cmass", "dens", "fpc")
+  
+  for(this.var in possible.vars) {
+    
+    if(this.var %in% available.vars) {
+      
+      file.string = file.path(x@dir, paste(this.var, ".out", sep=""))
+      if(file.exists(file.string)){ 
+        header <- read.table(file.string, header = TRUE, nrow = 1)
+      }
+      else if(file.exists(paste(file.string, "gz", sep = "."))){
+        header <- read.table(gzfile(paste(file.string, "gz", sep = ".")), header = TRUE, nrow = 1)
+      }
+      
+      PFTs.present <- list()
+      for(colname in names(header)){
+        for(PFT in x@pft.set){
+          if(PFT@id == colname) {
+            PFTs.present <- append(PFTs.present, PFT)
+          }
+        }
+      }
+      
+      return(PFTs.present)
+      
+      
+    }
+    
+    
+    
+  }
+  
+  warning(paste("Hmmm, not been able to identify the PFTs in LPJ-GUESS(-SPITFIRE) run", x@name, "because I can't find an appropriate per-PFT file in the run directory. Returning the super-set list.", sep = " ") )
+  return(x@pft.set)
+  
+}
+
 
 ######################### TRIM AN LPJ-GUESS FILENAME  #####################################################################
 #' Helper function to raster::trim the ".out" or the ".out.gz" from an LPJ-GUESS filename to get the variable in question
@@ -355,3 +400,6 @@ LPJQuantFromFilename <- function(var.filename){
   return(NULL)
   
 }
+
+
+

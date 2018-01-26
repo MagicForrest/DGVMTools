@@ -95,9 +95,8 @@ getField <- function(source,
     
     
     # Check that the spatial extent matches before returning
-    # Note that there are various cases to check here (the full spatial extent and specifically defined extents)
-    if(is.null(spatial.extent) & is.null(spatial.extent.id)
-       | identical(spatial.extent, model.field@spatial.extent)){
+    # Note that there are two cases to check here (the full spatial extent and specifically defined extents)
+    if(spatial.extent.id == "Full" || identical(spatial.extent, model.field@spatial.extent)){
       if(store.internally) {source <<- addToSource(model.field, source)}
       return(model.field)
     }  
