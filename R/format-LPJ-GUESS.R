@@ -158,8 +158,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     mod.cols <- names(this.dt)
     mod.cols <- mod.cols[!mod.cols %in% unmod.cols]
     this.dt <- this.dt[, (mod.cols) := lapply(.SD, function(x) x * 100 ), .SDcols = mod.cols]
-    
-    
+    if("Grass" %in% names(this.dt)) { setnames(this.dt, old = "Grass", new = "NonTree") }
     return(this.dt)
     
   }

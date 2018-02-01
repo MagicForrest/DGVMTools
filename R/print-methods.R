@@ -156,7 +156,7 @@ setMethod("print", signature(x="ComparisonLayer"), function(x) {
 setMethod("print", signature(x="SpatialComparison"), function(x) {
   
   cat(paste0("Spatial Comparison:\n"))
-  cat("Continuous comparison metrics")
+  cat("Continuous comparison metrics:\n")
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   cat(paste0("Mean Error (ME) = ", round(x@ME,4),  "\n"))
   cat(paste0("Normalised Mean Error (NME) = ", round(x@NME,4),  "\n"))  
@@ -166,10 +166,10 @@ setMethod("print", signature(x="SpatialComparison"), function(x) {
   cat(paste0("Nash Sutcliffe Modell Efficiency (R2.eff) = ", round(x@R2.eff,4),  "\n"))  
   cat(paste0("Pearson Product Moment Correlation Coefficient (P.cor) = ", round(x@P.cor,4),  "\n"))  
   cat(paste0("Standard Deviation of Errors (sd.diff) = ", round(x@sd.diff,4),  "\n"))  
-  cat("Relative proportion comparison metrics")
+  cat("Relative proportion comparison metrics:\n")
   cat(paste0("Manhattan Metric (MM) = ", round(x@MM,4),  "\n"))
   cat(paste0("Square Chord Distance (SCD) = ", round(x@SCD,4),  "\n"))  
-  cat("Categorical comparison metrics")
+  cat("Categorical comparison metrics:\n")
   cat(paste0("(Cohen's) Kappa (Kappa) = ", round(x@Kappa,4),  "\n"))  
   for(kappa in x@individual.Kappas) {
     print(kappa)

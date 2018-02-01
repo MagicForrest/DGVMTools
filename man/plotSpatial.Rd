@@ -5,7 +5,7 @@
 \title{Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)}
 \usage{
 plotSpatial(sources, layers = NULL, title = NULL, facet.labels = NULL,
-  facet.order = NULL, plot.bg.col = "white", panel.bg.col = "#cae1ff",
+  facet.order = NULL, plot.bg.col = "white", panel.bg.col = "#809DB8",
   useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
   ylim = NULL, years = NULL, days = NULL, months = NULL,
   seasons = NULL, limits = NULL, override.cols = NULL,

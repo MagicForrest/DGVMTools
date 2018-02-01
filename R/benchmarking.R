@@ -167,12 +167,20 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
 proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
   
   # check the incoming data.tables are the same size
-  if(ncol(dt1) != ncol(dt1)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of components")
+  if(ncol(dt1) != ncol(dt2)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of components")
+ 
+  # check the incoming data.tables are the same size
+  if(nrow(dt1) != nrow(dt2)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of rows")
   
+  # quick fix, divide by 100
+  dt1 <- dt1/100
+  dt2 <- dt2/100
+   
   # calculate Manhattan Metric and Squared Chord Distance
   MM <- 0
   SCD <- 0
   for(layer.index in 1:ncol(dt1)){
+
     
     # for Manhattan Metric
     difference.vector <- abs(dt1[[layer.index]] - dt2[[layer.index]])
