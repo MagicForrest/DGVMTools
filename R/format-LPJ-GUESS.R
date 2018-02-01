@@ -333,6 +333,12 @@ listAllLPJOutput <- function(directory){
 
 
 #' Detemine PFTs present in an LPJ-GUESS run
+#' 
+#' @param x  A Source objects describing an LPJ-GUESS(-SPITFIRE) run
+#' @param variables Some variable to loom for to detremine the PFTs present in the run.  Not the function automatically searches:
+#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
 listPFTs_LPJ <- function(x, variables) {
   
@@ -348,10 +354,10 @@ listPFTs_LPJ <- function(x, variables) {
       
       file.string = file.path(x@dir, paste(this.var, ".out", sep=""))
       if(file.exists(file.string)){ 
-        header <- read.table(file.string, header = TRUE, nrow = 1)
+        header <- utils::read.table(file.string, header = TRUE, nrow = 1)
       }
       else if(file.exists(paste(file.string, "gz", sep = "."))){
-        header <- read.table(gzfile(paste(file.string, "gz", sep = ".")), header = TRUE, nrow = 1)
+        header <- utils::read.table(gzfile(paste(file.string, "gz", sep = ".")), header = TRUE, nrow = 1)
       }
       
       PFTs.present <- list()

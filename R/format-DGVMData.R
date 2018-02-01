@@ -25,7 +25,7 @@ openDGVMDataFile <- function(source,
                              verbose = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Year = Month = NULL
+  Lon = Lat = Year = Month = Time = NULL
   
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present

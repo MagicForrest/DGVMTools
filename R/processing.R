@@ -99,7 +99,7 @@ combineShadeTolerance <- function(input){
 
 
 ###################################################################################
-##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, SEASONAL ETC...)
+##### MAKE TOTALS (LIFEFORM, PHENOLOGY, ZONE, ETC...)
 #'
 #' Combine layers of a Field (or a data.table)
 #' 

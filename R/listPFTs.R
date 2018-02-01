@@ -3,12 +3,14 @@
 
 #' Get PFTs present
 #' 
+#' @param x The Source object for which to determine the PFTs present
+#' @param ...  Extra arguments to the format-specific functions that this function wraps around.
 #' 
 #' 
 #' 
 #' 
-#' 
-
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
 listPFTs <- function(x, ...) {
   
