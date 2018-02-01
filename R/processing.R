@@ -1,19 +1,5 @@
 #!/usr/bin/Rscript
 
-
-########### SEPARATION CHARACTER
-# I am not sure if I prefer to use " ", "", "_" or "." when constructing variable names such as "EvergreenFractionofTree"
-# but here is an easy way to choose.
-
-#' Separation character for builidng variables names
-#' 
-#' Currently hard-coded to "", but could also be " ", "_" or "." (for example)
-#' This should clearly be implemented in a more useful way...
-#' @keywords internal datasets
-sep.char = ""
-
-
-
 ############# EXTRACT THE PFTS PRESENT IN A RUN USING THE DATA.TABLE HEADER
 #' Get the PFTs present in a run
 #' 
@@ -307,6 +293,13 @@ newLayer <- function(input, layers, method = NULL, PFT.data = NULL){
 #' @seealso expandslayers getVegTotals
 
 divideLayers <- function(input, layers, denominators = list("Total"), aggregate.method = "sum"){
+  
+  
+  ########### SEPARATION CHARACTER
+  # I am not sure if I prefer to use " ", "", "_" or "." when constructing variable names such as "EvergreenFractionofTree"
+  #' This should clearly be implemented in a more useful way...
+  sep.char = ""
+  
   
   # To avoid NOTES
   Total = NULL

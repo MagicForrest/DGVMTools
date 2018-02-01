@@ -36,6 +36,7 @@ See documention of \code{expandLayers} for details.
 }
 \seealso{
 expandslayers getVegTotals
+This should clearly be implemented in a more useful way...
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
