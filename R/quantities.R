@@ -5,30 +5,30 @@
 #' Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties) from the standard \code{dgvm.quantities} list
 #' 
 #' @param quant.id String holding the id of the \code{Quantity} you want
-#' @param model.str String holding the name of the model or "Standard"
+#' @param format.str String holding the name of the model or "Standard"
 #' @param verbose Logical, if TRUE (default) give some extra information
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @return A \code{Quantity} object if it finds the right one.  Otherwise the code halts.
-lookupQuantity <- function(quant.id, model.str = "Standard", verbose = TRUE){
+lookupQuantity <- function(quant.id, format.str = "Standard", verbose = TRUE){
   
   # this code will make the function first check for a user-defined dgvm.quantities list
   local.dgvm.quantities <- get('dgvm.quantities', envir=.GlobalEnv)
- 
+  
   # First look for the exact quant.id model combination
   for(quant in local.dgvm.quantities){
-     if(quant.id == quant@id & model.str %in% quant@model) return(quant)
+    if(quant.id == quant@id & format.str %in% quant@model) return(quant)
   }
   
   # if can't find that then warn
   if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std" && verbose) {
-    warning(paste0("Can't find a quantity with id = ", quant.id, " and model = ", model.str, " in dgvm.quantities, now searching only on the quant.id."))
+    warning(paste0("Can't find a quantity with id = ", quant.id, " and formay= ", format.str, " in dgvm.quantities, now searching only on the quant.id."))
   }
   
   # then look for a match on the name only
   for(quant in local.dgvm.quantities){
-        if(quant.id == quant@id) return(quant)
+    if(quant.id == quant@id) return(quant)
   }
-
+  
   # if can't find that then warn
   if(verbose) {
     warning(paste0("Can't find a quantity with id = ", quant.id, " anywhere in dgvm.quantities, now searching the supported.biomes.schemes"))
@@ -76,7 +76,7 @@ dgvm.quantities <- list(
       colours = grDevices::colorRampPalette(c("grey85", "black")), 
       model = c("Standard","DGVMData"),
       cf.name = "area_fraction"), 
- 
+  
   new("Quantity",
       id = "vegcover_std",
       type = "",
@@ -143,7 +143,8 @@ dgvm.quantities <- list(
       type = "annual",
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
-      model = c("Standard")),
+      model = c("Standard", "DGVMData"),
+      cf.name = "burned_area_fraction"),
   
   new("Quantity",
       id = "FPAR_std",
@@ -504,7 +505,8 @@ dgvm.quantities <- list(
       type = "annual",
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
-      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "burned_area_fraction"),
   
   new("Quantity",
       id = "tot_runoff",
@@ -612,7 +614,7 @@ dgvm.quantities <- list(
       units = "kgN/ha",
       colours = fields::tim.colors,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
- 
+  
   
   new("Quantity",
       id = "mprec",
@@ -623,12 +625,12 @@ dgvm.quantities <- list(
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
-     id = "mtemp",
-     name = "Mean Monthly Temperature",
-     type = "monthly",
-     units = "deg C",
-     colours = fields::tim.colors,
-     model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+      id = "mtemp",
+      name = "Mean Monthly Temperature",
+      type = "monthly",
+      units = "deg C",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mwmass_stem",
@@ -951,58 +953,58 @@ dgvm.quantities <- list(
       model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
-                           id = "allocation_iters",
-                           name = "Monthly Iteration To Allocation Fire",
-                           type = "annual",
-                           units = "days",
-                           colours = fields::tim.colors,
-                           model = c("LPJ-GUESS-SPITFIRE")),
+      id = "allocation_iters",
+      name = "Monthly Iteration To Allocation Fire",
+      type = "annual",
+      units = "days",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
-                id = "mfuel",
-                name = "Monthly Fuel",
-                type = "monthly",
-                units = "kgC/m^2",
-                colours = fields::tim.colors,
-                aggregate.method = "mean",
-                model = c("LPJ-GUESS-SPITFIRE")),
+      id = "mfuel",
+      name = "Monthly Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
-                    id = "mfinefuel",
-                    name = "Monthly Fine Fuel",
-                    type = "monthly",
-                    units = "kgC/m^2",
-                    colours = fields::tim.colors,
-                    aggregate.method = "mean",
-                    model = c("LPJ-GUESS-SPITFIRE")),
+      id = "mfinefuel",
+      name = "Monthly Fine Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
-                    id = "mleaffuel",
-                    name = "Monthly Leaf Fuel",
-                    type = "monthly",
-                    units = "kgC/m^2",
-                    colours = fields::tim.colors,
-                    aggregate.method = "mean",
-                    model = c("LPJ-GUESS-SPITFIRE")),
+      id = "mleaffuel",
+      name = "Monthly Leaf Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS-SPITFIRE")),
   
   
   new("Quantity",
-                    id = "mfiredays",
-                    name = "Monthly sum of daily fire probabilites",
-                    type = "monthly",
-                    units = "days",
-                    colours = fields::tim.colors,
-                    aggregate.method = "sum",
-                    model = c("LPJ-GUESS-SPITFIRE")),
+      id = "mfiredays",
+      name = "Monthly sum of daily fire probabilites",
+      type = "monthly",
+      units = "days",
+      colours = fields::tim.colors,
+      aggregate.method = "sum",
+      model = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
-                         id = "mfiredaysfine",
-                         name = "Monthly sum of daily fire probabilites (based on fine fuel threshold)",
-                         type = "monthly",
-                         units = "days",
-                         colours = fields::tim.colors,
-                         aggregate.method = "sum",
-                         model = c("LPJ-GUESS-SPITFIRE")),
+      id = "mfiredaysfine",
+      name = "Monthly sum of daily fire probabilites (based on fine fuel threshold)",
+      type = "monthly",
+      units = "days",
+      colours = fields::tim.colors,
+      aggregate.method = "sum",
+      model = c("LPJ-GUESS-SPITFIRE")),
   
   #############################################################################################
   ################################### aDGVM QUANTITIES ########################################
@@ -1026,7 +1028,7 @@ dgvm.quantities <- list(
       colours = fields::tim.colors,
       aggregate.method = "mean",
       model = c("aDGVM")),
-
+  
   new("Quantity",
       id = "basalarea",
       name = "Basal Area",
@@ -1035,7 +1037,7 @@ dgvm.quantities <- list(
       colours = fields::tim.colors,
       aggregate.method = "mean",
       model = c("aDGVM")),
-
+  
   new("Quantity",
       id = "nind",
       name = "Number of individuals",
@@ -1053,7 +1055,7 @@ dgvm.quantities <- list(
       colours = veg.palette,
       aggregate.method = "sum",
       model = c("aDGVM")),
-      
+  
   new("Quantity",
       id = "firefreq",
       name = "Fire Frequency",
@@ -1061,8 +1063,8 @@ dgvm.quantities <- list(
       units = "",
       colours = reversed.fire.palette,
       model = c("aDGVM"))
- 
-
+  
+  
 )
 
 

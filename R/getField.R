@@ -49,7 +49,7 @@ getField <- function(source,
   Lon = Lat = Year = NULL  
   
   
-  ### CONVERT STRING TO VEGQUANT
+  ### CONVERT STRING TO QUANTITY
   if(class(var) == "character") {
     quant <- lookupQuantity(var, source@format)
     var.string <- var
@@ -350,6 +350,8 @@ getField <- function(source,
                      temporal.extent.id = temporal.extent.id,
                      spatial.aggregate.method = spatial.aggregate.method,
                      temporal.aggregate.method = year.aggregation.method,
+                     subannual.aggregate.method = "none",
+                     subannual.original = "none",
                      source = as(source, "SourceInfo"))
   
   

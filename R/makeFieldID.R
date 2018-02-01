@@ -9,8 +9,6 @@
 #' 
 #' @param var.string Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"
 #' @param unit.string Character string to describe the units in which the data are measured
-#' @param temporal.resolution Character string to describe the temporal resolution of this data, eg. "Annual" or "Daily"
-#' @param spatial.resolution Character string to describe the spatial resolution of this data eg "HD" (for half degree) or "QD" (for quarter degree)
 #' @param temporal.extent.id The temporal extent of this object if it has been cropped from the orginal duration, otherwise NULL
 #' @param spatial.extent.id The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL
 #' @param temporal.aggregate.method Character, method by which this Field was temporally aggregated (if not temporally averaged leave blank of use "none")
@@ -23,8 +21,6 @@
 
 makeFieldID <- function(source.info,
                         var.string,
-                        spatial.resolution = NULL, 
-                        temporal.resolution = NULL,
                         subannual.resolution = NULL,
                         spatial.aggregate.method = NULL,
                         temporal.aggregate.method = NULL, 

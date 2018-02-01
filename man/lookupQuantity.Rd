@@ -4,12 +4,12 @@
 \alias{lookupQuantity}
 \title{Retrieve a Quantity from the standard list.}
 \usage{
-lookupQuantity(quant.id, model.str = "Standard", verbose = TRUE)
+lookupQuantity(quant.id, format.str = "Standard", verbose = TRUE)
 }
 \arguments{
 \item{quant.id}{String holding the id of the \code{Quantity} you want}
 
-\item{model.str}{String holding the name of the model or "Standard"}
+\item{format.str}{String holding the name of the model or "Standard"}
 
 \item{verbose}{Logical, if TRUE (default) give some extra information}
 }

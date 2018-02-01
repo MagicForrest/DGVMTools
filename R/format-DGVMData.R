@@ -43,12 +43,30 @@ openDGVMDataFile <- function(source,
   }
   
   
+  # Open file and get Lon and Lat dimensions, and get values for later 
   message(paste0("Opening file ", file.name.nc))     
-  
-  
-  this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
+  if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
+  else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
   this.lat <- ncdf4::ncvar_get(this.nc,"lat",verbose=verbose)
   this.lon <- ncdf4::ncvar_get(this.nc,"lon",verbose=verbose)
+  all.lats <- this.nc$dim$lat$vals
+  all.lons <- this.nc$dim$lon$vals
+  
+  # check the number of dimensions and pull time if present
+  
+  if(this.nc$ndims == 2){
+    if(verbose) message("Got two dimensions, assuming lon and lat")  
+    start <- c(1,1)
+    count <- c(-1,-1)
+    dimension.names <- list(this.lon, this.lat)
+  }
+  if(this.nc$ndims == 3) {
+    this.time <- ncdf4::ncvar_get(this.nc,"Time",verbose=verbose)
+    start <- c(1,1,1)
+    count <- c(-1,-1,-1)
+    dimension.names <- list(this.lon, this.lat, this.time)
+  }
+  
   
   # look up attributes for meta-data for this layer/variable
   first.year <- ncatt_get(this.nc, 0, attname="DGVMData_first.year", verbose=FALSE)$value
@@ -62,17 +80,17 @@ openDGVMDataFile <- function(source,
   dt.list <- list()
   
   for(this.var in all.vars) {
-
+    
     # Get the actual data and set the dimension names    
-    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = c(1,1), count = c(-1,-1), verbose = verbose)
-    dimnames(this.slice) <- list(this.lon, this.lat)
+    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose)
+    dimnames(this.slice) <- dimension.names
     
     # melt to a data.table, via data.frame
     this.slice.dt <- as.data.table(melt(this.slice))
     
     # remove NAs
     this.slice.dt <- stats::na.omit(this.slice.dt)
-  
+    
     # 
     # # quantity
     # quant.str <- ncatt_get(this.nc, this.var, attname="DGVMTools_quant", verbose=FALSE)$value
@@ -86,10 +104,71 @@ openDGVMDataFile <- function(source,
     
     
     # also set the names, key and if categorical, set to factors in the variabl@units slot
-    setnames(this.slice.dt, c("Lon", "Lat", this.var$name))
+    if(this.nc$ndims == 2){
+      setnames(this.slice.dt, c("Lon", "Lat", this.var$name))
+    }
+    if(this.nc$ndims == 3){
+      setnames(this.slice.dt, c("Lon", "Lat", "Time", this.var$name))
+      
+      # some tricks to determine exactly what the 'Time' axis represent 
+      time.axis.string <- this.nc$dim$Time$units
+      
+      
+      # actually, lets do some shortcuts
+      length.time.axis <- this.nc$dim$Time$len
+      
+      # lets see if we have annual data
+      if(length.time.axis == (last.year - first.year + 1)) {
+        if(verbose) message("Got annual data.")
+      }
+      # else check for monthly
+      if(length.time.axis == (last.year - first.year + 1) *12) {
+        if(verbose) message("Got monthly data.")
+        
+        all.years <- first.year:last.year
+       
+        # sort data.table by Time axis
+        this.slice.dt[order(Time)] 
+        
+        # make Year vector and add it do the data.table
+        temp.nentries.per.year <- nrow(this.slice.dt)/length(all.years)
+        year.vector <- c()
+        for(year in all.years) {
+          year.vector <- append(year.vector, rep.int(year, temp.nentries.per.year))
+        }
+        this.slice.dt[, Year := year.vector]
+        
+        # Make Month vector
+        month.vector <- c()
+        for(year in all.years) {
+          for(month in 1:12) {
+            month.vector <-append(month.vector, rep.int(month, temp.nentries.per.year/12))
+          }
+        }
+        this.slice.dt[, Month := month.vector]
+        
+        
+        # Remove the Time columns
+        this.slice.dt[, Time := NULL]
+        
+        # make new colum order so that the variable is last
+        all.names <- names(this.slice.dt)
+        all.names <- all.names[-which(all.names == this.var$name)]
+        all.names <- append(all.names, this.var$name)
+        setcolorder(this.slice.dt, all.names)
+        print(this.slice.dt)
+
+        
+      }
+      
+      
+    }
+    
     setKeyDGVM(this.slice.dt)
+    
+    
     if(variable@type == "categorical") {
-       this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = variable@units)]
+      this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = variable@units)]
     }
     
     # now join this to all.dt
@@ -132,8 +211,8 @@ openDGVMDataFile <- function(source,
     print(utils::head(dt))
   }
   
-  # if london.centre is requested, make sure all negative longitudes are shifted to positive
-  if(source@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  # if london.centre is requested, shift to -180 to +180
+  if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   
   
   # set some attributes about the file - works!

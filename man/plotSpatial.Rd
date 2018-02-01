@@ -5,11 +5,12 @@
 \title{Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)}
 \usage{
 plotSpatial(sources, layers = NULL, title = NULL, facet.labels = NULL,
-  facet.order = NULL, plot.bg.col = "white", useLongNames = FALSE,
-  text.multiplier = NULL, xlim = NULL, ylim = NULL, years = NULL,
-  days = NULL, months = NULL, seasons = NULL, limits = NULL,
-  override.cols = NULL, override.cuts = NULL, discretise = FALSE,
-  map.overlay = NULL, grid = FALSE, plot = TRUE, interior.lines = TRUE)
+  facet.order = NULL, plot.bg.col = "white", panel.bg.col = "#cae1ff",
+  useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
+  ylim = NULL, years = NULL, days = NULL, months = NULL,
+  seasons = NULL, limits = NULL, override.cols = NULL,
+  override.cuts = NULL, discretise = FALSE, map.overlay = NULL,
+  grid = FALSE, plot = TRUE, interior.lines = TRUE)
 }
 \arguments{
 \item{sources}{The data to plot. Can be a Field, a DataObject, or a list of including both}
@@ -27,6 +28,8 @@ and check the values of the XXXX column.  But generally they will be the values 
 in this function).}
 
 \item{plot.bg.col}{Colour string for the plot background.  "white"}
+
+\item{panel.bg.col}{Colour string for the panel background, default it a sort of sky blue.}
 
 \item{useLongNames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!}
 

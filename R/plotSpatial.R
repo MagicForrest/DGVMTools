@@ -23,6 +23,7 @@
 #' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
 #' @param plot.bg.col Colour string for the plot background.  "white"
+#' @param panel.bg.col Colour string for the panel background, default it a sort of sky blue.
 #' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
@@ -67,6 +68,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                          facet.labels =  NULL,
                          facet.order = NULL,
                          plot.bg.col =  "white",
+                         panel.bg.col = "#809DB8", #"cae1ff",
                          useLongNames = FALSE,
                          text.multiplier = NULL,
                          xlim = NULL,
@@ -341,10 +343,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     override.cuts <- waiver()
   }
   
-  
-  ### RETURN DATA ONLY IF REQUESTED
-  if(!plot) return(data.toplot)
-  
+
   
   ### CALCULATE THE RANGE OF LONGITUDE AND LATITUDE TO BE PLOTTED AND CROP
   all.lons <- sort(unique(data.toplot[["Lon"]]))
@@ -579,6 +578,9 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   
   
+  ### RETURN DATA.TABLE ONLY NOT PLOT REQUESTED
+  if(!plot) return(data.toplot)
+  
   
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
@@ -660,7 +662,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   # set background colour of panel
   mp <- mp + theme(
     plot.background = element_rect(fill = plot.bg.col), # bg of the plot
-    panel.background = element_rect(fill = "#cae1ff"), # bg of the panel
+    panel.background = element_rect(fill = panel.bg.col), # bg of the panel
     #panel.grid.major = element_blank(), # get rid of major grid
     #panel.grid.minor = element_blank(), # get rid of minor grid
     legend.background = element_rect(fill = "transparent"), #, # get rid of legend bg
