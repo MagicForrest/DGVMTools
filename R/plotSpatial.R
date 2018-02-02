@@ -461,13 +461,6 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       
       if(length(cols) == length(unique.vals)) is.PFTs <- TRUE
       
-      # if not PFTs, look for months
-      if(!is.PFTs){
-        
-        print("Here look for months")
-        
-      }
-      
     }
     
     
@@ -695,7 +688,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   # map overlay - suppress warning about missing values
   
   if(!is.null(map.overlay)) {
-    suppressWarnings( mp <- mp + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group = group)))
+    suppressWarnings(mp <- mp + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group = group)))
   }
   
   return(mp)
