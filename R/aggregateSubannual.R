@@ -232,8 +232,13 @@ aggregateSubannual.uncompiled <- function(input.obj,
   # sort out the input object class
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
-    input.obj@temporal.aggregate.method <- method
-    input.obj@id <- makeFieldID(input.obj@quant@id, temporal.extent.id = input.obj@temporal.extent.id, spatial.extent.id = input.obj@spatial.extent.id, temporal.aggregate.method = input.obj@temporal.aggregate.method, spatial.aggregate.method = input.obj@spatial.aggregate.method)
+    input.obj@subannual.aggregate.method <- method
+    input.obj@id <- makeFieldID(input.obj@quant@id, 
+                                first.year = input.obj@first.year, 
+                                last.year = input.obj@last.year,
+                                year.aggregate.method = input.obj@year.aggregate.method, 
+                                spatial.extent.id = input.obj@spatial.extent.id, 
+                                spatial.aggregate.method = input.obj@spatial.aggregate.method)
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}

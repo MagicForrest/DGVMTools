@@ -36,17 +36,6 @@ setMethod("print", signature(x="Quantity"), function(x) {
 })
 
 
-#' @rdname print
-#' @export
-setMethod("print", signature(x="TemporalExtent"), function(x) {
-  
-  cat(paste0("Temporal Extent:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  cat(paste0("start = ", x@start, "\n"))
-  cat(paste0("end = ", x@end, "\n"))
-  
-})
 
 
 #' @rdname print
@@ -115,10 +104,11 @@ setMethod("print", signature(x="Field"), function(x) {
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   #cat(paste0("name = ", x@name, "\"", "\n"))
   print(x@quant)
-  cat(paste0("Spatially Averaged =  ",  x@spatial.aggregate.method, "\n"))
+  cat(paste0("Spatial Aggregation =  ",  x@spatial.aggregate.method, "\n"))
   print(x@spatial.extent)
-  cat(paste0("Temporally Averaged =  ",  x@temporal.aggregate.method, "\n"))
-  print(x@temporal.extent)
+  cat(paste0("Yearly Aggregation =  ",  x@year.aggregate.method, "\n"))
+  cat(paste0("First year =  ",  x@first.year, "\n"))
+  cat(paste0("Last year =  ",  x@last.year, "\n"))
   cat(paste0("Data: ",  "\n"))
   print(x@data)
   cat(paste0("Source = ", "\"", x@source@name, "\"", "\n"))
@@ -138,8 +128,6 @@ setMethod("print", signature(x="ComparisonLayer"), function(x) {
   print(x@quant)
   cat(paste0("Spatially Averaged =  ",  x@spatial.aggregate.method, "\n"))
   print(x@spatial.extent)
-  cat(paste0("Temporally Averaged =  ",  x@temporal.aggregate.method, "\n"))
-  print(x@temporal.extent)
   cat(paste0("Data: ",  "\n"))
   print(x@data)
   cat(paste0("Source for first layer: \n"))

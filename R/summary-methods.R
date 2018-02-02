@@ -35,7 +35,7 @@ setMethod("summary", signature("Field"), function(object, ...) {
                          description=object@objects[[n]]@quant@name,
                          units=object@objects[[n]]@quant@units,
                          colnames=colnames(object@objects[[n]]@data))
-    } else if (object@objects[[n]]@temporal.aggregate.method) {
+    } else if (object@objects[[n]]@year.aggregate.method) {
       spatial[[n]]=list(name=n,
                         description=object@objects[[n]]@quant@name,
                         units=object@objects[[n]]@quant@units,

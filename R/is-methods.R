@@ -27,7 +27,7 @@ is.Field <- function(input, spatial=FALSE, temporal=FALSE) {
         if (input@spatial.aggregate.method == "none")
           return(TRUE)
       } else if (!spatial && temporal) {
-        if (input@temporal.aggregate.method == "none")
+        if (input@year.aggregate.method == "none")
           return(TRUE)
       } else if (!spatial && !temporal) {
         return(TRUE)

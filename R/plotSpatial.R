@@ -6,7 +6,7 @@
 ##########################################################################################################################################
 
 
-#' Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
+#' Plot maps from a \code{Field} or \code{ComaprisonLayer} (and lists thereof)
 #' 
 #' This is a heavy lifting function for plotting maps from Fields, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
@@ -265,7 +265,8 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   # Loop through the objects and pull layers from each one into a large data.table for plotting
   
-  temporal.extent <- NULL
+  first.year <- NULL
+  last.year <- NULL
   discrete <- FALSE
   continuous <- FALSE
   first <- TRUE
@@ -291,12 +292,16 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       if(is.null(override.cols) & continuous) override.cols <- object@quant@colours(20)
       legend.title <- object@quant@units
       quant <- object@quant
-      temporal.extent <- object@temporal.extent
+      first.year <- object@first.year
+      last.year <- object@last.year
     }
     else {
-      # check for consistent temporal extent
-      if(!is.null(temporal.extent)){
-        if(temporal.extent@start != object@temporal.extent@start || temporal.extent@end != object@temporal.extent@end) temporal.extent <- NULL
+      # check for consistent first and last years
+      if(!is.null(first.year) & !is.null(last.year)){
+        if(first.year != object@first.year || last.year != object@last.year) {
+          first.year <- NULL
+          last.year <- NULL
+        }
       }
       # check for consistent Quantity
       if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")

@@ -123,12 +123,6 @@ compareLayers <- function(object1,
   
   # make meta-data for the ComparisonLayer
   id <- paste0(new.ids.1, "-", new.ids.2)
-  if(object1@temporal.extent@start == object2@temporal.extent@start & object1@temporal.extent@end == object2@temporal.extent@end){
-    te <- object2@temporal.extent
-  }
-  else {
-    te <- object1@temporal.extent
-  }
   se <- extent(new.data)
   if(!identical(object1@quant, object1@quant)) {
     if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", object1@quant@id, " and ", object2@quant@id, "), proceeding using quantity", object1@quant@id))
@@ -183,10 +177,7 @@ compareLayers <- function(object1,
                           stats = stats,
                           spatial.extent = se,
                           spatial.extent.id = object1@spatial.extent.id ,
-                          temporal.extent = te,
-                          temporal.extent.id = object1@spatial.extent.id ,
-                          spatial.aggregate.method = object1@spatial.aggregate.method,
-                          temporal.aggregate.method = object1@temporal.aggregate.method,
+                                             spatial.aggregate.method = object1@spatial.aggregate.method,
                           subannual.aggregate.method = object1@subannual.aggregate.method,
                           subannual.original = object1@subannual.original
   )

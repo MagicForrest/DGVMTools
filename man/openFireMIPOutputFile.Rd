@@ -4,7 +4,7 @@
 \alias{openFireMIPOutputFile}
 \title{Open a FireMIP output file}
 \usage{
-openFireMIPOutputFile(run, quantity, temporal.extent = NULL,
+openFireMIPOutputFile(run, quantity, first.year = NULL, last.year = NULL,
   spatial.extent = NULL, verbose = TRUE)
 }
 \arguments{
@@ -12,7 +12,9 @@ openFireMIPOutputFile(run, quantity, temporal.extent = NULL,
 
 \item{quantity}{A Quantity object to define which variable we want to look up}
 
-\item{temporal.extent}{A TemporalExtent object to define which years we want to read}
+\item{first.year}{The first year we want to read (numeric)}
+
+\item{last.year}{The last year we want to read (numeric)}
 
 \item{spatial.extent}{The spatial extent we want to read (as defined by as raster::extent or an object that can be cast to a raster::extent)}
 

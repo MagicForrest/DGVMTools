@@ -2,18 +2,18 @@
 
 ################################# GET FIELD - Does a lot! #########################################
 #
-#' Get a \code{Field}, optionally with spatial/temporal averaging/cropping 
+#' Get a \code{Field}, optionally with spatial/yearly averaging/cropping 
 #' 
-#' Given a \code{Source} object a \code{Quantity} object, return an appropriate spatially-averaged \code{ModelField} oject for that source and quantity. Arguments can also be provided for averaging over different spatial or temporal extents (very useful) or optionall just cropping to those extents
+#' Given a \code{Source} object a \code{Quantity} object, return an appropriate spatially-averaged \code{ModelField} oject for that source and quantity. Arguments can also be provided for averaging over different spatial or year extents (very useful) or optionall just cropping to those extents
 #' 
 #' Note that because there are two types of averaging available, the resulting \code{Source} object can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
 #' Also not that the data is stored internal as a data.table object, but this is mostly not important to the user.
 #'   
 #' @param source The \code{Source} object for which the spatially-averaged \code{ModelField} should be built (eg. "lai")
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
-#' @param temporal.extent The temporal extent (as a \code{TemporalExtent} object over which the data is to be averaged)
-#' @param temporal.extent.id A character string to give an identifier for the temporal period this ModelField covers.
-#' @param temporal.aggregate.method A character string describing the method by which to temporally aggregate the data.  Leave blank or use "none" to apply no temporal aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
+#' @param first.year The first year (as a numeric) of the data to be return
+#' @param last.year The last year (as a numeric) of the data to be return
+#' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank or use "none" to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param spatial.extent An extent in space to which this Field should be cropped, supplied as a raster::extent object or an object from which a raster::extent object can be derived - eg. a Raster* object or another Field object.
 #' @param spatial.extent.id A character string to give an identifier for the spatial extent this ModelField covers.
@@ -32,9 +32,9 @@
 
 getField <- function(source, 
                      var, 
-                     temporal.extent = NULL, 
-                     temporal.extent.id = "Full",
-                     temporal.aggregate.method = "none", 
+                     first.year = NULL,
+                     last.year = NULL,
+                     year.aggregate.method = "none", 
                      spatial.extent = NULL, 
                      spatial.extent.id = "Full", 
                      spatial.aggregate.method = "none",
@@ -59,12 +59,13 @@ getField <- function(source,
     var.string <- quant@id
   }
   
-  ### MAKE UNIQUE IDENTIFIER OF THIS VEGOBJECT VARIABLE AND FILENAME - this describes completely whether we want the files spatially or temporally aggregated and reduced in extent
+  ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
   model.field.id <- makeFieldID(source.info = as(source, "SourceInfo"), 
                                 var.string = var.string, 
-                                temporal.extent.id = temporal.extent.id, 
+                                first.year = first.year,
+                                last.year = last.year,
+                                year.aggregate.method = year.aggregate.method, 
                                 spatial.extent.id = spatial.extent.id, 
-                                temporal.aggregate.method = temporal.aggregate.method, 
                                 spatial.aggregate.method = spatial.aggregate.method)
   file.name <- file.path(source@dir, paste(model.field.id, "DGVMData", sep = "."))
   if(verbose) message(paste("Seeking ModelField with id = ", model.field.id, sep = ""))
@@ -150,10 +151,10 @@ getField <- function(source,
       # Meta-data for use later on
       if("Year" %in% getSTInfo(this.dt)) {
         year.range <- range(this.dt[,Year])
-        first.year <- year.range[1]
-        last.year <- year.range[2]
+        first.year.present <- year.range[1]
+        last.year.present <- year.range[2]
       }
-      year.aggregation.method = "none"
+      year.aggregation.method.present = "none"
       
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
@@ -163,9 +164,9 @@ getField <- function(source,
       data.list <- openDGVMDataFile(source, quant, verbose = verbose)
       
       this.dt <- data.list$dt
-      first.year <-  data.list$first.year
-      last.year <-  data.list$last.year
-      year.aggregation.method <-  data.list$year.aggregation.method
+      first.year.present <-  data.list$first.year
+      last.year.present <-  data.list$last.year
+      year.aggregation.method.present <-  data.list$year.aggregation.method
       
     }
     
@@ -174,8 +175,8 @@ getField <- function(source,
     else if(source@format == "aDGVM") {
       
       if("aDGVM" %in% quant@format | "Standard" == quant@format) {
-        if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(source, temporal.extent, quant))
-        if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, temporal.extent, quant))
+        if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(source, first.year = first.year, last.year= last.year, quant))
+        if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, first.year = first.year, last.year= last.year, quant))
       }
       #else if(quant@format == "Standard") {
       #  stop("Standard quantities nor currently defined for aDGVM")
@@ -199,8 +200,12 @@ getField <- function(source,
       print(quant@format)
       
       if(quant@format == "FireMIP") {
-        print("woohoo")
-        this.dt <- openFireMIPOutputFile(source, var.string, quantity = quant, temporal.extent = temporal.extent, verbose = verbose)
+        this.dt <- openFireMIPOutputFile(source, 
+                                         var.string, 
+                                         quantity = quant, 
+                                         first.year = first.year, 
+                                         last.year= last.year, 
+                                         verbose = verbose)
       }
       else {
         
@@ -230,21 +235,17 @@ getField <- function(source,
     ### STORE THE FULL MODEL OUTPUT AS AN UNAVERAGED VEGOBJECT IF REQUESTED
     # Note we gotta do this now before the cropping and averaging below
     if(store.full){
-
+      
       model.field.full <- new("Field",
                               id = var.string,
                               data = this.dt,
                               quant = quant,
                               spatial.extent = extent(this.dt),
                               spatial.extent.id = "Full",
-                              temporal.extent = new("TemporalExtent",
-                                                    id = "FullTS",
-                                                    name = "Full simulation duration",
-                                                    start = first.year,
-                                                    end = last.year),
-                              temporal.extent.id = "Full",
+                              first.year = first.year.present,
+                              last.year  = last.year.present,
+                              year.aggregate.method = year.aggregate.method.present,
                               spatial.aggregate.method = "none",
-                              temporal.aggregate.method = "none",
                               source = as(source, "SourceInfo"))
       
       # name and store
@@ -255,9 +256,9 @@ getField <- function(source,
     
   } # end option 4
   
-  ### CROP THE SPATIAL AND TEMPORAL EXTENTS IF REQUESTED, AND CHECK THAT WE HAVE A VALID DATA.TABLE
+  ### CROP THE SPATIAL EXTENT IF REQUESTED, AND 
   if(!is.null(spatial.extent))  {
-
+    
     # if the provided spatial yields a valid extent, use the crop function
     possible.error <- try ( extent(spatial.extent), silent=TRUE )
     if (class(possible.error) != "try-error") {
@@ -287,17 +288,28 @@ getField <- function(source,
     
   }
   
-  if(!is.null(temporal.extent))  this.dt <- selectYears(this.dt, new("TemporalExtent",
-                                                                     id = "FullTS",
-                                                                     name = "Full simulation duration",
-                                                                     start = first.year,
-                                                                     end = last.year))   
+  ### SELECT THE YEARS IF REQUESTED
+  got.first.year <- !missing(first.year) & !is.null(first.year)
+  got.last.year <- !missing(last.year) & !is.null(last.year)
+  if(got.first.year & got.last.year) {
+    if(verbose) message(paste("Selecting years from", first.year, "to", last.year, sep = " "))
+    this.dt <- selectYears(this.dt, first = first.year, last = last.year) 
+  }
+  else if(!got.first.year & !got.last.year) {
+    if(verbose) message("No year slection being applied")
+  }
+  else {
+    stop("Got to provide both first.year and last.year, or neither of them.")
+  }
   
-  if(length(this.dt) == 0) stop("getModelField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the temporal.exent and spatial.extent that you have requested.")
+  
+  
+  ### CHECK THAT WE HAVE A VALID DATA.TABLE
+  if(length(this.dt) == 0) stop("getModelField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
   
   
   
-  ### GET THE SPATAIAL AND TEMPORAL EXTENTS BEFORE THEY MAY BE AVERAGED AWAY
+  ### GET THE YEARS BEFORE THEY MAY BE AVERAGED AWAY
   ordered.years = NULL
   if("Year" %in% names(this.dt)) { 
     ordered.years <- sort(unique(this.dt[,Year]))
@@ -315,11 +327,11 @@ getField <- function(source,
   }
   
   
-  ###  DO TIME AGGREGATATION
-  if(tolower(temporal.aggregate.method) != "none"){
-    this.dt <- aggregateYears(this.dt, method = temporal.aggregate.method, verbose = verbose)
+  ###  DO YEAR AGGREGATATION
+  if(tolower(year.aggregate.method) != "none"){
+    this.dt <- aggregateYears(this.dt, method = year.aggregate.method, verbose = verbose)
     if(verbose) {
-      message("Head of time aggregated data.table:")
+      message("Head of year aggregated data.table:")
       print(utils::head(this.dt))
     }
   }
@@ -327,16 +339,6 @@ getField <- function(source,
   
   ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE FINAL VEGOBJECT TO RETURN
   
-  # TEMPORAL
-  if(is.null(temporal.extent)) {
-    temporal.extent<- new("TemporalExtent",
-                          id = "FullTS",
-                          name = "Full simulation duration",
-                          start = first.year,
-                          end = last.year
-    )
-    if(verbose) message(paste("No temporal extent specified, setting temporal extent to whole simulation duration (",  temporal.extent@start, "-", temporal.extent@end, ")", sep = ""))
-  }
   
   
   ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
@@ -344,12 +346,12 @@ getField <- function(source,
                      id = model.field.id,
                      data = this.dt,
                      quant = quant,
+                     first.year = first.year, 
+                     last.year = last.year, 
+                     year.aggregate.method = year.aggregate.method,
                      spatial.extent = this.spatial.extent,
-                     temporal.extent = temporal.extent,
                      spatial.extent.id = spatial.extent.id,
-                     temporal.extent.id = temporal.extent.id,
                      spatial.aggregate.method = spatial.aggregate.method,
-                     temporal.aggregate.method = year.aggregation.method,
                      subannual.aggregate.method = "none",
                      subannual.original = "none",
                      source = as(source, "SourceInfo"))

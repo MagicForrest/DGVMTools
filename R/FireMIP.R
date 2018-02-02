@@ -6,7 +6,8 @@
 #' 
 #' @param run A Source object to define the run we want to open.
 #' @param quantity A Quantity object to define which variable we want to look up
-#' @param temporal.extent A TemporalExtent object to define which years we want to read
+#' @param first.year The first year we want to read (numeric)
+#' @param last.year The last year we want to read (numeric)
 #' @param spatial.extent The spatial extent we want to read (as defined by as raster::extent or an object that can be cast to a raster::extent)
 #' @param verbose Logical, if TRUE spew forth a lot of info.
 #' 
@@ -16,7 +17,7 @@
 #'
 #' @export 
 
-openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial.extent = NULL, verbose = TRUE) {
+openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = NULL, spatial.extent = NULL, verbose = TRUE) {
   
   Year = Lon = Total = NULL
   
@@ -104,13 +105,11 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
       africa.centre <- TRUE
     }
     
-    # choose temporal extent (if specifed, else take the whole range)
-    if(!is.null(temporal.extent)){
+    # choose range of years (if specifed, else take the whole range)
+    if(!is.null(first.year) &  !is.null(last.year)){
       
       # match the range to the time axis
-      first.year <- temporal.extent@start
-      last.year <- temporal.extent@end
-      index.range <- match(c(temporal.extent@start, temporal.extent@end), this.time)
+        index.range <- match(c(first.year, last.year), this.time)
       
       # check it is sensible
       if(class(index.range) != "integer" || length(index.range) != 2 || index.range[1] > index.range[2]){
@@ -282,13 +281,11 @@ openFireMIPOutputFile <- function(run, quantity, temporal.extent = NULL, spatial
       africa.centre <- TRUE
     }
     
-    # choose temporal extent (if specifed, else take the whole range)
-    if(!is.null(temporal.extent)){
+    # choose range of year (if specifed, else take the whole range)
+    if(!is.null(first.year) &  !is.null(last.year)){
       
       # match the range to the time axis
-      first.year <- temporal.extent@start
-      last.year <- temporal.extent@end
-      index.range <- match(c(temporal.extent@start, temporal.extent@end), this.time)
+      index.range <- match(c(first.year, last.year), this.time)
       
       # check it is sensible
       if(class(index.range) != "integer" || length(index.range) != 2 || index.range[1] > index.range[2]){

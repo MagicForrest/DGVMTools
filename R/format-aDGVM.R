@@ -312,7 +312,8 @@ convertMonthlyScheme1 <- function( runid, fire, directory )
 #' Simple scheme, classifies only as tree, C4 grass or C3 grass based on only the pop file, doesn't open the trait file.
 #' 
 #' @param run A \code{Source}
-#' @param period A \code{TemporalExtent} object to define the period over which to average.
+#' @param first.year First year of data to read (not currently used)
+#' @param last.year Last year of data to read (not currently used)
 #' @param variable A character string specifying which variable to get, can be "agb","nind","meanheight","basalarea","pind","firefreq","vegcover_std","vegC_std","LAI_std","aGPP_std","canopyheight_std","burntfraction_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -515,7 +516,8 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
 #' Classifies as evergreen tree, deciduous tree, evergreen shrub, deciduous shrub, C3 grass, C4 grass.
 #' 
 #' @param run A \code{Source}
-#' @param period A \code{TemporalExtent} object to define the period over which to average.
+#' @param first.year First year of data to read (not currently used)
+#' @param last.year Last year of data to read (not currently used)
 #' @param variable A character string specifying which variable to get, only "agb" currently supported
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}

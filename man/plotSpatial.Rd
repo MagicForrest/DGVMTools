@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotSpatial.R
 \name{plotSpatial}
 \alias{plotSpatial}
-\title{Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)}
+\title{Plot maps from a \code{Field} or \code{ComaprisonLayer} (and lists thereof)}
 \usage{
 plotSpatial(sources, layers = NULL, title = NULL, facet.labels = NULL,
   facet.order = NULL, plot.bg.col = "white", panel.bg.col = "#809DB8",

@@ -32,7 +32,11 @@ calcBiomes <-function(input, scheme){
   # get gdd5
   if(scheme@needGDD5){
     temp.model.run <- new("Field", input@source)
-    gdd5 <- getField(temp.model.run, "gdd5", input@temporal.extent, read.full = FALSE)
+    gdd5 <- getField(temp.model.run, 
+                     "gdd5", 
+                     first.year = input@first.year, 
+                     last.year = input@last.year,
+                     read.full = FALSE)
     dt <- input@data
     dt.gdd5 <- gdd5@data
     dt <- dt[dt.gdd5]
@@ -73,18 +77,19 @@ calcBiomes <-function(input, scheme){
   biomes <- new("Field",
                 id = makeFieldID(source.info = input@source, 
                                  var.string = scheme@id, 
-                                 temporal.extent.id = input@temporal.extent.id,
+                                 first.year = input@first.year,
+                                 last.year = input@last.year,
+                                 year.aggregate.method = input@year.aggregate.method, 
                                  spatial.extent.id = input@spatial.extent.id, 
-                                 temporal.aggregate.method = input@temporal.aggregate.method, 
                                  spatial.aggregate.method = input@spatial.aggregate.method),
                 data = biome.dt,
                 quant = as(scheme, "Quantity"),
+                first.year = input@first.year,
+                last.year = input@last.year,
+                year.aggregate.method = input@year.aggregate.method, 
                 spatial.extent.id = input@spatial.extent.id,
-                temporal.extent.id = input@temporal.extent.id,
                 spatial.extent = input@spatial.extent,
-                temporal.extent = input@temporal.extent,
                 spatial.aggregate.method = input@spatial.aggregate.method,
-                temporal.aggregate.method = input@temporal.aggregate.method,
                 source = input@source)
   
   return(biomes)

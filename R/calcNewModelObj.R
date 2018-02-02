@@ -38,7 +38,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     stop(paste("Operator '", op, "' not implemented (yet)!", sep=""))
   }
 
-  if (x@temporal.aggregate.method != y@temporal.aggregate.method ||
+  if (x@year.aggregate.method != y@year.aggregate.method ||
       x@spatial.aggregate.method != y@spatial.aggregate.method)
     stop("'x' and 'y' are averaged differently.")
 
@@ -50,17 +50,19 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     message("Getting the data.")
 
   x.quant     <- x@quant
-  x.t.extent  <- x@temporal.extent
+  x.first.year  <- x@first.year
+  x.last.year  <- x@last.year
   x.sp.extent <- x@spatial.extent
   x.run       <- x@source
   x.dt        <- copy(x@data)
   y.quant     <- y@quant
-  y.t.extent  <- y@temporal.extent
+  y.first.year  <- y@first.year
+  y.last.year  <- y@last.yeart
   y.sp.extent <- y@spatial.extent
   y.dt        <- copy(y@data)
 
-  if (!is.equal(x.t.extent, y.t.extent)) 
-    warning("Temporal extents differ.")
+  if (!is.equal(x.first.year, y.first.year) | !is.equal(x.last.year, y.last.year)) 
+    warning("Temporal extents (ie first and last yers of data) differ.")
   if (!is.equal(x.sp.extent, y.sp.extent))
     warning("Spatial extents differ.")
 
@@ -92,7 +94,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     setnames(y.dt, val.names, paste("y.", val.names, sep=""))
 
     list.str <- paste(val.names, "=x.",val.names, op, "y.", val.names, sep="", collapse=", ")
-    if (x@temporal.aggregate.method != "none") {
+    if (x@year.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
     } else if (x@spatial.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
@@ -105,8 +107,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                data = new.dt,
                quant = quant,
                spatial.extent = x.sp.extent,
-               temporal.extent = x.t.extent,
-               temporal.aggregate.method = x@temporal.aggregate.method,
+               first.year = x.first.year,
+               last.year = x.last.year,
+               year.aggregate.method = x@year.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "SourceInfo")))      
 
@@ -117,7 +120,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     setnames(x.dt, val.names, paste("x.", val.names, sep=""))
     
     list.str <- paste(val.names, "=x.", val.names, op, y.col, sep="", collapse=", ")
-    if (x@temporal.aggregate.method != "none") {
+    if (x@year.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
     } else if (x@spatial.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
@@ -129,8 +132,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                data = new.dt,
                quant = quant,
                spatial.extent = x.sp.extent,
-               temporal.extent = x.t.extent,
-               temporal.aggregate.method = x@temporal.aggregate.method,
+               first.year = x.first.year,
+               last.year = x.last.year,
+               year.aggregate.method = x@year.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "SourceInfo")))      
     
@@ -141,7 +145,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     setnames(y.dt, val.names, paste0("y.", val.names))
     
     list.str <- paste(val.names, "=", x.col, op, "y.", val.names, sep="", collapse=", ")
-    if (x@temporal.aggregate.method != "none") {
+    if (x@year.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste0("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]")))
     } else if (x@spatial.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
@@ -153,8 +157,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                data = new.dt,
                quant = quant,
                spatial.extent = x.sp.extent,
-               temporal.extent = x.t.extent,
-               temporal.aggregate.method = x@temporal.aggregate.method,
+               first.year = x.first.year,
+               last.year = x.last.year,
+               year.aggregate.method = x@year.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "SourceInfo")))      
   } else {
@@ -172,7 +177,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
     } else {
       list.str <- paste0("value=x.", x.col, op, "y.", y.col)
     }
-    if (x@temporal.aggregate.method != "none") {
+    if (x@year.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Lon=Lon, Lat=Lat, ", list.str,")]", sep="")))
     } else if (x@spatial.aggregate.method != "none") {
       new.dt <- eval(parse(text=paste("x.dt[y.dt, list(Year=Year, ", list.str,")]", sep="")))
@@ -184,8 +189,9 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                data = new.dt,
                quant = quant,
                spatial.extent = x.sp.extent,
-               temporal.extent = x.t.extent,
-               temporal.aggregate.method = x@temporal.aggregate.method,
+               first.year = x.first.year,
+               last.year = x.last.year,
+               year.aggregate.method = x@year.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
                run = as(x.run, "SourceInfo")))      
   }

@@ -6,7 +6,7 @@
 ##########################################################################################################################################
 
 
-#' Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
+#' Plot maps from a \code{Field} or \code{ComaprisonLayer} (and lists thereof)
 #' 
 #' This is a heavy lifting function for plotting maps from Fields, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
@@ -134,7 +134,8 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
     if(is.null(override.cols) & continuous) override.cols <- data@quant@colours(20)
     legend.title <- data@quant@units
     quant <- data@quant
-    temporal.extent <- data@temporal.extent
+    first.year <- data@first.year
+    last.year <- data@last.year
     
     # for later (handling wrap/grid and plot titles)
     multiple.sources <- FALSE
@@ -199,7 +200,8 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
     if(is.null(override.cols) & continuous) override.cols <- data@quant@colours(20)
     legend.title <- data@quant@units
     quant <- data@quant
-    temporal.extent <- data@temporal.extent
+    first.year <- data@first.year
+    last.year <- data@last.year
     
     # special case for difference plots, make limits symmetric around 0
     if(missing(limits) & (layers == "Difference" || layers == "Percentage Difference")){
@@ -237,7 +239,8 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
       
       # Loop through the objects and pull layers from each one into a large data.table for plotting
       
-      temporal.extent <- NULL
+      first.year <- NULL
+      last.year <- NULL
       first <- TRUE
       for(object in data){
         
@@ -259,12 +262,13 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
           if(is.null(override.cols) & continuous) override.cols <- object@quant@colours(20)
           legend.title <- object@quant@units
           quant <- object@quant
-          temporal.extent <- object@temporal.extent
+          first.year <- object@first.year
+          last.year <- object@last.year
         }
         else {
-          # check for consistent temporal extent
-          if(!is.null(temporal.extent)){
-            if(temporal.extent@start != object@temporal.extent@start || temporal.extent@end != object@temporal.extent@end) temporal.extent <- NULL
+          # check for consistent years extent
+          if(!is.null(first.year) & !is.null(last.year)){
+            if(first.year != object@first.year ||last.year != object@tlast.year) first.year = last.year = NULL
           }
           # check for consistent Quantity
           if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
@@ -340,7 +344,8 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
         if(is.null(override.cols) & continuous) override.cols <- comp.layer@quant@colours(20)
         legend.title <- comp.layer@quant@units
         quant <- comp.layer@quant
-        temporal.extent <- comp.layer@temporal.extent
+        first.year <- comp.layer@first.year
+        last.year <- comp.layer@last.year
         
       } # for each ComparisonLayer
       
@@ -650,8 +655,8 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
     if(!multiple.layers & tolower(original.layers) != "absolute") layer.string <- layers
     
     # also only use the 'source' argument in the title if we are plotting only data from only one source 
-    if(multiple.sources)  title <- makePlotTitle(quant@name, layer = layer.string, source = NULL, period = temporal.extent) 
-    else title <- makePlotTitle(quant@name, layer = layer.string, source = data, period = data@temporal.extent)
+    #if(multiple.sources)  title <- makePlotTitle(quant@name, layer = layer.string, source = NULL, first.year = first.year, last.year = last.year) 
+    #else title <- makePlotTitle(quant@name, layer = layer.string, source = data, first.year = data@first.year, last.year = data@last.year)
     
   }
   

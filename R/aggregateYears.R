@@ -1,9 +1,9 @@
 #!/usr/bin/Rscript
 
 
-#############################################################################
-######################### TEMPORAL AGGREGATION ##############################
-#############################################################################
+###########################################################################
+######################### YEARLY AGGREGATION ##############################
+###########################################################################
 
 
 #' Aggregate years
@@ -44,7 +44,7 @@ aggregateYears.uncompiled <- function(input.obj,
   
   
   # Do the averaging
-  if(verbose) message("Temporally averaging ...")
+  if(verbose) message("Aggregating years ...")
   
   # Check the 'by' dims
   by.dims <- c()
@@ -70,12 +70,13 @@ aggregateYears.uncompiled <- function(input.obj,
   # sort out the input object class
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
-    input.obj@temporal.aggregate.method <- method
+    input.obj@year.aggregate.method <- method
     input.obj@id <- makeFieldID(source.info = input.obj@source,
                                 var.string = input.obj@quant@id, 
-                                temporal.extent.id = input.obj@temporal.extent.id, 
+                                first.year= input.obj@first.year, 
+                                last.year= input.obj@last.year, 
+                                year.aggregate.method = input.obj@year.aggregate.method, 
                                 spatial.extent.id = input.obj@spatial.extent.id, 
-                                temporal.aggregate.method = input.obj@temporal.aggregate.method, 
                                 spatial.aggregate.method = input.obj@spatial.aggregate.method, 
                                 subannual.aggregate.method = input.obj@subannual.aggregate.method, 
                                 subannual.original = input.obj@subannual.original)

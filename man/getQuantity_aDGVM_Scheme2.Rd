@@ -9,9 +9,11 @@ getQuantity_aDGVM_Scheme2(run, period, variable)
 \arguments{
 \item{run}{A \code{Source}}
 
-\item{period}{A \code{TemporalExtent} object to define the period over which to average.}
-
 \item{variable}{A character string specifying which variable to get, only "agb" currently supported}
+
+\item{first.year}{First year of data to read (not currently used)}
+
+\item{last.year}{Last year of data to read (not currently used)}
 }
 \description{
 Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 

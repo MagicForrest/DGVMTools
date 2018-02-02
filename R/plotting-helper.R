@@ -45,7 +45,7 @@ correct.map.offset <- function(spl) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #'
 #' @export 
-makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NULL, extent.str = NULL){
+makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, first.year = NULL, last.year = NULL, extent.str = NULL){
   
   # quantity.str must be supplied
   string <- quantity.str
@@ -60,7 +60,7 @@ makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, period = NU
   }
   
   # And a period and/or spatial extent may be supplied  
-  if(!is.null(period) && !is.null(extent.str)) string <- paste(string, paste("(", extent.str, " ", period@start, "-", period@end, ")", sep = ""), sep = " ")
+  if(!is.null(first.year) && !is.null(extent.str)) string <- paste(string, paste("(", extent.str, " ", period@start, "-", period@end, ")", sep = ""), sep = " ")
   else if(!is.null(period) ) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
   else if(!is.null(extent.str) ) string <- paste(string, paste("(", extent.str, ")", sep = ""), sep = " ")
   

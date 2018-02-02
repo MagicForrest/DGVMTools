@@ -13,7 +13,7 @@
 #' Useful options might be \code{max},  \code{min} and \code{sd}.  
 #'  
 #'@details  
-#' The function currently does no checks that the spatial extent, temporal extent and Quantity are consistent between runs.  The resulting Field simple takes these things
+#' The function currently does no checks that the spatial extent, yearly period and Quantity are consistent between runs.  The resulting Field simple takes these things
 #' from the first object from list.of.vegruns.  It is therefore up to the user not do anything silly and average quantites, or spatial or temporal extents that don't makes sense.
 #'          
 #' @export

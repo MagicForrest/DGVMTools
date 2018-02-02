@@ -6,25 +6,6 @@
 ##############################################################################
 
 
-#' Temporal extent for defining the duration of a model run and selecting time periods 
-#' 
-#' A simple S4 class to define a time period ie 1961-1990, called here \code{TemporalExtent} and distinct from the \code{Period} class (which contains months and seasons)
-#' 
-#' @slot id A unique character string to identify this particular time period.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot name A character string to describe the time period. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
-#' @slot start First year of the temporal extent (a year, eg 1961)
-#' @slot end Last year of the temporal extent (a year, eg 1990)
-#' @exportClass TemporalExtent
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("TemporalExtent",
-         slots = c(id = "character",
-                   name = "character",
-                   start = "numeric",
-                   end = "numeric"
-         )
-)
-
-
 #' Time periods - eg. a month or a season or a year.
 #' 
 #' A simple S4 class to define a month, a season or a year used for aggregating monthly values to seasonal or annual values and for making monthly plots with nice labels etc.
@@ -124,7 +105,8 @@ supported.formats <- c("LPJ-GUESS",
                        "JSBACH-FireMIP",
                        "Inferno-FireMIP",
                        "ORCHIDEE-FireMIP",
-                       "DGVMData")
+                       "DGVMData",
+                       "Data")
 
 ########### SourceInfo - class to hold the metadata for an LPJ-GUESS run
 
@@ -354,10 +336,7 @@ setClass("SpatialComparison",
 #' @slot info2 A SourceInfo object describing the source of the second layer in the comparison
 #' @slot spatial.extent An object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
 #' @slot spatial.extent.id  Lalala
-#' @slot temporal.extent A TemporalExtent object which describes the time period covered by this ComparisonLayer.  Particularly useful if the data has been temporally averaged.
-#' @slot temporal.extent.id Lalala
 #' @slot spatial.aggregate.method  Set to TRUE is this ComparisonLayer has been spatially averaged
-#' @slot temporal.aggregate.method Set to TRUE is this ComparisonLayer has been temporally averaged
 #' @slot subannual.aggregate.method Lalala
 #' @slot subannual.original Lalala
 #' @exportClass ComparisonLayer
@@ -373,10 +352,7 @@ setClass("ComparisonLayer",
                    info2 = "ANY",
                    spatial.extent = "ANY",
                    spatial.extent.id = "character",
-                   temporal.extent = "ANY",
-                   temporal.extent.id = "character",
                    spatial.aggregate.method = "character",
-                   temporal.aggregate.method = "character",
                    subannual.aggregate.method = "character",
                    subannual.original = "character"
                    
@@ -444,7 +420,7 @@ setClass("BiomeScheme",
 #' A \code{Source} object contains the metadata concerning the an inherited \code{SourceInfo} object
 #'  and the actual model data run as \code{Fields} in a list in slot \code{objects} and comparisions to datasets 
 #'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-#' Such objects can be built by calls to \code{getField()}, \code{getVegSpatial()}, \code{getVegTemporal()}, \code{calcNewVegObj},
+#' Such objects can be built by calls to \code{getField()}, \code{calcNewVegObj},
 #'  and \code{compareBiomes()}, and saved to the \code{Source} using \code{addToSource()}. 
 #'  
 #' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
@@ -484,13 +460,13 @@ setClass("Source",
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant A Quantity object to define what output this.Field contains
+#' @slot first.year Lalala
+#' @slot last.year Lalala
+#' @slot year.aggregate.method Set to TRUE is this.Field has been anually averaged
 #' @slot spatial.extent An object which can be used to crop or subselect gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
 #' used) or a list of gridcells used by DGVMTools::selectGridcels (see that documentation for how to format the gridcell list).
-#' @slot temporal.extent A TemporalExtent object which describes the time period covered by this.Field.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.extent.id A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever
-#' @slot temporal.extent.id A TemporalExtent object which describes the time periog covered by this.Field.  Particularly useful if the data has been temporally averaged.
 #' @slot spatial.aggregate.method Set to TRUE is this.Field has been spatially averaged
-#' @slot temporal.aggregate.method Set to TRUE is this.Field has been temporally averaged
 #' @slot subannual.aggregate.method Method by which this Field has been subannually aggregated
 #' @slot subannual.original Original subannual resolution of this field
 #' @slot source A SourceInfo object which contains the metadata about the run which this Field belongs too.
@@ -501,12 +477,12 @@ setClass("Field",
          slots = c(id = "character",
                    data = "data.table",
                    quant = "Quantity",
+                   first.year = "numeric",
+                   last.year = "numeric",
+                   year.aggregate.method = "character",
                    spatial.extent = "ANY",
                    spatial.extent.id = "character",
-                   temporal.extent = "ANY",
-                   temporal.extent.id = "character",
                    spatial.aggregate.method = "character",
-                   temporal.aggregate.method = "character",
                    subannual.aggregate.method = "character",
                    subannual.original = "character",
                    source = "SourceInfo"

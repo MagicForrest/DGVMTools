@@ -111,14 +111,14 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
   ##       and temporal averaging is on or off respectivly
   ##       Usefull combinations:
   ##       annually:
-  ##       mo@temporal.aggregate.method == "none" && !monthly && !daily   ok (normal & reduced)
-  ##       mo@temporal.aggregate.method != "none" && monthly && !daily    ok (normal & reduced)
-  ##       mo@temporal.aggregate.method != "none" && !monthly && daily
+  ##       mo@year.aggregate.method == "none" && !monthly && !daily   ok (normal & reduced)
+  ##       mo@year.aggregate.method != "none" && monthly && !daily    ok (normal & reduced)
+  ##       mo@year.aggregate.method != "none" && !monthly && daily
   ##       multi-annual averages:
-  ##       mo@temporal.aggregate.method != "none && !monthly && !daily    ok (normal & reduced)
-  ##       mo@temporal.aggregate.method != "none" && monthly && !daily     ok (normal & reduced)
+  ##       mo@year.aggregate.method != "none && !monthly && !daily    ok (normal & reduced)
+  ##       mo@year.aggregate.method != "none" && monthly && !daily     ok (normal & reduced)
   ##       daily makes not really sense, or does it?
-  if (mo@temporal.aggregate.method == "none") {
+  if (mo@year.aggregate.method == "none") {
     years <- sort(unique(mo@data$Year))
     if (leap) {
       time <- is.leapyear(years, doy=TRUE)
@@ -211,7 +211,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
     } else {
       time <- c(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
     }
-    dims[['time']] <- ncdim_def("time", paste0("days since ", mo@temporal.extent@end, "-01-01 00:00:00"),
+    dims[['time']] <- ncdim_def("time", paste0("days since ", mo@last.year, "-01-01 00:00:00"),
                                 cumsum(time), unlim=TRUE, create_dimvar=TRUE)
   } else if (daily) {
     stop("Daily data as multi-annual average does not really make sense!")
@@ -285,7 +285,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
     if (verbose)
       message(paste0(" * Writing '", mo@quant@id,"'."))
     if (reduce) {
-      if (mo@temporal.aggregate.method != "none") {
+      if (mo@year.aggregate.method != "none") {
         data <- data.table::melt(mo@data, id.vars=c("landid"), measure.vars=month.abb)
         data <- array(data$value, c(nlandid, length(time)))
         if (as.flux)
@@ -313,7 +313,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
       if (verbose)
         message(paste0(" * Writing '", name,"'."))
       if (reduce) {
-        if (mo@temporal.aggregate.method != "none") {
+        if (mo@year.aggregate.method != "none") {
           data <- eval(parse(text=paste0("mo@data$", name)))
           if (as.flux)
             data <- data / (time * as.flux)
@@ -327,7 +327,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
         }
       } else {
         data <- modelObject2Array(mo@data, name, invert.lat, verbose=verbose)
-        if (as.flux && mo@temporal.aggregate.method != "none") {
+        if (as.flux && mo@year.aggregate.method != "none") {
           data <- data / time
         } else if (as.flux) {
           data <- data / array(rep(time * as.flux, each=length(lon) * length(lat)), dim(data))
@@ -345,7 +345,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
   ncatt_put(ncout, "lat" , "standard_name", "latitude")
   ncatt_put(ncout, "lon" , "axis", "X")
   ncatt_put(ncout, "lat" , "axis", "Y")
-  if (mo@temporal.aggregate.method == "none") {
+  if (mo@year.aggregate.method == "none") {
     ncatt_put(ncout, "time" , "standard_name", "time")
     ncatt_put(ncout, "time" , "axis", "T")
     if (leap) {
@@ -354,7 +354,7 @@ write.nc <- function(filename=NA, mo=NA, columns=NA, as.flux=FALSE, fill.value=F
       ncatt_put(ncout, "time" , "calendar", "noleap")
     }
   } else {
-    ncatt_put(ncout, 0 , "temporal_extent", paste0(mo@temporal.extent@start, "-",mo@temporal.extent@end))
+    ncatt_put(ncout, 0 , "temporal_extent", paste0(mo@first.year, "-",mo@last.year))
   }
   if (!is.null(globalAttr)) {
     if (length(globalAttr)==1 && is.logical(globalAttr)) {

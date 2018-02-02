@@ -20,9 +20,3 @@ setMethod("is.equal", signature("Quantity", "Quantity"), function(a, b) {
   return(FALSE)
 })
 
-#' @describeIn is.equal Checks two TemoralExtent objects for equality
-setMethod("is.equal", signature("TemporalExtent", "TemporalExtent"), function(a, b) {
-  if (a@start==b@start && a@end==b@end)
-    return(TRUE)
-  return(FALSE)
-})
