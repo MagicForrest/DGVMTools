@@ -67,6 +67,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
                         facet.labels =  NULL,
                         facet.order = NULL,
                         plot.bg.col =  "white",
+                        panel.bg.col = "#809DB8", #"cae1ff",
                         useLongNames = FALSE,
                         text.multiplier = NULL,
                         xlim = NULL,
@@ -268,7 +269,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
         else {
           # check for consistent years extent
           if(!is.null(first.year) & !is.null(last.year)){
-            if(first.year != object@first.year ||last.year != object@tlast.year) first.year = last.year = NULL
+            if(first.year != object@first.year ||last.year != object@last.year) first.year = last.year = NULL
           }
           # check for consistent Quantity
           if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
@@ -709,7 +710,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
   # set background colour of panel
   mp <- mp + theme(
     plot.background = element_rect(fill = plot.bg.col), # bg of the plot
-    panel.background = element_rect(fill = "#cae1ff"), # bg of the panel
+    panel.background = element_rect(fill = panel.bg.col), # bg of the panel
     #panel.grid.major = element_blank(), # get rid of major grid
     #panel.grid.minor = element_blank(), # get rid of minor grid
     legend.background = element_rect(fill = "transparent"), #, # get rid of legend bg

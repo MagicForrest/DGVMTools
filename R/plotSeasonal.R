@@ -42,7 +42,7 @@ plotSeasonal <- function(runs,
   getQuant_local <- function(quant.str, list.of.runs){
     
     for(run in list.of.runs){
-      result = tryCatch({ return(lookupQuantity(quant, run@model)) })
+      result = tryCatch({ return(lookupQuantity(quant, run@format)) })
     }
     
   }
@@ -159,7 +159,7 @@ plotSeasonal <- function(runs,
   p <- ggplot(as.data.frame(all.dt), aes(Month, Value, colour = Quantity, group = interaction(Year, Quantity)), alpha = 0.2) + geom_line(alpha = 0.2)
   
   # add average line if chosen
-  if(plotAverage) p <- p + stat_summary(aes(group=Quantity), fun.y=mean, geom="line", size = 1)
+  if(plotAverage) p <- p + stat_summary(aes(group=Quantity, color=paste("mean", Quantity) ), fun.y=mean, geom="line", size = 1, linetype = "longdash")
   
   # set the x-axis
   p <- p + scale_x_continuous(breaks = 1:12,labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep","Oct","Nov","Dec"))

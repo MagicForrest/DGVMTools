@@ -65,7 +65,7 @@ lookupQuantity <- function(quant.id, format.str = "Standard", verbose = TRUE){
 dgvm.quantities <- list(
   
   ######################################################################
-  ########## STANDARD (CROSS-MODEL) QUANTITIES  ########################
+  ########## STANDARD (CROSS-FORMAT) QUANTITIES  ########################
   #####################################################################
   
   new("Quantity",

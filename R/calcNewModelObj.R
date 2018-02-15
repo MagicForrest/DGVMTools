@@ -57,13 +57,13 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
   x.dt        <- copy(x@data)
   y.quant     <- y@quant
   y.first.year  <- y@first.year
-  y.last.year  <- y@last.yeart
+  y.last.year  <- y@last.year
   y.sp.extent <- y@spatial.extent
   y.dt        <- copy(y@data)
 
-  if (!is.equal(x.first.year, y.first.year) | !is.equal(x.last.year, y.last.year)) 
+  if (!(x.first.year == y.first.year) | !(x.last.year == y.last.year)) 
     warning("Temporal extents (ie first and last yers of data) differ.")
-  if (!is.equal(x.sp.extent, y.sp.extent))
+  if (!identical(x.sp.extent, y.sp.extent))
     warning("Spatial extents differ.")
 
   if (!is.equal(x.quant, y.quant) && (op == "+" || op == "-"))

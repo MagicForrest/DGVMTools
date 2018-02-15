@@ -45,8 +45,8 @@ defineSource <- function(id,
   
   
   
-  
-  
+  # if no name provided use the id
+  if(missing(name))  name <- id
   
   # make SourceInfo object from the supplied meta data
   info <- new("SourceInfo",
@@ -71,7 +71,7 @@ defineSource <- function(id,
   
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
   if(length(info@pft.set) == 0) info@pft.set <- list()
-  if(length(info@name) == 0)  info@name <- info@id
+ 
   if(length(info@lonlat.offset) == 0)  info@lonlat.offset <- c(0,0)
   if(length(info@year.offset) == 0)  info@year.offset <- 0
   if(length(info@forcing.data) == 0)  info@forcing.data <- "No forcing data set"

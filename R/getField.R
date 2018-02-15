@@ -167,7 +167,7 @@ getField <- function(source,
       first.year.present <-  data.list$first.year
       last.year.present <-  data.list$last.year
       year.aggregation.method.present <-  data.list$year.aggregation.method
-      
+
     }
     
     
@@ -305,7 +305,7 @@ getField <- function(source,
   
   
   ### CHECK THAT WE HAVE A VALID DATA.TABLE
-  if(length(this.dt) == 0) stop("getModelField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
+  if(nrow(this.dt) == 0) stop("getModelField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
   
   
   
@@ -313,9 +313,9 @@ getField <- function(source,
   ordered.years = NULL
   if("Year" %in% names(this.dt)) { 
     ordered.years <- sort(unique(this.dt[,Year]))
+    first.year.present <- min(ordered.years)
+    last.year.present <- max(ordered.years)
   }
-  
-  
   
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(tolower(spatial.aggregate.method) != "none"){
@@ -346,8 +346,8 @@ getField <- function(source,
                      id = model.field.id,
                      data = this.dt,
                      quant = quant,
-                     first.year = first.year, 
-                     last.year = last.year, 
+                     first.year = first.year.present, 
+                     last.year = last.year.present, 
                      year.aggregate.method = year.aggregate.method,
                      spatial.extent = this.spatial.extent,
                      spatial.extent.id = spatial.extent.id,

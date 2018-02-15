@@ -79,19 +79,24 @@ compareLayers <- function(object1,
   ###  Set the names by appending the id so that they are not identical when we combine them, also save the ids so that we can use them later
   new.ids.1 <- c()
   for(layer in layers1) { 
-    temp.id <- paste(info1@id, layer, object1@id, sep = ".")
+    temp.id <- paste(layer, object1@id, sep = ".")
     new.ids.1 <- append(new.ids.1, temp.id)
     setnames(layer.object1@data, layer, temp.id)  
   }
   
   new.ids.2 <- c()
   for(layer in layers2) { 
-    temp.id <- paste(info2@id, layer, object2@id, sep = ".")
+    temp.id <- paste(layer, object2@id, sep = ".")
     new.ids.2 <- append(new.ids.2, temp.id)
     setnames(layer.object2@data, layer, temp.id)  
   }
   
-  
+  if(verbose){
+    message("First dataset:")
+    print(layer.object1@data)
+    message("Second dataset:")
+    print(layer.object2@data)
+  }
   
   ### Check the case that the longitudes, latitudes and years are identical
   
@@ -104,6 +109,7 @@ compareLayers <- function(object1,
   ### Else, not-so-easy-life is having to check the domains and keeping points or not
   else {
     if(verbose) message("Not so easy life! Fields don't have the same dimensions, doing a copyLayers() operation.")
+  
     new.data <- copyLayers(from = layer.object2, 
                            to = layer.object1, 
                            layer.names = new.ids.2, 
@@ -111,8 +117,7 @@ compareLayers <- function(object1,
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
                            dec.places = dec.places)@data
-    
-    
+
   }
   
   # match NAs if necessary
@@ -120,6 +125,14 @@ compareLayers <- function(object1,
     are.NAs <- which(is.na(new.data[[new.ids.1]] * new.data[[new.ids.2]]))
     new.data[are.NAs, (c(new.ids.1, new.ids.2)) := .SD[NA], .SDcols =c(new.ids.1, new.ids.2)]
   }
+  
+  ### Check we made have valid overlap and print if verbose
+  if(nrow(new.data) == 0) stop("The fields you selected to compare have no common points, so layer comparison can't be done! Check your input data and also note that the 'decimal.places' argument to this function may be useful for truncating coordinates to a common precision.") 
+  
+  if(verbose){
+    message("Merged dataset")
+    print(new.data)
+   }
   
   # make meta-data for the ComparisonLayer
   id <- paste0(new.ids.1, "-", new.ids.2)
@@ -164,8 +177,8 @@ compareLayers <- function(object1,
     stats <- proportionsComparison(dt1 =dt1, dt2 = dt2, name1 = info1@name, name2 = info2@name, verbose = verbose)
     if(verbose) print(stats)
   }
-  
-  
+
+
   ### Finally build the layer and return
   comparison.layer <- new("ComparisonLayer",
                           id = id,

@@ -28,7 +28,6 @@ aggregateSubannual.uncompiled <- function(input.obj,
   # Possible can solve this by replace the subset function
   Year = Season = Month = Day = Lat = Lon = Weight = NULL
   
-  
   # Function for weighting months by their number of days
   addMonthlyWeights <- function(x){
     
@@ -68,7 +67,6 @@ aggregateSubannual.uncompiled <- function(input.obj,
   # sort out the input object class
   if(is.Field(input.obj)) {input.dt <- input.obj@data}
   else if(is.data.table(input.obj)) {input.dt <- input.obj}
-  
   
   ### Get the spatial-temporal dimensions present
   avail.dims <- getSTInfo(input.obj)
@@ -222,8 +220,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
   else{
     stop(paste("Unknown target for sub-annual aggregation \"", target, "\" found. Exiting..."))
   }
-  
-  
+
   if(verbose) message("...done.")
   
   # Set keys and return the averaged table
@@ -233,7 +230,8 @@ aggregateSubannual.uncompiled <- function(input.obj,
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@subannual.aggregate.method <- method
-    input.obj@id <- makeFieldID(input.obj@quant@id, 
+    input.obj@id <- makeFieldID(source.info = input.obj@source,
+                                var.string = input.obj@quant@id, 
                                 first.year = input.obj@first.year, 
                                 last.year = input.obj@last.year,
                                 year.aggregate.method = input.obj@year.aggregate.method, 

@@ -99,7 +99,7 @@ openLPJOutputFile <- function(run,
   attr(dt, "shadeToleranceCombined") <- FALSE
   
   # set keys
-  setkey(dt, Lon, Lat, Year)
+  setKeyDGVM(dt)
   
   # remove any NAs
   dt <- stats::na.omit(dt)

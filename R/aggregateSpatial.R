@@ -126,7 +126,8 @@ aggregateSpatial.uncompiled <- function(input.obj,
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@spatial.aggregate.method <- method
-    input.obj@id <- makeFieldID(input.obj@quant@id, 
+    input.obj@id <- makeFieldID(source.info = input.obj@source,
+                                var.string = input.obj@quant@id, 
                                 first.year = input.obj@first.year,
                                 last.year = input.obj@last.year,
                                 year.aggregate.method = input.obj@year.aggregate.method, 

@@ -124,6 +124,7 @@ supported.formats <- c("LPJ-GUESS",
 checkSourceInfo <- function(object){
   
   errors <- character()
+  warnings <- character()
   
   # Check format type is supported
   if (!length(object@format) > 0) {
@@ -150,14 +151,15 @@ checkSourceInfo <- function(object){
   
   # Check name is sensible 
   if (!length(object@name) > 0 | object@name == "") {
+    object@name <- object@id
     msg <- paste("Not a sensible source name:", object@name, sep = " ")
-    errors <- c(errors, msg)
+   # errors <- c(errors, msg)
   }
   
   # Other things are set to sensible/empty defaults in defineSource()
   
   if (length(errors) == 0) TRUE else errors
-  
+
 }
 
 
