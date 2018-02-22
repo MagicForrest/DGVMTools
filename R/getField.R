@@ -96,8 +96,9 @@ getField <- function(source,
     
     
     # Check that the spatial extent matches before returning
-    # Note that there are two cases to check here (the full spatial extent and specifically defined extents)
-    if(spatial.extent.id == "Full" || identical(spatial.extent, model.field@spatial.extent)){
+    # Note that there are two cases to check here (specifically defined extents or just the same ids)
+    if(identical(spatial.extent, model.field@spatial.extent) ||
+       spatial.extent.id == model.field@spatial.extent.id){
       if(store.internally) {source <<- addToSource(model.field, source)}
       return(model.field)
     }  
@@ -162,11 +163,13 @@ getField <- function(source,
     else if(source@format == "DGVMData") {
       
       data.list <- openDGVMDataFile(source, quant, verbose = verbose)
-      
       this.dt <- data.list$dt
-      first.year.present <-  data.list$first.year
-      last.year.present <-  data.list$last.year
-      year.aggregation.method.present <-  data.list$year.aggregation.method
+      if("first.year" %in% names(data.list)) first.year.present <-  data.list$first.year
+      if("last.year" %in% names(data.list)) last.year.present <-  data.list$last.year
+      if("year.aggregation.method" %in% names(data.list)) year.aggregation.method.present <-  data.list$year.aggregation.method
+      if("spatial.extent" %in% names(data.list)) spatial.extent.present <- data.list$spatial.extent
+      if("spatial.extent.id" %in% names(data.list)) spatial.extent.id.present <- data.list$spatial.extent.id
+      if("spatial.aggregate.method" %in% names(data.list)) spatial.aggregate.method.present <- data.list$spatial.aggregate.method
 
     }
     
@@ -236,12 +239,16 @@ getField <- function(source,
     # Note we gotta do this now before the cropping and averaging below
     if(store.full){
       
+      # if spatial extent and spatial.extent.id not already determined use then set them
+      if(!exists("spatial.extent.present")) spatial.extent.present <- extent(this.dt)
+      if(!exists("spatial.extent.id.present")) spatial.extent.id.present <- "Full"
+      
       model.field.full <- new("Field",
                               id = var.string,
                               data = this.dt,
                               quant = quant,
-                              spatial.extent = extent(this.dt),
-                              spatial.extent.id = "Full",
+                              spatial.extent = spatial.extent.present,
+                              spatial.extent.id = spatial.extent.id.present,
                               first.year = first.year.present,
                               last.year  = last.year.present,
                               year.aggregate.method = year.aggregate.method.present,
@@ -263,14 +270,14 @@ getField <- function(source,
     possible.error <- try ( extent(spatial.extent), silent=TRUE )
     if (class(possible.error) != "try-error") {
       this.dt <- crop(this.dt, spatial.extent)  
-      this.spatial.extent <- extent(spatial.extent)
+      spatial.extent.present <- extent(spatial.extent)
       if(missing(spatial.extent.id)) spatial.extent.id <- "CroppedToExtent"
     }
     
     # else check if some gridcells to be selected with getGridcells
     else if(is.data.frame(spatial.extent) || is.data.table(spatial.extent) || is.numeric(spatial.extent) || is.list(spatial.extent)){
       this.dt <- selectGridcells(this.dt, spatial.extent)
-      this.spatial.extent <- spatial.extent
+      spatial.extent.present <- spatial.extent
       if(missing(spatial.extent.id)) spatial.extent.id <- "SubsetOfGridcells"
     }
     
@@ -282,9 +289,9 @@ getField <- function(source,
   }
   else {
     
-    this.spatial.extent <- extent(this.dt)
+    if(!exists("spatial.extent.present")) spatial.extent.present <- extent(this.dt)
     
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  this.spatial.extent@xmin, ",", this.spatial.extent@xmax, "), Lat = (" ,  this.spatial.extent@ymin, ",", this.spatial.extent@ymax, ").", sep = ""))
+    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent.present@xmin, ",", spatial.extent.present@xmax, "), Lat = (" ,  spatial.extent.present@ymin, ",", spatial.extent.present@ymax, ").", sep = ""))
     
   }
   
@@ -349,7 +356,7 @@ getField <- function(source,
                      first.year = first.year.present, 
                      last.year = last.year.present, 
                      year.aggregate.method = year.aggregate.method,
-                     spatial.extent = this.spatial.extent,
+                     spatial.extent = spatial.extent.present,
                      spatial.extent.id = spatial.extent.id,
                      spatial.aggregate.method = spatial.aggregate.method,
                      subannual.aggregate.method = "none",

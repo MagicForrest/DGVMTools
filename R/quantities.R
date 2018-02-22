@@ -21,7 +21,7 @@ lookupQuantity <- function(quant.id, format.str = "Standard", verbose = TRUE){
   
   # if can't find that then warn
   if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std" && verbose) {
-    warning(paste0("Can't find a quantity with id = ", quant.id, " and formay= ", format.str, " in dgvm.quantities, now searching only on the quant.id."))
+    warning(paste0("Can't find a quantity with id = ", quant.id, " and format= ", format.str, " in dgvm.quantities, now searching only on the quant.id."))
   }
   
   # then look for a match on the name only

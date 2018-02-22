@@ -22,13 +22,14 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateSpatial.uncompiled <- function(input.obj,
                                         method = "mean",
-                                        verbose = FALSE){
+                                        verbose = FALSE,
+                                        ...){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
   Year = Lat = Lon = area = NULL
   
   ### SET UP THE AGGREGATE METHOD 
-  print(method)
+
   method <- match.arg(method, c("weighted.mean", "w.mean", "mean", "weighted.sum", "w.sum", "sum", "max", "min", "sd", "var"))
   
   method.function <- switch(method,
@@ -56,14 +57,17 @@ aggregateSpatial.uncompiled <- function(input.obj,
   if (method == "w.mean") {
     if (!any(colnames(input.dt)=="area")) {
       if (verbose) message("Add column area.")
-      input.dt <- addArea(input.dt, verbose=verbose)
+      input.dt <- addArea(input.dt, verbose=verbose, ...)
     }
     if(verbose) message(paste("Spatially averaging (with area weighting) ...", sep = ""))
     
     # check to see if Year is still a colmun name (it might have been averaged away)
-    if("Year" %in% names(input.dt)) output.dt <- input.dt[,lapply(.SD, method.function, w=area), by=list(Year)]
+    if("Year" %in% names(input.dt)) {
+      output.dt <- input.dt[,lapply(.SD, method.function, w=area), by=list(Year)]
+    }
     else {
       output.dt <- input.dt[,lapply(.SD, method.function, w=area)]
+     
     }
     output.dt[,area:=NULL]
   } 
@@ -112,7 +116,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   # remove the Lon and Lat columns 'cos they dun' make so much sense no mo'
   output.dt[,Lon:=NULL]
   output.dt[,Lat:=NULL]
-  
+
   if(verbose) message("Averaged")
   
   # Delete the full dataset to free up memory - necessary??
@@ -131,7 +135,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
                                 first.year = input.obj@first.year,
                                 last.year = input.obj@last.year,
                                 year.aggregate.method = input.obj@year.aggregate.method, 
-                                spatial.extent.id = input.obj@spatial.extent, 
+                                spatial.extent.id = input.obj@spatial.extent.id, 
                                 spatial.aggregate.method = input.obj@spatial.aggregate.method)
     return(input.obj)
   }

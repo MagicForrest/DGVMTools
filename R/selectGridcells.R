@@ -11,7 +11,7 @@
 #' @return A Field, DataObject, data.table or data.frame depending on the type of the input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
-selectGridcells <- function(x, gridcells, tolerance = NULL) {
+selectGridcells <- function(x, gridcells, tolerance = NULL, decimal.places = NULL) {
   
   # deal with the class of x,
   isDataTable <- FALSE
@@ -69,12 +69,23 @@ selectGridcells <- function(x, gridcells, tolerance = NULL) {
     }
   }
   
+  ######  ROUNDING FROM DECIMAL PLACES ARGUMENT (IF REQUESTED)
+  
+  if(!missing(decimal.places) && !is.null(decimal.places)){
+    
+    dt[,Lon := round(Lon, decimal.places)]
+    dt[,Lat := round(Lat, decimal.places)]
+    selection.dt[,Lon := round(Lon, decimal.places)]
+    selection.dt[,Lat := round(Lat, decimal.places)]
+    
+  }
+  
   
   ####### MATCHING: consider two cases: exact matching or matching within a tolerance
   
   # CASE 1: Exact matching
   if(missing(tolerance) || is.null(tolerance) || tolerance == 0.0) {
-    final.dt <- dt[selection.dt, on = c(Lon = "Lon", Lat = "Lat")]
+    final.dt <- dt[selection.dt, on = c(Lon = "Lon", Lat = "Lat"), nomatch=0]
   }
   
   # CASE 2: Inexact matching - much less efficient

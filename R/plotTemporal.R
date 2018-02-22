@@ -136,7 +136,12 @@ plotTemporal <- function(input.data,
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(is.null(title)) {
     if(single.object) {
-      title <- makePlotTitle(quant@name, layer = NULL, source = input.data, extent.str = input.data@spatial.extent) 
+      title <- makePlotTitle(quant@name, 
+                             layer = NULL, 
+                             source = input.data, 
+                             extent.str = input.data@spatial.extent.id, 
+                             first.year = input.data@first.year,
+                             last.year = input.data@last.year) 
     }
     else {
       title <- element_blank()
@@ -224,18 +229,24 @@ plotTemporal <- function(input.data,
   }
   
   
-  # now make the plot
-  if(is.null(group)) p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Year", y = "value", colour = "variable")) + geom_line(aes_string(linetype="variable"), size = 1)
-  else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Year", y = "value", group = "Source", colour = "Source")) + geom_line(aes_string(linetype="Source"), size = 1)
- 
-  
-  #else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(id.vars, "value", group = "Source", colour = "Source")) + geom_line(size = 1)
 
-  #p <- p + scale_x_continuous(breaks = unique(plotting.data.dt.melted[["Year"]])
+  if("Year" %in% names(plotting.data.dt.melted)) {
+    plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-01-01"), format = "%Y-%m-%d")]
+    plotting.data.dt.melted[, Year := NULL]
+  }
+  
+  # now make the plot
+  if(is.null(group)) p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Time", y = "value", colour = "variable")) + geom_line(aes_string(linetype="variable"), size = 1)
+  else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Time", y = "value", group = "Source", colour = "Source")) + geom_line(aes_string(linetype="Source"), size = 1)
+
   
   # line formatting
-  if(!is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
-  if(!is.null(types)) p <- p + scale_linetype_manual(values=types, labels=labels)
+  #print(cols)
+  #print(types)
+  #print(labels)
+  #if(!is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
+  #if(!is.null(types)) p <- p + scale_linetype_manual(values=types, labels=labels)
+
 
   
   # labels and positioning

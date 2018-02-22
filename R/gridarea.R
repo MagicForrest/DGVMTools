@@ -121,7 +121,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' @export
 #' @return same class as input
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
+addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits) {
   ## to avoid "no visible binding for global variable" during check
   Lat = Lon = NULL
   if (is.na(unit))
@@ -150,9 +150,9 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
   if (is.data.table(input) || is.Field(input)) {
     area <- as.data.table(area)
     if (is.data.table(input)) {
-      setkey(area, Lon, Lat)
+      setKeyDGVM(area)
     } else {
-      setkey(area, Lon, Lat)
+      setKeyDGVM(area)
     }
   }
 
@@ -174,16 +174,34 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE) {
       warning("Package 'udunits2' not installed! Using m^2 instead.")
     }  
   }
+  
+
+  #input <- na.omit(input)
 
   if (is.data.table(input)) {
+  
+    
     setKeyDGVM(area)
-    setKeyDGVM(input)
-    input <- merge(area, input, all =FALSE)
+    setkeyv(input, key(area))
+
+    if(!missing(digits) && !is.null(digits)) {
+      
+      input[, Lon := round(Lon, digits)]
+      input[, Lat := round(Lat, digits)]
+      area[, Lon := round(Lon, digits)]
+      area[, Lat := round(Lat, digits)]
+      
+    }
+    
+    
+    input <- merge(area, input, all.x = FALSE, all.y = TRUE)
+    
+
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "' to data.table.", sep=""))
     return(input)
   } else if (is.data.frame(input)) {
-    input <- merge.data.frame(area, input, by=c("Lon", "Lat"))
+    input <- merge.data.frame(area, input, by=getSTInfo(input))
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "' to data.frame.", sep=""))
     return(input)

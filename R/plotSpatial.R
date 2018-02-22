@@ -274,7 +274,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     
     # select the layers and time periods required and mash the data into shape
     these.layers <- selectLayers(object, layers)
-    if(!is.null(years)) these.layers <- selectYears(these.layers, years)
+    if(!is.null(years)) {
+      # set key to Year
+      setkey(these.layers@data, Year)
+      # subset by years required
+      these.layers@data <- these.layers@data[J(years)]
+      # set keys again
+      setKeyDGVM(these.layers@data)
+    }
     
     these.layers.melted <- melt(these.layers@data, measure.vars = layers)
     these.layers.melted[, Source := object@source@name]

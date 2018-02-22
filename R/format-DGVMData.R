@@ -27,106 +27,142 @@ openDGVMDataFile <- function(source,
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Year = Month = Time = NULL
   
+  getGlobalAttribute <- function(attr.name, global.attributes) {
+    dgvm.attr.name <- paste("DGVMData", attr.name, sep = "_")
+    if(dgvm.attr.name %in% names(global.attributes)) {
+      return(global.attributes[[dgvm.attr.name]]) 
+    }
+    else {
+      warning(paste0("No ", attr.name,  " attribute (", dgvm.attr.name, " ) found in file ", file.name.nc, ".  This is not DGVMData compliant.  Right now returning NULL, but this might cause problems later"))
+      return(NULL)
+    }
+  }
+  
+  
+  # The list of things to return
+  data.list <-list()
+  
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
   file.name.nc <- file.path(source@dir, paste(source@id, variable@id, "nc", sep = "."))
   if(file.exists(file.name.nc)){ 
     if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
-    
   }
   else if(file.exists(paste(file.name.nc, "gz", sep = "."))){
     #dt <- fread(paste("zcat < ", paste(file.name.nc, "gz", sep = "."), sep = ""))
     stop("Gunzipping not yet supported for DGVMData.")
   }
   else {
-    stop(paste("File (or gzipped file) not found:", file.name.nc))
+    file.name.nc.old <- file.name.nc
+    file.name.nc <- file.path(source@dir, paste(variable@id, "nc", sep = "."))
+    if(file.exists(file.name.nc)){ 
+      if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
+    }
+    else if(file.exists(paste(file.name.nc, "gz", sep = "."))){
+      #dt <- fread(paste("zcat < ", paste(file.name.nc, "gz", sep = "."), sep = ""))
+      stop("Gunzipping not yet supported for DGVMData.")
+    }
+    else {
+      stop(paste("File (or gzipped file) not found:", file.name.nc.old, "or", file.name.nc))
+    }
   }
   
   
-  # Open file and get Lon and Lat dimensions, and get values for later 
+  # Open file and get global attributes
   message(paste0("Opening file ", file.name.nc))     
   if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
   else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
-  this.lat <- ncdf4::ncvar_get(this.nc,"lat",verbose=verbose)
-  this.lon <- ncdf4::ncvar_get(this.nc,"lon",verbose=verbose)
-  all.lats <- this.nc$dim$lat$vals
-  all.lons <- this.nc$dim$lon$vals
+  global.attributes <- ncatt_get(this.nc, 0, attname=NA, verbose=FALSE)
+  
+  # Check out dimensions
+  dims.present <- names(this.nc$dim)
+  if(verbose) message(paste("File has dimensions", dims.present, sep = " "))
+  
+  
+  all.lats <- numeric(0)
+  all.lons <- numeric(0)
+  all.times <- numeric(0)
+  for(this.dimension in dims.present) {
+    
+    # pick up Lat/lat
+    if(this.dimension == "lat") { all.lats <- this.nc$dim$lat$vals  }
+    else if(this.dimension == "Lat") { all.lats <- this.nc$dim$Lat$vals }
+    
+    # pick up Lon/lon
+    else if(this.dimension == "lon") { all.lons <- this.nc$dim$lon$vals }
+    else if(this.dimension == "Lon") { all.lons <- this.nc$dim$Lon$vals }
+    
+    # pick up Time/time
+    else if(this.dimension == "time") { all.time <- this.nc$dim$time$vals  }
+    else if(this.dimension == "Time") { all.times <- this.nc$dim$Time$vals}
+    
+    # Catch the rest
+    else {
+      stop(paste("Unknown dimension found", this.dimension, " which I din't know what to do with."))
+    }
+    
+  }
   
   # check the number of dimensions and pull time if present
+  start <- rep(1, length(dims.present))
+  count <- rep(-1, length(dims.present))
   
-  if(this.nc$ndims == 2){
-    if(verbose) message("Got two dimensions, assuming lon and lat")  
-    start <- c(1,1)
-    count <- c(-1,-1)
-    dimension.names <- list(this.lon, this.lat)
-  }
-  if(this.nc$ndims == 3) {
-    this.time <- ncdf4::ncvar_get(this.nc,"Time",verbose=verbose)
-    start <- c(1,1,1)
-    count <- c(-1,-1,-1)
-    dimension.names <- list(this.lon, this.lat, this.time)
-  }
+  dimension.names <- list()
+  if(length(all.lons) > 0) dimension.names[["Lon"]] <- all.lons
+  if(length(all.lats) > 0) dimension.names[["Lat"]] <- all.lats
+  if(length(all.times) > 0) dimension.names[["Time"]] <- all.times
   
   
-  # look up attributes for meta-data for this layer/variable
-  first.year <- ncatt_get(this.nc, 0, attname="DGVMData_first.year", verbose=FALSE)$value
-  last.year <- ncatt_get(this.nc, 0, attname="DGVMData_last.year", verbose=FALSE)$value
-  year.aggregation.method <- ncatt_get(this.nc, 0, attname="DGVMData_year.aggregation.method", verbose=FALSE)$value
+  # look up year-related attributes
+  data.list[["first.year"]]  <- getGlobalAttribute("first.year", global.attributes)
+  data.list[["last.year"]]  <- getGlobalAttribute("last.year", global.attributes)
+  data.list[["year.aggregation.method"]]  <- getGlobalAttribute("year.aggregation.method", global.attributes)
+  first.year <- data.list[["first.year"]] 
+  last.year <- data.list[["last.year"]] 
   
-  
-  
-  all.vars <- this.nc$var
+ 
   
   dt.list <- list()
   
-  for(this.var in all.vars) {
+  for(this.var in this.nc$var) {
     
     # Get the actual data and set the dimension names    
     this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose)
     dimnames(this.slice) <- dimension.names
     
-    # melt to a data.table, via data.frame
+    # prepare data.table from the slice (array)
     this.slice.dt <- as.data.table(melt(this.slice))
-    
-    # remove NAs
     this.slice.dt <- stats::na.omit(this.slice.dt)
-    
-    # 
-    # # quantity
-    # quant.str <- ncatt_get(this.nc, this.var, attname="DGVMTools_quant", verbose=FALSE)$value
-    # 
-    # # set the name to something equivalent in the model
-    # layer.name <- ncatt_get(this.nc, this.var, attname="DGVMTools_layer.name", verbose=FALSE)$value
-    
-    #################################
-    ######### Here do checks ########
-    #################################
+    setnames(this.slice.dt, "value", this.var$name)
     
     
-    # also set the names, key and if categorical, set to factors in the variabl@units slot
-    if(this.nc$ndims == 2){
-      setnames(this.slice.dt, c("Lon", "Lat", this.var$name))
-    }
-    if(this.nc$ndims == 3){
-      setnames(this.slice.dt, c("Lon", "Lat", "Time", this.var$name))
+    ###  HANDLE TIME AXIS 
+    if(length(all.times) > 0) {
       
       # some tricks to determine exactly what the 'Time' axis represent 
-      time.axis.string <- this.nc$dim$Time$units
+      
+      # don't need to be so fancy here!
+      # time.axis.string <- this.nc$dim$Time$units
       
       
       # actually, lets do some shortcuts
-      length.time.axis <- this.nc$dim$Time$len
+      length.time.axis <- length(all.times)
       
       # lets see if we have annual data
       if(length.time.axis == (last.year - first.year + 1)) {
         if(verbose) message("Got annual data.")
+        
+       
+        # subsitute using first.year and last.year   
+        this.slice.dt[, Year := plyr::mapvalues(this.slice.dt[["Time"]], from = all.times, to = first.year:last.year)]
+        this.slice.dt[, Time := NULL]
       }
       # else check for monthly
       if(length.time.axis == (last.year - first.year + 1) *12) {
         if(verbose) message("Got monthly data.")
         
         all.years <- first.year:last.year
-       
+        
         # sort data.table by Time axis
         this.slice.dt[order(Time)] 
         
@@ -156,8 +192,7 @@ openDGVMDataFile <- function(source,
         all.names <- all.names[-which(all.names == this.var$name)]
         all.names <- append(all.names, this.var$name)
         setcolorder(this.slice.dt, all.names)
-        print(this.slice.dt)
-
+      
         
       }
       
@@ -177,20 +212,46 @@ openDGVMDataFile <- function(source,
   }
   
   
-  # join all together
+  # join all together and set key
   dt <- dt.list[[1]]
   if(length(dt.list) > 1) {
     for(this.dt in dt.list[[2:length(dt.list)]]) {
-      print(this.dt)
       merge(dt, this.dt)
-      print(dt)
     }
   }
+  if(verbose) message("Setting key")
   dt <- setKeyDGVM(dt)
-  
   
   # STInfo
   st.info <- getSTInfo(dt)
+  
+  
+  ### DETERMINE SPATIAL EXTENT 
+  
+  # simple ones
+  data.list[["spatial.extent.id"]]  <- getGlobalAttribute("spatial.extent.id", global.attributes)
+  data.list[["spatial.aggregate.method"]]  <- getGlobalAttribute("spatial.aggregate.method", global.attributes)
+  
+  # first attempt to use the attributes from the NetCDF file
+  xmin  <- getGlobalAttribute("xmin", global.attributes)
+  xmax  <- getGlobalAttribute("xmax", global.attributes)
+  ymin  <- getGlobalAttribute("ymin", global.attributes)
+  ymax  <- getGlobalAttribute("ymax", global.attributes)
+  # else attempt to lookm of from Lon and Lat columns
+  if(!is.null(xmin) & !is.null(xmax) & !is.null(ymin) & !is.null(ymax)){
+    data.list[["spatial.extent"]] <- raster::extent(xmin, xmax, ymin,ymax)
+    if(verbose) message("Setting spatial extent from DGVMData attributes")
+  }
+  else if("Lon" %in% st.info && "Lat" %in% st.info) {
+    data.list[["spatial.extent"]] <- extent(dt)
+    if(verbose) message("Setting spatial extent from Lon and Lat dimensions")
+  }
+  else{
+    if(verbose) message(paste("No spatial extent determinable from DGVMData", file.name.nc,"file. A filler extent will be set."))
+    warning(paste("No spatial extent determinable from DGVMData", file.name.nc,"file. A filler extent will be set."))
+    data.list[["spatial.extent"]] <- extent(c(0,1,0,1))
+  }
+  
   
   
   # Correct year, lons and lats
@@ -212,7 +273,9 @@ openDGVMDataFile <- function(source,
   }
   
   # if london.centre is requested, shift to -180 to +180
-  if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  if(length(all.lons) > 0) {
+    if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  }
   
   
   # set some attributes about the file - works!
@@ -221,18 +284,10 @@ openDGVMDataFile <- function(source,
   # set keys
   setKeyDGVM(dt)
   
-  # remove any NAs
+  # remove any NAs, complete list and reutn
   dt <- stats::na.omit(dt)
-  
-  return(
-    
-    list(dt = dt,
-         first.year = first.year,
-         last.year = last.year,
-         year.aggregation.method = year.aggregation.method
-    )
-    
-  )
+  data.list[["dt"]] <- dt
+  return(data.list)
   
 }
 

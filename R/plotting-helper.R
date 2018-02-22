@@ -47,23 +47,40 @@ correct.map.offset <- function(spl) {
 #' @export 
 makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, first.year = NULL, last.year = NULL, extent.str = NULL){
   
+  
+  print(extent.str)
+  
   # quantity.str must be supplied
   string <- quantity.str
   
   # A layer name may be supplied
   if(!is.null(layer)) string <- paste(string, layer, sep = " ")
-  
+  print(string)
   # A source may be supplied (either a Field or ComparisonLayer)
   if(!is.null(source)) {
     if(is.Field(source)) string <- paste(string, source@source@name, sep = " ")
     if(is.ComparisonLayer(source)) string <- paste(string, source@name, sep = " ")
   }
+  print(string)
+  # A temporal extent may be supplied
+  in.brackets <- NULL
+  if(!is.null(extent.str)) {
+    in.brackets <- extent.str
+  }
+  print(in.brackets)
+  # a first and last year may be supplied
+  if(!is.null(first.year) & !is.null(last.year)){
+    if(is.null(in.brackets)) in.brackets <- paste(first.year, last.year, sep = "-")
+    else in.brackets <- paste0(in.brackets, ", ", paste(first.year, last.year, sep = "-"))
+  }
+  print(in.brackets)
+  # add year and spatial extent if present
+  print(in.brackets)
+  if(!is.null(in.brackets)){
+    string <- paste0(string, " (", in.brackets, ")")
+  }
   
-  # And a period and/or spatial extent may be supplied  
-  if(!is.null(first.year) && !is.null(extent.str)) string <- paste(string, paste("(", extent.str, " ", period@start, "-", period@end, ")", sep = ""), sep = " ")
-  else if(!is.null(period) ) string <- paste(string, paste("(", period@start, "-", period@end, ")", sep = ""), sep = " ")
-  else if(!is.null(extent.str) ) string <- paste(string, paste("(", extent.str, ")", sep = ""), sep = " ")
-  
+ 
   return(string)
   
 }
