@@ -13,6 +13,8 @@
 
 selectGridcells <- function(x, gridcells, tolerance = NULL, decimal.places = NULL) {
   
+  Lon = Lat = NULL
+  
   # deal with the class of x,
   isDataTable <- FALSE
   isDataFrame <- FALSE

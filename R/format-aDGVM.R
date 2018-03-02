@@ -320,7 +320,7 @@ convertMonthlyScheme1 <- function( runid, fire, directory )
 #' @import ncdf4
 #' @keywords internal
 #' @seealso \code{getQuantity_aDGVM_Scheme2}
-getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
+getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year)
 {
 
   fname <- file.path(run@dir, paste("pop_", run@id,".nc", sep=""))
@@ -524,7 +524,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, period, variable)
 #' @import ncdf4
 #' @keywords internal
 #' @seealso \code{getQuantity_aDGVM_Scheme1}
-getQuantity_aDGVM_Scheme2 <- function(run, period, variable)
+getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
 {
   fname <- file.path(run@dir, paste("trait_", run@id,".nc", sep=""))
   

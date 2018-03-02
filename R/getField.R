@@ -166,7 +166,7 @@ getField <- function(source,
       this.dt <- data.list$dt
       if("first.year" %in% names(data.list)) first.year.present <-  data.list$first.year
       if("last.year" %in% names(data.list)) last.year.present <-  data.list$last.year
-      if("year.aggregation.method" %in% names(data.list)) year.aggregation.method.present <-  data.list$year.aggregation.method
+      if("year.aggregate.method" %in% names(data.list)) year.aggregate.method.present <-  data.list$year.aggregate.method
       if("spatial.extent" %in% names(data.list)) spatial.extent.present <- data.list$spatial.extent
       if("spatial.extent.id" %in% names(data.list)) spatial.extent.id.present <- data.list$spatial.extent.id
       if("spatial.aggregate.method" %in% names(data.list)) spatial.aggregate.method.present <- data.list$spatial.aggregate.method
@@ -242,6 +242,7 @@ getField <- function(source,
       # if spatial extent and spatial.extent.id not already determined use then set them
       if(!exists("spatial.extent.present")) spatial.extent.present <- extent(this.dt)
       if(!exists("spatial.extent.id.present")) spatial.extent.id.present <- "Full"
+      if(!exists("year.aggregate.method.present")) year.aggregate.method.present <- "none"
       
       model.field.full <- new("Field",
                               id = var.string,
@@ -342,7 +343,7 @@ getField <- function(source,
       print(utils::head(this.dt))
     }
   }
-  
+  year.aggregate.method.present <- year.aggregate.method
   
   ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE FINAL VEGOBJECT TO RETURN
   
@@ -355,7 +356,7 @@ getField <- function(source,
                      quant = quant,
                      first.year = first.year.present, 
                      last.year = last.year.present, 
-                     year.aggregate.method = year.aggregate.method,
+                     year.aggregate.method = year.aggregate.method.present,
                      spatial.extent = spatial.extent.present,
                      spatial.extent.id = spatial.extent.id,
                      spatial.aggregate.method = spatial.aggregate.method,

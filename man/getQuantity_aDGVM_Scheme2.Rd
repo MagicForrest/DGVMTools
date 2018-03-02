@@ -4,7 +4,7 @@
 \alias{getQuantity_aDGVM_Scheme2}
 \title{Slightty more complex classification of yearly output for aDGVM}
 \usage{
-getQuantity_aDGVM_Scheme2(run, period, variable)
+getQuantity_aDGVM_Scheme2(run, variable, first.year, last.year)
 }
 \arguments{
 \item{run}{A \code{Source}}
