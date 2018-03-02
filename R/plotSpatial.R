@@ -16,7 +16,7 @@
 #' @param sources The data to plot. Can be a Field, a DataObject, or a list of including both
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.
-#' Note that using these, especially "worldHires", can add quite a bit off time. 
+#' Note that using these, especially "worldHires", can add quite a bit of time. 
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
@@ -85,13 +85,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                         grid = FALSE,
                         plot = TRUE,
                         interior.lines = TRUE){
-  
+
   J = Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = NULL
   
   ### CHECK FOR MISSING OR INCONSISTENT ARGUMENTS AND INITIALISE STUFF WHERE APPROPRIATE
   categorical.legend.labels <- waiver()
   
+ 
   plot.seasons = !(missing(seasons) || is.null(seasons))
   plot.days = !(missing(days) || is.null(days))
   plot.months =!(missing(months) || is.null(months))
@@ -102,9 +103,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     warning("More than one of days/months/seasons specified for plotting. I can't handle this, returning NULL")
     return(NULL)
   }
-  
-  
-  
+ 
   
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
@@ -244,7 +243,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     if(plot.seasons){
       
       if(!"Season" %in% this.stinfo.names){
-        warning("Plotting of days requested but not present in at least one input object, so returning NULL.")
+        warning("Plotting of seasons requested but not present in at least one input object, so returning NULL.")
         return(NULL)
       }
       else{
@@ -283,8 +282,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     if(!is.null(days)) these.layers <- selectDays(these.layers, days)
     if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
     if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
-    
-    
+
     these.layers.melted <- melt(these.layers@data, measure.vars = layers)
     these.layers.melted[, Source := object@source@name]
     data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted

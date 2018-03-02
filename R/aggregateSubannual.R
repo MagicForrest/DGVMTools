@@ -161,8 +161,8 @@ aggregateSubannual.uncompiled <- function(input.obj,
       # set the season 
       # this function is a bit dirty, but okay for now
       monthToSeason <- function(x){
-        month.to.season <- c("1","1","2","2","2","3","3","3","4","4","4","1")
-        return(as.numeric(month.to.season[x]))
+        month.to.season <- c("DJF","DJF","MAM","MAM","MAM","JJA","JJA","JJA","SON","SON","SON","DJF")
+        return(month.to.season[x])
       }
       output.dt <- copy(input.dt)[, Season := lapply(.SD, monthToSeason), .SDcols = c("Month")]
       by.dims <- append(by.dims, "Season")

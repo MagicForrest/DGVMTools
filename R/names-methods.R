@@ -14,12 +14,9 @@ NULL
 #' @rdname names 
 setMethod("names", signature(x="Field"), function(x) {
 
-  # columns to be removed because they contain spatial and temporal information rather than actual data layers
-  remove <- c("Lon", "Lat", "Year", "Month", "Day")
-  
-  # get all column names, remove the spatial and temporal and return
+  # get all column names, remove the spatial and temporal dimensions and return
   col.names <- names(x@data)
-  col.names <- col.names[!col.names %in% remove]
+  col.names <- col.names[!col.names %in% getSTInfo(x)]
   return(col.names)
   
 })
@@ -29,12 +26,9 @@ setMethod("names", signature(x="Field"), function(x) {
 #' @rdname names
 setMethod("names", signature(x="ComparisonLayer"), function(x) {
   
-  # columns to be removed because they contain spatial and temporal information rather than actual data layers
-  remove <- c("Lon", "Lat", "Year", "Month", "Day")
-  
-  # get all column names, remove the spatial and temporal and return
+   # get all column names, remove the spatial and temporal dimensions and return
   col.names <- names(x@data)
-  col.names <- col.names[!col.names %in% remove]
+  col.names <- col.names[!col.names %in% getSTInfo(x)]
   return(col.names)
   
 })
