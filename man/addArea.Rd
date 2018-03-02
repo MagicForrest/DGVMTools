@@ -14,6 +14,9 @@ addArea(input, unit = "m^2", ellipse = FALSE, verbose = TRUE, digits)
 \item{ellipse}{If the eath should be assumed to be a ellipsoid instead of a sphere.}
 
 \item{verbose}{print some information.}
+
+\item{digits}{Numeric, number of digits to which to truncate the coordinates when merging the area data.table with the input. This is a technical detail,
+you only need to use it if you have troubles because of coordinates with a few decimal places.}
 }
 \value{
 same class as input

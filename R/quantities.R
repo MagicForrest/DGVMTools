@@ -185,7 +185,7 @@ dgvm.quantities <- list(
       type = "",
       name = "Leaf Area Index",
       units = "-",
-      colours = viridis::viridis, 
+      colours = reversed.viridis, 
       model = "FireMIP"), 
   
   new("Quantity",
@@ -222,7 +222,7 @@ dgvm.quantities <- list(
       name = "LAI",
       type = "PFT",
       units = "m^2/m^2",
-      colours = viridis::viridis,
+      colours = reversed.viridis,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM")),
   
   new("Quantity",

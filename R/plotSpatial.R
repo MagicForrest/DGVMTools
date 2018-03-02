@@ -20,7 +20,7 @@
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
-#' and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
+#' and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
 #' @param plot.bg.col Colour string for the plot background.  "white"
 #' @param panel.bg.col Colour string for the panel background, default it a sort of sky blue.
@@ -63,30 +63,30 @@
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
 plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
-                         layers = NULL,
-                         title = NULL,
-                         facet.labels =  NULL,
-                         facet.order = NULL,
-                         plot.bg.col =  "white",
-                         panel.bg.col = "#809DB8", #"cae1ff",
-                         useLongNames = FALSE,
-                         text.multiplier = NULL,
-                         xlim = NULL,
-                         ylim = NULL,
-                         years = NULL,
-                         days = NULL,
-                         months = NULL,
-                         seasons = NULL,
-                         limits = NULL,
-                         override.cols = NULL,
-                         override.cuts = NULL,
-                         discretise = FALSE,
-                         map.overlay = NULL,
-                         grid = FALSE,
-                         plot = TRUE,
-                         interior.lines = TRUE){
+                        layers = NULL,
+                        title = NULL,
+                        facet.labels =  NULL,
+                        facet.order = NULL,
+                        plot.bg.col =  "white",
+                        panel.bg.col = "#809DB8", #"cae1ff",
+                        useLongNames = FALSE,
+                        text.multiplier = NULL,
+                        xlim = NULL,
+                        ylim = NULL,
+                        years = NULL,
+                        days = NULL,
+                        months = NULL,
+                        seasons = NULL,
+                        limits = NULL,
+                        override.cols = NULL,
+                        override.cuts = NULL,
+                        discretise = FALSE,
+                        map.overlay = NULL,
+                        grid = FALSE,
+                        plot = TRUE,
+                        interior.lines = TRUE){
   
-  Source = Value = Lat = Lon = Layer = long = lat = group = NULL
+  J = Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = NULL
   
   ### CHECK FOR MISSING OR INCONSISTENT ARGUMENTS AND INITIALISE STUFF WHERE APPROPRIATE
@@ -323,15 +323,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   data.toplot <- rbindlist(data.toplot.list)
   
   
-  
   ### Rename "variable" to "Layer" which makes more conceptual sense
   setnames(data.toplot, "variable", "Layer")
   setnames(data.toplot, "value", "Value")
   
   
   ### VERBOSE
-  #if(discrete) print("Printing in mode for discrete variables")
-  #if(continuous) print("Printing in mode for continuous variables")
+  #if(discrete) message("Printing in mode for discrete variables")
+  #if(continuous) message("Printing in mode for continuous variables")
   #if(!continuous & !discrete) stop("Neither discrete nor continuous")
   
   
@@ -355,7 +354,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     override.cuts <- waiver()
   }
   
-
+  
   
   ### CALCULATE THE RANGE OF LONGITUDE AND LATITUDE TO BE PLOTTED AND CROP
   all.lons <- sort(unique(data.toplot[["Lon"]]))
@@ -555,34 +554,70 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     grid <- FALSE
   }
   
-  
-  
+
   # if wrapping, add a new column to uniquely describe each facet
   if(wrap){
+    factor.levels <- ""
     data.toplot[, Facet := ""]
-    if(multiple.layers) { data.toplot[, Facet := paste(Facet, Layer)] }
-    if(multiple.sources) { data.toplot[, Facet := paste(Facet, Source)] }
-    if(multiple.years) { data.toplot[, Facet := paste(Facet, Year)] }
-    if(multiple.days) { data.toplot[, Facet := paste(Facet, Day)] }
-    if(multiple.months) { data.toplot[, Facet := paste(Facet, Month)] }
-    if(multiple.seasons) { data.toplot[, Facet := paste(Facet, Season)] }
-    data.toplot[, Facet := trimws(Facet)]
+    if(multiple.layers) { 
+      data.toplot[, Facet := paste(Facet, Layer)] 
+      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Layer"]]), paste))
+    }
+    if(multiple.sources) {
+      data.toplot[, Facet := paste(Facet, Source)] 
+      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Source"]]), paste))
+    }
+    if(multiple.years) { 
+      data.toplot[, Facet := paste(Facet, Year)] 
+      ffactor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Year"]]), paste))
+    }
+    if(multiple.days) { 
+      data.toplot[, Facet := paste(Facet, Day)]
+      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Day"]]), paste))
+    }
+    if(multiple.months) {
+      data.toplot[, Facet := paste(Facet, Month)]
+      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Month"]]), paste))
+      }
+    if(multiple.seasons) { 
+      data.toplot[, Facet := paste(Facet, Season)] 
+      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Season"]]), paste))
+    }
+    data.toplot[, Facet := factor(trimws(Facet), levels = trimws(factor.levels))]
   }
+ 
   
   # if gridding get the columns to grid by
   if(grid){
     grid.columns <- c()
-    if(multiple.layers) grid.columns <- append(grid.columns, "Layer")
-    if(multiple.sources) grid.columns <- append(grid.columns, "Source")
-    if(multiple.years) grid.columns <- append(grid.columns, "Year")
-    if(multiple.days) grid.columns <- append(grid.columns, "Day")
-    if(multiple.months) grid.columns <- append(grid.columns, "Month")
-    if(multiple.seasons) grid.columns <- append(grid.columns, "Season")
+    if(multiple.layers) {
+      grid.columns <- append(grid.columns, "Layer")
+      data.toplot[, Layer := factor(Layer, levels = unique(data.toplot[["Layer"]]))]
+    }
+    if(multiple.sources) {
+      grid.columns <- append(grid.columns, "Source")
+      data.toplot[, Source := factor(Source, levels = unique(data.toplot[["Source"]]))]
+    }
+    if(multiple.years) {
+      grid.columns <- append(grid.columns, "Year")
+      data.toplot[, Year := factor(Year, levels = unique(data.toplot[["Year"]]))]
+    }
+    if(multiple.days) {
+      grid.columns <- append(grid.columns, "Day")
+      data.toplot[, Day := factor(Day, levels = unique(data.toplot[["Day"]]))]
+    }
+    if(multiple.months) {
+      grid.columns <- append(grid.columns, "Month")
+      data.toplot[, Month := factor(Month, levels = unique(data.toplot[["Month"]]))]
+    }
+    if(multiple.seasons) {
+      grid.columns <- append(grid.columns, "Season")
+      data.toplot[, Season := factor(Season, levels = unique(data.toplot[["Season"]]))]
+    }
     grid.string <- paste(grid.columns, collapse = "~")
   }
   
-  
-  
+   
   ### RETURN DATA.TABLE ONLY NOT PLOT REQUESTED
   if(!plot) return(data.toplot)
   
@@ -605,7 +640,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
- 
+  
   # facet with grid or wrap 
   if(facet){
     

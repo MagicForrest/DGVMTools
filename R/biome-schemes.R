@@ -466,9 +466,9 @@ MeditBiomeRules <- function(lai){
   if(as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']])) {return("Grass Steppe or Montane Grassland")}
   # BIOME 4 - Deciduous forest
   #if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
-  else if(as.numeric(lai[['Woody']]) > 2.0 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeBS")) {return("Deciduous Forest")}  # 2
+  else if(as.numeric(lai[['Woody']]) > 2.0 && (lai[['MaxWoody']] == "TeBS")) {return("Deciduous Forest")}  # 2
   # BIOME 5 - Cold Montane forest
-  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE" )) {return("Cold Montane Forest")} # 1.5
+  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE")) {return("Cold Montane Forest")} # 1.5
   # BIOME 2 - Needle-leaved evergreen forest
   else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return("Needle-leaved Woodlands/Forest")} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
@@ -496,12 +496,19 @@ MeditBiomes.scheme <- new("BiomeScheme",
                               id = "MeditBiomes",
                               name = "Mediterranean Biomes", 
                               type = "categorical",
-                              colours = grDevices::colorRampPalette(c("Grass Steppe or Montane Grassland" = "darkseagreen1",
-                                                                      "Needle-leaved Woodlands/Forest" = "darkolivegreen",
-                                                                      "Mediterranean Sclerophyllous Woodlands/Forest" = "orangered4",
-                                                                      "Deciduous Forest" = "green3",
+                              # colours = grDevices::colorRampPalette(c("Grass Steppe or Montane Grassland" = "darkseagreen1",
+                              #                                         "Needle-leaved Woodlands/Forest" = "darkolivegreen",
+                              #                                         "Mediterranean Sclerophyllous Woodlands/Forest" = "orangered4",
+                              #                                         "Deciduous Forest" = "green3",
+                              #                                         "Cold Montane Forest" = "royalblue4",
+                              #                                         "Deciduous Steppe-Woodlands" = "sandybrown",
+                              #                                         "Unclassifiable/Other" = "grey75")),
+                              colours = grDevices::colorRampPalette(c("Grass Steppe or Montane Grassland" = "lightgreen",
+                                                                      "Needle-leaved Woodlands/Forest" = "goldenrod4",
+                                                                      "Mediterranean Sclerophyllous Woodlands/Forest" = "red4",
+                                                                      "Deciduous Forest" = "darkgreen",
                                                                       "Cold Montane Forest" = "royalblue4",
-                                                                      "Deciduous Steppe-Woodlands" = "sandybrown",
+                                                                      "Deciduous Steppe-Woodlands" = "forestgreen",
                                                                       "Unclassifiable/Other" = "grey75")),
                               units =  c("Grass Steppe or Montane Grassland",
                                          "Needle-leaved Woodlands/Forest",

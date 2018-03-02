@@ -9,6 +9,7 @@
 \alias{fire.palette}
 \alias{reversed.fire.palette}
 \alias{reversed.tim.colors}
+\alias{reversed.viridis}
 \title{Helpful palettes for vegetation maps}
 \usage{
 veg.palette(n)
@@ -24,6 +25,8 @@ fire.palette(n)
 reversed.fire.palette(n)
 
 reversed.tim.colors(n)
+
+reversed.viridis(n)
 }
 \arguments{
 \item{n}{Number of colour shades required}

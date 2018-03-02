@@ -24,7 +24,7 @@ Note that using these, especially "worldHires", can add quite a bit off time.}
 Sensible titles will be constructed if this is not specified.}
 
 \item{facet.order}{A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
-and check the values of the XXXX column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
+and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 in this function).}
 
 \item{plot.bg.col}{Colour string for the plot background.  "white"}

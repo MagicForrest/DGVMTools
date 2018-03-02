@@ -6,7 +6,7 @@
 #' @param gridcells The gridcells to be extracted.  Can either be a simple two-element numeric to pull out one gridcell (ordering is lon, lat), or it can be a data.frame or data.table
 #' in which the first two columns are assumed to be longitude and latitude.
 #' @param tolerance A single numeric specifying how close a required gridcell in gridcells must be to one in x.  Doesn't currently work, non-exact matching is not implemented.
-#'  
+#' @param decimal.places A single numeric specifying how many decimal place to which the coordinates should rounded to facilitate a match.  
 #' 
 #' @return A Field, DataObject, data.table or data.frame depending on the type of the input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
@@ -98,7 +98,7 @@ selectGridcells <- function(x, gridcells, tolerance = NULL, decimal.places = NUL
     stop("Poorly formed 'tolerance' parameter in getGridcells(), should just simply be a single numeric (or NULL or left missing).")
   }
   
-  
+  final.dt <- setKeyDGVM(final.dt)
   
   ####### RETURN
   

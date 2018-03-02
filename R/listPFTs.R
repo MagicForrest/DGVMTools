@@ -1,6 +1,5 @@
 #!/usr/bin/Rscript
 
-
 #' Get PFTs present
 #' 
 #' @param x The Source object for which to determine the PFTs present
@@ -22,7 +21,7 @@ listPFTs <- function(x, ...) {
   # Else warn and return and empty list
   else{ 
     warning(paste("listPFTs() function not implemented yet for format", x@format, "so I am returning the original PFT list.",  sep = " "))
-    
+    return(x@pft.set)
   }
   
   

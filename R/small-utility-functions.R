@@ -35,6 +35,7 @@ setKeyDGVM <- function(dt){
   keys.present <- getSTInfo(dt)
   
   if(length(keys.present) > 0) setkeyv(dt, keys.present)
+  else warning("No spatial/temporal columns present in this data.table to set as keys!")
   
 }
 
@@ -52,4 +53,32 @@ LondonCentre <- function(lon) {
   
   return(ifelse(lon > 180, lon - 360, lon))
   
+}
+
+
+#####################################################################################################################
+################ CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED ########################
+#####################################################################################################################
+
+#' 
+#' Fixes a spatial lines object where some of eastern Russia transposed to the other side of the world
+#' 
+#' 
+#' @param spl SpatialLines object to fix
+#' @return a the SpatialLines object 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @keywords internal
+#' @import raster
+correct.map.offset <- function(spl) {
+  
+  we <- raster::crop(spl, raster::extent(-180, 180, -90, 90))
+  ww <- raster::crop(spl, raster::extent(179.999, 200, -90, 90))
+  
+  if(!is.null(ww) & !is.null(we)) {
+    
+    ww <- raster::shift(ww, -360)
+    spl <- raster::bind(we, ww)  
+    
+  }
+  return(spl)
 }

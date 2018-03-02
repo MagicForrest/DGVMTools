@@ -117,6 +117,8 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' @param input a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.
 #' @param unit area unit. Default m^2, if something else is spefified udunits2 must be installed. If udunits2 is not installed this option is ignored.
 #' @param ellipse If the eath should be assumed to be a ellipsoid instead of a sphere.
+#' @param digits Numeric, number of digits to which to truncate the coordinates when merging the area data.table with the input. This is a technical detail,
+#' you only need to use it if you have troubles because of coordinates with a few decimal places.   
 #' @param verbose print some information.
 #' @export
 #' @return same class as input

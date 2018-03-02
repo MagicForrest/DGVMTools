@@ -205,7 +205,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     }
     else {
       this.dt <- openLPJOutputFile(run, "mgpp", verbose = TRUE)
-      this.dt <- newLayer(this.dt, "Annual") 
+      this.dt <- autoLayer(this.dt, "Annual") 
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Annual"), with = FALSE]
       this.dt <- this.dt[, Total := Annual]
       this.dt <- this.dt[, Annual := NULL]
@@ -227,7 +227,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     }
     else{
       this.dt <- openLPJOutputFile(run, "mnpp", verbose = TRUE)
-      this.dt <- newLayer(this.dt, "Annual")
+      this.dt <- autoLayer(this.dt, "Annual")
     }
     
     

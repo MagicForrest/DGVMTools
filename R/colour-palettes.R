@@ -45,3 +45,6 @@ reversed.fire.palette <- grDevices::colorRampPalette(rev(c("red4", "red","orange
 
 #' @rdname veg.palettes
 reversed.tim.colors = function(n) rev(fields::tim.colors(n))
+
+#' @rdname veg.palettes
+reversed.viridis = function(n) rev(viridis::viridis(n))

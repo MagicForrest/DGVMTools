@@ -25,7 +25,9 @@ calcBiomes <-function(input, scheme){
   Grass = Biome = NULL
   
   # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
-  if(scheme@combineShadeTolerance) input <- combineShadeTolerance(input)
+  if(scheme@combineShadeTolerance) {
+    input <- combineShadeTolerance(input)
+  }
   
   # If GDD5 required for classification
   #if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
@@ -45,14 +47,14 @@ calcBiomes <-function(input, scheme){
   }
   
   # Get the dominant tree and dominant woody PFTs
-  input <- newLayer(input, layers = scheme@max.needed, method = "max")
+  input <- autoLayer(input, layers = scheme@max.needed, method = "max")
   
   if(!"Grass" %in% names(input@data) ) {
     input@data[, Grass := 0]
   }
   
   # Get the totals required
-  input <- newLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
+  input <- autoLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
   
   # Get the fractions required
   input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
