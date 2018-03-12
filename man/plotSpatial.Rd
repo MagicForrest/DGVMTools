@@ -8,9 +8,9 @@ plotSpatial(sources, layers = NULL, title = NULL, facet.labels = NULL,
   facet.order = NULL, plot.bg.col = "white", panel.bg.col = "#809DB8",
   useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
   ylim = NULL, years = NULL, days = NULL, months = NULL,
-  seasons = NULL, limits = NULL, override.cols = NULL,
-  override.cuts = NULL, discretise = FALSE, map.overlay = NULL,
-  grid = FALSE, plot = TRUE, interior.lines = TRUE)
+  seasons = NULL, limits = NULL, override.cols = NULL, cuts = NULL,
+  discretise = FALSE, map.overlay = NULL, grid = FALSE, plot = TRUE,
+  interior.lines = TRUE)
 }
 \arguments{
 \item{sources}{The data to plot. Can be a Field, a DataObject, or a list of including both}
@@ -18,7 +18,7 @@ plotSpatial(sources, layers = NULL, title = NULL, facet.labels = NULL,
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
 \item{title}{A character string to override the default title.
-Note that using these, especially "worldHires", can add quite a bit off time.}
+Note that using these, especially "worldHires", can add quite a bit of time.}
 
 \item{facet.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
 Sensible titles will be constructed if this is not specified.}
@@ -40,21 +40,21 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 
 \item{ylim}{An optional vector of two numerics to specify the y/latitude range of the plot.}
 
-\item{years}{An optional numeric vector specifying which years to plot}
+\item{years}{An optional numeric vector specifying which years to plot (take care, this defaults to all the years in the input Fields which can be a lot!)}
 
-\item{days}{An optional numeric vector specifying which days to plot}
+\item{days}{An optional numeric vector specifying which days to plot (take care, this defaults to all the days in the input Fields which can be a lot!)}
 
-\item{months}{An optional numeric vector specifying which months to plot}
+\item{months}{An optional numeric vector specifying which months to plot(defaults to all the days in the input Fields)}
 
-\item{seasons}{An optional character vector specifying which seasons to plot (any or all of "DJF", "MAM, "JJA", "SON")}
+\item{seasons}{An optional character vector specifying which seasons to plot (any or all of "DJF", "MAM, "JJA", "SON", defaults to all the seasons in the input Fields)}
 
 \item{limits}{A numeric vector with two members (lower and upper limit) to limit the plotted values.}
 
 \item{override.cols}{A colour palette function to override the defaults.}
 
-\item{override.cuts}{Cut ranges (a numeric vector) to override the default colour delimitation}
+\item{cuts}{Cut ranges (a numeric vector) to override the default colour delimitation}
 
-\item{discretise}{Boolen, if true, but the discretise the data according the override.cuts argument above}
+\item{discretise}{Boolen, if true, but the discretise the data according the cuts argument above}
 
 \item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.}
 

@@ -4,11 +4,11 @@
 \alias{writeNetCDF}
 \title{Write a netCDF file}
 \usage{
-writeNetCDF(data.in, var.name, var.units, time.resolution = "annual",
-  time.units.string = NULL, time.vals = NULL, long.name = "",
-  filename = "test.nc", ordering = "standard", missing.value = -999999)
+writeNetCDF(x, filename, verbose = FALSE, ...)
 }
 \arguments{
+\item{filename}{A character string (including the path) specifiying the name of the netCDF file.}
+
 \item{data.in}{The data as a Raster* object.  This should be broadened to also include data.frames and data.tables for writing 
 time series from a particular point.}
 
@@ -23,8 +23,6 @@ time series from a particular point.}
 \item{time.vals}{A list of strings providing the values for the time axis.}
 
 \item{long.name}{A charcter string for the "long_name" of the netCDF file.}
-
-\item{filename}{A character string (including the path) specifiying the name of the netCDF file.}
 
 \item{ordering}{A character string specifying the ordering of the dimension in the resulting netCDF file, can be "standard" for normal ordering 
 or "lpj" for ordering for fast LPJ-GUESS reading.}

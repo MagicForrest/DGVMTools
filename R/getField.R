@@ -48,6 +48,8 @@ getField <- function(source,
   # To avoid annoying NOTES when R CMD CHECK-ing
   Lon = Lat = Year = NULL  
   
+  ### CHECK ARGUEMENTS
+  
   
   ### CONVERT STRING TO QUANTITY
   if(class(var) == "character") {
@@ -142,7 +144,7 @@ getField <- function(source,
       
       
       if("LPJ-GUESS" %in% quant@model | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
-        this.dt <- openLPJOutputFile(source, var.string, verbose = verbose)
+        this.dt <- openLPJOutputFile(source, var.string, first.year = first.year, last.year = last.year, verbose = verbose)
       }
       else if("Standard" %in% quant@model) {
         this.dt <- getStandardQuantity_LPJ(source, quant, verbose = verbose)
@@ -304,7 +306,7 @@ getField <- function(source,
     this.dt <- selectYears(this.dt, first = first.year, last = last.year) 
   }
   else if(!got.first.year & !got.last.year) {
-    if(verbose) message("No year slection being applied")
+    if(verbose) message("No year selection being applied")
   }
   else {
     stop("Got to provide both first.year and last.year, or neither of them.")

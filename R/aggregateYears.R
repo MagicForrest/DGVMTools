@@ -19,11 +19,10 @@
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateYears.uncompiled <- function(input.obj,
-                                         method = "mean",
-                                         verbose = FALSE){
+                                      method = "mean",
+                                      verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
-  # Possible can solve this by replace the subset function
   Year = Lat = Lon = NULL
   
   
@@ -47,17 +46,44 @@ aggregateYears.uncompiled <- function(input.obj,
   if(verbose) message("Aggregating years ...")
   
   # Check the 'by' dims
-  by.dims <- c()
   avail.dims <- getSTInfo(input.obj)
-  for(possible.dim in list("Lon","Lat","Season","Month","Day")){
-    if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
+  if(!"Year" %in% avail.dims) stop("Aggregation of years requested, but year column not present.  Failing.")
+  by.dims <- avail.dims[-which(avail.dims == "Year")]
+  
+  # and actually do it
+  output.dt <- input.dt[, lapply(.SD, method.function), by=by.dims]
+ 
+  
+  # try another way - THIS IS SLOWER!!
+  if(FALSE) {
+    
+    t1 <- Sys.time()
+    all.cols <- names(input.dt)
+    # build the command
+    command <- "list("
+    for(col in all.cols) {
+      if(col != "Year") command <- paste0(command, "mean", "(", col, "),")
+    }
+    command <- substr(command,1,nchar(command)-1) 
+    command <- paste0(command, ")")
+    print(command)
+    
+    these.cols <- all.cols[-which(all.cols == "Year")]
+    
+    input.dt[, Year := as.numeric(Year)]
+    t15 <- Sys.time()
+    print(t15 - t1)
+    input.dt[, (these.cols) := eval(parse(text = command)), by=by.dims]
+    print(input.dt)
+    t2 <- Sys.time()
+    print(t2 -t1)
+    
+    if(verbose) message("...done.")
+    setKeyDGVM(input.dt)
+    setKeyDGVM(output.dt)
+    print(identical(input.dt, output.dt))
+    
   }
-  
-  output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
-  if(verbose) message("...done.")
-  
-  # remove the Year 'cos it dun' make so much sense no mo'
-  output.dt[,Year:=NULL]
   
   
   # Delete the full dataset to free up memory - necessary??

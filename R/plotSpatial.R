@@ -29,14 +29,14 @@
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param ylim An optional vector of two numerics to specify the y/latitude range of the plot.
 #' @param xlim An optional vector of two numerics to specify the x/longitude range of the plot.
-#' @param years An optional numeric vector specifying which years to plot  
-#' @param days An optional numeric vector specifying which days to plot
-#' @param months An optional numeric vector specifying which months to plot
-#' @param seasons An optional character vector specifying which seasons to plot (any or all of "DJF", "MAM, "JJA", "SON")  
+#' @param years An optional numeric vector specifying which years to plot (take care, this defaults to all the years in the input Fields which can be a lot!)
+#' @param days An optional numeric vector specifying which days to plot (take care, this defaults to all the days in the input Fields which can be a lot!)
+#' @param months An optional numeric vector specifying which months to plot(defaults to all the days in the input Fields)
+#' @param seasons An optional character vector specifying which seasons to plot (any or all of "DJF", "MAM, "JJA", "SON", defaults to all the seasons in the input Fields)  
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param override.cols A colour palette function to override the defaults.
-#' @param override.cuts Cut ranges (a numeric vector) to override the default colour delimitation
-#' @param discretise Boolen, if true, but the discretise the data according the override.cuts argument above
+#' @param cuts Cut ranges (a numeric vector) to override the default colour delimitation
+#' @param discretise Boolen, if true, but the discretise the data according the cuts argument above
 #' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
@@ -79,31 +79,19 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                         seasons = NULL,
                         limits = NULL,
                         override.cols = NULL,
-                        override.cuts = NULL,
+                        cuts = NULL,
                         discretise = FALSE,
                         map.overlay = NULL,
                         grid = FALSE,
                         plot = TRUE,
                         interior.lines = TRUE){
-
+  
   J = Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = NULL
   
   ### CHECK FOR MISSING OR INCONSISTENT ARGUMENTS AND INITIALISE STUFF WHERE APPROPRIATE
   categorical.legend.labels <- waiver()
   
- 
-  plot.seasons = !(missing(seasons) || is.null(seasons))
-  plot.days = !(missing(days) || is.null(days))
-  plot.months =!(missing(months) || is.null(months))
-  plot.years = !(missing(years) || is.null(years))
-  
-  # require that at most only one of seasons/months/days be specified
-  if(sum(plot.months, plot.seasons, plot.days ) > 1){
-    warning("More than one of days/months/seasons specified for plotting. I can't handle this, returning NULL")
-    return(NULL)
-  }
- 
   
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
@@ -173,87 +161,59 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   ### 3. SPATIOTEMPORAL - check the dimensions etc.
   
-  for(object in sources){
-    
-    this.stinfo.names <- getSTInfo(object, info = "names")
-    years.all <- c()
-    days.all <- c()
-    
-    # return NULL if lon and lat are not available for every object to be plotted
-    if(!"Lon" %in% this.stinfo.names || !"Lat" %in% this.stinfo.names) {
-      warning("Lon (longitude) and/or Lat (latitude) missing from a Model/DataObject for which a map is tried to be plotted.  Obviously this won't work, returning NULL.")
-      return(NULL)
-    }
-    
-    
-    # check if individual years are present
-    if(plot.years) {
-      
-      if("Year" %in% this.stinfo.names) {
-        years.all <- append(years.all, getSTInfo(object, info = "values")$Year)
-      }
-      else{
-        warning("Plotting of individual years requested, but they are not avialable in at least one of the object to be plotted, returning NULL plot.")
+  ### Check if all the sources have the same ST dimensions and that Lon and Lat are present.  If not, warn and return NULL
+  stinfo.names <- getSTInfo(sources[[1]], info = "names")
+  
+  # check Lon and Lat present
+  if(!"Lon" %in% stinfo.names || !"Lat" %in% stinfo.names) {
+    warning("Lon (longitude) and/or Lat (latitude) missing from a Model/DataObject for which a map is tried to be plotted.  Obviously this won't work, returning NULL.")
+    return(NULL)
+  }
+  
+  # check all the same dimensions
+  if(length(sources) > 1)
+    for(counter in 2:length(sources)){
+      if(!identical(stinfo.names, getSTInfo(sources[[counter]], info = "names"))) {
+        warning(paste0("Trying to plot two Fields with different Spatial-Temporal dimensions.  One has \"", paste(stinfo.names, collapse = ","), "\" and the other has \"",  paste(getSTInfo(sources[[counter]], info = "names"), collapse = ","), "\".  So not plotting and returning NULL."))
         return(NULL)
       }
-      
     }
-    else{
+  
+  
+  ###  Build lists of what to plot
+  
+  # this functions either issues a warning if a year/season/month/day is requested to be plotted but is not present
+  # or, if they have not explicitly been requested, it makes a list of possible years/seasons/months/days
+  checkValues <- function(sources, input.values = NULL,  string) {
+    
+    all.values <- c()
+    for(object in sources){
       
-      if("Year" %in% this.stinfo.names){
-        warning("Plotting of individual years not requested, but individual years are present in the data to be plotted!  In the future average the Object first or select the years, for now returning NULL plot.")
-        return(NULL)
-      }
+      # get a list of all unique days present
+      values.present <- unique(object@data[[string]])
       
-    }
-    
-    # now check the subannual dimensions
-    
-    # first check if the data is somehow corrupted with (ie has more than one of Season/Day/Month)
-    if(sum("Month" %in% this.stinfo.names, "Season" %in% this.stinfo.names, "Day" %in% this.stinfo.names) > 1) {
-      warning("At least one object to plot has more than one of Day/Month/Season present so would seem to be corrupted or strangely constructed.  Don't know how to interpret this, so returning NULL plot.")
-      return(NULL)
-    }
-    
-    
-    if(plot.days){
-      
-      if(!"Day" %in% this.stinfo.names){
-        warning("Plotting of days requested but not present in at least one input object, so returning NULL.")
-        return(NULL)
+      # 'input.list specified so check that they are present
+      if(!is.null(input.values)) {
+        for(counter in input.values) { if(!counter %in% values.present) warning(paste0(string, " ", counter, " not present in Field ", object@id)) }
       }
-      else{
-        
-      }
+      # else 'days' not specified so make a list of unique days across all Fields
+      else { all.values <- append(all.values, values.present) }
       
     }
     
-    if(plot.months){
-      
-      if(!"Month" %in% this.stinfo.names){
-        warning("Plotting of days requested but not present in at least one input object, so returning NULL.")
-        return(NULL)
-      }
-      else{
-        
-      }
-      
-    }
+    # make a unique and sorted list of values
+    if(is.null(input.values)) input.values <- sort(unique(all.values))
     
-    if(plot.seasons){
-      
-      if(!"Season" %in% this.stinfo.names){
-        warning("Plotting of seasons requested but not present in at least one input object, so returning NULL.")
-        return(NULL)
-      }
-      else{
-        
-      }
-      
-    }
+    # return
+    return(input.values)
     
   }
   
+  # For each possible temporal 'facet axis' check the values   
+  if("Day" %in% stinfo.names) days <- checkValues(sources, days, "Day")
+  if("Month" %in% stinfo.names) months <- checkValues(sources, months, "Month") 
+  if("Season" %in% stinfo.names) seasons <- checkValues(sources, seasons, "Season") 
+  if("Year" %in% stinfo.names) years <- checkValues(sources, years, "Year")
   
   
   
@@ -282,7 +242,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     if(!is.null(days)) these.layers <- selectDays(these.layers, days)
     if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
     if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
-
+    
     these.layers.melted <- melt(these.layers@data, measure.vars = layers)
     these.layers.melted[, Source := object@source@name]
     data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
@@ -336,14 +296,21 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   
   ### APPLY CUSTOM CUTS TO DISCRETISE IF NECESSARY
-  if(continuous & !is.null(override.cuts)) {
+  
+  if(continuous & !is.null(cuts)) {
+    
+    t1 <- Sys.time()
+    #data.toplot[,Value:= cut(Value, cuts, right = FALSE, include.lowest = TRUE)]
+    t2 <- Sys.time()
+    print(t2-t1)
+    
     if(discretise) {
-      data.toplot[,Value:= cut(Value, override.cuts, right = FALSE, include.lowest = TRUE)]
+      data.toplot[,Value:= cut(Value, cuts, right = FALSE, include.lowest = TRUE)]
       discrete <- TRUE
       continuous <- FALSE
       breaks <- waiver()
-      if(length(override.cols) != length(override.cuts)){
-        override.cols <- grDevices::colorRampPalette(override.cols)(length(override.cuts))
+      if(length(override.cols) != length(cuts)){
+        override.cols <- grDevices::colorRampPalette(override.cols)(length(cuts))
       }
     }
     else{
@@ -351,7 +318,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     }
   }
   else{
-    override.cuts <- waiver()
+    cuts <- waiver()
   }
   
   
@@ -501,17 +468,18 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   }
   
   ### Swap 1,2,3... for Jan,Feb,Mar... if plotting months
-  if(plot.months) {
+  if("Month" %in% names(data.toplot)) {
     
     # make a list of months from the meta data
     month.list <- c()
-    for(this.month in all.months) { month.list <- append(month.list, paste0("%^&", this.month@padded.index, "%^&", this.month@id)) }
-    
-    # simple replacement function
-    get.pos <- function(x, v){ return(v[x]) }
+    for(this.month in all.months) { 
+      if(this.month@index %in% months) {
+        month.list <- append(month.list, this.month@id) 
+      }
+    }
     
     # apply replacement function
-    data.toplot[, Month := unlist(lapply(data.toplot[["Month"]], FUN = get.pos, month.list))]
+    data.toplot[, Month := factor(Month, labels = month.list)]
     setKeyDGVM(data.toplot)
     
   }
@@ -554,7 +522,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     grid <- FALSE
   }
   
-
+  
   # if wrapping, add a new column to uniquely describe each facet
   if(wrap){
     factor.levels <- ""
@@ -578,14 +546,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     if(multiple.months) {
       data.toplot[, Facet := paste(Facet, Month)]
       factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Month"]]), paste))
-      }
+    }
     if(multiple.seasons) { 
       data.toplot[, Facet := paste(Facet, Season)] 
       factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Season"]]), paste))
     }
     data.toplot[, Facet := factor(trimws(Facet), levels = trimws(factor.levels))]
   }
- 
+  
   
   # if gridding get the columns to grid by
   if(grid){
@@ -617,7 +585,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     grid.string <- paste(grid.columns, collapse = "~")
   }
   
-   
+  
   ### RETURN DATA.TABLE ONLY NOT PLOT REQUESTED
   if(!plot) return(data.toplot)
   
@@ -666,12 +634,22 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   # colour bar
   if(continuous)  {
-    mp <- mp + scale_fill_gradientn(name = legend.title, 
-                                    limits = limits, 
-                                    colors = override.cols, 
-                                    breaks = override.cuts,
-                                    na.value="grey75")
+    #if(is.null(cuts)) {
+    
+    mp <- mp + scale_fill_gradientn(name = legend.title,
+                                    limits = limits,
+                                    colors = override.cols,
+                                    breaks = cuts,
+                                    na.value="grey75",
+                                    guide = "legend")
+    
     mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
+    #}
+    #else {
+    
+    #mp <- mp + scale_fill_manual(values = override.cols)
+    
+    #
   }
   if(discrete) {
     mp <- mp + scale_fill_manual(values = override.cols, 

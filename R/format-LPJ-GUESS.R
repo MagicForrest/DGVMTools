@@ -15,6 +15,8 @@
 #' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
 #' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param first.year The first year (as a numeric) of the data to be return
+#' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -22,6 +24,8 @@
 #' @export
 openLPJOutputFile <- function(run,
                               variable,
+                              first.year,
+                              last.year,
                               verbose = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
@@ -52,15 +56,26 @@ openLPJOutputFile <- function(run,
   }
   
   
-  # Correct year, lons and lats
-  if(verbose)message("Correcting years, lons and lats with offsets...")
-  if(run@year.offset != 0) dt[,Year := Year + run@year.offset]
+  # Correct year
+  if(run@year.offset != 0) {
+    dt[,Year := Year + run@year.offset]
+    if(verbose) message("Correcting year with offset.")
+  }
+  
+  # Select year
+  if(!missing(first.year) & !missing(last.year) & !is.null(first.year) & !is.null(last.year)) {
+    dt <- selectYears(dt, first.year, last.year)
+  }
+  
+  
+  # Correct lon and lats
   if(length(run@lonlat.offset) == 2 ){
+    if(verbose) message("Correcting lons and lats with offset.")
     if(run@lonlat.offset[1] != 0) dt[, Lon := Lon + run@lonlat.offset[1]]
     if(run@lonlat.offset[2] != 0) dt[, Lat := Lat + run@lonlat.offset[2]]
   }
-  
   else if(length(run@lonlat.offset) == 1 ){
+    if(verbose) message("Correcting lons and lats with offset.")
     if(run@lonlat.offset[1] != 0) dt[, Lon := Lon + run@lonlat.offset[1]]
     if(run@lonlat.offset[1] != 0) dt[, Lat := Lat + run@lonlat.offset[1]]
   }
@@ -124,6 +139,8 @@ openLPJOutputFile <- function(run,
 #' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param first.year The first year (as a numeric) of the data to be return
+#' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -131,7 +148,11 @@ openLPJOutputFile <- function(run,
 #' @keywords internal
 #' @export
 
-getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
+getStandardQuantity_LPJ <- function(run, 
+                                    quant, 
+                                    first.year,
+                                    last.year,
+                                    verbose = FALSE) {
   
   Total = Annual = FireRT = NULL
   
@@ -151,7 +172,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   if(quant@id == "vegcover_std") {
     
     # vegcover.out provides the right quantity here (note this is not standard LPJ-GUESS)
-    this.dt <- openLPJOutputFile(run, "vegcover", verbose = TRUE)
+    this.dt <- openLPJOutputFile(run, "vegcover", first.year, last.year, verbose = TRUE)
     
     # But we need to scale it to %
     if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
@@ -167,7 +188,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   else if(quant@id == "vegC_std") {
     
     # cmass provides the right quantity here - so done
-    this.dt <- openLPJOutputFile(run, "cmass", verbose = TRUE)
+    this.dt <- openLPJOutputFile(run, "cmass", first.year, last.year, verbose = TRUE)
     
     return(this.dt)
     
@@ -177,7 +198,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   else if(quant@id == "LAI_std") {
     
     # lai provides the right quantity here - so done
-    this.dt <- openLPJOutputFile(run, "lai", verbose = TRUE)
+    this.dt <- openLPJOutputFile(run, "lai", first.year, last.year, verbose = TRUE)
     
     return(this.dt)
     
@@ -187,7 +208,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   else if(quant@id == "FPAR_std") {
     
     # lai provides the right quantity here - so done
-    temp.dt <- openLPJOutputFile(run, "fpc", verbose = TRUE)
+    temp.dt <- openLPJOutputFile(run, "fpc", first.year, last.year, verbose = TRUE)
     this.dt <- temp.dt[, c("Lon", "Lat", "Year", "Total")]
     this.dt[, Total := pmin(Total, 1) * 100 * 0.83]
     return(this.dt)
@@ -200,11 +221,11 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     if(file.exists(file.path(run@dir, "agpp.out")) || file.exists(file.path(run@dir, "agpp.out.gz"))){
-      this.dt <- openLPJOutputFile(run, "agpp", verbose = TRUE)
+      this.dt <- openLPJOutputFile(run, "agpp", first.year, last.year, verbose = TRUE)
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
     else {
-      this.dt <- openLPJOutputFile(run, "mgpp", verbose = TRUE)
+      this.dt <- openLPJOutputFile(run, "mgpp", first.year, last.year, verbose = TRUE)
       this.dt <- autoLayer(this.dt, "Annual") 
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Annual"), with = FALSE]
       this.dt <- this.dt[, Total := Annual]
@@ -222,11 +243,11 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     # newer versions have the agpp output variable which has the per PFT version
     
     if(file.exists(file.path(run@dir, "anpp.out") || file.path(run@dir, "anpp.out.gz"))){
-      this.dt <- openLPJOutputFile(run, "anpp", verbose = TRUE)
+      this.dt <- openLPJOutputFile(run, "anpp", first.year, last.year, verbose = TRUE)
       this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
     else{
-      this.dt <- openLPJOutputFile(run, "mnpp", verbose = TRUE)
+      this.dt <- openLPJOutputFile(run, "mnpp", first.year, last.year, verbose = TRUE)
       this.dt <- autoLayer(this.dt, "Annual")
     }
     
@@ -240,7 +261,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
-    this.dt <- openLPJOutputFile(run, "cflux", verbose = TRUE)
+    this.dt <- openLPJOutputFile(run, "cflux", first.year, last.year, verbose = TRUE)
     
     # make the annual total and remove ditch the rest
     this.dt <- this.dt[, c("Lon", "Lat", "Year","NEE"), with = FALSE]
@@ -256,7 +277,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   else if(quant@id == "canopyheight_std") {
     
     # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
-    this.dt <- openLPJOutputFile(run, "canopyheight", verbose = TRUE)
+    this.dt <- openLPJOutputFile(run, "canopyheight", first.year, last.year, verbose = TRUE)
     setnames(this.dt, "CanHght", "CanopyHeight")
 
     return(this.dt)
@@ -268,14 +289,14 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
     
     # if mfirefrac is present the open it and use it
     if("mfirefrac" %in% listAllLPJOutput(run@dir)){
-      this.dt <- openLPJOutputFile(run, "mfirefrac", verbose = TRUE)
+      this.dt <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = TRUE)
       this.dt <- aggregateSubannual(this.dt, method = "sum")
       
     }
     
     # otherwise open firert to get GlobFIRM fire return interval and invert it
     else {
-      this.dt <- openLPJOutputFile(run, "firert", verbose = TRUE)
+      this.dt <- openLPJOutputFile(run, "firert", first.year, last.year, verbose = TRUE)
       this.dt[, Annual :=  1 / FireRT]
       this.dt[, FireRT :=  NULL]
     }
@@ -287,7 +308,7 @@ getStandardQuantity_LPJ <- function(run, quant, verbose = FALSE) {
   # else stop
   else {
     
-    stop(paste("Unfortunately "))
+    stop(paste("Unfortunately standard quantity", quant@id, "does not seem to be available in LPJ-GUESS"))
     
   }
   
