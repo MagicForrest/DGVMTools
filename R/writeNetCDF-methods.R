@@ -17,14 +17,29 @@
 #' 
 # first define (redfine) the generic
 if (!isGeneric("writeNetCDF")) {
-  setGeneric("writeNetCDF", function(x, filename, verbose = FALSE, ...) standardGeneric("writeNetCDF"))
+  setGeneric("writeNetCDF", function(x, filename, start.date = NULL, monthly = FALSE, verbose = FALSE, ...) standardGeneric("writeNetCDF"))
 }
 
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(x, filename, ...) {
   
-  array.slice <- modelObject2Array(x@data) 
-  writeNetCDF(array.slice, filename, ...)
+  st.names <- getSTInfo(x)
+  if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
+  if("Month" %in% st.names) monthly <- TRUE
+  
+  array.list <- FieldToArray(x@data) 
+  layers <- names(x)
+  if(is.array(array.list)) { 
+    array.list <- list(array.list)
+    names(array.list) <- layers
+  }
+  
+  writeNetCDF(array.list, 
+              filename, 
+              monthly = monthly, 
+              verbose = verbose, 
+              start.date = start.date,
+              ...)
   
 })
 
@@ -34,12 +49,12 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   
   # check input list and get layer names
   for(list.element in x) {
-     if(!is.numeric(list.element)) stop("Got a non-numeric item in the list of layers.  Failing!")
-     dims <- dim(list.element)
-     if(exists("last.dims")) {
-       if(!identical(dims,last.dims)) stop("Arrays not the same size for each layer, can't make a netCDF like this!")
-     }
-     last.dims <- dims
+    if(!is.numeric(list.element)) stop("Got a non-numeric item in the list of layers.  Failing!")
+    dims <- dim(list.element)
+    if(exists("last.dims")) {
+      if(!identical(dims,last.dims)) stop("Arrays not the same size for each layer, can't make a netCDF like this!")
+    }
+    last.dims <- dims
   }
   
   layers <- names(x)
@@ -51,16 +66,64 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   all.dims <- list()
   all.dims[["Lon"]] <- ncdim_def(name = "Lon", units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdim_def(name = "Lat", units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
-  if(length(all.dimnames) > 2 ) all.dims[["Time"]] <- ncdim_def(name = "Time", units = "timeunit", vals = as.numeric(all.dimnames[[3]]), unlim=TRUE, create_dimvar=TRUE)
+  if(length(all.dimnames) > 2 ) {
+    if(monthly) {
+      if(verbose) print("Got monthly data")
+      
+      # get the year and month as a numeric code with format "Year.Month"
+      all.year.months <- as.numeric(all.dimnames[[3]]) / 100
+      all.years <- sort(unique((trunc(all.year.months))))
+      
+      # if no start date is set start at Jan 1st of the first year of data
+      if(is.null(start.date)) start.date <- as.Date(paste(all.years[1], "01", "01", sep = "-"))
+      
+      # make the time values, taking of the inconveient fact that months have different numbers of days
+      month.cumulative.additions <- c(0)
+      for(month in all.months[1:11]) {
+        month.cumulative.additions <- append(month.cumulative.additions, month.cumulative.additions[length(month.cumulative.additions)] + month@days)
+      }
+      
+      time.vals <- c()
+      start.year <- as.numeric(format(start.date,"%Y"))
+      for(year.month in all.year.months) {
+        
+        year <- trunc(year.month)
+        month <- as.integer((year.month - year) * 100) 
+        time.vals <- append(time.vals, (year-start.year) * 365 + month.cumulative.additions[month+1])
+        
+      }
+    
+    }
+    
+    # else is yearly, so make annual axis of entries 365 days apart
+    else {
+      if(verbose) print("Got annual data")
+      
+      all.years <- as.numeric(all.dimnames[[3]])
+      
+      # if no start date is set start at Jan 1st of the first year of data
+      if(is.null(start.date)) start.date <- as.Date(paste(all.years[1], "01", "01", sep = "-"))
+      
+      time.vals <- (all.years - as.numeric(format(start.date,"%Y"))) * 365
   
-
+    }
+    
+    # make start date and calendar
+    calendar <- "365_day" 
+    time.unit <- paste("days since", start.date)
+    
+    all.dims[["Time"]] <- ncdim_def(name = "Time", units = time.unit, vals = time.vals , calendar = calendar, unlim=TRUE, create_dimvar=TRUE)
+    
+  }
+  
+  
   # PREPARE THE VARIABLES, ONE FOR EACH LAYER
   all.vars <- list()
   for(layer in layers) {
     all.vars[[layer]] <- ncvar_def(name = layer, units = "temp.unit", dim = all.dims, longname = layer, -99999)  # standard
   }
   
-
+  
   # MAKE THE NETCDF FILE
   if(verbose) print(paste("Creating the output file", filename))
   outfile <- nc_create(filename, all.vars, verbose=verbose)
@@ -74,8 +137,14 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # STANDARD SPATIAL ATTRIBUTES
   outfile <- addStandardSpatialAttributes(outfile)
   
+  # ADD TEMPORAL ATTRIBUTES
+  #if(exists("calendar")) ncatt_put(outfile, "Time" , "calendar", calendar)
+  
+  # ADD GENERAL ATTRIBUTES
+  ncatt_put(outfile, 0, "Conventions", "CF-1.6")
+  
   # CLOSE
   nc_close(outfile)
- 
+  
   
 })

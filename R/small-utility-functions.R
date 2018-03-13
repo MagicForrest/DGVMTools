@@ -82,3 +82,28 @@ correct.map.offset <- function(spl) {
   }
   return(spl)
 }
+
+
+## Some date function
+## not yet really needed. However, potentially useful with the daily LPJ-GUESS output.
+
+#' check if a given year is a leap year
+#' 
+#' @param year year (integer or vector)
+#' @param proleptic use leap years even before 1582.
+#' @param doy return days of year instead logical.
+#' @return logical or integer, if doy is TRUE
+#' 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
+is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
+  leap <- sapply(year, function(x) {
+    if (!proleptic && x < 1582) return(FALSE)
+    if (((x %% 4 == 0) & (x %% 100 != 0)) | (x %% 400 == 0))
+      return(TRUE)
+    return(FALSE)
+  })
+  if (doy)
+    return(ifelse(leap, 366, 365))
+  return(leap)
+}

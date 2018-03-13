@@ -1,26 +1,3 @@
-## Some date function
-## not yet really needed. However, potentially useful with the daily LPJ-GUESS output.
-
-#' check if a given year is a leap year
-#' 
-#' @param year year (integer or vector)
-#' @param proleptic use leap years even before 1582.
-#' @param doy return days of year instead logical.
-#' @return logical or integer, if doy is TRUE
-#' 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @export
-is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
-  leap <- sapply(year, function(x) {
-    if (!proleptic && x < 1582) return(FALSE)
-    if (((x %% 4 == 0) & (x %% 100 != 0)) | (x %% 400 == 0))
-      return(TRUE)
-    return(FALSE)
-  })
-  if (doy)
-    return(ifelse(leap, 366, 365))
-  return(leap)
-}
 
 #' Convert a Field to a multi-dimensional array
 #' 
@@ -33,21 +10,25 @@ is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
 #' @importFrom reshape2 acast
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
-modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
-
+FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
+  
   Lon=Lat=Year=variable=NULL
-
+  
   ## get the full spatial extent
   lon <- extract.seq(d$Lon)
   lat <- extract.seq(d$Lat, descending=invertlat)
-  if (verbose)
+  if (verbose) {
     message(paste0("Spatial extent: Lon: ", min(lon), " ", max(lon), " (", length(lon), ")\n", 
                    "                Lat: ", min(lat), " ", max(lat), " (", length(lat), ")"))
-
+  }
+  
+  ## get temporal info
+  st.names <- getSTInfo(d)
+  
   ## check for annual data
   is.temporal <- FALSE
-  if (any(colnames(d) == "Year")) {
-    if (verbose)
+  if("Year" %in% st.names) {
+     if (verbose)
       message("'Year' column present.")
     time <- sort(unique(d$Year))
     is.temporal <- TRUE
@@ -55,23 +36,20 @@ modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   
   ## check for monthly data
   is.monthly <- FALSE
-  if (all(month.abb %in% colnames(d))) {
+  if("Month" %in% st.names) {
     cname <- FALSE
-    if (is.temporal) {
-      d <- data.table::melt(d, id.vars=c("Lon", "Lat", "Year"))
-      d[, Year:= Year * 100 + as.numeric(variable)]
-      d$variable <- NULL
-      setkey(d, Lon, Lat, Year)
-    } else {
-      d <- data.table::melt(d, id.vars=c("Lon", "Lat"))
-      d[, Year:= as.numeric(variable)]
-      d$variable <- NULL
-      setkey(d, Lon, Lat, Year)
-    }
-    time <- sort(unique(d$Year))    
+   
+    # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
+    if (is.temporal) {  d[, Year:= Year * 100 + as.numeric(Month)]  }
+    time <- sort(unique(d$Year))
+
+    d[, Month := NULL]
     is.monthly <- TRUE
     is.temporal <- TRUE
   }
+ 
+  #print(d)
+  setKeyDGVM(d)
   
   ## create the target grid
   if (is.temporal) {
@@ -110,22 +88,3 @@ modelObject2Array <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   names(rv) <- cname
   return(rv)
 }
-
-#' Array methods
-#' 
-#' Converts a \code{\linkS4class{Field}} to multi-dimensional array(s) all parameters are passed along to \code{\link{modelObject2Array}}.
-#' 
-#' @param x \code{\linkS4class{Field}}
-#' @param ... Other arguments, not currently used
-#' @return an lon/lat(/time) array - or a list of arrays - of the modelObjects input data.table.
-#' @name Array-methods
-#' @rdname Array-methods
-#' @exportMethod 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}         
-setGeneric("as.array", function(x,...) standardGeneric("as.array"))
-
-#' @rdname Array-methods
-#' @aliases as.array
-setMethod("as.array", signature("Field"), function(x, ...) {
-  modelObject2Array(x@data, ...)
-})

@@ -246,3 +246,21 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, g
   
 }
 
+#' Array methods
+#' 
+#' Converts a \code{\linkS4class{Field}} to multi-dimensional array(s) all parameters are passed along to \code{\link{modelObject2Array}}.
+#' 
+#' @param x \code{\linkS4class{Field}}
+#' @param ... Other arguments, not currently used
+#' @return an lon/lat(/time) array - or a list of arrays - of the modelObjects input data.table.
+#' @name Array-methods
+#' @rdname Array-methods
+#' @exportMethod 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}         
+setGeneric("as.array", function(x,...) standardGeneric("as.array"))
+
+#' @rdname Array-methods
+#' @aliases as.array
+setMethod("as.array", signature("Field"), function(x, ...) {
+  FieldToArray(x@data, ...)
+})
