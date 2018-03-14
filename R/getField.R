@@ -147,7 +147,7 @@ getField <- function(source,
         this.dt <- openLPJOutputFile(source, var.string, first.year = first.year, last.year = last.year, verbose = verbose)
       }
       else if("Standard" %in% quant@model) {
-        this.dt <- getStandardQuantity_LPJ(source, quant, verbose = verbose)
+        this.dt <- getStandardQuantity_LPJ(source, quant, first.year = first.year, last.year = last.year, verbose = verbose)
       }
       
       

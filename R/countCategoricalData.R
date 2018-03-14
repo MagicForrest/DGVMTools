@@ -36,7 +36,7 @@ countCategoricalData <- function(original.data, overlay.objects, return.type = "
   output.df <- data.frame()
   
   ### Make a list of the cells of the output grid that we want to produce
-  if(class(overlay.objects)[1] == "Raster") {
+  if(class(overlay.objects)[1] == "RasterLayer") {
     
     temp.list <- list()
     
@@ -57,7 +57,7 @@ countCategoricalData <- function(original.data, overlay.objects, return.type = "
       this.extent <- raster::extent(lon-lon.res.div.2,lon+lon.res.div.2, lat-lat.res.div.2,lat+lat.res.div.2)
       
       # add this extent to the list
-      temp.list[[length(temp.list + 1)]] <- list("lon" = lon, "lat" = lat, extent = list(this.extent)) 
+      temp.list[[length(temp.list)+1]] <- list("lon" = lon, "lat" = lat, extent = list(this.extent)) 
       
     }
     
