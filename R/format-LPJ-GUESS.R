@@ -336,8 +336,8 @@ openLPJOutputFile_FireMIP <- function(run,
     dt_evap <- openLPJOutputFile(run, "mevap", first.year, last.year,  verbose)
     setKeyDGVM(dt_trans)
     setKeyDGVM(dt_evap)
-    dt_evap <- dt_evap[dt_trans]
-    rm(dt_trans)
+    dt_trans <- dt_evap[dt_trans]
+    rm(dt_evap)
     gc()
     
     # now add interception
@@ -348,10 +348,10 @@ openLPJOutputFile_FireMIP <- function(run,
     
     
     # combine, convert and clean up
-    dt_trans[,Total := maet + mevap + mintercep]
-    dt_trans[,maet := NULL]
-    dt_trans[,mevap := NULL]
-    dt_trans[,mintercep := NULL]
+    dt_trans[, Total := maet + mevap + mintercep]
+    dt_trans[, maet := NULL]
+    dt_trans[, mevap := NULL]
+    dt_trans[, mintercep := NULL]
     dt_trans[, Seconds := seconds.in.month[Month]]
     dt_trans[, Total := Total/Seconds]
     dt_trans[, Seconds := NULL]
