@@ -24,6 +24,7 @@ if (!isGeneric("writeNetCDF")) {
                                      verbose = FALSE, 
                                      quantity = NULL, 
                                      source = NULL, 
+                                     layer.dim.name = NULL,
                                      ...) standardGeneric("writeNetCDF"))
 }
 
@@ -48,6 +49,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
               start.date = start.date,
               quantity = x@quant,
               source = x@source,
+              layer.dim.name = layer.dim.name,
               ...)
   
 })
@@ -55,7 +57,6 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
 
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x, filename, ...) {
-  
   
   ### GET METADATA FROM QUANTITY IF PRESENT
   if(!is.null(quantity)) {
@@ -81,8 +82,20 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   ### MAKE DIMENSIONS
   all.dimnames <- dimnames(x[[1]])
   all.dims <- list()
+  
+  # Lon and Lat - easy-peasy
   all.dims[["Lon"]] <- ncdim_def(name = "Lon", units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdim_def(name = "Lat", units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
+  
+  # Layer - only if a layer.dim.name has been specifed which mean collapse all the diffents layers as values along a dimension
+  if(!is.null(layer.dim.name)) {
+    
+    if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
+    all.dims[[layer.dim.name]] <- ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
+    
+  }
+  
+  # Time
   if(length(all.dimnames) > 2 ) {
     if(monthly) {
       if(verbose) print("Got monthly data")
@@ -134,25 +147,55 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   }
   
   
-  ### PREPARE THE VARIABLES, ONE FOR EACH LAYER
+  ### PREPARE THE VARIABLES: ONE FOR EACH LAYER OR COMBINE THEM IF WE WANT LAYERS TO BE DEFINED ALONG A DIMENSION AXIS
   all.vars <- list()
-  for(layer in layers) {
-    all.vars[[layer]] <- ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = standard.name, -99999)  # standard
+  # individual layers
+  if(is.null(layer.dim.name)) {  
+    for(layer in layers) {
+      all.vars[[layer]] <- ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = standard.name, -99999)  # standard
+    }
   }
+  # else turn layers into a dimension
+  else {
+  
+    all.vars <- ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = standard.name, -99999)  # standard
+    old.layers <- layers # for storing the key from dimension values to layer
+ 
+  } 
   
   
   ### MAKE THE NETCDF FILE
   if(verbose) print(paste("Creating the output file", filename))
-  outfile <- nc_create(filename, all.vars, verbose=verbose)
+  outfile <- nc_create(filename, all.vars, verbose=verbose, force_v4=TRUE)
   
   
   ### PUT EACH VARIABLE INTO THE FILE
+  
   for(layer in layers) {
     if(verbose) print(paste("Saving variable", layer, "to file",  filename, sep =" " ), quote=FALSE)
-    ncvar_put(outfile, layer,  x[[layer]], start=NA, count=NA, verbose=verbose)
-    ncatt_put(outfile, layer, "standard_name", standard.name)
+    # simple case of one variable per layer
+    if(is.null(layer.dim.name)) {
+      ncvar_put(nc = outfile, varid = layer,  vals = x[[layer]], start=NA, count=NA, verbose=verbose)
+      ncatt_put(outfile, layer, "standard_name", standard.name)
+    }
+    # else slightly more complicated case of all layers going into one variable
+    else{
+      this.layer.index <- which(layer == layers)
+      start.indices <- c(1,1,this.layer.index,1)
+      count.indices <- c(-1,-1,1,-1)
+      ncvar_put(nc = outfile, varid = all.vars,  vals = x[[layer]], start=start.indices, count=count.indices, verbose=verbose)
+    }
+
   }
   
+  # add meta-data if layers collapsed to a dimension
+  if(!is.null(layer.dim.name)) {
+    ncatt_put(outfile, quantity@id, "standard_name", standard.name)
+    for(counter in 1:length(old.layers)){
+      ncatt_put(outfile, all.vars, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
+    }
+  }
+ 
   
   # STANDARD SPATIAL ATTRIBUTES
   outfile <- addStandardSpatialAttributes(outfile)
@@ -179,7 +222,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   #ncatt_put(outfile, 0, "DGVMData_last.year", last.year)
   #ncatt_put(outfile, 0, "DGVMData_year.aggregation.method", "mean")
   #ncatt_put(outfile, 0, "DGVMData_quantity", quantity.id)
-
+  
   # CLOSE
   nc_close(outfile)
   

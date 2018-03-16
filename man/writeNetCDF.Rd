@@ -5,7 +5,8 @@
 \title{Write a netCDF file}
 \usage{
 writeNetCDF(x, filename, start.date = NULL, monthly = FALSE,
-  verbose = FALSE, quantity = NULL, source = NULL, ...)
+  verbose = FALSE, quantity = NULL, source = NULL,
+  layer.dim.name = NULL, ...)
 }
 \arguments{
 \item{filename}{A character string (including the path) specifiying the name of the netCDF file.}

@@ -143,7 +143,11 @@ getField <- function(source,
     if(source@format == "LPJ-GUESS" | source@format == "LPJ-GUESS-SPITFIRE" ) {
       
       
-      if("LPJ-GUESS" %in% quant@model | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
+      # First check if quantity is for FireMIP, if so call a special function with the extra processing required
+      if("FireMIP" %in% quant@model) {
+        this.dt <- openLPJOutputFile_FireMIP(source, var.string, first.year = first.year, last.year = last.year, verbose = verbose)
+      }
+      else if("LPJ-GUESS" %in% quant@model | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
         this.dt <- openLPJOutputFile(source, var.string, first.year = first.year, last.year = last.year, verbose = verbose)
       }
       else if("Standard" %in% quant@model) {

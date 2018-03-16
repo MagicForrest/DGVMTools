@@ -108,7 +108,7 @@ openLPJOutputFile <- function(run,
   
   # if daily then melt
   # TODO - implement daily melting, follow above for implementation
-
+  
   
   # set some attributes about the file - works!
   attr(dt, "shadeToleranceCombined") <- FALSE
@@ -123,6 +123,243 @@ openLPJOutputFile <- function(run,
   
 }
 
+
+######################### OPEN AN LPJ-GUESS *.out FILE  #####################################################################
+#' Open an LPJ-GUESS .out file
+#'
+#' \code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity 
+#' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
+#'
+#' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
+#' 
+#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param first.year The first year (as a numeric) of the data to be return
+#' @param last.year The last year (as a numeric) of the data to be return
+#' @param verbose A logical, set to true to give progress/debug information
+#' @return a data.table (with the correct tear offset and lon-lat offsets applied)
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import data.table
+#' @export
+openLPJOutputFile_FireMIP <- function(run,
+                                      variable,
+                                      first.year,
+                                      last.year,
+                                      verbose = FALSE){
+  
+  # seconds in month
+  seconds.in.month <- c()
+  for(month in all.months) {
+    seconds.in.month <- append(seconds.in.month, month@days * 24 * 60 * 60)
+  }
+  
+  
+  ################################################################################################
+  ############# PER PFT VARIABLES
+  
+  if(variable == "lai") {
+    return(openLPJOutputFile(run, "lai", first.year, last.year,  verbose))
+  }
+  if(variable == "landCoverFrac") {
+    return(openLPJOutputFile(run, "fpc", first.year, last.year,  verbose))
+  }
+  if(variable == "theightpft") {
+    return(openLPJOutputFile(run, "speciesheights", first.year, last.year,  verbose))
+  }
+  
+  
+  ################################################################################################
+  ############ MONTHLY VARIABLES (NOT PER PFT)
+  
+  # These will often require some sort of unit conversions
+  monthly.to.second <- FALSE
+  monthly.to.percent <- FALSE
+  monthly <- FALSE
+  
+  ## Here look for variables that require per month to per second
+  if(variable == "gpp") {
+    guess.var <- "mgpp"
+    monthly.to.second <- TRUE
+  }
+  if(variable == "npp") {
+    guess.var <- "mnpp"
+    monthly.to.second <- TRUE
+  }
+  if(variable == "nbp") {
+    guess.var <- "mnbp"
+    monthly.to.second <- TRUE
+  }
+  if(variable == "ra") {
+    guess.var <- "mra"
+    monthly.to.second <- TRUE
+  }
+  if(variable == "rh") {
+    guess.var <- "mrh"
+    monthly.to.second <- TRUE
+  }
+  if(variable == "mrro") {
+    guess.var <- "mrunoff"
+    monthly.to.second <- TRUE
+  }
+  if(variable == "fFirePFT") {
+    guess.var <- "cflux_fire"
+    monthly.to.second <- TRUE
+  }
+  if(variable == "tran") {
+    guess.var <- "maet"
+    monthly.to.second <- TRUE
+  }
+  if(variable == "evspsblveg") {
+    guess.var <- "mintercep"
+    monthly.to.second <- TRUE
+  }
+  if(variable == "evspsblsoi") {
+    guess.var <- "mevap"
+    monthly.to.second <- TRUE
+  }
+  
+  ## Here look for variables that require conversion to percent
+  if(variable == "BA") {
+    guess.var <- "mfirefrac"
+    monthly.to.percent <- TRUE
+  }
+  if(variable == "intensFire") {
+    guess.var <- "real_intensity"
+    monthly.to.percent <- TRUE
+  }
+  if(variable == "ccFuelLiveGrass") {
+    guess.var <- "mlivegrass_cc"
+    monthly.to.percent <- TRUE
+  }
+  if(variable == "ccFuel1hr") {
+    guess.var <- "m1hr_c"
+    monthly.to.percent <- TRUE
+  }
+  if(variable == "ccFuel10hr") {
+    guess.var <- "m10hr_cc"
+    monthly.to.percent <- TRUE
+  }
+  if(variable == "ccFuel100hr") {
+    guess.var <- "m100hr_cc"
+    monthly.to.percent <- TRUE
+  }
+  if(variable == "ccFuel1000hr") {
+    guess.var <- "m1000hr_cc"
+    monthly.to.percent <- TRUE
+  }
+
+  # Here we have simple monthly variables (no conversion)
+  if(variable == "cFuelLiveGrass") {
+    guess.var <- "mlivegrass_fuel"
+    monthly <- TRUE
+  }
+  if(variable == "cFuel1hr") {
+    guess.var <- "m1hr_fuel"
+    monthly <- TRUE
+  }
+  if(variable == "cFuel10hr") {
+    guess.var <- "m10hr_fuel"
+    monthly <- TRUE
+  }
+  if(variable == "cFuel100hr") {
+    guess.var <- "m100hr_fuel"
+    monthly <- TRUE
+  }
+  if(variable == "cFuel1000hr") {
+    guess.var <- "m1000hr_fuel"
+    monthly <- TRUE
+  }
+  if(variable == "mFuelDead") {
+    guess.var <- "mdlm_deadfuel"
+    monthly <- TRUE
+  }
+  if(variable == "mFuelLiveGrass") {
+    guess.var <- "mdlm_livegrass"
+    monthly <- TRUE
+  } 
+  if(variable == "mFuelLiveGrass") {
+    guess.var <- "mdlm_livegrass"
+    monthly <- TRUE
+  }
+  if(variable == "nrfire") {
+    guess.var <- "real_num_fires"
+    monthly <- TRUE
+  }
+  if(variable == "cMortality") {
+    guess.var <- "monthly_nind_killed"
+    monthly <- TRUE
+  }
+  
+    # Now calculate these bad boys
+  if(monthly.to.second || monthly.to.percent || monthly){
+    
+    dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose)
+    setnames(dt, guess.var, "Total")
+    if(monthly.to.second){
+      dt[, Seconds := seconds.in.month[Month]]
+      dt[, Total := Total/Seconds]
+      dt[, Seconds := NULL]
+    }
+    if(monthly.to.percent){
+      dt[, Total := Total * 100]
+    }
+    return(dt)
+    
+  }
+  
+  ### Special monthly variables
+  if(variable == "meanFire") {
+    dt <- openLPJOutputFile(run, "real_fire_size", first.year, last.year,  verbose)
+    setnames(dt, guess.var, "Total")
+    dt[, Total := Total * 10000]
+    return(dt)
+  }
+  
+  if(variable == "mrso") {
+    dt_upper <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose)
+    setKeyDGVM(dt_upper)
+    dt_lower <- openLPJOutputFile(run, "mwcont_lower", first.year, last.year,  verbose)
+    setKeyDGVM(dt_lower)
+    dt <- dt_upper[dt_lower]
+    dt[, Total := mwcont_lower + mwcont_upper]
+    dt[, mwcont_lower := NULL]
+    dt[, mwcont_upper := NULL]
+    rm(dt_upper,dt_lower)
+    gc()
+    return(dt)
+  }
+  
+  if(variable == "evapotrans") {
+    
+    # firsty combine transpiration and evaporation
+    dt_trans <- openLPJOutputFile(run, "maet", first.year, last.year,  verbose)
+    dt_evap <- openLPJOutputFile(run, "mevap", first.year, last.year,  verbose)
+    setKeyDGVM(dt_trans)
+    setKeyDGVM(dt_evap)
+    dt_evap <- dt_evap[dt_trans]
+    rm(dt_trans)
+    gc()
+    
+    # now add interception
+    dt_intercep <- openLPJOutputFile(run, "mintercep", first.year, last.year,  verbose)
+    setKeyDGVM(dt_intercep)
+    dt_trans <- dt_trans[dt_intercep]
+    rm(dt_intercep)
+    
+    
+    # combine, convert and clean up
+    dt_trans[,Total := maet + mevap + mintercep]
+    dt_trans[,maet := NULL]
+    dt_trans[,mevap := NULL]
+    dt_trans[,mintercep := NULL]
+    dt_trans[, Seconds := seconds.in.month[Month]]
+    dt_trans[, Total := Total/Seconds]
+    dt_trans[, Seconds := NULL]
+    return(dt_trans)
+  }
+  
+  
+}
 
 
 
@@ -279,7 +516,7 @@ getStandardQuantity_LPJ <- function(run,
     # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
     this.dt <- openLPJOutputFile(run, "canopyheight", first.year, last.year, verbose = TRUE)
     setnames(this.dt, "CanHght", "CanopyHeight")
-
+    
     return(this.dt)
     
   }

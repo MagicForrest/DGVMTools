@@ -180,404 +180,404 @@ dgvm.quantities <- list(
       type = "",
       name = "C emitted from fire (per PFT)",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "C emitted from fire (per PFT)"), 
-  
+      cf.name = "C emitted from fire (per PFT)"),
+
   new("Quantity",
       id = "fFire",
       type = "",
       name = "C emitted from fire",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "CO2 emitted from fire"), 
-  
+      cf.name = "CO2 emitted from fire"),
+
   new("Quantity",
       id = "coFire",
       type = "",
       name = "CO emitted from fire",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "CO emitted from fire"), 
-  
+      cf.name = "CO emitted from fire"),
+
   new("Quantity",
       id = "burntArea",
       type = "",
       name = "Burnt Area Fraction (per PFT)",
       units = "%",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Burnt Area Fraction (per PFT)"), 
-  
+      cf.name = "Burnt Area Fraction (per PFT)"),
+
   new("Quantity",
       id = "BA",
       type = "",
       name = "Burnt Area Fraction (monthly)",
       units = "%",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Burnt Area Fraction (monthly)"), 
-  
-  
+      cf.name = "Burnt Area Fraction (monthly)"),
+
+
   ### FUEL LOADS
-  
+
   new("Quantity",
       id = "cFuelLiveGrass",
       type = "",
       name = "Carbon in live grass fuel",
       units = "kg C m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Carbon in live grass fuel"), 
-  
+      cf.name = "Carbon in live grass fuel"),
+
   new("Quantity",
       id = "cFuel1hr",
       type = "",
       name = "Carbon in 1hr fuel",
       units = "kg C m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Carbon in 1hr fuel"), 
-  
+      cf.name = "Carbon in 1hr fuel"),
+
   new("Quantity",
       id = "cFuel10hr",
       type = "",
       name = "Carbon in 10hr fuel",
       units = "kg C m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Carbon in 10hr fuel"), 
-  
+      cf.name = "Carbon in 10hr fuel"),
+
   new("Quantity",
       id = "cFuel100hr",
       type = "",
       name = "Carbon in 100hr fuel",
       units = "kg C m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Carbon in 100hr fuel"), 
-  
+      cf.name = "Carbon in 100hr fuel"),
+
   new("Quantity",
       id = "cFuel1000hr",
       type = "",
       name = "Carbon in 1000hr fuel",
       units = "kg C m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Carbon in 1000hr fuel"), 
-  
-  
+      cf.name = "Carbon in 1000hr fuel"),
+
+
   ### COMBUSION COMPLETENESS
-  
+
   new("Quantity",
       id = "ccFuelLiveGrass",
       type = "",
       name = "Combusion Completeness in live grass fuel",
       units = "%",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Combusion Completeness live grass fuel"), 
-  
+      cf.name = "Combusion Completeness live grass fuel"),
+
   new("Quantity",
       id = "ccFuel1hr",
       type = "",
       name = "Combustion Completeness in 1hr fuel",
       units = "%",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Combustion Completenessin 1hr fuel"), 
-  
+      cf.name = "Combustion Completenessin 1hr fuel"),
+
   new("Quantity",
       id = "ccFuel10hr",
       type = "",
       name = "Combustion Completenessin 10hr fuel",
       units = "%",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Combustion Completeness in 10hr fuel"), 
-  
+      cf.name = "Combustion Completeness in 10hr fuel"),
+
   new("Quantity",
       id = "ccFuel100hr",
       type = "",
       name = "Combustion Completenessin 100hr fuel",
       units = "%",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Combustion Completeness in 100hr fuel"), 
-  
+      cf.name = "Combustion Completeness in 100hr fuel"),
+
   new("Quantity",
       id = "ccFuel1000hr",
       type = "",
       name = "Combustion Completenessin 1000hr fuel",
       units = "%",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Combustion Completeness in 1000hr fuel"), 
-  
-  
+      cf.name = "Combustion Completeness in 1000hr fuel"),
+
+
   ### FUEL MOISTURE
-  
+
   new("Quantity",
       id = "mFuelDead",
       type = "",
       name = "Fuel moisture of dead fuel",
       units = "",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Fuel moisture of dead fuel"), 
-  
+      cf.name = "Fuel moisture of dead fuel"),
+
   new("Quantity",
       id = "mFuelLiveGrass",
       type = "",
       name = "Fuel moisture of live grass fuel",
       units = "",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Fuel moisture of live grass fuel"), 
-  
-  
+      cf.name = "Fuel moisture of live grass fuel"),
+
+
   ### FIRE PROPERTIES AND MORTALITY
-  
+
   new("Quantity",
       id = "intensFire",
       type = "",
       name = "Fireline intensity",
       units = "kW m-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Fireline intensity"), 
-  
+      cf.name = "Fireline intensity"),
+
   new("Quantity",
       id = "nrfire",
       type = "",
       name = "Number of fires",
       units = "nr m-2 month-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Number of fires"), 
-  
+      cf.name = "Number of fires"),
+
   new("Quantity",
       id = "meanFire",
       type = "",
       name = "Mean fire size",
       units = "m2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Mean fire size"), 
-  
+      cf.name = "Mean fire size"),
+
   new("Quantity",
       id = "cMortality",
       type = "",
       name = "Number of individuals killed",
       units = "indiv m-2 month-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Number of individuals killed"), 
-  
-  
+      cf.name = "Number of individuals killed"),
+
+
   ### HYDROLOGICAL VARIABLES
-  
+
   new("Quantity",
       id = "mrro",
       type = "",
       name = "Total Runoff",
       units = "kg m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Total Runoff"), 
-  
+      cf.name = "Total Runoff"),
+
   new("Quantity",
       id = "evapotrans",
       type = "",
       name = "Total Evapo-Transpiration",
       units = "kg m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Total Evapo-Transpiration"), 
- 
+      cf.name = "Total Evapo-Transpiration"),
+
   new("Quantity",
       id = "mrso",
       type = "",
       name = "Total Soil Moisture Content",
       units = "kg m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Total Soil Moisture Content"), 
-  
+      cf.name = "Total Soil Moisture Content"),
+
   new("Quantity",
       id = "evspsblveg",
       type = "",
       name = "Evaporation from Canopy",
       units = "kg m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Evaporation from Canopy"), 
-  
+      cf.name = "Evaporation from Canopy"),
+
   new("Quantity",
       id = "evspsblsoi",
       type = "",
       name = "Evaporation from Soil",
       units = "kg m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Evaporation from Soil"), 
-  
+      cf.name = "Evaporation from Soil"),
+
   new("Quantity",
       id = "tran",
       type = "",
       name = "Transpiration",
       units = "kg m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Transpiration"), 
-  
-  
-  
+      cf.name = "Transpiration"),
+
+
+
   ### FLUXES
-  
+
   new("Quantity",
       id = "gpp",
       type = "",
       name = "Gross Primary Production",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Gross Primary Production"), 
-  
+      cf.name = "Gross Primary Production"),
+
   new("Quantity",
       id = "npp",
       type = "",
       name = "Net Primary Production",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Net Primary Production"), 
-  
+      cf.name = "Net Primary Production"),
+
   new("Quantity",
       id = "nbp",
       type = "",
       name = "Net Biospheric Production",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Net Biospheric Production"), 
-  
+      cf.name = "Net Biospheric Production"),
+
   new("Quantity",
       id = "ra",
       type = "",
       name = "Autotrophic (Plant) Respiration",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Autotrophic (Plant) Respiration"), 
-  
+      cf.name = "Autotrophic (Plant) Respiration"),
+
   new("Quantity",
       id = "rh",
       type = "",
       name = "Heterotrophic Respiration",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Heterotrophic Respiration"), 
-  
+      cf.name = "Heterotrophic Respiration"),
+
   new("Quantity",
       id = "gpppft",
       type = "",
       name = "Vegtype level GPP",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Vegtype level GPP"), 
-  
+      cf.name = "Vegtype level GPP"),
+
   new("Quantity",
       id = "npppft",
       type = "",
       name = "Vegtype level NPP",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Vegtype level NPP"), 
-  
+      cf.name = "Vegtype level NPP"),
+
   new("Quantity",
       id = "fLuc",
       type = "",
       name = "CO2 Flux to Atmosphere from Land Use Change",
       units = "kg C m-2 s-1",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "CO2 Flux to Atmosphere from Land Use Change"), 
-  
-  
+      cf.name = "CO2 Flux to Atmosphere from Land Use Change"),
+
+
   # POOLS
-  
+
   new("Quantity",
       id = "cVegpft",
       type = "",
       name = "Vegtype level Carbon in Vegetation",
       units = "kg C m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Vegtype level Carbon in Vegetation"), 
-  
+      cf.name = "Vegtype level Carbon in Vegetation"),
+
   new("Quantity",
       id = "cVeg",
       type = "",
       name = "Carbon in Vegetation",
       units = "kg C m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Carbon in Vegetation"), 
-  
+      cf.name = "Carbon in Vegetation"),
+
   new("Quantity",
       id = "cLitter",
       type = "",
       name = "Carbon in Above-ground Litter Pool",
       units = "kg C m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Carbon in Above-ground Litter Pool"), 
-  
+      cf.name = "Carbon in Above-ground Litter Pool"),
+
   new("Quantity",
       id = "cSoil",
       type = "",
       name = "Carbon in Soil (including below-ground litter)",
       units = "kg C m-2",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Carbon in Soil (including below-ground litter)"), 
-  
-  
+      cf.name = "Carbon in Soil (including below-ground litter)"),
+
+
   ###  STRUCTURE
- 
+
   new("Quantity",
       id = "landCoverFrac",
       type = "",
       name = "Fractional Land Cover of PFT",
       units = "",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
       aggregate.method = "sum" ,
-      cf.name = "Fractional Land Cover of PFT",  
-  
+      cf.name = "Fractional Land Cover of PFT"),
+
   new("Quantity",
       id = "lai",
       type = "",
       name = "Leaf Area Index",
       units = "",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = "FireMIP",
-      cf.name = "Leaf Area Index"), 
-  
+      cf.name = "Leaf Area Index"),
+
   new("Quantity",
       id = "theightpft",
       type = "",
       name = "Vegtype level tree heights",
       units = "m",
-      colours = reversed.viridis, 
+      colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-      cf.name = "Vegtype level tree heights"), 
+      cf.name = "Vegtype level tree heights"),
   
   
   
