@@ -12,7 +12,7 @@
 #' @export
 FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   
-  Lon=Lat=Year=variable=NULL
+  Lon=Lat=Year=Month=variable=NULL
   
   ## get the full spatial extent
   lon <- extract.seq(d$Lon)

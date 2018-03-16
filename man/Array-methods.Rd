@@ -20,7 +20,7 @@ as.array(x, ...)
 an lon/lat(/time) array - or a list of arrays - of the modelObjects input data.table.
 }
 \description{
-Converts a \code{\linkS4class{Field}} to multi-dimensional array(s) all parameters are passed along to \code{\link{modelObject2Array}}.
+Converts a \code{\linkS4class{Field}} to multi-dimensional array(s) all parameters are passed along to \code{\link{FieldToArray}}.
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

@@ -147,6 +147,9 @@ openLPJOutputFile_FireMIP <- function(run,
                                       last.year,
                                       verbose = FALSE){
   
+  Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = NULL
+  
+  
   # seconds in month
   seconds.in.month <- c()
   for(month in all.months) {
@@ -331,7 +334,7 @@ openLPJOutputFile_FireMIP <- function(run,
   
   if(variable == "evapotrans") {
     
-    # firsty combine transpiration and evaporation
+    # firstly combine transpiration and evaporation
     dt_trans <- openLPJOutputFile(run, "maet", first.year, last.year,  verbose)
     dt_evap <- openLPJOutputFile(run, "mevap", first.year, last.year,  verbose)
     setKeyDGVM(dt_trans)

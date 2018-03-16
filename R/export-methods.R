@@ -248,7 +248,7 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, g
 
 #' Array methods
 #' 
-#' Converts a \code{\linkS4class{Field}} to multi-dimensional array(s) all parameters are passed along to \code{\link{modelObject2Array}}.
+#' Converts a \code{\linkS4class{Field}} to multi-dimensional array(s) all parameters are passed along to \code{\link{FieldToArray}}.
 #' 
 #' @param x \code{\linkS4class{Field}}
 #' @param ... Other arguments, not currently used
