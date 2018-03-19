@@ -148,6 +148,7 @@ openLPJOutputFile_FireMIP <- function(run,
                                       verbose = FALSE){
   
   Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = NULL
+  ..target.cols = SoilfC = SoilsC = NULL
   
   
   # seconds in month
@@ -176,6 +177,8 @@ openLPJOutputFile_FireMIP <- function(run,
   
   # These will often require some sort of unit conversions
   monthly.to.second <- FALSE
+  CO2.to.C <- FALSE
+  CO.to.C <- FALSE
   monthly.to.percent <- FALSE
   monthly <- FALSE
   
@@ -202,10 +205,6 @@ openLPJOutputFile_FireMIP <- function(run,
   }
   if(variable == "mrro") {
     guess.var <- "mrunoff"
-    monthly.to.second <- TRUE
-  }
-  if(variable == "fFirePFT") {
-    guess.var <- "cflux_fire"
     monthly.to.second <- TRUE
   }
   if(variable == "tran") {
@@ -235,7 +234,7 @@ openLPJOutputFile_FireMIP <- function(run,
     monthly.to.percent <- TRUE
   }
   if(variable == "ccFuel1hr") {
-    guess.var <- "m1hr_c"
+    guess.var <- "m1hr_cc"
     monthly.to.percent <- TRUE
   }
   if(variable == "ccFuel10hr") {
@@ -251,7 +250,7 @@ openLPJOutputFile_FireMIP <- function(run,
     monthly.to.percent <- TRUE
   }
 
-  # Here we have simple monthly variables (no conversion)
+  ## Here we have simple monthly variables (no conversion)
   if(variable == "cFuelLiveGrass") {
     guess.var <- "mlivegrass_fuel"
     monthly <- TRUE
@@ -280,10 +279,6 @@ openLPJOutputFile_FireMIP <- function(run,
     guess.var <- "mdlm_livegrass"
     monthly <- TRUE
   } 
-  if(variable == "mFuelLiveGrass") {
-    guess.var <- "mdlm_livegrass"
-    monthly <- TRUE
-  }
   if(variable == "nrfire") {
     guess.var <- "real_num_fires"
     monthly <- TRUE
@@ -293,7 +288,20 @@ openLPJOutputFile_FireMIP <- function(run,
     monthly <- TRUE
   }
   
-    # Now calculate these bad boys
+  ## Finally we have a couple of monthly to second variables which also required molar conversion to C
+  if(variable == "fFire") {
+    guess.var <- "m_co2flux_fire"
+    monthly.to.second <- TRUE
+    CO2.to.C <- TRUE
+  }
+  if(variable == "coFire") {
+    guess.var <- "m_coflux_fire"
+    monthly.to.second <- TRUE
+    CO.to.C <- TRUE
+  }
+  
+  
+  # Now calculate these bad boys
   if(monthly.to.second || monthly.to.percent || monthly){
     
     dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose)
@@ -305,6 +313,12 @@ openLPJOutputFile_FireMIP <- function(run,
     }
     if(monthly.to.percent){
       dt[, Total := Total * 100]
+    }
+    if(CO2.to.C){
+      dt[, Total := Total * 12 / 44]
+    }
+    if(CO.to.C){
+      dt[, Total := Total * 12 / 28]
     }
     return(dt)
     
@@ -361,6 +375,51 @@ openLPJOutputFile_FireMIP <- function(run,
     return(dt_trans)
   }
   
+  ### ANNUAL C POOLS FROM cpool.out FILE
+  
+  if(variable == "cVeg") {
+    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
+    target.cols <- append(getSTInfo(dt), "VegC")
+    dt <- dt[,..target.cols]
+    setnames(dt, "VegC", "cVeg")
+    return(dt)
+  }
+  if(variable == "cLitter") {
+    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
+    target.cols <- append(getSTInfo(dt), "LittC")
+    dt <- dt[,..target.cols]
+    setnames(dt, "LittC", "cLitter")
+    return(dt)
+  }
+  if(variable == "cSoil") {
+    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
+    print(dt)
+    target.cols <- append(unlist(getSTInfo(dt)), c("SoilfC", "SoilsC"))
+    print(target.cols)
+    dt <- dt[,..target.cols]
+    dt[, "cSoil" := SoilfC + SoilsC]
+    dt[, SoilfC := NULL]
+    dt[, SoilsC := NULL]
+    return(dt)
+  }
+  
+  ### LAND USE FLUX AND STORE FROM luflux.out FILE
+  
+  if(variable == "cProduct") {
+    dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose)
+    target.cols <- append(getSTInfo(dt), "Products_Pool")
+    dt <- dt[,..target.cols]
+    setnames(dt, "Products_Pool", "cProduct")
+    return(dt)
+  }
+  
+  if(variable == "fLuc") {
+    dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose)
+    target.cols <- append(getSTInfo(dt), "Deforest_Flux")
+    dt <- dt[,..target.cols]
+    setnames(dt, "Deforest_Flux", "fLuc")
+    return(dt)
+  }
   
 }
 

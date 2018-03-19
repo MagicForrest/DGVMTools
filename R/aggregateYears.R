@@ -52,7 +52,7 @@ aggregateYears.uncompiled <- function(input.obj,
   
   # and actually do it
   output.dt <- input.dt[, lapply(.SD, method.function), by=by.dims]
- 
+  output.dt[, Year := NULL]
   
   # try another way - THIS IS SLOWER!!
   if(FALSE) {

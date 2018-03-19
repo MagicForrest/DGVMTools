@@ -8,7 +8,7 @@ plotSpatial(sources, layers = NULL, title = NULL, facet.labels = NULL,
   facet.order = NULL, plot.bg.col = "white", panel.bg.col = "#809DB8",
   useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
   ylim = NULL, years = NULL, days = NULL, months = NULL,
-  seasons = NULL, limits = NULL, override.cols = NULL, cuts = NULL,
+  seasons = NULL, limits = NULL, cols = NULL, cuts = NULL,
   discretise = FALSE, map.overlay = NULL, grid = FALSE, plot = TRUE,
   interior.lines = TRUE)
 }
@@ -50,7 +50,7 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 
 \item{limits}{A numeric vector with two members (lower and upper limit) to limit the plotted values.}
 
-\item{override.cols}{A colour palette function to override the defaults.}
+\item{cols}{A colour palette function to override the defaults.}
 
 \item{cuts}{Cut ranges (a numeric vector) to override the default colour delimitation}
 

@@ -34,8 +34,8 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   st.names <- getSTInfo(x)
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   if("Month" %in% st.names) monthly <- TRUE
-  
   array.list <- FieldToArray(x@data) 
+
   layers <- names(x)
   if(is.array(array.list)) { 
     array.list <- list(array.list)
@@ -57,7 +57,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
 
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x, filename, ...) {
-  
+
   ### GET METADATA FROM QUANTITY IF PRESENT
   if(!is.null(quantity)) {
     quantity.units <- quantity@units

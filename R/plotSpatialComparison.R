@@ -134,7 +134,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     
     return(plotSpatial(objects.to.plot,
                         layers = layer.to.plot,
-                        override.cols = override.cols,
+                        cols = override.cols,
                         limits = limits,
                         title = title,
                         ...))
@@ -196,7 +196,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
    
     return(plotSpatial(objects.to.plot,
                         layers =  object@quant@id,
-                        override.cols = override.cols,
+                        cols = override.cols,
                         limits = limits,
                         title = title,
                         ...))

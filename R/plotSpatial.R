@@ -34,7 +34,7 @@
 #' @param months An optional numeric vector specifying which months to plot(defaults to all the days in the input Fields)
 #' @param seasons An optional character vector specifying which seasons to plot (any or all of "DJF", "MAM, "JJA", "SON", defaults to all the seasons in the input Fields)  
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
-#' @param override.cols A colour palette function to override the defaults.
+#' @param cols A colour palette function to override the defaults.
 #' @param cuts Cut ranges (a numeric vector) to override the default colour delimitation
 #' @param discretise Boolen, if true, but the discretise the data according the cuts argument above
 #' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
@@ -78,7 +78,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                         months = NULL,
                         seasons = NULL,
                         limits = NULL,
-                        override.cols = NULL,
+                        cols = NULL,
                         cuts = NULL,
                         discretise = FALSE,
                         map.overlay = NULL,
@@ -256,7 +256,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     
     # check for meta-data to automagic the plots a little bit if possble
     if(first) {
-      if(is.null(override.cols) & continuous) override.cols <- object@quant@colours(20)
+      if(is.null(cols) & continuous) cols <- object@quant@colours(20)
       legend.title <- object@quant@units
       quant <- object@quant
       first.year <- object@first.year
@@ -309,8 +309,8 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       discrete <- TRUE
       continuous <- FALSE
       breaks <- waiver()
-      if(length(override.cols) != length(cuts)){
-        override.cols <- grDevices::colorRampPalette(override.cols)(length(cuts))
+      if(length(cols) != length(cuts)){
+        cols <- grDevices::colorRampPalette(cols)(length(cuts))
       }
     }
     else{
@@ -376,14 +376,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     stop("Some other overlay type...")
   }
   
+  
   ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
-  if(discrete & is.null(override.cols)){
-    
+  if(discrete & is.null(cols)){
     # make a list of all the unique values (factors), each of these will need a colour
     unique.vals <- unique(data.toplot[["Value"]])
     
     # Final results of stuff below
-    cols <- c()
+    here.cols <- c()
     is.PFTs <- FALSE
     is.categorical <- FALSE
     
@@ -396,15 +396,16 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       quant.cols <- quant@colours(length(quant@units))
       names(quant.cols) <- quant@units
       
+      print(unique.vals)
       for(val in unique.vals) {
         if(!is.na(val)){
           for(factor.value in quant@units) {
-            if(val == factor.value) cols[[val]] <- quant.cols[[val]]
+            if(val == factor.value) here.cols[[val]] <- quant.cols[[val]]
           }  
         }
       }
       
-      if(length(cols) == length(unique.vals)){
+      if(length(here.cols) == length(unique.vals)){
         is.categorical <- TRUE
       }
       
@@ -420,6 +421,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       pft.superset <- NULL
       if(is.Field(sources)) {
         pft.superset <- source@source@pft.set 
+        print(pft.superset)
       }
       else {
         
@@ -431,22 +433,25 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
         }
       }
       
+      
       for(val in unique.vals) {
         for(PFT in pft.superset) {
-          if(val == PFT@id) cols[[val]] <- PFT@colour
+          if(val == PFT@id) here.cols[[val]] <- PFT@colour
+          else if(tolower(val) == "none") here.cols[[val]] <- "grey75"
         }    
       }
       
-      if(length(cols) == length(unique.vals)) is.PFTs <- TRUE
+      
+      if(length(here.cols) == length(unique.vals)) is.PFTs <- TRUE
       
     }
     
     
     # If found colours for all the factors, set the values for plotting
     if(is.PFTs) {
-      if(is.null(override.cols)) override.cols <- cols
+      if(is.null(cols)) cols <- here.cols
       legend.title <- "PFT"
-      breaks <- sort(names(override.cols))
+      breaks <- sort(names(cols))
       if(useLongNames) {
         categorical.legend.labels <- c()
         for(this.break in breaks){
@@ -460,7 +465,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       }
     }
     else if(is.categorical) {
-      if(is.null(override.cols)) override.cols <- cols
+      if(is.null(cols)) cols <- here.cols
       legend.title <- quant@name
       breaks <- quant@units
     }
@@ -638,7 +643,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
-                                    colors = override.cols,
+                                    colors = cols,
                                     breaks = cuts,
                                     na.value="grey75",
                                     guide = "legend")
@@ -647,12 +652,16 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     #}
     #else {
     
-    #mp <- mp + scale_fill_manual(values = override.cols)
+    #mp <- mp + scale_fill_manual(values = cols)
     
     #
   }
   if(discrete) {
-    mp <- mp + scale_fill_manual(values = override.cols, 
+    print(data.toplot)
+    print(cols)
+    print(categorical.legend.labels)
+    print(breaks)
+    mp <- mp + scale_fill_manual(values = cols, 
                                  breaks = breaks,
                                  labels = categorical.legend.labels)
     # mp <- mp + guides(fill = guide_legend(keyheight = 1))

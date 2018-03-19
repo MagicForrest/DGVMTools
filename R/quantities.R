@@ -579,6 +579,26 @@ dgvm.quantities <- list(
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
       cf.name = "Vegtype level tree heights"),
   
+  ### LAND USE
+  
+  new("Quantity",
+      id = "cProduct",
+      type = "",
+      name = "Carbon in Products of Land Use Change",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in Products of Land Use Change"),
+  
+  new("Quantity",
+      id = "fLuc",
+      type = "",
+      name = "CO2 Flux to Atmosphere from Land Use Change",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "CO2 Flux to Atmosphere from Land Use Change"),
+  
   
   
   ######################################################################
