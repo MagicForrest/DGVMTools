@@ -91,7 +91,7 @@ dgvm.quantities <- list(
       name = "Vegetation Carbon Mass",
       type = "PFT",
       units = "kg m-2",
-      colours = viridis::viridis,
+      colours = reversed.viridis,
       model = c("Standard", "DGVMData"),
       cf.name = "vegetation_carbon_content"),
   
@@ -134,7 +134,7 @@ dgvm.quantities <- list(
       name = "Canopy Height",
       type = "-",
       units = "m",
-      colours = fields::tim.colors,
+      colours = reversed.magma,
       model = c("Standard", "DGVMData"),
       cf.name = "canopy_height"),
   
@@ -219,6 +219,16 @@ dgvm.quantities <- list(
       colours = reversed.viridis,
       model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
       cf.name = "Burnt Area Fraction (monthly)"),
+  
+  new("Quantity",
+      id = "fFirepft",
+      type = "",
+      name = "C emitted from fire (per PFT)",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "C emitted from fire (per PFT)"),
+  
 
 
   ### FUEL LOADS

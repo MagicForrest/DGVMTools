@@ -6,7 +6,9 @@
 \usage{
 writeNetCDF(x, filename, start.date = NULL, monthly = FALSE,
   verbose = FALSE, quantity = NULL, source = NULL,
-  layer.dim.name = NULL, ...)
+  layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
+  time.dim.name = "Time", prec = "float", time.unit = NULL,
+  time.values = NULL, ...)
 }
 \arguments{
 \item{filename}{A character string (including the path) specifiying the name of the netCDF file.}

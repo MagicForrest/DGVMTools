@@ -8,18 +8,18 @@
 #' 
 #' @keywords internal
 
-addStandardSpatialAttributes <- function(nc.file) { 
+addStandardSpatialAttributes <- function(nc.file, lat.name = "Lat", lon.name = "Lon") { 
   
   # ADD ATTRIBUTES
-  ncatt_put(nc.file, "Lon" , "units", "degrees_east")
-  ncatt_put(nc.file, "Lon" , "axis", "X")
-  ncatt_put(nc.file, "Lon" , "standard_name", "longitude")
-  ncatt_put(nc.file, "Lon" , "long_name", "longitude")
+  ncatt_put(nc.file, lon.name , "units", "degrees_east")
+  ncatt_put(nc.file, lon.name , "axis", "X")
+  ncatt_put(nc.file, lon.name , "standard_name", "longitude")
+  ncatt_put(nc.file, lon.name , "long_name", "longitude")
   
-  ncatt_put(nc.file, "Lat" , "units", "degrees_north")
-  ncatt_put(nc.file, "Lat" , "axis", "Y")
-  ncatt_put(nc.file, "Lat" , "standard_name", "latitude")
-  ncatt_put(nc.file, "Lat" , "long_name", "latitude")
+  ncatt_put(nc.file, lat.name , "units", "degrees_north")
+  ncatt_put(nc.file, lat.name , "axis", "Y")
+  ncatt_put(nc.file, lat.name , "standard_name", "latitude")
+  ncatt_put(nc.file, lat.name , "long_name", "latitude")
   
   return(nc.file)
   

@@ -22,7 +22,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
   Year = Lon = Total = NULL
   
   # get the name of the model
-  model.string <- gsub("-FireMIP", "", run@model)
+  model.string <- gsub("-FireMIP", "", run@format)
 
   # ANNUAL, PER-VEGTYPE
   # Any annual, per PFT variable should be manageable here, eg landCoverFrac
@@ -43,7 +43,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
     africa.centre <- FALSE
     remove.total <- FALSE
     requires.averaging <- FALSE
-    if(model.string == "LPJ-GUESS-SPITFIRE") {
+    if(model.string == "LPJ-GUESS-SPITFIRE-OLD") {
       if(quantity@id != "theightpft") this.pfts <- c("BNE", "BINE", "BNS", "BIBS", "TeNE", "TeBS", "TeIBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "Total")
       else this.pfts <- c("BNE", "BINE", "BNS", "BIBS", "TeNE", "TeBS", "TeIBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G")
       this.lat <- ncvar_get(this.nc,"latitude",verbose=verbose)
@@ -142,7 +142,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
     for(counter in 0:(n.years-1)) {
       
       # get one year - depends on the structure of each model
-      if(model.string == "LPJ-GUESS-SPITFIRE" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
+      if(model.string == "LPJ-GUESS-SPITFIRE-OLD" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
         this.slice <- ncvar_get(this.nc, start = c(1,1,1, counter+start.index), count = c(-1,-1,-1, 1))
       }
       else if(model.string == "CLM") {
@@ -219,7 +219,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
     africa.centre <- FALSE
     remove.total <- FALSE
     requires.averaging <- FALSE
-    if(model.string == "LPJ-GUESS-SPITFIRE") {
+    if(model.string == "LPJ-GUESS-SPITFIRE-OLD") {
       if(quantity@id != "theightpft") this.pfts <- c("BNE", "BINE", "BNS", "BIBS", "TeNE", "TeBS", "TeIBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "Total")
       else this.pfts <- c("BNE", "BINE", "BNS", "BIBS", "TeNE", "TeBS", "TeIBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G")
       this.lat <- ncvar_get(this.nc,"latitude",verbose=verbose)
@@ -318,7 +318,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
     for(counter in 0:(n.years-1)) {
       
       # get one year - depends on the structure of each model
-      if(model.string == "LPJ-GUESS-SPITFIRE" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
+      if(model.string == "LPJ-GUESS-SPITFIRE-OLD" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
         this.slice <- ncvar_get(this.nc, start = c(1,1, ((counter+start.index) * 12) - 11) , count = c(-1,-1, 12))
         print(((counter+start.index) * 12) - 11)
         print(dim(this.slice))
@@ -429,8 +429,8 @@ toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
   
   ### NOW DEFINE THE MAPPING FOR EACH MODEL
   
-  # LPJ-GUESS-SPITFIRE
-  if(model.string == "LPJ-GUESS-SPITFIRE") {
+  # LPJ-GUESS-SPITFIRE-OLD
+  if(model.string == "LPJ-GUESS-SPITFIRE-OLD") {
     classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
     classify.df <- rbind(classify.df, c("BINE", "NE"))
     classify.df <- rbind(classify.df, c("BNS", "NS"))
@@ -447,10 +447,10 @@ toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
     
   }
   
-  # LPJ-GUESS-SPITFIRE
+  # LPJ-GUESS-SPITFIRE-OLD
   if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE" ) {
     
-    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE
+    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE-OLD
     classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
     classify.df <- rbind(classify.df, c("BINE", "NE"))
     classify.df <- rbind(classify.df, c("BNS", "NS"))
@@ -478,7 +478,7 @@ toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
   # CLM
   if(model.string == "CLM") {
     
-    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE
+    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE-OLD
     classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
     classify.df <- rbind(classify.df, c("TeNE", "NE"))
     classify.df <- rbind(classify.df, c("BNS", "NS"))
@@ -567,7 +567,7 @@ toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
   
   if(model.string == "ORCHIDEE") {
     
-    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE
+    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE-OLD
     classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
     classify.df <- rbind(classify.df, c("TeNE", "NE"))
     classify.df <- rbind(classify.df, c("BNS", "NS"))

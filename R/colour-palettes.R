@@ -48,3 +48,12 @@ reversed.tim.colors = function(n) rev(fields::tim.colors(n))
 
 #' @rdname veg.palettes
 reversed.viridis = function(n) rev(viridis::viridis(n))
+
+#' @rdname veg.palettes
+reversed.magma = function(n) rev(viridis::magma(n))
+
+#' @rdname veg.palettes
+reversed.inferno = function(n) rev(viridis::inferno(n))
+
+#' @rdname veg.palettes
+reversed.plasma = function(n) rev(viridis::plasma(n))

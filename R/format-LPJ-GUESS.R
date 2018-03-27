@@ -148,7 +148,7 @@ openLPJOutputFile_FireMIP <- function(run,
                                       verbose = FALSE){
   
   Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = NULL
-  ..target.cols = SoilfC = SoilsC = NULL
+  target.cols = SoilfC = SoilsC = NULL
   
   
   # seconds in month
@@ -326,7 +326,8 @@ openLPJOutputFile_FireMIP <- function(run,
   
   ### Special monthly variables
   if(variable == "meanFire") {
-    dt <- openLPJOutputFile(run, "real_fire_size", first.year, last.year,  verbose)
+    guess.var <- "real_fire_size"
+    dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose)
     setnames(dt, guess.var, "Total")
     dt[, Total := Total * 10000]
     return(dt)
@@ -380,14 +381,14 @@ openLPJOutputFile_FireMIP <- function(run,
   if(variable == "cVeg") {
     dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
     target.cols <- append(getSTInfo(dt), "VegC")
-    dt <- dt[,..target.cols]
+    dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "VegC", "cVeg")
     return(dt)
   }
   if(variable == "cLitter") {
     dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
     target.cols <- append(getSTInfo(dt), "LittC")
-    dt <- dt[,..target.cols]
+    dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "LittC", "cLitter")
     return(dt)
   }
@@ -396,7 +397,7 @@ openLPJOutputFile_FireMIP <- function(run,
     print(dt)
     target.cols <- append(unlist(getSTInfo(dt)), c("SoilfC", "SoilsC"))
     print(target.cols)
-    dt <- dt[,..target.cols]
+    dt <- dt[,target.cols,with=FALSE]
     dt[, "cSoil" := SoilfC + SoilsC]
     dt[, SoilfC := NULL]
     dt[, SoilsC := NULL]
@@ -408,15 +409,16 @@ openLPJOutputFile_FireMIP <- function(run,
   if(variable == "cProduct") {
     dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose)
     target.cols <- append(getSTInfo(dt), "Products_Pool")
-    dt <- dt[,..target.cols]
+    dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Products_Pool", "cProduct")
     return(dt)
   }
   
   if(variable == "fLuc") {
+    
     dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose)
     target.cols <- append(getSTInfo(dt), "Deforest_Flux")
-    dt <- dt[,..target.cols]
+    dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Deforest_Flux", "fLuc")
     return(dt)
   }

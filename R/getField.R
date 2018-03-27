@@ -161,7 +161,7 @@ getField <- function(source,
         first.year.present <- year.range[1]
         last.year.present <- year.range[2]
       }
-      year.aggregation.method.present = "none"
+      year.aggregate.method.present = "none"
       
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
@@ -199,6 +199,7 @@ getField <- function(source,
     
     # If model is from FireMIP
     else if(source@format == "LPJ-GUESS-SPITFIRE-FireMIP"  ||
+            source@format == "LPJ-GUESS-SPITFIRE-OLD-FireMIP"  ||
             source@format == "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP"     ||
             source@format == "LPJ-GUESS-GlobFIRM-FireMIP"  ||
             source@format == "CLM-FireMIP"                 ||
@@ -206,9 +207,12 @@ getField <- function(source,
             source@format == "Inferno-FireMIP"             ||
             source@format == "JSBACH-FireMIP"              ||
             source@format == "ORCHIDEE-FireMIP"               ) {
-      print(quant@format)
       
-      if(quant@format == "FireMIP") {
+  
+      if(quant@model == "FireMIP") {
+        
+        
+        
         this.dt <- openFireMIPOutputFile(source, 
                                          var.string, 
                                          quantity = quant, 
@@ -319,7 +323,7 @@ getField <- function(source,
   
   
   ### CHECK THAT WE HAVE A VALID DATA.TABLE
-  if(nrow(this.dt) == 0) stop("getModelField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
+  if(nrow(this.dt) == 0) stop("getField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
   
   
   

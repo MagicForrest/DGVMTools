@@ -542,7 +542,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     }
     if(multiple.years) { 
       data.toplot[, Facet := paste(Facet, Year)] 
-      ffactor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Year"]]), paste))
+      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Year"]]), paste))
     }
     if(multiple.days) { 
       data.toplot[, Facet := paste(Facet, Day)]

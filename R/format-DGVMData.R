@@ -76,7 +76,7 @@ openDGVMDataFile <- function(source,
   
   # Check out dimensions
   dims.present <- names(this.nc$dim)
-  if(verbose) message(paste("File has dimensions", dims.present, sep = " "))
+  message(paste("File has dimensions", paste(dims.present, collapse = ","), sep = " "))
   
   
   all.lats <- numeric(0)
@@ -93,12 +93,12 @@ openDGVMDataFile <- function(source,
     else if(this.dimension == "Lon") { all.lons <- this.nc$dim$Lon$vals }
     
     # pick up Time/time
-    else if(this.dimension == "time") { all.time <- this.nc$dim$time$vals  }
-    else if(this.dimension == "Time") { all.times <- this.nc$dim$Time$vals}
+    else if(this.dimension == "time") { all.time <- this.nc$dim$time$vals }
+    else if(this.dimension == "Time") { all.times <- this.nc$dim$Time$vals }
     
     # Catch the rest
     else {
-      stop(paste("Unknown dimension found", this.dimension, " which I din't know what to do with."))
+      stop(paste("Unknown dimension found", this.dimension, " which I don't know what to do with."))
     }
     
   }
@@ -112,15 +112,27 @@ openDGVMDataFile <- function(source,
   if(length(all.lats) > 0) dimension.names[["Lat"]] <- all.lats
   if(length(all.times) > 0) dimension.names[["Time"]] <- all.times
   
-  
   # look up year-related attributes
   data.list[["first.year"]]  <- getGlobalAttribute("first.year", global.attributes)
   data.list[["last.year"]]  <- getGlobalAttribute("last.year", global.attributes)
-  data.list[["year.aggregation.method"]]  <- getGlobalAttribute("year.aggregation.method", global.attributes)
+  data.list[["year.aggregate.method"]]  <- getGlobalAttribute("year.aggregate.method", global.attributes)
   first.year <- data.list[["first.year"]] 
   last.year <- data.list[["last.year"]] 
   
- 
+  ###  HACK!! - for some reason this ncdf4 package is reading time value dimensions as NA
+  ###  These values seem to be perfectly valid according to ncview and ncdump, so I don't know what is going on.
+  ###  In the mean time, if any NA's detected, make up a time axis (this will be over-written below anyways, they just need to be no NAs)
+  if(length(all.times) > 0){
+    time.NAs.present  <- FALSE
+    for(check.thing in all.times){
+      if(is.na(check.thing)) time.NAs.present <- TRUE
+    }
+    if(time.NAs.present) {
+      all.times <- first.year:last.year
+      dimension.names[["Time"]] <- all.times
+    }
+  }
+  
   
   dt.list <- list()
   
@@ -152,7 +164,7 @@ openDGVMDataFile <- function(source,
       if(length.time.axis == (last.year - first.year + 1)) {
         if(verbose) message("Got annual data.")
         
-       
+        
         # subsitute using first.year and last.year   
         this.slice.dt[, Year := plyr::mapvalues(this.slice.dt[["Time"]], from = all.times, to = first.year:last.year)]
         this.slice.dt[, Time := NULL]
@@ -192,7 +204,7 @@ openDGVMDataFile <- function(source,
         all.names <- all.names[-which(all.names == this.var$name)]
         all.names <- append(all.names, this.var$name)
         setcolorder(this.slice.dt, all.names)
-      
+        
         
       }
       
@@ -205,20 +217,27 @@ openDGVMDataFile <- function(source,
     if(variable@type == "categorical") {
       this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = variable@units)]
     }
-    
+  
     # now join this to all.dt
     dt.list[[length(dt.list)+1]] <- this.slice.dt
+    
+   
     
   }
   
   
   # join all together and set key
   dt <- dt.list[[1]]
+  
+
   if(length(dt.list) > 1) {
-    for(this.dt in dt.list[[2:length(dt.list)]]) {
-      merge(dt, this.dt)
+    for(this.dt in dt.list[2:length(dt.list)]) {
+      print(key(dt)) 
+      print(key(this.dt))
+      dt <- merge(x = dt, y = this.dt)
     }
   }
+  print(dt)
   if(verbose) message("Setting key")
   dt <- setKeyDGVM(dt)
   
