@@ -15,6 +15,7 @@
 #' @param match.NAs Boolean, if TRUE copy NAs from one layer to the other.  This is mostly to make sure that when you later plot the data in the final ComparisonLayer side-by-side,
 #' that the both have 'no data' (typically grey areas) plotted on both maps.
 #' @param dec.places Numeric, passed to copyLayers. Defines to how many decimal places to round the coordinates in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.  
+#' @param show.stats Boolean, if TRUE print the summary statistics
 #' @param verbose Boolean, if TRUE print some informative output
 #' 
 #' The returned ComparisonLayer object can be plotted using \code{plotSpatail} (to give the absolute difference, original values side-by-side and percentage difference, also the NME spatial - to be implemented)
@@ -34,6 +35,7 @@ compareLayers <- function(object1,
                           override.quantity = FALSE, 
                           verbose = FALSE, 
                           match.NAs = FALSE,
+                          show.stats = TRUE,
                           dec.places = NULL){
   
   ### Check that the object have the same dimensions and that we have the same number of layers, if not fail immediately
@@ -155,13 +157,13 @@ compareLayers <- function(object1,
     # check the classes of the data and perform the appropriate comparison
     if(single) {
       # Statistics
-      stats <- continuousComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = verbose)
+      stats <- continuousComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = show.stats)
       # Make the difference layer
       new.data[, "Difference" := get(new.ids.1) - get(new.ids.2)]
     }
     else if(categorical) {
       if(verbose) print("Doing stats comparison")
-      stats <- categoricalComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = verbose)
+      stats <- categoricalComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = show.stats)
       
     }
   }
@@ -172,10 +174,8 @@ compareLayers <- function(object1,
     dt2 <- new.data[,new.ids.2,with=FALSE]
     
     # Calculate Manhattan Metric and Squared Chord Distance
+    stats <- proportionsComparison(dt1 =dt1, dt2 = dt2, name1 = info1@name, name2 = info2@name, verbose = show.stats)
     
-    
-    stats <- proportionsComparison(dt1 =dt1, dt2 = dt2, name1 = info1@name, name2 = info2@name, verbose = verbose)
-    if(verbose) print(stats)
   }
 
 

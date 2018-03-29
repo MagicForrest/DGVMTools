@@ -48,6 +48,8 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
     names(array.list) <- layers
   }
   
+  this.quant <- x@quant
+  this.source <- x@source
   rm(x)
   gc()
   
@@ -56,8 +58,8 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
               monthly = monthly, 
               verbose = verbose, 
               start.date = start.date,
-              quantity = x@quant,
-              source = x@source,
+              quantity = this.quant ,
+              source = this.source,
               layer.dim.name = layer.dim.name,
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,

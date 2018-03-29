@@ -557,6 +557,19 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Season"]]), paste))
     }
     data.toplot[, Facet := factor(trimws(Facet), levels = trimws(factor.levels))]
+    
+    # if facet order specified, re-order the facets
+    if(!is.null(facet.order)) {
+      if(length(facet.order) != length(levels(data.toplot[["Facet"]]))) {
+        warning(paste("You have not supplied the correct number of facets in the \'facet.order\' argument, (you supplied ", length(facet.order), "but I need", length(levels(data.toplot[["Facet"]])), ")", "so I am ignoring your facte re-ordering command", sep = " "))
+      }
+      else {
+      #print(facet.order)
+      #print(str(data.toplot[["Facet"]]))
+        data.toplot[, Facet := factor(trimws(Facet), levels = trimws(facet.order))]
+      }
+      #print(str(data.toplot[["Facet"]]))
+    }
   }
   
   
@@ -619,8 +632,10 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     
     # note that we add each facet as an individual layer to support multiple resolutions
     if(wrap){
-      for(facet in unique(data.toplot[["Facet"]])){ mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) }
-      mp <- mp + facet_wrap(~ Facet)      
+       for(facet in levels(data.toplot[["Facet"]])){
+        mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+      }
+      mp <- mp + facet_wrap(~Facet)      
     }
     if(grid){
       for(col1 in unique(data.toplot[[grid.columns[1]]])){ 

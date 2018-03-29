@@ -232,12 +232,10 @@ openDGVMDataFile <- function(source,
 
   if(length(dt.list) > 1) {
     for(this.dt in dt.list[2:length(dt.list)]) {
-      print(key(dt)) 
-      print(key(this.dt))
-      dt <- merge(x = dt, y = this.dt)
+     dt <- merge(x = dt, y = this.dt)
     }
   }
-  print(dt)
+  
   if(verbose) message("Setting key")
   dt <- setKeyDGVM(dt)
   

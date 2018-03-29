@@ -225,10 +225,6 @@ openLPJOutputFile_FireMIP <- function(run,
     guess.var <- "mfirefrac"
     monthly.to.percent <- TRUE
   }
-  if(variable == "intensFire") {
-    guess.var <- "real_intensity"
-    monthly.to.percent <- TRUE
-  }
   if(variable == "ccFuelLiveGrass") {
     guess.var <- "mlivegrass_cc"
     monthly.to.percent <- TRUE
@@ -287,6 +283,10 @@ openLPJOutputFile_FireMIP <- function(run,
     guess.var <- "monthly_nind_killed"
     monthly <- TRUE
   }
+  if(variable == "intensFire") {
+    guess.var <- "real_intensity"
+    monthly <- TRUE
+  }
   
   ## Finally we have a couple of monthly to second variables which also required molar conversion to C
   if(variable == "fFire") {
@@ -305,20 +305,20 @@ openLPJOutputFile_FireMIP <- function(run,
   if(monthly.to.second || monthly.to.percent || monthly){
     
     dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose)
-    setnames(dt, guess.var, "Total")
+    setnames(dt, guess.var, variable)
     if(monthly.to.second){
       dt[, Seconds := seconds.in.month[Month]]
-      dt[, Total := Total/Seconds]
+      dt[, (variable) := get(variable)/Seconds]
       dt[, Seconds := NULL]
     }
     if(monthly.to.percent){
-      dt[, Total := Total * 100]
+      dt[, (variable) := get(variable) * 100]
     }
     if(CO2.to.C){
-      dt[, Total := Total * 12 / 44]
+      dt[, (variable ):= get(variable) * 12 / 44]
     }
     if(CO.to.C){
-      dt[, Total := Total * 12 / 28]
+      dt[, (variable) := get(variable) * 12 / 28]
     }
     return(dt)
     
@@ -328,8 +328,8 @@ openLPJOutputFile_FireMIP <- function(run,
   if(variable == "meanFire") {
     guess.var <- "real_fire_size"
     dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose)
-    setnames(dt, guess.var, "Total")
-    dt[, Total := Total * 10000]
+    setnames(dt, guess.var, variable)
+    dt[, (variable) := variable * 10000]
     return(dt)
   }
   
@@ -339,7 +339,7 @@ openLPJOutputFile_FireMIP <- function(run,
     dt_lower <- openLPJOutputFile(run, "mwcont_lower", first.year, last.year,  verbose)
     setKeyDGVM(dt_lower)
     dt <- dt_upper[dt_lower]
-    dt[, Total := mwcont_lower + mwcont_upper]
+    dt[, (variable) := mwcont_lower + mwcont_upper]
     dt[, mwcont_lower := NULL]
     dt[, mwcont_upper := NULL]
     rm(dt_upper,dt_lower)
@@ -366,12 +366,12 @@ openLPJOutputFile_FireMIP <- function(run,
     
     
     # combine, convert and clean up
-    dt_trans[, Total := maet + mevap + mintercep]
+    dt_trans[, (variable) := maet + mevap + mintercep]
     dt_trans[, maet := NULL]
     dt_trans[, mevap := NULL]
     dt_trans[, mintercep := NULL]
     dt_trans[, Seconds := seconds.in.month[Month]]
-    dt_trans[, Total := Total/Seconds]
+    dt_trans[, (variable) := get(variable)/Seconds]
     dt_trans[, Seconds := NULL]
     return(dt_trans)
   }
