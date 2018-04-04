@@ -18,20 +18,15 @@ lookupQuantity <- function(quant.id, format.str = "Standard", verbose = TRUE){
   for(quant in local.dgvm.quantities){
     if(quant.id == quant@id & format.str %in% quant@model) return(quant)
   }
-  
-  # if can't find that then warn
-  if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std" && verbose) {
-    warning(paste0("Can't find a quantity with id = ", quant.id, " and format= ", format.str, " in dgvm.quantities, now searching only on the quant.id."))
-  }
-  
+
   # then look for a match on the name only
   for(quant in local.dgvm.quantities){
-    if(quant.id == quant@id) return(quant)
-  }
-  
-  # if can't find that then warn
-  if(verbose) {
-    warning(paste0("Can't find a quantity with id = ", quant.id, " anywhere in dgvm.quantities, now searching the supported.biomes.schemes"))
+    if(quant.id == quant@id) {
+      if(substr(quant.id, nchar(quant.id) - nchar("_std") +1, nchar(quant.id)) != "_std" && verbose) {
+        warning(paste0("Didn't find a quantity with id = ", quant.id, " and format= ", format.str, " in dgvm.quantities, returning one with format = ", quant@format ,"."))
+      }
+      return(quant)
+    }
   }
   
   # this code will make the function first check for a user-defined dgvm.quantities list
@@ -42,7 +37,7 @@ lookupQuantity <- function(quant.id, format.str = "Standard", verbose = TRUE){
   }
   
   # fail because can't find the quantity
-  stop(paste0("Can't find a quantity with id = ", quant.id, " anywhere in dgvm.quantities or in the supported biome schemes (either the version in the package, or a user-extend vertsion"))
+  stop(paste0("Can't find a quantity with id = ", quant.id, " anywhere in dgvm.quantities or in the supported biome schemes (either the version in the package, or a user-extended version)"))
   
 }
 
@@ -802,6 +797,15 @@ dgvm.quantities <- list(
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
+      id = "canopyheight",
+      name = "Canopy Height",
+      type = "-",
+      units = "m",
+      colours = reversed.magma,
+      model = c("LPJ-GUESS"),
+      cf.name = "canopy_height"),
+  
+  new("Quantity",
       id = "maet",
       name = "Monthly Actual Evapotranspiration",
       type = "monthly",
@@ -865,6 +869,30 @@ dgvm.quantities <- list(
       type = "monthly",
       units = "mm H20",
       colours = reversed.tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+    new("Quantity",
+      id = "aaet",
+      name = "Annual Actual Evapotranspiration",
+      type = "annual",
+      units = "mm/year",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "aiso",
+      name = "Annual Isoprene Emissions",
+      type = "annual",
+      units = "kg/year",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "amon",
+      name = "Annual Monoterpene Emissions",
+      type = "annual",
+      units = "kg/year",
+      colours = fields::tim.colors,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",

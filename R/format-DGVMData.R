@@ -33,7 +33,7 @@ openDGVMDataFile <- function(source,
       return(global.attributes[[dgvm.attr.name]]) 
     }
     else {
-      warning(paste0("No ", attr.name,  " attribute (", dgvm.attr.name, " ) found in file ", file.name.nc, ".  This is not DGVMData compliant.  Right now returning NULL, but this might cause problems later"))
+      warning(paste0("No ", attr.name,  " attribute (", dgvm.attr.name, " ) found in file ", file.name.nc, ".  This is not DGVMData compliant.  Right now setting attribute to NULL, but this might cause problems later"))
       return(NULL)
     }
   }

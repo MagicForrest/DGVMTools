@@ -245,7 +245,7 @@ openLPJOutputFile_FireMIP <- function(run,
     guess.var <- "m1000hr_cc"
     monthly.to.percent <- TRUE
   }
-
+  
   ## Here we have simple monthly variables (no conversion)
   if(variable == "cFuelLiveGrass") {
     guess.var <- "mlivegrass_fuel"
@@ -633,22 +633,44 @@ getStandardQuantity_LPJ <- function(run,
 listAllLPJOutput <- function(directory){
   
   # First get the list of *.out files present
-  files.present <- list.files(directory, "*.out")
-  files.present <- append(files.present, list.files(directory, "*.out.gz"))
-  
+  files.present <- list.files(directory, ".out$")
+  files.present <- append(files.present, list.files(directory, ".out.gz$"))
   
   # Now strip the .out file extension out the get the variable name
   this.var.list <- unlist(lapply(files.present, FUN = LPJQuantFromFilename))
   
-  # get rid of stupid ones
+ 
+  # check that they correspond to actual quantities, if not through a warning and chuck them out
+  good.list <- list()
   ignore.list <- c("*", "guess_out", "guess_err")
-  for(ignore.string in ignore.list){
-    if(ignore.string %in% this.var.list) {
-      this.var.list <- this.var.list[-which(this.var.list == ignore.string)]
+  
+  for(this.file in files.present){
+    
+    variable<- LPJQuantFromFilename(this.file)
+    
+    if(!variable %in% ignore.list) {
+      
+      result = tryCatch({
+        dummy.quant <- suppressWarnings(lookupQuantity(variable, "LPJ-GUESS"))
+      },  warning = function(w) {
+        #warning(w)
+      }, error = function(e) {
+        #warning(e)
+      }, finally = {
+      })
+      
+      if(is.Quantity(result))  {
+        good.list <- append(good.list, variable)
+      }
+      else {
+        warning("Although I have found file with an appropriate extension that looks like an LPJ-GUESS output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
+      }
+      
     }
+    
   }
   
-  return(this.var.list)
+  return(unlist(good.list))
   
 }
 
@@ -665,7 +687,7 @@ listAllLPJOutput <- function(directory){
 listPFTs_LPJ <- function(x, variables) {
   
   # first get a list of all avaiable variables
-  available.vars <- listAllLPJOutput(x@dir)
+  available.vars <- suppressWarnings(listAllLPJOutput(x@dir))
   
   # check for the presence the following variables (in order)
   possible.vars <- c("lai", "cmass", "dens", "fpc")
@@ -675,6 +697,7 @@ listPFTs_LPJ <- function(x, variables) {
     if(this.var %in% available.vars) {
       
       file.string = file.path(x@dir, paste(this.var, ".out", sep=""))
+      
       if(file.exists(file.string)){ 
         header <- utils::read.table(file.string, header = TRUE, nrow = 1)
       }
@@ -693,10 +716,7 @@ listPFTs_LPJ <- function(x, variables) {
       
       return(PFTs.present)
       
-      
     }
-    
-    
     
   }
   

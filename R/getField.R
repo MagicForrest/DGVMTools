@@ -74,7 +74,7 @@ getField <- function(source,
   
   
   
-  ### CASE 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE MODELsource IN MEMORY
+  ### CASE 1 - USE THE EXACT VEGOBJECT IF IT HAS ALREADY BEEN COMPUTED AND SAVED IN THE SOURCE IN MEMORY
   if(model.field.id %in% names(source@objects)){
     
     # if it is present it in memory then can be returned directly
@@ -122,10 +122,12 @@ getField <- function(source,
   
   
   ### CASE 3 - IF THE WHOLE FILE HAS BEEN READ AND STORED IN MEMORY AS A VEGOBJECT, THEN TAKE THAT AND EXTRACT THE DATA.TABLE AND THEN AVERAGE IT BELOW
-  if(var.string %in% names(source@objects)){
+  temp.var.string <- paste(source@format, source@id, var.string, "all_years", sep = ".")
+  if(var.string %in% names(source@objects) || temp.var.string %in% names(source@objects)){
     
     if(verbose) message(paste(var.string, " is already read, so using that internal copy.", sep = ""))
-    this.dt <- source@objects[[var.string]]@data
+    if(var.string %in% names(source@objects)) { this.dt <- source@objects[[var.string]]@data }
+    else if(temp.var.string %in% names(source@objects)) { this.dt <- source@objects[[temp.var.string]]@data }
     setKeyDGVM(this.dt)
     
   }
@@ -176,7 +178,7 @@ getField <- function(source,
       if("spatial.extent" %in% names(data.list)) spatial.extent.present <- data.list$spatial.extent
       if("spatial.extent.id" %in% names(data.list)) spatial.extent.id.present <- data.list$spatial.extent.id
       if("spatial.aggregate.method" %in% names(data.list)) spatial.aggregate.method.present <- data.list$spatial.aggregate.method
-
+      
     }
     
     
@@ -208,7 +210,7 @@ getField <- function(source,
             source@format == "JSBACH-FireMIP"              ||
             source@format == "ORCHIDEE-FireMIP"               ) {
       
-  
+      
       if(quant@model == "FireMIP") {
         
         
@@ -249,6 +251,9 @@ getField <- function(source,
     # Note we gotta do this now before the cropping and averaging below
     if(store.full){
       
+      print("Storing full")
+      
+      
       # if spatial extent and spatial.extent.id not already determined use then set them
       if(!exists("spatial.extent.present")) spatial.extent.present <- extent(this.dt)
       if(!exists("spatial.extent.id.present")) spatial.extent.id.present <- "Full"
@@ -269,6 +274,7 @@ getField <- function(source,
       # name and store
       #names(model.field.full) <- var.string
       source <<- addToSource(model.field.full, source)
+      print(source)
       
     } # end if(store.full)
     
