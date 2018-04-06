@@ -29,7 +29,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   Year = Lat = Lon = area = NULL
   
   ### SET UP THE AGGREGATE METHOD 
-
+  
   method <- match.arg(method, c("weighted.mean", "w.mean", "mean", "weighted.sum", "w.sum", "sum", "max", "min", "sd", "var"))
   
   method.function <- switch(method,
@@ -52,6 +52,21 @@ aggregateSpatial.uncompiled <- function(input.obj,
   else if(is.data.table(input.obj)) {input.dt <- input.obj}
   
   
+  # get the 'by' colums (these are basically the time dimensions if present)
+  # check to see if Year is still a colmun name (it might have been averaged away)
+  # Check the 'by' dims
+  by.dims <- c()
+  avail.dims <- getSTInfo(input.obj)
+  for(possible.dim in list("Year","Season","Month","Day")){
+    if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
+  }
+  
+  # 
+  # 
+  # by.cols <- list()
+  # for(time.dim in c("Year", "Month", "Day")) {
+  #   if(time.dim %in% names(input.dt)) by.cols[[length(by.cols)+1]] <- time.dim
+  # }
   
   # Do the aggregating
   if (method == "w.mean") {
@@ -61,15 +76,10 @@ aggregateSpatial.uncompiled <- function(input.obj,
     }
     if(verbose) message(paste("Spatially averaging (with area weighting) ...", sep = ""))
     
-    # check to see if Year is still a colmun name (it might have been averaged away)
-    if("Year" %in% names(input.dt)) {
-      output.dt <- input.dt[,lapply(.SD, method.function, w=area), by=list(Year)]
-    }
-    else {
-      output.dt <- input.dt[,lapply(.SD, method.function, w=area)]
-     
-    }
+    
+    output.dt <- input.dt[,lapply(.SD, method.function, w=area), by=by.dims]
     output.dt[,area:=NULL]
+    
   } 
   else if (method == "w.sum") {
     if (!any(colnames(input.dt)=="area")) {
@@ -87,13 +97,8 @@ aggregateSpatial.uncompiled <- function(input.obj,
     
     # check to see if Year is still a column name (it might have been averaged away)
     input.dt[, (col.names) := lapply(.SD, function(x) x * input.dt[['area']] ), .SDcols = col.names]
-    
-    if("Year" %in% names(input.dt)) {
-      output.dt <- input.dt[, lapply(.SD, method.function), by=list(Year)]
-    }
-    else {
-      output.dt <- input.dt[, (col.names) := lapply(.SD, method.function)]
-    }
+ 
+    output.dt <- input.dt[, lapply(.SD, method.function), by=by.dims]
     output.dt[,area:=NULL]
     
   } 
@@ -102,13 +107,6 @@ aggregateSpatial.uncompiled <- function(input.obj,
   else {
     if(verbose) message(paste("Spatially aggregating with function", method," and no area-weighting ...", sep = ""))
     
-    # Check the 'by' dims
-    by.dims <- c()
-    avail.dims <- getSTInfo(input.obj)
-    for(possible.dim in list("Year","Season","Month","Day")){
-      if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
-    }
-    
     output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
     
   }
@@ -116,7 +114,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   # remove the Lon and Lat columns 'cos they dun' make so much sense no mo'
   output.dt[,Lon:=NULL]
   output.dt[,Lat:=NULL]
-
+  
   if(verbose) message("Averaged")
   
   # Delete the full dataset to free up memory - necessary??

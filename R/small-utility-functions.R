@@ -84,6 +84,25 @@ correct.map.offset <- function(spl) {
 }
 
 
+
+
+
+
+matchPFTCols <- function(values, pfts, others = list(Total = "black", Tree = "brown", Grass = "green", Shrub = "red")) {
+  
+  these.cols <- list()
+  for(val in values) {
+    for(PFT in pfts){
+      if(val == PFT@id) these.cols[[val]] <- PFT@colour
+      else if(tolower(val) == "none") these.cols[[val]] <- "grey75"
+    }    
+  }
+
+  return(unlist(these.cols))
+ 
+}
+
+
 ## Some date function
 ## not yet really needed. However, potentially useful with the daily LPJ-GUESS output.
 

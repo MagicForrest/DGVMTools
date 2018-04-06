@@ -69,7 +69,7 @@ getField <- function(source,
                                 year.aggregate.method = year.aggregate.method, 
                                 spatial.extent.id = spatial.extent.id, 
                                 spatial.aggregate.method = spatial.aggregate.method)
-  file.name <- file.path(source@dir, paste(model.field.id, "DGVMData", sep = "."))
+  file.name <- file.path(source@dir, paste(model.field.id, "DGVMField", sep = "."))
   if(verbose) message(paste("Seeking ModelField with id = ", model.field.id, sep = ""))
   
   
@@ -383,7 +383,7 @@ getField <- function(source,
   
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
-    if(verbose) {message("Saving as a .DGVMData object...")}
+    if(verbose) {message("Saving as a .DGVMField object...")}
     saveRDS(model.field, file = file.name)
     if(verbose) {message("...done.")}
   }

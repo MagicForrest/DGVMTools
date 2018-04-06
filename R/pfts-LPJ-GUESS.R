@@ -36,7 +36,7 @@ lpj.global.PFTs <- list(
              leafform = "Needleleaved",
              phenology = "Evergreen",
              zone = "Boreal",
-             colour = "darkblue",
+             colour = "dodgerblue3",
              combine = "BNE"
   ),
   
@@ -47,7 +47,7 @@ lpj.global.PFTs <- list(
             leafform = "Needleleaved",
             phenology = "Summergreen",
             zone = "Boreal",
-            colour = "cornflowerblue",
+            colour = "cadetblue2",
             combine = "None"
   ),
   
@@ -120,7 +120,7 @@ lpj.global.PFTs <- list(
               leafform = "Broadleaved",
               phenology = "Evergreen",
               zone = "Tropical", 
-              colour = "orchid4",
+              colour = "orchid",
               combine = "TrBE"
   ),
   
@@ -178,7 +178,7 @@ lpj.global.PFTs <- list(
               leafform = "NA",
               phenology = "NA",
               zone = "NA", 
-              colour = "Black",
+              colour = "black",
               combine = "None"
   ),
 

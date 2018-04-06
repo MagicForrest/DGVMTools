@@ -20,7 +20,8 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 
-makeFieldID <- function(source.info,
+makeFieldID <- function(field,
+                        source.info,
                         var.string,
                         first.year,
                         last.year,
@@ -35,11 +36,27 @@ makeFieldID <- function(source.info,
   # separator character
   sep = "."
   
+  # First, if an actual Field it provided as an argument, use it 
+  if(!missing(field)  && !is.null(field)) {
+    
+    this.id <- makeFieldID(source.info = field@source,
+                           var.string = field@quant@id, 
+                           first.year= field@first.year, 
+                           last.year= field@last.year, 
+                           year.aggregate.method = field@year.aggregate.method, 
+                           spatial.extent.id = field@spatial.extent.id, 
+                           spatial.aggregate.method = field@spatial.aggregate.method, 
+                           subannual.aggregate.method = field@subannual.aggregate.method, 
+                           subannual.original = field@subannual.original)
+    return(this.id)
+    
+  }
+  
   
   ###################################################
   ##########  MAKE THE YEAR STRING
   
-  # first the aggragation method
+  # first the aggregation method
   year.string <- ""
   sep.char = ""
   if(!missing(year.aggregate.method) & !is.null(year.aggregate.method) & year.aggregate.method != "none") {
@@ -65,7 +82,7 @@ makeFieldID <- function(source.info,
   
   
   
-  # from source.info make the leading part of the id, note the difference between model- and data-derived fields
+  # from source.info make the leading part of the id
   field.id <- paste(source.info@format, source.info@id, sep = sep)
   
   # quantity

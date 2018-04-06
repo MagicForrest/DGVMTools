@@ -379,6 +379,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
   if(discrete & is.null(cols)){
+    
     # make a list of all the unique values (factors), each of these will need a colour
     unique.vals <- unique(data.toplot[["Value"]])
     
@@ -417,22 +418,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     # TODO - implement months below!!
     else {
       
-      # check if the factors are PFTs, and if so assign them their meta-data colour
-      pft.superset <- NULL
-      if(is.Field(sources)) {
-        pft.superset <- source@source@pft.set 
-        print(pft.superset)
-      }
-      else {
-        
-        for(object in sources) {
+    
+      for(object in sources) {
           if(is.Field(object)) {
             pft.superset <- append(pft.superset, object@source@pft.set)
           }
-          
-        }
       }
       
+      pft.superset <- unique(pft.superset)
       
       for(val in unique.vals) {
         for(PFT in pft.superset) {

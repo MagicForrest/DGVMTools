@@ -12,10 +12,11 @@
 #' @param labels A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
-#' @param facet Character string. If specified, split the data (ie melt) the data by the column specified in the argument, and then split the plot into ribbons accordingly.  
+#' @param facet Logical, if TRUE split the plot into panels by source.  If false, plots all data in a single panel. 
 #' @param facet.scales Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
+#' @param plot Logical, if FALSE return the data.table of data instead of the plot
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #'  
 #' @details
@@ -37,67 +38,49 @@ plotTemporal <- function(input.data,
                          y.lim = NULL,
                          x.label = NULL,
                          x.lim = NULL,
-                         facet = NULL,
+                         facet = TRUE,
                          facet.scales = "fixed",
                          legend.position = "bottom",
-                         text.multiplier = NULL
+                         text.multiplier = NULL,
+                         plot = TRUE
 ){
   
   
   Time = Year = value = variable = Lat = Lon = NULL
   
   # whether to to use the a grouping (ie plot many objects on one plot)
-  group <- NULL  
   single.object <- FALSE
   
   # Deal with class action and organise into a data.table for further manipulations and plotting
+  # if it is a single DataObject or Field, pull out the data (and PFTs if present)
+  if(is.Field(input.data)){
+    
+    if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
+    plotting.data.dt <- input.data@data
+    if(is.Field(input.data)) PFTs <- input.data@source@pft.set
+    if(is.null(quant)) quant <- input.data@quant
+    single.object <- TRUE
+    
+    if(!missing(facet) & facet) warning("Only got one Source object so ignoring your facet = TRUE argument")
+    
+  }
+  
   
   # If we get a list it should be a list of Fields and/or DataObjects.  Here we check that, and mangle it in to a data.table
-  if(class(input.data) == "list") {
+  else if(class(input.data) == "list") {
     
-    # if a list of objects are supplied there are two possibilites:  facet the plot, one facet (ribbon) for each object or plot the same layers in one plot or   
- 
-    # POSSIBILITY 1 - put all on one plot
-    if(is.null(facet)) {
+    plotting.data.dt <- data.table()
+    PFTs <- list()
+    for(x.object in input.data){
       
-      group <- "Source"
+      if(!(is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a Field") }
+      temp.dt <- copy(x.object@data)
+      temp.dt[,"Source" := x.object@source@name]
+      plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
+      rm(temp.dt)
       
-      plotting.data.dt <- data.table()
-      PFTs <- list()
-      for(x.object in input.data){
-        
-        if(!(is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a Field") }
-        temp.dt <- copy(x.object@data)
-        temp.dt[,"Source" := x.object@source@name]
-        plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
-        rm(temp.dt)
-        
-        # also make a superset of all the PFTs
-        if(is.Field(x.object)) PFTs <- append(PFTs, x.object@source@pft.set)
-        
-      }
-     
-    }
-    
-    # POSSIBILITY 2- facet per object
-    else {
-      
-      plotting.data.dt <- data.table()
-      PFTs <- list()
-      
-      
-      for(x.object in input.data){
-        
-        if(!(is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a Field") }
-        temp.dt <- copy(x.object@data)
-        temp.dt[,"Source" := x.object@source@name]
-        plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
-        rm(temp.dt)
-        
-        # also make a superset of all the PFTs
-        if(is.Field(x.object)) PFTs <- append(PFTs, x.object@source@pft.set)
-        
-      }
+      # also make a superset of all the PFTs
+      if(is.Field(x.object)) PFTs <- append(PFTs, x.object@source@pft.set)
       
     }
     
@@ -106,33 +89,17 @@ plotTemporal <- function(input.data,
     
   }
   
-  # if it is a single DataObject or Field, pull out the data (and PFTs if present)
-  else if(is.Field(input.data)){
-    
-    if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
-    plotting.data.dt <- input.data@data
-    if(is.Field(input.data)) PFTs <- input.data@source@pft.set
-    if(is.null(quant)) quant <- input.data@quant
-    single.object <- TRUE
-    
-  }
-
   # else fail
   else{
     stop(paste("Don't know how to make temporal plot for object of class", class(input.data), sep = " "))
   }
   
   
-  
   # Check for Lon and Lat (and remove 'em)
-  if("Lon" %in% names(plotting.data.dt)) {
-    plotting.data.dt[, Lon := NULL]
-  }
-  if("Lat" %in% names(plotting.data.dt)) {
-    plotting.data.dt[, Lat := NULL]
-  }
-
-
+  if("Lon" %in% names(plotting.data.dt)) { plotting.data.dt[, Lon := NULL] }
+  if("Lat" %in% names(plotting.data.dt)) { plotting.data.dt[, Lat := NULL] }
+  
+  
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(is.null(title)) {
     if(single.object) {
@@ -154,100 +121,74 @@ plotTemporal <- function(input.data,
     if(!is.null(quant)) y.label  <- paste0(quant@name, " (", quant@units, ")")
   }
   
-  
-  
   # melt the data table so that all remaining layers become entries in a column (instead of column names)
-  if("Year" %in% names(plotting.data.dt)) id.vars <- c("Year")
-  else if("Month" %in% names(plotting.data.dt)) id.vars <- c("Month")
-  else warning("plotTemporal: No suitable time axis found, aborting")  
-  
-  if(!is.null(facet)) id.vars <- append(id.vars, facet)
-  if(!is.null(group)) id.vars <- append(id.vars, group)
+  id.vars <- c()
+  for(dim in c("Year", "Season", "Month", "Day")) {
+    if(dim %in% names(plotting.data.dt)) id.vars <- append(id.vars, dim)
+  }
+  if(length(dim) == 0) warning("plotTemporal: No suitable time axis found, aborting")  
+  if("Source" %in% names(plotting.data.dt)) id.vars <- append(id.vars, "Source")
   plotting.data.dt.melted <- melt(plotting.data.dt, id.vars = id.vars)
+  setnames(plotting.data.dt.melted, "variable", "Layer")
+  setnames(plotting.data.dt.melted, "value", "Value")
   
   # helpful check here
   if(nrow(plotting.data.dt.melted) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are selecting a site that isn't there?")
   
+  
   # Now that the data is melted into the final form, set the colours if not already specified and if enough meta-data is available
-  if(is.null(cols) && is.null(types)){
-    
-    got.all <- TRUE
-    new.cols <- c()
-    new.types <- c()
-    new.labels <- c()
-    
-    all.layers <- as.character(unique(plotting.data.dt.melted[["variable"]]))
-    
-    #### IF PFTs are present try to match layers to PFTs
-    if(exists("PFTs")){
-      
-      for(layer in all.layers) {
-        
-        colour <- NULL
-        type <- NULL
-        
-        # check if it is a PFT and use that colour  
-        for(PFT in PFTs){
-          if(layer == PFT@id) { 
-            colour <- PFT@colour
-            if(PFT@combine != "no" &&  tolower(PFT@combine) != "none") type <- 2
-            else type <- 1
-            label <- PFT@id
-          }
+  all.layers <- unique(as.character(plotting.data.dt.melted[["Layer"]]))
+  labels <- all.layers
+  names(labels) <- all.layers
+  
+  if(is.null(cols)){
+    new.cols <- matchPFTCols(all.layers, PFTs)
+    if(length(new.cols) == length(all.layers))  cols <- new.cols 
+  }
+  
+  if(is.null(types)) {
+    new.types <- list()
+    for(layer in all.layers) {
+      for(PFT in PFTs){
+        if(layer == PFT@id) { 
+          if(PFT@combine != "no" &&  tolower(PFT@combine) != "none") new.types[[layer]] <- 2
+          else new.types[[layer]] <- 1
         }
-        
-        # now check for specific aggregated layers
-        if(layer == "Woody") {
-          colour <- "brown"
-          label <- "Woody"
-          type <- 3
-        }
-        
-        
-        if(!is.null(colour)) {
-          new.cols <- append(new.cols, colour)
-          new.types <- append(new.types, type)
-          new.labels <- append(new.labels, labels)
-        }
-        else got.all <- FALSE
-        
       }
-      
-      if(got.all) {
-        cols <- new.cols
-        types <- new.types
-        if(is.null(labels)) labels <- all.layers
-        names(cols) <- all.layers
-        names(types) <- all.layers
-        names(labels) <- all.layers
-      }
-      
     }
-    
-    
-    
+    if(length(new.types) == length(all.layers)) {
+       types <- unlist(new.types)
+    }
   }
   
   
-
-  if("Year" %in% names(plotting.data.dt.melted)) {
+  
+  ### Make a 'Time' column of data objects for the x-axis 
+  if("Year" %in% names(plotting.data.dt.melted) && "Month" %in% names(plotting.data.dt.melted)) {
+    pad <- function(x) { ifelse(x < 10, paste0(0,x), paste0(x)) }
+    plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-", pad(Month), "-01"), format = "%Y-%m-%d")]
+    plotting.data.dt.melted[, Year := NULL]
+    plotting.data.dt.melted[, Month := NULL]
+  }
+  else if("Year" %in% names(plotting.data.dt.melted)) {
     plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-01-01"), format = "%Y-%m-%d")]
     plotting.data.dt.melted[, Year := NULL]
   }
   
+  
+  ### If requested, just return the data
+  if(!plot) return(plotting.data.dt.melted)
+  
   # now make the plot
-  if(is.null(group)) p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Time", y = "value", colour = "variable")) + geom_line(aes_string(linetype="variable"), size = 1)
-  else p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Time", y = "value", group = "Source", colour = "Source")) + geom_line(aes_string(linetype="Source"), size = 1)
-
+  p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Time", y = "Value", colour = "Layer"))
+  for(this.source in unique(plotting.data.dt.melted[["Source"]])) {
+    p <- p + geom_line(data = plotting.data.dt.melted[Source == this.source,], aes_string(linetype="Layer"), size = 1)
+    #p <- p + geom_line(data = plotting.data.dt.melted[Source == this.source,], size = 1)
+  }
   
   # line formatting
-  #print(cols)
-  #print(types)
-  #print(labels)
-  #if(!is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
-  #if(!is.null(types)) p <- p + scale_linetype_manual(values=types, labels=labels)
-
-
+  if(!is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
+  if(!is.null(types)) p <- p + scale_linetype_manual(values=types, labels=labels)
   
   # labels and positioning
   p <- p + labs(title = title, y = y.label)
@@ -259,13 +200,13 @@ plotTemporal <- function(input.data,
   if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
   # set limits
-  if(!is.null(x.lim)) p <- p + scale_x_continuous(limits = x.lim)
+  if(!is.null(x.lim)) p <- p + xlim(x.lim)
   if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
   p <- p + labs(y = y.label)
   
   # if facet
-  if(!is.null(facet)){
-    p <- p + facet_wrap(stats::as.formula(paste("~", facet)), ncol = 1, scales = facet.scales)
+  if(facet){
+    p <- p + facet_wrap(stats::as.formula(paste("~Source")), ncol = 1, scales = facet.scales)
   }
   
   

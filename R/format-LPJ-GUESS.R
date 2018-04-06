@@ -394,9 +394,7 @@ openLPJOutputFile_FireMIP <- function(run,
   }
   if(variable == "cSoil") {
     dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
-    print(dt)
     target.cols <- append(unlist(getSTInfo(dt)), c("SoilfC", "SoilsC"))
-    print(target.cols)
     dt <- dt[,target.cols,with=FALSE]
     dt[, "cSoil" := SoilfC + SoilsC]
     dt[, SoilfC := NULL]
@@ -568,9 +566,7 @@ getStandardQuantity_LPJ <- function(run,
     this.dt <- this.dt[, c("Lon", "Lat", "Year","NEE"), with = FALSE]
     
     
-    print(this.dt)
-    
-    return(this.dt)
+     return(this.dt)
     
   }
   

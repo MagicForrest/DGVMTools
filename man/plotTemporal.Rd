@@ -7,8 +7,8 @@
 plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
   title = NULL, quant = NULL, cols = NULL, types = NULL,
   labels = NULL, y.label = NULL, y.lim = NULL, x.label = NULL,
-  x.lim = NULL, facet = NULL, facet.scales = "fixed",
-  legend.position = "bottom", text.multiplier = NULL)
+  x.lim = NULL, facet = TRUE, facet.scales = "fixed",
+  legend.position = "bottom", text.multiplier = NULL, plot = TRUE)
 }
 \arguments{
 \item{input.data}{The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.}
@@ -30,13 +30,15 @@ the same length as the labels arguments}
 
 \item{x.lim, y.lim}{Limits for the x and y axes (each a two-element numeric, optional)}
 
-\item{facet}{Character string. If specified, split the data (ie melt) the data by the column specified in the argument, and then split the plot into ribbons accordingly.}
+\item{facet}{Logical, if TRUE split the plot into panels by source.  If false, plots all data in a single panel.}
 
 \item{facet.scales}{Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales}
 
 \item{legend.position}{Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector}
 
-\item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
+\item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.}
+
+\item{plot}{Logical, if FALSE return the data.table of data instead of the plot
 Make it bigger if the text is too small on large plots and vice-versa.}
 }
 \value{

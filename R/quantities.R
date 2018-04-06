@@ -806,6 +806,15 @@ dgvm.quantities <- list(
       cf.name = "canopy_height"),
   
   new("Quantity",
+      id = "doc",
+      name = "Dissolved Organic Carbon (?)",
+      type = "-",
+      units = "kgC/m^2/year",
+      colours = reversed.magma,
+      model = c("LPJ-GUESS"),
+      cf.name = "canopy_height"),
+  
+  new("Quantity",
       id = "maet",
       name = "Monthly Actual Evapotranspiration",
       type = "monthly",
@@ -887,10 +896,27 @@ dgvm.quantities <- list(
       colours = fields::tim.colors,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
+  
+  new("Quantity",
+      id = "miso",
+      name = "Monthly Isoprene Emissions",
+      type = "monthly",
+      units = "kg/month",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
   new("Quantity",
       id = "amon",
       name = "Annual Monoterpene Emissions",
       type = "annual",
+      units = "kg/year",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mmon",
+      name = "Monthly Monoterpene Emissions",
+      type = "monthly",
       units = "kg/year",
       colours = fields::tim.colors,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
@@ -991,7 +1017,15 @@ dgvm.quantities <- list(
       id = "nmass",
       name = "Vegetation Nitrogen Mass",
       type = "PFT",
-      units = "gN/m^2",
+      units = "kgN/m^2",
+      colours = viridis::viridis,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "ngases",
+      name = "Annual Nitrogren Gases Emissions",
+      type = "-",
+      units = "kg/ha/year",
       colours = viridis::viridis,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
   
@@ -1018,14 +1052,7 @@ dgvm.quantities <- list(
       units = "gN/ha",
       colours = fields::tim.colors,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-  
-  new("Quantity",
-      id = "nflux",
-      name = "Nitrogen Flux",
-      type = "annual",
-      units = "kgN/ha",
-      colours = fields::tim.colors,
-      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+ 
   
   new("Quantity",
       id = "nflux",
@@ -1042,7 +1069,6 @@ dgvm.quantities <- list(
       units = "kgN/ha",
       colours = fields::tim.colors,
       model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-  
   
   new("Quantity",
       id = "mprec",
