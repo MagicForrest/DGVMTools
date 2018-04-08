@@ -54,14 +54,17 @@ plotTemporal <- function(input.data,
   # Deal with class action and organise into a data.table for further manipulations and plotting
   # if it is a single DataObject or Field, pull out the data (and PFTs if present)
   if(is.Field(input.data)){
-    
+
     if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
     plotting.data.dt <- input.data@data
+    plotting.data.dt[,"Source" := input.data@source@name]
     if(is.Field(input.data)) PFTs <- input.data@source@pft.set
     if(is.null(quant)) quant <- input.data@quant
     single.object <- TRUE
-    
-    if(!missing(facet) & facet) warning("Only got one Source object so ignoring your facet = TRUE argument")
+    if(!missing(facet) & facet) {
+      warning("Only got one Source object so ignoring your facet = TRUE argument")
+    }
+    facet <- FALSE
     
   }
   

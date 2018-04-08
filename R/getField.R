@@ -185,7 +185,7 @@ getField <- function(source,
     # If model is aDGVM and the required Quantity is defined for aDGVM
     else if(source@format == "aDGVM") {
       
-      if("aDGVM" %in% quant@format | "Standard" == quant@format) {
+      if("aDGVM" %in% quant@model | "Standard" == quant@model) {
         if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(source, first.year = first.year, last.year= last.year, quant))
         if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, first.year = first.year, last.year= last.year, quant))
       }
