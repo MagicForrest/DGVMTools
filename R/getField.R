@@ -21,7 +21,7 @@
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
-#' @param write If TRUE, write the data of the \code{ModelField} to disk as text file.
+#' @param write If TRUE, write the data of the \code{Field} to disk as text file.
 #' @param store.internally If TRUE store the resulting \code{ModelField} in the \code{Source} for using later
 #' @param store.full If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{ModelFields} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!
 #' @param adgvm.scheme In the case of analysing an aDGVM source, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.

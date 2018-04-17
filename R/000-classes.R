@@ -154,13 +154,13 @@ checkSourceInfo <- function(object){
   if (!length(object@name) > 0 | object@name == "") {
     object@name <- object@id
     msg <- paste("Not a sensible source name:", object@name, sep = " ")
-   # errors <- c(errors, msg)
+    # errors <- c(errors, msg)
   }
   
   # Other things are set to sensible/empty defaults in defineSource()
   
   if (length(errors) == 0) TRUE else errors
-
+  
 }
 
 
@@ -453,6 +453,18 @@ setClass("Source",
 )
 
 
+setClass("STAInfo",
+         slots = c(first.year = "numeric",
+                   last.year = "numeric",
+                   year.aggregate.method = "character",
+                   spatial.extent = "ANY",
+                   spatial.extent.id = "character",
+                   spatial.aggregate.method = "character",
+                   subannual.aggregate.method = "character",
+                   subannual.original = "character"))
+
+
+
 #' Contains one aspect of the model output, eg. LAI
 #' 
 #' A key class of the package.  A \code{Field} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
@@ -480,17 +492,30 @@ setClass("Field",
          slots = c(id = "character",
                    data = "data.table",
                    quant = "Quantity",
-                   first.year = "numeric",
-                   last.year = "numeric",
-                   year.aggregate.method = "character",
-                   spatial.extent = "ANY",
-                   spatial.extent.id = "character",
-                   spatial.aggregate.method = "character",
-                   subannual.aggregate.method = "character",
-                   subannual.original = "character",
+                   # first.year = "numeric",
+                   # last.year = "numeric",
+                   # year.aggregate.method = "character",
+                   # spatial.extent = "ANY",
+                   # spatial.extent.id = "character",
+                   # spatial.aggregate.method = "character",
+                   # subannual.aggregate.method = "character",
+                   # subannual.original = "character",
                    source = "SourceInfo"
+         ),
+         contains = "STAInfo"
+)
+
+
+setClass("Format", 
+         slots = c(id = "character",
+                   default.pfts = "list",
+                   quantities = "list",
+                   listPFTs = "function",
+                   listAvailableQuantities = "function",
+                   getField = "function"
          )
 )
+
 
 
 

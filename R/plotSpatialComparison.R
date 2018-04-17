@@ -133,11 +133,11 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     #if(missing(title)) title <- paste()
     
     return(plotSpatial(objects.to.plot,
-                        layers = layer.to.plot,
-                        cols = override.cols,
-                        limits = limits,
-                        title = title,
-                        ...))
+                       layers = layer.to.plot,
+                       cols = override.cols,
+                       limits = limits,
+                       title = title,
+                       ...))
     
     
   }
@@ -149,7 +149,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     objects.to.plot <- list()
     
     for(object in sources){ 
-   
+      
       # FIRST INFO
       new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
       setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
@@ -189,18 +189,18 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     
     # set the colours
     #if(missing(override.cols)) override.cols <-  rev(RColorBrewer::brewer.pal(11, "RdBu"))
-
+    
     # make an appropriate title if not provided
     #if(missing(title)) title <- paste()
-
-   
+    
+    
     return(plotSpatial(objects.to.plot,
-                        layers =  object@quant@id,
-                        cols = override.cols,
-                        limits = limits,
-                        title = title,
-                        ...))
-
+                       layers =  object@quant@id,
+                       cols = override.cols,
+                       limits = limits,
+                       title = title,
+                       ...))
+    
     
     
   }

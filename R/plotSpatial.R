@@ -418,11 +418,11 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     # TODO - implement months below!!
     else {
       
-    
+      pft.superset <- list()
       for(object in sources) {
-          if(is.Field(object)) {
-            pft.superset <- append(pft.superset, object@source@pft.set)
-          }
+        if(is.Field(object)) {
+          pft.superset <- append(pft.superset, object@source@pft.set)
+        }
       }
       
       pft.superset <- unique(pft.superset)
@@ -449,9 +449,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
         categorical.legend.labels <- c()
         for(this.break in breaks){
           
-          for(PFT in pft.superset) {
-            if(this.break == PFT@id) categorical.legend.labels <- append(categorical.legend.labels, PFT@name)
-          }   
+          if(this.break == "None") {
+            categorical.legend.labels <- append(categorical.legend.labels, "None")
+          }
+          else {
+            for(PFT in pft.superset) {
+              if(this.break == PFT@id) categorical.legend.labels <- append(categorical.legend.labels, PFT@name)
+            }   
+          }
           
           
         }
@@ -557,8 +562,8 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
         warning(paste("You have not supplied the correct number of facets in the \'facet.order\' argument, (you supplied ", length(facet.order), "but I need", length(levels(data.toplot[["Facet"]])), ")", "so I am ignoring your facte re-ordering command", sep = " "))
       }
       else {
-      #print(facet.order)
-      #print(str(data.toplot[["Facet"]]))
+        #print(facet.order)
+        #print(str(data.toplot[["Facet"]]))
         data.toplot[, Facet := factor(trimws(Facet), levels = trimws(facet.order))]
       }
       #print(str(data.toplot[["Facet"]]))
@@ -625,7 +630,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     
     # note that we add each facet as an individual layer to support multiple resolutions
     if(wrap){
-       for(facet in levels(data.toplot[["Facet"]])){
+      for(facet in levels(data.toplot[["Facet"]])){
         mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
       }
       mp <- mp + facet_wrap(~Facet)      
