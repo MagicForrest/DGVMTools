@@ -56,10 +56,37 @@ calcBiomes <-function(input, scheme){
   # Get the totals required
   input <- autoLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
   
-  # Get the fractions required
-  input <- divideLayers(input, layers = scheme@fraction.of.total, denominators = list("Total"))
-  input <- divideLayers(input, layers = scheme@fraction.of.tree,  denominators = list("Tree"))
-  input <- divideLayers(input, layers = scheme@fraction.of.woody, denominators = list("Woody"))
+  # Get the fractions required - now somewhat long way around (since remove divideLayers() but whatevs) 
+  if(length(scheme@fraction.of.total) > 0) {
+    if(!"Total" %in% names(input)) input <- autoLayer(input, "Total", method = "sum")
+    for(layer in scheme@fraction.of.total){
+      all.layers <- expandLayers(layer = layer, input.data = input)
+      for(layer2 in all.layers) {
+        layerOp(input, "/", c(layer2,"Total"), paste0(layer2, "Fraction"))
+      }
+    }
+  }
+  
+  if(length(scheme@fraction.of.tree) > 0) {
+    if(!"Total" %in% names(input)) input <- autoLayer(input, "Tree", method = "sum")
+    for(layer in scheme@fraction.of.tree){
+      all.layers <- expandLayers(layer = layer, input.data = input)
+      for(layer2 in all.layers) {
+        layerOp(input, "/", c(layer2,"Tree"), paste0(layer2, "FractionOfTree"))
+      }
+    }
+  }
+  
+  if(length(scheme@fraction.of.woody) > 0) {
+    if(!"Total" %in% names(input)) input <- autoLayer(input, "Woody", method = "sum")
+    for(layer in scheme@fraction.of.woody){
+      all.layers <- expandLayers(layer = layer, input.data = input)
+      for(layer2 in all.layers) {
+        layerOp(input, "/", c(layer2,"Woody"), paste0(layer2, "FractionOfWoody"))
+      }
+    }
+  }
+ 
   
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
