@@ -388,7 +388,6 @@ setClass("ComparisonLayer",
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
-#' @slot combineShadeTolerance If TRUE, call combineShadeTolerance before doing the biome classification
 #' @slot totals.needed List of vegetation totals needed to calculate biomes, for example c("Tree", "Grass")
 #' @slot max.needed List of maximum values needed to calculate biomes, for example c("PFT", "Tree")
 #' @slot fraction.of.total List of vegetation fraction of totals needed to calculate biomes
@@ -402,7 +401,6 @@ setClass("ComparisonLayer",
 setClass("BiomeScheme",
          contains = "Quantity",
          slots = c(rules = "function",
-                   combineShadeTolerance = "logical",
                    max.needed = "character",
                    totals.needed = "character",
                    fraction.of.total = "character",

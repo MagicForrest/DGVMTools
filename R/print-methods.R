@@ -23,7 +23,7 @@ setGeneric("print", function(x, ...) standardGeneric("print"))
 #' @export
 setMethod("print", signature(x="PFT"), function(x) {
   
-  cat(paste0("PFT: ", x@id," (", x@name, "): ", "Lifeform=",  x@lifeform, ", Leafform=", x@leafform, ", Phenology=", x@phenology, ", Climate zone=", x@zone, ", Preferred colour=", x@colour, ", Combine with=", x@combine, "\n"))
+  cat(paste0("PFT: ", x@id," (", x@name, "): ", "Lifeform=",  x@lifeform, ", Leafform=", x@leafform, ", Phenology=", x@phenology, ", Climate zone=", x@zone, ", Preferred colour=", x@colour, "\n"))
 
 })
 
@@ -34,6 +34,7 @@ setMethod("print", signature(x="Quantity"), function(x) {
   cat(paste0("Quantity: ", x@id," (", x@name, "): ", "Type=",  x@type, ", Units=", x@units, ", Aggregate Method=", x@aggregate.method, ", Defined for models: ", paste0(unlist(x@model), collapse = ', '), "\n"))
 
 })
+
 
 
 
@@ -66,7 +67,7 @@ setMethod("print", signature(x="SourceInfo"), function(x) {
   cat(paste0("name = ", "\"", x@name, "\"", "\n"))
   cat(paste0("format = ", "\"", x@format, "\"", "\n"))
   cat(paste0("directory = ", "\"", x@dir, "\"", "\n"))
-  cat(paste0("forcing data = ", "\"", x@forcing.data, "\"", "\n"))
+  cat(paste0("driving data = ", "\"", x@driving.data, "\"", "\n"))
   cat(paste0("lon-lat offset = (", x@lonlat.offset[1], ",", x@lonlat.offset[2], ")\n"))
   cat(paste0("year offset = ", x@year.offset, "\n"))
   cat(paste0("london.centre = ", x@london.centre, "\n"))
@@ -104,11 +105,10 @@ setMethod("print", signature(x="Field"), function(x) {
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   #cat(paste0("name = ", x@name, "\"", "\n"))
   print(x@quant)
-  cat(paste0("Spatial Aggregation =  ",  x@spatial.aggregate.method, "\n"))
+  cat(paste0("Spatially Averaged =  ",  x@spatial.aggregate.method, "\n"))
   print(x@spatial.extent)
-  cat(paste0("Yearly Aggregation =  ",  x@year.aggregate.method, "\n"))
-  cat(paste0("First year =  ",  x@first.year, "\n"))
-  cat(paste0("Last year =  ",  x@last.year, "\n"))
+  cat(paste0("Temporally Averaged =  ",  x@temporal.aggregate.method, "\n"))
+  print(x@temporal.extent)
   cat(paste0("Data: ",  "\n"))
   print(x@data)
   cat(paste0("Source = ", "\"", x@source@name, "\"", "\n"))
@@ -128,6 +128,8 @@ setMethod("print", signature(x="ComparisonLayer"), function(x) {
   print(x@quant)
   cat(paste0("Spatially Averaged =  ",  x@spatial.aggregate.method, "\n"))
   print(x@spatial.extent)
+  cat(paste0("Temporally Averaged =  ",  x@temporal.aggregate.method, "\n"))
+  print(x@temporal.extent)
   cat(paste0("Data: ",  "\n"))
   print(x@data)
   cat(paste0("Source for first layer: \n"))
@@ -144,7 +146,7 @@ setMethod("print", signature(x="ComparisonLayer"), function(x) {
 setMethod("print", signature(x="SpatialComparison"), function(x) {
   
   cat(paste0("Spatial Comparison:\n"))
-  cat("Continuous comparison metrics:\n")
+  cat("Continuous comparison metrics")
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   cat(paste0("Mean Error (ME) = ", round(x@ME,4),  "\n"))
   cat(paste0("Normalised Mean Error (NME) = ", round(x@NME,4),  "\n"))  
@@ -154,10 +156,10 @@ setMethod("print", signature(x="SpatialComparison"), function(x) {
   cat(paste0("Nash Sutcliffe Modell Efficiency (R2.eff) = ", round(x@R2.eff,4),  "\n"))  
   cat(paste0("Pearson Product Moment Correlation Coefficient (P.cor) = ", round(x@P.cor,4),  "\n"))  
   cat(paste0("Standard Deviation of Errors (sd.diff) = ", round(x@sd.diff,4),  "\n"))  
-  cat("Relative proportion comparison metrics:\n")
+  cat("Relative proportion comparison metrics")
   cat(paste0("Manhattan Metric (MM) = ", round(x@MM,4),  "\n"))
   cat(paste0("Square Chord Distance (SCD) = ", round(x@SCD,4),  "\n"))  
-  cat("Categorical comparison metrics:\n")
+  cat("Categorical comparison metrics")
   cat(paste0("(Cohen's) Kappa (Kappa) = ", round(x@Kappa,4),  "\n"))  
   for(kappa in x@individual.Kappas) {
     print(kappa)
@@ -173,7 +175,6 @@ setMethod("print", signature(x="BiomeScheme"), function(x) {
   cat(paste0("Biome Scheme:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   cat(paste0("name = ", x@name, "\"", "\n"))
-  cat(paste0("Combine shade tolerance classes: ", x@combineShadeTolerance, "\n"))  
   cat(paste0("Totals needed: ", paste0(x@totals.needed, collapse = ' '), "\n"))
   cat(paste0("Maximums needed: ", paste0(x@max.needed, collapse = ' '), "\n"))
   cat(paste0("Fraction of Total needed: ", paste0(x@fraction.of.total, collapse = ' '), "\n"))

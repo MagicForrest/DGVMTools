@@ -24,11 +24,8 @@ calcBiomes <-function(input, scheme){
   
   Grass = Biome = NULL
   
-  # Combine shade tolerance classes and add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
-  if(scheme@combineShadeTolerance) {
-    input <- combineShadeTolerance(input)
-  }
-  
+  ### Add the relevant totals, fractions and dominant PFTs which are needed for the classifaction
+ 
   # If GDD5 required for classification
   #if(scheme@needGDD5 && !any(names(input@data)=="GDD5")) {
   # get gdd5
