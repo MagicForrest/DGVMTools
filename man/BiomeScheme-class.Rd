@@ -29,8 +29,6 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 
 \item{\code{rules}}{A function which is applied to every row of the data.table and describes the biome classification rules.}
 
-\item{\code{combineShadeTolerance}}{If TRUE, call combineShadeTolerance before doing the biome classification}
-
 \item{\code{totals.needed}}{List of vegetation totals needed to calculate biomes, for example c("Tree", "Grass")}
 
 \item{\code{max.needed}}{List of maximum values needed to calculate biomes, for example c("PFT", "Tree")}
