@@ -46,7 +46,7 @@ plotTemporal <- function(input.data,
 ){
   
   
-  Time = Year = value = variable = Lat = Lon = NULL
+  Time = Year = Month = Source = value = variable = Lat = Lon = NULL
   
   # whether to to use the a grouping (ie plot many objects on one plot)
   single.object <- FALSE

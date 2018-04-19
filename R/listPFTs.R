@@ -14,15 +14,15 @@
 listPFTs <- function(x, ...) {
   
   # Call the function for the relevant format type
+  if(is.function(x@format@listPFTs)) {
+    return(x@format@listPFTs(x, ...))
+  }
   
-  # LPJ-GUESS or LPJ-GUESS SPITFIRE
-  if(x@format == "LPJ-GUESS" || x@format == "LPJ-GUESS-SPITFIRE") {  return(listPFTs_LPJ(x, ...)) }
-  
-  # Else warn and return and empty list
-  else{ 
-    warning(paste("listPFTs() function not implemented yet for format", x@format, "so I am returning the original PFT list.",  sep = " "))
+  # else 
+  else{
+    warning("Malformed listPFTs slot of the Format object. Returning the fill list of PFTs")
     return(x@pft.set)
   }
   
-  
+
 }

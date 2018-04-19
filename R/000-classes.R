@@ -1,9 +1,19 @@
 #!/usr/bin/Rscript
 
 
-##############################################################################
-########  GENERAL CLASSES ####################################################
-##############################################################################
+setClass("Format", 
+         slots = c(id = "character",
+                   default.pfts = "list",
+                   quantities = "list",
+                   listPFTs = "function",
+                   listAvailableQuantities = "function",
+                   getField = "function"
+         )
+)
+
+
+
+
 
 
 #' Time periods - eg. a month or a season or a year.
@@ -132,10 +142,10 @@ checkSourceInfo <- function(object){
     msg <- "Error defining Source, you must define a format type!"
     errors <- c(errors, msg)
   }
-  else if (!(object@format  %in% supported.formats)) {
-    msg <- paste("Unsupported model type", object@format, sep = " ")
-    errors <- c(errors, msg)
-  }
+  #else if (!(object@format  %in% supported.formats)) {
+  #  msg <- paste("Unsupported model type", object@format, sep = " ")
+  #  errors <- c(errors, msg)
+  #}
   
   
   # Check dir exists
@@ -186,7 +196,7 @@ checkSourceInfo <- function(object){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("SourceInfo", 
          slots = c(id = "character",
-                   format = "character",
+                   format = "Format",
                    pft.set = "list",
                    name = "character",
                    dir = "character",                              
@@ -503,16 +513,6 @@ setClass("Field",
          contains = "STAInfo"
 )
 
-
-setClass("Format", 
-         slots = c(id = "character",
-                   default.pfts = "list",
-                   quantities = "list",
-                   listPFTs = "function",
-                   listAvailableQuantities = "function",
-                   getField = "function"
-         )
-)
 
 
 

@@ -85,7 +85,10 @@ correct.map.offset <- function(spl) {
 
 
 
-
+#' Make a PFT colour list
+#' 
+#' This is a helper function for when plotting PFTs by colour.  It takes a list of PFT ids (other things like "Total" or "Tree") and returns a a list 
+#' with the 
 
 
 matchPFTCols <- function(values, pfts, others = list(Total = "black", Tree = "brown", Grass = "green", Shrub = "red")) {

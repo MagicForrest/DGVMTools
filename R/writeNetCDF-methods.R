@@ -1,13 +1,37 @@
 #!/usr/bin/Rscript
 #' writeNetCDF methods
 #' 
-#' Methods for cropping DGVMTools objects (and data.tables) to each other, to raster and sp objects (and basically anything that can be coerced in a raster::Extent object). 
-#' The data.table in the "data" slot of the DGVMTools object (or the stand-alone data.table), must have columns named "Lon" and "Lat" otherwise these methods fail.  Unpleasantly.  
-#' 
-#' @param x A Field or ComparisonLayer or a stand-alone data.table to be cropped
-#' @param y Anything from which raster::Extent object can be derived
+#' Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes.
+#'  
+#' @param x A Field or Raster* object to be written as a netCDF file.  The method can also handle a list of arrays (each array in the list represents one layer)
+#' but this is more of a technical, internal use of this method.
+#' @param filename A character specifying the name of the netCDF file to be written.
+#' @param start.date A data (as a POSIX data) for the start of the time dimension.  Can be omitted for a Field (), \emph{must} be included if you want to write 
+#' a RasterStack or RasterBrick with a time dimension. 
+#' @param monthly Logical specifying if the data has has a monthly time resolution. Is ignored for a Field, but it is necessary to set it to TRUE if you want to make a netCDF file out
+#' of a RasterStack or RasterBrick where each layer represents a month.
+#' @param verbose Logical, if TRUE print a bunch of progress and debug output
+#' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but not
+#' if you want to use different meta-data for a Field just alter the Quantity object in the Field object before you call writeNetCDF)
+#' @param source A DGVMTools::Source object.  This is to provide meta-data about teh source of the data (model run/dataset, climate forcing, cintact person etc)
+#' if saving a Raster* object. It is ignored in the case of a Field (but not if you want to use different meta-data for a Field just alter the Source object in the Field object before you call writeNetCDF)
+#' @param layer.dim.name A character string specifing the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
+#' is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension. 
+#' @param lat.dim.name Character, the latitude dimension name. Defaults to "Lat".  
+#' @param lon.dim.name Character, the longitude dimension name. Defaults to "Lon". 
+#' @param time.dim.name Character, the time dimension name. Defaults to "Time".
+#' @param time.values The time dimension information (in the case of Raster*, is ignored for a Field).  Format is 'days since' the 'start.date' argument.  NOT CURRENTLY IMPLEMENT, CAN MAYBE REPLACE 'monthly'? 
+#' @param precision Character, the output precision (alternatively type, confusingly) to use in the netCDF file (see the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.
 #' @param ... Other arguments, not currently used
-#' @return A spatially cropped object
+#' 
+#' 
+#' 
+#' These methods offers two very convienent things.  Firsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
+#' convenient way to write Raster* objects as netCDF objects than writeRaster (at least in the eye's of the author).  This because is allows specifying of meta data and a time axis, 
+#' allows some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes. 
+#' 
+#' 
+#' @return Nothing
 #' @name writeNetCDF-methods
 #' @rdname writeNetCDF-methods
 #' @aliases writeNetCDF
@@ -28,8 +52,7 @@ if (!isGeneric("writeNetCDF")) {
                                      lat.dim.name = "Lat",
                                      lon.dim.name = "Lon",
                                      time.dim.name = "Time",
-                                     prec = "float",
-                                     time.unit = NULL,
+                                     precision = "float",
                                      time.values = NULL, 
                                      ...) standardGeneric("writeNetCDF"))
 }
@@ -37,6 +60,7 @@ if (!isGeneric("writeNetCDF")) {
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(x, filename, ...) {
   
+  monthly <- FALSE
   st.names <- getSTInfo(x)
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   if("Month" %in% st.names) monthly <- TRUE
@@ -64,7 +88,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
-              prec = prec,
+              precision = precision,
               ...)
   
 })
@@ -80,7 +104,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
   multiple.time.slices <- FALSE
   
   # If only a single layer, for sure we have only a single variable, check to see if we want to include a timestep.
-  if(nlayers(x) == 1) {
+  if(raster::nlayers(x) == 1) {
     message("Got a single layer, so we have a single variable")
     if(!is.null(start.date)) {
       single.time.slice <- TRUE
@@ -125,10 +149,10 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     ## MF consider instead reversing the order of lat.list below?
     
     # make the list of lons and lats
-    xres <- xres(this.layer)
-    lon.list <- seq(from =  xmin(this.layer) + xres/2 , to = xmax(this.layer) - xres/2,  by = xres)
-    yres <- yres(this.layer)
-    lat.list <- seq(from =  ymin(this.layer) + yres/2, to = ymax(this.layer) - yres/2,  by = yres)
+    xres <- raster::xres(this.layer)
+    lon.list <- seq(from =  raster::xmin(this.layer) + xres/2 , to = raster::xmax(this.layer) - xres/2,  by = xres)
+    yres <- raster::yres(this.layer)
+    lat.list <- seq(from =  raster::ymin(this.layer) + yres/2, to = raster::ymax(this.layer) - yres/2,  by = yres)
     
     
     colnames(this.array) <- lat.list
@@ -158,7 +182,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
-              prec = prec,
+              precision = precision,
               ...)
   
 })
@@ -264,13 +288,13 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # individual layers
   if(is.null(layer.dim.name)) {  
     for(layer in layers) {
-      all.vars[[layer]] <- ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = standard.name, prec = prec, -99999)  # standard
+      all.vars[[layer]] <- ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = standard.name, prec = precision, -99999)  # standard
     }
   }
   # else turn layers into a dimension
   else {
     
-    all.vars <- ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = standard.name, prec = prec, -99999)  # standard
+    all.vars <- ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = standard.name, prec = precision, -99999)  # standard
     old.layers <- layers # for storing the key from dimension values to layer
     
   } 

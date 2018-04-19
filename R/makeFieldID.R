@@ -83,7 +83,7 @@ makeFieldID <- function(field,
   
   
   # from source.info make the leading part of the id
-  field.id <- paste(source.info@format, source.info@id, sep = sep)
+  field.id <- paste(source.info@format@id, source.info@id, sep = sep)
   
   # quantity
   field.id <- paste(field.id, var.string, sep = sep)

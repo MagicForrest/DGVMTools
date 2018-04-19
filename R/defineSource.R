@@ -48,6 +48,19 @@ defineSource <- function(id,
   # if no name provided use the id
   if(missing(name))  name <- id
   
+  # Retreive a Format object if a string is provided
+  if(is.character(format)) {
+    if(format == "LPJ-GUESS" || "GUESS" || "LPJ-GUESS-SPITFIRE") {
+      format <- GUESS
+    }
+    
+  }
+  
+  # 
+  if(missing(pft.set)){
+    pft.set <- format@default.pfts
+  }
+  
   # make SourceInfo object from the supplied meta data
   info <- new("SourceInfo",
               id = id,
@@ -64,14 +77,13 @@ defineSource <- function(id,
               institute = institute)
   
   # look up the PFTs to get the actual PFTs present from the superset
-  if(length(pft.set) > 0) {
+  if(length(info@pft.set) > 0) {
     info@pft.set <- listPFTs(info, ...)
   }
 
   
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
   if(length(info@pft.set) == 0) info@pft.set <- list()
- 
   if(length(info@lonlat.offset) == 0)  info@lonlat.offset <- c(0,0)
   if(length(info@year.offset) == 0)  info@year.offset <- 0
   if(length(info@forcing.data) == 0)  info@forcing.data <- "No forcing data set"

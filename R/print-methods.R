@@ -65,7 +65,7 @@ setMethod("print", signature(x="SourceInfo"), function(x) {
   cat(paste0("SourceInfo:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  cat(paste0("format = ", "\"", x@format, "\"", "\n"))
+  cat(paste0("format = ", "\"", x@format@id, "\"", "\n"))
   cat(paste0("directory = ", "\"", x@dir, "\"", "\n"))
   cat(paste0("forcing data = ", "\"", x@forcing.data, "\"", "\n"))
   cat(paste0("lon-lat offset = (", x@lonlat.offset[1], ",", x@lonlat.offset[2], ")\n"))

@@ -32,8 +32,8 @@
 
 getField <- function(source, 
                      var, 
-                     first.year = NULL,
-                     last.year = NULL,
+                     first.year,
+                     last.year,
                      year.aggregate.method = "none", 
                      spatial.extent = NULL, 
                      spatial.extent.id = "Full", 
@@ -53,13 +53,21 @@ getField <- function(source,
   
   ### CONVERT STRING TO QUANTITY
   if(class(var) == "character") {
-    quant <- lookupQuantity(var, source@format)
+    quant <- lookupQuantity(var, source@format@id)
     var.string <- var
   }
   else {
     quant <- var
     var.string <- quant@id
   }
+  
+  ### TIDY THE RELEVANT STA ARGUMENTS INTO THE TARGET STA OBJECT
+  if(missing(first.year)) first.year <- numeric(0)
+  if(missing(last.year)) last.year <- numeric(0)
+  target.STAInfo <- new("STAInfo",
+                        first.year= first.year,
+                        last.year = last.year)
+  
   
   ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
   model.field.id <- makeFieldID(source.info = as(source, "SourceInfo"), 
@@ -122,7 +130,7 @@ getField <- function(source,
   
   
   ### CASE 3 - IF THE WHOLE FILE HAS BEEN READ AND STORED IN MEMORY AS A VEGOBJECT, THEN TAKE THAT AND EXTRACT THE DATA.TABLE AND THEN AVERAGE IT BELOW
-  temp.var.string <- paste(source@format, source@id, var.string, "all_years", sep = ".")
+  temp.var.string <- paste(source@format@id, source@id, var.string, "all_years", sep = ".")
   if(var.string %in% names(source@objects) || temp.var.string %in% names(source@objects)){
     
     if(verbose) message(paste(var.string, " is already read, so using that internal copy.", sep = ""))
@@ -140,22 +148,16 @@ getField <- function(source,
     if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
     
     ### !!! CALL FORMAT SPECIFIC FUNTIONS HERE !!!
-    
+
     # If model is LPJ-GUESS(-SPITFIRE) and the required Quantity is defined for LPJ-GUESS(-SPITFIRE)
-    if(source@format == "LPJ-GUESS" | source@format == "LPJ-GUESS-SPITFIRE" ) {
+    if(source@format@id == "LPJ-GUESS" | source@format@id == "LPJ-GUESS-SPITFIRE" ) {
       
+     
+     data.list <- source@format@getField(source, quant, target.STAInfo, verbose)
       
-      # First check if quantity is for FireMIP, if so call a special function with the extra processing required
-      if("FireMIP" %in% quant@model) {
-        this.dt <- openLPJOutputFile_FireMIP(source, var.string, first.year = first.year, last.year = last.year, verbose = verbose)
-      }
-      else if("LPJ-GUESS" %in% quant@model | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
-        this.dt <- openLPJOutputFile(source, var.string, first.year = first.year, last.year = last.year, verbose = verbose)
-      }
-      else if("Standard" %in% quant@model) {
-        this.dt <- getStandardQuantity_LPJ(source, quant, first.year = first.year, last.year = last.year, verbose = verbose)
-      }
-      
+     this.dt <- data.list[[1]]
+     this.STAInfo <- data.list[[2]]
+     
       
       # Meta-data for use later on
       if("Year" %in% getSTInfo(this.dt)) {
@@ -168,7 +170,7 @@ getField <- function(source,
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
     
-    else if(source@format == "DGVMData") {
+    else if(source@format@id == "DGVMData") {
       
       data.list <- openDGVMDataFile(source, quant, verbose = verbose)
       this.dt <- data.list$dt
@@ -183,7 +185,7 @@ getField <- function(source,
     
     
     # If model is aDGVM and the required Quantity is defined for aDGVM
-    else if(source@format == "aDGVM") {
+    else if(source@format@id == "aDGVM") {
       
       if("aDGVM" %in% quant@model | "Standard" == quant@model) {
         if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(source, first.year = first.year, last.year= last.year, quant))
@@ -200,15 +202,15 @@ getField <- function(source,
     
     
     # If model is from FireMIP
-    else if(source@format == "LPJ-GUESS-SPITFIRE-FireMIP"  ||
-            source@format == "LPJ-GUESS-SPITFIRE-OLD-FireMIP"  ||
-            source@format == "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP"     ||
-            source@format == "LPJ-GUESS-GlobFIRM-FireMIP"  ||
-            source@format == "CLM-FireMIP"                 ||
-            source@format == "CTEM-FireMIP"                ||
-            source@format == "Inferno-FireMIP"             ||
-            source@format == "JSBACH-FireMIP"              ||
-            source@format == "ORCHIDEE-FireMIP"               ) {
+    else if(source@format@id == "LPJ-GUESS-SPITFIRE-FireMIP"  ||
+            source@format@id == "LPJ-GUESS-SPITFIRE-OLD-FireMIP"  ||
+            source@format@id == "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP"     ||
+            source@format@id == "LPJ-GUESS-GlobFIRM-FireMIP"  ||
+            source@format@id == "CLM-FireMIP"                 ||
+            source@format@id == "CTEM-FireMIP"                ||
+            source@format@id == "Inferno-FireMIP"             ||
+            source@format@id == "JSBACH-FireMIP"              ||
+            source@format@id == "ORCHIDEE-FireMIP"               ) {
       
       
       if(quant@model == "FireMIP") {
@@ -313,6 +315,8 @@ getField <- function(source,
   }
   
   ### SELECT THE YEARS IF REQUESTED
+  if(length(first.year) == 0) first.year <- NULL
+  if(length(last.year) == 0) last.year <- NULL
   got.first.year <- !missing(first.year) & !is.null(first.year)
   got.last.year <- !missing(last.year) & !is.null(last.year)
   if(got.first.year & got.last.year) {

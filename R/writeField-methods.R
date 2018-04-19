@@ -10,14 +10,14 @@
 #' @aliases write
 #' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
-if (!isGeneric("write")) {
-  setGeneric("write", function(x) standardGeneric("write"))
+if (!isGeneric("writeField")) {
+  setGeneric("writeField", function(x) standardGeneric("writeField"))
 }
 #' must have columns named "Lon" and "Lat" otherwise these methods fail.  
 
 
 #' @rdname write-methods
-setMethod("write", signature(x="Field"), function(x) {
+setMethod("writeField", signature(x="Field"), function(x) {
   
  file.name <- file.path(x@source@dir, paste(x@id, "DGVMField", sep = "."))
  saveRDS(x, file = file.name) 

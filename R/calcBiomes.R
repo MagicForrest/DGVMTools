@@ -57,7 +57,7 @@ calcBiomes <-function(input, scheme){
   if(length(scheme@fraction.of.total) > 0) {
     if(!"Total" %in% names(input)) input <- autoLayer(input, "Total", method = "sum")
     for(layer in scheme@fraction.of.total){
-      all.layers <- expandLayers(layer = layer, input.data = input)
+      all.layers <- expandLayers(layers = layer, input.data = input)
       for(layer2 in all.layers) {
         layerOp(input, "/", c(layer2,"Total"), paste0(layer2, "Fraction"))
       }
@@ -67,7 +67,7 @@ calcBiomes <-function(input, scheme){
   if(length(scheme@fraction.of.tree) > 0) {
     if(!"Total" %in% names(input)) input <- autoLayer(input, "Tree", method = "sum")
     for(layer in scheme@fraction.of.tree){
-      all.layers <- expandLayers(layer = layer, input.data = input)
+      all.layers <- expandLayers(layers = layer, input.data = input)
       for(layer2 in all.layers) {
         layerOp(input, "/", c(layer2,"Tree"), paste0(layer2, "FractionOfTree"))
       }
@@ -77,7 +77,7 @@ calcBiomes <-function(input, scheme){
   if(length(scheme@fraction.of.woody) > 0) {
     if(!"Total" %in% names(input)) input <- autoLayer(input, "Woody", method = "sum")
     for(layer in scheme@fraction.of.woody){
-      all.layers <- expandLayers(layer = layer, input.data = input)
+      all.layers <- expandLayers(layers = layer, input.data = input)
       for(layer2 in all.layers) {
         layerOp(input, "/", c(layer2,"Woody"), paste0(layer2, "FractionOfWoody"))
       }
