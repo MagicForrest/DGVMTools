@@ -145,7 +145,7 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
 #' @return logical or integer, if doy is TRUE
 #' 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @kewords internal
+#' @keywords internal
 #' @export
 is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
   leap <- sapply(year, function(x) {
