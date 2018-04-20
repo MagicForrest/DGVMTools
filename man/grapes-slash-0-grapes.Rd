@@ -16,3 +16,4 @@ Handy little thing.}
 \description{
 Function to divide two number but return 0 if the denominator is 0
 }
+\keyword{internal}

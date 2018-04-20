@@ -175,8 +175,8 @@ openLPJOutputFile <- function(run,
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
 #' @import data.table
-#' @export
 openLPJOutputFile_FireMIP <- function(run,
                                       variable,
                                       first.year,
@@ -1823,9 +1823,9 @@ GUESS.quantities <- list(
       model = c("LPJ-GUESS-SPITFIRE"))
 )
 
-#####################################################################
-########### LPJ-GUESS(-SPITFIRE) QUANTITIES ########################
-#####################################################################
+################################################################
+########### LPJ-GUESS(-SPITFIRE) FORMAT ########################
+################################################################
 
 #' @title dummy text
 #' 

@@ -86,7 +86,7 @@ calcR2 <- function(vector2, vector1) {
 #' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are not for continuous data.
 #' 
 #' @return A spatial comparison object
-#' 
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE){
@@ -161,7 +161,7 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
 #' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are not for relative proportions data.
 #' 
 #' @return A spatial comparison object
-#' 
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
@@ -225,7 +225,7 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
 #' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are for continuous as opposed to categorical data
 #' 
 #' @return A spatial comparison object
-#' 
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 categoricalComparison<- function(vector1,

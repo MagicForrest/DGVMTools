@@ -1,3 +1,36 @@
+############################################################################################################################
+############################ FUNCTIONS TO HANDLE FireMIP FILES ###########################################################
+############################################################################################################################
+
+
+#' Get a Field for FireMIP
+#' 
+#' An internal function that reads data from an FireMIP run.  
+#' 
+#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param first.year The first year (as a numeric) of the data to be returned
+#' @param last.year The last year (as a numeric) of the data to be returned
+#' @param verbose A logical, set to true to give progress/debug information
+#' 
+#' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+getField_FireMIP <- function(source,
+                              quant,
+                              target.STAInfo,
+                              verbose) {
+  
+  
+  
+  this.dt <- openFireMIPOutputFile(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+  
+  
+  return(list(this.dt, NULL))
+  
+}
+
+
 #' Open a FireMIP output file
 #' 
 #' Opens a .nc file from the FireMIP output and sorts out the meta-data and dimensions and all that messy stuff.  
@@ -11,6 +44,9 @@
 #' @param spatial.extent The spatial extent we want to read (as defined by as raster::extent or an object that can be cast to a raster::extent)
 #' @param verbose Logical, if TRUE spew forth a lot of info.
 #' 
+#' @keywords internal
+#' 
+#'  
 #' @return A data.table
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -390,269 +426,51 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
 
 }
 
-#' Aggregate to FireMIP PFTs
+
+#' Detemine PFTs present in an FireMIP run source 
 #' 
-#' Aggregates the PFTs in a FireMIP Field to a standard set of PFTs
-#' 
-#' @param input.data A Field from a FireMIP model
-#' @param remove.agriculture Logical, if TRUE, remove the cropland PFT and scale up the rest to compensate
-#' 
-#' @return A Field with the standard FireMIP PFTs
-#'  
+#' @param x  A Source objects describing a FireMIP source
+#' @param variables Some variable to look for to detremine the PFTs present in the run.  Not the function automatically searches:
+#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.  Currently ignored.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#'
-#' @export 
+#' @keywords internal
 
-
-toFireMIPPFTs <- function(input.data, remove.agriculture = FALSE) {
+listPFTs_FireMIP <- function(x, variables) {
   
-  Lat = NS = BS = BR = NULL
-  
-  # get the name of the model
-  model.string <- gsub("-FireMIP", "", input.data@source@model)
-  print(paste0("Standardising to FireMIP PFTs: ", model.string))
-  
-  # retrieve the data.table
-  dt <- input.data@data
-  
-  ### FIRST DEFINE THE FIREMIP PFTS
-  FireMIP.PFTs <- c("Evergreen Broadleafed Tree" = "BE",
-                    "Summergreen Broadleafed Tree" = "BS",
-                    "Raingreen Broadleafed" = "BR",
-                    "Evergreen Needleleafed" = "NE",
-                    "Summergreen Needleafed" = "NS",
-                    "C3 Grass" = "C3G",
-                    "C4 Grass" ="C4G",
-                    "Shrub" = "Shb",
-                    "Croplands" = "Crops")
-  
-  
-  ### NOW DEFINE THE MAPPING FOR EACH MODEL
-  
-  # LPJ-GUESS-SPITFIRE-OLD
-  if(model.string == "LPJ-GUESS-SPITFIRE-OLD") {
-    classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
-    classify.df <- rbind(classify.df, c("BINE", "NE"))
-    classify.df <- rbind(classify.df, c("BNS", "NS"))
-    classify.df <- rbind(classify.df, c("BIBS", "BS"))
-    classify.df <- rbind(classify.df, c("TeNE", "NE"))
-    classify.df <- rbind(classify.df, c("TeBS", "BS"))
-    classify.df <- rbind(classify.df, c("TeIBS", "BS"))
-    classify.df <- rbind(classify.df, c("TeBE", "BE"))
-    classify.df <- rbind(classify.df, c("TrBE", "BE"))
-    classify.df <- rbind(classify.df, c("TrIBE", "BE"))
-    classify.df <- rbind(classify.df, c("TrBR", "BR"))
-    classify.df <- rbind(classify.df, c("C3G", "C3G"))
-    classify.df <- rbind(classify.df, c("C4G", "C4G"))
-    
-  }
-  
-  # LPJ-GUESS-SPITFIRE-OLD
-  if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE" ) {
-    
-    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE-OLD
-    classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
-    classify.df <- rbind(classify.df, c("BINE", "NE"))
-    classify.df <- rbind(classify.df, c("BNS", "NS"))
-    classify.df <- rbind(classify.df, c("TeBS", "BS"))
-    classify.df <- rbind(classify.df, c("IBS", "BS"))
-    classify.df <- rbind(classify.df, c("TeBE", "BE"))
-    classify.df <- rbind(classify.df, c("TrBE", "BE"))
-    classify.df <- rbind(classify.df, c("TrIBE", "BE"))
-    classify.df <- rbind(classify.df, c("TrBR", "BR"))
-    classify.df <- rbind(classify.df, c("C3G", "C3G"))
-    classify.df <- rbind(classify.df, c("C4G", "C4G"))
-    
-    # agricultural
-    classify.df <- rbind(classify.df, c("C3G_pas", "C3G"))
-    classify.df <- rbind(classify.df, c("C4G_pas", "C4G"))
-    classify.df <- rbind(classify.df, c("TeSW", "Crops"))
-    classify.df <- rbind(classify.df, c("TeSWirr", "Crops"))
-    classify.df <- rbind(classify.df, c("TeWW", "Crops"))
-    classify.df <- rbind(classify.df, c("TeWWirr", "Crops"))
-    classify.df <- rbind(classify.df, c("TeCo", "Crops"))
-    classify.df <- rbind(classify.df, c("TeCoirr", "Crops"))
-    
-  }
-  
-  # CLM
-  if(model.string == "CLM") {
-    
-    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE-OLD
-    classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
-    classify.df <- rbind(classify.df, c("TeNE", "NE"))
-    classify.df <- rbind(classify.df, c("BNS", "NS"))
-    classify.df <- rbind(classify.df, c("TrBE", "BE"))
-    classify.df <- rbind(classify.df, c("TeBE", "BE"))
-    classify.df <- rbind(classify.df, c("TrBR", "BR"))
-    classify.df <- rbind(classify.df, c("TeBS", "BS"))
-    classify.df <- rbind(classify.df, c("BBS", "BS"))
-    classify.df <- rbind(classify.df, c("C3G", "C3G"))
-    classify.df <- rbind(classify.df, c("C3G_arc", "C3G"))
-    classify.df <- rbind(classify.df, c("C4G", "C4G"))
-    
-    # shrubs
-    classify.df <- rbind(classify.df, c("BE_Shb", "Shb"))
-    classify.df <- rbind(classify.df, c("TeBS_Shb", "Shb"))
-    classify.df <- rbind(classify.df, c("BBS_Shb", "Shb"))
-    
-    
-    # agricultural
-    classify.df <- rbind(classify.df, c("Crop1", "Crops"))
-    classify.df <- rbind(classify.df, c("Crop2", "Crops"))
-    
-  }
-  
-  
-  # CTEM
-  if(model.string == "CTEM") {
-    
-    
-    # natural PFTs
-    classify.df <-  data.frame(original = c("NDL-EVG"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
-    classify.df <- rbind(classify.df, c("NDL-DCD", "NS"))
-    classify.df <- rbind(classify.df, c("BDL-EVG", "BE"))
-    classify.df <- rbind(classify.df, c("BDL-DCD-DRY", "BR"))
-    classify.df <- rbind(classify.df, c("BDL-DCD-COLD", "BS"))
-    classify.df <- rbind(classify.df, c("C3-GRASS", "C3G"))
-    classify.df <- rbind(classify.df, c("C4-GRASS", "C4G"))
-    
-    # agriculture
-    classify.df <- rbind(classify.df, c("C3-CROP", "Crops"))
-    classify.df <- rbind(classify.df, c("C4-CROP", "Crops"))
-    
-  }
-  
-  
-  # Inferno
-  if(model.string == "Inferno") {
-    
-    # natural PFTs
-    classify.df <-  data.frame(original = c("NE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
-    classify.df <- rbind(classify.df, c("ND", "NS"))
-    classify.df <- rbind(classify.df, c("TrBE", "BE"))
-    classify.df <- rbind(classify.df, c("TeBE", "BE"))
-    classify.df <- rbind(classify.df, c("BD", "BS"))
-    classify.df <- rbind(classify.df, c("C3G", "C3G"))
-    classify.df <- rbind(classify.df, c("C4G", "C4G"))
-    
-    # shrubs
-    classify.df <- rbind(classify.df, c("Ev_Shb", "Shb"))
-    classify.df <- rbind(classify.df, c("De_Shb", "Shb"))
-    
-  }
-  
-  # JSBACH
-  if(model.string == "JSBACH") {
-    
-    # natural PFTs
-    classify.df <-  data.frame(original = c("TrE"), FireMIP = c("BE"), stringsAsFactors = FALSE) 
-    classify.df <- rbind(classify.df, c("TrD", "BR"))
-    classify.df <- rbind(classify.df, c("ExtE", "NE"))
-    classify.df <- rbind(classify.df, c("ExtD", "BS"))
-    classify.df <- rbind(classify.df, c("C3G", "C3G"))
-    classify.df <- rbind(classify.df, c("C4G", "C4G"))
-    
-    # shrubs
-    classify.df <- rbind(classify.df, c("Rg_Shb", "Shb"))
-    classify.df <- rbind(classify.df, c("De_Shb", "Shb"))
-    
-    # agriculture
-    classify.df <- rbind(classify.df, c("C3G_pas", "C3G"))
-    classify.df <- rbind(classify.df, c("C4G_pas", "C4G"))
-    classify.df <- rbind(classify.df, c("Crop", "Crops"))
-    
-    
-  }
-  
-  if(model.string == "ORCHIDEE") {
-    
-    # normal PFTs similar (but not identical to) LPJ-GUESS-SPITFIRE-OLD
-    classify.df <-  data.frame(original = c("BNE"), FireMIP = c("NE"), stringsAsFactors = FALSE) 
-    classify.df <- rbind(classify.df, c("TeNE", "NE"))
-    classify.df <- rbind(classify.df, c("BNS", "NS"))
-    classify.df <- rbind(classify.df, c("TrBE", "BE"))
-    classify.df <- rbind(classify.df, c("TeBE", "BE"))
-    classify.df <- rbind(classify.df, c("TrBR", "BR"))
-    classify.df <- rbind(classify.df, c("TeBS", "BS"))
-    classify.df <- rbind(classify.df, c("BBS", "BS"))
-    classify.df <- rbind(classify.df, c("C3G", "C3G"))
-    classify.df <- rbind(classify.df, c("C4G", "C4G"))
-    
-    # agricultural
-    classify.df <- rbind(classify.df, c("C3_agr", "Crops"))
-    classify.df <- rbind(classify.df, c("C4_agr", "Crops"))
-    
-  }
-  
-  
-  
-  ### DO THE CLASSIFICATION
-  
-  # For each FireMIP PFT sum the contributing model PFTs
-  for(FireMIP.PFT in FireMIP.PFTs) {
-    
-    # get a list the corresponding model PFTs
-    model.PFTs <- classify.df$original[which(classify.df$FireMIP == FireMIP.PFT)]
-    
-    # sum them 
-    if(length(model.PFTs) > 0)  dt <- dt[, paste("FireMIP", FireMIP.PFT, sep = ".") := rowSums(.SD), .SDcols = model.PFTs, with = FALSE]
-    else  dt <- dt[,  paste("FireMIP", FireMIP.PFT, sep = ".") := 0]
-    
-    # remove the PFTs we just summed
-    if(length(model.PFTs) > 0)  dt <- dt[, model.PFTs := NULL, with = FALSE]
-    
-  }
-  
-  # Remove "Bare" etc.  if necessary
-  if("Bare" %in% names(dt)) dt <- dt[, "Bare" := NULL, with = FALSE]
-  if("Ice" %in% names(dt)) dt <- dt[, "Ice" := NULL, with = FALSE]
-  if("Water" %in% names(dt)) dt <- dt[, "Water" := NULL, with = FALSE]
-  if("Urban" %in% names(dt)) dt <- dt[, "Urban" := NULL, with = FALSE]
-  
-  
-  ### SET THE NAMES
-  setnames(dt, gsub("FireMIP.", "",  names(dt)))
-  
-  ### SPECIAL FIX FOR JSBACH FOR NEEDLE-LEAVED SUMMERGREEN
-  if(model.string == "JSBACH") {
-   dt <- dt[Lat > 60, NS := BS]
-   dt <- dt[Lat > 60, BS := 0]
-  }
-  
-  ### SPECIAL FIX FOR INFERNO FOR BROADLEAVED RAINGREEN
-  if(model.string == "Inferno") {
-    dt <- dt[abs(Lat) < 23, BR := BS]
-    dt <- dt[abs(Lat) < 23, BS := 0]
-  }
-  
-  
-  
-  
-  ### RESCALE TO ACCOUNT FOR AGRICULTURE
-  if(remove.agriculture) {
-    rescale <- function(x) {
-      x <- x * (1/(1-x$Crops))
-    }
-
-    dt <- dt[, FireMIP.PFTs := rescale(.SD), .SDcols = FireMIP.PFTs, with = FALSE]
-    
-    # important, remove any NAs that my have been introduced by scaling
-    dt <- stats::na.omit(dt)
-    
-    # remove agriculture column 
-    if("Crops" %in% names(dt)) dt <- dt[, "Crops" := 0, with = FALSE]
-    
-  }
-  
-  ### AND RETURN
-  input.data@data <- dt
-  rm(dt)
-  return(input.data)
-  
+  warning("listPFTs_FireMIP not currently implmented.")
+  return(x@format@pft.set)
   
 }
 
+
+
+#' List all LPJ-GUESS *.out files in a source directory
+#'
+#' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
+#' Also ignores some common red herrings like "guess.out" and "*.out" 
+#' 
+#' @param source A path to a directory on the file system containing some .out files
+#' @return A list of all the .out files present, with the ".out" removed. 
+#' 
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
+
+listAvailableQuantities_FireMIP <- function(source){
+  
+  # First get the list of *.out files present
+  files.present <- list.files(source@dir, "*.nc")
+  
+  quantities.present <- list()
+  for(file in files.present) {
+    
+      # simple code to deparse the filename and find the variables
+    
+  }
+  
+  return(quantities.present)
+  
+}
 
 ########################################################
 ########### FireMIP Coarse PFTS ########################
@@ -778,3 +596,498 @@ FireMIP.PFTs <- list(
   
 )
 
+
+
+######################################################################
+########## FIREMIP QUANTITIES  ######################################
+######################################################################  
+
+#' @title dummy text
+#' 
+#' @description
+#' 
+#' @details FireMIP Output Quantities
+#' 
+#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @rdname Quantity-class
+#' @keywords datasets
+#' 
+#' 
+FireMIP.quantities <- list(
+
+#### BURNT AREA AND EMISSIONS
+
+new("Quantity",
+    id = "fFirePFT",
+    type = "",
+    name = "C emitted from fire (per PFT)",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "C emitted from fire (per PFT)"),
+
+new("Quantity",
+    id = "fFire",
+    type = "",
+    name = "C emitted from fire",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "CO2 emitted from fire"),
+
+new("Quantity",
+    id = "coFire",
+    type = "",
+    name = "CO emitted from fire",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "CO emitted from fire"),
+
+new("Quantity",
+    id = "burntArea",
+    type = "",
+    name = "Burnt Area Fraction (per PFT)",
+    units = "%",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Burnt Area Fraction (per PFT)"),
+
+new("Quantity",
+    id = "BA",
+    type = "",
+    name = "Burnt Area Fraction (monthly)",
+    units = "%",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Burnt Area Fraction (monthly)"),
+
+new("Quantity",
+    id = "fFirepft",
+    type = "",
+    name = "C emitted from fire (per PFT)",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "C emitted from fire (per PFT)"),
+
+
+
+### FUEL LOADS
+
+new("Quantity",
+    id = "cFuelLiveGrass",
+    type = "",
+    name = "Carbon in live grass fuel",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Carbon in live grass fuel"),
+
+new("Quantity",
+    id = "cFuel1hr",
+    type = "",
+    name = "Carbon in 1hr fuel",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Carbon in 1hr fuel"),
+
+new("Quantity",
+    id = "cFuel10hr",
+    type = "",
+    name = "Carbon in 10hr fuel",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Carbon in 10hr fuel"),
+
+new("Quantity",
+    id = "cFuel100hr",
+    type = "",
+    name = "Carbon in 100hr fuel",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Carbon in 100hr fuel"),
+
+new("Quantity",
+    id = "cFuel1000hr",
+    type = "",
+    name = "Carbon in 1000hr fuel",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Carbon in 1000hr fuel"),
+
+
+### COMBUSION COMPLETENESS
+
+new("Quantity",
+    id = "ccFuelLiveGrass",
+    type = "",
+    name = "Combusion Completeness in live grass fuel",
+    units = "%",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Combusion Completeness live grass fuel"),
+
+new("Quantity",
+    id = "ccFuel1hr",
+    type = "",
+    name = "Combustion Completeness in 1hr fuel",
+    units = "%",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Combustion Completenessin 1hr fuel"),
+
+new("Quantity",
+    id = "ccFuel10hr",
+    type = "",
+    name = "Combustion Completenessin 10hr fuel",
+    units = "%",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Combustion Completeness in 10hr fuel"),
+
+new("Quantity",
+    id = "ccFuel100hr",
+    type = "",
+    name = "Combustion Completenessin 100hr fuel",
+    units = "%",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Combustion Completeness in 100hr fuel"),
+
+new("Quantity",
+    id = "ccFuel1000hr",
+    type = "",
+    name = "Combustion Completenessin 1000hr fuel",
+    units = "%",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Combustion Completeness in 1000hr fuel"),
+
+
+### FUEL MOISTURE
+
+new("Quantity",
+    id = "mFuelDead",
+    type = "",
+    name = "Fuel moisture of dead fuel",
+    units = "",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Fuel moisture of dead fuel"),
+
+new("Quantity",
+    id = "mFuelLiveGrass",
+    type = "",
+    name = "Fuel moisture of live grass fuel",
+    units = "",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Fuel moisture of live grass fuel"),
+
+
+### FIRE PROPERTIES AND MORTALITY
+
+new("Quantity",
+    id = "intensFire",
+    type = "",
+    name = "Fireline intensity",
+    units = "kW m-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Fireline intensity"),
+
+new("Quantity",
+    id = "nrfire",
+    type = "",
+    name = "Number of fires",
+    units = "nr m-2 month-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Number of fires"),
+
+new("Quantity",
+    id = "meanFire",
+    type = "",
+    name = "Mean fire size",
+    units = "m2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Mean fire size"),
+
+new("Quantity",
+    id = "cMortality",
+    type = "",
+    name = "Number of individuals killed",
+    units = "indiv m-2 month-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Number of individuals killed"),
+
+
+### HYDROLOGICAL VARIABLES
+
+new("Quantity",
+    id = "mrro",
+    type = "",
+    name = "Total Runoff",
+    units = "kg m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Total Runoff"),
+
+new("Quantity",
+    id = "evapotrans",
+    type = "",
+    name = "Total Evapo-Transpiration",
+    units = "kg m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Total Evapo-Transpiration"),
+
+new("Quantity",
+    id = "mrso",
+    type = "",
+    name = "Total Soil Moisture Content",
+    units = "kg m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Total Soil Moisture Content"),
+
+new("Quantity",
+    id = "evspsblveg",
+    type = "",
+    name = "Evaporation from Canopy",
+    units = "kg m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Evaporation from Canopy"),
+
+new("Quantity",
+    id = "evspsblsoi",
+    type = "",
+    name = "Evaporation from Soil",
+    units = "kg m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Evaporation from Soil"),
+
+new("Quantity",
+    id = "tran",
+    type = "",
+    name = "Transpiration",
+    units = "kg m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Transpiration"),
+
+
+
+### FLUXES
+
+new("Quantity",
+    id = "gpp",
+    type = "",
+    name = "Gross Primary Production",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Gross Primary Production"),
+
+new("Quantity",
+    id = "npp",
+    type = "",
+    name = "Net Primary Production",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Net Primary Production"),
+
+new("Quantity",
+    id = "nbp",
+    type = "",
+    name = "Net Biospheric Production",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Net Biospheric Production"),
+
+new("Quantity",
+    id = "ra",
+    type = "",
+    name = "Autotrophic (Plant) Respiration",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Autotrophic (Plant) Respiration"),
+
+new("Quantity",
+    id = "rh",
+    type = "",
+    name = "Heterotrophic Respiration",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Heterotrophic Respiration"),
+
+new("Quantity",
+    id = "gpppft",
+    type = "",
+    name = "Vegtype level GPP",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Vegtype level GPP"),
+
+new("Quantity",
+    id = "npppft",
+    type = "",
+    name = "Vegtype level NPP",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Vegtype level NPP"),
+
+new("Quantity",
+    id = "fLuc",
+    type = "",
+    name = "CO2 Flux to Atmosphere from Land Use Change",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "CO2 Flux to Atmosphere from Land Use Change"),
+
+
+# POOLS
+
+new("Quantity",
+    id = "cVegpft",
+    type = "",
+    name = "Vegtype level Carbon in Vegetation",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Vegtype level Carbon in Vegetation"),
+
+new("Quantity",
+    id = "cVeg",
+    type = "",
+    name = "Carbon in Vegetation",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Carbon in Vegetation"),
+
+new("Quantity",
+    id = "cLitter",
+    type = "",
+    name = "Carbon in Above-ground Litter Pool",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Carbon in Above-ground Litter Pool"),
+
+new("Quantity",
+    id = "cSoil",
+    type = "",
+    name = "Carbon in Soil (including below-ground litter)",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Carbon in Soil (including below-ground litter)"),
+
+
+###  STRUCTURE
+
+new("Quantity",
+    id = "landCoverFrac",
+    type = "",
+    name = "Fractional Land Cover of PFT",
+    units = "",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    aggregate.method = "sum" ,
+    cf.name = "Fractional Land Cover of PFT"),
+
+new("Quantity",
+    id = "lai",
+    type = "",
+    name = "Leaf Area Index",
+    units = "",
+    colours = reversed.viridis,
+    model = "FireMIP",
+    cf.name = "Leaf Area Index"),
+
+new("Quantity",
+    id = "theightpft",
+    type = "",
+    name = "Vegtype level tree heights",
+    units = "m",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Vegtype level tree heights"),
+
+### LAND USE
+
+new("Quantity",
+    id = "cProduct",
+    type = "",
+    name = "Carbon in Products of Land Use Change",
+    units = "kg C m-2",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Carbon in Products of Land Use Change"),
+
+new("Quantity",
+    id = "fLuc",
+    type = "",
+    name = "CO2 Flux to Atmosphere from Land Use Change",
+    units = "kg C m-2 s-1",
+    colours = reversed.viridis,
+    model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "CO2 Flux to Atmosphere from Land Use Change")
+
+)
+
+
+####################################################
+########### FireMIP FORMAT ########################
+####################################################
+
+#' @title dummy text
+#' 
+#' @description dummy description 
+#' 
+#' @details FireMIP Format 
+#' 
+#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' 
+#' 
+FireMIP<- new("Format",
+                
+                # UNIQUE ID
+                id = "FireMIP",
+                
+                # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
+                listPFTs = listPFTs_FireMIP,
+                
+                # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
+                listAvailableQuantities = listAvailableQuantities_FireMIP,
+                
+                # FUNCTION TO READ A FIELD 
+                getField = getField_FireMIP,
+                
+                # DEFAULT GLOBAL PFTS  
+                default.pfts = FireMIP.PFTs,
+                
+                # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
+                quantities = FireMIP.quantities
+                
+)

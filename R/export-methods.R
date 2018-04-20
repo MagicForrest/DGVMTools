@@ -22,6 +22,7 @@
 #' @importMethodsFrom raster as.data.frame
 #' 
 #' 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}, Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}    
 #' 
 NULL
 
@@ -98,6 +99,26 @@ setMethod("as.Raster", signature("Field"),   function(x) promoteToRaster(x@data)
 #' @export
 #' @exportMethod as.Raster
 setMethod("as.Raster", signature("ComparisonLayer"),   function(x) promoteToRaster(x@data))
+
+
+#' @name as.array
+#' @rdname export-methods
+#' @export
+#' @exportMethod as.array
+#' Generic method for coercing to raster  
+setGeneric("as.array", function(x,...) standardGeneric("as.array"))
+
+#' @rdname export-methods
+#' @export
+#' @aliases as.array
+setMethod("as.array", signature("Field"), function(x, ...) {
+  FieldToArray(x@data, ...)
+})
+
+
+#######################################################################################
+####################### HELPER FUNCTIONS ##############################################
+#######################################################################################
 
 
 ################################# PROMOTE TO RASTER
@@ -187,10 +208,6 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
 }
 
 
-##########################################################################################################
-########### HELPER FUNCTIONS
-
-
 ################################# MAKE SPATIALPIXELSDATAFRAME FROM DATA.FRAME OR DATA.TABLE
 #
 #' Make SpatialPixelDataFrame from a data.table
@@ -246,21 +263,92 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, g
   
 }
 
-#' Array methods
+#' Convert a Field to a multi-dimensional array
 #' 
-#' Converts a \code{\linkS4class{Field}} to multi-dimensional array(s) all parameters are passed along to \code{\link{FieldToArray}}.
+#' @param d the data.table of a \code{\linkS4class{Field}}
+#' @param cname the column name to convert, if not set a list is returned
+#' @param invertlat start in the north
+#' @param verbose print some information
+#' @return a array or a list or arrays
 #' 
-#' @param x \code{\linkS4class{Field}}
-#' @param ... Other arguments, not currently used
-#' @return an lon/lat(/time) array - or a list of arrays - of the modelObjects input data.table.
-#' @name Array-methods
-#' @rdname Array-methods
-#' @exportMethod 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}         
-setGeneric("as.array", function(x,...) standardGeneric("as.array"))
-
-#' @rdname Array-methods
-#' @aliases as.array
-setMethod("as.array", signature("Field"), function(x, ...) {
-  FieldToArray(x@data, ...)
-})
+#' @importFrom reshape2 acast
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @keywords internal
+FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
+  
+  Lon=Lat=Year=Month=variable=NULL
+  
+  ## get the full spatial extent
+  lon <- extract.seq(d$Lon)
+  lat <- extract.seq(d$Lat, descending=invertlat)
+  if (verbose) {
+    message(paste0("Spatial extent: Lon: ", min(lon), " ", max(lon), " (", length(lon), ")\n", 
+                   "                Lat: ", min(lat), " ", max(lat), " (", length(lat), ")"))
+  }
+  
+  ## get temporal info
+  st.names <- getSTInfo(d)
+  
+  ## check for annual data
+  is.temporal <- FALSE
+  if("Year" %in% st.names) {
+    if (verbose)
+      message("'Year' column present.")
+    time <- sort(unique(d$Year))
+    is.temporal <- TRUE
+  }
+  
+  ## check for monthly data
+  is.monthly <- FALSE
+  if("Month" %in% st.names) {
+    cname <- FALSE
+    
+    # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
+    if (is.temporal) {  d[, Year:= Year * 100 + as.numeric(Month)]  }
+    time <- sort(unique(d$Year))
+    
+    d[, Month := NULL]
+    is.monthly <- TRUE
+    is.temporal <- TRUE
+  }
+  
+  #print(d)
+  setKeyDGVM(d)
+  
+  ## create the target grid
+  if (is.temporal) {
+    full.grid <- data.table(Lon=rep(rep(lon, length(lat)), length(time)),
+                            Lat=rep(rep(lat, each=length(lon)), length(time)),
+                            Year=rep(time, each=length(lon) * length(lat)))                     
+    setkey(full.grid, Lon, Lat, Year)
+  } else {
+    full.grid <- data.table(Lon=rep(lon, length(lat)),
+                            Lat=rep(lat, each=length(lon)))
+    setkey(full.grid, Lon, Lat)
+  }
+  
+  ## get the desired column name(s) if none was given
+  if (is.logical(cname))
+    cname <- colnames(d)[!(colnames(d) %in% c("Lon", "Lat", "Year"))]
+  
+  ## create the array(s)
+  rv <- lapply(cname, function(x) {
+    if (is.temporal) {
+      d <- d[full.grid]
+      rv <- reshape2::acast(d, Lon ~ Lat ~ Year, value.var=x)
+      if (invertlat)
+        rv <- rv[,length(lat):1,]
+    } else {
+      d <- d[full.grid]
+      rv <- reshape2::acast(d, Lon ~ Lat, value.var=cname)
+      if (invertlat)
+        rv <- rv[,length(lat):1]
+    }
+    return(rv)
+  })
+  if (length(rv) == 1)
+    return(rv[[1]])
+  
+  names(rv) <- cname
+  return(rv)
+}

@@ -8,7 +8,7 @@
 #' @param y denominator
 #' 
 #' Handy little thing.
-#' @export
+#' @keywords internal
 #' 
 #' 
 "%/0%" <- function(x,y) ifelse(y==0,0,base::"/"(x,y))
@@ -145,6 +145,7 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
 #' @return logical or integer, if doy is TRUE
 #' 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @kewords internal
 #' @export
 is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
   leap <- sapply(year, function(x) {

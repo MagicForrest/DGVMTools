@@ -5,6 +5,36 @@
 ############################################################################################################################
 
 
+#' Get a Field for DGVMData
+#' 
+#' 
+#' An internal function that reads data from an LPJ-GUESS run.  It actually call one of three other functions depending on the type of quantity specified.   
+#' 
+#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param first.year The first year (as a numeric) of the data to be returned
+#' @param last.year The last year (as a numeric) of the data to be returned
+#' @param verbose A logical, set to true to give progress/debug information
+#' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+getField_DGVMData <- function(source,
+                           quant,
+                           target.STAInfo,
+                           verbose) {
+  
+  
+
+    this.dt <- openDGVMDataFile(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+
+  
+  
+  return(list(this.dt, NULL))
+  
+}
+
+
+
 ######################### OPEN A DGVMData *.nc FILE  #####################################################################
 #' Open a DGVMData *.n file
 #'
@@ -15,13 +45,17 @@
 #' 
 #' @param source A \code{Source} containing the meta-data about the LPJ-GUESS source
 #' @param variable A string the define what output file from the LPJ-GUESS source to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param first.year The first year (as a numeric) of the data to be returned
+#' @param last.year The last year (as a numeric) of the data to be returned
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
-#' @export
+#' @keywords internal
 openDGVMDataFile <- function(source,
                              variable,
+                             first.year,
+                             last.year,
                              verbose = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
@@ -320,6 +354,8 @@ openDGVMDataFile <- function(source,
 #' 
 #' @param source A path to a directory on the file system containing some .out files
 #' @return A list of all the .out files present, with the ".out" removed. 
+#' 
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
@@ -343,4 +379,175 @@ listAvailableQuantities_DGVMData <- function(source){
   
 }
 
+
+#' Detemine PFTs present in an DGVMData source 
+#' 
+#' @param x  A Source objects describing a DGVMData source
+#' @param variables Some variable to look for to detremine the PFTs present in the run.  Not the function automatically searches:
+#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.  Currently ignored.
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+
+listPFTs_DGVMData <- function(x, variables) {
+  
+  warning("Datasets don't normally have PFTs (or they are not likely to be defined consistently) so I am not looking for them.  Instead I am returning the source@format@pft.set argument directly (in case you defined some yourself, which would be the way to go in this case)")
+  return(x@format@pft.set)
+  
+}
+
+
+########################################################
+########### DGVMData QUANTITIES ########################
+########################################################
+
+#' @title dummy text
+#' 
+#' @description
+#' 
+#' @details DGVMData Output Quantities
+#' 
+#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @rdname Quantity-class
+#' @keywords datasets
+#' 
+#' 
+DGVMData.quantities <- list(
+  
+  
+  new("Quantity",
+      id = "fraction",
+      type = "unknown",
+      name = "Fraction",
+      units = "",
+      colours = grDevices::colorRampPalette(c("grey85", "black")), 
+      model = c("Standard","DGVMData"),
+      cf.name = "area_fraction"), 
+  
+  new("Quantity",
+      id = "vegcover_std",
+      type = "",
+      name = "Area Fraction",
+      units = "%",
+      colours = veg.palette, 
+      model = c("Standard", "DGVMData"),
+      cf.name = "area_fraction_percent"), 
+  
+  new("Quantity",
+      id = "vegC_std",
+      name = "Vegetation Carbon Mass",
+      type = "PFT",
+      units = "kg m-2",
+      colours = reversed.viridis,
+      model = c("Standard", "DGVMData"),
+      cf.name = "vegetation_carbon_content"),
+  
+  new("Quantity",
+      id = "LAI_std",
+      name = "LAI",
+      type = "PFT",
+      units = "1",
+      colours = viridis::viridis,
+      model = c("Standard"),
+      cf.name = "leaf_area_index"),
+  
+  new("Quantity",
+      id = "mGPP_std",
+      name = "Monthly GPP",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("Standard")),
+  
+  new("Quantity",
+      id = "aGPP_std",
+      name = "Annual GPP",
+      type = "PFT",
+      units = "kgC m-2 year-1",
+      colours = fields::tim.colors,
+      model = c("Standard", "DGVMData"),
+      cf.name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
+  
+  new("Quantity",
+      id = "aNPP_std",
+      name = "Annual NPP",
+      type = "PFT",
+      units = "kgC/m^2/year",
+      colours = fields::tim.colors,
+      model = c("Standard")),
+  
+  new("Quantity",
+      id = "canopyheight_std",
+      name = "Canopy Height",
+      type = "-",
+      units = "m",
+      colours = reversed.magma,
+      model = c("Standard", "DGVMData"),
+      cf.name = "canopy_height"),
+  
+  new("Quantity",
+      id = "burntfraction_std",
+      name = "Annual Fraction Burned",
+      type = "annual",
+      units = "fraction of gridcell",
+      colours = reversed.fire.palette,
+      model = c("Standard", "DGVMData"),
+      cf.name = "burned_area_fraction"),
+  
+  new("Quantity",
+      id = "FPAR_std",
+      name = "Fraction absorbed of Photosynthetically Active Radiation",
+      type = "annual",
+      units = "fraction",
+      colours = veg.palette,
+      model = c("Standard", "DGVMData"),
+      cf.name = "fraction_absorbed_of_photosynthetically_active_radiation"),
+  
+  new("Quantity",
+      id = "aNEE_std",
+      name = "Annual land sink (NEE)",
+      type = "annual",
+      units = "GtC/year",
+      colours = veg.palette,
+      model = c("Standard"))
+  
+)
+
+
+####################################################
+########### DGVMDATA FORMAT ########################
+####################################################
+
+#' @title dummy text
+#' 
+#' @description dummy description 
+#' 
+#' @details DGVMData Format 
+#' 
+#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' 
+#' 
+DGVMData <- new("Format",
+             
+             # UNIQUE ID
+             id = "DGVMData",
+             
+             # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
+             listPFTs = listPFTs_DGVMData,
+             
+             # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
+             listAvailableQuantities = listAvailableQuantities_DGVMData,
+             
+             # FUNCTION TO READ A FIELD 
+             getField = getField_DGVMData,
+             
+             # DEFAULT GLOBAL PFTS  
+             default.pfts = list(),
+             
+             # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
+             quantities = DGVMData.quantities
+             
+)
 

@@ -16,6 +16,9 @@
 \alias{as.Raster}
 \alias{as.Raster,Field-method}
 \alias{as.Raster,ComparisonLayer-method}
+\alias{as.array}
+\alias{as.array,Field-method}
+\alias{as.array}
 \title{Coerce from Fields and DataObjects}
 \usage{
 \method{as.data.frame}{Field}(x, row.names, optional, ...)
@@ -31,6 +34,10 @@ as.Raster(x)
 \S4method{as.Raster}{Field}(x)
 
 \S4method{as.Raster}{ComparisonLayer}(x)
+
+as.array(x, ...)
+
+\S4method{as.array}{Field}(x, ...)
 }
 \arguments{
 \item{x}{A Field or a DataObject}
@@ -51,4 +58,7 @@ Functions to coerce Fields and DataObjects into other objects (data.frame, data.
 \details{
 Note that for coercing to a Raster* object (RasterLayer or RasterBrick) the function is called "as.Raster" (capital "R") to avoid conflict with  
 another function in the raster package called "as.raster"
+}
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}, Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }

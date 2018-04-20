@@ -58,6 +58,7 @@
 #' @importFrom raster crs
 #' 
 #' @export 
+#' @keywords internal
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
 
 plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field

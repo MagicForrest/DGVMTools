@@ -1458,66 +1458,7 @@ dgvm.quantities <- list(
       units = "days",
       colours = fields::tim.colors,
       aggregate.method = "sum",
-      model = c("LPJ-GUESS-SPITFIRE")),
-  
-  #############################################################################################
-  ################################### aDGVM QUANTITIES ########################################
-  #############################################################################################
-  
-  
-  new("Quantity",
-      id = "agb",
-      name = "Above Ground Biomass",
-      type = "PFT",
-      units = "kgC/m^2",
-      colours = viridis::viridis,
-      aggregate.method = "sum",
-      model = c("aDGVM")),
-  
-  new("Quantity",
-      id = "meanheight",
-      name = "Mean Canopy Height",
-      type = "PFT",
-      units = "m",
-      colours = fields::tim.colors,
-      aggregate.method = "mean",
-      model = c("aDGVM")),
-  
-  new("Quantity",
-      id = "basalarea",
-      name = "Basal Area",
-      type = "PFT",
-      units = "m^2/ha",
-      colours = fields::tim.colors,
-      aggregate.method = "mean",
-      model = c("aDGVM")),
-  
-  new("Quantity",
-      id = "nind",
-      name = "Number of individuals",
-      type = "PFT",
-      units = "plants",
-      colours = veg.palette,
-      aggregate.method = "sum",
-      model = c("aDGVM")),
-  
-  new("Quantity",
-      id = "pind",
-      name = "Fraction of individuals",
-      type = "PFT",
-      units = "",
-      colours = veg.palette,
-      aggregate.method = "sum",
-      model = c("aDGVM")),
-  
-  new("Quantity",
-      id = "firefreq",
-      name = "Fire Frequency",
-      type = "annual",
-      units = "",
-      colours = reversed.fire.palette,
-      model = c("aDGVM"))
-  
+      model = c("LPJ-GUESS-SPITFIRE"))
   
 )
 

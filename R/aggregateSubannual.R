@@ -5,17 +5,16 @@
 ######################### SUBANNUAL AGGREGATION ##############################
 #############################################################################
 
-#
-#' Time average a data.table
+#' Sub-annual aggregation
 #' 
-#' Time average all availables years (denoted by column "Years") or a data.table object
+#' Aggregates data with sub-annual time resultion to a coarser time resolution.  For example, going from monthly to annual. 
 #'
-#' @param input.obj data.table, Field or DataObject  
+#' @param input.obj data.table or Field 
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Annual" (default)  
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A Field, DataObject or data.table depending on the input object
+#' @return A Field or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -245,16 +244,16 @@ aggregateSubannual.uncompiled <- function(input.obj,
 
 
 
-#' Time average a data.table
+#' Sub-annual aggregation
 #' 
-#' Time average all availables years (denoted by column "Years") or a data.table object
+#' Aggregates data with sub-annual time resultion to a coarser time resolution.  For example, going from monthly to annual. 
 #'
-#' @param input.obj data.table, Field or DataObject  
+#' @param input.obj data.table or Field 
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Annual" (default)  
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @return A Field, DataObject or data.table depending on the input object
-#' @keywords internal
+#' @return A Field or data.table depending on the input object
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateSubannual <- compiler::cmpfun(aggregateSubannual.uncompiled)

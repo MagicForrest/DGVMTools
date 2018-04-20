@@ -1,3 +1,42 @@
+############################################################################################################################
+############################ FUNCTIONS TO HANDLE LPJ-GUESS FILES ###########################################################
+############################################################################################################################
+
+#' Get a Field for aDGVM
+#' 
+#' An internal function that reads data from an aDGVM run.  It actually call one of three other functions depending on the type of quantity specified.   
+#' 
+#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param first.year The first year (as a numeric) of the data to be return
+#' @param last.year The last year (as a numeric) of the data to be return
+#' @param verbose A logical, set to true to give progress/debug information
+#' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+getField_aDGVM <- function(source,
+                           quant,
+                           target.STAInfo,
+                           adgvm.scheme,
+                           verbose) {
+  
+  if("aDGVM" %in% quant@model | "Standard" == quant@model) {
+    if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
+    if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
+  }
+  #else if(quant@format == "Standard") {
+  #  stop("Standard quantities nor currently defined for aDGVM")
+  #}
+  else {
+    stop(paste("Quantity", quant@id, "doesn't seem to be defined for aDGVM"))
+  }
+
+  
+  return(list(this.dt, NULL))
+  
+}
+
+
 # ----------------------------------------------------
 # Convert aDGVM2 netCDF output into LPJ ASCII format.
 #
@@ -735,8 +774,251 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   
 }
 
+#' Detemine PFTs present in an aDGVM  
+#' 
+#' @param x  A Source objects describing a DGVMData source
+#' @param variables Some variable to look for to detremine the PFTs present in the run.  Not the function automatically searches:
+#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.  Currently ignored.
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+
+listPFTs_aDGVM <- function(x, variables) {
+  
+  warning("Need aDGVMers to write this function! For now I am returning the source@format@pft.set argument directly.")
+  return(x@format@pft.set)
+  
+}
+
+
+#' List aDGVM quantities avialable
+#'
+#' Simply lists all quantitied aDGVM  output variables 
+#' 
+#' @param source A path to a directory on the file system containing some .out files
+#' @return A list of all the .out files present, with the ".out" removed. 
+#' 
+#' Needs to be implemented by an aDGVMer
+#' 
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
+
+listAvailableQuantities_aDGVM <- function(source){
+  
+  warning("Needs to be implemented by an aDGVMer.")
+  
+  quantities.present <- list()
+  return(quantities.present)
+  
+}
+
+
+###############################################
+########### aDGVM PFTS ########################
+###############################################
+
+#' @title dummy text
+#' 
+#' @description
+#' 
+#' @details aDGVM PFTs (under development)
+#' 
+#' @format A list of \code{PFT} objects that store meta-data for standard PFT for supported models
+#' @rdname PFT-class
+#' @keywords datasets
+aDGVM.PFTs <- list(
+  
+  C3G = new("PFT",
+            id = "C3G",
+            name = "Boreal/Temperate Grass",
+            lifeform = "Grass",
+            leafform = "Broadleaved",
+            phenology = "GrassPhenology",
+            zone = "NA",
+            colour = "lightgoldenrod1",
+            combine = "None"
+  ),
+  
+  C4G = new("PFT",
+            id = "C4G",
+            name = "Tropical Grass",
+            lifeform = "Grass",
+            leafform = "Broadleaved",
+            phenology = "GrassPhenology",
+            zone = "NA",
+            colour = "sienna2",
+            combine = "None"
+  ),
+  
+  Tr= new("PFT",
+          id = "Tr",
+          name = "Tropical Tree",
+          lifeform = "Tree",
+          leafform = "Broadleaved",
+          phenology = "Evergreen",
+          zone = "Tropical",
+          colour = "palevioletred",
+          combine = "None"
+  ),
+  
+  TrBE = new("PFT",
+             id = "TrBE",
+             name = "Tropical Broadleaved Evergreen Tree",
+             lifeform = "Tree",
+             leafform = "Broadleaved",
+             phenology = "Evergreen",
+             zone = "Tropical",
+             colour = "orchid4",
+             combine = "None"
+  ),
+  
+  TrBR = new("PFT",
+             id = "TrBR",
+             name = "Tropical Broadleaved Raingreen Tree",
+             lifeform = "Tree",
+             leafform = "Broadleaved",
+             phenology = "Raingreen",
+             zone = "Tropical",
+             colour = "palevioletred",
+             combine = "None"
+  ),
+  
+  TrBES = new("PFT",
+              id = "TrBE",
+              name = "Tropical Broadleaved Evergreen Shrub",
+              lifeform = "Shrub",
+              leafform = "Broadleaved",
+              phenology = "Evergreen",
+              zone = "Tropical",
+              colour = "orchid4",
+              combine = "None"
+  ),
+  
+  TrBRS = new("PFT",
+              id = "TrBR",
+              name = "Tropical Broadleaved Raingreen Shrub",
+              lifeform = "Shrub",
+              leafform = "Broadleaved",
+              phenology = "Raingreen",
+              zone = "Tropical",
+              colour = "palevioletred",
+              combine = "None"
+  )
+  
+
+)
 
 
 
+#####################################################
+########### aDGVM QUANTITIES ########################
+#####################################################
+
+#' @title dummy text
+#' 
+#' @description
+#' 
+#' @details aDGVMData Output Quantities
+#' 
+#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @rdname Quantity-class
+#' @keywords datasets
+#' 
+#' 
+aDGVM.quantities <- list(
+  
+  
+  new("Quantity",
+      id = "agb",
+      name = "Above Ground Biomass",
+      type = "PFT",
+      units = "kgC/m^2",
+      colours = viridis::viridis,
+      aggregate.method = "sum",
+      model = c("aDGVM")),
+  
+  new("Quantity",
+      id = "meanheight",
+      name = "Mean Canopy Height",
+      type = "PFT",
+      units = "m",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("aDGVM")),
+  
+  new("Quantity",
+      id = "basalarea",
+      name = "Basal Area",
+      type = "PFT",
+      units = "m^2/ha",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("aDGVM")),
+  
+  new("Quantity",
+      id = "nind",
+      name = "Number of individuals",
+      type = "PFT",
+      units = "plants",
+      colours = veg.palette,
+      aggregate.method = "sum",
+      model = c("aDGVM")),
+  
+  new("Quantity",
+      id = "pind",
+      name = "Fraction of individuals",
+      type = "PFT",
+      units = "",
+      colours = veg.palette,
+      aggregate.method = "sum",
+      model = c("aDGVM")),
+  
+  new("Quantity",
+      id = "firefreq",
+      name = "Fire Frequency",
+      type = "annual",
+      units = "",
+      colours = reversed.fire.palette,
+      model = c("aDGVM"))
+  
+  
+)
 
 
+################################################################
+########### aDGVM FORMAT ########################
+################################################################
+
+#' @title dummy text
+#' 
+#' @description dummy description 
+#' 
+#' @details aDGVM Format 
+#' 
+#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' 
+#' 
+aDGVM <- new("Format",
+                
+                # UNIQUE ID
+                id = "aDGVM",
+                
+                # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
+                listPFTs = listPFTs_aDGVM,
+                
+                # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
+                listAvailableQuantities = listAvailableQuantities_aDGVM,
+                
+                # FUNCTION TO READ A FIELD 
+                getField = getField_aDGVM,
+                
+                # DEFAULT GLOBAL PFTS  
+                default.pfts = aDGVM.PFTs,
+                
+                # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
+                quantities = aDGVM.quantities
+                
+)

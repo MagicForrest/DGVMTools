@@ -16,6 +16,7 @@
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".
 #' @param verbose If TRUE give some progress update about the averaging.
+#' @param ... Extra arguments passed to addArea function if a weighted method is being used.
 #' @return A Field, DataObject or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
@@ -153,8 +154,8 @@ aggregateSpatial.uncompiled <- function(input.obj,
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".
 #' @param verbose If TRUE give some progress update about the averaging.
+#' @param ... Extra arguments passed to addArea function if a weighted method is being used.
 #' @return A Field, DataObject or data.table depending on the input object
-#' @keywords internal
 #' @import  compiler cmpfun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateSpatial <- compiler::cmpfun(aggregateSpatial.uncompiled)

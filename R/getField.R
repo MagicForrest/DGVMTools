@@ -147,17 +147,23 @@ getField <- function(source,
     
     if(verbose) message(paste("File ", var.string, ".out not already read, so reading it now.", sep = ""))
     
-    ### !!! CALL FORMAT SPECIFIC FUNTIONS HERE !!!
-
-    # If model is LPJ-GUESS(-SPITFIRE) and the required Quantity is defined for LPJ-GUESS(-SPITFIRE)
-    if(source@format@id == "LPJ-GUESS" | source@format@id == "LPJ-GUESS-SPITFIRE" ) {
+    
+    
+    # Implemented LPJ-GUESS and aDGVM
+    if(source@format@id == "LPJ-GUESS" 
+       | source@format@id == "aDGVM") {
       
-     
-     data.list <- source@format@getField(source, quant, target.STAInfo, verbose)
+      # special call for aDGVM with the scheme type
+      if(source@format@id == "aDGVM") {
+        data.list <- source@format@getField(source, quant, target.STAInfo, adgvm.scheme, verbose)
+      }
+      else {
+        data.list <- source@format@getField(source, quant, target.STAInfo, verbose)
+      }
       
-     this.dt <- data.list[[1]]
-     this.STAInfo <- data.list[[2]]
-     
+      this.dt <- data.list[[1]]
+      this.STAInfo <- data.list[[2]]
+      
       
       # Meta-data for use later on
       if("Year" %in% getSTInfo(this.dt)) {
@@ -183,22 +189,6 @@ getField <- function(source,
       
     }
     
-    
-    # If model is aDGVM and the required Quantity is defined for aDGVM
-    else if(source@format@id == "aDGVM") {
-      
-      if("aDGVM" %in% quant@model | "Standard" == quant@model) {
-        if(adgvm.scheme == 1) this.dt <- data.table(getQuantity_aDGVM_Scheme1(source, first.year = first.year, last.year= last.year, quant))
-        if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, first.year = first.year, last.year= last.year, quant))
-      }
-      #else if(quant@format == "Standard") {
-      #  stop("Standard quantities nor currently defined for aDGVM")
-      #}
-      else {
-        stop(paste("Quantity", var.string, "doesn't seem to be defined for aDGVM"))
-      }
-      
-    } # END IF aDGVM
     
     
     # If model is from FireMIP
