@@ -288,13 +288,8 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   setnames(data.toplot, "value", "Value")
   
   
-  ### VERBOSE
-  #if(discrete) message("Printing in mode for discrete variables")
-  #if(continuous) message("Printing in mode for continuous variables")
-  #if(!continuous & !discrete) stop("Neither discrete nor continuous")
   
-  
-  
+
   ### APPLY CUSTOM CUTS TO DISCRETISE IF NECESSARY
   
   if(continuous & !is.null(cuts)) {
@@ -373,7 +368,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     
   }
   else if(!is.null(map.overlay)) {
-    stop("Some other overlay type...")
+    stop("Some other overlay type, which is not implemented...")
   }
   
   
@@ -397,7 +392,6 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       quant.cols <- quant@colours(length(quant@units))
       names(quant.cols) <- quant@units
       
-      print(unique.vals)
       for(val in unique.vals) {
         if(!is.na(val)){
           for(factor.value in quant@units) {
@@ -427,14 +421,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       
       pft.superset <- unique(pft.superset)
       
-      for(val in unique.vals) {
-        for(PFT in pft.superset) {
-          if(val == PFT@id) here.cols[[val]] <- PFT@colour
-          else if(tolower(val) == "none") here.cols[[val]] <- "grey75"
-        }    
-      }
-      
-      
+      here.cols <- matchPFTCols(unique.vals, pft.superset)
       if(length(here.cols) == length(unique.vals)) is.PFTs <- TRUE
       
     }

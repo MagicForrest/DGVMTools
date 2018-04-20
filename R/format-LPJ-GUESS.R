@@ -4,6 +4,10 @@
 ############################ FUNCTIONS TO HANDLE LPJ-GUESS FILES ###########################################################
 ############################################################################################################################
 
+#' Get a Field for LPJ-GUESS
+#' 
+#' An internal function that reads data from an LPJ-GUESS run.  It actually call one of three other functions depending on the type of quantity specified.   
+#' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
 #' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param first.year The first year (as a numeric) of the data to be return
@@ -11,8 +15,7 @@
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import data.table
-#' @export
+#' @keywords internal
 getField_GUESS <- function(source,
                            quant,
                            target.STAInfo,
@@ -461,7 +464,7 @@ openLPJOutputFile_FireMIP <- function(run,
 #' Returns the data from one LPJ-GUESS output variable as a \code{data.table}.   
 #'
 #' 
-#' This fucntion can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
+#' This funtion can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
 #' to compare to other models and to data.  This must be implemented for each and every Standard quantity 
 #' for each and every model to to ensure completeness.
 #' 
@@ -618,7 +621,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "burntfraction_std") {
     
     # if mfirefrac is present the open it and use it
-    if("mfirefrac" %in% listAllGUESSOutput(run@dir)){
+    if("mfirefrac" %in% listAvailableQuantities_GUESS(run@dir, names=TRUE)){
       this.dt <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = TRUE)
       this.dt <- aggregateSubannual(this.dt, method = "sum")
       
@@ -655,11 +658,12 @@ getStandardQuantity_LPJ <- function(run,
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
 #' @param directory A path to a directory on the file system containing some .out files
+#' @param names Logical, if TRUE return the namse of the quantities, if FLASE return the quanties themseleves
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-listAllGUESSOutput <- function(directory){
+listAvailableQuantities_GUESS <- function(directory, names = TRUE){
   
   # First get the list of *.out files present
   files.present <- list.files(directory, ".out$")
@@ -689,7 +693,8 @@ listAllGUESSOutput <- function(directory){
       })
       
       if(is.Quantity(result))  {
-        good.list <- append(good.list, variable)
+        if(names) good.list <- append(good.list, variable)
+        else good.list <- append(good.list, result)
       }
       else {
         warning("Although I have found file with an appropriate extension that looks like an LPJ-GUESS output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
@@ -716,7 +721,7 @@ listAllGUESSOutput <- function(directory){
 listPFTs_GUESS <- function(x, variables) {
   
   # first get a list of all avaiable variables
-  available.vars <- suppressWarnings(listAllGUESSOutput(x@dir))
+  available.vars <- suppressWarnings(listAvailableQuantities_GUESS(x@dir))
   
   # check for the presence the following variables (in order)
   possible.vars <- c("lai", "cmass", "dens", "fpc")
@@ -778,9 +783,1062 @@ LPJQuantFromFilename <- function(var.filename){
 }
 
 
+#####################################################################
+########### LPJ-GUESS(-SPITFIRE) GLOBAL PFTS ########################
+#####################################################################
 
+#' @title dummy text
+#' 
+#' @description
+#' 
+#' @details LPJ-GUESS(-SPITFIRE) Global PFTs
+#' 
+#' @format A list of \code{PFT} objects that store meta-data for standard PFT for supported models
+#' @rdname PFT-class
+#' @keywords datasets
+GUESS.PFTs <- list(
+  
+  # BOREAL TREES
+  
+  BNE = new("PFT",
+            id = "BNE",
+            name = "Boreal Needleleaved Evergreen Tree",
+            lifeform = "Tree",
+            leafform = "Needleleaved",
+            phenology = "Evergreen",
+            zone = "Boreal",
+            colour = "darkblue",
+            combine = "None"
+  ),
+  
+  BINE = new("PFT",
+             id = "BINE",
+             name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
+             lifeform = "Tree",
+             leafform = "Needleleaved",
+             phenology = "Evergreen",
+             zone = "Boreal",
+             colour = "dodgerblue3",
+             combine = "BNE"
+  ),
+  
+  BNS = new("PFT",
+            id = "BNS",
+            name = "Boreal Needleleaved Summergreen Tree",
+            lifeform = "Tree",
+            leafform = "Needleleaved",
+            phenology = "Summergreen",
+            zone = "Boreal",
+            colour = "cadetblue2",
+            combine = "None"
+  ),
+  
+  
+  IBS = new("PFT",
+            id = "IBS",
+            name = "Shade-intolerant B/leaved Summergreen Tree",
+            lifeform = "Tree",
+            leafform = "Broadleaved",
+            phenology = "Summergreen",
+            zone = "Temperate",
+            colour = "chartreuse",
+            combine = "None"
+  ),
+  
+  # TEMPERATE TREES
+  
+  TeBE = new("PFT",
+             id = "TeBE",
+             name = "Temperate Broadleaved Evergreen Tree",
+             lifeform = "Tree",
+             leafform = "Broadleaved",
+             phenology = "Evergreen",
+             zone = "Temperate",
+             colour = "darkgreen",
+             combine = "None"
+  ),
+  
+  TeNE = new("PFT",
+             id = "TeNE",
+             name = "Temperate Needleleaved Evergreen Tree",
+             lifeform = "Tree",
+             leafform = "Needleleaved",
+             phenology = "Evergreen",
+             zone = "Temperate",
+             colour = "lightseagreen",
+             combine = "None"
+  ),
+  
+  TeBS = new("PFT",
+             id = "TeBS",
+             name = "Temperate Broadleaved Summergreen Tree",
+             lifeform = "Tree",
+             leafform = "Broadleaved",
+             phenology = "Summergreen",
+             colour = "darkolivegreen3",
+             zone = "Temperate",
+             combine = "None"
+  ),
+  
+  
+  # TROPICAL TREES
+  
+  TrBE = new("PFT",
+             id = "TrBE",
+             name = "Tropical Broadleaved Evergreen Tree",
+             lifeform = "Tree",
+             leafform = "Broadleaved",
+             phenology = "Evergreen",
+             zone = "Tropical",
+             colour = "orchid4",
+             combine = "None"
+  ),
+  
+  
+  TrIBE = new("PFT",
+              id = "TrIBE",
+              name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
+              lifeform = "Tree",
+              leafform = "Broadleaved",
+              phenology = "Evergreen",
+              zone = "Tropical", 
+              colour = "orchid",
+              combine = "TrBE"
+  ),
+  
+  TrBR = new("PFT",
+             id = "TrBR",
+             name = "Tropical Broadleaved Raingreen Tree",
+             lifeform = "Tree",
+             leafform = "Broadleaved",
+             phenology = "Raingreen",
+             zone = "Tropical",
+             colour = "palevioletred",
+             combine = "None"
+  ),
+  
+  
+  # GRASSES
+  
+  C3G = new("PFT",
+            id = "C3G",
+            name = "Boreal/Temperate Grass",
+            lifeform = "Grass",
+            leafform = "Broadleaved",
+            phenology = "GrassPhenology",
+            zone = "NA",
+            colour = "lightgoldenrod1",
+            combine = "None"
+  ),
+  
+  C4G = new("PFT",
+            id = "C4G",
+            name = "Tropical Grass",
+            lifeform = "Grass",
+            leafform = "Broadleaved",
+            phenology = "GrassPhenology",
+            zone = "NA",
+            colour = "sienna2",
+            combine = "None"
+  ),
 
+  
+  Total = new("PFT",
+              id = "Total",
+              name = "Total",
+              lifeform = "NA",
+              leafform = "NA",
+              phenology = "NA",
+              zone = "NA", 
+              colour = "black",
+              combine = "None"
+  )
+  
+)
 
+#####################################################################
+########### LPJ-GUESS(-SPITFIRE) QUANTITIES ########################
+#####################################################################
+
+#' @title dummy text
+#' 
+#' @description
+#' 
+#' @details LPJ-GUESS(-SPITFIRE) Output Quantities
+#' 
+#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @rdname Quantity-class
+#' @keywords datasets
+#' 
+#' 
+GUESS.quantities <- list(
+  new("Quantity",
+      id = "lai",
+      name = "LAI",
+      type = "PFT",
+      units = "m^2/m^2",
+      colours = reversed.viridis,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM"),
+      cf.name = "leaf_area_index"),
+  
+  new("Quantity",
+      id = "mlai",
+      name = "Monthly LAI",
+      type = "monthly",
+      units = "m^2/m^2",
+      colours = viridis::viridis,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "leaf_area_index"),
+  
+  new("Quantity",
+      id = "fpc",
+      name = "Foliar Projective Cover",
+      type = "PFT",
+      units = "m^2/m^2",
+      colours = veg.palette,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfpc",
+      name = "Monthly Foliar Projective Cover",
+      type = "Monthly",
+      units = "m^2/m^2",
+      colours = veg.palette,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "vegcover",
+      name = "Vegetation Cover",
+      type = "",
+      units = "m^2/m^2",
+      colours = veg.palette,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "agpp",
+      name = "Annual GPP",
+      type = "PFT",
+      units = "kgC/m2/year",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "cmass",
+      name = "Vegetation Carbon Mass",
+      type = "PFT",
+      units = "kgC/m^2",
+      colours = viridis::viridis,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "clitter",
+      name = "Litter Carbon Mass",
+      type = "PFT",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "agb",
+      name = "Above Ground Biomass",
+      type = "PFT",
+      units = "tonnes/hectare",
+      colours = viridis::viridis,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "cpool",
+      name = "Carbon",
+      type = "pools",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "litter_wood",
+      name = "Wood Litter",
+      type = "PFT",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "litter_leaf",
+      name = "Leaf Litter",
+      type = "PFT",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "litter_repr",
+      name = "Reproductive Litter",
+      type = "PFT",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "fine_fuel",
+      name = "Fine Fuel",
+      type = "PFT",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mnpp",
+      name = "NPP",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mgpp",
+      name = "GPP",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mnee",
+      name = "Monthly NEE",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mrh",
+      name = "Monthly Heterotrophic Respiration",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mra",
+      name = "Monthly Autotrophic Respiration",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "anpp",
+      name = "Annual NPP",
+      type = "PFT",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "cflux",
+      name = "Carbon Flux",
+      type = "flux",
+      units = "kgC/m^2/y",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "dens",
+      name = "PFT Density",
+      type = "PFT",
+      units = "indiv/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "speciesheights",
+      name = "PFT Average Heights",
+      type = "PFT",
+      units = "m",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "canopyheight",
+      name = "Canopy Height",
+      type = "-",
+      units = "m",
+      colours = reversed.magma,
+      model = c("LPJ-GUESS"),
+      cf.name = "canopy_height"),
+  
+  new("Quantity",
+      id = "doc",
+      name = "Dissolved Organic Carbon (?)",
+      type = "-",
+      units = "kgC/m^2/year",
+      colours = reversed.magma,
+      model = c("LPJ-GUESS"),
+      cf.name = "canopy_height"),
+  
+  new("Quantity",
+      id = "maet",
+      name = "Monthly Actual Evapotranspiration",
+      type = "monthly",
+      units = "mm/month",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mpet",
+      name = "Monthly Potential Evapotranspiration",
+      type = "monthly",
+      units = "mm/month",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mevap",
+      name = "Monthly Evaporation",
+      type = "monthly",
+      units = "mm/month",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mrunoff",
+      name = "Monthly Runoff",
+      type = "monthly",
+      units = "mm/month",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mintercep",
+      name = "Monthly Interception",
+      type = "monthly",
+      units = "mm/month",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mwcont_upper",
+      name = "Monthly Upper Soil Layer",
+      type = "monthly",
+      units = "fraction",
+      colours = reversed.tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mwcont_lower",
+      name = "Monthly Lower Soil Layer",
+      type = "monthly",
+      units = "fraction",
+      colours = reversed.tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "msnowpack",
+      name = "Monthly Snow Pack",
+      type = "monthly",
+      units = "mm H20",
+      colours = reversed.tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "aaet",
+      name = "Annual Actual Evapotranspiration",
+      type = "annual",
+      units = "mm/year",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "aiso",
+      name = "Annual Isoprene Emissions",
+      type = "annual",
+      units = "kg/year",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  
+  new("Quantity",
+      id = "miso",
+      name = "Monthly Isoprene Emissions",
+      type = "monthly",
+      units = "kg/month",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "amon",
+      name = "Annual Monoterpene Emissions",
+      type = "annual",
+      units = "kg/year",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mmon",
+      name = "Monthly Monoterpene Emissions",
+      type = "monthly",
+      units = "kg/year",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "firert",
+      name = "Fire Return Interval",
+      type = "annual",
+      units = "years",
+      colours = fire.palette,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "fireseason",
+      name = "Fire Season Length",
+      type = "annual",
+      units = "days",
+      colours = fire.palette,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "firesl",
+      name = "Fire Season Length",
+      type = "annual",
+      units = "days",
+      colours = fire.palette,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "burntarea", 
+      name = "Annual Fraction Burned",
+      type = "annual",
+      units = "fraction of gridcell",
+      colours = fire.palette,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "burntfraction",
+      name = "Annual Fraction Burned",
+      type = "annual",
+      units = "fraction of gridcell",
+      colours = reversed.fire.palette,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "burned_area_fraction"),
+  
+  new("Quantity",
+      id = "tot_runoff",
+      name = "Runoff",
+      type = "annual",
+      units = "mm/year",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "vmaxnlim",
+      name = "Nitrogen Limitation to Vmax",
+      type = "PFT",
+      units = "fraction",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE"),
+      aggregate.method = "mean"),
+  
+  new("Quantity",
+      id = "bioclim",
+      name = "Bioclimatic Limit Variables",
+      type = "irregular",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "gdd5",
+      name = "Growing Degree Days (5deg C base)",
+      type = "annual",
+      units = "degree days",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  
+  new("Quantity",
+      id = "aleafshed",
+      name = "Number times leafs shed per year",
+      type = "PFT",
+      units = "",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "cton_leaf",
+      name = "C:N leaf",
+      type = "PFT",
+      units = "ckgC/kgN",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nmass",
+      name = "Vegetation Nitrogen Mass",
+      type = "PFT",
+      units = "kgN/m^2",
+      colours = viridis::viridis,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "ngases",
+      name = "Annual Nitrogren Gases Emissions",
+      type = "-",
+      units = "kg/ha/year",
+      colours = viridis::viridis,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "npool",
+      name = "Nitrogen",
+      type = "pools",
+      units = "kgN/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nuptake",
+      name = "Nitrogen Uptake",
+      type = "PFT",
+      units = "kgN/ha",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nsources",
+      name = "Nitrogen Source",
+      type = "annual",
+      units = "gN/ha",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  
+  new("Quantity",
+      id = "nflux",
+      name = "Nitrogen Flux",
+      type = "annual",
+      units = "kgN/ha",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "nlitter",
+      name = "Litter Nitrogen Mass",
+      type = "PFT",
+      units = "kgN/ha",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mprec",
+      name = "Monthly Precipitation",
+      type = "monthly",
+      units = "mm",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mtemp",
+      name = "Mean Monthly Temperature",
+      type = "monthly",
+      units = "deg C",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mwmass_stem",
+      name = "Water Stored in Stem",
+      type = "monthly",
+      units = "kgH20/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mwmass_leaf",
+      name = "Water Stored in Leaves",
+      type = "monthly",
+      units = "kgH20/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "bioclim_mtemps",
+      name = "Bioclimactic Temperatures",
+      type = "annual",
+      units = "deg C",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
+  
+  
+  #############################################################################################
+  ############################# LPJ-GUESS-SPITFIRE QUANTITIES #################################
+  #############################################################################################
+  
+  new("Quantity",
+      id = "mfirefrac",
+      name = "Monthly Burned Area Fraction",
+      type = "monthly",
+      units = "",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mtau_l",
+      name = "Monthly Residence Time",
+      type = "monthly",
+      units = "mins",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "pyro_flux",
+      name = "Pyrogenic Emmisions",
+      type = "irregular",
+      units = "kg species/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfireintens",
+      name = "Monthly Fire Intensity",
+      type = "monthly",
+      units = "kW/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mlivegrass_fuel",
+      name = "Mean Monthly Live Grass Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "m1hr_fuel",
+      name = "Mean Monthly 1hr Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "m10hr_fuel",
+      name = "Mean Monthly 10hr Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "m100hr_fuel",
+      name = "Mean Monthly 100hr Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "m1000hr_fuel",
+      name = "Mean Monthly 1000hr Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mlivegrass_cc",
+      name = "Mean Monthly Live Grass Combustion Completeness",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "m1hr_cc",
+      name = "Mean Monthly 1hr Combustion Completeness",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "m10hr_cc",
+      name = "Mean Monthly 10hr Combustion Completeness",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id ="m100hr_cc",
+      name = "Mean Monthly 100hr Combustion Completeness",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "m1000hr_cc",
+      name = "Mean Monthly 1000hr Combustion Completeness",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "afdays",
+      name = "Fire Days per Year",
+      type = "annual",
+      units = "days",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mavenest",
+      name = "Average Monthly Nesterov",
+      type = "monthly",
+      units = "",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mdlm_livegrass",
+      name = "Monthly Litter Moisture of Live Grass",
+      type = "monthly",
+      units = "",
+      colours = reversed.tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mdlm_deadfuel",
+      name = "Monthly Litter Moisture of Dead Fuel",
+      type = "monthly",
+      units = "",
+      colours = reversed.tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "meff_wind",
+      name = "Monthly Effective Windspeed",
+      type = "monthly",
+      units = "m/min",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mnfdi",
+      name = "Monthly Nesterov Fire Danger Index",
+      type = "monthly",
+      units = "m/min",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  
+  new("Quantity",
+      id = "mFBD",
+      name = "Monthly Fuel Bulk Density",
+      type = "monthly",
+      units = "m^3/m^3",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mSAV",
+      name = "Monthly Surface Area to Volume Ratio",
+      type = "monthly",
+      units = "m^2/m^3",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mMoE",
+      name = "Monthly Moisture of Extinction",
+      type = "monthly",
+      units = "",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mmcont",
+      name = "Monthly Fuel Moisture Content",
+      type = "monthly",
+      units = "",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfire_durat",
+      name = "Monthly Fire Duration",
+      type = "monthly",
+      units = "mins",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mscorch_height",
+      name = "Monthly Scorch Height",
+      type = "monthly",
+      units = "m",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mRoS",
+      name = "Monthly Rate of Spread",
+      type = "monthly",
+      units = "m/min",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfire_size",
+      name = "Monthly Fire Size",
+      type = "monthly",
+      units = "ha",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mhuman_ign",
+      name = "Monthly average of human ignition rate",
+      type = "monthly",
+      units = "ign/day",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mlightning_ign",
+      name = "Monthly average of lightning ignition rate",
+      type = "monthly",
+      units = "ign/day",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE"),
+      aggregate.method = "mean"),
+  
+  new("Quantity",
+      id = "mfireday_duration",
+      name = "Monthly Fire Duration (Fire Days Only)",
+      type = "monthly",
+      units = "mins",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfireday_scorch_height",
+      name = "Monthly Scorch Height (Fire Days Only)",
+      type = "monthly",
+      units = "m",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfireday_intensity",
+      name = "Monthly Fire Intensity (Fire Days Only)",
+      type = "monthly",
+      units = "kW/m",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfireday_nesterov",
+      name = "Monthly Nesterov (Fire Days Only)",
+      type = "monthly",
+      units = "",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfireday_residence_time",
+      name = "Monthly Residence Time (Fire Days Only)",
+      type = "monthly",
+      units = "min",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "allocation_fails",
+      name = "Monthly Allocation Fails",
+      type = "annual",
+      units = "days",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "allocation_iters",
+      name = "Monthly Iteration To Allocation Fire",
+      type = "annual",
+      units = "days",
+      colours = fields::tim.colors,
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfuel",
+      name = "Monthly Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfinefuel",
+      name = "Monthly Fine Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mleaffuel",
+      name = "Monthly Leaf Fuel",
+      type = "monthly",
+      units = "kgC/m^2",
+      colours = fields::tim.colors,
+      aggregate.method = "mean",
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  
+  new("Quantity",
+      id = "mfiredays",
+      name = "Monthly sum of daily fire probabilites",
+      type = "monthly",
+      units = "days",
+      colours = fields::tim.colors,
+      aggregate.method = "sum",
+      model = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "mfiredaysfine",
+      name = "Monthly sum of daily fire probabilites (based on fine fuel threshold)",
+      type = "monthly",
+      units = "days",
+      colours = fields::tim.colors,
+      aggregate.method = "sum",
+      model = c("LPJ-GUESS-SPITFIRE"))
+)
+
+#####################################################################
+########### LPJ-GUESS(-SPITFIRE) QUANTITIES ########################
+#####################################################################
+
+#' @title dummy text
+#' 
+#' @description dummy description 
+#' 
+#' @details LPJ-GUESS(-SPITFIRE) Format 
+#' 
+#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' 
+#' 
 GUESS <- new("Format",
              
              # UNIQUE ID
@@ -790,1105 +1848,16 @@ GUESS <- new("Format",
              listPFTs = listPFTs_GUESS,
              
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-             listAvailableQuantities = listAllGUESSOutput,
+             listAvailableQuantities = listAvailableQuantities_GUESS,
              
              # FUNCTION TO READ A FIELD 
              getField = getField_GUESS,
              
              # DEFAULT GLOBAL PFTS  
-             default.pfts =  list(
-               
-               # BOREAL TREES
-               
-               BNE = new("PFT",
-                         id = "BNE",
-                         name = "Boreal Needleleaved Evergreen Tree",
-                         lifeform = "Tree",
-                         leafform = "Needleleaved",
-                         phenology = "Evergreen",
-                         zone = "Boreal",
-                         colour = "darkblue",
-                         combine = "None"
-               ),
-               
-               BINE = new("PFT",
-                          id = "BINE",
-                          name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
-                          lifeform = "Tree",
-                          leafform = "Needleleaved",
-                          phenology = "Evergreen",
-                          zone = "Boreal",
-                          colour = "dodgerblue3",
-                          combine = "BNE"
-               ),
-               
-               BNS = new("PFT",
-                         id = "BNS",
-                         name = "Boreal Needleleaved Summergreen Tree",
-                         lifeform = "Tree",
-                         leafform = "Needleleaved",
-                         phenology = "Summergreen",
-                         zone = "Boreal",
-                         colour = "cadetblue2",
-                         combine = "None"
-               ),
-               
-               
-               IBS = new("PFT",
-                         id = "IBS",
-                         name = "Shade-intolerant B/leaved Summergreen Tree",
-                         lifeform = "Tree",
-                         leafform = "Broadleaved",
-                         phenology = "Summergreen",
-                         zone = "Temperate",
-                         colour = "chartreuse",
-                         combine = "None"
-               ),
-               
-               # TEMPERATE TREES
-               
-               TeBE = new("PFT",
-                          id = "TeBE",
-                          name = "Temperate Broadleaved Evergreen Tree",
-                          lifeform = "Tree",
-                          leafform = "Broadleaved",
-                          phenology = "Evergreen",
-                          zone = "Temperate",
-                          colour = "darkgreen",
-                          combine = "None"
-               ),
-               
-               TeNE = new("PFT",
-                          id = "TeNE",
-                          name = "Temperate Needleleaved Evergreen Tree",
-                          lifeform = "Tree",
-                          leafform = "Needleleaved",
-                          phenology = "Evergreen",
-                          zone = "Temperate",
-                          colour = "lightseagreen",
-                          combine = "None"
-               ),
-               
-               TeBS = new("PFT",
-                          id = "TeBS",
-                          name = "Temperate Broadleaved Summergreen Tree",
-                          lifeform = "Tree",
-                          leafform = "Broadleaved",
-                          phenology = "Summergreen",
-                          colour = "darkolivegreen3",
-                          zone = "Temperate",
-                          combine = "None"
-               ),
-               
-               
-               # TROPICAL TREES
-               
-               TrBE = new("PFT",
-                          id = "TrBE",
-                          name = "Tropical Broadleaved Evergreen Tree",
-                          lifeform = "Tree",
-                          leafform = "Broadleaved",
-                          phenology = "Evergreen",
-                          zone = "Tropical",
-                          colour = "orchid4",
-                          combine = "None"
-               ),
-               
-               
-               TrIBE = new("PFT",
-                           id = "TrIBE",
-                           name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
-                           lifeform = "Tree",
-                           leafform = "Broadleaved",
-                           phenology = "Evergreen",
-                           zone = "Tropical", 
-                           colour = "orchid",
-                           combine = "TrBE"
-               ),
-               
-               TrBR = new("PFT",
-                          id = "TrBR",
-                          name = "Tropical Broadleaved Raingreen Tree",
-                          lifeform = "Tree",
-                          leafform = "Broadleaved",
-                          phenology = "Raingreen",
-                          zone = "Tropical",
-                          colour = "palevioletred",
-                          combine = "None"
-               ),
-               
-               
-               # GRASSES
-               
-               C3G = new("PFT",
-                         id = "C3G",
-                         name = "Boreal/Temperate Grass",
-                         lifeform = "Grass",
-                         leafform = "Broadleaved",
-                         phenology = "GrassPhenology",
-                         zone = "NA",
-                         colour = "lightgoldenrod1",
-                         combine = "None"
-               ),
-               
-               C4G = new("PFT",
-                         id = "C4G",
-                         name = "Tropical Grass",
-                         lifeform = "Grass",
-                         leafform = "Broadleaved",
-                         phenology = "GrassPhenology",
-                         zone = "NA",
-                         colour = "sienna2",
-                         combine = "None"
-               ),
-               
-               None = new("PFT",
-                          id = "None",
-                          name = "None",
-                          lifeform = "NA",
-                          leafform = "NA",
-                          phenology = "NA",
-                          zone = "NA",
-                          colour = "grey80",
-                          combine = "None"
-               ),
-               
-               Total = new("PFT",
-                           id = "Total",
-                           name = "Total",
-                           lifeform = "NA",
-                           leafform = "NA",
-                           phenology = "NA",
-                           zone = "NA", 
-                           colour = "black",
-                           combine = "None"
-               ),
-               
-               Bare = new("PFT",
-                          id = "Bare",
-                          name = "Bare ground",
-                          lifeform = "NA",
-                          leafform = "NA",
-                          phenology = "NA",
-                          zone = "NA",
-                          colour = "grey80",
-                          combine = "None"
-               )
-               
-             ),
-             
+             default.pfts = GUESS.PFTs,
              
              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
-             quantities = list(
-               new("Quantity",
-                   id = "lai",
-                   name = "LAI",
-                   type = "PFT",
-                   units = "m^2/m^2",
-                   colours = reversed.viridis,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM"),
-                   cf.name = "leaf_area_index"),
-               
-               new("Quantity",
-                   id = "mlai",
-                   name = "Monthly LAI",
-                   type = "monthly",
-                   units = "m^2/m^2",
-                   colours = viridis::viridis,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE"),
-                   cf.name = "leaf_area_index"),
-               
-               new("Quantity",
-                   id = "fpc",
-                   name = "Foliar Projective Cover",
-                   type = "PFT",
-                   units = "m^2/m^2",
-                   colours = veg.palette,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfpc",
-                   name = "Monthly Foliar Projective Cover",
-                   type = "Monthly",
-                   units = "m^2/m^2",
-                   colours = veg.palette,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "vegcover",
-                   name = "Vegetation Cover",
-                   type = "",
-                   units = "m^2/m^2",
-                   colours = veg.palette,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "agpp",
-                   name = "Annual GPP",
-                   type = "PFT",
-                   units = "kgC/m2/year",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "cmass",
-                   name = "Vegetation Carbon Mass",
-                   type = "PFT",
-                   units = "kgC/m^2",
-                   colours = viridis::viridis,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "clitter",
-                   name = "Litter Carbon Mass",
-                   type = "PFT",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "agb",
-                   name = "Above Ground Biomass",
-                   type = "PFT",
-                   units = "tonnes/hectare",
-                   colours = viridis::viridis,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "cpool",
-                   name = "Carbon",
-                   type = "pools",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "litter_wood",
-                   name = "Wood Litter",
-                   type = "PFT",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "litter_leaf",
-                   name = "Leaf Litter",
-                   type = "PFT",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "litter_repr",
-                   name = "Reproductive Litter",
-                   type = "PFT",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "fine_fuel",
-                   name = "Fine Fuel",
-                   type = "PFT",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mnpp",
-                   name = "NPP",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mgpp",
-                   name = "GPP",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mnee",
-                   name = "Monthly NEE",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mrh",
-                   name = "Monthly Heterotrophic Respiration",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mra",
-                   name = "Monthly Autotrophic Respiration",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "anpp",
-                   name = "Annual NPP",
-                   type = "PFT",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "cflux",
-                   name = "Carbon Flux",
-                   type = "flux",
-                   units = "kgC/m^2/y",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "dens",
-                   name = "PFT Density",
-                   type = "PFT",
-                   units = "indiv/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "speciesheights",
-                   name = "PFT Average Heights",
-                   type = "PFT",
-                   units = "m",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "canopyheight",
-                   name = "Canopy Height",
-                   type = "-",
-                   units = "m",
-                   colours = reversed.magma,
-                   model = c("LPJ-GUESS"),
-                   cf.name = "canopy_height"),
-               
-               new("Quantity",
-                   id = "doc",
-                   name = "Dissolved Organic Carbon (?)",
-                   type = "-",
-                   units = "kgC/m^2/year",
-                   colours = reversed.magma,
-                   model = c("LPJ-GUESS"),
-                   cf.name = "canopy_height"),
-               
-               new("Quantity",
-                   id = "maet",
-                   name = "Monthly Actual Evapotranspiration",
-                   type = "monthly",
-                   units = "mm/month",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mpet",
-                   name = "Monthly Potential Evapotranspiration",
-                   type = "monthly",
-                   units = "mm/month",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mevap",
-                   name = "Monthly Evaporation",
-                   type = "monthly",
-                   units = "mm/month",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mrunoff",
-                   name = "Monthly Runoff",
-                   type = "monthly",
-                   units = "mm/month",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mintercep",
-                   name = "Monthly Interception",
-                   type = "monthly",
-                   units = "mm/month",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mwcont_upper",
-                   name = "Monthly Upper Soil Layer",
-                   type = "monthly",
-                   units = "fraction",
-                   colours = reversed.tim.colors,
-                   aggregate.method = "mean",
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mwcont_lower",
-                   name = "Monthly Lower Soil Layer",
-                   type = "monthly",
-                   units = "fraction",
-                   colours = reversed.tim.colors,
-                   aggregate.method = "mean",
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "msnowpack",
-                   name = "Monthly Snow Pack",
-                   type = "monthly",
-                   units = "mm H20",
-                   colours = reversed.tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "aaet",
-                   name = "Annual Actual Evapotranspiration",
-                   type = "annual",
-                   units = "mm/year",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "aiso",
-                   name = "Annual Isoprene Emissions",
-                   type = "annual",
-                   units = "kg/year",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               
-               new("Quantity",
-                   id = "miso",
-                   name = "Monthly Isoprene Emissions",
-                   type = "monthly",
-                   units = "kg/month",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "amon",
-                   name = "Annual Monoterpene Emissions",
-                   type = "annual",
-                   units = "kg/year",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mmon",
-                   name = "Monthly Monoterpene Emissions",
-                   type = "monthly",
-                   units = "kg/year",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "firert",
-                   name = "Fire Return Interval",
-                   type = "annual",
-                   units = "years",
-                   colours = fire.palette,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "fireseason",
-                   name = "Fire Season Length",
-                   type = "annual",
-                   units = "days",
-                   colours = fire.palette,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "firesl",
-                   name = "Fire Season Length",
-                   type = "annual",
-                   units = "days",
-                   colours = fire.palette,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "burntarea", 
-                   name = "Annual Fraction Burned",
-                   type = "annual",
-                   units = "fraction of gridcell",
-                   colours = fire.palette,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "burntfraction",
-                   name = "Annual Fraction Burned",
-                   type = "annual",
-                   units = "fraction of gridcell",
-                   colours = reversed.fire.palette,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE"),
-                   cf.name = "burned_area_fraction"),
-               
-               new("Quantity",
-                   id = "tot_runoff",
-                   name = "Runoff",
-                   type = "annual",
-                   units = "mm/year",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "vmaxnlim",
-                   name = "Nitrogen Limitation to Vmax",
-                   type = "PFT",
-                   units = "fraction",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE"),
-                   aggregate.method = "mean"),
-               
-               new("Quantity",
-                   id = "bioclim",
-                   name = "Bioclimatic Limit Variables",
-                   type = "irregular",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "gdd5",
-                   name = "Growing Degree Days (5deg C base)",
-                   type = "annual",
-                   units = "degree days",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               
-               new("Quantity",
-                   id = "aleafshed",
-                   name = "Number times leafs shed per year",
-                   type = "PFT",
-                   units = "",
-                   colours = fields::tim.colors,
-                   aggregate.method = "mean",
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "cton_leaf",
-                   name = "C:N leaf",
-                   type = "PFT",
-                   units = "ckgC/kgN",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "nmass",
-                   name = "Vegetation Nitrogen Mass",
-                   type = "PFT",
-                   units = "kgN/m^2",
-                   colours = viridis::viridis,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "ngases",
-                   name = "Annual Nitrogren Gases Emissions",
-                   type = "-",
-                   units = "kg/ha/year",
-                   colours = viridis::viridis,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "npool",
-                   name = "Nitrogen",
-                   type = "pools",
-                   units = "kgN/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "nuptake",
-                   name = "Nitrogen Uptake",
-                   type = "PFT",
-                   units = "kgN/ha",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "nsources",
-                   name = "Nitrogen Source",
-                   type = "annual",
-                   units = "gN/ha",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               
-               new("Quantity",
-                   id = "nflux",
-                   name = "Nitrogen Flux",
-                   type = "annual",
-                   units = "kgN/ha",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "nlitter",
-                   name = "Litter Nitrogen Mass",
-                   type = "PFT",
-                   units = "kgN/ha",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mprec",
-                   name = "Monthly Precipitation",
-                   type = "monthly",
-                   units = "mm",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mtemp",
-                   name = "Mean Monthly Temperature",
-                   type = "monthly",
-                   units = "deg C",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mwmass_stem",
-                   name = "Water Stored in Stem",
-                   type = "monthly",
-                   units = "kgH20/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mwmass_leaf",
-                   name = "Water Stored in Leaves",
-                   type = "monthly",
-                   units = "kgH20/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "bioclim_mtemps",
-                   name = "Bioclimactic Temperatures",
-                   type = "annual",
-                   units = "deg C",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
-               
-               
-               #############################################################################################
-               ############################# LPJ-GUESS-SPITFIRE QUANTITIES #################################
-               #############################################################################################
-               
-               new("Quantity",
-                   id = "mfirefrac",
-                   name = "Monthly Burned Area Fraction",
-                   type = "monthly",
-                   units = "",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mtau_l",
-                   name = "Monthly Residence Time",
-                   type = "monthly",
-                   units = "mins",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "pyro_flux",
-                   name = "Pyrogenic Emmisions",
-                   type = "irregular",
-                   units = "kg species/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfireintens",
-                   name = "Monthly Fire Intensity",
-                   type = "monthly",
-                   units = "kW/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mlivegrass_fuel",
-                   name = "Mean Monthly Live Grass Fuel",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "m1hr_fuel",
-                   name = "Mean Monthly 1hr Fuel",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "m10hr_fuel",
-                   name = "Mean Monthly 10hr Fuel",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "m100hr_fuel",
-                   name = "Mean Monthly 100hr Fuel",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "m1000hr_fuel",
-                   name = "Mean Monthly 1000hr Fuel",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mlivegrass_cc",
-                   name = "Mean Monthly Live Grass Combustion Completeness",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "m1hr_cc",
-                   name = "Mean Monthly 1hr Combustion Completeness",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "m10hr_cc",
-                   name = "Mean Monthly 10hr Combustion Completeness",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id ="m100hr_cc",
-                   name = "Mean Monthly 100hr Combustion Completeness",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "m1000hr_cc",
-                   name = "Mean Monthly 1000hr Combustion Completeness",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "afdays",
-                   name = "Fire Days per Year",
-                   type = "annual",
-                   units = "days",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mavenest",
-                   name = "Average Monthly Nesterov",
-                   type = "monthly",
-                   units = "",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mdlm_livegrass",
-                   name = "Monthly Litter Moisture of Live Grass",
-                   type = "monthly",
-                   units = "",
-                   colours = reversed.tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mdlm_deadfuel",
-                   name = "Monthly Litter Moisture of Dead Fuel",
-                   type = "monthly",
-                   units = "",
-                   colours = reversed.tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "meff_wind",
-                   name = "Monthly Effective Windspeed",
-                   type = "monthly",
-                   units = "m/min",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mnfdi",
-                   name = "Monthly Nesterov Fire Danger Index",
-                   type = "monthly",
-                   units = "m/min",
-                   colours = fields::tim.colors,
-                   aggregate.method = "mean",
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               
-               new("Quantity",
-                   id = "mFBD",
-                   name = "Monthly Fuel Bulk Density",
-                   type = "monthly",
-                   units = "m^3/m^3",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mSAV",
-                   name = "Monthly Surface Area to Volume Ratio",
-                   type = "monthly",
-                   units = "m^2/m^3",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mMoE",
-                   name = "Monthly Moisture of Extinction",
-                   type = "monthly",
-                   units = "",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mmcont",
-                   name = "Monthly Fuel Moisture Content",
-                   type = "monthly",
-                   units = "",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfire_durat",
-                   name = "Monthly Fire Duration",
-                   type = "monthly",
-                   units = "mins",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mscorch_height",
-                   name = "Monthly Scorch Height",
-                   type = "monthly",
-                   units = "m",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mRoS",
-                   name = "Monthly Rate of Spread",
-                   type = "monthly",
-                   units = "m/min",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfire_size",
-                   name = "Monthly Fire Size",
-                   type = "monthly",
-                   units = "ha",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mhuman_ign",
-                   name = "Monthly average of human ignition rate",
-                   type = "monthly",
-                   units = "ign/day",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mlightning_ign",
-                   name = "Monthly average of lightning ignition rate",
-                   type = "monthly",
-                   units = "ign/day",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE"),
-                   aggregate.method = "mean"),
-               
-               new("Quantity",
-                   id = "mfireday_duration",
-                   name = "Monthly Fire Duration (Fire Days Only)",
-                   type = "monthly",
-                   units = "mins",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfireday_scorch_height",
-                   name = "Monthly Scorch Height (Fire Days Only)",
-                   type = "monthly",
-                   units = "m",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfireday_intensity",
-                   name = "Monthly Fire Intensity (Fire Days Only)",
-                   type = "monthly",
-                   units = "kW/m",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfireday_nesterov",
-                   name = "Monthly Nesterov (Fire Days Only)",
-                   type = "monthly",
-                   units = "",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfireday_residence_time",
-                   name = "Monthly Residence Time (Fire Days Only)",
-                   type = "monthly",
-                   units = "min",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "allocation_fails",
-                   name = "Monthly Allocation Fails",
-                   type = "annual",
-                   units = "days",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "allocation_iters",
-                   name = "Monthly Iteration To Allocation Fire",
-                   type = "annual",
-                   units = "days",
-                   colours = fields::tim.colors,
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfuel",
-                   name = "Monthly Fuel",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   aggregate.method = "mean",
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfinefuel",
-                   name = "Monthly Fine Fuel",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   aggregate.method = "mean",
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mleaffuel",
-                   name = "Monthly Leaf Fuel",
-                   type = "monthly",
-                   units = "kgC/m^2",
-                   colours = fields::tim.colors,
-                   aggregate.method = "mean",
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               
-               new("Quantity",
-                   id = "mfiredays",
-                   name = "Monthly sum of daily fire probabilites",
-                   type = "monthly",
-                   units = "days",
-                   colours = fields::tim.colors,
-                   aggregate.method = "sum",
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               new("Quantity",
-                   id = "mfiredaysfine",
-                   name = "Monthly sum of daily fire probabilites (based on fine fuel threshold)",
-                   type = "monthly",
-                   units = "days",
-                   colours = fields::tim.colors,
-                   aggregate.method = "sum",
-                   model = c("LPJ-GUESS-SPITFIRE")),
-               
-               #############################################################################################
-               ################################### aDGVM QUANTITIES ########################################
-               #############################################################################################
-               
-               
-               new("Quantity",
-                   id = "agb",
-                   name = "Above Ground Biomass",
-                   type = "PFT",
-                   units = "kgC/m^2",
-                   colours = viridis::viridis,
-                   aggregate.method = "sum",
-                   model = c("aDGVM")),
-               
-               new("Quantity",
-                   id = "meanheight",
-                   name = "Mean Canopy Height",
-                   type = "PFT",
-                   units = "m",
-                   colours = fields::tim.colors,
-                   aggregate.method = "mean",
-                   model = c("aDGVM")),
-               
-               new("Quantity",
-                   id = "basalarea",
-                   name = "Basal Area",
-                   type = "PFT",
-                   units = "m^2/ha",
-                   colours = fields::tim.colors,
-                   aggregate.method = "mean",
-                   model = c("aDGVM")),
-               
-               new("Quantity",
-                   id = "nind",
-                   name = "Number of individuals",
-                   type = "PFT",
-                   units = "plants",
-                   colours = veg.palette,
-                   aggregate.method = "sum",
-                   model = c("aDGVM")),
-               
-               new("Quantity",
-                   id = "pind",
-                   name = "Fraction of individuals",
-                   type = "PFT",
-                   units = "",
-                   colours = veg.palette,
-                   aggregate.method = "sum",
-                   model = c("aDGVM")),
-               
-               new("Quantity",
-                   id = "firefreq",
-                   name = "Fire Frequency",
-                   type = "annual",
-                   units = "",
-                   colours = reversed.fire.palette,
-                   model = c("aDGVM"))
-             )
-             
+             quantities = GUESS.quantities
              
 )
 

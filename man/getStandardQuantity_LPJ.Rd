@@ -21,7 +21,7 @@ getStandardQuantity_LPJ(run, quant, first.year, last.year, verbose = FALSE)
 a data.table (with the correct tear offset and lon-lat offsets applied)
 }
 \description{
-This fucntion can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
+This funtion can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
 to compare to other models and to data.  This must be implemented for each and every Standard quantity 
 for each and every model to to ensure completeness.
 }

@@ -87,22 +87,50 @@ correct.map.offset <- function(spl) {
 
 #' Make a PFT colour list
 #' 
-#' This is a helper function for when plotting PFTs by colour.  It takes a list of PFT ids (other things like "Total" or "Tree") and returns a a list 
-#' with the 
-
-
-matchPFTCols <- function(values, pfts, others = list(Total = "black", Tree = "brown", Grass = "green", Shrub = "red")) {
+#' This is a helper function for when plotting PFTs by colour.  It takes a list of PFT ids (other things like "Total" or "Tree" can also be specified) and returns a list 
+#' of colours with the names of the PFT (which is how ggplot likes colours to be specified).
+#' 
+#' @param values List of values (as chararacters) for which you want standard colours.
+#' @param pfts A list of PFT objects (which should contain PFTs with ids provided in 'values)
+#' @param others A list of other name-colour combinations, for example to plot 'Total' as black, "None" as grey, or whatever.  Some defaults are defined.
+#' @return Returns a named list of colours, where the names are the values that the colours will represent
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' 
+#' 
+matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub = "red")) {
   
   these.cols <- list()
   for(val in values) {
+    
+    # check if it is a PFT
+    done <- FALSE
     for(PFT in pfts){
-      if(val == PFT@id) these.cols[[val]] <- PFT@colour
-      else if(tolower(val) == "none") these.cols[[val]] <- "grey75"
-    }    
-  }
+      if(val == PFT@id) {
+        these.cols[[val]] <- PFT@colour
+        done <- TRUE
+      }
+    } 
 
+    # if not a PFT, check if it is as 'other' 
+    if(!done) {
+      for(other in names(others)) {
+        if(tolower(val) == tolower(other)) {
+          these.cols[[val]] <- others[[other]]
+          done <- TRUE
+        }
+      }
+    }
+    
+    # if no colour can be found to match the value, fail gently
+    if(!done) {
+      warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchPFTCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument"))
+      return(NULL)
+    }  
+
+  }
+  
   return(unlist(these.cols))
- 
+  
 }
 
 

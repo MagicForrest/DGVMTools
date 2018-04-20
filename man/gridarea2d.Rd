@@ -34,3 +34,4 @@ sum(gridarea2d(lon,lat, scale=1.e-12, ellipse=TRUE)$area)
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }
+\keyword{internal}

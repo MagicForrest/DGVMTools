@@ -1,6 +1,28 @@
 #!/usr/bin/Rscript
 
 
+#' Format class
+#'
+#' This class encapsulates all the specific details of a supported model or dataset.  It stores meta-data and methods (just functions, not technically
+#'  methods in R terms) for a DGVM output format (or other data format).  Note that the default.pfts and  'quantities' arguments are just default 
+#'  values, it is easy to add new ones.  Equally they don't all need to to be available for a particular run or dataset.
+#'
+#' @slot id Simple character string to gave an uniquely identify this format
+#' @slot default.pfts 'Standard' vegetation types (PFTs, Plant Functional Type) that this model uses, as a list of DGVMTools::PFT objects.  
+#' This is just a default PFT set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
+#' @slot quantities 'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output
+#' @slot listPFTs A function to determine which PFTs are present in a run or dataset.
+#' @slot listAvailableQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
+#' @slot getField A function to retrieve actually data from the model output or dataset.  This is likely to be a fairly complex function, and really depends on the specifics 
+#' and idiosynchrasies of the model output format.
+#' 
+#' @details Normally a user won't need to deal with this class since it defines model spcific metadata and functions which should be defined once and then
+#' 'just work' (haha) in the future. If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
+#' 
+#' @name Format-class
+#' @rdname Format-class
+#' @exportClass Format
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("Format", 
          slots = c(id = "character",
                    default.pfts = "list",
@@ -10,10 +32,6 @@ setClass("Format",
                    getField = "function"
          )
 )
-
-
-
-
 
 
 #' Time periods - eg. a month or a season or a year.
@@ -460,7 +478,30 @@ setClass("Source",
          
 )
 
-
+#' STAInfo class
+#'
+#' This class encapsulations all the Spatial (S, longitude and latidude), Temporal (T, monthly, daily etc.) and Annual (A, years included) 
+#' Information  (hence the name 'STAInfo') about a particular DGVMTools::Field.  Normally the user won't have to deal with this (it is mostly used internally),
+#' but it can be handy, for example to extract the STAInfo from one Field, and use it extract another field with the same dimensions. 
+#'     
+#' @param first.year A single numeric, the first year.
+#' @param last.year A single numeric, the last year.
+#' @param year.aggregate.method A character specifying how the years have been aggregated, for example "mean", or "sum" or "var". See aggregateYears.
+#' If no yearly aggregation has been applied it should be NULL.
+#' @param spatial.extent This can be of any type that can be used but DGVMTools::crop, and stores the current spatial extent.  
+#' But default (and with no cropping) it is simple teh raster::Extent object of the whole domain.
+#' @param spatial.aggregate.method A character method specifying how the spatial extent has been aggregated, for eample "mean" or "sum",
+#' see aggregateSpatial.  If no spatial aggregation has been applied it should be NULL.
+#' @param subannual.original A character string specifying the original sub-annual resolution of this data, eg. "Monthly" or "Daily"
+#' @param subannual.aggregate.method A character specifying how the subannual perods have been aggregated, for example "mean", "max", "sum" or "var". 
+#' See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.
+#' 
+#' @details This is mostly a behind-the-scenes class which is partly just created to bundle together a lot of dimension information in a tidy form. 
+#' 
+#' @name STAInfo-class
+#' @rdname STAInfo-class
+#' @exportClass STAInfo
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("STAInfo",
          slots = c(first.year = "numeric",
                    last.year = "numeric",

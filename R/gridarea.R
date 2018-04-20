@@ -17,7 +17,7 @@
 #' @param scale multiplicator. If 1 (default) unit m^2
 #' @param ellipse TRUE (polar and equatorial radius differ) or
 #' FALSE (default, polar and equatorial radius are the same)
-#' @export
+#' @keywords internal
 #' @return vector of gridcell area is m^2
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @examples
@@ -58,7 +58,7 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
 #' @param scale multiplicator. If 1 (default) unit m^2
 #' @param ellipse TRUE (polar and equatorial radius differ) or
 #' FALSE (default, polar and equatorial radius are the same)
-#' @export
+#' @keywords internal
 #' @import data.table
 #' @return data.table of gridcells with columns c("Lon", "Lat", "area")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
@@ -109,6 +109,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   }
   return(x)
 }
+
 #' Adds the gridcell area to a spatial Field or data.table/data.frame
 #' 
 #' Adds the gridcell area to a spatial Field or data.table/data.frame.

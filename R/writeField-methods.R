@@ -5,9 +5,9 @@
 #' @param x A Field
 #' @param ... Other arguments, not currently used
 #' @return The name of the file written out (probably not so useful, just want to return something)
-#' @name write-methods
-#' @rdname write-methods
-#' @aliases write
+#' @name writeField-methods
+#' @rdname writeField-methods
+#' @aliases writeField
 #' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 if (!isGeneric("writeField")) {
@@ -16,7 +16,7 @@ if (!isGeneric("writeField")) {
 #' must have columns named "Lon" and "Lat" otherwise these methods fail.  
 
 
-#' @rdname write-methods
+#' @rdname writeField-methods
 setMethod("writeField", signature(x="Field"), function(x) {
   
  file.name <- file.path(x@source@dir, paste(x@id, "DGVMField", sep = "."))

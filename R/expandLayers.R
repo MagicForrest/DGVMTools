@@ -44,7 +44,7 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
   
   # get PFTs present in data
   PFTs <- getPFTs(input.data, PFT.set)
-  
+  print(PFTs)
   # if type is undertermined, try to figure it out
   # if found at least one PFT and that PFT is not "Total" then assume we have a per PFT variable
   if(type == "unknown"){
@@ -105,7 +105,7 @@ expandLayers <- function(layers, input.data, PFT.set = NULL, type = "unknown", i
     
     # Expand "leafforms" 
     if("leafforms" %in% tolower(layers) | "leafform" %in% tolower(layers)){
-      
+      print("leaf")
       # Find all leafforms present in PFTs 
       all.leafforms <- vector()
       for(PFT in PFTs) {all.leafforms <- append(all.leafforms, PFT@leafform)}

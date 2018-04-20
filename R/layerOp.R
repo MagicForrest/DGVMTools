@@ -73,23 +73,23 @@ layerOp <- function(x, operator, layers, new.layer){
     }
     
     # max
-    else if(operator == "max") {
+    else if(operator == "max.layer") {
       if(missing(new.layer)) new.layer <- paste0("max.layer(", paste0(layers, collapse = ","), ")")
       max.layer <- function(x){ 
         if(all(!x)) return("None")
         return(names(x)[which.max(x)])
       }
-      x@data <- x@data[, (new.layer) := apply(.SD, 1, max.layer), .SDcols = layers]
+      x@data <- x@data[, (new.layer) := factor(apply(.SD, 1, max.layer)), .SDcols = layers]
     }
     
     # min 
-    else if(operator == "min") {
+    else if(operator == "min.layer") {
       if(missing(new.layer)) new.layer <- paste0("min.layer(", paste0(layers, collapse = ","), ")")
       min.layer <- function(x){ 
         if(all(!x)) return("None")
         return(names(x)[which.min(x)])
       }
-      x@data <- x@data[, (new.layer) := apply(.SD, 1, min.layer), .SDcols = layers]
+      x@data <- x@data[, (new.layer) := factor(apply(.SD, 1, min.layer)), .SDcols = layers]
     }
     
     # else
