@@ -365,7 +365,7 @@ openLPJOutputFile_FireMIP <- function(run,
     guess.var <- "real_fire_size"
     dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose)
     setnames(dt, guess.var, variable)
-    dt[, (variable) := geg(variable) * 10000]
+    dt[, (variable) := get(variable) * 10000]
     return(dt)
   }
   
