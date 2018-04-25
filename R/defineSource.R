@@ -50,8 +50,11 @@ defineSource <- function(id,
   
   # Retreive a Format object if a string is provided
   if(is.character(format)) {
-    if(format == "LPJ-GUESS" || "GUESS" || "LPJ-GUESS-SPITFIRE") {
+    if(format == "LPJ-GUESS" || format == "GUESS" || format == "LPJ-GUESS-SPITFIRE") {
       format <- GUESS
+    }
+    else if(format == "DGVMData") {
+      format <- DGVMData
     }
     
   }
