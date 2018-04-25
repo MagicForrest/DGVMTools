@@ -151,20 +151,34 @@ getField <- function(source,
     
     # Implemented LPJ-GUESS and aDGVM
     if(source@format@id == "LPJ-GUESS" 
-       | source@format@id == "aDGVM") {
+       | source@format@id == "aDGVM"
+       | source@format@id == "DGVMData") {
       
       # special call for aDGVM with the scheme type
       if(source@format@id == "aDGVM") {
         data.list <- source@format@getField(source, quant, target.STAInfo, adgvm.scheme, verbose)
       }
+      else if(source@format@id == "DGVMData") {
+        
+         
+        data.list <- source@format@getField(source, quant, target.STAInfo, verbose) #openDGVMDataFile(source, quant, verbose = verbose)
+        
+        if("first.year" %in% names(data.list)) first.year.present <-  data.list$first.year
+        if("last.year" %in% names(data.list)) last.year.present <-  data.list$last.year
+        if("year.aggregate.method" %in% names(data.list)) year.aggregate.method.present <-  data.list$year.aggregate.method
+        if("spatial.extent" %in% names(data.list)) spatial.extent.present <- data.list$spatial.extent
+        if("spatial.extent.id" %in% names(data.list)) spatial.extent.id.present <- data.list$spatial.extent.id
+        if("spatial.aggregate.method" %in% names(data.list)) spatial.aggregate.method.present <- data.list$spatial.aggregate.method
+        
+      }
       else {
         data.list <- source@format@getField(source, quant, target.STAInfo, verbose)
       }
       
-      this.dt <- data.list[[1]]
+       this.dt <- data.list[["dt"]]
       this.STAInfo <- data.list[[2]]
       
-      
+       
       # Meta-data for use later on
       if("Year" %in% getSTInfo(this.dt)) {
         year.range <- range(this.dt[,Year])
@@ -176,18 +190,7 @@ getField <- function(source,
     } # END IF LPJ-GUESS or LPJ-GUESS-SPITFIRE
     
     
-    else if(source@format@id == "DGVMData") {
-      
-      data.list <- openDGVMDataFile(source, quant, verbose = verbose)
-      this.dt <- data.list$dt
-      if("first.year" %in% names(data.list)) first.year.present <-  data.list$first.year
-      if("last.year" %in% names(data.list)) last.year.present <-  data.list$last.year
-      if("year.aggregate.method" %in% names(data.list)) year.aggregate.method.present <-  data.list$year.aggregate.method
-      if("spatial.extent" %in% names(data.list)) spatial.extent.present <- data.list$spatial.extent
-      if("spatial.extent.id" %in% names(data.list)) spatial.extent.id.present <- data.list$spatial.extent.id
-      if("spatial.aggregate.method" %in% names(data.list)) spatial.aggregate.method.present <- data.list$spatial.aggregate.method
-      
-    }
+   
     
     
     

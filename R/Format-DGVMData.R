@@ -11,7 +11,7 @@
 #' An internal function that reads data from an LPJ-GUESS run.  It actually call one of three other functions depending on the type of quantity specified.   
 #' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
-#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param first.year The first year (as a numeric) of the data to be returned
 #' @param last.year The last year (as a numeric) of the data to be returned
 #' @param verbose A logical, set to true to give progress/debug information
@@ -24,12 +24,9 @@ getField_DGVMData <- function(source,
                            verbose) {
   
   
+    this.dt <- openDGVMDataFile(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
 
-    this.dt <- openDGVMDataFile(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
-
-  
-  
-  return(list(this.dt, NULL))
+  return(this.dt)
   
 }
 
@@ -44,7 +41,7 @@ getField_DGVMData <- function(source,
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
 #' @param source A \code{Source} containing the meta-data about the LPJ-GUESS source
-#' @param variable A string the define what output file from the LPJ-GUESS source to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param quant A string the define what output file from the LPJ-GUESS source to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param first.year The first year (as a numeric) of the data to be returned
 #' @param last.year The last year (as a numeric) of the data to be returned
 #' @param verbose A logical, set to true to give progress/debug information
@@ -53,7 +50,7 @@ getField_DGVMData <- function(source,
 #' @import data.table
 #' @keywords internal
 openDGVMDataFile <- function(source,
-                             variable,
+                             quant,
                              first.year,
                              last.year,
                              verbose = FALSE){
@@ -78,7 +75,7 @@ openDGVMDataFile <- function(source,
   
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
-  file.name.nc <- file.path(source@dir, paste(source@id, variable@id, "nc", sep = "."))
+  file.name.nc <- file.path(source@dir, paste(source@id, quant@id, "nc", sep = "."))
   if(file.exists(file.name.nc)){ 
     if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
   }
@@ -88,7 +85,7 @@ openDGVMDataFile <- function(source,
   }
   else {
     file.name.nc.old <- file.name.nc
-    file.name.nc <- file.path(source@dir, paste(variable@id, "nc", sep = "."))
+    file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
     if(file.exists(file.name.nc)){ 
       if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
     }
@@ -233,7 +230,7 @@ openDGVMDataFile <- function(source,
         # Remove the Time columns
         this.slice.dt[, Time := NULL]
         
-        # make new colum order so that the variable is last
+        # make new colum order so that the quant is last
         all.names <- names(this.slice.dt)
         all.names <- all.names[-which(all.names == this.var$name)]
         all.names <- append(all.names, this.var$name)
@@ -248,8 +245,8 @@ openDGVMDataFile <- function(source,
     setKeyDGVM(this.slice.dt)
     
     
-    if(variable@type == "categorical") {
-      this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = variable@units)]
+    if(quant@type == "categorical") {
+      this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = quant@units)]
     }
   
     # now join this to all.dt
