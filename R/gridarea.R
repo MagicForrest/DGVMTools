@@ -124,7 +124,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' @export
 #' @return same class as input
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits) {
+addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10) {
   ## to avoid "no visible binding for global variable" during check
   Lat = Lon = NULL
   if (is.na(unit))
@@ -150,6 +150,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits) {
   }
 
   area <- gridarea2d(lon, lat, ellipse=ellipse)
+ 
   if (is.data.table(input) || is.Field(input)) {
     area <- as.data.table(area)
     if (is.data.table(input)) {
@@ -187,7 +188,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits) {
     setKeyDGVM(area)
     setkeyv(input, key(area))
 
-    if(!missing(digits) && !is.null(digits)) {
+    if(!is.null(digits)) {
       
       input[, Lon := round(Lon, digits)]
       input[, Lat := round(Lat, digits)]
@@ -195,11 +196,9 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits) {
       area[, Lat := round(Lat, digits)]
       
     }
-    
-    
+ 
     input <- merge(area, input, all.x = FALSE, all.y = TRUE)
     
-
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "' to data.table.", sep=""))
     return(input)
