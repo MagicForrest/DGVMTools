@@ -199,10 +199,10 @@ checkSourceInfo <- function(object){
 #' and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
 #' 
 #' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
-#' @slot format A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
-#' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
-#' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @slot dir The location of this run on the file system (Mandatory)
+#' @slot format A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
+#' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run 
+#' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1" (can be omitted, in which case the id will be used instead)
 #' @slot forcing.data A character string identifying the climate or other data used to produce this model run
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years

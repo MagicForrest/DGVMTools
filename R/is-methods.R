@@ -84,6 +84,16 @@ is.Quantity <- function(input) {
   return(FALSE)
 }
 
+#' @rdname is.object-methods
+#' @export
+is.PFT <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "PFT" && attr(class.def, "package")=="DGVMTools")
+      return(TRUE)
+  return(FALSE)
+}
+
 
 #' @rdname is.object-methods
 #' @export
