@@ -18,7 +18,7 @@
 #'  \item{\emph{Whatever function}} {Now we are into crazy territory!  You can provide any function (the actual function, not a string ) that operates on a vector of numerics and it might just work!  Works for sd, var, min and max, but your mileage may vary.}
 #'  \item{\emph{Something else?}}{Contact the author!}
 #' }
-#' @param layers The names of the layers upon which to operate (as a vector of characters)
+#' @param layers The names of the layers upon which to operate (as a vector of characters).  Furthermore, one can utilise a handy a handy trick whereby any layer spcecified, 
 #' @param new.layer A single character specifying the name of the new layer, will over-write an existing layer if already present.  Will be built automatically if not specified.
 #'
 #' @return A Field (but not this is not strictly necessary since the objects are changed in place)
@@ -29,6 +29,29 @@
 layerOp <- function(x, operator, layers, new.layer){
   
   t1 <- Sys.time()
+  
+  
+  ### PREAMBLE - find layers which start with a '.' and expand them to PFT ids
+  final.layers <- c()
+  for(layer in layers) {
+    
+    if(substring(layer, 1, 1) == '.') {
+      
+      criteria <- substring(layer, 2)
+      if(tolower(criteria) == "pfts") new.layers <- whichPFTs(x)
+      else new.layers <- whichPFTs(x, criteria)
+      final.layers <- append(final.layers, unlist(new.layer))
+              
+    }
+    else {
+      final.layers <- append(final.layers, layer)
+    }
+  
+    
+  }
+  print(layers)
+  print(final.layers)
+  
   
   # First consider the numeric or NULL case to set or remove layers
   if(is.null(operator) || is.numeric(operator)){
