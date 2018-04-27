@@ -561,10 +561,7 @@ getStandardQuantity_LPJ <- function(run,
     }
     else {
       this.dt <- openLPJOutputFile(run, "mgpp", first.year, last.year, verbose = TRUE)
-      this.dt <- autoLayer(this.dt, "Annual") 
-      this.dt <- this.dt[, c("Lon", "Lat", "Year","Annual"), with = FALSE]
-      this.dt <- this.dt[, Total := Annual]
-      this.dt <- this.dt[, Annual := NULL]
+      this.dt <- aggregateSubannual(this.dt, method = "sum", target = "Annual")
     }
     return(this.dt)
     
@@ -583,7 +580,7 @@ getStandardQuantity_LPJ <- function(run,
     }
     else{
       this.dt <- openLPJOutputFile(run, "mnpp", first.year, last.year, verbose = TRUE)
-      this.dt <- autoLayer(this.dt, "Annual")
+      this.dt <- aggregateSubannual(this.dt, method = "sum", target = "Annual")
     }
     
     
@@ -940,18 +937,6 @@ GUESS.PFTs <- list(
             zone = "NA",
             colour = "sienna2",
             combine = "None"
-  ),
-
-  
-  Total = new("PFT",
-              id = "Total",
-              name = "Total",
-              lifeform = "NA",
-              leafform = "NA",
-              phenology = "NA",
-              zone = "NA", 
-              colour = "black",
-              combine = "None"
   )
   
 )

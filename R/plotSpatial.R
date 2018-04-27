@@ -657,11 +657,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     #
   }
   if(discrete) {
-    print(data.toplot)
-    print(cols)
-    print(categorical.legend.labels)
-    print(breaks)
-    mp <- mp + scale_fill_manual(values = cols, 
+     mp <- mp + scale_fill_manual(values = cols, 
                                  breaks = breaks,
                                  labels = categorical.legend.labels)
     # mp <- mp + guides(fill = guide_legend(keyheight = 1))

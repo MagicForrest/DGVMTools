@@ -19,14 +19,10 @@ plotScatter <- function(field1, field2 = field1, layer1, layer2 = layer1) {
   
   if(!identical(field1, field2)) {
       to.plot <- selectLayers(field1, layer1)
-      print(to.plot)
-      print(field2@data)
       to.plot <- copyLayers(from = field2, to = to.plot, layer2, keep.all.to = FALSE, keep.all.from = FALSE)
-      print(to.plot)
   }
   else {
       to.plot <- selectLayers(field1, c(layer1, layer2))
-      print(to.plot)
   }
   
  

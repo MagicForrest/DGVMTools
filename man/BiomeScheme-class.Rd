@@ -29,15 +29,11 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 
 \item{\code{rules}}{A function which is applied to every row of the data.table and describes the biome classification rules.}
 
-\item{\code{totals.needed}}{List of vegetation totals needed to calculate biomes, for example c("Tree", "Grass")}
+\item{\code{totals.needed}}{List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a two-item list.  For example one element could be
+for example to calculate the maximum woody PFT and call the layer "Woody" one element of the list should be list(c(".Tree", ."Shrub"), "Woody").}
 
-\item{\code{max.needed}}{List of maximum values needed to calculate biomes, for example c("PFT", "Tree")}
-
-\item{\code{fraction.of.total}}{List of vegetation fraction of totals needed to calculate biomes}
-
-\item{\code{fraction.of.tree}}{List of vegetation fraction of tree total needed to calculate biomes}
-
-\item{\code{fraction.of.woody}}{List of vegetation fraction of woody total needed to calculate biomes}
+\item{\code{max.needed}}{List of vegetation maximums needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a two-item list.  For example one element could be
+for example to calculate the maximum woody PFT and call the layer "MaxWoody" one element of the list should be list(c(".Tree", ."Shrub"), "MaxWoody").}
 
 \item{\code{needGDD5}}{If TRUE the biome rules require GDD5 for the classification}
 

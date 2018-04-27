@@ -7,6 +7,7 @@
 \alias{is.Source}
 \alias{is.SourceInfo}
 \alias{is.Quantity}
+\alias{is.PFT}
 \alias{is.SpatialComparison}
 \title{Check if an object is a particular type of DGVMTools object.}
 \usage{
@@ -19,6 +20,8 @@ is.Source(input)
 is.SourceInfo(input)
 
 is.Quantity(input)
+
+is.PFT(input)
 
 is.SpatialComparison(input)
 }

@@ -38,9 +38,9 @@ layerOp <- function(x, operator, layers, new.layer){
     if(substring(layer, 1, 1) == '.') {
       
       criteria <- substring(layer, 2)
-      if(tolower(criteria) == "pfts") new.layers <- whichPFTs(x)
-      else new.layers <- whichPFTs(x, criteria)
-      final.layers <- append(final.layers, unlist(new.layer))
+      if(tolower(criteria) == "pfts") expanded.layers <- whichPFTs(x)
+      else expanded.layers <- whichPFTs(x, criteria)
+      final.layers <- append(final.layers, unlist(expanded.layers))
               
     }
     else {
@@ -49,10 +49,10 @@ layerOp <- function(x, operator, layers, new.layer){
   
     
   }
-  print(layers)
-  print(final.layers)
   
-  
+  # reser the layers to the new ones
+  layers <- final.layers
+ 
   # First consider the numeric or NULL case to set or remove layers
   if(is.null(operator) || is.numeric(operator)){
     if(length(operator) > 1 ) stop(paste0("When assigning values to layers using layerOp() you need to provide a single value or NULL, you provided ", length(operator)))

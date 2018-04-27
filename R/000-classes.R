@@ -416,11 +416,10 @@ setClass("ComparisonLayer",
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
-#' @slot totals.needed List of vegetation totals needed to calculate biomes, for example c("Tree", "Grass")
-#' @slot max.needed List of maximum values needed to calculate biomes, for example c("PFT", "Tree")
-#' @slot fraction.of.total List of vegetation fraction of totals needed to calculate biomes
-#' @slot fraction.of.tree List of vegetation fraction of tree total needed to calculate biomes
-#' @slot fraction.of.woody List of vegetation fraction of woody total needed to calculate biomes
+#' @slot totals.needed List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a two-item list.  For example one element could be
+#' for example to calculate the maximum woody PFT and call the layer "Woody" one element of the list should be list(c(".Tree", ."Shrub"), "Woody").
+#' @slot max.needed List of vegetation maximums needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a two-item list.  For example one element could be
+#' for example to calculate the maximum woody PFT and call the layer "MaxWoody" one element of the list should be list(c(".Tree", ."Shrub"), "MaxWoody").
 #' @slot needGDD5 If TRUE the biome rules require GDD5 for the classification
 #' @slot data.reference Character string giving a reference where the data for this biome scheme comes from
 #' @slot published.reference Character string giving a reference where this model output classification scheme was published
@@ -429,11 +428,9 @@ setClass("ComparisonLayer",
 setClass("BiomeScheme",
          contains = "Quantity",
          slots = c(rules = "function",
-                   max.needed = "character",
-                   totals.needed = "character",
-                   fraction.of.total = "character",
-                   fraction.of.tree = "character",
-                   fraction.of.woody = "character",
+                   max.needed = "list",
+                   totals.needed = "list",
+                   fractions.needed = "list",
                    needGDD5 = "logical",
                    data.reference = "character",
                    published.reference = "character"

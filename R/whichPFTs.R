@@ -49,7 +49,6 @@ whichPFTs <- function(x, criteria = NULL, return.ids = TRUE) {
     
   }
   
-  
   return(matched.pfts)
   
 }

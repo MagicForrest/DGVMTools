@@ -43,46 +43,69 @@ calcBiomes <-function(input, scheme){
     rm(temp.model.run)
   }
   
-  # Get the dominant tree and dominant woody PFTs
-  input <- autoLayer(input, layers = scheme@max.needed, method = "max")
+  # Get the maximums needed
+  for(max.of.layers in scheme@max.needed) {
+    layerOp(x = input, operator = "max.layer", layers = max.of.layers[[1]], new.layer = max.of.layers[[2]])
+  }
+ 
   
   if(!"Grass" %in% names(input@data) ) {
     input@data[, Grass := 0]
   }
   
-  # Get the totals required
-  input <- autoLayer(input, layers = c(scheme@fraction.of.total, scheme@fraction.of.tree, scheme@fraction.of.woody, scheme@totals.needed), method = "sum")
+  # Get the totals needed
+  for(total.of.layers in scheme@totals.needed) {
+    layerOp(x = input, operator = "sum", layers = total.of.layers[[1]], new.layer = total.of.layers[[2]])
+  }
   
+ 
   # Get the fractions required - now somewhat long way around (since remove divideLayers() but whatevs) 
-  if(length(scheme@fraction.of.total) > 0) {
-    if(!"Total" %in% names(input)) input <- autoLayer(input, "Total", method = "sum")
-    for(layer in scheme@fraction.of.total){
-      all.layers <- expandLayers(layers = layer, input.data = input)
-      for(layer2 in all.layers) {
-        layerOp(input, "/", c(layer2,"Total"), paste0(layer2, "Fraction"))
-      }
+  if(length(scheme@fractions.needed) > 0) {
+    for(fractions in scheme@fractions.needed) {
+      layerOp(input, "/", c(fractions[[1]], fractions[[2]]), fractions[[3]])
     }
   }
-  
-  if(length(scheme@fraction.of.tree) > 0) {
-    if(!"Total" %in% names(input)) input <- autoLayer(input, "Tree", method = "sum")
-    for(layer in scheme@fraction.of.tree){
-      all.layers <- expandLayers(layers = layer, input.data = input)
-      for(layer2 in all.layers) {
-        layerOp(input, "/", c(layer2,"Tree"), paste0(layer2, "FractionOfTree"))
-      }
-    }
-  }
-  
-  if(length(scheme@fraction.of.woody) > 0) {
-    if(!"Total" %in% names(input)) input <- autoLayer(input, "Woody", method = "sum")
-    for(layer in scheme@fraction.of.woody){
-      all.layers <- expandLayers(layers = layer, input.data = input)
-      for(layer2 in all.layers) {
-        layerOp(input, "/", c(layer2,"Woody"), paste0(layer2, "FractionOfWoody"))
-      }
-    }
-  }
+    
+    
+  #   if(!"Total" %in% names(input)) layerOp(x = input, operator = "sum", layers = ".PFTs", new.layer = "Total")
+  #   for(layer in scheme@fraction.of.total){
+  #     all.layers <- expandLayers(layers = layer, input.data = input)
+  #     for(layer2 in all.layers) {
+  #       layerOp(input, "/", c(layer2,"Total"), paste0(layer2, "Fraction"))
+  #     }
+  #   }
+  # }
+  # 
+  # 
+  # if(length(scheme@fraction.of.total) > 0) {
+  #   if(!"Total" %in% names(input)) layerOp(x = input, operator = "sum", layers = ".PFTs", new.layer = "Total")
+  #   for(layer in scheme@fraction.of.total){
+  #     all.layers <- expandLayers(layers = layer, input.data = input)
+  #     for(layer2 in all.layers) {
+  #       layerOp(input, "/", c(layer2,"Total"), paste0(layer2, "Fraction"))
+  #     }
+  #   }
+  # }
+  # 
+  # if(length(scheme@fraction.of.tree) > 0) {
+  #   if(!"Tree" %in% names(input)) layerOp(x = input, operator = "sum", layers = ".Tree", new.layer = "Tree")
+  #   for(layer in scheme@fraction.of.tree){
+  #     all.layers <- expandLayers(layers = layer, input.data = input)
+  #     for(layer2 in all.layers) {
+  #       layerOp(input, "/", c(layer2,"Tree"), paste0(layer2, "FractionOfTree"))
+  #     }
+  #   }
+  # }
+  # 
+  # if(length(scheme@fraction.of.woody) > 0) {
+  #   if(!"Woody" %in% names(input)) layerOp(x = input, operator = "sum", layers = c(".Tree", ".Shrub"), new.layer = "Woody")
+  #   for(layer in scheme@fraction.of.woody){
+  #     all.layers <- expandLayers(layers = layer, input.data = input)
+  #     for(layer2 in all.layers) {
+  #       layerOp(input, "/", c(layer2,"Woody"), paste0(layer2, "FractionOfWoody"))
+  #     }
+  #   }
+  # }
  
   
   # We get a warning about a shallow copy here, suppress it
