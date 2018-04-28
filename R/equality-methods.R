@@ -15,7 +15,7 @@ setGeneric("is.equal", function(a, b) standardGeneric("is.equal"))
 
 #' @describeIn is.equal Checks two Quantity objects for equality
 setMethod("is.equal", signature("Quantity", "Quantity"), function(a, b) {
-  if (a@type==b@type && a@units==b@units && a@aggregate.method==b@aggregate.method)
+  if (a@type==b@type && a@units==b@units)
     return(TRUE)
   return(FALSE)
 })

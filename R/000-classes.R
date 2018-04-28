@@ -254,7 +254,6 @@ setClass("SourceInfo",
 #' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.  
 #' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
 #' @slot colours A function that returns a colour scale suited for plotting this quantity.
-#' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, either "sum" or "average"
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
 #' @slot cf.name A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
 #' but it makes sense to use this where possible.  
@@ -269,7 +268,6 @@ setClass("Quantity",
                    type = "character",
                    units = "character",
                    colours = "function",
-                   aggregate.method = "character",
                    model = "character",
                    cf.name = "character"
          ),
@@ -278,7 +276,6 @@ setClass("Quantity",
                        type = "UnknownType",
                        units = "-",
                        colours = fields::tim.colors,
-                       aggregate.method = "sum",
                        model = "Standard",
                        cf.name = "unknown"
          )
@@ -413,7 +410,6 @@ setClass("ComparisonLayer",
 #' @slot type A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")
 #' @slot units A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")
 #' @slot colours A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")
-#' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
 #' @slot totals.needed List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.  

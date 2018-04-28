@@ -934,7 +934,6 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = viridis::viridis,
-      aggregate.method = "sum",
       model = c("aDGVM")),
   
   new("Quantity",
@@ -943,7 +942,6 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "m",
       colours = fields::tim.colors,
-      aggregate.method = "mean",
       model = c("aDGVM")),
   
   new("Quantity",
@@ -952,7 +950,6 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "m^2/ha",
       colours = fields::tim.colors,
-      aggregate.method = "mean",
       model = c("aDGVM")),
   
   new("Quantity",
@@ -961,7 +958,6 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "plants",
       colours = veg.palette,
-      aggregate.method = "sum",
       model = c("aDGVM")),
   
   new("Quantity",
@@ -970,7 +966,6 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "",
       colours = veg.palette,
-      aggregate.method = "sum",
       model = c("aDGVM")),
   
   new("Quantity",

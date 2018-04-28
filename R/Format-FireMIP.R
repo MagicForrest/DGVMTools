@@ -1010,7 +1010,6 @@ new("Quantity",
     units = "",
     colours = reversed.viridis,
     model = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    aggregate.method = "sum" ,
     cf.name = "Fractional Land Cover of PFT"),
 
 new("Quantity",

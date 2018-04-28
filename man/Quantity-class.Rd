@@ -64,8 +64,6 @@ but they will likely need to be modified and new ones aded for a specific analys
 
 \item{\code{colours}}{A function that returns a colour scale suited for plotting this quantity.}
 
-\item{\code{aggregate.method}}{A character string defining the default method for how to aggregate the quantity, either "sum" or "average"}
-
 \item{\code{model}}{Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.}
 
 \item{\code{cf.name}}{A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
