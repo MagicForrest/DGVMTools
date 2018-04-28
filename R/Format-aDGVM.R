@@ -782,7 +782,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-listPFTs_aDGVM <- function(x, variables) {
+determinePFTs_aDGVM <- function(x, variables) {
   
   warning("Need aDGVMers to write this function! For now I am returning the source@format@pft.set argument directly.")
   return(x@format@pft.set)
@@ -803,7 +803,7 @@ listPFTs_aDGVM <- function(x, variables) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-listAvailableQuantities_aDGVM <- function(source){
+determineQuantities_aDGVM <- function(source){
   
   warning("Needs to be implemented by an aDGVMer.")
   
@@ -1007,10 +1007,10 @@ aDGVM <- new("Format",
                 id = "aDGVM",
                 
                 # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-                listPFTs = listPFTs_aDGVM,
+                determinePFTs = determinePFTs_aDGVM,
                 
                 # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-                listAvailableQuantities = listAvailableQuantities_aDGVM,
+                determineQuantities = determineQuantities_aDGVM,
                 
                 # FUNCTION TO READ A FIELD 
                 getField = getField_aDGVM,

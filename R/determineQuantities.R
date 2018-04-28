@@ -8,8 +8,8 @@
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
-listAvailableQuantities <- function(source, names = TRUE) {
+determineQuantities <- function(source, names = TRUE) {
   
-    return(source@format@listAvailableQuantities(source@dir, names = names))
+    return(source@format@determineQuantities(source@dir, names = names))
   
 }

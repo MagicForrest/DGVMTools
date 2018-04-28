@@ -29,11 +29,16 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 
 \item{\code{rules}}{A function which is applied to every row of the data.table and describes the biome classification rules.}
 
-\item{\code{totals.needed}}{List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a two-item list.  For example one element could be
-for example to calculate the maximum woody PFT and call the layer "Woody" one element of the list should be list(c(".Tree", ."Shrub"), "Woody").}
+\item{\code{totals.needed}}{List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.
+For example one element could be to list(c(".Tree", ."Shrub"), "Woody") which would make a layer called "Woody" which would be the sum of all trees and shrubs.}
 
-\item{\code{max.needed}}{List of vegetation maximums needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a two-item list.  For example one element could be
-for example to calculate the maximum woody PFT and call the layer "MaxWoody" one element of the list should be list(c(".Tree", ."Shrub"), "MaxWoody").}
+\item{\code{max.needed}}{List of vegetation maximums needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.
+For example one element could be to list(c(".Tree", ."Shrub"), "MaxWoody") which would make a layer called "MaxWoody" which would be the maximum  of all trees and shrubs.}
+
+\item{\code{fractions.needed}}{List of vegetation fractions needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of threeo-item list.
+For example one element could be to list("TeBE", "Tree", "TeBEFractionOFTree") which would make a layer called "TeBEFractionOFTre" and would the value for TeBE divided by the value for Tree.}
+
+\item{\code{needGDD5}}{If TRUE the biome rules require GDD5 for the classification}
 
 \item{\code{needGDD5}}{If TRUE the biome rules require GDD5 for the classification}
 

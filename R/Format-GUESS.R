@@ -618,7 +618,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "burntfraction_std") {
     
     # if mfirefrac is present the open it and use it
-    if("mfirefrac" %in% listAvailableQuantities_GUESS(run@dir, names=TRUE)){
+    if("mfirefrac" %in% determineQuantities_GUESS(run@dir, names=TRUE)){
       this.dt <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = TRUE)
       this.dt <- aggregateSubannual(this.dt, method = "sum")
       
@@ -660,7 +660,7 @@ getStandardQuantity_LPJ <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-listAvailableQuantities_GUESS <- function(directory, names = TRUE){
+determineQuantities_GUESS <- function(directory, names = TRUE){
   
   # First get the list of *.out files present
   files.present <- list.files(directory, ".out$")
@@ -715,10 +715,10 @@ listAvailableQuantities_GUESS <- function(directory, names = TRUE){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-listPFTs_GUESS <- function(x, variables) {
+determinePFTs_GUESS <- function(x, variables) {
   
   # first get a list of all avaiable variables
-  available.vars <- suppressWarnings(listAvailableQuantities_GUESS(x@dir))
+  available.vars <- suppressWarnings(determineQuantities_GUESS(x@dir))
   
   # check for the presence the following variables (in order)
   possible.vars <- c("lai", "cmass", "dens", "fpc")
@@ -1830,10 +1830,10 @@ GUESS <- new("Format",
              id = "LPJ-GUESS",
              
              # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-             listPFTs = listPFTs_GUESS,
+             determinePFTs = determinePFTs_GUESS,
              
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-             listAvailableQuantities = listAvailableQuantities_GUESS,
+             determineQuantities = determineQuantities_GUESS,
              
              # FUNCTION TO READ A FIELD 
              getField = getField_GUESS,

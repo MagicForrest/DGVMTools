@@ -356,7 +356,7 @@ openDGVMDataFile <- function(source,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-listAvailableQuantities_DGVMData <- function(source){
+determineQuantities_DGVMData <- function(source){
   
   # First get the list of *.out files present
   files.present <- list.files(source@dir, "*.nc")
@@ -385,7 +385,7 @@ listAvailableQuantities_DGVMData <- function(source){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-listPFTs_DGVMData <- function(x, variables) {
+determinePFTs_DGVMData <- function(x, variables) {
   
   warning("Datasets don't normally have PFTs (or they are not likely to be defined consistently) so I am not looking for them.  Instead I am returning the source@format@pft.set argument directly (in case you defined some yourself, which would be the way to go in this case)")
   return(x@format@pft.set)
@@ -532,10 +532,10 @@ DGVMData <- new("Format",
              id = "DGVMData",
              
              # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-             listPFTs = listPFTs_DGVMData,
+             determinePFTs = determinePFTs_DGVMData,
              
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-             listAvailableQuantities = listAvailableQuantities_DGVMData,
+             determineQuantities = determineQuantities_DGVMData,
              
              # FUNCTION TO READ A FIELD 
              getField = getField_DGVMData,

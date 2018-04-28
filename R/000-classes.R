@@ -11,8 +11,8 @@
 #' @slot default.pfts 'Standard' vegetation types (PFTs, Plant Functional Type) that this model uses, as a list of DGVMTools::PFT objects.  
 #' This is just a default PFT set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
 #' @slot quantities 'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output
-#' @slot listPFTs A function to determine which PFTs are present in a run or dataset.
-#' @slot listAvailableQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
+#' @slot determinePFTs A function to determine which PFTs are present in a run or dataset.
+#' @slot determineQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
 #' @slot getField A function to retrieve actually data from the model output or dataset.  This is likely to be a fairly complex function, and really depends on the specifics 
 #' and idiosynchrasies of the model output format.
 #' 
@@ -27,8 +27,8 @@ setClass("Format",
          slots = c(id = "character",
                    default.pfts = "list",
                    quantities = "list",
-                   listPFTs = "function",
-                   listAvailableQuantities = "function",
+                   determinePFTs = "function",
+                   determineQuantities = "function",
                    getField = "function"
          )
 )
@@ -416,10 +416,13 @@ setClass("ComparisonLayer",
 #' @slot aggregate.method A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
-#' @slot totals.needed List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a two-item list.  For example one element could be
-#' for example to calculate the maximum woody PFT and call the layer "Woody" one element of the list should be list(c(".Tree", ."Shrub"), "Woody").
-#' @slot max.needed List of vegetation maximums needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a two-item list.  For example one element could be
-#' for example to calculate the maximum woody PFT and call the layer "MaxWoody" one element of the list should be list(c(".Tree", ."Shrub"), "MaxWoody").
+#' @slot totals.needed List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.  
+#' For example one element could be to list(c(".Tree", ."Shrub"), "Woody") which would make a layer called "Woody" which would be the sum of all trees and shrubs.
+#' @slot max.needed List of vegetation maximums needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.  
+#' For example one element could be to list(c(".Tree", ."Shrub"), "MaxWoody") which would make a layer called "MaxWoody" which would be the maximum  of all trees and shrubs.
+#' @slot fractions.needed List of vegetation fractions needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of threeo-item list.  
+#' For example one element could be to list("TeBE", "Tree", "TeBEFractionOFTree") which would make a layer called "TeBEFractionOFTre" and would the value for TeBE divided by the value for Tree.
+#' @slot needGDD5 If TRUE the biome rules require GDD5 for the classification
 #' @slot needGDD5 If TRUE the biome rules require GDD5 for the classification
 #' @slot data.reference Character string giving a reference where the data for this biome scheme comes from
 #' @slot published.reference Character string giving a reference where this model output classification scheme was published

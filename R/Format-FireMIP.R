@@ -435,9 +435,9 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-listPFTs_FireMIP <- function(x, variables) {
+determinePFTs_FireMIP <- function(x, variables) {
   
-  warning("listPFTs_FireMIP not currently implmented.")
+  warning("determinePFTs_FireMIP not currently implmented.")
   return(x@format@pft.set)
   
 }
@@ -456,7 +456,7 @@ listPFTs_FireMIP <- function(x, variables) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-listAvailableQuantities_FireMIP <- function(source){
+determineQuantities_FireMIP <- function(source){
   
   # First get the list of *.out files present
   files.present <- list.files(source@dir, "*.nc")
@@ -1076,10 +1076,10 @@ FireMIP<- new("Format",
                 id = "FireMIP",
                 
                 # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-                listPFTs = listPFTs_FireMIP,
+                determinePFTs = determinePFTs_FireMIP,
                 
                 # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-                listAvailableQuantities = listAvailableQuantities_FireMIP,
+                determineQuantities = determineQuantities_FireMIP,
                 
                 # FUNCTION TO READ A FIELD 
                 getField = getField_FireMIP,
