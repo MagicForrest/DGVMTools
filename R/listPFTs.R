@@ -30,20 +30,28 @@ listPFTs <- function(x, criteria = NULL, return.ids = TRUE) {
     stop("Unexpected input for argument 'x' in listPFTs().")
   }
   
+  # get a list of the layers of x, to check that the PFT is actually present
+  layers.x <- names(x)
+  
   
   # now check each PFT in X to see if it matches the criteria
   matched.pfts <- list()
   if(!is.null(criteria)) criteria <- tolower(criteria)
   for(PFT in pft.list) {
     
-    if(tolower(PFT@lifeform) == criteria 
-       || tolower(PFT@zone) == criteria
-       || tolower(PFT@leafform) == criteria 
-       || tolower(PFT@phenology) == criteria
-       || is.null(criteria)) {
+    # check PFT is present in data.table 
+    if(PFT@id %in% layers.x) {
       
-      if(return.ids) matched.pfts[[PFT@id]] <- PFT@id 
-      else matched.pfts[[PFT@id]] <- PFT
+      if(tolower(PFT@lifeform) == criteria 
+         || tolower(PFT@zone) == criteria
+         || tolower(PFT@leafform) == criteria 
+         || tolower(PFT@phenology) == criteria
+         || is.null(criteria)) {
+        
+        if(return.ids) matched.pfts[[PFT@id]] <- PFT@id 
+        else matched.pfts[[PFT@id]] <- PFT
+        
+      }
       
     }
     

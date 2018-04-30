@@ -38,7 +38,7 @@ layerOp <- function(x, operator, layers, new.layer){
     if(substring(layer, 1, 1) == '.') {
       
       criteria <- substring(layer, 2)
-      if(tolower(criteria) == "pfts") expanded.layers <- listPFTs(x)
+      if(tolower(criteria) == "pfts" || tolower(criteria) == "pft") expanded.layers <- listPFTs(x)
       else expanded.layers <- listPFTs(x, criteria)
       final.layers <- append(final.layers, unlist(expanded.layers))
               
