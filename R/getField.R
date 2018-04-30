@@ -53,7 +53,7 @@ getField <- function(source,
   
   ### CONVERT STRING TO QUANTITY
   if(class(var) == "character") {
-    quant <- lookupQuantity(var, source@format@id)
+    quant <- lookupQuantity(var, source@format)
     var.string <- var
   }
   else {

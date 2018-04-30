@@ -264,7 +264,7 @@ getSaatchi2011_example <- function(resolution = "HD"){
                          first.year = 1991,
                          last.year = 2001,
                          year.aggregate.method = "mean",
-                         quant = lookupQuantity("vegC_std", "Standard"),
+                         quant = lookupQuantity("vegC_std"),
                          spatial.extent = extent(Saatchi.dt), spatial.extent.id = "SaatchiTropics",
                          spatial.aggregate.method = "none",
                          subannual.aggregate.method = "none",

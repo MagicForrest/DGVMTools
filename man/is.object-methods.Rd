@@ -9,6 +9,7 @@
 \alias{is.Quantity}
 \alias{is.PFT}
 \alias{is.SpatialComparison}
+\alias{is.Format}
 \title{Check if an object is a particular type of DGVMTools object.}
 \usage{
 is.Field(input, spatial = FALSE, temporal = FALSE)
@@ -24,6 +25,8 @@ is.Quantity(input)
 is.PFT(input)
 
 is.SpatialComparison(input)
+
+is.Format(input)
 }
 \arguments{
 \item{input}{Any R object to be checked}

@@ -417,7 +417,7 @@ DGVMData.quantities <- list(
       name = "Fraction",
       units = "",
       colours = grDevices::colorRampPalette(c("grey85", "black")), 
-      model = c("Standard","DGVMData"),
+      model = c("DGVMData"),
       cf.name = "area_fraction"), 
   
   new("Quantity",
@@ -426,7 +426,7 @@ DGVMData.quantities <- list(
       name = "Area Fraction",
       units = "%",
       colours = veg.palette, 
-      model = c("Standard", "DGVMData"),
+      model = c("DGVMData"),
       cf.name = "area_fraction_percent"), 
   
   new("Quantity",
@@ -435,7 +435,7 @@ DGVMData.quantities <- list(
       type = "PFT",
       units = "kg m-2",
       colours = reversed.viridis,
-      model = c("Standard", "DGVMData"),
+      model = c("DGVMData"),
       cf.name = "vegetation_carbon_content"),
   
   new("Quantity",
@@ -444,7 +444,7 @@ DGVMData.quantities <- list(
       type = "PFT",
       units = "1",
       colours = viridis::viridis,
-      model = c("Standard"),
+      model = c("DGVMData"),
       cf.name = "leaf_area_index"),
   
   new("Quantity",
@@ -461,7 +461,7 @@ DGVMData.quantities <- list(
       type = "PFT",
       units = "kgC m-2 year-1",
       colours = fields::tim.colors,
-      model = c("Standard", "DGVMData"),
+      model = c("DGVMData"),
       cf.name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
   
   new("Quantity",
@@ -470,7 +470,7 @@ DGVMData.quantities <- list(
       type = "PFT",
       units = "kgC/m^2/year",
       colours = fields::tim.colors,
-      model = c("Standard")),
+      model = c("DGVMData")),
   
   new("Quantity",
       id = "canopyheight_std",
@@ -478,7 +478,7 @@ DGVMData.quantities <- list(
       type = "-",
       units = "m",
       colours = reversed.magma,
-      model = c("Standard", "DGVMData"),
+      model = c("DGVMData"),
       cf.name = "canopy_height"),
   
   new("Quantity",
@@ -487,7 +487,7 @@ DGVMData.quantities <- list(
       type = "annual",
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
-      model = c("Standard", "DGVMData"),
+      model = c("DGVMData"),
       cf.name = "burned_area_fraction"),
   
   new("Quantity",
@@ -496,7 +496,7 @@ DGVMData.quantities <- list(
       type = "annual",
       units = "fraction",
       colours = veg.palette,
-      model = c("Standard", "DGVMData"),
+      model = c("DGVMData"),
       cf.name = "fraction_absorbed_of_photosynthetically_active_radiation"),
   
   new("Quantity",
@@ -505,7 +505,7 @@ DGVMData.quantities <- list(
       type = "annual",
       units = "GtC/year",
       colours = veg.palette,
-      model = c("Standard"))
+      model = c("DGVMData"))
   
 )
 

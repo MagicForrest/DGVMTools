@@ -104,3 +104,14 @@ is.SpatialComparison <- function(input) {
       return(TRUE)
   return(FALSE)
 }
+
+
+#' @rdname is.object-methods
+#' @export
+is.Format <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "Format" && attr(class.def, "package")=="DGVMTools")
+      return(TRUE)
+  return(FALSE)
+}
