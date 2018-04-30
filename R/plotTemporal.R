@@ -154,7 +154,7 @@ plotTemporal <- function(input.data,
     for(layer in all.layers) {
       for(PFT in PFTs){
         if(layer == PFT@id) { 
-          if(PFT@combine != "no" &&  tolower(PFT@combine) != "none") new.types[[layer]] <- 2
+          if(PFT@shade.tolerance != "no" &&  tolower(PFT@shade.tolerance) != "none") new.types[[layer]] <- 2
           else new.types[[layer]] <- 1
         }
       }

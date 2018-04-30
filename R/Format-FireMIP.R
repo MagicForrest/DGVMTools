@@ -493,57 +493,57 @@ FireMIP.PFTs <- list(
   NE = new("PFT",
            id = "NE",
            name = "Needleleaved Evergreen Tree",
-           lifeform = "Tree",
-           leafform = "Needleleaved",
+           growth.form = "Tree",
+           leaf.form = "Needleleaved",
            phenology = "Evergreen",
-           zone = "NA",
+           climate.zone = "NA",
            colour = "darkblue",
-           combine = "no"
+           shade.tolerance = "no"
   ),
   
   NS = new("PFT",
            id = "NS",
            name = "Needleleaved Summergreen Tree",
-           lifeform = "Tree",
-           leafform = "Needleleaved",
+           growth.form = "Tree",
+           leaf.form = "Needleleaved",
            phenology = "Summergreen",
-           zone = "NA",
+           climate.zone = "NA",
            colour = "cornflowerblue",
-           combine = "no"
+           shade.tolerance = "no"
   ),
   
   BS = new("PFT",
            id = "BS",
            name = "Broadleaved Summergreen Tree",
-           lifeform = "Tree",
-           leafform = "Broadleaved",
+           growth.form = "Tree",
+           leaf.form = "Broadleaved",
            phenology = "Summergreen",
-           zone = "NA",
+           climate.zone = "NA",
            colour = "cyan",
-           combine = "no"
+           shade.tolerance = "no"
   ),
   
   BE = new("PFT",
            id = "BE",
            name = "Broadleaved Evergreen Tree",
-           lifeform = "Tree",
-           leafform = "Broadleaved",
+           growth.form = "Tree",
+           leaf.form = "Broadleaved",
            phenology = "Evergreen",
-           zone = "NA",
+           climate.zone = "NA",
            colour = "darkgreen",
-           combine = "no"
+           shade.tolerance = "no"
   ),
   
   
   BR = new("PFT",
            id = "BR",
            name = "Broadleaved Raingreen Tree",
-           lifeform = "Tree",
-           leafform = "Broadleaved",
+           growth.form = "Tree",
+           leaf.form = "Broadleaved",
            phenology = "Raingreen",
-           zone = "NA",
+           climate.zone = "NA",
            colour = "maroon",
-           combine = "no"
+           shade.tolerance = "no"
   ),
   
   # GRASSES
@@ -551,47 +551,47 @@ FireMIP.PFTs <- list(
   C3G = new("PFT",
             id = "C3G",
             name = "Boreal/Temperate Grass",
-            lifeform = "Grass",
-            leafform = "Broadleaved",
+            growth.form = "Grass",
+            leaf.form = "Broadleaved",
             phenology = "GrassPhenology",
-            zone = "NA",
+            climate.zone = "NA",
             colour = "lightgoldenrod1",
-            combine = "no"
+            shade.tolerance = "no"
   ),
   
   C4G = new("PFT",
             id = "C4G",
             name = "Tropical Grass",
-            lifeform = "Grass",
-            leafform = "Broadleaved",
+            growth.form = "Grass",
+            leaf.form = "Broadleaved",
             phenology = "GrassPhenology",
-            zone = "NA",
+            climate.zone = "NA",
             colour = "sienna2",
-            combine = "no"
+            shade.tolerance = "no"
   ),
   
   # SHRUBS
   Shb = new("PFT",
             id = "Shb",
             name = "Shrub",
-            lifeform = "Shrub",
-            leafform = "NA",
+            growth.form = "Shrub",
+            leaf.form = "NA",
             phenology = "NA",
-            zone = "NA",
+            climate.zone = "NA",
             colour = "darkred",
-            combine = "no"
+            shade.tolerance = "no"
   ),
   
   # Agrcultural
   Crops = new("PFT",
             id = "Crops",
             name = "Agricultural",
-            lifeform = "Agricultural",
-            leafform = "NA",
+            growth.form = "Agricultural",
+            leaf.form = "NA",
             phenology = "NA",
-            zone = "NA",
+            climate.zone = "NA",
             colour = "black",
-            combine = "no"
+            shade.tolerance = "no"
   )
   
 )

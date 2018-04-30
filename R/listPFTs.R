@@ -42,9 +42,9 @@ listPFTs <- function(x, criteria = NULL, return.ids = TRUE) {
     # check PFT is present in data.table 
     if(PFT@id %in% layers.x) {
       
-      if(tolower(PFT@lifeform) == criteria 
-         || tolower(PFT@zone) == criteria
-         || tolower(PFT@leafform) == criteria 
+      if(tolower(PFT@growth.form) == criteria 
+         || tolower(PFT@climate.zone) == criteria
+         || tolower(PFT@leaf.form) == criteria 
          || tolower(PFT@phenology) == criteria
          || is.null(criteria)) {
         

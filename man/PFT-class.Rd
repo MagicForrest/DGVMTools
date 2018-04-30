@@ -17,7 +17,7 @@ GUESS.PFTs
 aDGVM.PFTs
 }
 \description{
-This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their lifeform, phenology, leaftype, climate zone etc, and a default plot colour.
+This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their growth form, phenology, leaftype, climate zone etc, and a default plot colour.
 These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a SourceInfo object
 to define which PFTs might be in a run (but they don't all need to be present in a given run)
 
@@ -43,17 +43,17 @@ aDGVM PFTs (under development)
 
 \item{\code{name}}{A character string to describe the PFT. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.}
 
-\item{\code{lifeform}}{A string defining the lifeform of the PFT, typically either "Tree", "Grass" or "Shrub"}
+\item{\code{growth.form}}{A string defining the growth.form of the PFT, typically either "Tree", "Grass" or "Shrub"}
 
-\item{\code{leafform}}{A string defining the leafform of the PFT, typically either "Broadleaved" or "Needleleaved"}
+\item{\code{leaf.form}}{A string defining the leaf.form of the PFT, typically either "Broadleaved" or "Needleleaved"}
 
 \item{\code{phenology}}{A string defining the phenology of the PFT, typically "Evergreen", "Summergreen", "Raingreen" or "GrassPhenology"}
 
-\item{\code{zone}}{A string defining the climate zone of a PFT, typically "Boreal", "Temperate" or "Tropical" (could go crazy and also have "Mediterranean", for example)}
+\item{\code{climate.zone}}{A string defining the climate climate.zone of a PFT, typically "Boreal", "Temperate" or "Tropical" (could go crazy and also have "Mediterranean", for example)}
+
+\item{\code{shade.tolerance}}{A string defining the \code{id} of a shade tolerance characteristric of a PFT.}
 
 \item{\code{colour}}{A string defining a preferred R colour to plot this PFT (for line graphs etc)}
-
-\item{\code{combine}}{A string defining the \code{id} of a PFT that this PFT should be combined with when combining PFT with similar functioning but different shade tolerance.  Used primarily with LPJ-GUESS.}
 }}
 
 \author{

@@ -831,78 +831,78 @@ aDGVM.PFTs <- list(
   C3G = new("PFT",
             id = "C3G",
             name = "Boreal/Temperate Grass",
-            lifeform = "Grass",
-            leafform = "Broadleaved",
+            growth.form = "Grass",
+            leaf.form = "Broadleaved",
             phenology = "GrassPhenology",
-            zone = "NA",
+            climate.zone = "NA",
             colour = "lightgoldenrod1",
-            combine = "None"
+            shade.tolerance = "None"
   ),
   
   C4G = new("PFT",
             id = "C4G",
             name = "Tropical Grass",
-            lifeform = "Grass",
-            leafform = "Broadleaved",
+            growth.form = "Grass",
+            leaf.form = "Broadleaved",
             phenology = "GrassPhenology",
-            zone = "NA",
+            climate.zone = "NA",
             colour = "sienna2",
-            combine = "None"
+            shade.tolerance = "None"
   ),
   
   Tr= new("PFT",
           id = "Tr",
           name = "Tropical Tree",
-          lifeform = "Tree",
-          leafform = "Broadleaved",
+          growth.form = "Tree",
+          leaf.form = "Broadleaved",
           phenology = "Evergreen",
-          zone = "Tropical",
+          climate.zone = "Tropical",
           colour = "palevioletred",
-          combine = "None"
+          shade.tolerance = "None"
   ),
   
   TrBE = new("PFT",
              id = "TrBE",
              name = "Tropical Broadleaved Evergreen Tree",
-             lifeform = "Tree",
-             leafform = "Broadleaved",
+             growth.form = "Tree",
+             leaf.form = "Broadleaved",
              phenology = "Evergreen",
-             zone = "Tropical",
+             climate.zone = "Tropical",
              colour = "orchid4",
-             combine = "None"
+             shade.tolerance = "None"
   ),
   
   TrBR = new("PFT",
              id = "TrBR",
              name = "Tropical Broadleaved Raingreen Tree",
-             lifeform = "Tree",
-             leafform = "Broadleaved",
+             growth.form = "Tree",
+             leaf.form = "Broadleaved",
              phenology = "Raingreen",
-             zone = "Tropical",
+             climate.zone = "Tropical",
              colour = "palevioletred",
-             combine = "None"
+             shade.tolerance = "None"
   ),
   
   TrBES = new("PFT",
               id = "TrBE",
               name = "Tropical Broadleaved Evergreen Shrub",
-              lifeform = "Shrub",
-              leafform = "Broadleaved",
+              growth.form = "Shrub",
+              leaf.form = "Broadleaved",
               phenology = "Evergreen",
-              zone = "Tropical",
+              climate.zone = "Tropical",
               colour = "orchid4",
-              combine = "None"
+              shade.tolerance = "None"
   ),
   
   TrBRS = new("PFT",
               id = "TrBR",
               name = "Tropical Broadleaved Raingreen Shrub",
-              lifeform = "Shrub",
-              leafform = "Broadleaved",
+              growth.form = "Shrub",
+              leaf.form = "Broadleaved",
               phenology = "Raingreen",
-              zone = "Tropical",
+              climate.zone = "Tropical",
               colour = "palevioletred",
-              combine = "None"
+              shade.tolerance = "None"
   )
   
 

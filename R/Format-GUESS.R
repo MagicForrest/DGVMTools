@@ -401,7 +401,7 @@ openLPJOutputFile_FireMIP <- function(run,
     rm(dt_intercep)
     
     
-    # combine, convert and clean up
+    # shade.tolerance, convert and clean up
     dt_trans[, (variable) := maet + mevap + mintercep]
     dt_trans[, maet := NULL]
     dt_trans[, mevap := NULL]
@@ -800,46 +800,46 @@ GUESS.PFTs <- list(
   BNE = new("PFT",
             id = "BNE",
             name = "Boreal Needleleaved Evergreen Tree",
-            lifeform = "Tree",
-            leafform = "Needleleaved",
+            growth.form = "Tree",
+            leaf.form = "Needleleaved",
             phenology = "Evergreen",
-            zone = "Boreal",
+            climate.zone = "Boreal",
             colour = "darkblue",
-            combine = "None"
+            shade.tolerance = "None"
   ),
   
   BINE = new("PFT",
              id = "BINE",
              name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
-             lifeform = "Tree",
-             leafform = "Needleleaved",
+             growth.form = "Tree",
+             leaf.form = "Needleleaved",
              phenology = "Evergreen",
-             zone = "Boreal",
+             climate.zone = "Boreal",
              colour = "dodgerblue3",
-             combine = "BNE"
+             shade.tolerance = "BNE"
   ),
   
   BNS = new("PFT",
             id = "BNS",
             name = "Boreal Needleleaved Summergreen Tree",
-            lifeform = "Tree",
-            leafform = "Needleleaved",
+            growth.form = "Tree",
+            leaf.form = "Needleleaved",
             phenology = "Summergreen",
-            zone = "Boreal",
+            climate.zone = "Boreal",
             colour = "cadetblue2",
-            combine = "None"
+            shade.tolerance = "None"
   ),
   
   
   IBS = new("PFT",
             id = "IBS",
             name = "Shade-intolerant B/leaved Summergreen Tree",
-            lifeform = "Tree",
-            leafform = "Broadleaved",
+            growth.form = "Tree",
+            leaf.form = "Broadleaved",
             phenology = "Summergreen",
-            zone = "Temperate",
+            climate.zone = "Temperate",
             colour = "chartreuse",
-            combine = "None"
+            shade.tolerance = "None"
   ),
   
   # TEMPERATE TREES
@@ -847,34 +847,34 @@ GUESS.PFTs <- list(
   TeBE = new("PFT",
              id = "TeBE",
              name = "Temperate Broadleaved Evergreen Tree",
-             lifeform = "Tree",
-             leafform = "Broadleaved",
+             growth.form = "Tree",
+             leaf.form = "Broadleaved",
              phenology = "Evergreen",
-             zone = "Temperate",
+             climate.zone = "Temperate",
              colour = "darkgreen",
-             combine = "None"
+             shade.tolerance = "None"
   ),
   
   TeNE = new("PFT",
              id = "TeNE",
              name = "Temperate Needleleaved Evergreen Tree",
-             lifeform = "Tree",
-             leafform = "Needleleaved",
+             growth.form = "Tree",
+             leaf.form = "Needleleaved",
              phenology = "Evergreen",
-             zone = "Temperate",
+             climate.zone = "Temperate",
              colour = "lightseagreen",
-             combine = "None"
+             shade.tolerance = "None"
   ),
   
   TeBS = new("PFT",
              id = "TeBS",
              name = "Temperate Broadleaved Summergreen Tree",
-             lifeform = "Tree",
-             leafform = "Broadleaved",
+             growth.form = "Tree",
+             leaf.form = "Broadleaved",
              phenology = "Summergreen",
              colour = "darkolivegreen3",
-             zone = "Temperate",
-             combine = "None"
+             climate.zone = "Temperate",
+             shade.tolerance = "None"
   ),
   
   
@@ -883,35 +883,35 @@ GUESS.PFTs <- list(
   TrBE = new("PFT",
              id = "TrBE",
              name = "Tropical Broadleaved Evergreen Tree",
-             lifeform = "Tree",
-             leafform = "Broadleaved",
+             growth.form = "Tree",
+             leaf.form = "Broadleaved",
              phenology = "Evergreen",
-             zone = "Tropical",
+             climate.zone = "Tropical",
              colour = "orchid4",
-             combine = "None"
+             shade.tolerance = "None"
   ),
   
   
   TrIBE = new("PFT",
               id = "TrIBE",
               name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
-              lifeform = "Tree",
-              leafform = "Broadleaved",
+              growth.form = "Tree",
+              leaf.form = "Broadleaved",
               phenology = "Evergreen",
-              zone = "Tropical", 
+              climate.zone = "Tropical", 
               colour = "orchid",
-              combine = "TrBE"
+              shade.tolerance = "TrBE"
   ),
   
   TrBR = new("PFT",
              id = "TrBR",
              name = "Tropical Broadleaved Raingreen Tree",
-             lifeform = "Tree",
-             leafform = "Broadleaved",
+             growth.form = "Tree",
+             leaf.form = "Broadleaved",
              phenology = "Raingreen",
-             zone = "Tropical",
+             climate.zone = "Tropical",
              colour = "palevioletred",
-             combine = "None"
+             shade.tolerance = "None"
   ),
   
   
@@ -920,23 +920,23 @@ GUESS.PFTs <- list(
   C3G = new("PFT",
             id = "C3G",
             name = "Boreal/Temperate Grass",
-            lifeform = "Grass",
-            leafform = "Broadleaved",
+            growth.form = "Grass",
+            leaf.form = "Broadleaved",
             phenology = "GrassPhenology",
-            zone = "NA",
+            climate.zone = "NA",
             colour = "lightgoldenrod1",
-            combine = "None"
+            shade.tolerance = "None"
   ),
   
   C4G = new("PFT",
             id = "C4G",
             name = "Tropical Grass",
-            lifeform = "Grass",
-            leafform = "Broadleaved",
+            growth.form = "Grass",
+            leaf.form = "Broadleaved",
             phenology = "GrassPhenology",
-            zone = "NA",
+            climate.zone = "NA",
             colour = "sienna2",
-            combine = "None"
+            shade.tolerance = "None"
   )
   
 )

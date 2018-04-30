@@ -23,7 +23,7 @@ setGeneric("print", function(x, ...) standardGeneric("print"))
 #' @export
 setMethod("print", signature(x="PFT"), function(x) {
   
-  cat(paste0("PFT: ", x@id," (", x@name, "): ", "Lifeform=",  x@lifeform, ", Leafform=", x@leafform, ", Phenology=", x@phenology, ", Climate zone=", x@zone, ", Preferred colour=", x@colour, "\n"))
+  cat(paste0("PFT: ", x@id," (", x@name, "): ", "Growth form=",  x@growth.form, ", Leaf form=", x@leaf.form, ", Phenology=", x@phenology, ", Climate zone=", x@climate.zone, ", Shade tolerance=", x@shade.tolerance, ", Preferred colour=", x@colour, "\n"))
 
 })
 
@@ -189,6 +189,24 @@ setMethod("print", signature(x="BiomeScheme"), function(x) {
     cat(paste0("     ", type,"\n"))    
   }
 
+})
+
+#' @rdname print
+#' @export 
+setMethod("print", signature(x="Format"), function(x) {
+  
+  cat(paste0("Format:\n"))
+  cat(paste0("id = \"", x@id, "\"", "\n"))
+  cat(paste0("Default PFTs:\n"))
+  for(PFT in x@default.pfts){
+    print(PFT)
+  }
+  cat(paste0("Defined Quantities:\n"))
+  for(quant in x@quantities){
+    print(quant)
+  }
+  
+ 
 })
 
 
