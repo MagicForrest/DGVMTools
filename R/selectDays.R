@@ -18,7 +18,7 @@ selectDays <- function(x, days){
   else stop("Called for an object which is not a Data/Model object or a data.table.  Exiting...")
   
   # Fail if day in not a column
-  if(!"Day" %in% getSTInfo(input.dt)) stop("Day column not present!")
+  if(!"Day" %in% getDimInfo(input.dt)) stop("Day column not present!")
   
   # Warning if a certain day is not present
   days.present <- unique(input.dt[["Day"]])

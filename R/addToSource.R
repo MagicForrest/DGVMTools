@@ -1,6 +1,6 @@
 ############# ADD AN OBJECT TO A SOURCE ######################################
 
-#' Add an object (either a \code{Field} or a  \code{SpatialComparison}) to a \code{Source} object to be use later.  
+#' Add an object (either a \code{Field} or a  \code{Statistics}) to a \code{Source} object to be use later.  
 #' 
 #' Stores an object in its run for later calculations, plotting, comparisons.
 #' 
@@ -14,7 +14,7 @@
 addToSource <- function(object, run){
   
   # Add a BiomeComaprison or RasterComparison to the list in the benchmarks slot 
-  if(is.SpatialComparison(object)) {
+  if(is.Statistics(object)) {
     
     benchmark.list <- run@benchmarks
     benchmark.list[[object@id]] <- object

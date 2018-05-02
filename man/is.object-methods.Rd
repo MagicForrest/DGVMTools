@@ -3,18 +3,19 @@
 \name{is.object-methods}
 \alias{is.object-methods}
 \alias{is.Field}
-\alias{is.ComparisonLayer}
+\alias{is.Comparison}
 \alias{is.Source}
 \alias{is.SourceInfo}
 \alias{is.Quantity}
 \alias{is.PFT}
-\alias{is.SpatialComparison}
+\alias{is.Statistics}
 \alias{is.Format}
+\alias{is.STAInfo}
 \title{Check if an object is a particular type of DGVMTools object.}
 \usage{
 is.Field(input, spatial = FALSE, temporal = FALSE)
 
-is.ComparisonLayer(input)
+is.Comparison(input)
 
 is.Source(input)
 
@@ -24,9 +25,11 @@ is.Quantity(input)
 
 is.PFT(input)
 
-is.SpatialComparison(input)
+is.Statistics(input)
 
 is.Format(input)
+
+is.STAInfo(input)
 }
 \arguments{
 \item{input}{Any R object to be checked}

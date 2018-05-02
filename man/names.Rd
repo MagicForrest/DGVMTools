@@ -4,12 +4,12 @@
 \name{names-methods}
 \alias{names-methods}
 \alias{names,Field-method}
-\alias{names,ComparisonLayer-method}
+\alias{names,Comparison-method}
 \title{Names methods}
 \usage{
 \S4method{names}{Field}(x)
 
-\S4method{names}{ComparisonLayer}(x)
+\S4method{names}{Comparison}(x)
 }
 \arguments{
 \item{x}{A Field or DataObject}

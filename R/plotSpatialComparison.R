@@ -6,14 +6,14 @@
 ##########################################################################################################################################
 
 
-#' Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
+#' Plot a comparion between two layers
 #' 
-#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
+#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and Comparisons (and lists of those things) with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
 #' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
 #'
-#' @param sources The data to plot, must be a ComparisonLayer or a list of ComparisonLayers
+#' @param sources The data to plot, must be a Comparison or a list of Comparisons
 #' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
 #' (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)
 #' @param title A character string to override the default title.
@@ -24,7 +24,7 @@
 #' @param percentage.difference.limit If precentage difference to be plotted, what to limit the scale to.
 #' @param ... Parameters passed to \code{plotSpatial()}
 #' 
-#' @details  A wrapper for around \code{plotSpatial()} to plot the spatial ComparisonLayers as maps.  
+#' @details  A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -61,19 +61,19 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
   ### 1. SOURCES - check the sources
-  if(is.ComparisonLayer(sources)) {
+  if(is.Comparison(sources)) {
     sources<- list(sources)
   }
   else if(class(sources)[1] == "list") {
     for(object in sources){ 
-      if(!is.ComparisonLayer(object)) {
-        warning("You have passed me a list of items to plot but the items are not exclusively of ComparisonLayers.  Returning NULL")
+      if(!is.Comparison(object)) {
+        warning("You have passed me a list of items to plot but the items are not exclusively of Comparisons.  Returning NULL")
         return(NULL)
       }
     }
   }
   else{
-    stop(paste("plotSpatialComparison can only handle single a ComparisonLayer, or a list of ComparisonLayers can't plot an object of type", class(sources)[1], sep = " "))
+    stop(paste("plotStatistics can only handle single a Comparison, or a list of Comparisons can't plot an object of type", class(sources)[1], sep = " "))
   }
   
   
@@ -83,7 +83,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   #### DIFFERENCE OR PERCENTAGE DIFFERENCE
   if(type == "difference" || type == "percentage.difference") {
     
-    # convert the ComparisonLayers into a Fields  for plotting 
+    # convert the Comparisons into a Fields  for plotting 
     objects.to.plot <- list()
     max.for.scale <- 0
     for(object in sources){ 
@@ -103,16 +103,12 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
       new.field <- new("Field",
                        id = object@id,
                        data = new.object@data,
-                       quant = object@quant,
+                       quant = object@quant1,
                        first.year = 0,
                        last.year = 0,
-                       year.aggregate.method = "NULL",
-                       spatial.extent = object@spatial.extent,
-                       spatial.extent.id = object@spatial.extent.id,
-                       spatial.aggregate.method = object@spatial.aggregate.method,
-                       subannual.aggregate.method = object@ subannual.aggregate.method,
-                       subannual.original = object@subannual.original,
-                       source = object@info1)
+                       year.aggregate.method = "NULL", 
+                       source = object@info1,
+                       commonSTAInfo(list(object@sta.info1, object@sta.info2)))
       
       objects.to.plot[[length(objects.to.plot)+1]] <- new.field
       
@@ -145,44 +141,30 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   ### VALUES 
   else if(type == "values") {
     
-    # convert the ComparisonLayers into a Fields  for plotting 
+    # convert the Comparisons into a Fields  for plotting 
     objects.to.plot <- list()
     
     for(object in sources){ 
       
       # FIRST INFO
-      new.dt <- object@data[, append(getSTInfo(object), names(object)[1]), with=FALSE]
-      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
+      new.dt <- object@data[, append(getDimInfo(object), names(object)[1]), with=FALSE]
+      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant1@id )
       objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
                                                           id = object@id,
                                                           data = new.dt,
-                                                          quant = object@quant,
-                                                          first.year = 0,
-                                                          last.year = 0,
-                                                          year.aggregate.method = "NULL",
-                                                          spatial.extent = object@spatial.extent,
-                                                          spatial.extent.id = object@spatial.extent.id,
-                                                          spatial.aggregate.method = object@spatial.aggregate.method,
-                                                          subannual.aggregate.method = object@ subannual.aggregate.method,
-                                                          subannual.original = object@subannual.original,
-                                                          source = object@info1)
+                                                          quant = object@quant1,
+                                                          source = object@info1,
+                                                          object@sta.info1)
       
       # SECOND INFO
-      new.dt <- object@data[, append(getSTInfo(object), names(object)[2]), with=FALSE]
-      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant@id )
+      new.dt <- object@data[, append(getDimInfo(object), names(object)[2]), with=FALSE]
+      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant2@id )
       objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
                                                           id = object@id,
                                                           data = new.dt,
-                                                          quant = object@quant,
-                                                          first.year = 0,
-                                                          last.year = 0,
-                                                          year.aggregate.method = "NULL",
-                                                          spatial.extent = object@spatial.extent,
-                                                          spatial.extent.id = object@spatial.extent.id,
-                                                          spatial.aggregate.method = object@spatial.aggregate.method,
-                                                          subannual.aggregate.method = object@ subannual.aggregate.method,
-                                                          subannual.original = object@subannual.original,
-                                                          source = object@info2)
+                                                          quant = object@quant2,
+                                                          source = object@info2,
+                                                          object@sta.info2)
       
     }
     
@@ -192,10 +174,10 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     
     # make an appropriate title if not provided
     #if(missing(title)) title <- paste()
-    
+    layers <- 
     
     return(plotSpatial(objects.to.plot,
-                       layers =  object@quant@id,
+                       layers =  unique(c(object@quant1@id, object@quant2@id)),
                        cols = override.cols,
                        limits = limits,
                        title = title,

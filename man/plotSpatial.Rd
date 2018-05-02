@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotSpatial.R
 \name{plotSpatial}
 \alias{plotSpatial}
-\title{Plot maps from a \code{Field} or \code{ComaprisonLayer} (and lists thereof)}
+\title{Plot maps from a \code{Field} or \code{Comparison} (and lists thereof)}
 \usage{
 plotSpatial(sources, layers = NULL, title = NULL, facet.labels = NULL,
   facet.order = NULL, plot.bg.col = "white", panel.bg.col = "#809DB8",
@@ -70,7 +70,7 @@ Other things can be overlain on the resulting plot with further ggplot2 commands
 Returns a ggplot object
 }
 \description{
-This is a heavy lifting function for plotting maps from Fields, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
+This is a heavy lifting function for plotting maps from Fields, DataObjects, and Comparisons (and lists of those things) with flexibility, but also with a high degree of automation. 
 As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
 It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 using further ggplot2 commands.

@@ -26,12 +26,13 @@ exportClasses(Period,
               Source, 
               Field, 
               Quantity,  
-              ComparisonLayer,
+              Comparison,
+              Statistics,
               BiomeScheme)
 
-S3method(as.data.frame, ComparisonLayer)
+S3method(as.data.frame, Comparison)
 S3method(as.data.frame, Field)
 
-S3method(as.data.table, ComparisonLayer)
+S3method(as.data.table, Comparison)
 S3method(as.data.table, Field)
 

@@ -18,7 +18,7 @@ selectMonths <- function(x, months){
   else stop("Called for an object which is not a Data/Model object or a data.table.  Exiting...")
   
   # Fail if Month is not a column
-  if(!"Month" %in% getSTInfo(input.dt)) stop("Month column not present!")
+  if(!"Month" %in% getDimInfo(input.dt)) stop("Month column not present!")
   
   # Substitute month strings for month numbers
   old.months <- months

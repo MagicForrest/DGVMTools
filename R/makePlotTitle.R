@@ -10,7 +10,7 @@
 #' 
 #' @param quantity.str Character string for the quantity plotted
 #' @param layer The names of the layer (or another identifier)
-#' @param source The Field or ComparisonLayer that is being plotted
+#' @param source The Field or Comparison that is being plotted
 #' @param first.year The first year of the data plotted
 #' @param last.year The last year of the data plotted
 #' @param extent.str The spatial extent plotted as described by a character string (optional)
@@ -30,10 +30,10 @@ makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, first.year 
   # A layer name may be supplied
   if(!is.null(layer)) string <- paste(string, layer, sep = " ")
 
-  # A source may be supplied (either a Field or ComparisonLayer)
+  # A source may be supplied (either a Field or Comparison)
   if(!is.null(source)) {
     if(is.Field(source)) string <- paste(string, source@source@name, sep = " ")
-    if(is.ComparisonLayer(source)) string <- paste(string, source@name, sep = " ")
+    if(is.Comparison(source)) string <- paste(string, source@name, sep = " ")
   }
 
   # A temporal extent may be supplied

@@ -61,7 +61,7 @@ if (!isGeneric("writeNetCDF")) {
 setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(x, filename, ...) {
   
   monthly <- FALSE
-  st.names <- getSTInfo(x)
+  st.names <- getDimInfo(x)
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   if("Month" %in% st.names) monthly <- TRUE
   array.list <- FieldToArray(x@data) 

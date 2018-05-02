@@ -7,7 +7,7 @@
 getSTInfo(x, info = "names")
 }
 \arguments{
-\item{x}{A DataObject, Field, ComparisonLayer or data.tables}
+\item{x}{A DataObject, Field, Comparison or data.tables}
 
 \item{info}{A character string to define what spatio-temporal info you want.  Can be:
 
@@ -25,7 +25,7 @@ getSTInfo(x, info = "names")
 See above
 }
 \description{
-This function returns information about the spacio-temporal dimensions of a DataObject, Field, ComparisonLayer or data.table
+This function returns information about the spacio-temporal dimensions of a DataObject, Field, Comparison or data.table
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

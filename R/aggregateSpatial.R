@@ -57,7 +57,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   # check to see if Year is still a colmun name (it might have been averaged away)
   # Check the 'by' dims
   by.dims <- c()
-  avail.dims <- getSTInfo(input.obj)
+  avail.dims <- getDimInfo(input.obj)
   for(possible.dim in list("Year","Season","Month","Day")){
     if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
   }

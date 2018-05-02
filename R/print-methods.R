@@ -121,7 +121,7 @@ setMethod("print", signature(x="Field"), function(x) {
 
 #' @rdname print
 #' @export
-setMethod("print", signature(x="ComparisonLayer"), function(x) {
+setMethod("print", signature(x="Comparison"), function(x) {
   
   cat(paste0("Comparison Layer:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
@@ -144,7 +144,7 @@ setMethod("print", signature(x="ComparisonLayer"), function(x) {
 
 #' @rdname print
 #' @export
-setMethod("print", signature(x="SpatialComparison"), function(x) {
+setMethod("print", signature(x="Statistics"), function(x) {
   
   cat(paste0("Spatial Comparison:\n"))
   cat("Continuous comparison metrics")

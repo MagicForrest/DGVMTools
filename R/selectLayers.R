@@ -16,7 +16,7 @@
 selectLayers <- function(x, layers) {
   
   all.layers <- names(x)
-  st.layers <- getSTInfo(x)
+  st.layers <- getDimInfo(x)
   
   # check if layer is present
   for(layer in layers) {

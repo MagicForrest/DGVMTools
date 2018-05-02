@@ -203,7 +203,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
       message(paste("Added column 'area' in unit '", unit, "' to data.table.", sep=""))
     return(input)
   } else if (is.data.frame(input)) {
-    input <- merge.data.frame(area, input, by=getSTInfo(input))
+    input <- merge.data.frame(area, input, by=getDimInfo(input))
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "' to data.frame.", sep=""))
     return(input)

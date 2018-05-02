@@ -3,7 +3,7 @@
 #' Methods for cropping DGVMTools objects (and data.tables) to each other, to raster and sp objects (and basically anything that can be coerced in a raster::Extent object). 
 #' The data.table in the "data" slot of the DGVMTools object (or the stand-alone data.table), must have columns named "Lon" and "Lat" otherwise these methods fail.  Unpleasantly.  
 #' 
-#' @param x A Field or ComparisonLayer or a stand-alone data.table to be cropped
+#' @param x A Field or Comparison or a stand-alone data.table to be cropped
 #' @param y Anything from which raster::Extent object can be derived
 #' @param ... Other arguments, not currently used
 #' @return A spatially cropped object
@@ -56,7 +56,7 @@ setMethod("crop", signature(x="Field", y = "ANY"), function(x, y) {
 
 
 #' @rdname crop-methods
-setMethod("crop", signature(x="ComparisonLayer", y = "ANY"), function(x, y) {
+setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y) {
   
   Lon = Lat = NULL
  

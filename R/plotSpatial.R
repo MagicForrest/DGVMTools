@@ -6,9 +6,9 @@
 ##########################################################################################################################################
 
 
-#' Plot maps from a \code{Field} or \code{ComaprisonLayer} (and lists thereof)
+#' Plot maps from a \code{Field} or \code{Comparison} (and lists thereof)
 #' 
-#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
+#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and Comparisons (and lists of those things) with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
 #' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
@@ -162,7 +162,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   ### 3. SPATIOTEMPORAL - check the dimensions etc.
   
   ### Check if all the sources have the same ST dimensions and that Lon and Lat are present.  If not, warn and return NULL
-  stinfo.names <- getSTInfo(sources[[1]], info = "names")
+  stinfo.names <- getDimInfo(sources[[1]], info = "names")
   
   # check Lon and Lat present
   if(!"Lon" %in% stinfo.names || !"Lat" %in% stinfo.names) {
@@ -173,8 +173,8 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   # check all the same dimensions
   if(length(sources) > 1)
     for(counter in 2:length(sources)){
-      if(!identical(stinfo.names, getSTInfo(sources[[counter]], info = "names"))) {
-        warning(paste0("Trying to plot two Fields with different Spatial-Temporal dimensions.  One has \"", paste(stinfo.names, collapse = ","), "\" and the other has \"",  paste(getSTInfo(sources[[counter]], info = "names"), collapse = ","), "\".  So not plotting and returning NULL."))
+      if(!identical(stinfo.names, getDimInfo(sources[[counter]], info = "names"))) {
+        warning(paste0("Trying to plot two Fields with different Spatial-Temporal dimensions.  One has \"", paste(stinfo.names, collapse = ","), "\" and the other has \"",  paste(getDimInfo(sources[[counter]], info = "names"), collapse = ","), "\".  So not plotting and returning NULL."))
         return(NULL)
       }
     }

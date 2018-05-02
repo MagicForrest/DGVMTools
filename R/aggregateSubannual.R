@@ -68,7 +68,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
   else if(is.data.table(input.obj)) {input.dt <- input.obj}
   
   ### Get the spatial-temporal dimensions present
-  avail.dims <- getSTInfo(input.obj)
+  avail.dims <- getDimInfo(input.obj)
   
   ### Check the 'by' dims
   by.dims <- c()

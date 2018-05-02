@@ -46,7 +46,7 @@ aggregateYears.uncompiled <- function(input.obj,
   if(verbose) message("Aggregating years ...")
   
   # Check the 'by' dims
-  avail.dims <- getSTInfo(input.obj)
+  avail.dims <- getDimInfo(input.obj)
   if(!"Year" %in% avail.dims) stop("Aggregation of years requested, but year column not present.  Failing.")
   by.dims <- avail.dims[-which(avail.dims == "Year")]
   

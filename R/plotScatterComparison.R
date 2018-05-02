@@ -46,8 +46,8 @@ plotScatterComparison <- function(input.CLayers,
   Run = Model = OtherFacet = facet = NULL
   
   # checks
-  # for a single ComparisonLayer
-  if(is.ComparisonLayer(input.CLayers)) {
+  # for a single Comparison
+  if(is.Comparison(input.CLayers)) {
     
     temp.dt <- stats::na.omit(input.CLayers@data[, names(input.CLayers)[1:2], with=FALSE])
     setnames(temp.dt, c("ValueX", "ValueY")) 
@@ -63,7 +63,7 @@ plotScatterComparison <- function(input.CLayers,
     new.labels <- c()
     for(thing in input.CLayers){
       
-      if(!is.ComparisonLayer(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
+      if(!is.Comparison(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
       else {
         
 

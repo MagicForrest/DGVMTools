@@ -6,9 +6,9 @@
 ##########################################################################################################################################
 
 
-#' Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{ComaprisonLayer} (and lists thereof)
+#' Plot maps from a temporally-averaged \code{Field}, \code{DataObject} or \code{Comparison} (and lists thereof)
 #' 
-#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and ComparisonLayers (and lists of those things) with flexibility, but also with a high degree of automation. 
+#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and Comparisons (and lists of those things) with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
 #' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
@@ -143,8 +143,8 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
     
   }
   
-  ### CASE 2 - A single ComparisonLayer
-  else if(is.ComparisonLayer(data)) {
+  ### CASE 2 - A single Comparison
+  else if(is.Comparison(data)) {
     
     single.object <- TRUE
     grid <- FALSE
@@ -215,7 +215,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
   }
   
   
-  ### CASE 3- A list, hopefully made exclusively of Fields/DataObjects xor ComparisonLayers
+  ### CASE 3- A list, hopefully made exclusively of Fields/DataObjects xor Comparisons
   else if(class(data)[1] == "list") {
     
     # PREAMBLE - first determine if the list contains consistent types and then fail if it does not
@@ -223,11 +223,11 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
     only.comparison.layers <- TRUE
     for(object in data){ 
       if(!is.Field(object)) only.data.or.model.objects <- FALSE
-      if(!is.ComparisonLayer(object)) only.comparison.layers <- FALSE
+      if(!is.Comparison(object)) only.comparison.layers <- FALSE
     }
     
     if(!xor(only.data.or.model.objects, only.comparison.layers)) {
-      stop("You have passed me a list of items to plot but the items are exclusively of Fields or ComparisonLayers (note you cannot mix those two types)")
+      stop("You have passed me a list of items to plot but the items are exclusively of Fields or Comparisons (note you cannot mix those two types)")
     }
     
     # list of all data.tables to be rbinded at the end
@@ -282,7 +282,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
     }
     
     
-    ### CASE 3B - Plotting a bunch of ComparisonLayers
+    ### CASE 3B - Plotting a bunch of Comparisons
     else if(only.comparison.layers) {
       
       for(comp.layer in data){  
@@ -302,7 +302,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
           if(is.null(override.cols) & continuous) override.cols <- rev(RColorBrewer::brewer.pal(11, "RdBu"))
         }
         else if(tolower(original.layers) == "absolute") {
-          # changes the names of the ComparisonLayer 
+          # changes the names of the Comparison 
           
           layers <- names(comp.layer)[2:1]
         }
@@ -343,7 +343,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
         quant <- comp.layer@quant
         #temporal.extent <- comp.layer@temporal.extent
         
-      } # for each ComparisonLayer
+      } # for each Comparison
       
       # special case for difference plots, make limits symmetric around 0
       if(missing(limits) & (layers == "Difference" || layers == "Percentage Difference")){
@@ -358,7 +358,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
         dont.wrap.comparison.layer.only <- TRUE
       }
       
-    } # for each ComparisonLayer in the list
+    } # for each Comparison in the list
     
     
     # finally mash them all togther to make the final data.table to plot

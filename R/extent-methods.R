@@ -105,15 +105,15 @@ setMethod("extent", signature(x="Field"), function(x) {
 
 
 #' @rdname extent-methods 
-setMethod("extent", signature(x="ComparisonLayer"), function(x) {
+setMethod("extent", signature(x="Comparison"), function(x) {
   
   Lon = Lat = NULL
   
   # Get an ordered list of lons and lats
   if("Lat" %in% names(x@data)) { ordered.lats <- sort(unique(x@data[,Lat]))}
-  else {stop("No column called \"Lat\" in the data.table in the data slot of the ComparisonLayer")}
+  else {stop("No column called \"Lat\" in the data.table in the data slot of the Comparison")}
   if("Lon" %in% names(x@data)) { ordered.lons <- sort(unique(x@data[,Lon]))}
-  else {stop("No column called \"Lon\" in the data.table in the data slot of the ComparisonLayer")}
+  else {stop("No column called \"Lon\" in the data.table in the data slot of the Comparison")}
   
   
   # Now build the spatial extent depending on if it is a single site or not

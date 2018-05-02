@@ -16,7 +16,7 @@ setMethod("names", signature(x="Field"), function(x) {
 
   # get all column names, remove the spatial and temporal dimensions and return
   col.names <- names(x@data)
-  col.names <- col.names[!col.names %in% getSTInfo(x)]
+  col.names <- col.names[!col.names %in% getDimInfo(x)]
   return(col.names)
   
 })
@@ -24,11 +24,11 @@ setMethod("names", signature(x="Field"), function(x) {
 
 
 #' @rdname names
-setMethod("names", signature(x="ComparisonLayer"), function(x) {
+setMethod("names", signature(x="Comparison"), function(x) {
   
    # get all column names, remove the spatial and temporal dimensions and return
   col.names <- names(x@data)
-  col.names <- col.names[!col.names %in% getSTInfo(x)]
+  col.names <- col.names[!col.names %in% getDimInfo(x)]
   return(col.names)
   
 })

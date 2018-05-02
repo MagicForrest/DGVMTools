@@ -73,7 +73,7 @@ calcBiomes <-function(input, scheme){
   if(scheme@id %in% names(dt)) { dt[, scheme@id := NULL, with=FALSE] }
   
   # get spatial and temporal columns
-  st.cols <- getSTInfo(input)
+  st.cols <- getDimInfo(input)
   
   # calculate the biomes (first add it to the existing data.table then subset to make a new data.table and then delete the column from the original)
   suppressWarnings(dt[, Biome := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])

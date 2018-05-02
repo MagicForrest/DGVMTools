@@ -271,7 +271,7 @@ openDGVMDataFile <- function(source,
   dt <- setKeyDGVM(dt)
   
   # STInfo
-  st.info <- getSTInfo(dt)
+  st.info <- getDimInfo(dt)
   
   
   ### DETERMINE SPATIAL EXTENT 

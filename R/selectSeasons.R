@@ -18,7 +18,7 @@ selectSeasons <- function(x, seasons){
   else stop("Called for an object which is not a Data/Model object or a data.table.  Exiting...")
   
   # Fail if Season is not a column
-  if(!"Season" %in% getSTInfo(input.dt)) stop("Season column not present!")
+  if(!"Season" %in% getDimInfo(input.dt)) stop("Season column not present!")
   
   # Warning if a certain season is not present
   seasons.present <- unique(input.dt[["Season"]])

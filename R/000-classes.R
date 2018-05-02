@@ -75,11 +75,42 @@ setClass("Period",
          )
 )
 
+#' STAInfo class
+#'
+#' This class encapsulations all the Spatial (S, longitude and latidude), Temporal (T, monthly, daily etc.) and Annual (A, years included) 
+#' Information  (hence the name 'STAInfo') about a particular DGVMTools::Field.  Normally the user won't have to deal with this (it is mostly used internally),
+#' but it can be handy, for example to extract the STAInfo from one Field, and use it extract another field with the same dimensions. 
+#'     
+#' @param first.year A single numeric, the first year.
+#' @param last.year A single numeric, the last year.
+#' @param year.aggregate.method A character specifying how the years have been aggregated, for example "mean", or "sum" or "var". See aggregateYears.
+#' If no yearly aggregation has been applied it should be NULL.
+#' @param spatial.extent This can be of any type that can be used but DGVMTools::crop, and stores the current spatial extent.  
+#' But default (and with no cropping) it is simple teh raster::Extent object of the whole domain.
+#' @param spatial.aggregate.method A character method specifying how the spatial extent has been aggregated, for eample "mean" or "sum",
+#' see aggregateSpatial.  If no spatial aggregation has been applied it should be NULL.
+#' @param subannual.original A character string specifying the original sub-annual resolution of this data, eg. "Monthly" or "Daily"
+#' @param subannual.aggregate.method A character specifying how the subannual perods have been aggregated, for example "mean", "max", "sum" or "var". 
+#' See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.
+#' 
+#' @details This is mostly a behind-the-scenes class which is partly just created to bundle together a lot of dimension information in a tidy form. 
+#' 
+#' @name STAInfo-class
+#' @rdname STAInfo-class
+#' @exportClass STAInfo
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+setClass("STAInfo",
+         slots = c(first.year = "numeric",
+                   last.year = "numeric",
+                   year.aggregate.method = "character",
+                   spatial.extent = "ANY",
+                   spatial.extent.id = "character",
+                   spatial.aggregate.method = "character",
+                   subannual.aggregate.method = "character",
+                   subannual.original = "character"))
 
-###############################################################################
-########  VEGETATION SPECIFIC CLASSES #########################################
-###############################################################################
 
+ 
 #' Class to hold the metadata for a Plant Functional Type (PFT)
 #' 
 #' @description   This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their growth form, phenology, leaftype, climate zone etc, and a default plot colour.
@@ -286,9 +317,9 @@ setClass("Quantity",
 
 
 
-#' Result of comparing a model raster to a data raster
+#' Comparison statistics
 #' 
-#' This class stores the rasters (model, data, difference and precentage difference) and the statistics (R^2 etc) resulting when two rasters are compared using \code{compareRunToDataObject}
+#' This class stores the statistics resulting from the comparison of two layers from DGVMTools::Field objects.
 #' 
 #' @slot id A unique character string to identify this particular raster compariosn.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot R2 The R^2 between the model and the data
@@ -303,10 +334,10 @@ setClass("Quantity",
 #' @slot SCD The Manhattan Metric (for comparisons of relative proportions)
 #' @slot Kappa The overall Cohen's Kappa obtained when comparing categorical variables.
 #' @slot individual.Kappas The individual Cohen's Kappas for each category when comparing categorical data
-#' @exportClass RasterComparison
+#' @exportClass Statistics
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
-setClass("SpatialComparison",
+setClass("Statistics",
          slots = c(id = "character",
                    R2 = "numeric", 
                    R2.eff = "numeric",
@@ -358,31 +389,27 @@ setClass("SpatialComparison",
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string describing this comaprison layer, is automatically generated
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A Quantity object to define what output this.Field contains
+#' @slot quant1 A Quantity object to define what quantity the data from first field represents
+#' @slot quant2 A Quantity object to define what quantity the data from second field represents
 #' @slot stats An SpatialComaprison object giving ther statistical comparison metric between these two layers
 #' @slot info1 A SourceInfo object describing the source of the first layer in the comparison
 #' @slot info2 A SourceInfo object describing the source of the second layer in the comparison
-#' @slot spatial.extent An object which describes the area covered by this ComparisonLayer.  Particularly useful if the data has been spatially averaged.
-#' @slot spatial.extent.id  Lalala
-#' @slot spatial.aggregate.method  Set to TRUE is this ComparisonLayer has been spatially averaged
-#' @slot subannual.aggregate.method Lalala
-#' @slot subannual.original Lalala
-#' @exportClass ComparisonLayer
+#' @slot sta.info1 The STAInfo object for the first field
+#' @slot sta.info2 The STAInfo object for the second field
+#' @exportClass Comparison
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-setClass("ComparisonLayer", 
+setClass("Comparison", 
          slots = c(id = "character",
                    name = "character",
                    data = "data.table",
-                   quant = "Quantity",
-                   stats = "SpatialComparison",
-                   info1 = "ANY",
-                   info2 = "ANY",
-                   spatial.extent = "ANY",
-                   spatial.extent.id = "character",
-                   spatial.aggregate.method = "character",
-                   subannual.aggregate.method = "character",
-                   subannual.original = "character"
+                   quant1 = "Quantity",
+                   quant2 = "Quantity",
+                   info1 = "SourceInfo",
+                   info2 = "SourceInfo",
+                   sta.info1 = "STAInfo",
+                   sta.info2 = "STAInfo",
+                   stats = "Statistics"
                    
          )#,
          #validity = checkComparison
@@ -474,39 +501,6 @@ setClass("Source",
          
 )
 
-#' STAInfo class
-#'
-#' This class encapsulations all the Spatial (S, longitude and latidude), Temporal (T, monthly, daily etc.) and Annual (A, years included) 
-#' Information  (hence the name 'STAInfo') about a particular DGVMTools::Field.  Normally the user won't have to deal with this (it is mostly used internally),
-#' but it can be handy, for example to extract the STAInfo from one Field, and use it extract another field with the same dimensions. 
-#'     
-#' @param first.year A single numeric, the first year.
-#' @param last.year A single numeric, the last year.
-#' @param year.aggregate.method A character specifying how the years have been aggregated, for example "mean", or "sum" or "var". See aggregateYears.
-#' If no yearly aggregation has been applied it should be NULL.
-#' @param spatial.extent This can be of any type that can be used but DGVMTools::crop, and stores the current spatial extent.  
-#' But default (and with no cropping) it is simple teh raster::Extent object of the whole domain.
-#' @param spatial.aggregate.method A character method specifying how the spatial extent has been aggregated, for eample "mean" or "sum",
-#' see aggregateSpatial.  If no spatial aggregation has been applied it should be NULL.
-#' @param subannual.original A character string specifying the original sub-annual resolution of this data, eg. "Monthly" or "Daily"
-#' @param subannual.aggregate.method A character specifying how the subannual perods have been aggregated, for example "mean", "max", "sum" or "var". 
-#' See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.
-#' 
-#' @details This is mostly a behind-the-scenes class which is partly just created to bundle together a lot of dimension information in a tidy form. 
-#' 
-#' @name STAInfo-class
-#' @rdname STAInfo-class
-#' @exportClass STAInfo
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("STAInfo",
-         slots = c(first.year = "numeric",
-                   last.year = "numeric",
-                   year.aggregate.method = "character",
-                   spatial.extent = "ANY",
-                   spatial.extent.id = "character",
-                   spatial.aggregate.method = "character",
-                   subannual.aggregate.method = "character",
-                   subannual.original = "character"))
 
 
 

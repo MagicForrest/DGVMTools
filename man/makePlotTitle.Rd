@@ -12,7 +12,7 @@ makePlotTitle(quantity.str, layer = NULL, source = NULL,
 
 \item{layer}{The names of the layer (or another identifier)}
 
-\item{source}{The Field or ComparisonLayer that is being plotted}
+\item{source}{The Field or Comparison that is being plotted}
 
 \item{first.year}{The first year of the data plotted}
 

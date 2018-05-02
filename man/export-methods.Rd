@@ -6,16 +6,16 @@
 \alias{export-methods}
 \alias{as.data.frame.Field}
 \alias{export-methods}
-\alias{as.data.frame.ComparisonLayer}
+\alias{as.data.frame.Comparison}
 \alias{export-methods}
 \alias{as.data.table.Field}
 \alias{export-methods}
-\alias{as.data.table.ComparisonLayer}
+\alias{as.data.table.Comparison}
 \alias{export-methods}
 \alias{export-methods}
 \alias{as.Raster}
 \alias{as.Raster,Field-method}
-\alias{as.Raster,ComparisonLayer-method}
+\alias{as.Raster,Comparison-method}
 \alias{as.array}
 \alias{as.array,Field-method}
 \alias{as.array}
@@ -23,17 +23,17 @@
 \usage{
 \method{as.data.frame}{Field}(x, row.names, optional, ...)
 
-\method{as.data.frame}{ComparisonLayer}(x, row.names, optional, ...)
+\method{as.data.frame}{Comparison}(x, row.names, optional, ...)
 
 \method{as.data.table}{Field}(x, keep.rownames, ...)
 
-\method{as.data.table}{ComparisonLayer}(x, keep.rownames, ...)
+\method{as.data.table}{Comparison}(x, keep.rownames, ...)
 
 as.Raster(x)
 
 \S4method{as.Raster}{Field}(x)
 
-\S4method{as.Raster}{ComparisonLayer}(x)
+\S4method{as.Raster}{Comparison}(x)
 
 as.array(x, ...)
 

@@ -42,13 +42,13 @@ as.data.frame.Field = function(x, row.names, optional, ...) as(x, "data.frame")
 
 #' @name export-methods
 #' @export
-setAs("ComparisonLayer", "data.frame", function(from) as.data.frame(from@data))
+setAs("Comparison", "data.frame", function(from) as.data.frame(from@data))
 
 
 #' @rdname export-methods
-#' @method as.data.frame ComparisonLayer
+#' @method as.data.frame Comparison
 #' @export
-as.data.frame.ComparisonLayer = function(x, row.names, optional, ...) as(x, "data.frame") 
+as.data.frame.Comparison = function(x, row.names, optional, ...) as(x, "data.frame") 
 
 #############  data.table
 
@@ -62,11 +62,11 @@ as.data.table.Field = function(x, keep.rownames, ...) as(x, "data.table")
 
 #' @name export-methods
 #' @export
-setAs("ComparisonLayer", "data.table", function(from) from@data)
+setAs("Comparison", "data.table", function(from) from@data)
 
 #' @rdname export-methods
 #' @export
-as.data.table.ComparisonLayer = function(x, keep.rownames, ...) as(x, "data.table") 
+as.data.table.Comparison = function(x, keep.rownames, ...) as(x, "data.table") 
 
 
 ############# raster
@@ -77,7 +77,7 @@ setAs("Field", "Raster", function(from) promoteToRaster(from@data))
 
 #' @name export-methods
 #' @export
-setAs("ComparisonLayer", "Raster", function(from) promoteToRaster(from@data))
+setAs("Comparison", "Raster", function(from) promoteToRaster(from@data))
 
 
 
@@ -98,7 +98,7 @@ setMethod("as.Raster", signature("Field"),   function(x) promoteToRaster(x@data)
 #' @rdname export-methods
 #' @export
 #' @exportMethod as.Raster
-setMethod("as.Raster", signature("ComparisonLayer"),   function(x) promoteToRaster(x@data))
+setMethod("as.Raster", signature("Comparison"),   function(x) promoteToRaster(x@data))
 
 
 #' @name as.array
@@ -144,7 +144,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   
   ###  Define the layers we are pulling out
   # for Field - note could define a methods "names" do cover this exception
-  if((is.Field(input.data) || is.ComparisonLayer(input.data) ) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
+  if((is.Field(input.data) || is.Comparison(input.data) ) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
   # for data.table or rasters
   else if(is.null(layers) | layers[1] == "all") {
     layers = names(input.data)
@@ -165,13 +165,13 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
   }
   ### If data.table or Field (which contains a data.table) 
   # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table" | is.Field(input.data) | is.ComparisonLayer(input.data)) {
+  else if(this.class == "data.table" | is.Field(input.data) | is.Comparison(input.data)) {
     # first make a SpatialPointsDataFrame
     if(this.class == "data.table") {
       data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = grid.topology)
     }
     
-    if(is.Field(input.data) | is.ComparisonLayer(input.data)) {
+    if(is.Field(input.data) | is.Comparison(input.data)) {
       data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
     }
     
@@ -287,7 +287,7 @@ FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   }
   
   ## get temporal info
-  st.names <- getSTInfo(d)
+  st.names <- getDimInfo(d)
   
   ## check for annual data
   is.temporal <- FALSE

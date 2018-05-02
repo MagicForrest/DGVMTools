@@ -1,9 +1,9 @@
-#' Plot the residuals from a ComparisonLayer or list of ComparisonLayers as histogram
+#' Plot the residuals from a Comparison or list of Comparisons as histogram
 #' 
-#' Function will overlay histograms if more than one ComaprisonLayer is provided.  
+#' Function will overlay histograms if more than one Comparison is provided.  
 #' Line colours, line types and fill colours can all be specified but have sensible defaults. 
 #' 
-#' @param input.CLayers The ComparisonLayer or ComparisonLayers for which to plot the residuals
+#' @param input.CLayers The Comparison or Comparisons for which to plot the residuals
 #' @param cols,types,fills Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.
 #' @param labels Vector of character for label the histos. Can be left empty (defaults to the run id) but if defined it must have one entry for each set of residuals you are plotting.
 #' @param title Character for plot title (optional)
@@ -39,8 +39,8 @@ plotResidualsHisto <- function(input.CLayers,
   Source = Value = NULL
   
   # checks
-  # for a single ComparisonLayer
-  if(is.ComparisonLayer(input.CLayers)) {
+  # for a single Comparison
+  if(is.Comparison(input.CLayers)) {
     
     temp.dt <- stats::na.omit(input.CLayers@data[, c("Difference"), with=FALSE])
     setnames(temp.dt, input.CLayers@name) 
@@ -60,7 +60,7 @@ plotResidualsHisto <- function(input.CLayers,
     diff.layers <- c()
     for(thing in input.CLayers){
       
-      if(!is.ComparisonLayer(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
+      if(!is.Comparison(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
       else {
         
         really.temp.dt <- stats::na.omit(thing@data[, c("Difference"), with=FALSE])
@@ -85,7 +85,7 @@ plotResidualsHisto <- function(input.CLayers,
     # get the data.table, select the residual layers (all the ones with names ending "_Error") from the incoming DataObject and remove NAs
   }
   else {
-    warning("plotResidualsHisto(): Not received either a ComparisonLayer oor a list of comparison layers, returning a NULL plot")
+    warning("plotResidualsHisto(): Not received either a Comparison oor a list of comparison layers, returning a NULL plot")
     return(NULL)
   }
   

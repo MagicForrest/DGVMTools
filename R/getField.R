@@ -150,7 +150,7 @@ getField <- function(source,
     
     
     # Implemented LPJ-GUESS and aDGVM
-    if(source@format@id == "LPJ-GUESS" 
+    if(source@format@id == "GUESS" 
        | source@format@id == "aDGVM"
        | source@format@id == "DGVMData") {
       
@@ -180,7 +180,7 @@ getField <- function(source,
       
        
       # Meta-data for use later on
-      if("Year" %in% getSTInfo(this.dt)) {
+      if("Year" %in% getDimInfo(this.dt)) {
         year.range <- range(this.dt[,Year])
         first.year.present <- year.range[1]
         last.year.present <- year.range[2]

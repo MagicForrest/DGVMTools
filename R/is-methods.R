@@ -42,10 +42,10 @@ is.Field <- function(input, spatial=FALSE, temporal=FALSE) {
 
 #' @rdname is.object-methods
 #' @export
-is.ComparisonLayer <- function(input) {
+is.Comparison <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "ComparisonLayer" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "Comparison" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
@@ -97,10 +97,10 @@ is.PFT <- function(input) {
 
 #' @rdname is.object-methods
 #' @export
-is.SpatialComparison <- function(input) {
+is.Statistics <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "SpatialComparison" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "Statistics" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
@@ -112,6 +112,16 @@ is.Format <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
     if (class.def[1] == "Format" && attr(class.def, "package")=="DGVMTools")
+      return(TRUE)
+  return(FALSE)
+}
+
+#' @rdname is.object-methods
+#' @export
+is.STAInfo <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "STAInfo" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }

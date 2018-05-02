@@ -32,7 +32,7 @@
 
 setKeyDGVM <- function(dt){
   
-  keys.present <- getSTInfo(dt)
+  keys.present <- getDimInfo(dt)
   
   if(length(keys.present) > 0) setkeyv(dt, keys.present)
   else warning("No spatial/temporal columns present in this data.table to set as keys!")

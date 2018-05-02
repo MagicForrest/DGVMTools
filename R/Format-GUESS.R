@@ -128,7 +128,7 @@ openLPJOutputFile <- function(run,
   
   # first get of all the columns which are not spatial-temporal info
   all.cols <- names(dt)
-  st.cols <- getSTInfo(dt)
+  st.cols <- getDimInfo(dt)
   nonst.cols <- all.cols[!all.cols %in% st.cols]
   
   # if monthly then melt
@@ -416,21 +416,21 @@ openLPJOutputFile_FireMIP <- function(run,
   
   if(variable == "cVeg") {
     dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
-    target.cols <- append(getSTInfo(dt), "VegC")
+    target.cols <- append(getDimInfo(dt), "VegC")
     dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "VegC", "cVeg")
     return(dt)
   }
   if(variable == "cLitter") {
     dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
-    target.cols <- append(getSTInfo(dt), "LittC")
+    target.cols <- append(getDimInfo(dt), "LittC")
     dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "LittC", "cLitter")
     return(dt)
   }
   if(variable == "cSoil") {
     dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
-    target.cols <- append(unlist(getSTInfo(dt)), c("SoilfC", "SoilsC"))
+    target.cols <- append(unlist(getDimInfo(dt)), c("SoilfC", "SoilsC"))
     dt <- dt[,target.cols,with=FALSE]
     dt[, "cSoil" := SoilfC + SoilsC]
     dt[, SoilfC := NULL]
@@ -442,7 +442,7 @@ openLPJOutputFile_FireMIP <- function(run,
   
   if(variable == "cProduct") {
     dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose)
-    target.cols <- append(getSTInfo(dt), "Products_Pool")
+    target.cols <- append(getDimInfo(dt), "Products_Pool")
     dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Products_Pool", "cProduct")
     return(dt)
@@ -451,7 +451,7 @@ openLPJOutputFile_FireMIP <- function(run,
   if(variable == "fLuc") {
     
     dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose)
-    target.cols <- append(getSTInfo(dt), "Deforest_Flux")
+    target.cols <- append(getDimInfo(dt), "Deforest_Flux")
     dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Deforest_Flux", "fLuc")
     return(dt)
