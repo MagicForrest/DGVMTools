@@ -90,6 +90,7 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
 #' @param descending sort in descending order if TRUE (default: ascendind)
 #' @export
 #' @return data.frame of gridcells with columns c("Lon", "Lat", "area")
+#' @keywords internal
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
   x <- sort(unique(x))

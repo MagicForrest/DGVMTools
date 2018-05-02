@@ -5,7 +5,6 @@
 #' @param sta.objects  A list of Field and/or STAInfo objects which should be compared to dermine the common STAInfo
 #' @param logical Logical, if TRUE return a simple TRUE/FALSE rather than an STAInfo object of common info.
 #' 
-#' @rdname STAInfo-class  
 #' @return Either a logical or an STAInfo object, depending on the value of 'logical'
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
