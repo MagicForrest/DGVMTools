@@ -15,7 +15,7 @@
 #' @param first.year The first year (as a numeric) of the data to be returned
 #' @param last.year The last year (as a numeric) of the data to be returned
 #' @param verbose A logical, set to true to give progress/debug information
-#' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
+#' @return A list containing firstly the data.tablel containing the data, and secondly the STAInfo 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 getField_DGVMData <- function(source,
@@ -24,9 +24,10 @@ getField_DGVMData <- function(source,
                            verbose) {
   
   
-    this.dt <- openDGVMDataFile(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+  data.list <- openDGVMDataFile(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
 
-  return(this.dt)
+    
+  return(data.list)
   
 }
 
@@ -58,6 +59,7 @@ openDGVMDataFile <- function(source,
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Year = Month = Time = NULL
   
+  # function read attributes and warn if they are not present.
   getGlobalAttribute <- function(attr.name, global.attributes) {
     dgvm.attr.name <- paste("DGVMData", attr.name, sep = "_")
     if(dgvm.attr.name %in% names(global.attributes)) {
@@ -70,8 +72,9 @@ openDGVMDataFile <- function(source,
   }
   
   
-  # The list of things to return
-  data.list <-list()
+  # STAInfo object describing the data
+  sta.info = new("STAInfo")
+
   
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
@@ -144,11 +147,12 @@ openDGVMDataFile <- function(source,
   if(length(all.times) > 0) dimension.names[["Time"]] <- all.times
   
   # look up year-related attributes
-  data.list[["first.year"]]  <- getGlobalAttribute("first.year", global.attributes)
-  data.list[["last.year"]]  <- getGlobalAttribute("last.year", global.attributes)
-  data.list[["year.aggregate.method"]]  <- getGlobalAttribute("year.aggregate.method", global.attributes)
-  first.year <- data.list[["first.year"]] 
-  last.year <- data.list[["last.year"]] 
+  first.year  <- getGlobalAttribute("first.year", global.attributes)
+  last.year  <- getGlobalAttribute("last.year", global.attributes)
+  year.aggregate.method <- getGlobalAttribute("year.aggregate.method", global.attributes)
+  if(!is.null(first.year)) sta.info@first.year <- first.year
+  if(!is.null(last.year)) sta.info@last.year <- last.year
+  if(!is.null(year.aggregate.method)) sta.info@last.year <- year.aggregate.method
   
   ###  HACK!! - for some reason this ncdf4 package is reading time value dimensions as NA
   ###  These values seem to be perfectly valid according to ncview and ncdump, so I don't know what is going on.
@@ -199,6 +203,9 @@ openDGVMDataFile <- function(source,
         # subsitute using first.year and last.year   
         this.slice.dt[, Year := plyr::mapvalues(this.slice.dt[["Time"]], from = all.times, to = first.year:last.year)]
         this.slice.dt[, Time := NULL]
+        
+        sta.info@subannual.resolution <- "Annual"
+        sta.info@subannual.original <- "Annual"
       }
       # else check for monthly
       if(length.time.axis == (last.year - first.year + 1) *12) {
@@ -236,10 +243,15 @@ openDGVMDataFile <- function(source,
         all.names <- append(all.names, this.var$name)
         setcolorder(this.slice.dt, all.names)
         
-        
+        sta.info@subannual.resolution <- "Monthly"
+        sta.info@subannual.original <- "Monthly"
       }
       
       
+    }
+    else {
+      sta.info@subannual.resolution <- "Annual"
+      sta.info@subannual.original <- "Annual"
     }
     
     setKeyDGVM(this.slice.dt)
@@ -274,34 +286,6 @@ openDGVMDataFile <- function(source,
   st.info <- getDimInfo(dt)
   
   
-  ### DETERMINE SPATIAL EXTENT 
-  
-  # simple ones
-  data.list[["spatial.extent.id"]]  <- getGlobalAttribute("spatial.extent.id", global.attributes)
-  data.list[["spatial.aggregate.method"]]  <- getGlobalAttribute("spatial.aggregate.method", global.attributes)
-  
-  # first attempt to use the attributes from the NetCDF file
-  xmin  <- getGlobalAttribute("xmin", global.attributes)
-  xmax  <- getGlobalAttribute("xmax", global.attributes)
-  ymin  <- getGlobalAttribute("ymin", global.attributes)
-  ymax  <- getGlobalAttribute("ymax", global.attributes)
-  # else attempt to lookm of from Lon and Lat columns
-  if(!is.null(xmin) & !is.null(xmax) & !is.null(ymin) & !is.null(ymax)){
-    data.list[["spatial.extent"]] <- raster::extent(xmin, xmax, ymin,ymax)
-    if(verbose) message("Setting spatial extent from DGVMData attributes")
-  }
-  else if("Lon" %in% st.info && "Lat" %in% st.info) {
-    data.list[["spatial.extent"]] <- extent(dt)
-    if(verbose) message("Setting spatial extent from Lon and Lat dimensions")
-  }
-  else{
-    if(verbose) message(paste("No spatial extent determinable from DGVMData", file.name.nc,"file. A filler extent will be set."))
-    warning(paste("No spatial extent determinable from DGVMData", file.name.nc,"file. A filler extent will be set."))
-    data.list[["spatial.extent"]] <- extent(c(0,1,0,1))
-  }
-  
-  
-  
   # Correct year, lons and lats
   if(verbose) message("Correcting years, lons and lats with offsets...")
   if(source@year.offset != 0 && "Year" %in% st.info) dt[,Year := Year + source@year.offset]
@@ -320,6 +304,37 @@ openDGVMDataFile <- function(source,
     print(utils::head(dt))
   }
   
+  
+  ### DETERMINE SPATIAL EXTENT 
+  
+  # simple ones
+  spatial.extent.id  <- getGlobalAttribute("spatial.extent.id", global.attributes)
+  spatial.aggregate.method  <- getGlobalAttribute("spatial.aggregate.method", global.attributes)
+  if(!is.null(spatial.extent.id)) sta.info@spatial.extent.id <- spatial.extent.id
+  if(!is.null(spatial.aggregate.method)) sta.info@spatial.aggregate.method <- spatial.aggregate.method
+  
+  # first attempt to use the attributes from the NetCDF file
+  xmin  <- getGlobalAttribute("xmin", global.attributes)
+  xmax  <- getGlobalAttribute("xmax", global.attributes)
+  ymin  <- getGlobalAttribute("ymin", global.attributes)
+  ymax  <- getGlobalAttribute("ymax", global.attributes)
+  # else attempt to lookm of from Lon and Lat columns
+  if(!is.null(xmin) & !is.null(xmax) & !is.null(ymin) & !is.null(ymax)){
+    sta.info@spatial.extent <- raster::extent(xmin, xmax, ymin,ymax)
+    if(verbose) message("Setting spatial extent from DGVMData attributes")
+  }
+  else if("Lon" %in% st.info && "Lat" %in% st.info) {
+    sta.info@spatial.extent <- extent(dt)
+    if(verbose) message("Setting spatial extent from Lon and Lat dimensions")
+  }
+  else{
+    if(verbose) message(paste("No spatial extent determinable from DGVMData", file.name.nc,"file. A filler extent will be set."))
+    warning(paste("No spatial extent determinable from DGVMData", file.name.nc,"file. A filler extent will be set."))
+    sta.info@spatial.extent <- numeric(0)
+  }
+  
+  
+ 
   # if london.centre is requested, shift to -180 to +180
   if(length(all.lons) > 0) {
     if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
@@ -332,10 +347,12 @@ openDGVMDataFile <- function(source,
   # set keys
   setKeyDGVM(dt)
   
-  # remove any NAs, complete list and reutn
+  # remove any NAs, complete list and return
   dt <- stats::na.omit(dt)
-  data.list[["dt"]] <- dt
-  return(data.list)
+ 
+  
+  return(list(dt = dt, 
+              sta.info = sta.info))
   
 }
 

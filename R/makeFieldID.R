@@ -59,7 +59,7 @@ makeFieldID <- function(field,
   # first the aggregation method
   year.string <- ""
   sep.char = ""
-  if(!missing(year.aggregate.method) & !is.null(year.aggregate.method) & year.aggregate.method != "none") {
+  if(!missing(year.aggregate.method) & length(year.aggregate.method) > 0) {
     year.string <- year.aggregate.method
     sep.char = "_"
   }
@@ -89,9 +89,9 @@ makeFieldID <- function(field,
   field.id <- paste(field.id, var.string, sep = sep)
   
   # spatial aggregation
-  if((!missing(spatial.aggregate.method) && !is.null(spatial.aggregate.method) && tolower(spatial.aggregate.method) != "none")) {
+  if((!missing(spatial.aggregate.method) && length(spatial.aggregate.method) > 0)) {
     field.id <- paste(field.id, "Spatial", sep = sep)
-    if(!missing(spatial.aggregate.method) && !is.null(spatial.aggregate.method) && tolower(spatial.aggregate.method) != "none")  field.id <- paste(field.id, spatial.aggregate.method, sep = ".")
+    if(!missing(spatial.aggregate.method) && length(spatial.aggregate.method) > 0)  field.id <- paste(field.id, spatial.aggregate.method, sep = ".")
     if(!missing(spatial.extent.id) && !is.null(spatial.extent.id) && tolower(spatial.extent.id) != "Full") field.id <- paste(field.id, spatial.extent.id, sep = ".")
   }
   
@@ -101,8 +101,8 @@ makeFieldID <- function(field,
   }
   
   # subannual aggregation
-  if(!missing(subannual.aggregate.method) &&  !is.null(subannual.aggregate.method) && !tolower(subannual.aggregate.method) == "none")  field.id <- paste(field.id, subannual.aggregate.method, sep = ".")
-  if(!missing(subannual.original) && !is.null(subannual.original) && !tolower(subannual.original) == "none") field.id <- paste(field.id, "of", subannual.original, sep =".")
+  if(!missing(subannual.aggregate.method) && length(subannual.aggregate.method) > 0)  field.id <- paste(field.id, subannual.aggregate.method, sep = ".")
+  if(!missing(subannual.original) && length(subannual.aggregate.method) > 0) field.id <- paste(field.id, "of", subannual.original, sep =".")
   
   return(field.id)
   

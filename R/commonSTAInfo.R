@@ -13,22 +13,13 @@ commonSTAInfo <- function(sta.objects, logical = FALSE) {
   
   sta.infos <- list()
   for(sta.object in sta.objects) {
-    if(is.Field(sta.object))  sta.infos <- append(sta.infos, as(sta.object, "STAInfo"))
-    else if(is.STAInfo(sta.object)) sta.infos <- append(sta.infos, sta.object)
+    if(is.Field(sta.object)) sta.infos[[length(sta.infos)+1]] <-  as(sta.object, "STAInfo")
+    else if(is.STAInfo(sta.object)) sta.infos[[length(sta.infos)+1]] <- sta.object
     else warning(paste("No STAInfo can be derived from class", class(sta.object), "so ignoring it", sep = " "))
   }
-  
-  
+
   # make a 'NULL' STAInfo
-  common.sta.info <- new("STAInfo",
-                         first.year = numeric(0),
-                         last.year = numeric(0),
-                         year.aggregate.method = character(0),
-                         spatial.extent = NULL,
-                         spatial.extent.id = character(0),
-                         spatial.aggregate.method = character(0),
-                         subannual.aggregate.method = character(0),
-                         subannual.original = character(0))
+  common.sta.info <- new("STAInfo")
   
   # check each slot for each of the input lists
   all.all.good <- TRUE

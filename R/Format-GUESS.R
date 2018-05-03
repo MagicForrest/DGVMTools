@@ -34,7 +34,8 @@ getField_GUESS <- function(source,
   }
   
   
-  return(list("dt" = this.dt, NULL))
+  return(list(st = this.dt,
+              sta.info = NULL))
   
 }
 

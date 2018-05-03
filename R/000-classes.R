@@ -106,11 +106,25 @@ setClass("STAInfo",
                    spatial.extent = "ANY",
                    spatial.extent.id = "character",
                    spatial.aggregate.method = "character",
+                   subannual.resolution = "character",
                    subannual.aggregate.method = "character",
-                   subannual.original = "character"))
+                   subannual.original = "character"
+         ),
+         prototype  = c(first.year = numeric(0),
+                        last.year = numeric(0),
+                        year.aggregate.method = character(0),
+                        spatial.extent = NULL,
+                        spatial.extent.id = character(0),
+                        spatial.aggregate.method = character(0),
+                        subannual.resolution = character(0),
+                        subannual.aggregate.method = character(0),
+                        subannual.original = character(0)
+         )
+         
+)
 
 
- 
+
 #' Class to hold the metadata for a Plant Functional Type (PFT)
 #' 
 #' @description   This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their growth form, phenology, leaftype, climate zone etc, and a default plot colour.

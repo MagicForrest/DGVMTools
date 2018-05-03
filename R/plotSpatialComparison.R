@@ -175,13 +175,13 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     # make an appropriate title if not provided
     #if(missing(title)) title <- paste()
     layers <- 
-    
-    return(plotSpatial(objects.to.plot,
-                       layers =  unique(c(object@quant1@id, object@quant2@id)),
-                       cols = override.cols,
-                       limits = limits,
-                       title = title,
-                       ...))
+      
+      return(plotSpatial(objects.to.plot,
+                         layers =  unique(c(object@quant1@id, object@quant2@id)),
+                         cols = override.cols,
+                         limits = limits,
+                         title = title,
+                         ...))
     
     
     
