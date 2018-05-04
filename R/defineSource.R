@@ -2,7 +2,7 @@
 
 #' Define a Source object that represents a model run or data set, setting up all the required metadata (only). 
 #' 
-#' This function is preferred to a \code{new("SourceInfo",...)} initialisation followed by  \code{new("Source",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
+#' This function is preferred to a \code{new("Source",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
 #'
 #' Note that initially no actual data is stored, only metadata. The data, stored as Fields, can be added to a Source object, are added built with later with other commands and added to \code{Source} command using \code{addToSource}
 #'
@@ -22,11 +22,11 @@
 #' @param institute Name of the institute (default "none").
 #' @param ... extra arguments for call to determinePFTs() to determine the PFTs in a run, for exampel which aDGVM classification scheme to use (normally not needed)
 #' 
-#' The parameters are the slots of a SourceInfo object. Note that that \code{id}, \code{name}, \code{format}, and \code{dir} are compulsory, the rest will be filled with dummy/default values if left blank.
+#' Note that that \code{id}, \code{name}, \code{format}, and \code{dir} are compulsory, the rest will be filled with dummy/default values if left blank.
 #' Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS configurations.
 #' @return A Source object including metadata defined by empty data slots
 #' @export
-#' @seealso Source, SourceInfo 
+#' @seealso Source
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 defineSource <- function(id,
@@ -64,8 +64,8 @@ defineSource <- function(id,
     pft.set <- format@default.pfts
   }
   
-  # make SourceInfo object from the supplied meta data
-  info <- new("SourceInfo",
+  # make Source object from the supplied meta data
+  source <- new("Source",
               id = id,
               format = format,
               pft.set = pft.set,
@@ -80,24 +80,23 @@ defineSource <- function(id,
               institute = institute)
   
   # look up the PFTs to get the actual PFTs present from the superset
-  if(length(info@pft.set) > 0) {
-    info@pft.set <- determinePFTs(info, ...)
+  if(length(source@pft.set) > 0) {
+    source@pft.set <- determinePFTs(source, ...)
   }
 
   
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
-  if(length(info@pft.set) == 0) info@pft.set <- list()
-  if(length(info@lonlat.offset) == 0)  info@lonlat.offset <- c(0,0)
-  if(length(info@year.offset) == 0)  info@year.offset <- 0
-  if(length(info@forcing.data) == 0)  info@forcing.data <- "No forcing data set"
-  if(length(info@london.centre) == 0)  info@london.centre <- TRUE
-  if(length(info@land.use.included) == 0)  info@land.use.included <- FALSE
-  if(length(info@contact) == 0)  info@contact <- Sys.getenv("USER")
-  if(length(info@institute) == 0)  info@institute <- "none"
+  if(length(source@pft.set) == 0) source@pft.set <- list()
+  if(length(source@lonlat.offset) == 0)  source@lonlat.offset <- c(0,0)
+  if(length(source@year.offset) == 0)  source@year.offset <- 0
+  if(length(source@forcing.data) == 0)  source@forcing.data <- "No forcing data set"
+  if(length(source@london.centre) == 0)  source@london.centre <- TRUE
+  if(length(source@land.use.included) == 0)  source@land.use.included <- FALSE
+  if(length(source@contact) == 0)  source@contact <- Sys.getenv("USER")
+  if(length(source@institute) == 0)  source@institute <- "none"
   
   # return a Source object with empty data fields but meta data filled  
-  return(new("Source",
-             info))
+  return(source)
   
   
 }

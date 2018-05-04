@@ -26,3 +26,4 @@ Mostly is called by \code{promoteToRaster}, but can be useful in and of itself.
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
+\keyword{internal}

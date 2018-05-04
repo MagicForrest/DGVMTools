@@ -128,7 +128,7 @@ setClass("STAInfo",
 #' Class to hold the metadata for a Plant Functional Type (PFT)
 #' 
 #' @description   This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their growth form, phenology, leaftype, climate zone etc, and a default plot colour.
-#' These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a SourceInfo object
+#' These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a Source object
 #' to define which PFTs might be in a run (but they don't all need to be present in a given run)   
 #' 
 #' @slot id A unique character string to identify this particular PFT.  Recommended to be alphanumeric because it is used to construct file names.
@@ -153,8 +153,8 @@ setClass("PFT",
                    leaf.form = "character",
                    phenology = "character",
                    climate.zone = "character",
-                   colour = "character",
-                   shade.tolerance = "character"
+                   shade.tolerance = "character",
+                   colour = "character"
          )
 )
 
@@ -182,20 +182,20 @@ supported.formats <- c("LPJ-GUESS",
                        "DGVMData",
                        "Data")
 
-########### SourceInfo - class to hold the metadata for an LPJ-GUESS run
+########### Source - class to hold the metadata for an LPJ-GUESS run
 
-#' Checks validity of a \code{SourceInfo}.
+#' Checks validity of a \code{Source}.
 #' 
-#' Called internally as the validity slot of the \code{SourceInfo}.  It checks that the essential slots are filled with sensible values ie a dir that
+#' Called internally as the validity slot of the \code{Source}.  It checks that the essential slots are filled with sensible values ie a dir that
 #' exists on the file system; a model type which is valid and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
 #' 
-#' @param object The \code{SourceInfo} object to check for vailidity.
+#' @param object The \code{Source} object to check for vailidity.
 #' @return Empty string if the essential slots are fine, a string containing an error message if not.
 #' @keywords internal
 #'    
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-checkSourceInfo <- function(object){
+checkSource <- function(object){
   
   errors <- character()
   warnings <- character()
@@ -237,11 +237,14 @@ checkSourceInfo <- function(object){
 }
 
 
-#' Class to hold the metadata for a vegetation model run
+#' Metadata for a data source
 #' 
-#' This class describes a vegetation run, including its location on disk, the model used, the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
+#' This class describes a data source, including its location on disk, the format (ie what model it cam from), the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
 #' It is not primarily intended to be used by itself. Instead it is inherited by \code{Source} object (due to this inheritance the slots can be accessed directly)
 #' and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
+#' 
+#'  
+#' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
 #' 
 #' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot dir The location of this run on the file system (Mandatory)
@@ -255,9 +258,9 @@ checkSourceInfo <- function(object){
 #' @slot land.use.included If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
 #' @slot contact Name and email address of responsible person (default to OS username).
 #' @slot institute Name of the institute (default "none").
-#' @exportClass SourceInfo
+#' @exportClass Source
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("SourceInfo", 
+setClass("Source", 
          slots = c(id = "character",
                    format = "Format",
                    pft.set = "list",
@@ -280,7 +283,7 @@ setClass("SourceInfo",
                        contact = "not specified",
                        institute = "not specified"
          ),
-         validity = checkSourceInfo
+         validity = checkSource
          
 )
 
@@ -406,8 +409,8 @@ setClass("Statistics",
 #' @slot quant1 A Quantity object to define what quantity the data from first field represents
 #' @slot quant2 A Quantity object to define what quantity the data from second field represents
 #' @slot stats An SpatialComaprison object giving ther statistical comparison metric between these two layers
-#' @slot info1 A SourceInfo object describing the source of the first layer in the comparison
-#' @slot info2 A SourceInfo object describing the source of the second layer in the comparison
+#' @slot source1 A Source object describing the source of the first layer in the comparison
+#' @slot source2 A Source object describing the source of the second layer in the comparison
 #' @slot sta.info1 The STAInfo object for the first field
 #' @slot sta.info2 The STAInfo object for the second field
 #' @exportClass Comparison
@@ -419,8 +422,8 @@ setClass("Comparison",
                    data = "data.table",
                    quant1 = "Quantity",
                    quant2 = "Quantity",
-                   info1 = "SourceInfo",
-                   info2 = "SourceInfo",
+                   source1 = "Source",
+                   source2 = "Source",
                    sta.info1 = "STAInfo",
                    sta.info2 = "STAInfo",
                    stats = "Statistics"
@@ -481,63 +484,27 @@ setClass("BiomeScheme",
 
 
 
-#' An S4 class to contain metadata and, optionally, data and benchmarks for a single vegetation run
-#' 
-#' A \code{Source} object contains the metadata concerning the an inherited \code{SourceInfo} object
-#'  and the actual model data run as \code{Fields} in a list in slot \code{objects} and comparisions to datasets 
-#'  as \code{BiomeComparison} and \code{RasterComparison} in a list in slot \code{benchmarks}.
-#' Such objects can be built by calls to \code{getField()}, \code{calcNewVegObj},
-#'  and \code{compareBiomes()}, and saved to the \code{Source} using \code{addToSource()}. 
-#'  
-#' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
-#' 
-#' @slot objects List of \code{Fields} saved in this run
-#' @slot id A unique character string to identify this particular model run.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
-#' @slot format A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "FireMIP" or "aDGVM". (Mandatory)
-#' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
-#' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1"
-#' @slot dir The location of this run on the file system (Mandatory)
-#' @slot forcing.data A character string identifying the climate or other data used to produce this model run
-#' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
-#' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
-#' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
-#' @slot land.use.included If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
-#' @slot contact Name and email address of responsible person (default to OS username).
-#' @slot institute Name of the institute (default "none").
-#' @exportClass Source
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("Source", 
-         slots = c(objects = "list"
-         ),
-         prototype = c(objects = list()
-         ),
-         contains = "SourceInfo"
-         
-)
-
-
-
-
 #' Contains one aspect of the model output, eg. LAI
 #' 
 #' A key class of the package.  A \code{Field} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
-#' For example LAI (Leaf Area Index), or monthly evapotranspiration.  The data can be averaged spatially or temporally, or neither ot both, and manipulated and plotted by mayn funtions in this package.
+#' For example LAI (Leaf Area Index), or evapotranspiration.  The data can be aggragted across space, and across and within years, and manipulated and plotted by mayn funtions in this package.
 #' 
 #' Generally these are not created directly by the user, but rather by functions like \code{getField}.
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant A Quantity object to define what output this.Field contains
-#' @slot first.year Lalala
-#' @slot last.year Lalala
-#' @slot year.aggregate.method Set to TRUE is this.Field has been anually averaged
+#' @slot first.year The first year of data
+#' @slot last.year The last year of data
+#' @slot year.aggregate.method A charecter string describing the method by which the years have been aggregated.  Will be the zero character ("character(0)") if data it not 
+#' yearly aggreagted
 #' @slot spatial.extent An object which can be used to crop or subselect gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
 #' used) or a list of gridcells used by DGVMTools::selectGridcels (see that documentation for how to format the gridcell list).
 #' @slot spatial.extent.id A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever
 #' @slot spatial.aggregate.method Set to TRUE is this.Field has been spatially averaged
 #' @slot subannual.aggregate.method Method by which this Field has been subannually aggregated
 #' @slot subannual.original Original subannual resolution of this field
-#' @slot source A SourceInfo object which contains the metadata about the run which this Field belongs too.
+#' @slot source A Source object which contains the metadata about the run which this Field belongs too.
 #' @exportClass Field
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -545,15 +512,7 @@ setClass("Field",
          slots = c(id = "character",
                    data = "data.table",
                    quant = "Quantity",
-                   # first.year = "numeric",
-                   # last.year = "numeric",
-                   # year.aggregate.method = "character",
-                   # spatial.extent = "ANY",
-                   # spatial.extent.id = "character",
-                   # spatial.aggregate.method = "character",
-                   # subannual.aggregate.method = "character",
-                   # subannual.original = "character",
-                   source = "SourceInfo"
+                   source = "Source"
          ),
          contains = "STAInfo"
 )

@@ -222,6 +222,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
 #' @return A SpatialPixelDataFrame
 #' @export
 #' @import data.table sp
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
   

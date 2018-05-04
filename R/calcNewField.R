@@ -16,7 +16,7 @@
 #' @export
 #' @import data.table
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbose=TRUE) {
+calcNewField <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbose=TRUE) {
   ## check if valid arguments are given
   if (missing(x) || missing(y) || missing(op))
     stop("Missing values for 'x', 'y' and/or 'op'!")
@@ -66,7 +66,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
   if (!identical(x.sp.extent, y.sp.extent))
     warning("Spatial extents differ.")
 
-  if (!is.equal(x.quant, y.quant) && (op == "+" || op == "-"))
+  if (!equivalentQuantities(x.quant, y.quant) && (op == "+" || op == "-"))
     warning("Quantity definitions differ.")
 
   if (!is.Quantity(quant) ) {
@@ -111,7 +111,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                last.year = x.last.year,
                year.aggregate.method = x@year.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
-               run = as(x.run, "SourceInfo")))      
+               source = x.run))      
 
   } else if (is.null(x.col) && !is.null(y.col)) {
     key.names <- key(x.dt)
@@ -136,7 +136,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                last.year = x.last.year,
                year.aggregate.method = x@year.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
-               run = as(x.run, "SourceInfo")))      
+               source = x.run))      
     
   } else if (!is.null(x.col) && is.null(y.col)) {
     key.names <- key(y.dt)
@@ -161,7 +161,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                last.year = x.last.year,
                year.aggregate.method = x@year.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
-               run = as(x.run, "SourceInfo")))      
+               source = x.run))      
   } else {
     key.names <- key(x.dt)
     val.names <- names(x.dt)
@@ -193,7 +193,7 @@ calcNewModelObj <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbos
                last.year = x.last.year,
                year.aggregate.method = x@year.aggregate.method,
                spatial.aggregate.method = x@spatial.aggregate.method,
-               run = as(x.run, "SourceInfo")))      
+               source = x.run))      
   }
   stop("MISSING: Not implemented yet.")
 }

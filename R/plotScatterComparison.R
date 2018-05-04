@@ -51,7 +51,7 @@ plotScatterComparison <- function(input.CLayers,
     
     temp.dt <- stats::na.omit(input.CLayers@data[, names(input.CLayers)[1:2], with=FALSE])
     setnames(temp.dt, c("ValueX", "ValueY")) 
-    if(is.null(labels)) labels <- input.CLayers@info1@name
+    if(is.null(labels)) labels <- input.CLayers@source1@name
 
     wrap <- FALSE
     
@@ -71,8 +71,8 @@ plotScatterComparison <- function(input.CLayers,
         setnames(really.temp.dt, c("ValueX", "ValueY")) 
         
         # also add the source of the comparison
-        really.temp.dt <- really.temp.dt[, "Source" := paste(thing@info1@name, "vs", thing@info2@name, sep = " ")]
-        if(is.null(labels)) new.labels <- append(new.labels, thing@info1@name)
+        really.temp.dt <- really.temp.dt[, "Source" := paste(thing@source1@name, "vs", thing@source2@name, sep = " ")]
+        if(is.null(labels)) new.labels <- append(new.labels, thing@source1@name)
         list.of.dts[[thing@id]] <- really.temp.dt
         
       }
@@ -144,18 +144,18 @@ plotScatterComparison <- function(input.CLayers,
   
   
   scatter.plot <- scatter.plot + theme(text = element_text(size=25))
-  if(is.null(wrap)) scatter.plot <- scatter.plot + ggtitle(paste(input.CLayers@info1@name, "vs.", input.CLayers@info2@name)) + theme(plot.title = element_text(lineheight=.8, face="bold", hjust = 0.5))
+  if(is.null(wrap)) scatter.plot <- scatter.plot + ggtitle(paste(input.CLayers@source1@name, "vs.", input.CLayers@source2@name)) + theme(plot.title = element_text(lineheight=.8, face="bold", hjust = 0.5))
 
   # x and y labels
   if(is.null(wrap)) {
-    scatter.plot <- scatter.plot +  xlab(input.CLayers@info1@name) + ylab(input.CLayers@info2@name)  
+    scatter.plot <- scatter.plot +  xlab(input.CLayers@source1@name) + ylab(input.CLayers@source2@name)  
   }
   else{
     if(!is.null(xlab)) scatter.plot <- scatter.plot +  xlab(xlab)
     if(!is.null(ylab)) scatter.plot <- scatter.plot +  ylab(ylab)
   }
   
-  #else  scatter.plot <- scatter.plot +  xlab(input.CLayers@info1@name) + ylab(input.CLayers@info2@name)     
+  #else  scatter.plot <- scatter.plot +  xlab(input.CLayers@source1@name) + ylab(input.CLayers@source2@name)     
   
   
   # crop to xlim and ylim as appropriate and fix the aspect ratio 

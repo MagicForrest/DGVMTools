@@ -60,9 +60,9 @@ setMethod("print", signature(x="Period"), function(x) {
 
 #' @rdname print
 #' @export
-setMethod("print", signature(x="SourceInfo"), function(x) {
+setMethod("print", signature(x="Source"), function(x) {
   
-  cat(paste0("SourceInfo:\n"))
+  cat(paste0("Source:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   cat(paste0("name = ", "\"", x@name, "\"", "\n"))
   cat(paste0("format = ", "\"", x@format@id, "\"", "\n"))
@@ -81,20 +81,6 @@ setMethod("print", signature(x="SourceInfo"), function(x) {
   
 })
 
-#' @rdname print
-#' @export
-setMethod("print", signature(x="Source"), function(x) {
-  
-  print(as(x, "SourceInfo"))
-  cat("The following Fields have been stored internally in this Source:\n")
-  if(length(x@objects) > 0){
-    for(object in x@objects) cat(paste0(object@id, "\n"))
-  }
-  else{
-    cat("(None)\n")
-  }
-
-})
 
 
 #' @rdname print
@@ -134,9 +120,9 @@ setMethod("print", signature(x="Comparison"), function(x) {
   cat(paste0("Data: ",  "\n"))
   print(x@data)
   cat(paste0("Source for first layer: \n"))
-  print(x@info1)
+  print(x@source1)
   cat(paste0("Source for second layer: \n"))
-  print(x@info2)
+  print(x@source2)
 
 })
 

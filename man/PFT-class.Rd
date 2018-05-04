@@ -18,7 +18,7 @@ aDGVM.PFTs
 }
 \description{
 This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their growth form, phenology, leaftype, climate zone etc, and a default plot colour.
-These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a SourceInfo object
+These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a Source object
 to define which PFTs might be in a run (but they don't all need to be present in a given run)
 
 

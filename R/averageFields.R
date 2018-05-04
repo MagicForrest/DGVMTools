@@ -65,7 +65,7 @@ averageFields <- function(list.of.fields, run = NULL, method = mean) {
     # but put in the new run and data
     new.Field <- list.of.fields[[1]]
     new.Field@data <- output.dt
-    new.Field@source <- as(run, "SourceInfo")
+    new.Field@source <- run
     
     
     return(new.Field)

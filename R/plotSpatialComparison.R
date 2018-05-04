@@ -107,7 +107,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                        first.year = 0,
                        last.year = 0,
                        year.aggregate.method = "NULL", 
-                       source = object@info1,
+                       source = object@source1,
                        commonSTAInfo(list(object@sta.info1, object@sta.info2)))
       
       objects.to.plot[[length(objects.to.plot)+1]] <- new.field
@@ -153,7 +153,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                           id = object@id,
                                                           data = new.dt,
                                                           quant = object@quant1,
-                                                          source = object@info1,
+                                                          source = object@source1,
                                                           object@sta.info1)
       
       # SECOND INFO
@@ -163,7 +163,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                           id = object@id,
                                                           data = new.dt,
                                                           quant = object@quant2,
-                                                          source = object@info2,
+                                                          source = object@source2,
                                                           object@sta.info2)
       
     }

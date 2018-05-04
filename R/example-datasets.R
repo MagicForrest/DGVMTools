@@ -23,7 +23,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   dataset.id = "HandPBiomes"
   
-  source.info <- new("SourceInfo",
+  source <- new("Source",
                      id = dataset.id,
                      model = "Data",
                      pft.set = list(),
@@ -204,7 +204,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
         spatial.aggregate.method = "none",
         subannual.aggregate.method = "none",
         subannual.original = "annual",
-        source = source.info)
+        source = source)
     
   )
 }
@@ -229,7 +229,7 @@ getSaatchi2011_example <- function(resolution = "HD"){
   Lat = Lon = NULL
   
   
-  source.info <- new("SourceInfo",
+  source <- new("Source",
                      id = "Saatchi2011",
                      format = "Data",
                      pft.set = list(),
@@ -269,7 +269,7 @@ getSaatchi2011_example <- function(resolution = "HD"){
                          spatial.aggregate.method = "none",
                          subannual.aggregate.method = "none",
                          subannual.original = "annual",
-                         source = source.info)
+                         source = source)
   
   
  

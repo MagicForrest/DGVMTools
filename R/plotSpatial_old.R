@@ -183,7 +183,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
     
     # in the special case of absolute, change the layer names at this point from the ugly ids to the nice names
     if(tolower(original.layers) == "absolute") {
-      new.layer.names <- c(data@info1@name, data@info2@name)
+      new.layer.names <- c(data@source1@name, data@source2@name)
       setnames(data.toplot, layers, new.layer.names)
       layers <- new.layer.names
     }
@@ -321,7 +321,7 @@ plotSpatial_old <- function(data, # can be a data.table, a SpatialPixelsDataFram
         
         # in the special case of absolute, change the layer names at this point from the ugly ids to the nice names
         if(tolower(original.layers) == "absolute") {
-          new.layer.names <- c(comp.layer@info2@name, comp.layer@info1@name)
+          new.layer.names <- c(comp.layer@source2@name, comp.layer@source1@name)
           setnames(data.toplot, layers, new.layer.names)
           layers <- new.layer.names
         }

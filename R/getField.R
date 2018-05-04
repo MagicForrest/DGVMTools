@@ -27,8 +27,8 @@
 #' @param subannual.resolution A character string specifying the subannual resolution that you want to the data on.  Can be "Annual", "Monthly" or "Daily".
 #' @param subannual.aggregate.method A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "sd" or "var".
 #' See \code{\link{aggregateSubannual}} 
-#' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method 
-#' Can be "Annual", "Monthly" or "Daily".  Currently ignored. resolution that you want to the data on.  Can be "Annual", "Monthly" or "Daily"
+#' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
+#' Can be "Annual", "Monthly" or "Daily".  Currently ignored.
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
@@ -99,7 +99,7 @@ getField <- function(source,
   }
   
   ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
-  target.field.id <- makeFieldID(source.info = as(source, "SourceInfo"), 
+  target.field.id <- makeFieldID(source.info = source, 
                                  var.string = var.string, 
                                  first.year = sta.info@first.year,
                                  last.year = sta.info@last.year,
@@ -315,7 +315,7 @@ getField <- function(source,
                      data = this.dt,
                      quant = quant,
                      actual.sta.info,
-                     source = as(source, "SourceInfo"))
+                     source = source)
   
   
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED

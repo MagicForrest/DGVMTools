@@ -158,3 +158,18 @@ is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
     return(ifelse(leap, 366, 365))
   return(leap)
 }
+
+
+#' Check if two Quantity objects are equivalent
+#' 
+#' Performs a simple check on the units and types of two quantities
+#' @param quant1 First Quantity to compare
+#' @param quant2 Second Quantity to compare
+#' 
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @keywords internal
+
+equivalentQuantities <- function(quant1, quant2) {
+  if (quant1@type==quant2@type && quant1@units==quant2@units)  return(TRUE)
+  else return(FALSE)
+}

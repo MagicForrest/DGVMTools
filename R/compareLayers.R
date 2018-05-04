@@ -74,8 +74,8 @@ compareLayers <- function(field1,
   layer.field2 <- selectLayers(field2, layers2)
   
   ###  Pull out the source info objects
-  info1 <- as(field1@source, "SourceInfo")
-  info2 <- as(field2@source, "SourceInfo")
+  source1 <- field1@source
+  source2 <- field2@source
   
   
   ###  Set the names by appending the id so that they are not identical when we combine them, also save the ids so that we can use them later
@@ -143,9 +143,9 @@ compareLayers <- function(field1,
     if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity", field1@quant@id))
     else stop("Comparing different Quantity")
   }
-  if(single){ new.name <- paste(info1@name, "-",  info2@name) }
-  else if(categorical) { new.name <- paste(info1@name, "vs.",  info2@name) }
-  else if(relative.abundance) { new.name <- paste("Relative abundance", info1@name, "vs.",  info2@name) }
+  if(single){ new.name <- paste(source1@name, "-",  source2@name) }
+  else if(categorical) { new.name <- paste(source1@name, "vs.",  source2@name) }
+  else if(relative.abundance) { new.name <- paste("Relative abundance", source1@name, "vs.",  source2@name) }
   
   ### Calculate the approriate statistical comparisons
   # make vectors of values
@@ -157,13 +157,13 @@ compareLayers <- function(field1,
     # check the classes of the data and perform the appropriate comparison
     if(single) {
       # Statistics
-      stats <- continuousComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = show.stats)
+      stats <- continuousComparison(vector1 = vector1, vector2 = vector2, name1 = source1@name, name2 = source2@name, verbose = show.stats)
       # Make the difference layer
       new.data[, "Difference" := get(new.ids.1) - get(new.ids.2)]
     }
     else if(categorical) {
       if(verbose) print("Doing stats comparison")
-      stats <- categoricalComparison(vector1 = vector1, vector2 = vector2, name1 = info1@name, name2 = info2@name, verbose = show.stats)
+      stats <- categoricalComparison(vector1 = vector1, vector2 = vector2, name1 = source1@name, name2 = source2@name, verbose = show.stats)
       
     }
   }
@@ -174,7 +174,7 @@ compareLayers <- function(field1,
     dt2 <- new.data[,new.ids.2,with=FALSE]
     
     # Calculate Manhattan Metric and Squared Chord Distance
-    stats <- proportionsComparison(dt1 =dt1, dt2 = dt2, name1 = info1@name, name2 = info2@name, verbose = show.stats)
+    stats <- proportionsComparison(dt1 =dt1, dt2 = dt2, name1 = source1@name, name2 = source2@name, verbose = show.stats)
     
   }
 
@@ -189,8 +189,8 @@ compareLayers <- function(field1,
                           data = new.data,
                           quant1 = field1@quant,
                           quant2 = field2@quant,
-                          info1 = info1,
-                          info2 = info2,
+                          source1 = source1,
+                          source2 = source2,
                           sta.info1 = as(field1, "STAInfo"),
                           sta.info2 = as(field2, "STAInfo"),
                           stats = stats

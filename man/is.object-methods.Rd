@@ -5,7 +5,6 @@
 \alias{is.Field}
 \alias{is.Comparison}
 \alias{is.Source}
-\alias{is.SourceInfo}
 \alias{is.Quantity}
 \alias{is.PFT}
 \alias{is.Statistics}
@@ -18,8 +17,6 @@ is.Field(input, spatial = FALSE, temporal = FALSE)
 is.Comparison(input)
 
 is.Source(input)
-
-is.SourceInfo(input)
 
 is.Quantity(input)
 
