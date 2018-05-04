@@ -97,15 +97,9 @@ aggregateYears.uncompiled <- function(input.obj,
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@year.aggregate.method <- method
-    input.obj@id <- makeFieldID(source.info = input.obj@source,
+    input.obj@id <- makeFieldID(source = input.obj@source,
                                 var.string = input.obj@quant@id, 
-                                first.year= input.obj@first.year, 
-                                last.year= input.obj@last.year, 
-                                year.aggregate.method = input.obj@year.aggregate.method, 
-                                spatial.extent.id = input.obj@spatial.extent.id, 
-                                spatial.aggregate.method = input.obj@spatial.aggregate.method, 
-                                subannual.aggregate.method = input.obj@subannual.aggregate.method, 
-                                subannual.original = input.obj@subannual.original)
+                                sta.info = as(input.obj, "STAInfo"))
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}

@@ -27,6 +27,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
   # Possible can solve this by replace the subset function
   Year = Season = Month = Day = Lat = Lon = Weight = NULL
   
+ 
   # Function for weighting months by their number of days
   addMonthlyWeights <- function(x){
     
@@ -67,8 +68,11 @@ aggregateSubannual.uncompiled <- function(input.obj,
   if(is.Field(input.obj)) {input.dt <- input.obj@data}
   else if(is.data.table(input.obj)) {input.dt <- input.obj}
   
-  ### Get the spatial-temporal dimensions present
+  ### Get the spatial-temporal dimensions present and determine the initial subannual resolution
   avail.dims <- getDimInfo(input.obj)
+  if("Month" %in% avail.dims) initial.subannual <- "Monthly"
+  else if("Day" %in% avail.dims) initial.subannual <- "Daily"
+  else initial.subannual <- "Annual"
   
   ### Check the 'by' dims
   by.dims <- c()
@@ -229,13 +233,11 @@ aggregateSubannual.uncompiled <- function(input.obj,
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@subannual.aggregate.method <- method
-    input.obj@id <- makeFieldID(source.info = input.obj@source,
+    input.obj@subannual.original <- initial.subannual
+    input.obj@subannual.resolution  <- target
+    input.obj@id <- makeFieldID(source = input.obj@source,
                                 var.string = input.obj@quant@id, 
-                                first.year = input.obj@first.year, 
-                                last.year = input.obj@last.year,
-                                year.aggregate.method = input.obj@year.aggregate.method, 
-                                spatial.extent.id = input.obj@spatial.extent.id, 
-                                spatial.aggregate.method = input.obj@spatial.aggregate.method)
+                                sta.info = as(input.obj, "STAInfo"))
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}

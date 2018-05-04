@@ -98,7 +98,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
     
     # check to see if Year is still a column name (it might have been averaged away)
     input.dt[, (col.names) := lapply(.SD, function(x) x * input.dt[['area']] ), .SDcols = col.names]
- 
+    
     output.dt <- input.dt[, lapply(.SD, method.function), by=by.dims]
     output.dt[,area:=NULL]
     
@@ -106,7 +106,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   
   # if not weighted
   else {
-    if(verbose) message(paste("Spatially aggregating with function", method," and no area-weighting ...", sep = ""))
+    if(verbose) message(paste("Spatially aggregating with function ", method," and no area-weighting ...", sep = ""))
     
     output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
     
@@ -129,13 +129,9 @@ aggregateSpatial.uncompiled <- function(input.obj,
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@spatial.aggregate.method <- method
-    input.obj@id <- makeFieldID(source.info = input.obj@source,
+    input.obj@id <- makeFieldID(source = input.obj@source,
                                 var.string = input.obj@quant@id, 
-                                first.year = input.obj@first.year,
-                                last.year = input.obj@last.year,
-                                year.aggregate.method = input.obj@year.aggregate.method, 
-                                spatial.extent.id = input.obj@spatial.extent.id, 
-                                spatial.aggregate.method = input.obj@spatial.aggregate.method)
+                                sta.info = as(input.obj, "STAInfo"))
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}

@@ -42,15 +42,9 @@ selectYears <- function(x, first, last){
     x@data <- output.dt
     x@first.year <- first
     x@last.year <- last
-    x@id <- makeFieldID(source.info = x@source,
+    x@id <- makeFieldID(source = x@source,
                         var.string = x@quant@id, 
-                        first.year= x@first.year, 
-                        last.year= x@last.year, 
-                        year.aggregate.method = x@year.aggregate.method, 
-                        spatial.extent.id = x@spatial.extent.id, 
-                        spatial.aggregate.method = x@spatial.aggregate.method, 
-                        subannual.aggregate.method = x@subannual.aggregate.method, 
-                        subannual.original = x@subannual.original)
+                        sta.info = as(x, "STAInfo"))
     return(x)
   }
   else {

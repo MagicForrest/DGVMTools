@@ -81,22 +81,14 @@ calcBiomes <-function(input, scheme){
   dt[, Biome := NULL]
   
   # now make a new Field and return
+  sta.info <- as(input, "STAInfo")
   biomes <- new("Field",
-                id = makeFieldID(source.info = input@source, 
+                id = makeFieldID(source = input@source, 
                                  var.string = scheme@id, 
-                                 first.year = input@first.year,
-                                 last.year = input@last.year,
-                                 year.aggregate.method = input@year.aggregate.method, 
-                                 spatial.extent.id = input@spatial.extent.id, 
-                                 spatial.aggregate.method = input@spatial.aggregate.method),
+                                 sta.info = sta.info),
                 data = biome.dt,
                 quant = as(scheme, "Quantity"),
-                first.year = input@first.year,
-                last.year = input@last.year,
-                year.aggregate.method = input@year.aggregate.method, 
-                spatial.extent.id = input@spatial.extent.id,
-                spatial.extent = input@spatial.extent,
-                spatial.aggregate.method = input@spatial.aggregate.method,
+                sta.info,
                 source = input@source)
   
   return(biomes)

@@ -21,8 +21,9 @@
 
 
 makeFieldID <- function(field,
-                        source.info,
+                        source,
                         var.string,
+                        sta.info,
                         first.year,
                         last.year,
                         year.aggregate.method,
@@ -39,7 +40,7 @@ makeFieldID <- function(field,
   # First, if an actual Field it provided as an argument, use it 
   if(!missing(field)  && !is.null(field)) {
     
-    this.id <- makeFieldID(source.info = field@source,
+    this.id <- makeFieldID(source = field@source,
                            var.string = field@quant@id, 
                            first.year= field@first.year, 
                            last.year= field@last.year, 
@@ -59,17 +60,17 @@ makeFieldID <- function(field,
   # first the aggregation method
   year.string <- ""
   sep.char = ""
-  if(!missing(year.aggregate.method) & length(year.aggregate.method) > 0) {
-    year.string <- year.aggregate.method
+  if(length(sta.info@year.aggregate.method) > 0) {
+    year.string <- sta.info@year.aggregate.method
     sep.char = "_"
   }
   
   
   # then the interval
-  got.first.year <- !missing(first.year) & !is.null(first.year)
-  got.last.year <- !missing(last.year) & !is.null(last.year)
+  got.first.year <- length(sta.info@first.year) > 0 
+  got.last.year <- length(sta.info@last.year) > 0 
   if(got.first.year & got.last.year) {
-    year.string <- paste0(year.string, sep.char, first.year, "-", last.year)
+    year.string <- paste0(year.string, sep.char, sta.info@first.year, "-", sta.info@last.year)
   }
   else if(!got.first.year & !got.last.year) {
     year.string <- paste0(year.string, sep.char, "all_years")
@@ -80,19 +81,15 @@ makeFieldID <- function(field,
   
   
   
+  # from source and quantity make leading part of the id
+  field.id <- paste(source@id, var.string, sep = sep)
   
-  
-  # from source.info make the leading part of the id
-  field.id <- paste(source.info@format@id, source.info@id, sep = sep)
-  
-  # quantity
-  field.id <- paste(field.id, var.string, sep = sep)
-  
-  # spatial aggregation
-  if((!missing(spatial.aggregate.method) && length(spatial.aggregate.method) > 0)) {
+ 
+  # spatial extent and aggregation
+  if(length(sta.info@spatial.aggregate.method) > 0  || length(sta.info@spatial.extent.id)) {
     field.id <- paste(field.id, "Spatial", sep = sep)
-    if(!missing(spatial.aggregate.method) && length(spatial.aggregate.method) > 0)  field.id <- paste(field.id, spatial.aggregate.method, sep = ".")
-    if(!missing(spatial.extent.id) && !is.null(spatial.extent.id) && tolower(spatial.extent.id) != "Full") field.id <- paste(field.id, spatial.extent.id, sep = ".")
+    if(length(sta.info@spatial.aggregate.method) > 0)  field.id <- paste(field.id, sta.info@spatial.aggregate.method, sep = "_")
+    if(length(sta.info@spatial.extent.id) > 0) field.id <- paste(field.id, sta.info@spatial.extent.id, sep = "_")
   }
   
   
@@ -101,9 +98,23 @@ makeFieldID <- function(field,
   }
   
   # subannual aggregation
-  if(!missing(subannual.aggregate.method) && length(subannual.aggregate.method) > 0)  field.id <- paste(field.id, subannual.aggregate.method, sep = ".")
-  if(!missing(subannual.original) && length(subannual.aggregate.method) > 0) field.id <- paste(field.id, "of", subannual.original, sep =".")
   
+  # First put the resolution actual resolution
+  if(length(sta.info@subannual.resolution) > 0) field.id <- paste(field.id, sta.info@subannual.resolution, sep = ".")
+  
+  # then aggregate and original subannual resolution
+   
+  if(length(sta.info@subannual.aggregate.method) > 0  || length(sta.info@subannual.original) > 0) {
+    
+    field.id <- paste(field.id, sta.info@subannual.aggregate.method, sep = ".")
+    
+    if(length(sta.info@subannual.original) > 0 && sta.info@subannual.original != sta.info@subannual.resolution) {
+      if(length(sta.info@subannual.original) > 0 ) field.id <- paste(field.id, "of", sta.info@subannual.original, sep =".")
+      else field.id <- paste(field.id, "of", "Unknown", sep =".")
+    }
+    
+  } 
+
   return(field.id)
   
 }

@@ -89,7 +89,7 @@ getField <- function(source,
     if(is.Field(sta.info)) sta.info <- as(sta.info, "STAInfo")
     if(!missing(first.year)) warning("Since 'sta.info' argument has been specified, the 'first.year' argument will be ignored")
     if(!missing(last.year)) warning("Since 'sta.info' argument has been specified, the 'last.year' argument will be ignored")
-    if(!missing(year.aggregate.method)) warning("Since 'sta.info' has been argument specified, the 'year.aggregate.method' argument will be ignored")
+    if(!missing(year.aggregate.method)) warning("Since 'sta.info' argument has been specified, the 'year.aggregate.method' argument will be ignored")
     if(!missing(spatial.extent)) warning("Since 'sta.info' argument has been specified, the 'spatial.extent' argument will be ignored")
     if(!missing(spatial.extent.id)) warning("Since 'sta.info' argument has been specified, the 'spatial.extent.id' argument will be ignored")
     if(!missing(spatial.aggregate.method)) warning("Since 'sta.info' has been argument specified, the 'spatial.aggregate.method' argument will be ignored")
@@ -99,18 +99,9 @@ getField <- function(source,
   }
   
   ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
-  target.field.id <- makeFieldID(source.info = source, 
+  target.field.id <- makeFieldID(source = source, 
                                  var.string = var.string, 
-                                 first.year = sta.info@first.year,
-                                 last.year = sta.info@last.year,
-                                 year.aggregate.method = sta.info@year.aggregate.method, 
-                                 spatial.extent.id = sta.info@spatial.extent.id, 
-                                 spatial.aggregate.method = sta.info@spatial.aggregate.method,
-                                 subannual.resolution = sta.info@subannual.resolution,
-                                 subannual.original = sta.info@subannual.original,
-                                 subannual.aggregate.method = sta.info@subannual.aggregate.method
-  )
-  print(target.field.id)
+                                 sta.info = sta.info)
   
   file.name <- file.path(source@dir, paste(target.field.id, "DGVMField", sep = "."))
   if(verbose) message(paste("Seeking ModelField with id = ", target.field.id, sep = ""))
@@ -118,7 +109,7 @@ getField <- function(source,
   
   
   
-  ### CASE 1 - USE THE PREAVERAGED/CROPPED VEGOBJECT FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
+  ### CASE 1 - USE THE PREAVERAGED/CROPPED FIELD FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
   if(file.exists(paste(file.name)) & !read.full){
     
     # get the object from disk
@@ -132,7 +123,11 @@ getField <- function(source,
     
     # Check that the spatial extent matches before returning
     # Note that there are two cases to check here (specifically defined extents or just the same ids)
-    if(identical(sta.info@spatial.extent, model.field@spatial.extent) ||
+    print(sta.info@spatial.extent)
+    print(model.field@spatial.extent)
+    print(sta.info@spatial.extent.id)
+    print(model.field@spatial.extent.id)
+    if(#identical(sta.info@spatial.extent, model.field@spatial.extent) ||
        sta.info@spatial.extent.id == model.field@spatial.extent.id){
       return(model.field)
     }  
@@ -154,13 +149,13 @@ getField <- function(source,
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   else {
     
-    if(verbose) message(paste("File for ", var.string, "not already read (or 'read.full' argument set to TRUE), so reading full data file now.", sep = ""))
+    if(verbose) message(paste("File for ", var.string, " not already read (or 'read.full' argument set to TRUE), so reading full data file now.", sep = ""))
     
     data.list <- source@format@getField(source, quant, sta.info, verbose, ...)
     this.dt <- data.list[["dt"]]
     setKeyDGVM(this.dt)
     actual.sta.info <- data.list[["sta.info"]]
- 
+    
   } # end option 2
   
   
@@ -194,7 +189,7 @@ getField <- function(source,
   }
   else {
     
-     if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@xmin, ",", actual.sta.info@xmax, "), Lat = (" ,  actual.sta.info@ymin, ",", actual.sta.info@ymax, ").", sep = ""))
+    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
     
   }
   
@@ -247,7 +242,7 @@ getField <- function(source,
   ### CHECK THAT WE HAVE A VALID DATA.TABLE
   if(nrow(this.dt) == 0) stop("getField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
   
- 
+  
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method &&
      length(sta.info@spatial.aggregate.method) > 0 ){
