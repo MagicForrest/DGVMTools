@@ -98,6 +98,14 @@ getField <- function(source,
     if(!missing(subannual.aggregate.method)) warning("Since 'sta.info' argument has been specified, the 'subannual.aggregate.method' argument will be ignored")
   }
   
+  
+  ### CATCH AWKWARD CASE
+  ### Fail when a spatial.extent is specified but no spatial.extent.id
+  if(!missing(spatial.extent) && missing(spatial.extent.id)){
+    stop("Please specify a spatial.extent.id when specifying a spatial.extent (just a simple character string).  This is to maintain metadata integrity.")
+  }
+  
+  
   ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
   target.field.id <- makeFieldID(source = source, 
                                  var.string = var.string, 
@@ -123,12 +131,23 @@ getField <- function(source,
     
     # Check that the spatial extent matches before returning
     # Note that there are two cases to check here (specifically defined extents or just the same ids)
-    print(sta.info@spatial.extent)
-    print(model.field@spatial.extent)
-    print(sta.info@spatial.extent.id)
-    print(model.field@spatial.extent.id)
-    if(#identical(sta.info@spatial.extent, model.field@spatial.extent) ||
-       sta.info@spatial.extent.id == model.field@spatial.extent.id){
+    
+    
+    full.domain.matched <- FALSE
+    if(length(sta.info@spatial.extent) == 0 && model.field@spatial.extent.id == "Full") {
+      full.domain.matched <- TRUE
+      if(verbose) message("Full domain matched.")
+    }
+    
+    cropped.domain.matched <- FALSE
+    if(length(sta.info@spatial.extent) > 0 && length(model.field@spatial.extent)  > 0 ) {
+      if(identical(sta.info@spatial.extent, model.field@spatial.extent)){
+        cropped.domain.matched <- TRUE
+        if(verbose) message("Cropped domain matched.")
+      }
+    }
+    
+    if(full.domain.matched || cropped.domain.matched){
       return(model.field)
     }  
     
@@ -147,17 +166,12 @@ getField <- function(source,
   
   
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
-  else {
-    
-    if(verbose) message(paste("File for ", var.string, " not already read (or 'read.full' argument set to TRUE), so reading full data file now.", sep = ""))
-    
-    data.list <- source@format@getField(source, quant, sta.info, verbose, ...)
-    this.dt <- data.list[["dt"]]
-    setKeyDGVM(this.dt)
-    actual.sta.info <- data.list[["sta.info"]]
-    
-  } # end option 2
+  if(verbose) message(paste("Field ", target.field.id, " not already saved (or 'read.full' argument set to TRUE), so reading full data file to create the field now.", sep = ""))
   
+  data.list <- source@format@getField(source, quant, sta.info, verbose, ...)
+  this.dt <- data.list[["dt"]]
+  setKeyDGVM(this.dt)
+  actual.sta.info <- data.list[["sta.info"]]
   
   
   ### CROP THE SPATIAL EXTENT IF REQUESTED
@@ -166,10 +180,9 @@ getField <- function(source,
     # if the provided spatial yields a valid extent, use the crop function
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
     if (class(possible.error) != "try-error") {
-      this.dt <- crop(this.dt, sta.info@spatial.extent)  
+      this.dt <- crop(this.dt, sta.info@spatial.extent, sta.info@spatial.extent.id)  
       actual.sta.info@spatial.extent <- extent(sta.info@spatial.extent)
-      if(length(sta.info@spatial.extent) == 0 ) actual.sta.info@spatial.extent.id <- "CroppedToExtent"
-      else actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
+      actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
       
     }
     
@@ -177,8 +190,7 @@ getField <- function(source,
     else if(is.data.frame(sta.info@spatial.extent) || is.data.table(sta.info@spatial.extent) || is.numeric(sta.info@spatial.extent) || is.list(sta.info@spatial.extent)){
       this.dt <- selectGridcells(this.dt, sta.info@spatial.extent)
       actual.sta.info@spatial.extent <- sta.info@spatial.extent
-      if(length(sta.info@spatial.extent) == 0 ) actual.sta.info@spatial.extent.id <- "SubsetOfGridcells"
-      else actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
+      actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
     }
     
     # else fail with error message
@@ -189,6 +201,7 @@ getField <- function(source,
   }
   else {
     
+    actual.sta.info@spatial.extent.id <- "Full"
     if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
     
   }

@@ -42,13 +42,7 @@ makeFieldID <- function(field,
     
     this.id <- makeFieldID(source = field@source,
                            var.string = field@quant@id, 
-                           first.year= field@first.year, 
-                           last.year= field@last.year, 
-                           year.aggregate.method = field@year.aggregate.method, 
-                           spatial.extent.id = field@spatial.extent.id, 
-                           spatial.aggregate.method = field@spatial.aggregate.method, 
-                           subannual.aggregate.method = field@subannual.aggregate.method, 
-                           subannual.original = field@subannual.original)
+                           sta.info = field@sta.info)
     return(this.id)
     
   }
@@ -86,7 +80,9 @@ makeFieldID <- function(field,
   
  
   # spatial extent and aggregation
-  if(length(sta.info@spatial.aggregate.method) > 0  || length(sta.info@spatial.extent.id)) {
+  if(length(sta.info@spatial.aggregate.method) > 0  
+     || length(sta.info@spatial.extent.id) > 0
+     || length(sta.info@spatial.extent) > 0) {
     field.id <- paste(field.id, "Spatial", sep = sep)
     if(length(sta.info@spatial.aggregate.method) > 0)  field.id <- paste(field.id, sta.info@spatial.aggregate.method, sep = "_")
     if(length(sta.info@spatial.extent.id) > 0) field.id <- paste(field.id, sta.info@spatial.extent.id, sep = "_")

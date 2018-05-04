@@ -5,6 +5,8 @@
 #' 
 #' @param x A Field or Comparison or a stand-alone data.table to be cropped
 #' @param y Anything from which raster::Extent object can be derived
+#' @param spatial.extent.id A character string to describe the spatial extent (y) required for meta-data consistency.
+#' Must be provided when cropping \code{Fields} or \code{Comparisons}.
 #' @param ... Other arguments, not currently used
 #' @return A spatially cropped object
 #' @name crop-methods
@@ -18,9 +20,9 @@
 #' 
 #' 
 # first define (redfine) the generic
-if (!isGeneric("crop")) {
-  setGeneric("crop", function(x, y, ...) standardGeneric("crop"))
-}
+#if (!isGeneric("crop")) {
+  setGeneric("crop", function(x, y, spatial.extent.id = NULL, ...) standardGeneric("crop"))
+#}
 
 
 #######################################################################################
@@ -29,7 +31,11 @@ if (!isGeneric("crop")) {
 
 
 #' @rdname crop-methods
-setMethod("crop", signature(x="Field", y = "ANY"), function(x, y) {
+setMethod("crop", signature(x="Field", y = "ANY"), function(x, y, ...) {
+  
+  if(is.null(spatial.extent.id)){
+    stop("When cropping a DGVMTools object, please provide a spatial.extent.id when cropping a DGVMTools object to maintain meta-data integrity.")
+  }
   
   Lon = Lat = NULL
   
@@ -47,7 +53,7 @@ setMethod("crop", signature(x="Field", y = "ANY"), function(x, y) {
 
   # adjust the meta-data to reflext the new cropped extent
   x@spatial.extent <- extent(x@data)
-  x@spatial.extent.id <-paste0(x@spatial.extent.id, "_cropped")
+  x@spatial.extent.id <- paste0(spatial.extent.id)
   
   
   return(x)
@@ -56,10 +62,13 @@ setMethod("crop", signature(x="Field", y = "ANY"), function(x, y) {
 
 
 #' @rdname crop-methods
-setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y) {
-  
-  Lon = Lat = NULL
+setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y, ...) {
  
+  if(is.null(spatial.extent.id)){
+    stop("When cropping a DGVMTools object, please provide a spatial.extent.id when cropping a DGVMTools object to maintain meta-data integrity.")
+  }
+   
+  Lon = Lat = NULL
  
   # get raster::Extent for cropping
   y <- try ( extent(y), silent=TRUE )
@@ -75,7 +84,7 @@ setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y) {
  
   # adjust the meta-data to reflext the new cropped extent
   x@spatial.extent <- extent(x@data)
-  x@spatial.extent.id <-paste0(x@spatial.extent.id, "_cropped")
+  x@spatial.extent.id <-paste0(spatial.extent.id)
   
   return(x)
   

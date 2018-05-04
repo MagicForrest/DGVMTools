@@ -6,12 +6,13 @@
 #' @param gridcells The gridcells to be extracted.  Can either be a simple two-element numeric to pull out one gridcell (ordering is lon, lat), or it can be a data.frame or data.table
 #' in which the first two columns are assumed to be longitude and latitude.
 #' @param tolerance A single numeric specifying how close a required gridcell in gridcells must be to one in x.  Doesn't currently work, non-exact matching is not implemented.
+#' @param spatial.extent.id A character string to describe the gridcells selected, this is required for meta-data consistency.
 #' @param decimal.places A single numeric specifying how many decimal place to which the coordinates should rounded to facilitate a match.  
 #' 
 #' @return A Field, DataObject, data.table or data.frame depending on the type of the input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
-selectGridcells <- function(x, gridcells, tolerance = NULL, decimal.places = NULL) {
+selectGridcells <- function(x, gridcells, tolerance = NULL, spatial.extent.id = NULL, decimal.places = NULL) {
   
   Lon = Lat = NULL
   
@@ -27,6 +28,7 @@ selectGridcells <- function(x, gridcells, tolerance = NULL, decimal.places = NUL
     dt <- data.table(x)
   }
   else if(is.Field(x)) {
+    if(missing(spatial.extent.id)) stop("When selecting gridcells from a DGVMTools object, please provide a spatial.extent.id when cropping a DGVMTools object to maintain meta-data integrity.")
     dt <- x@data
   }
   else {
@@ -112,6 +114,11 @@ selectGridcells <- function(x, gridcells, tolerance = NULL, decimal.places = NUL
   }
   else{
     x@data <- final.dt
+    x@spatial.extent.id <- spatial.extent.id
+    x@spatial.extent <- extent(final.dt)
+    x@id <- makeFieldID(source = x@source,
+                        var.string = x@quant@id, 
+                        sta.info = as(x, "STAInfo"))
     return(x)
   }
   
