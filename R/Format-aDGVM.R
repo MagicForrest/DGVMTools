@@ -367,6 +367,10 @@ convertMonthlyScheme1 <- function( runid, fire, directory )
 getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgvm.daily)
 {
   
+  
+  # To stop NOTES
+  Day = Lat = Lon = Month = Time = Year = NULL
+  
   fname <- file.path(run@dir, paste("pop_", run@id,".nc", sep=""))
   
   

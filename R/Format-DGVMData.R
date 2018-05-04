@@ -8,56 +8,27 @@
 #' Get a Field for DGVMData
 #' 
 #' 
-#' An internal function that reads data from an LPJ-GUESS run.  It actually call one of three other functions depending on the type of quantity specified.   
+#' An internal function that reads data from an DGVMData .nc file.  
 #' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
 #' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
-#' @param first.year The first year (as a numeric) of the data to be returned
+#' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param last.year The last year (as a numeric) of the data to be returned
 #' @param verbose A logical, set to true to give progress/debug information
-#' @return A list containing firstly the data.tablel containing the data, and secondly the STAInfo 
+#' @return A list containing firstly the data.tablle containing the data, and secondly the STAInfo for the data that we have
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 getField_DGVMData <- function(source,
                            quant,
                            target.STAInfo,
-                           verbose) {
+                           verbose = FALSE) {
   
-  
-  data.list <- openDGVMDataFile(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
-
-    
-  return(data.list)
-  
-}
-
-
-
-######################### OPEN A DGVMData *.nc FILE  #####################################################################
-#' Open a DGVMData *.n file
-#'
-#' \code{penDGVMDataFile} returns a data.table object given a string defining a vegetation quantity 
-#' from the source (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the source is on disk and the offsets to apply
-#'
-#' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
-#' 
-#' @param source A \code{Source} containing the meta-data about the LPJ-GUESS source
-#' @param quant A string the define what output file from the LPJ-GUESS source to open, for example "anpp" opens and read the "anpp.out" file 
-#' @param first.year The first year (as a numeric) of the data to be returned
-#' @param last.year The last year (as a numeric) of the data to be returned
-#' @param verbose A logical, set to true to give progress/debug information
-#' @return a data.table (with the correct tear offset and lon-lat offsets applied)
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import data.table
-#' @keywords internal
-openDGVMDataFile <- function(source,
-                             quant,
-                             first.year,
-                             last.year,
-                             verbose = FALSE){
-  
-  # To avoid annoying NOTES when R CMD check-ing
+   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Year = Month = Time = NULL
+  
+  # get fist and last year for use later on
+  first.year = target.STAInfo@first.year
+  last.year = target.STAInfo@last.year
   
   # function read attributes and warn if they are not present.
   getGlobalAttribute <- function(attr.name, global.attributes) {
@@ -152,7 +123,8 @@ openDGVMDataFile <- function(source,
   year.aggregate.method <- getGlobalAttribute("year.aggregate.method", global.attributes)
   if(!is.null(first.year)) sta.info@first.year <- first.year
   if(!is.null(last.year)) sta.info@last.year <- last.year
-  if(!is.null(year.aggregate.method)) sta.info@last.year <- year.aggregate.method
+  if(!is.null(year.aggregate.method)) sta.info@year.aggregate.method <- year.aggregate.method
+
   
   ###  HACK!! - for some reason this ncdf4 package is reading time value dimensions as NA
   ###  These values seem to be perfectly valid according to ncview and ncdump, so I don't know what is going on.

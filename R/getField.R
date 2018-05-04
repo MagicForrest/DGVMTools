@@ -3,30 +3,39 @@
 #
 #' Get a \code{Field} from a \code{Source}
 #' 
-#' Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially-averaged \code{Field} object. optionally including spatial,
-#' yearly and/or subannual cropping and aggregating.
+#' Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object. optionally including
+#' spatial, temporal and annual cropping.
 #' 
-#' Note that because there are two types of averaging available, the resulting \code{Source} object can either be full spatial-temporal dataset, a spatial-only dataset (map), a temporal only datasey a time-series) or an average across both space and time, i.e. a single number.
-#' Also not that the data is stored internal as a data.table object, but this is mostly not important to the user.
-#'   
+#' Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
+#' To check what dimensions you have you can use \code{\link{getDimInfo}}  
+#' 
 #' @param source The \code{Source} object for which the spatially-averaged \code{ModelField} should be built (eg. "lai")
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
+#' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
+#' Can also be a Field object from which the STA info will de derived.
+#' If specified the following 9 arguments are ignored (with a warning)
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' See \code{\link{aggregateYears}} 
 #' @param spatial.extent An extent in space to which this Field should be cropped, supplied as a raster::extent object or an object from which a raster::extent object can be derived - eg. a Raster* object or another Field object.
 #' @param spatial.extent.id A character string to give an identifier for the spatial extent this ModelField covers.
 #' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' See \code{\link{aggregateSpatial}} 
+#' @param subannual.resolution A character string specifying the subannual resolution that you want to the data on.  Can be "Annual", "Monthly" or "Daily".
+#' @param subannual.aggregate.method A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "sd" or "var".
+#' See \code{\link{aggregateSubannual}} 
+#' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method 
+#' Can be "Annual", "Monthly" or "Daily".  Currently ignored. resolution that you want to the data on.  Can be "Annual", "Monthly" or "Daily"
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
-#' @param store.internally If TRUE store the resulting \code{ModelField} in the \code{Source} for using later
-#' @param store.full If TRUE save the full temporal and spatial output in memory (if it is read) to save time if making more \code{ModelFields} from the variable later.  However, use with caution, saving too many full variables can easily fill up your system's RAM memory!
-#' @param adgvm.scheme In the case of analysing an aDGVM source, select the PFT classification scheme for when post-hoc assigning the individuals into PFTS.
+#' @param ...  Other arguments that are passed to the getField function for the specific Format.  Currently this is only 'adgvm.scheme' (for the aDGVM Format) which can be 1 or 2.
 #' 
 #' @return A \code{Field}. 
+#' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}}   
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -77,6 +86,7 @@ getField <- function(source,
     if(!missing(subannual.aggregate.method)) sta.info@subannual.aggregate.method = subannual.aggregate.method
   }
   else {
+    if(is.Field(sta.info)) sta.info <- as(sta.info, "STAInfo")
     if(!missing(first.year)) warning("Since 'sta.info' argument has been specified, the 'first.year' argument will be ignored")
     if(!missing(last.year)) warning("Since 'sta.info' argument has been specified, the 'last.year' argument will be ignored")
     if(!missing(year.aggregate.method)) warning("Since 'sta.info' has been argument specified, the 'year.aggregate.method' argument will be ignored")
@@ -141,8 +151,6 @@ getField <- function(source,
   #############################################################################################
   
   
-  
-  
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   else {
     
@@ -151,22 +159,13 @@ getField <- function(source,
     data.list <- source@format@getField(source, quant, sta.info, verbose, ...)
     this.dt <- data.list[["dt"]]
     setKeyDGVM(this.dt)
-    actual.sta.info <- data.list[[2]]
+    actual.sta.info <- data.list[["sta.info"]]
  
-    
-    # 
-    # else {
-    #   
-    #   stop(paste0("The Quantity ", quant@id, " is defined for models ", paste(quant@format, sep=", ", collapse="") , ", which doesn't include the model that you requested getting output for (", source@format, ").  Please check this."))
-    #       #   
-    # }
-    # 
-    ### !!! END CALL MODEL SPECIFIC FUNCTIONS !!!
-    
-    
-  } # end option 4
+  } # end option 2
   
-  ### CROP THE SPATIAL EXTENT IF REQUESTED, AND 
+  
+  
+  ### CROP THE SPATIAL EXTENT IF REQUESTED
   if(!is.null(sta.info@spatial.extent))  {
     
     # if the provided spatial yields a valid extent, use the crop function
@@ -195,9 +194,7 @@ getField <- function(source,
   }
   else {
     
-    #if(!exists("spatial.extent.present")) spatial.extent.present <- extent(this.dt)
-    
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  spatial.extent.present@xmin, ",", spatial.extent.present@xmax, "), Lat = (" ,  spatial.extent.present@ymin, ",", spatial.extent.present@ymax, ").", sep = ""))
+     if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@xmin, ",", actual.sta.info@xmax, "), Lat = (" ,  actual.sta.info@ymin, ",", actual.sta.info@ymax, ").", sep = ""))
     
   }
   
@@ -205,6 +202,7 @@ getField <- function(source,
   ### SELECT THE YEARS IF REQUESTED
   if("Year" %in% getDimInfo(this.dt)) {
     
+    crop.first <- FALSE
     if(length(sta.info@first.year) == 1) {
       if(sta.info@first.year != actual.sta.info@first.year) {
         first.year <- sta.info@first.year
@@ -216,6 +214,7 @@ getField <- function(source,
       }
     }
     
+    crop.last <- FALSE
     if(length(sta.info@last.year) == 1) {
       if(sta.info@last.year != actual.sta.info@last.year) {
         last.year <- sta.info@last.year
@@ -248,16 +247,7 @@ getField <- function(source,
   ### CHECK THAT WE HAVE A VALID DATA.TABLE
   if(nrow(this.dt) == 0) stop("getField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
   
-  
-  
-  ### GET THE YEARS BEFORE THEY MAY BE AVERAGED AWAY
-  ordered.years = NULL
-  if("Year" %in% names(this.dt)) { 
-    ordered.years <- sort(unique(this.dt[,Year]))
-    first.year.present <- min(ordered.years)
-    last.year.present <- max(ordered.years)
-  }
-  
+ 
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method &&
      length(sta.info@spatial.aggregate.method) > 0 ){
@@ -301,7 +291,7 @@ getField <- function(source,
     if(sta.info@subannual.resolution != actual.sta.info@subannual.resolution){
       
       if(length(sta.info@subannual.aggregate.method) == 0) {
-        stop(paste0("Please provide a subannual.aggregate.method if you want to aggraget the data from ", actual.sta.info@subannual.original, " to ", sta.info@subannual.resolution))
+        stop(paste0("Please provide a subannual.aggregate.method if you want to aggregate the data from ", actual.sta.info@subannual.original, " to ", sta.info@subannual.resolution))
       }
       
       this.dt <- aggregateSubannual(this.dt, method = sta.info@subannual.aggregate.method, target = sta.info@subannual.resolution, verbose = verbose)
@@ -319,25 +309,12 @@ getField <- function(source,
   
   
   
-  
-  ### IF NO EXTENTS SPECIFIED, GET THE EXTENTS FOR THE FINAL VEGOBJECT TO RETURN
-  
-  
-  
   ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
   model.field <- new("Field",
                      id = target.field.id,
                      data = this.dt,
                      quant = quant,
                      actual.sta.info,
-                     # first.year = first.year.present, 
-                     # last.year = last.year.present, 
-                     # year.aggregate.method = year.aggregate.method.present,
-                     # spatial.extent = actual.sta.info@spatial.extent,
-                     # spatial.extent.id = actual.sta.info@spatial.extent,
-                     # spatial.aggregate.method = spatial.aggregate.method,
-                     # subannual.aggregate.method = "none",
-                     # subannual.original = "none",
                      source = as(source, "SourceInfo"))
   
   

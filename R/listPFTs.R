@@ -57,6 +57,7 @@ listPFTs <- function(x, criteria = NULL, return.ids = TRUE) {
     
   }
   
-  return(matched.pfts)
+  if(return.ids) return(unlist(matched.pfts))
+  else return(matched.pfts)
   
 }

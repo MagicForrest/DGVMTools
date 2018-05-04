@@ -24,18 +24,17 @@ getField_GUESS <- function(source,
   
   # First check if quantity is for FireMIP, if so call a special function with the extra processing required
   if("FireMIP" %in% quant@model) {
-    this.dt <- openLPJOutputFile_FireMIP(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+    data.list <- openLPJOutputFile_FireMIP(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
   }
   else if("GUESS" %in% quant@model | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
-    this.dt <- openLPJOutputFile(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+    data.list <- openLPJOutputFile(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
   }
   else if("Standard" %in% quant@model) {
-    this.dt <- getStandardQuantity_LPJ(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+    data.list <- getStandardQuantity_LPJ(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
   }
   
   
-  return(list(st = this.dt,
-              sta.info = NULL))
+  return(data.list)
   
 }
 
@@ -156,7 +155,23 @@ openLPJOutputFile <- function(run,
   # remove any NAs
   dt <- stats::na.omit(dt)
   
-  return(dt)
+  # Build as STAInfo object describing the data
+  all.years <- sort(unique(dt[["Year"]]))
+  dimensions <- getDimInfo(dt)
+  subannual <- "Annual"
+  if("Month" %in% dimensions) subannual <- "Monthly"
+  else if("Day" %in% dimensions) subannual <- "Daily"
+  
+  
+  sta.info = new("STAInfo",
+                 first.year = min(all.years),
+                 last.year = max(all.years),
+                 subannual.resolution = subannual,
+                 subannual.original = subannual,
+                 spatial.extent = extent(dt))
+  
+  return(list(dt = dt,
+              sta.info = sta.info))
   
 }
 
@@ -493,11 +508,11 @@ getStandardQuantity_LPJ <- function(run,
   Total = Annual = FireRT = NULL
   
   # columns not to be modified for unit conversions etc.
-  unmod.cols <- c("Lon", "Lat", "Year", "Day")
+  unmod.cols <- c("Lon", "Lat", "Year", "Month", "Day")
   
   # Check that this really is a standard Quantity and therefore should have behaviour defined here
   if(!"Standard" %in% quant@model) {
-    stop()(paste("getStandardQuantity_LPJ called for a non-standard Quantity (", quant@id, ")", sep = ""))
+    stop((paste("getStandardQuantity_LPJ called for a non-standard Quantity (", quant@id, ")", sep = "")))
   }
   
   
@@ -508,15 +523,15 @@ getStandardQuantity_LPJ <- function(run,
   if(quant@id == "vegcover_std") {
     
     # vegcover.out provides the right quantity here (note this is not standard LPJ-GUESS)
-    this.dt <- openLPJOutputFile(run, "vegcover", first.year, last.year, verbose = TRUE)
-    
+    data.list <- openLPJOutputFile(run, "vegcover", first.year, last.year, verbose = TRUE)
+
     # But we need to scale it to %
     if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
-    mod.cols <- names(this.dt)
+    mod.cols <- names(data.list[["dt"]])
     mod.cols <- mod.cols[!mod.cols %in% unmod.cols]
-    this.dt <- this.dt[, (mod.cols) := lapply(.SD, function(x) x * 100 ), .SDcols = mod.cols]
-    if("Grass" %in% names(this.dt)) { setnames(this.dt, old = "Grass", new = "NonTree") }
-    return(this.dt)
+    data.list[["dt"]][, (mod.cols) := lapply(.SD, function(x) x * 100 ), .SDcols = mod.cols]
+    if("Grass" %in% names(data.list[["dt"]])) { setnames(data.list[["dt"]], old = "Grass", new = "NonTree") }
+    return(data.list)
     
   }
   
@@ -524,9 +539,8 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "vegC_std") {
     
     # cmass provides the right quantity here - so done
-    this.dt <- openLPJOutputFile(run, "cmass", first.year, last.year, verbose = TRUE)
-    
-    return(this.dt)
+    data.list <- openLPJOutputFile(run, "cmass", first.year, last.year, verbose = TRUE)
+    return(data.list)
     
   }
   
@@ -534,20 +548,21 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "LAI_std") {
     
     # lai provides the right quantity here - so done
-    this.dt <- openLPJOutputFile(run, "lai", first.year, last.year, verbose = TRUE)
-    
-    return(this.dt)
+    data.list <- openLPJOutputFile(run, "lai", first.year, last.year, verbose = TRUE)
+    return(data.list)
+  
     
   }
   
-  # LAI_std 
+  # FPAR_std 
   else if(quant@id == "FPAR_std") {
     
     # lai provides the right quantity here - so done
-    temp.dt <- openLPJOutputFile(run, "fpc", first.year, last.year, verbose = TRUE)
-    this.dt <- temp.dt[, c("Lon", "Lat", "Year", "Total")]
-    this.dt[, Total := pmin(Total, 1) * 100 * 0.83]
-    return(this.dt)
+    data.list <- openLPJOutputFile(run, "fpc", first.year, last.year, verbose = TRUE)
+   
+    data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year", "Total")]
+    data.list[["dt"]][, Total := pmin(Total, 1) * 100 * 0.83]
+    return(data.list)
     
   }
   
@@ -557,14 +572,14 @@ getStandardQuantity_LPJ <- function(run,
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     if(file.exists(file.path(run@dir, "agpp.out")) || file.exists(file.path(run@dir, "agpp.out.gz"))){
-      this.dt <- openLPJOutputFile(run, "agpp", first.year, last.year, verbose = TRUE)
-      this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
+      data.list <-  openLPJOutputFile(run, "agpp", first.year, last.year, verbose = TRUE)
+      data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
     else {
-      this.dt <- openLPJOutputFile(run, "mgpp", first.year, last.year, verbose = TRUE)
-      this.dt <- aggregateSubannual(this.dt, method = "sum", target = "Annual")
+      data.list <- openLPJOutputFile(run, "mgpp", first.year, last.year, verbose = TRUE)
+      data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum", target = "Annual")
     }
-    return(this.dt)
+    return(data.list)
     
   }
   
@@ -576,16 +591,14 @@ getStandardQuantity_LPJ <- function(run,
     # newer versions have the agpp output variable which has the per PFT version
     
     if(file.exists(file.path(run@dir, "anpp.out") || file.path(run@dir, "anpp.out.gz"))){
-      this.dt <- openLPJOutputFile(run, "anpp", first.year, last.year, verbose = TRUE)
-      this.dt <- this.dt[, c("Lon", "Lat", "Year","Total"), with = FALSE]
+      data.list <- openLPJOutputFile(run, "anpp", first.year, last.year, verbose = TRUE)
+      data.list[["dt"]] <-  data.list[["dt"]][, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
     else{
-      this.dt <- openLPJOutputFile(run, "mnpp", first.year, last.year, verbose = TRUE)
-      this.dt <- aggregateSubannual(this.dt, method = "sum", target = "Annual")
+      data.list <- openLPJOutputFile(run, "mnpp", first.year, last.year, verbose = TRUE)
+      data.list[["dt"]]  <- aggregateSubannual(data.list[["dt"]] , method = "sum", target = "Annual")
     }
-    
-    
-    return(this.dt)
+    return(data.list)
     
   }
   
@@ -594,13 +607,12 @@ getStandardQuantity_LPJ <- function(run,
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
-    this.dt <- openLPJOutputFile(run, "cflux", first.year, last.year, verbose = TRUE)
+    data.list <- openLPJOutputFile(run, "cflux", first.year, last.year, verbose = TRUE)
+   
+    # take NEE and  ditch the rest
+    data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year","NEE"), with = FALSE]
     
-    # make the annual total and remove ditch the rest
-    this.dt <- this.dt[, c("Lon", "Lat", "Year","NEE"), with = FALSE]
-    
-    
-    return(this.dt)
+    return(data.list)
     
   }
   
@@ -608,10 +620,10 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "canopyheight_std") {
     
     # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
-    this.dt <- openLPJOutputFile(run, "canopyheight", first.year, last.year, verbose = TRUE)
-    setnames(this.dt, "CanHght", "CanopyHeight")
+    data.list <- openLPJOutputFile(run, "canopyheight", first.year, last.year, verbose = TRUE)
+    setnames(data.list[["dt"]], "CanHght", "CanopyHeight")
     
-    return(this.dt)
+    return(data.list)
     
   }
   
@@ -620,19 +632,19 @@ getStandardQuantity_LPJ <- function(run,
     
     # if mfirefrac is present the open it and use it
     if("mfirefrac" %in% determineQuantities_GUESS(run@dir, names=TRUE)){
-      this.dt <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = TRUE)
-      this.dt <- aggregateSubannual(this.dt, method = "sum")
+      data.list <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = TRUE)
+      data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum")
       
     }
     
     # otherwise open firert to get GlobFIRM fire return interval and invert it
     else {
-      this.dt <- openLPJOutputFile(run, "firert", first.year, last.year, verbose = TRUE)
-      this.dt[, Annual :=  1 / FireRT]
-      this.dt[, FireRT :=  NULL]
+      data.list <- openLPJOutputFile(run, "firert", first.year, last.year, verbose = TRUE)
+      data.list[["dt"]][, Annual :=  1 / FireRT]
+      data.list[["dt"]][, FireRT :=  NULL]
     }
     
-    return(this.dt)
+    return(data.list)
     
   }
   

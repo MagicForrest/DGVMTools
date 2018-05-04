@@ -134,7 +134,7 @@ layerOp <- function(x, operator, layers, new.layer){
   }
   
   t2 <- Sys.time()
-  print(t2-t1)
+  #print(t2-t1)
   return(x)
   
 }
