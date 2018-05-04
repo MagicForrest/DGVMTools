@@ -887,13 +887,9 @@ determineQuantities_aDGVM <- function(source){
 ########### aDGVM PFTS ########################
 ###############################################
 
-#' @title dummy text
-#' 
-#' @description
-#' 
-#' @details aDGVM PFTs (under development)
-#' 
-#' @format A list of \code{PFT} objects that store meta-data for standard PFT for supported models
+
+
+#' @format An S4 class object with the slots as defined below.
 #' @rdname PFT-class
 #' @keywords datasets
 aDGVM.PFTs <- list(
@@ -984,13 +980,8 @@ aDGVM.PFTs <- list(
 ########### aDGVM QUANTITIES ########################
 #####################################################
 
-#' @title dummy text
-#' 
-#' @description
-#' 
-#' @details aDGVMData Output Quantities
-#' 
-#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+
+#' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
 #' 
@@ -1054,13 +1045,9 @@ aDGVM.quantities <- list(
 ########### aDGVM FORMAT ########################
 ################################################################
 
-#' @title dummy text
+#' @description \code{aDGVM} - a Format for reading aDGVM2 model output
 #' 
-#' @description dummy description 
-#' 
-#' @details aDGVM Format 
-#' 
-#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @format A \code{Quantity} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets

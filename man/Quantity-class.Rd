@@ -11,7 +11,7 @@
 \alias{aDGVM.quantities}
 \alias{Standard.quantities}
 \title{Class to hold meta-data for a vegetation quantity}
-\format{A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models}
+\format{The \code{Quantity} class is an S4 class with the slots defined below}
 \usage{
 DGVMData.quantities
 
@@ -27,30 +27,11 @@ Standard.quantities
 This class hold meta-data for specific vegetation or land surface quantities like "lai" (LAI) or "mwcont_upper" (mean monthly water).  
 Includes metadata about the quantity (the units it is measured in for example), values for default plot proprties (color scales, plot ranges) and the aggragating method - ie whether the quantity shoudd generally be summed (for example monthly burnt area or C mass per PFT) or averaged (for example monthly soil water content).
 See the 'Slots' documentation below.
-Note that the user will probably need to define their own, and modify these for their own analysis and plots
-
-
-
-
-
-
-
-
-
-A global scope list of standrd quantites which should be defined for many models (is Format objects).
-Once the package is loaded this is just a standard R list so can be modified and extended as you wish.  It can be conveniently accesed by the \code{lookupQuantity()} function.
+Note that for some analyses  user will probably need to define their own, and modify these for their own analysis and plots.  However the standard quantities 
+that one expects to be availabel from different model and data types are listed below in the 'Usage' section.
 }
 \details{
-DGVMData Output Quantities
-
-FireMIP Output Quantities
-
-LPJ-GUESS(-SPITFIRE) Output Quantities
-
-aDGVMData Output Quantities
-
-These quantities have sensible colour schemes, long names and cut ranges for standard global runs,
-but they will likely need to be modified and new ones aded for a specific analysis.
+Note that quantities in the \code{Standard.quantities} list should ideally be defined for all model types.
 }
 \section{Slots}{
 

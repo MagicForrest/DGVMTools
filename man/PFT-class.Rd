@@ -8,7 +8,7 @@
 \alias{GUESS.PFTs}
 \alias{aDGVM.PFTs}
 \title{Class to hold the metadata for a Plant Functional Type (PFT)}
-\format{A list of \code{PFT} objects that store meta-data for standard PFT for supported models}
+\format{An S4 class object with the slots as defined below.}
 \usage{
 FireMIP.PFTs
 
@@ -17,24 +17,14 @@ GUESS.PFTs
 aDGVM.PFTs
 }
 \description{
-This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their growth form, phenology, leaftype, climate zone etc, and a default plot colour.
-These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a Source object
-to define which PFTs might be in a run (but they don't all need to be present in a given run)
-
-
-
-
-
-
+This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, 
+as well as their growth form, phenology, leaftype, climate zone, shade tolerance and a default plot colour.
+These are defined in lists for the default PFTs for supported models (see'Usage' below).
 }
 \details{
-The following PFT list are already defined for standard model output:
-
-FireMIP (Fire Model Intercomparison Project) standardised PFTs
-
-LPJ-GUESS(-SPITFIRE) Global PFTs
-
-aDGVM PFTs (under development)
+The \code{PFT-class} is only meta-data but is very important as it allows users to calculate, for example, the total Tree LAI with a simple command. 
+The standard PFTs for some models are included (see above), but if you have other PFTs then you simply need define them.  You then combine the PFTs into an R list
+and then provide them as the 'pft.set' argument to the \code{defineSource} call and bingo! you are using your custom PFTs.
 }
 \section{Slots}{
 

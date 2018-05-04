@@ -476,14 +476,7 @@ determineQuantities_FireMIP <- function(source){
 ########### FireMIP Coarse PFTS ########################
 ########################################################
 
-
-#' @title dummy text
-#' 
-#' @description
-#' 
-#' @details FireMIP (Fire Model Intercomparison Project) standardised PFTs
-#' 
-#' @format A list of \code{PFT} objects that store meta-data for standard PFT for supported models
+#' @format An S4 class object with the slots as defined below.
 #' @rdname PFT-class
 #' @keywords datasets
 FireMIP.PFTs <- list(
@@ -602,16 +595,10 @@ FireMIP.PFTs <- list(
 ########## FIREMIP QUANTITIES  ######################################
 ######################################################################  
 
-#' @title dummy text
-#' 
-#' @description
-#' 
-#' @details FireMIP Output Quantities
-#' 
-#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+
+#' @format The \code{Quantity} class is an S4 class with the slots defined below.
 #' @rdname Quantity-class
 #' @keywords datasets
-#' 
 #' 
 FireMIP.quantities <- list(
 
@@ -1057,13 +1044,9 @@ new("Quantity",
 ########### FireMIP FORMAT ########################
 ####################################################
 
-#' @title dummy text
+#' @description \code{FireMIP} - a Format for reading 'standard' FieMIP model output
 #' 
-#' @description dummy description 
-#' 
-#' @details FireMIP Format 
-#' 
-#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @format A \code{Quantity} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets

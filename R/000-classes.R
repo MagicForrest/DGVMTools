@@ -5,7 +5,9 @@
 #'
 #' This class encapsulates all the specific details of a supported model or dataset.  It stores meta-data and methods (just functions, not technically
 #'  methods in R terms) for a DGVM output format (or other data format).  Note that the default.pfts and  'quantities' arguments are just default 
-#'  values, it is easy to add new ones.  Equally they don't all need to to be available for a particular run or dataset.
+#'  values, it is easy to add new ones.  Equally they don't all need to to be available for a particular run or dataset.  You can define your own for your 
+#'  own data format if you, for example, want to include a new model type.    
+#'  Format objects which are  included in the package by default are listed below:
 #'
 #' @slot id Simple character string to gave an uniquely identify this format
 #' @slot default.pfts 'Standard' vegetation types (PFTs, Plant Functional Type) that this model uses, as a list of DGVMTools::PFT objects.  
@@ -127,9 +129,9 @@ setClass("STAInfo",
 
 #' Class to hold the metadata for a Plant Functional Type (PFT)
 #' 
-#' @description   This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, as well as their growth form, phenology, leaftype, climate zone etc, and a default plot colour.
-#' These are defined in lists for the default PFTs for supported models (see below 'Usage' and 'Format' below) but the user may well need to define their own.  Such a list must be passed to a Source object
-#' to define which PFTs might be in a run (but they don't all need to be present in a given run)   
+#' @description   This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, 
+#' as well as their growth form, phenology, leaftype, climate zone, shade tolerance and a default plot colour.
+#' These are defined in lists for the default PFTs for supported models (see'Usage' below). 
 #' 
 #' @slot id A unique character string to identify this particular PFT.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string to describe the PFT. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
@@ -140,8 +142,11 @@ setClass("STAInfo",
 #' @slot shade.tolerance A string defining the \code{id} of a shade tolerance characteristric of a PFT. 
 #' @slot colour A string defining a preferred R colour to plot this PFT (for line graphs etc)
 #' 
-#' @details The following PFT list are already defined for standard model output:
+#' @details The \code{PFT-class} is only meta-data but is very important as it allows users to calculate, for example, the total Tree LAI with a simple command. 
+#' The standard PFTs for some models are included (see above), but if you have other PFTs then you simply need define them.  You then combine the PFTs into an R list
+#' and then provide them as the 'pft.set' argument to the \code{defineSource} call and bingo! you are using your custom PFTs. 
 #' 
+
 #' @name PFT-class
 #' @rdname PFT-class
 #' @exportClass PFT
@@ -158,29 +163,7 @@ setClass("PFT",
          )
 )
 
-#' Supported Rub/Data Formats
-#' 
-#' List of supported data formats can be either a DGVM models type (say "LPJ-GUESS") or another standardised format 
-#' (for example the "DGVMData" format used by the DGVMData package).  Dev question: Implement CF compliant netCDF as a format??
-#' Possible dev answer, that is covered by the DGVMData package perhaps? 
-#'  
-#' @format A list of character strings for each of the supported vegetation models
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-supported.formats <- c("LPJ-GUESS", 
-                       "LPJ-GUESS-SPITFIRE", 
-                       "aDGVM", 
-                       "LPJ-GUESS-SPITFIRE-OLD-FireMIP", 
-                       "LPJ-GUESS-SPITFIRE-FireMIP",
-                       "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP",
-                       "LPJ-GUESS-GlobFIRM-FireMIP",
-                       "CLM-FireMIP",
-                       "CTEM-FireMIP",
-                       "JSBACH-FireMIP",
-                       "Inferno-FireMIP",
-                       "ORCHIDEE-FireMIP",
-                       "DGVMData",
-                       "Data")
+
 
 ########### Source - class to hold the metadata for an LPJ-GUESS run
 
@@ -205,11 +188,7 @@ checkSource <- function(object){
     msg <- "Error defining Source, you must define a format type!"
     errors <- c(errors, msg)
   }
-  #else if (!(object@format  %in% supported.formats)) {
-  #  msg <- paste("Unsupported model type", object@format, sep = " ")
-  #  errors <- c(errors, msg)
-  #}
-  
+ 
   
   # Check dir exists
   if (!utils::file_test("-d", object@dir)) {
@@ -295,7 +274,8 @@ setClass("Source",
 #' This class hold meta-data for specific vegetation or land surface quantities like "lai" (LAI) or "mwcont_upper" (mean monthly water).  
 #' Includes metadata about the quantity (the units it is measured in for example), values for default plot proprties (color scales, plot ranges) and the aggragating method - ie whether the quantity shoudd generally be summed (for example monthly burnt area or C mass per PFT) or averaged (for example monthly soil water content).
 #' See the 'Slots' documentation below.
-#' Note that the user will probably need to define their own, and modify these for their own analysis and plots
+#' Note that for some analyses  user will probably need to define their own, and modify these for their own analysis and plots.  However the standard quantities 
+#' that one expects to be availabel from different model and data types are listed below in the 'Usage' section.
 #' 
 #' @slot id A unique character string to identify this particular vegetation quantity, should match with the name of a particular model output variable.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A longer character string to provide a more complete description of this quantity
@@ -305,6 +285,8 @@ setClass("Source",
 #' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
 #' @slot cf.name A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
 #' but it makes sense to use this where possible.  
+#' 
+#' @details Note that quantities in the \code{Standard.quantities} list should ideally be defined for all model types. 
 #'
 #' @exportClass Quantity
 #' @name Quantity-class

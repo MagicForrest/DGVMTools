@@ -386,13 +386,8 @@ determinePFTs_DGVMData <- function(x, variables) {
 ########### DGVMData QUANTITIES ########################
 ########################################################
 
-#' @title dummy text
-#' 
-#' @description
-#' 
-#' @details DGVMData Output Quantities
-#' 
-#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+
+#' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
 #' 
@@ -503,18 +498,14 @@ DGVMData.quantities <- list(
 ########### DGVMDATA FORMAT ########################
 ####################################################
 
-#' @title dummy text
+
+#' @description \code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format.  It is essentially CF-compliant netCDF with a couplf of extra attributes defined. 
+#' Can be produced using the companion DGVMData package. 
 #' 
-#' @description dummy description 
-#' 
-#' @details DGVMData Format 
-#' 
-#' @format A list of \code{Quantity} objects that store meta-data for standard output variabla for supported models
+#' @format A \code{Quantity} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
-#' 
-#' 
 DGVMData <- new("Format",
              
              # UNIQUE ID

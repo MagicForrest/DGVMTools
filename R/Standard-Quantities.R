@@ -1,13 +1,3 @@
-#' @title dummy text
-#' 
-#' @description A global scope list of standrd quantites which should be defined for many models (is Format objects).
-#' Once the package is loaded this is just a standard R list so can be modified and extended as you wish.  It can be conveniently accesed by the \code{lookupQuantity()} function.
-#' 
-#' @details These quantities have sensible colour schemes, long names and cut ranges for standard global runs,
-#' but they will likely need to be modified and new ones aded for a specific analysis.
-#' 
-#' @format \code{dgvm.quantities} is list of \code{Quantity} objects that store meta-data for common output variables from supported models as well as some standard quantities
-#' which should be derivable from all model output.
 #' @rdname Quantity-class
 #' @keywords datasets
 #' @importFrom fields tim.colors  
