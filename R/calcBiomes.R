@@ -79,6 +79,7 @@ calcBiomes <-function(input, scheme){
   suppressWarnings(dt[, Biome := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
   biome.dt <- dt[,append(st.cols, "Biome"), with = FALSE]
   dt[, Biome := NULL]
+  message("Done.")
   
   # now make a new Field and return
   sta.info <- as(input, "STAInfo")

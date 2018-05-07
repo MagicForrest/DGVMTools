@@ -4,8 +4,7 @@
 \alias{makePlotTitle}
 \title{Make a plot title}
 \usage{
-makePlotTitle(quantity.str, layer = NULL, source = NULL,
-  first.year = NULL, last.year = NULL, extent.str = NULL)
+makePlotTitle(fields)
 }
 \arguments{
 \item{quantity.str}{Character string for the quantity plotted}

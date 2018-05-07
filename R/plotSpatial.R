@@ -125,7 +125,6 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       num.layers.x.sources <- num.layers.x.sources + length(temp.layers)
       layers.superset <- append(layers.superset, temp.layers)
     } 
-    
     layers <- unique(layers.superset)
     
   }
@@ -224,8 +223,6 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   # Loop through the objects and pull layers from each one into a large data.table for plotting
   
-  first.year <- NULL
-  last.year <- NULL
   discrete <- FALSE
   continuous <- FALSE
   first <- TRUE
@@ -235,6 +232,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     these.layers <- selectLayers(object, layers)
     if(!is.null(years)) {
       # set key to Year, subset by years, the set keys back
+      # not were are not doing selectYears() because we may want to select non-contiguous years
       setkey(these.layers@data, Year)
       these.layers@data <- these.layers@data[J(years)]
       setKeyDGVM(these.layers@data)
@@ -259,17 +257,9 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       if(is.null(cols) & continuous) cols <- object@quant@colours(20)
       legend.title <- object@quant@units
       quant <- object@quant
-      first.year <- object@first.year
-      last.year <- object@last.year
     }
     else {
-      # check for consistent first and last years
-      if(!is.null(first.year) & !is.null(last.year)){
-        if(first.year != object@first.year || last.year != object@last.year) {
-          first.year <- NULL
-          last.year <- NULL
-        }
-      }
+    
       # check for consistent Quantity
       if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
     }
@@ -549,12 +539,11 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
         warning(paste("You have not supplied the correct number of facets in the \'facet.order\' argument, (you supplied ", length(facet.order), "but I need", length(levels(data.toplot[["Facet"]])), ")", "so I am ignoring your facte re-ordering command", sep = " "))
       }
       else {
-        #print(facet.order)
-        #print(str(data.toplot[["Facet"]]))
-        data.toplot[, Facet := factor(trimws(Facet), levels = trimws(facet.order))]
+         data.toplot[, Facet := factor(trimws(Facet), levels = trimws(facet.order))]
       }
-      #print(str(data.toplot[["Facet"]]))
+
     }
+  
   }
   
   

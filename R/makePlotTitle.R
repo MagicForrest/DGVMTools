@@ -19,41 +19,103 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #'
 #' @export 
-makePlotTitle <- function(quantity.str, layer = NULL, source = NULL, first.year = NULL, last.year = NULL, extent.str = NULL){
+makePlotTitle <- function(fields){
   
   
-  print(extent.str)
+  ####### MAKE A SUBTITLE WITH THE STAINFO
   
-  # quantity.str must be supplied
-  string <- quantity.str
-  
-  # A layer name may be supplied
-  if(!is.null(layer)) string <- paste(string, layer, sep = " ")
+  ##### get common STAInfo
+  sta.info <- commonSTAInfo(fields)
 
-  # A source may be supplied (either a Field or Comparison)
-  if(!is.null(source)) {
-    if(is.Field(source)) string <- paste(string, source@source@name, sep = " ")
-    if(is.Comparison(source)) string <- paste(string, source@name, sep = " ")
+  ##### make spatial section
+  spatial.string <- character(0)
+  if(length(sta.info@spatial.aggregate.method) > 0) spatial.string <- paste(spatial.string, sta.info@spatial.aggregate.method)
+  if(length(sta.info@spatial.extent.id) > 0 && sta.info@spatial.extent.id != "Full") spatial.string <-paste(spatial.string, sta.info@spatial.extent.id)
+  spatial.string <- trimws(spatial.string)
+  
+  ##### make temporal section
+  temporal.string <- character(0)
+  if(length(sta.info@year.aggregate.method) > 0) temporal.string <- paste(temporal.string, sta.info@year.aggregate.method)
+  if(length(sta.info@first.year) > 0 && length(sta.info@last.year) > 0) temporal.string <- paste(temporal.string, paste(sta.info@first.year, sta.info@last.year, sep = "-"))
+  temporal.string <- trimws(temporal.string)
+  
+  ##### make subannual section
+  subannual.string <- character(0)
+  if(length(sta.info@subannual.resolution) > 0) subannual.string <- trimws(paste(subannual.string, sta.info@subannual.resolution, sep = " "))
+  if(length(sta.info@subannual.aggregate.method) > 0) subannual.string <- trimws(paste(subannual.string, sta.info@subannual.aggregate.method, "of", sep = " "))
+  if(length(sta.info@subannual.original) > 0 && length(sta.info@subannual.aggregate.method) > 0 )   {
+    if(sta.info@subannual.original != sta.info@subannual.resolution){
+    subannual.string <- trimws(paste(subannual.string, sta.info@subannual.original, sep = " "))
+    }
   }
-
-  # A temporal extent may be supplied
-  in.brackets <- NULL
-  if(!is.null(extent.str)) {
-    in.brackets <- extent.str
-  }
-
-  # a first and last year may be supplied
-  if(!is.null(first.year) & !is.null(last.year)){
-    if(is.null(in.brackets)) in.brackets <- paste(first.year, last.year, sep = "-")
-    else in.brackets <- paste0(in.brackets, ", ", paste(first.year, last.year, sep = "-"))
-  }
-
-  # add year and spatial extent if present
-  if(!is.null(in.brackets)){
-    string <- paste0(string, " (", in.brackets, ")")
-  }
+    
+  #### combine 
+  subtitle <- character(0)
+  if(length(subannual.string) > 0 )  subtitle <- trimws(paste0(subtitle, ", ", subannual.string))
+  if(length(spatial.string) > 0 )  subtitle <- trimws(paste0(subtitle, ", " , spatial.string))
+  if(length(temporal.string) > 0 )  subtitle <- trimws(paste0(subtitle, ", ", temporal.string))
   
   
-  return(string)
+  
+  
+  #######  MAKE THE MAIN TITLE
+  
+  # if a common subannual resolution check to see if there is a single value
+  if(length(sta.info@subannual.resolution) > 0)  {
+
+    subannual.period <- character(0)
+    
+    if(sta.info@subannual.resolution == "Monthly") {
+      all.months.present <- c()
+      for(field in fields) all.months.present <- append(all.months.present, getDimInfo(field, "values")[["Month"]])
+      all.months.present <- unique(all.months.present)
+      if(length(all.months.present) ==1 ) subannual.period <- all.months.present[1]
+    }
+
+    else if(sta.info@subannual.resolution == "Seasonal") {
+      all.seasons.present <- c()
+      for(field in fields) all.seasons.present <- append(all.seasons.present, getDimInfo(field, "values")[["Season"]])
+      all.seasons.present <- unique(all.seasons.present)
+      if(length(all.seasons.present) ==1 ) subannual.period <- all.seasons.present[1]
+    }
+    
+    else if(sta.info@subannual.resolution == "Daily") {
+      all.days.present <- c()
+      for(field in fields) all.days.present <- append(all.days.present, getDimInfo(field, "values")[["Day"]])
+      all.days.present <- unique(all.days.present)
+      if(length(all.days.present) ==1 ) subannual.period <- all.days.present[1]
+    }
+ 
+  }
+  
+  sources.vec <- c()
+  quants.vec <- c()
+  layers.vec <- c()
+  for(field in fields) {
+    layers.vec <- append(layers.vec, names(field))
+    sources.vec <- append(sources.vec, field@source@name )
+    quants.vec <- append(quants.vec, field@quant@name )
+  }
+  
+  sources.vec <- unique(sources.vec)
+  quants.vec <- unique(quants.vec)
+  layers.vec <- unique(layers.vec)
+  
+  
+  # put them al together
+  title.string <- character(0)
+   if(length(subannual.period) == 1) title.string <- paste(title.string, subannual.period)
+  if(length(layers.vec) == 1) title.string <- paste(title.string, layers.vec)
+  if(length(quants.vec) == 1) title.string <- paste(title.string, quants.vec)
+  if(length(sources.vec) == 1) title.string <- paste(title.string, sources.vec)
+  
+  
+
+  
+  return(list(title = trimws(title.string),
+              subtitle = trimws(subtitle)))
+  
+  
+ 
   
 }

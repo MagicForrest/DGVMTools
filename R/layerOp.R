@@ -50,9 +50,15 @@ layerOp <- function(x, operator, layers, new.layer){
     
   }
   
-  # reser the layers to the new ones
+  # reset the layers to the new ones, and if no layers warn and exit
   layers <- final.layers
- 
+  if(length(layers) == 0) {
+    warning(paste0("No input layers found when building layer ", new.layer, ", so not making one and returning.  If subsequent code depends on this layer it will probably fail"))
+    return(x)
+  }
+  
+  
+  
   # First consider the numeric or NULL case to set or remove layers
   if(is.null(operator) || is.numeric(operator)){
     if(length(operator) > 1 ) stop(paste0("When assigning values to layers using layerOp() you need to provide a single value or NULL, you provided ", length(operator)))

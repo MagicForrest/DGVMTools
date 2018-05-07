@@ -229,8 +229,13 @@ getField_DGVMData <- function(source,
     setKeyDGVM(this.slice.dt)
     
     
-    if(quant@type == "categorical") {
-      this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = quant@units)]
+    if(length(quant@units) > 1) {
+      
+      # # remove categories which aren't present
+      categories.present <- unique(this.slice.dt[[this.var$name]])
+      all.categories <- quant@units
+    
+      this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = all.categories[sort(categories.present)])]
     }
   
     # now join this to all.dt
