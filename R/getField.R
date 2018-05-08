@@ -24,11 +24,11 @@
 #' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' See \code{\link{aggregateSpatial}} 
-#' @param subannual.resolution A character string specifying the subannual resolution that you want to the data on.  Can be "Annual", "Monthly" or "Daily".
+#' @param subannual.resolution A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".
 #' @param subannual.aggregate.method A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "sd" or "var".
 #' See \code{\link{aggregateSubannual}} 
 #' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
-#' Can be "Annual", "Monthly" or "Daily".  Currently ignored.
+#' Can be "Year", "Month" or "Day".  Currently ignored.
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
@@ -259,10 +259,7 @@ getField <- function(source,
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(sta.info@spatial.aggregate.method != "none") {
     
-    print(sta.info@spatial.aggregate.method)
-    print(actual.sta.info@spatial.aggregate.method)
-    
-    if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
+     if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
       
       this.dt <- aggregateSpatial(this.dt, method = sta.info@spatial.aggregate.method, verbose = verbose)
       
@@ -297,9 +294,9 @@ getField <- function(source,
     
     # get the original subannual resolution
     these.dims <- getDimInfo(this.dt, info = "names")
-    if("Day" %in% these.dims) actual.sta.info@subannual.original <- "Daily"
-    if("Month" %in% these.dims) actual.sta.info@subannual.original <- "Monthly"
-    else actual.sta.info@subannual.original <- "Annual"
+    if("Day" %in% these.dims) actual.sta.info@subannual.original <- "Day"
+    if("Month" %in% these.dims) actual.sta.info@subannual.original <- "Month"
+    else actual.sta.info@subannual.original <- "Year"
     
     if(sta.info@subannual.resolution != actual.sta.info@subannual.resolution){
       

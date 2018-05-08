@@ -63,7 +63,7 @@ openLPJOutputFile <- function(run,
                               verbose = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Year = Month = NULL
+  Lon = Lat = Annual = Year = Month = NULL
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
   file.string = file.path(run@dir, paste(variable, ".out", sep=""))
@@ -158,9 +158,9 @@ openLPJOutputFile <- function(run,
   # Build as STAInfo object describing the data
   all.years <- sort(unique(dt[["Year"]]))
   dimensions <- getDimInfo(dt)
-  subannual <- "Annual"
-  if("Month" %in% dimensions) subannual <- "Monthly"
-  else if("Day" %in% dimensions) subannual <- "Daily"
+  subannual <- "Year"
+  if("Month" %in% dimensions) subannual <- "Month"
+  else if("Day" %in% dimensions) subannual <- "Day"
   
   
   sta.info = new("STAInfo",
@@ -505,7 +505,7 @@ getStandardQuantity_LPJ <- function(run,
                                     last.year,
                                     verbose = FALSE) {
   
-  Total = Annual = FireRT = NULL
+  Total = Year = FireRT = NULL
   
   # columns not to be modified for unit conversions etc.
   unmod.cols <- c("Lon", "Lat", "Year", "Month", "Day")
@@ -577,7 +577,7 @@ getStandardQuantity_LPJ <- function(run,
     }
     else {
       data.list <- openLPJOutputFile(run, "mgpp", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum", target = "Annual")
+      data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum", target = "Year")
     }
     return(data.list)
     
@@ -596,7 +596,7 @@ getStandardQuantity_LPJ <- function(run,
     }
     else{
       data.list <- openLPJOutputFile(run, "mnpp", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]]  <- aggregateSubannual(data.list[["dt"]] , method = "sum", target = "Annual")
+      data.list[["dt"]]  <- aggregateSubannual(data.list[["dt"]] , method = "sum", target = "Year")
     }
     return(data.list)
     
@@ -640,7 +640,7 @@ getStandardQuantity_LPJ <- function(run,
     # otherwise open firert to get GlobFIRM fire return interval and invert it
     else {
       data.list <- openLPJOutputFile(run, "firert", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]][, Annual :=  1 / FireRT]
+      data.list[["dt"]][, "firert" :=  1 / FireRT]
       data.list[["dt"]][, FireRT :=  NULL]
     }
     

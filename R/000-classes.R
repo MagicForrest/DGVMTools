@@ -91,7 +91,8 @@ setClass("Period",
 #' But default (and with no cropping) it is simple teh raster::Extent object of the whole domain.
 #' @param spatial.aggregate.method A character method specifying how the spatial extent has been aggregated, for eample "mean" or "sum",
 #' see aggregateSpatial.  If no spatial aggregation has been applied it should be NULL.
-#' @param subannual.original A character string specifying the original sub-annual resolution of this data, eg. "Monthly" or "Daily"
+#' @param subannual.original A character string specifying the original sub-annual resolution of this data, eg. "Year", Month", "Day"
+#' @param subannual.resolution A character string specifying the current sub-annual resolution of this data, eg. "Year", Month", "Day"
 #' @param subannual.aggregate.method A character specifying how the subannual perods have been aggregated, for example "mean", "max", "sum" or "var". 
 #' See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.
 #' 

@@ -12,7 +12,7 @@
 #' @param input.obj data.table or Field 
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
-#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Annual" (default)  
+#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (default)  
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A Field or data.table depending on the input object
 #' @keywords internal
@@ -20,7 +20,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateSubannual.uncompiled <- function(input.obj,
                                           method = "mean",
-                                          target = "Annual",
+                                          target = "Year",
                                           verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
@@ -70,9 +70,10 @@ aggregateSubannual.uncompiled <- function(input.obj,
   
   ### Get the spatial-temporal dimensions present and determine the initial subannual resolution
   avail.dims <- getDimInfo(input.obj)
-  if("Month" %in% avail.dims) initial.subannual <- "Monthly"
-  else if("Day" %in% avail.dims) initial.subannual <- "Daily"
-  else initial.subannual <- "Annual"
+  if("Month" %in% avail.dims) initial.subannual <- "Month"
+  else if("Day" %in% avail.dims) initial.subannual <- "Day"
+  else if("Season" %in% avail.dims) initial.subannual <- "Season"
+  else initial.subannual <- "Year"
   
   ### Check the 'by' dims
   by.dims <- c()
@@ -138,7 +139,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
     }
     
     else if("Year" %in% avail.dims) {
-      warning("Aggregation to Annual requested but data already are annual so no averaging done and returning original data!")
+      warning("Aggregation to Year requested but data already are yearly so no averaging done and returning original data!")
       return(input.obj)
     }
     
@@ -253,7 +254,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
 #' @param input.obj data.table or Field 
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
-#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Annual" (default)  
+#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (default)  
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A Field or data.table depending on the input object
 #' @import data.table

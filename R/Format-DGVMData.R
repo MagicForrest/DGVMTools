@@ -176,8 +176,8 @@ getField_DGVMData <- function(source,
         this.slice.dt[, Year := plyr::mapvalues(this.slice.dt[["Time"]], from = all.times, to = first.year:last.year)]
         this.slice.dt[, Time := NULL]
         
-        sta.info@subannual.resolution <- "Annual"
-        sta.info@subannual.original <- "Annual"
+        sta.info@subannual.resolution <- "Year"
+        sta.info@subannual.original <- "Year"
       }
       # else check for monthly
       if(length.time.axis == (last.year - first.year + 1) *12) {
@@ -215,15 +215,15 @@ getField_DGVMData <- function(source,
         all.names <- append(all.names, this.var$name)
         setcolorder(this.slice.dt, all.names)
         
-        sta.info@subannual.resolution <- "Monthly"
-        sta.info@subannual.original <- "Monthly"
+        sta.info@subannual.resolution <- "Month"
+        sta.info@subannual.original <- "Month"
       }
       
       
     }
     else {
-      sta.info@subannual.resolution <- "Annual"
-      sta.info@subannual.original <- "Annual"
+      sta.info@subannual.resolution <- "Year"
+      sta.info@subannual.original <- "Year"
     }
     
     setKeyDGVM(this.slice.dt)

@@ -63,7 +63,6 @@ makePlotTitle <- function(fields){
     if(length(subtitle) > 0) subtitle <- trimws(paste0(subtitle, ", ", year.string))
     else subtitle <- year.string
   }
-  print(subannual.string)
 
   
   
@@ -74,7 +73,7 @@ makePlotTitle <- function(fields){
 
     subannual.period <- character(0)
     
-    if(sta.info@subannual.resolution == "Monthly") {
+    if(sta.info@subannual.resolution == "Month") {
       all.months.present <- c()
       for(field in fields) all.months.present <- append(all.months.present, getDimInfo(field, "values")[["Month"]])
       all.months.present <- unique(all.months.present)
@@ -88,7 +87,7 @@ makePlotTitle <- function(fields){
       if(length(all.seasons.present) ==1 ) subannual.period <- all.seasons.present[1]
     }
     
-    else if(sta.info@subannual.resolution == "Daily") {
+    else if(sta.info@subannual.resolution == "Day") {
       all.days.present <- c()
       for(field in fields) all.days.present <- append(all.days.present, getDimInfo(field, "values")[["Day"]])
       all.days.present <- unique(all.days.present)

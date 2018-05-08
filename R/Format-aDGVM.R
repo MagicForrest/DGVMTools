@@ -392,13 +392,13 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   # note that here we are assuming monthing data, so set meta-data to monthly
   # also assume that all years are in the days
   if(adgvm.daily) {
-    actual.sta.info@subannual.resolution <- "Daily"
-    actual.sta.info@subannual.original <- "Daily"
+    actual.sta.info@subannual.resolution <- "Day"
+    actual.sta.info@subannual.original <- "Day"
     time.steps.per.year <- 365
   }
   else {
-    actual.sta.info@subannual.resolution <- "Monthly"
-    actual.sta.info@subannual.original <- "Monthly"
+    actual.sta.info@subannual.resolution <- "Month"
+    actual.sta.info@subannual.original <- "Month"
     time.steps.per.year <- 12
   }
   actual.sta.info@first.year <- first.year
