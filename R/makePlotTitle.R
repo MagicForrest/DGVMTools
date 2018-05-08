@@ -1,25 +1,22 @@
 
-#####################################################################################################################
-################### HELPER FUNCTIONS FOR MAKING  SPATAIL/TEMPORAL PLOT TITLES #######################################
-#####################################################################################################################
+###################################################################################################
+################### HELPER FUNCTIONS FOR MAKING PLOT TITLES #######################################
+###################################################################################################
 
-#' Make a plot title
+#' Make a plot titles
 #' 
-#' Build an appropriate plot title from some possibly relevant variables.  
-#' It will use a string to represent the quantity (obligatory), and optionally a period and an ID.
+#' Build an appropriate plot title (and subtitle) from the meta-data from the fields (whihc will be plotted)
 #' 
-#' @param quantity.str Character string for the quantity plotted
-#' @param layer The names of the layer (or another identifier)
-#' @param source The Field or Comparison that is being plotted
-#' @param first.year The first year of the data plotted
-#' @param last.year The last year of the data plotted
-#' @param extent.str The spatial extent plotted as described by a character string (optional)
-#' @return A character string for use as a plot title
+#' @param fields A list of fields which will be plotted and the so the plot title should describe
+#' @return A list of two character strings.  The first (called "title") is the main title.  The second (called "subtitle" is the subtitle) 
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #'
 #' @export 
 makePlotTitle <- function(fields){
+  
+  # if is a single field make it into a list of fields (for looping)
+  if(is.Field(fields)) fields <- list(fields)
   
   
   ####### MAKE A SUBTITLE WITH THE STAINFO
@@ -29,21 +26,24 @@ makePlotTitle <- function(fields){
 
   ##### make spatial section
   spatial.string <- character(0)
-  if(length(sta.info@spatial.aggregate.method) > 0) spatial.string <- paste(spatial.string, sta.info@spatial.aggregate.method)
-  if(length(sta.info@spatial.extent.id) > 0 && sta.info@spatial.extent.id != "Full") spatial.string <-paste(spatial.string, sta.info@spatial.extent.id)
+  if(sta.info@spatial.aggregate.method != "none") spatial.string <- paste(spatial.string, sta.info@spatial.aggregate.method)
+  if(length(sta.info@spatial.extent.id) > 0) {
+    if(sta.info@spatial.extent.id == "Full")  spatial.string <- paste(spatial.string, "full spatial extent")
+    else spatial.string <- paste(spatial.string, sta.info@spatial.extent.id)
+  }
   spatial.string <- trimws(spatial.string)
   
-  ##### make temporal section
-  temporal.string <- character(0)
-  if(length(sta.info@year.aggregate.method) > 0) temporal.string <- paste(temporal.string, sta.info@year.aggregate.method)
-  if(length(sta.info@first.year) > 0 && length(sta.info@last.year) > 0) temporal.string <- paste(temporal.string, paste(sta.info@first.year, sta.info@last.year, sep = "-"))
-  temporal.string <- trimws(temporal.string)
+  ##### make year section
+  year.string <- character(0)
+  if(sta.info@year.aggregate.method != "none") year.string <- paste(year.string, sta.info@year.aggregate.method)
+  if(length(sta.info@first.year) > 0 && length(sta.info@last.year) > 0) year.string <- paste(year.string, paste(sta.info@first.year, sta.info@last.year, sep = "-"))
+  year.string <- trimws(year.string)
   
   ##### make subannual section
   subannual.string <- character(0)
   if(length(sta.info@subannual.resolution) > 0) subannual.string <- trimws(paste(subannual.string, sta.info@subannual.resolution, sep = " "))
-  if(length(sta.info@subannual.aggregate.method) > 0) subannual.string <- trimws(paste(subannual.string, sta.info@subannual.aggregate.method, "of", sep = " "))
-  if(length(sta.info@subannual.original) > 0 && length(sta.info@subannual.aggregate.method) > 0 )   {
+  if(sta.info@subannual.aggregate.method != "none") subannual.string <- trimws(paste(subannual.string, sta.info@subannual.aggregate.method, "of", sep = " "))
+  if(length(sta.info@subannual.original) > 0 && sta.info@subannual.aggregate.method != "none")   {
     if(sta.info@subannual.original != sta.info@subannual.resolution){
     subannual.string <- trimws(paste(subannual.string, sta.info@subannual.original, sep = " "))
     }
@@ -51,11 +51,20 @@ makePlotTitle <- function(fields){
     
   #### combine 
   subtitle <- character(0)
-  if(length(subannual.string) > 0 )  subtitle <- trimws(paste0(subtitle, ", ", subannual.string))
-  if(length(spatial.string) > 0 )  subtitle <- trimws(paste0(subtitle, ", " , spatial.string))
-  if(length(temporal.string) > 0 )  subtitle <- trimws(paste0(subtitle, ", ", temporal.string))
-  
-  
+  if(length(subannual.string) > 0)  {
+    if(length(subtitle) > 0) subtitle <- trimws(paste0(subtitle, ", ", subannual.string))
+    else subtitle <- subannual.string
+  }
+  if(length(spatial.string) > 0 )  {
+    if(length(subtitle) > 0) subtitle <- trimws(paste0(subtitle, ", ", spatial.string))
+    else subtitle <- spatial.string
+  }
+  if(length(year.string) > 0 )  {
+    if(length(subtitle) > 0) subtitle <- trimws(paste0(subtitle, ", ", year.string))
+    else subtitle <- year.string
+  }
+  print(subannual.string)
+
   
   
   #######  MAKE THE MAIN TITLE
@@ -69,10 +78,10 @@ makePlotTitle <- function(fields){
       all.months.present <- c()
       for(field in fields) all.months.present <- append(all.months.present, getDimInfo(field, "values")[["Month"]])
       all.months.present <- unique(all.months.present)
-      if(length(all.months.present) ==1 ) subannual.period <- all.months.present[1]
+      if(length(all.months.present) == 1) subannual.period <- all.months[[all.months.present]]@id 
     }
 
-    else if(sta.info@subannual.resolution == "Seasonal") {
+    else if(sta.info@subannual.resolution == "Season") {
       all.seasons.present <- c()
       for(field in fields) all.seasons.present <- append(all.seasons.present, getDimInfo(field, "values")[["Season"]])
       all.seasons.present <- unique(all.seasons.present)
@@ -83,29 +92,35 @@ makePlotTitle <- function(fields){
       all.days.present <- c()
       for(field in fields) all.days.present <- append(all.days.present, getDimInfo(field, "values")[["Day"]])
       all.days.present <- unique(all.days.present)
-      if(length(all.days.present) ==1 ) subannual.period <- all.days.present[1]
+      if(length(all.days.present) ==1 ) subannual.period <- paste0("Day ", all.days.present[1])
     }
  
   }
   
   sources.vec <- c()
   quants.vec <- c()
+  quants.id.vec <- c()
   layers.vec <- c()
   for(field in fields) {
     layers.vec <- append(layers.vec, names(field))
     sources.vec <- append(sources.vec, field@source@name )
     quants.vec <- append(quants.vec, field@quant@name )
+    quants.id.vec <- append(quants.id.vec, field@quant@id)
   }
   
   sources.vec <- unique(sources.vec)
   quants.vec <- unique(quants.vec)
+  quants.id.vec <- unique(quants.id.vec)
   layers.vec <- unique(layers.vec)
   
   
-  # put them al together
+  # put them all together - note that sometimes layers are the same as quant@id, we have a special cause to stop them being included in this case
   title.string <- character(0)
-   if(length(subannual.period) == 1) title.string <- paste(title.string, subannual.period)
-  if(length(layers.vec) == 1) title.string <- paste(title.string, layers.vec)
+  if(length(subannual.period) == 1) title.string <- paste(title.string, subannual.period)
+  if(length(layers.vec) == 1) {
+    if(quants.id.vec != layers.vec)
+    title.string <- paste(title.string, layers.vec)
+  }
   if(length(quants.vec) == 1) title.string <- paste(title.string, quants.vec)
   if(length(sources.vec) == 1) title.string <- paste(title.string, sources.vec)
   

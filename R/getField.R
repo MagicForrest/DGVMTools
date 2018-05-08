@@ -257,22 +257,27 @@ getField <- function(source,
   
   
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
-  if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method &&
-     length(sta.info@spatial.aggregate.method) > 0 ){
+  if(sta.info@spatial.aggregate.method != "none") {
     
-    this.dt <- aggregateSpatial(this.dt, method = sta.info@spatial.aggregate.method, verbose = verbose)
+    print(sta.info@spatial.aggregate.method)
+    print(actual.sta.info@spatial.aggregate.method)
     
-    # update meta-data and report  
-    actual.sta.info@spatial.aggregate.method <- sta.info@spatial.aggregate.method
-    if(verbose) {
-      message("Head of spatially aggregated data.table:")
-      print(utils::head(this.dt))
+    if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
+      
+      this.dt <- aggregateSpatial(this.dt, method = sta.info@spatial.aggregate.method, verbose = verbose)
+      
+      # update meta-data and report  
+      actual.sta.info@spatial.aggregate.method <- sta.info@spatial.aggregate.method
+      if(verbose) {
+        message("Head of spatially aggregated data.table:")
+        print(utils::head(this.dt))
+      }
     }
   }
   
   
   ###  DO YEAR AGGREGATATION
-  if(length(sta.info@year.aggregate.method) > 0){
+  if(sta.info@year.aggregate.method != "none"){
     if("Year" %in% getDimInfo(this.dt, "names")){
       
       this.dt <- aggregateYears(this.dt, method = sta.info@year.aggregate.method, verbose = verbose)
@@ -298,7 +303,7 @@ getField <- function(source,
     
     if(sta.info@subannual.resolution != actual.sta.info@subannual.resolution){
       
-      if(length(sta.info@subannual.aggregate.method) == 0) {
+      if(sta.info@subannual.aggregate.method == "none") {
         stop(paste0("Please provide a subannual.aggregate.method if you want to aggregate the data from ", actual.sta.info@subannual.original, " to ", sta.info@subannual.resolution))
       }
       

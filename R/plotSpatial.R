@@ -1,12 +1,12 @@
 #!/usr/bin/Rscript
 
 
-##########################################################################################################################################
-################################################## PLOT VEG MAPS #########################################################################
-##########################################################################################################################################
+#########################################################################################################################################
+################################################## PLOT SPATIAL #########################################################################
+#########################################################################################################################################
 
 
-#' Plot maps from a \code{Field} or \code{Comparison} (and lists thereof)
+#' Plot maps from a \code{Field} and a lists of \code{Field}.
 #' 
 #' This is a heavy lifting function for plotting maps from Fields, DataObjects, and Comparisons (and lists of those things) with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
@@ -15,7 +15,8 @@
 #'
 #' @param sources The data to plot. Can be a Field, a DataObject, or a list of including both
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
-#' @param title A character string to override the default title.
+#' @param title A character string to override the default title.  Set to NULL for no title.
+#' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
 #' Note that using these, especially "worldHires", can add quite a bit of time. 
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
@@ -64,7 +65,8 @@
 
 plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
                         layers = NULL,
-                        title = NULL,
+                        title = character(0),
+                        subtitle = character(0),
                         facet.labels =  NULL,
                         facet.order = NULL,
                         plot.bg.col =  "white",
@@ -97,7 +99,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   ### 1. SOURCES - check the sources
   if(is.Field(sources)) {
-    sources<- list(sources)
+    sources <- list(sources)
   }
   else if(class(sources)[1] == "list") {
     for(object in sources){ 
@@ -226,6 +228,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   discrete <- FALSE
   continuous <- FALSE
   first <- TRUE
+  final.fields <- list()
   for(object in sources){
     
     # select the layers and time periods required and mash the data into shape
@@ -240,6 +243,8 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     if(!is.null(days)) these.layers <- selectDays(these.layers, days)
     if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
     if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
+    
+    final.fields <- append(final.fields, these.layers)
     
     these.layers.melted <- melt(these.layers@data, measure.vars = layers)
     these.layers.melted[, Source := object@source@name]
@@ -583,18 +588,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   
   
-  ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
-  # if(is.null(title)) {
-  #   
-  #   layer.string <- NULL
-  #   # only use the layer string for the title if we are only plotting one layer
-  #   if(!multiple.layers & tolower(layers) != "absolute") layer.string <- layers
-  #   
-  #   # also only use the 'source' argument in the title if we are plotting only data from only one source 
-  #   if(multiple.sources)  title <- makePlotTitle(quant@name, layer = layer.string, source = NULL, period = temporal.extent) 
-  #   else title <- makePlotTitle(quant@name, layer = layer.string, source = sources, period = source@temporal.extent)
-  #   
-  # }
+  ### MAKE A DESCRIPTIVE TITLE AND SUBTITLE IF ONE HAS NOT BEEN SUPPLIED
+  if(missing(title) || missing(subtitle)) {
+    titles <- makePlotTitle(final.fields)  
+    if(missing(title)) title <- titles[["title"]]
+    else if(is.null(title)) title <- waiver()
+    if(missing(subtitle)) subtitle <- titles[["subtitle"]]
+    else if(is.null(subtitle)) subtitle <- waiver()
+  }
   
   ### BUILD THE PLOT
   
@@ -662,11 +663,12 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   mp <- mp + coord_fixed()
   
   # labels and positioning
-  mp <- mp + labs(title = title)
+  mp <- mp + labs(title = title, subtitle = subtitle)
   mp <- mp + labs(y = "Latitude", x = "Longitude")
   if(!is.null(legend.title)) {mp <- mp + labs(fill=legend.title) }
   else { mp <- mp + theme(legend.title = element_blank()) }
-  mp <- mp + theme(plot.title = element_text(hjust = 0.5))
+  mp <- mp + theme(plot.title = element_text(hjust = 0.5),
+                   plot.subtitle = element_text(hjust = 0.5))
   
   # overall text multiplier
   if(!missing(text.multiplier)) mp <- mp + theme(text = element_text(size = theme_get()$text$size * text.multiplier))

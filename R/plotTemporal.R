@@ -5,7 +5,9 @@
 #' @param input.data The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.  
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
-#' @param title Main plot title (character string)
+#' @param title A character string to override the default title.  Set to NULL for no title.
+#' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
+#' 
 #' @param quant A Quantity object to provide meta-data about how to make this plot
 #' @param cols,types Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
 #' the same length as the labels arguments
@@ -29,7 +31,8 @@
 plotTemporal <- function(input.data, 
                          layers = NULL,
                          expand.layers = TRUE,
-                         title = NULL,
+                         title = character(0),
+                         subtitle = character(0),
                          quant = NULL,
                          cols = NULL,
                          types = NULL,
@@ -104,19 +107,15 @@ plotTemporal <- function(input.data,
   
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
-  if(is.null(title)) {
-    if(single.object) {
-      title <- makePlotTitle(quant@name, 
-                             layer = NULL, 
-                             source = input.data, 
-                             extent.str = input.data@spatial.extent.id, 
-                             first.year = input.data@first.year,
-                             last.year = input.data@last.year) 
-    }
-    else {
-      title <- element_blank()
-    }
+  if(missing(title) || missing(subtitle)) {
+    titles <- makePlotTitle(input.data)  
+    if(missing(title)) title <- titles[["title"]]
+    else if(is.null(title)) title <- waiver()
+    if(missing(subtitle)) subtitle <- titles[["subtitle"]]
+    else if(is.null(subtitle)) subtitle <- waiver()
   }
+  
+  
   
   # make y label
   if(is.null(y.label)) {
@@ -194,10 +193,11 @@ plotTemporal <- function(input.data,
   if(!is.null(types)) p <- p + scale_linetype_manual(values=types, labels=labels)
   
   # labels and positioning
-  p <- p + labs(title = title, y = y.label)
+  p <- p + labs(title = title, subtitle = subtitle, y = y.label)
   p <- p + theme(legend.title=element_blank())
   p <- p + theme(legend.position = legend.position, legend.key.size = unit(2, 'lines'))
-  p <- p + theme(plot.title = element_text(hjust = 0.5))
+  p <- p + theme(plot.title = element_text(hjust = 0.5),
+                 plot.subtitle = element_text(hjust = 0.5))
   
   # overall text multiplier
   if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))

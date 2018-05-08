@@ -54,7 +54,7 @@ makeFieldID <- function(field,
   # first the aggregation method
   year.string <- ""
   sep.char = ""
-  if(length(sta.info@year.aggregate.method) > 0) {
+  if(sta.info@year.aggregate.method != "none") {
     year.string <- sta.info@year.aggregate.method
     sep.char = "_"
   }
@@ -80,11 +80,11 @@ makeFieldID <- function(field,
   
  
   # spatial extent and aggregation
-  if(length(sta.info@spatial.aggregate.method) > 0  
+  if(sta.info@spatial.aggregate.method != "none"  
      || length(sta.info@spatial.extent.id) > 0
      || length(sta.info@spatial.extent) > 0) {
     field.id <- paste(field.id, "Spatial", sep = sep)
-    if(length(sta.info@spatial.aggregate.method) > 0)  field.id <- paste(field.id, sta.info@spatial.aggregate.method, sep = "_")
+    if(sta.info@spatial.aggregate.method != "none")  field.id <- paste(field.id, sta.info@spatial.aggregate.method, sep = "_")
     if(length(sta.info@spatial.extent.id) > 0) field.id <- paste(field.id, sta.info@spatial.extent.id, sep = "_")
   }
   
@@ -100,7 +100,7 @@ makeFieldID <- function(field,
   
   # then aggregate and original subannual resolution
    
-  if(length(sta.info@subannual.aggregate.method) > 0  || length(sta.info@subannual.original) > 0) {
+  if(sta.info@subannual.aggregate.method != "none"  || length(sta.info@subannual.original) > 0) {
     
     field.id <- paste(field.id, sta.info@subannual.aggregate.method, sep = ".")
     

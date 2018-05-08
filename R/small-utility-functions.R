@@ -100,6 +100,7 @@ correct.map.offset <- function(spl) {
 matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub = "red")) {
   
   these.cols <- list()
+  at.least.one.match <- FALSE
   for(val in values) {
     
     # check if it is a PFT
@@ -108,6 +109,7 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
       if(val == PFT@id) {
         these.cols[[val]] <- PFT@colour
         done <- TRUE
+        at.least.one.match <- TRUE
       }
     } 
 
@@ -117,12 +119,13 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
         if(tolower(val) == tolower(other)) {
           these.cols[[val]] <- others[[other]]
           done <- TRUE
+          at.least.one.match <- TRUE
         }
       }
     }
     
     # if no colour can be found to match the value, fail gently
-    if(!done) {
+    if(!done && at.least.one.match) {
       warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchPFTCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument"))
       return(NULL)
     }  

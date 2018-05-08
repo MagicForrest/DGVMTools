@@ -112,14 +112,14 @@ setClass("STAInfo",
                    subannual.aggregate.method = "character",
                    subannual.original = "character"
          ),
-         prototype  = c(first.year = numeric(0),
+         prototype  = list(first.year = numeric(0),
                         last.year = numeric(0),
-                        year.aggregate.method = character(0),
+                        year.aggregate.method = "none",
                         spatial.extent = NULL,
                         spatial.extent.id = character(0),
-                        spatial.aggregate.method = character(0),
+                        spatial.aggregate.method = "none",
                         subannual.resolution = character(0),
-                        subannual.aggregate.method = character(0),
+                        subannual.aggregate.method = "none",
                         subannual.original = character(0)
          )
          

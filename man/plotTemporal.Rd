@@ -5,10 +5,11 @@
 \title{Plot temporal data}
 \usage{
 plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
-  title = NULL, quant = NULL, cols = NULL, types = NULL,
-  labels = NULL, y.label = NULL, y.lim = NULL, x.label = NULL,
-  x.lim = NULL, facet = TRUE, facet.scales = "fixed",
-  legend.position = "bottom", text.multiplier = NULL, plot = TRUE)
+  title = character(0), subtitle = character(0), quant = NULL,
+  cols = NULL, types = NULL, labels = NULL, y.label = NULL,
+  y.lim = NULL, x.label = NULL, x.lim = NULL, facet = TRUE,
+  facet.scales = "fixed", legend.position = "bottom",
+  text.multiplier = NULL, plot = TRUE)
 }
 \arguments{
 \item{input.data}{The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.}
@@ -17,7 +18,9 @@ plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
 
 \item{expand.layers}{A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.}
 
-\item{title}{Main plot title (character string)}
+\item{title}{A character string to override the default title.  Set to NULL for no title.}
+
+\item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.}
 
 \item{quant}{A Quantity object to provide meta-data about how to make this plot}
 

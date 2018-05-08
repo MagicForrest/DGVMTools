@@ -12,6 +12,8 @@
 commonSTAInfo <- function(sta.objects, logical = FALSE) {
   
   sta.infos <- list()
+  if(is.Field(sta.objects) || is.STAInfo(sta.objects)) sta.objects <- list(sta.objects)
+
   for(sta.object in sta.objects) {
     if(is.Field(sta.object)) sta.infos[[length(sta.infos)+1]] <-  as(sta.object, "STAInfo")
     else if(is.STAInfo(sta.object)) sta.infos[[length(sta.infos)+1]] <- sta.object

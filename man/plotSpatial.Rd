@@ -2,22 +2,24 @@
 % Please edit documentation in R/plotSpatial.R
 \name{plotSpatial}
 \alias{plotSpatial}
-\title{Plot maps from a \code{Field} or \code{Comparison} (and lists thereof)}
+\title{Plot maps from a \code{Field} and a lists of \code{Field}.}
 \usage{
-plotSpatial(sources, layers = NULL, title = NULL, facet.labels = NULL,
-  facet.order = NULL, plot.bg.col = "white", panel.bg.col = "#809DB8",
-  useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
-  ylim = NULL, years = NULL, days = NULL, months = NULL,
-  seasons = NULL, limits = NULL, cols = NULL, cuts = NULL,
-  discretise = FALSE, map.overlay = NULL, grid = FALSE, plot = TRUE,
-  interior.lines = TRUE)
+plotSpatial(sources, layers = NULL, title = character(0),
+  subtitle = character(0), facet.labels = NULL, facet.order = NULL,
+  plot.bg.col = "white", panel.bg.col = "#809DB8", useLongNames = FALSE,
+  text.multiplier = NULL, xlim = NULL, ylim = NULL, years = NULL,
+  days = NULL, months = NULL, seasons = NULL, limits = NULL,
+  cols = NULL, cuts = NULL, discretise = FALSE, map.overlay = NULL,
+  grid = FALSE, plot = TRUE, interior.lines = TRUE)
 }
 \arguments{
 \item{sources}{The data to plot. Can be a Field, a DataObject, or a list of including both}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
-\item{title}{A character string to override the default title.
+\item{title}{A character string to override the default title.  Set to NULL for no title.}
+
+\item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.
 Note that using these, especially "worldHires", can add quite a bit of time.}
 
 \item{facet.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
