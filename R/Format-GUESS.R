@@ -640,7 +640,7 @@ getStandardQuantity_LPJ <- function(run,
     # otherwise open firert to get GlobFIRM fire return interval and invert it
     else {
       data.list <- openLPJOutputFile(run, "firert", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]][, "firert" :=  1 / FireRT]
+      data.list[["dt"]][, "burntfraction_std" :=  1 / FireRT]
       data.list[["dt"]][, FireRT :=  NULL]
     }
     
