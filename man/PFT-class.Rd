@@ -19,7 +19,7 @@ aDGVM.PFTs
 \description{
 This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, 
 as well as their growth form, phenology, leaftype, climate zone, shade tolerance and a default plot colour.
-These are defined in lists for the default PFTs for supported models (see'Usage' below).
+These are defined in lists for the default PFTs for supported model format (see'Usage' below).
 }
 \details{
 The \code{PFT-class} is only meta-data but is very important as it allows users to calculate, for example, the total Tree LAI with a simple command. 

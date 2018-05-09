@@ -23,13 +23,13 @@ getField_GUESS <- function(source,
   
   
   # First check if quantity is for FireMIP, if so call a special function with the extra processing required
-  if("FireMIP" %in% quant@model) {
+  if("FireMIP" %in% quant@format) {
     data.list <- openLPJOutputFile_FireMIP(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
   }
-  else if("GUESS" %in% quant@model | "LPJ-GUESS-SPITFIRE" %in% quant@model) {
+  else if("GUESS" %in% quant@format | "LPJ-GUESS-SPITFIRE" %in% quant@format) {
     data.list <- openLPJOutputFile(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
   }
-  else if("Standard" %in% quant@model) {
+  else if("Standard" %in% quant@format) {
     data.list <- getStandardQuantity_LPJ(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
   }
   
@@ -511,8 +511,8 @@ getStandardQuantity_LPJ <- function(run,
   unmod.cols <- c("Lon", "Lat", "Year", "Month", "Day")
   
   # Check that this really is a standard Quantity and therefore should have behaviour defined here
-  if(!"Standard" %in% quant@model) {
-    stop((paste("getStandardQuantity_LPJ called for a non-standard Quantity (", quant@id, ")", sep = "")))
+  if(!"Standard" %in% quant@format) {
+    stop((paste("getStandardQuantity_LPJ called for a non-Standard Quantity (", quant@id, ")", sep = "")))
   }
   
   
@@ -966,7 +966,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "m^2/m^2",
       colours = reversed.viridis,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM"),
+      format = c("GUESS"),
       cf.name = "leaf_area_index"),
   
   new("Quantity",
@@ -975,7 +975,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "m^2/m^2",
       colours = viridis::viridis,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE"),
+      format = c("GUESS"),
       cf.name = "leaf_area_index"),
   
   new("Quantity",
@@ -984,7 +984,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "m^2/m^2",
       colours = veg.palette,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mfpc",
@@ -992,7 +992,7 @@ GUESS.quantities <- list(
       type = "Monthly",
       units = "m^2/m^2",
       colours = veg.palette,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "vegcover",
@@ -1000,7 +1000,7 @@ GUESS.quantities <- list(
       type = "",
       units = "m^2/m^2",
       colours = veg.palette,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "agpp",
@@ -1008,7 +1008,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgC/m2/year",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "cmass",
@@ -1016,7 +1016,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = viridis::viridis,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "clitter",
@@ -1024,7 +1024,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "agb",
@@ -1032,7 +1032,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "tonnes/hectare",
       colours = viridis::viridis,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "cpool",
@@ -1040,7 +1040,7 @@ GUESS.quantities <- list(
       type = "pools",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "litter_wood",
@@ -1048,7 +1048,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "litter_leaf",
@@ -1056,7 +1056,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "litter_repr",
@@ -1064,7 +1064,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "fine_fuel",
@@ -1072,7 +1072,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mnpp",
@@ -1080,7 +1080,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mgpp",
@@ -1088,7 +1088,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mnee",
@@ -1096,7 +1096,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mrh",
@@ -1104,7 +1104,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mra",
@@ -1112,7 +1112,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "anpp",
@@ -1120,7 +1120,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "cflux",
@@ -1128,7 +1128,7 @@ GUESS.quantities <- list(
       type = "flux",
       units = "kgC/m^2/y",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "dens",
@@ -1136,7 +1136,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "indiv/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "speciesheights",
@@ -1144,7 +1144,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "m",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "canopyheight",
@@ -1152,7 +1152,7 @@ GUESS.quantities <- list(
       type = "-",
       units = "m",
       colours = reversed.magma,
-      model = c("GUESS"),
+      format = c("GUESS"),
       cf.name = "canopy_height"),
   
   new("Quantity",
@@ -1161,7 +1161,7 @@ GUESS.quantities <- list(
       type = "-",
       units = "kgC/m^2/year",
       colours = reversed.magma,
-      model = c("GUESS"),
+      format = c("GUESS"),
       cf.name = "canopy_height"),
   
   new("Quantity",
@@ -1170,7 +1170,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mpet",
@@ -1178,7 +1178,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mevap",
@@ -1186,7 +1186,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mrunoff",
@@ -1194,7 +1194,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mintercep",
@@ -1202,7 +1202,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mm/month",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mwcont_upper",
@@ -1210,7 +1210,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "fraction",
       colours = reversed.tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mwcont_lower",
@@ -1218,7 +1218,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "fraction",
       colours = reversed.tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "msnowpack",
@@ -1226,7 +1226,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mm H20",
       colours = reversed.tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "aaet",
@@ -1234,7 +1234,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "mm/year",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "aiso",
@@ -1242,7 +1242,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "kg/year",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   
   new("Quantity",
@@ -1251,7 +1251,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kg/month",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "amon",
@@ -1259,7 +1259,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "kg/year",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mmon",
@@ -1267,7 +1267,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kg/year",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "firert",
@@ -1275,7 +1275,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "years",
       colours = fire.palette,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "fireseason",
@@ -1283,7 +1283,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "days",
       colours = fire.palette,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "firesl",
@@ -1291,7 +1291,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "days",
       colours = fire.palette,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "burntarea", 
@@ -1299,7 +1299,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "fraction of gridcell",
       colours = fire.palette,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "burntfraction",
@@ -1307,7 +1307,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE"),
+      format = c("GUESS"),
       cf.name = "burned_area_fraction"),
   
   new("Quantity",
@@ -1316,7 +1316,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "mm/year",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "vmaxnlim",
@@ -1324,7 +1324,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "fraction",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "bioclim",
@@ -1332,7 +1332,7 @@ GUESS.quantities <- list(
       type = "irregular",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "gdd5",
@@ -1340,7 +1340,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "degree days",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   
   new("Quantity",
@@ -1349,7 +1349,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "cton_leaf",
@@ -1357,7 +1357,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "ckgC/kgN",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "nmass",
@@ -1365,7 +1365,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgN/m^2",
       colours = viridis::viridis,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "ngases",
@@ -1373,7 +1373,7 @@ GUESS.quantities <- list(
       type = "-",
       units = "kg/ha/year",
       colours = viridis::viridis,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "npool",
@@ -1381,7 +1381,7 @@ GUESS.quantities <- list(
       type = "pools",
       units = "kgN/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "nuptake",
@@ -1389,7 +1389,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgN/ha",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "nsources",
@@ -1397,7 +1397,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "gN/ha",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   
   new("Quantity",
@@ -1406,7 +1406,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "kgN/ha",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "nlitter",
@@ -1414,7 +1414,7 @@ GUESS.quantities <- list(
       type = "PFT",
       units = "kgN/ha",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mprec",
@@ -1422,7 +1422,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mm",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mtemp",
@@ -1430,7 +1430,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "deg C",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mwmass_stem",
@@ -1438,7 +1438,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgH20/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "mwmass_leaf",
@@ -1446,7 +1446,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgH20/m^2",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   new("Quantity",
       id = "bioclim_mtemps",
@@ -1454,7 +1454,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "deg C",
       colours = fields::tim.colors,
-      model = c("GUESS", "LPJ-GUESS-SPITFIRE")),
+      format = c("GUESS")),
   
   
   #############################################################################################
@@ -1467,7 +1467,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mtau_l",
@@ -1475,7 +1475,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mins",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "pyro_flux",
@@ -1483,7 +1483,7 @@ GUESS.quantities <- list(
       type = "irregular",
       units = "kg species/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfireintens",
@@ -1491,7 +1491,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kW/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mlivegrass_fuel",
@@ -1499,7 +1499,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "m1hr_fuel",
@@ -1507,7 +1507,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "m10hr_fuel",
@@ -1515,7 +1515,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "m100hr_fuel",
@@ -1523,7 +1523,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "m1000hr_fuel",
@@ -1531,7 +1531,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mlivegrass_cc",
@@ -1539,7 +1539,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "m1hr_cc",
@@ -1547,7 +1547,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "m10hr_cc",
@@ -1555,7 +1555,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id ="m100hr_cc",
@@ -1563,7 +1563,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "m1000hr_cc",
@@ -1571,7 +1571,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "afdays",
@@ -1579,7 +1579,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "days",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mavenest",
@@ -1587,7 +1587,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mdlm_livegrass",
@@ -1595,7 +1595,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "",
       colours = reversed.tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mdlm_deadfuel",
@@ -1603,7 +1603,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "",
       colours = reversed.tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "meff_wind",
@@ -1611,7 +1611,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "m/min",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mnfdi",
@@ -1619,7 +1619,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "m/min",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   
   new("Quantity",
@@ -1628,7 +1628,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "m^3/m^3",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mSAV",
@@ -1636,7 +1636,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "m^2/m^3",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mMoE",
@@ -1644,7 +1644,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mmcont",
@@ -1652,7 +1652,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfire_durat",
@@ -1660,7 +1660,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mins",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mscorch_height",
@@ -1668,7 +1668,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "m",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mRoS",
@@ -1676,7 +1676,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "m/min",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfire_size",
@@ -1684,7 +1684,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "ha",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mhuman_ign",
@@ -1692,7 +1692,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "ign/day",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mlightning_ign",
@@ -1700,7 +1700,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "ign/day",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfireday_duration",
@@ -1708,7 +1708,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "mins",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfireday_scorch_height",
@@ -1716,7 +1716,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "m",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfireday_intensity",
@@ -1724,7 +1724,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kW/m",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfireday_nesterov",
@@ -1732,7 +1732,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfireday_residence_time",
@@ -1740,7 +1740,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "min",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "allocation_fails",
@@ -1748,7 +1748,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "days",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "allocation_iters",
@@ -1756,7 +1756,7 @@ GUESS.quantities <- list(
       type = "annual",
       units = "days",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfuel",
@@ -1764,7 +1764,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfinefuel",
@@ -1772,7 +1772,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mleaffuel",
@@ -1780,7 +1780,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   
   new("Quantity",
@@ -1789,7 +1789,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "days",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE")),
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "mfiredaysfine",
@@ -1797,7 +1797,7 @@ GUESS.quantities <- list(
       type = "monthly",
       units = "days",
       colours = fields::tim.colors,
-      model = c("LPJ-GUESS-SPITFIRE"))
+      format = c("LPJ-GUESS-SPITFIRE"))
 )
 
 ################################################################

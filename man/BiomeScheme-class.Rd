@@ -23,7 +23,7 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 
 \item{\code{colours}}{A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")}
 
-\item{\code{model}}{Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")}
+\item{\code{format}}{Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.}
 
 \item{\code{rules}}{A function which is applied to every row of the data.table and describes the biome classification rules.}
 

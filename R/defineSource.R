@@ -56,6 +56,9 @@ defineSource <- function(id,
     else if(format == "DGVMData") {
       format <- DGVMData
     }
+    else if(format == "aDGVM") {
+      format <- aDGVM
+    }
     
   }
   

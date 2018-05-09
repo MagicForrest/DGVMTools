@@ -10,15 +10,16 @@
 #'  Format objects which are  included in the package by default are listed below:
 #'
 #' @slot id Simple character string to gave an uniquely identify this format
-#' @slot default.pfts 'Standard' vegetation types (PFTs, Plant Functional Type) that this model uses, as a list of DGVMTools::PFT objects.  
+#' @slot default.pfts 'Standard' vegetation types (PFTs, Plant Functional Type) that this format uses, as a list of DGVMTools::PFT objects.  
+#' This is mostly likely applicable to formats decsribing DGVM output, but also for some data sets.  
 #' This is just a default PFT set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
-#' @slot quantities 'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output
+#' @slot quantities 'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output or dataset.
 #' @slot determinePFTs A function to determine which PFTs are present in a run or dataset.
 #' @slot determineQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
 #' @slot getField A function to retrieve actually data from the model output or dataset.  This is likely to be a fairly complex function, and really depends on the specifics 
-#' and idiosynchrasies of the model output format.
+#' and idiosynchrasies of the model output format or dataset.
 #' 
-#' @details Normally a user won't need to deal with this class since it defines model spcific metadata and functions which should be defined once and then
+#' @details Normally a user won't need to deal with this class since it defines model/dataset spcific metadata and functions which should be defined once and then
 #' 'just work' (haha) in the future. If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
 #' 
 #' @name Format-class
@@ -132,7 +133,7 @@ setClass("STAInfo",
 #' 
 #' @description   This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, 
 #' as well as their growth form, phenology, leaftype, climate zone, shade tolerance and a default plot colour.
-#' These are defined in lists for the default PFTs for supported models (see'Usage' below). 
+#' These are defined in lists for the default PFTs for supported model format (see'Usage' below). 
 #' 
 #' @slot id A unique character string to identify this particular PFT.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string to describe the PFT. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
@@ -171,7 +172,7 @@ setClass("PFT",
 #' Checks validity of a \code{Source}.
 #' 
 #' Called internally as the validity slot of the \code{Source}.  It checks that the essential slots are filled with sensible values ie a dir that
-#' exists on the file system; a model type which is valid and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
+#' exists on the file system; the format type is specified and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
 #' 
 #' @param object The \code{Source} object to check for vailidity.
 #' @return Empty string if the essential slots are fine, a string containing an error message if not.
@@ -219,19 +220,21 @@ checkSource <- function(object){
 
 #' Metadata for a data source
 #' 
-#' This class describes a data source, including its location on disk, the format (ie what model it cam from), the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
+#' This class describes a data source, including its location on disk, the format (ie what model or dataset it cam from), the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
 #' It is not primarily intended to be used by itself. Instead it is inherited by \code{Source} object (due to this inheritance the slots can be accessed directly)
 #' and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
 #' 
 #'  
 #' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
 #' 
-#' @slot id A unique character string to identify this particular model un.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
+#' @slot id A unique character string to identify this particular data source.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot dir The location of this run on the file system (Mandatory)
-#' @slot format A character string to identify what model produced this run.  Can currently be "LPJ-GUESS", "LPJ-GUESS-SPITFIRE" or "aDGVM". (Mandatory)
-#' @slot pft.set A list of PFT objects which includes all the PFTs used is this model run 
-#' @slot name A character string describing this run, ie. "LPJ-GUESS v3.1" (can be omitted, in which case the id will be used instead)
-#' @slot forcing.data A character string identifying the climate or other data used to produce this model run
+#' @slot format A character string or a DGVMTools::Format pbject to describe how this data is stored on disk.  This will depend on either the model 
+#' that was used to produce it or the dataset type.  Currently defined Format objects are \code{GUESS}, \code{aDGVM} and \code{DGVMData} but for convenience the 
+#' strings, "GUESS", "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM" and "DGVMData" make be used. (Mandatory)
+#' @slot pft.set A list of PFT objects which includes all the PFTs included in this model run/dataset.
+#' @slot name A character string describing this data source, ie. "LPJ-GUESS v3.1" (can be omitted, in which case the id will be used instead)
+#' @slot forcing.data A character string identifying the climate or other data used to produce this data
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
@@ -276,14 +279,15 @@ setClass("Source",
 #' Includes metadata about the quantity (the units it is measured in for example), values for default plot proprties (color scales, plot ranges) and the aggragating method - ie whether the quantity shoudd generally be summed (for example monthly burnt area or C mass per PFT) or averaged (for example monthly soil water content).
 #' See the 'Slots' documentation below.
 #' Note that for some analyses  user will probably need to define their own, and modify these for their own analysis and plots.  However the standard quantities 
-#' that one expects to be availabel from different model and data types are listed below in the 'Usage' section.
+#' that one expects to be available from different models are listed below in the 'Usage' section.
 #' 
-#' @slot id A unique character string to identify this particular vegetation quantity, should match with the name of a particular model output variable.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot id A unique character string to identify this particular vegetation quantity.  This will be interpreted for an output-format specific fucntion, but should
+#' ideally match with the name of a particular model output/dataset variable.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A longer character string to provide a more complete description of this quantity
 #' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.  
 #' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
 #' @slot colours A function that returns a colour scale suited for plotting this quantity.
-#' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.
+#' @slot format Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.
 #' @slot cf.name A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
 #' but it makes sense to use this where possible.  
 #' 
@@ -299,7 +303,7 @@ setClass("Quantity",
                    type = "character",
                    units = "character",
                    colours = "function",
-                   model = "character",
+                   format = "character",
                    cf.name = "character"
          ),
          prototype = c(id = "UnknownID",
@@ -307,7 +311,7 @@ setClass("Quantity",
                        type = "UnknownType",
                        units = "-",
                        colours = fields::tim.colors,
-                       model = "Standard",
+                       format = "Standard",
                        cf.name = "unknown"
          )
 )
@@ -322,14 +326,14 @@ setClass("Quantity",
 #' This class stores the statistics resulting from the comparison of two layers from DGVMTools::Field objects.
 #' 
 #' @slot id A unique character string to identify this particular raster compariosn.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot R2 The R^2 between the model and the data
-#' @slot R2.eff The model efficiency of the model compared to the data
-#' @slot P.cor The Pearsons product moment correlation between the model and the the data,
-#' @slot ME The Mean Error (mean of residuals) between the model and the data
-#' @slot NME The Normalised Mean Error (mean of residuals after the residuals have been divided the value of the data point) between the model and the data
-#' @slot NMSE The Normalised Square Mean Error (mean of the square of the residuals after the residuals have been divided the value of the data point) between the model and the data
-#' @slot RMSE The Root Mean Squared Error between the model and the the data
-#' @slot sd.diff The standard deviation of the difference between the model and the the data (all gridcells)
+#' @slot R2 The R^2 between the two datasets
+#' @slot R2.eff The model efficiency of the two datasets
+#' @slot P.cor The Pearsons product moment correlation between the two datasets
+#' @slot ME The Mean Error (mean of residuals) between two datasets
+#' @slot NME The Normalised Mean Error (mean of residuals after the residuals have been divided the value of the data point) between two datasets
+#' @slot NMSE The Normalised Square Mean Error (mean of the square of the residuals after the residuals have been divided the value of the data point) two datasets
+#' @slot RMSE The Root Mean Squared Error between the two datasets
+#' @slot sd.diff The standard deviation of the difference between the two datasets (all gridcells)
 #' @slot MM The Manhattan Metric (for comparisons of relative proportions)
 #' @slot SCD The Manhattan Metric (for comparisons of relative proportions)
 #' @slot Kappa The overall Cohen's Kappa obtained when comparing categorical variables.
@@ -437,7 +441,7 @@ setClass("Comparison",
 #' @slot type A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")
 #' @slot units A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")
 #' @slot colours A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")
-#' @slot model Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")
+#' @slot format Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
 #' @slot totals.needed List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.  
 #' For example one element could be to list(c(".Tree", ."Shrub"), "Woody") which would make a layer called "Woody" which would be the sum of all trees and shrubs.
@@ -467,10 +471,11 @@ setClass("BiomeScheme",
 
 
 
-#' Contains one aspect of the model output, eg. LAI
+#' Contains one aspect of the output, eg. LAI
 #' 
-#' A key class of the package.  A \code{Field} stores the data and metadata for one quantity that comes from a vegetation model run (including information about the run iself).
-#' For example LAI (Leaf Area Index), or evapotranspiration.  The data can be aggragted across space, and across and within years, and manipulated and plotted by mayn funtions in this package.
+#' A key class of the package as it actually holds the data (most other classes are for metadata).  A \code{Field} stores the data and metadata for one quantity
+#' that comes from a dataset or vegetation model run (including information about the run iself). For example LAI (Leaf Area Index), or evapotranspiration. 
+#' The data can be aggragted across space, and across and within years, and manipulated and plotted by mayn funtions in this package.
 #' 
 #' Generally these are not created directly by the user, but rather by functions like \code{getField}.
 #' 

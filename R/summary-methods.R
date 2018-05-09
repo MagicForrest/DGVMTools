@@ -24,7 +24,7 @@ setGeneric("summary", function(object,...) standardGeneric("summary"))
 #' @rdname Summary-methods
 #' @aliases summary
 setMethod("summary", signature("Field"), function(object, ...) {
-  ret <- list(id=object@id, name=object@name, model=object@model)
+  ret <- list(id=object@id, name=object@name, format=object@format)
   
   spatial=NULL
   temporal=NULL

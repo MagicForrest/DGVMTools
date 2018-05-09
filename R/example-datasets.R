@@ -25,7 +25,7 @@ readHandPBiomes <- function(resolution = "HD", classification = "Smith2014"){
   
   source <- new("Source",
                      id = dataset.id,
-                     model = "Data",
+                     format = "Data",
                      pft.set = list(),
                      name = "Haxeltine and Prentice global biomes",
                      dir = getwd(),                              

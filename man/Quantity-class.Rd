@@ -28,7 +28,7 @@ This class hold meta-data for specific vegetation or land surface quantities lik
 Includes metadata about the quantity (the units it is measured in for example), values for default plot proprties (color scales, plot ranges) and the aggragating method - ie whether the quantity shoudd generally be summed (for example monthly burnt area or C mass per PFT) or averaged (for example monthly soil water content).
 See the 'Slots' documentation below.
 Note that for some analyses  user will probably need to define their own, and modify these for their own analysis and plots.  However the standard quantities 
-that one expects to be availabel from different model and data types are listed below in the 'Usage' section.
+that one expects to be available from different models are listed below in the 'Usage' section.
 }
 \details{
 Note that quantities in the \code{Standard.quantities} list should ideally be defined for all model types.
@@ -36,7 +36,8 @@ Note that quantities in the \code{Standard.quantities} list should ideally be de
 \section{Slots}{
 
 \describe{
-\item{\code{id}}{A unique character string to identify this particular vegetation quantity, should match with the name of a particular model output variable.  Recommended to be alphanumeric because it is used to construct file names.}
+\item{\code{id}}{A unique character string to identify this particular vegetation quantity.  This will be interpreted for an output-format specific fucntion, but should
+ideally match with the name of a particular model output/dataset variable.  Recommended to be alphanumeric because it is used to construct file names.}
 
 \item{\code{name}}{A longer character string to provide a more complete description of this quantity}
 
@@ -46,7 +47,7 @@ Note that quantities in the \code{Standard.quantities} list should ideally be de
 
 \item{\code{colours}}{A function that returns a colour scale suited for plotting this quantity.}
 
-\item{\code{model}}{Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this Quantity is applicable.}
+\item{\code{format}}{Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.}
 
 \item{\code{cf.name}}{A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
 but it makes sense to use this where possible.}

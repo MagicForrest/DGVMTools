@@ -14,7 +14,7 @@ Standard.quantities <- list(
       name = "Fraction",
       units = "",
       colours = grDevices::colorRampPalette(c("grey85", "black")), 
-      model = c("Standard"),
+      format = c("Standard"),
       cf.name = "area_fraction"), 
   
   new("Quantity",
@@ -23,7 +23,7 @@ Standard.quantities <- list(
       name = "Area Fraction",
       units = "%",
       colours = veg.palette, 
-      model = c("Standard"),
+      format = c("Standard"),
       cf.name = "area_fraction_percent"), 
   
   new("Quantity",
@@ -32,7 +32,7 @@ Standard.quantities <- list(
       type = "PFT",
       units = "kg m-2",
       colours = reversed.viridis,
-      model = c("Standard"),
+      format = c("Standard"),
       cf.name = "vegetation_carbon_content"),
   
   new("Quantity",
@@ -41,7 +41,7 @@ Standard.quantities <- list(
       type = "PFT",
       units = "1",
       colours = viridis::viridis,
-      model = c("Standard"),
+      format = c("Standard"),
       cf.name = "leaf_area_index"),
   
   new("Quantity",
@@ -50,7 +50,7 @@ Standard.quantities <- list(
       type = "monthly",
       units = "kgC/m^2",
       colours = fields::tim.colors,
-      model = c("Standard")),
+      format = c("Standard")),
   
   new("Quantity",
       id = "aGPP_std",
@@ -58,7 +58,7 @@ Standard.quantities <- list(
       type = "PFT",
       units = "kgC m-2 year-1",
       colours = fields::tim.colors,
-      model = c("Standard"),
+      format = c("Standard"),
       cf.name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
   
   new("Quantity",
@@ -67,7 +67,7 @@ Standard.quantities <- list(
       type = "PFT",
       units = "kgC/m^2/year",
       colours = fields::tim.colors,
-      model = c("Standard")),
+      format = c("Standard")),
   
   new("Quantity",
       id = "canopyheight_std",
@@ -75,7 +75,7 @@ Standard.quantities <- list(
       type = "-",
       units = "m",
       colours = reversed.magma,
-      model = c("Standard"),
+      format = c("Standard"),
       cf.name = "canopy_height"),
   
   new("Quantity",
@@ -84,7 +84,7 @@ Standard.quantities <- list(
       type = "annual",
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
-      model = c("Standard"),
+      format = c("Standard"),
       cf.name = "burned_area_fraction"),
   
   new("Quantity",
@@ -93,7 +93,7 @@ Standard.quantities <- list(
       type = "annual",
       units = "fraction",
       colours = veg.palette,
-      model = c("Standard"),
+      format = c("Standard"),
       cf.name = "fraction_absorbed_of_photosynthetically_active_radiation"),
   
   new("Quantity",
@@ -102,6 +102,6 @@ Standard.quantities <- list(
       type = "annual",
       units = "GtC/year",
       colours = veg.palette,
-      model = c("Standard"))
+      format = c("Standard"))
   
 )

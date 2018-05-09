@@ -24,7 +24,7 @@ getField_aDGVM <- function(source,
   if(missing(adgvm.scheme)) adgvm.scheme <- 1
   if(missing(adgvm.daily)) adgvm.daily <- FALSE
   
-  if("aDGVM" %in% quant@model | "Standard" == quant@model) {
+  if("aDGVM" %in% quant@format | "Standard" %in% quant@format) {
     if(adgvm.scheme == 1) data.list <- getQuantity_aDGVM_Scheme1(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant, adgvm.daily)
     if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
   }
@@ -995,7 +995,7 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "kgC/m^2",
       colours = viridis::viridis,
-      model = c("aDGVM")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "meanheight",
@@ -1003,7 +1003,7 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "m",
       colours = fields::tim.colors,
-      model = c("aDGVM")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "basalarea",
@@ -1011,7 +1011,7 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "m^2/ha",
       colours = fields::tim.colors,
-      model = c("aDGVM")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "nind",
@@ -1019,7 +1019,7 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "plants",
       colours = veg.palette,
-      model = c("aDGVM")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "pind",
@@ -1027,7 +1027,7 @@ aDGVM.quantities <- list(
       type = "PFT",
       units = "",
       colours = veg.palette,
-      model = c("aDGVM")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "firefreq",
@@ -1035,7 +1035,7 @@ aDGVM.quantities <- list(
       type = "annual",
       units = "",
       colours = reversed.fire.palette,
-      model = c("aDGVM"))
+      format = c("aDGVM"))
   
   
 )
