@@ -173,6 +173,6 @@ is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
 #' @keywords internal
 
 equivalentQuantities <- function(quant1, quant2) {
-  if (quant1@type==quant2@type && quant1@units==quant2@units)  return(TRUE)
+  if (quant1@units==quant2@units)  return(TRUE)
   else return(FALSE)
 }

@@ -17,8 +17,6 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 
 \item{\code{name}}{A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")}
 
-\item{\code{type}}{A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")}
-
 \item{\code{units}}{A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")}
 
 \item{\code{colours}}{A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")}

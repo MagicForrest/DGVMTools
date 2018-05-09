@@ -41,8 +41,6 @@ ideally match with the name of a particular model output/dataset variable.  Reco
 
 \item{\code{name}}{A longer character string to provide a more complete description of this quantity}
 
-\item{\code{type}}{A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.}
-
 \item{\code{units}}{A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?}
 
 \item{\code{colours}}{A function that returns a colour scale suited for plotting this quantity.}

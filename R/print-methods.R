@@ -31,7 +31,7 @@ setMethod("print", signature(x="PFT"), function(x) {
 #' @export
 setMethod("print", signature(x="Quantity"), function(x) {
   
-  cat(paste0("Quantity: ", x@id," (", x@name, "): ", "Type=",  x@type, ", Units=", x@units, ", Defined for format: ", paste0(unlist(x@format), collapse = ', '), "\n"))
+  cat(paste0("Quantity: ", x@id," (", x@name, "): ",  ", Units=", x@units, ", Defined for format: ", paste0(unlist(x@format), collapse = ', '), "\n"))
 
 })
 

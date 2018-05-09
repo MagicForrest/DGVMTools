@@ -284,7 +284,6 @@ setClass("Source",
 #' @slot id A unique character string to identify this particular vegetation quantity.  This will be interpreted for an output-format specific fucntion, but should
 #' ideally match with the name of a particular model output/dataset variable.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A longer character string to provide a more complete description of this quantity
-#' @slot type A character string defining if this quantity is defined per PFT ("PFT"), per month ("monthly"), or something else.  The first two have a specific meaning to DGVMTools, but in principle the use can define anything.  
 #' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
 #' @slot colours A function that returns a colour scale suited for plotting this quantity.
 #' @slot format Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.
@@ -300,7 +299,6 @@ setClass("Source",
 setClass("Quantity", 
          slots = c(id = "character",
                    name = "character",
-                   type = "character",
                    units = "character",
                    colours = "function",
                    format = "character",
@@ -308,7 +306,6 @@ setClass("Quantity",
          ),
          prototype = c(id = "UnknownID",
                        name = "UnknownString",
-                       type = "UnknownType",
                        units = "-",
                        colours = fields::tim.colors,
                        format = "Standard",
@@ -438,7 +435,6 @@ setClass("Comparison",
 #' 
 #' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")
 #' @slot name A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")
-#' @slot type A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")
 #' @slot units A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")
 #' @slot colours A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")
 #' @slot format Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.

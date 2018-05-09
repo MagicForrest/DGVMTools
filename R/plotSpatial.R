@@ -379,7 +379,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     is.categorical <- FALSE
     
     ###  If the Quantity if specifically defined as categorical then use the colours defined in the Quantity's units slot
-    if(tolower(quant@type) == "categorical") {
+    if(length(quant@units) > 1) {
       
       legend.title = NULL
       
