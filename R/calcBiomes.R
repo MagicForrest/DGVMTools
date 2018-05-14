@@ -46,42 +46,12 @@ calcBiomes <-function(input, scheme){
   # Get each layer
   for(layer in scheme@layers.needed) {
     
-    print(layer)
-    
-    #these.arguments <- list.append(x = list(x = input), values = layer)
-    these.arguments <- list(x=input, operator = layer$operator, layers = layer$layers, new.layer = layer$new.layer)
-    print(names(these.arguments))
-    input <- do.call(layerOp, args = these.arguments)
-    # print(these.arguments)
-    # print(str(these.arguments))
-    # stop()
-                              
+    # build a list of arguments and call layerOp    
+    input <- do.call(layerOp, args = list(x=input, operator = layer$operator, layers = layer$layers, new.layer = layer$new.layer))
+   
   }
-  
-  
-  # # Get the maximums needed
-  # for(max.of.layers in scheme@max.needed) {
-  #   input <- layerOp(x = input, operator = "max.layer", layers = max.of.layers[[1]], new.layer = max.of.layers[[2]])
-  # }
-  # 
-  # # Get the totals needed
-  # for(total.of.layers in scheme@totals.needed) {
-  #   input <- layerOp(x = input, operator = "sum", layers = total.of.layers[[1]], new.layer = total.of.layers[[2]])
-  # }
-  # # maybe not needed
-  # if(!"Grass" %in% names(input@data) ) {
-  #   input <- input@data[, Grass := 0]
-  # }
-  # 
-  # # Get the fractions required - now somewhat long way around (since remove divideLayers() but whatevs) 
-  # if(length(scheme@fractions.needed) > 0) {
-  #   for(fractions in scheme@fractions.needed) {
-  #     input <- layerOp(input, "/", c(fractions[[1]], fractions[[2]]), fractions[[3]])
-  #   }
-  # }
-
  
-  
+ 
   # We get a warning about a shallow copy here, suppress it
   suppressWarnings(dt <- input@data)
   
