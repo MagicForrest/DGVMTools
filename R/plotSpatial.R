@@ -231,45 +231,56 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   final.fields <- list()
   for(object in sources){
     
-    # select the layers and time periods required and mash the data into shape
-    these.layers <- selectLayers(object, layers)
-    if(!is.null(years)) {
-      # set key to Year, subset by years, the set keys back
-      # not were are not doing selectYears() because we may want to select non-contiguous years
-      setkey(these.layers@data, Year)
-      these.layers@data <- these.layers@data[J(years)]
-      setKeyDGVM(these.layers@data)
-    }
-    if(!is.null(days)) these.layers <- selectDays(these.layers, days)
-    if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
-    if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
-    
-    final.fields <- append(final.fields, these.layers)
-    
-    these.layers.melted <- melt(these.layers@data, measure.vars = layers)
-    these.layers.melted[, Source := object@source@name]
-    data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
-    
-    # check if layers are all continuous or discrete
-    for(layer in layers) {
-      if(class(object@data[[layer]]) == "factor") discrete <- TRUE
-      if(class(object@data[[layer]]) == "numeric") continuous <- TRUE
-    }
-    if(discrete & continuous) stop("plotSpatial canot simultaneously plot discrete and continuous layers, check your layers")   
-    
-    # check for meta-data to automagic the plots a little bit if possble
-    if(first) {
-      if(is.null(cols) & continuous) cols <- object@quant@colours(20)
-      legend.title <- object@quant@units
-      quant <- object@quant
-    }
-    else {
-    
-      # check for consistent Quantity
-      if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
+    # check that at least one layer is present in this object
+    all.layers <- names(object)
+    something.present <- FALSE
+    for(this.layer in layers) {
+      if(this.layer %in% all.layers) something.present <- TRUE
     }
     
-    first <- FALSE
+    if(something.present) {
+      
+      # select the layers and time periods required and mash the data into shape
+      these.layers <- selectLayers(object, layers)
+      if(!is.null(years)) {
+        # set key to Year, subset by years, the set keys back
+        # not were are not doing selectYears() because we may want to select non-contiguous years
+        setkey(these.layers@data, Year)
+        these.layers@data <- these.layers@data[J(years)]
+        setKeyDGVM(these.layers@data)
+      }
+      if(!is.null(days)) these.layers <- selectDays(these.layers, days)
+      if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
+      if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
+      
+      final.fields <- append(final.fields, these.layers)
+      
+      these.layers.melted <- melt(these.layers@data, measure.vars = layers)
+      these.layers.melted[, Source := object@source@name]
+      data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
+      
+      # check if layers are all continuous or discrete
+      for(layer in layers) {
+        if(class(object@data[[layer]]) == "factor") discrete <- TRUE
+        if(class(object@data[[layer]]) == "numeric") continuous <- TRUE
+      }
+      if(discrete & continuous) stop("plotSpatial canot simultaneously plot discrete and continuous layers, check your layers")   
+      
+      # check for meta-data to automagic the plots a little bit if possble
+      if(first) {
+        if(is.null(cols) & continuous) cols <- object@quant@colours(20)
+        legend.title <- object@quant@units
+        quant <- object@quant
+      }
+      else {
+        
+        # check for consistent Quantity
+        if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
+      }
+      
+      first <- FALSE
+      
+    } # end if something.present
     
   }
   
@@ -284,15 +295,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   
   
-
+  
   ### APPLY CUSTOM CUTS TO DISCRETISE IF NECESSARY
   
   if(continuous & !is.null(cuts)) {
     
-    t1 <- Sys.time()
+   
     #data.toplot[,Value:= cut(Value, cuts, right = FALSE, include.lowest = TRUE)]
-    t2 <- Sys.time()
-    print(t2-t1)
+   
     
     if(discretise) {
       data.toplot[,Value:= cut(Value, cuts, right = FALSE, include.lowest = TRUE)]
@@ -544,11 +554,11 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
         warning(paste("You have not supplied the correct number of facets in the \'facet.order\' argument, (you supplied ", length(facet.order), "but I need", length(levels(data.toplot[["Facet"]])), ")", "so I am ignoring your facte re-ordering command", sep = " "))
       }
       else {
-         data.toplot[, Facet := factor(trimws(Facet), levels = trimws(facet.order))]
+        data.toplot[, Facet := factor(trimws(Facet), levels = trimws(facet.order))]
       }
-
+      
     }
-  
+    
   }
   
   
@@ -647,7 +657,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     #
   }
   if(discrete) {
-     mp <- mp + scale_fill_manual(values = cols, 
+    mp <- mp + scale_fill_manual(values = cols, 
                                  breaks = breaks,
                                  labels = categorical.legend.labels)
     # mp <- mp + guides(fill = guide_legend(keyheight = 1))
