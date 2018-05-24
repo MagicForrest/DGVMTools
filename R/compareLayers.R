@@ -164,7 +164,8 @@ compareLayers <- function(field1,
     else if(categorical) {
       if(verbose) print("Doing stats comparison")
       stats <- categoricalComparison(vector1 = vector1, vector2 = vector2, name1 = source1@name, name2 = source2@name, verbose = show.stats)
-      
+      new.data[, "Difference" := as.character(get(new.ids.1)) == as.character(get(new.ids.2))]
+     
     }
   }
   else if(relative.abundance) {

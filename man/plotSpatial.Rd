@@ -9,8 +9,8 @@ plotSpatial(sources, layers = NULL, title = character(0),
   plot.bg.col = "white", panel.bg.col = "#809DB8", useLongNames = FALSE,
   text.multiplier = NULL, xlim = NULL, ylim = NULL, years = NULL,
   days = NULL, months = NULL, seasons = NULL, limits = NULL,
-  cols = NULL, cuts = NULL, discretise = FALSE, map.overlay = NULL,
-  grid = FALSE, plot = TRUE, interior.lines = TRUE)
+  cols = NULL, cuts = NULL, map.overlay = NULL, grid = FALSE,
+  plot = TRUE, interior.lines = TRUE)
 }
 \arguments{
 \item{sources}{The data to plot. Can be a Field, a DataObject, or a list of including both}
@@ -54,9 +54,7 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 
 \item{cols}{A colour palette function to override the defaults.}
 
-\item{cuts}{Cut ranges (a numeric vector) to override the default colour delimitation}
-
-\item{discretise}{Boolen, if true, but the discretise the data according the cuts argument above}
+\item{cuts}{Cut ranges (a numeric vector) to override the default colour delimitation,  discretise the data into discrete colour bands}
 
 \item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.}
 

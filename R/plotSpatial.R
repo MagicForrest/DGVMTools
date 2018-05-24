@@ -36,8 +36,7 @@
 #' @param seasons An optional character vector specifying which seasons to plot (any or all of "DJF", "MAM, "JJA", "SON", defaults to all the seasons in the input Fields)  
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param cols A colour palette function to override the defaults.
-#' @param cuts Cut ranges (a numeric vector) to override the default colour delimitation
-#' @param discretise Boolen, if true, but the discretise the data according the cuts argument above
+#' @param cuts Cut ranges (a numeric vector) to override the default colour delimitation,  discretise the data into discrete colour bands
 #' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
@@ -82,7 +81,6 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                         limits = NULL,
                         cols = NULL,
                         cuts = NULL,
-                        discretise = FALSE,
                         map.overlay = NULL,
                         grid = FALSE,
                         plot = TRUE,
@@ -300,22 +298,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   if(continuous & !is.null(cuts)) {
     
-   
-    #data.toplot[,Value:= cut(Value, cuts, right = FALSE, include.lowest = TRUE)]
-   
+    data.toplot[,Value:= cut(Value, cuts, right = FALSE, include.lowest = TRUE)]
+    discrete <- TRUE
+    continuous <- FALSE
+    breaks <- waiver()
+    if(length(cols) != length(cuts)){
+      cols <- grDevices::colorRampPalette(cols)(length(cuts))
+    }
     
-    if(discretise) {
-      data.toplot[,Value:= cut(Value, cuts, right = FALSE, include.lowest = TRUE)]
-      discrete <- TRUE
-      continuous <- FALSE
-      breaks <- waiver()
-      if(length(cols) != length(cuts)){
-        cols <- grDevices::colorRampPalette(cols)(length(cuts))
-      }
-    }
-    else{
-      
-    }
   }
   else{
     cuts <- waiver()

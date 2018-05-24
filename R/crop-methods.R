@@ -20,9 +20,9 @@
 #' 
 #' 
 # first define (redfine) the generic
-#if (!isGeneric("crop")) {
-  setGeneric("crop", function(x, y, spatial.extent.id = NULL, ...) standardGeneric("crop"))
-#}
+if (!isGeneric("crop")) {
+  setGeneric("crop", function(x, y, ...) standardGeneric("crop"))
+}
 
 
 #######################################################################################
@@ -31,7 +31,7 @@
 
 
 #' @rdname crop-methods
-setMethod("crop", signature(x="Field", y = "ANY"), function(x, y, ...) {
+setMethod("crop", signature(x="Field", y = "ANY"), function(x, y, spatial.extent.id = NULL, ...) {
   
   if(is.null(spatial.extent.id)){
     stop("When cropping a DGVMTools object, please provide a spatial.extent.id when cropping a DGVMTools object to maintain meta-data integrity.")
@@ -62,7 +62,7 @@ setMethod("crop", signature(x="Field", y = "ANY"), function(x, y, ...) {
 
 
 #' @rdname crop-methods
-setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y, ...) {
+setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y, spatial.extent.id = NULL, ...) {
  
   if(is.null(spatial.extent.id)){
     stop("When cropping a DGVMTools object, please provide a spatial.extent.id when cropping a DGVMTools object to maintain meta-data integrity.")

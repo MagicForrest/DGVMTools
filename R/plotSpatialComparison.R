@@ -104,11 +104,11 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                        id = object@id,
                        data = new.object@data,
                        quant = object@quant1,
-                       first.year = 0,
-                       last.year = 0,
-                       year.aggregate.method = "NULL", 
                        source = object@source1,
                        commonSTAInfo(list(object@sta.info1, object@sta.info2)))
+     
+      new.field@source@name <- paste0("\u0394(", object@source1@name, " - ", object@source2@name, ")")
+      new.field@source@id <- paste(object@source1@id, object@source2@id, sep ="-")
       
       objects.to.plot[[length(objects.to.plot)+1]] <- new.field
       
@@ -125,16 +125,18 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     # set a symmetric scale (so zero always white/centre colour)
     if(symmetric.scale) limits <- c(-max.for.scale, max.for.scale)
     
-    # make an appropriate title if not provided
-    #if(missing(title)) title <- paste()
-    
-    return(plotSpatial(objects.to.plot,
+  
+    the.plot <- plotSpatial(objects.to.plot,
                        layers = layer.to.plot,
                        cols = override.cols,
                        limits = limits,
                        title = title,
-                       ...))
+                       ...)
     
+    
+    
+    if(is.logical(objects.to.plot[[1]]@data[[layer.to.plot]])) the.plot <- the.plot + scale_fill_discrete(name = "Agreement")
+    return(the.plot)
     
   }
   
