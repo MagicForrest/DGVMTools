@@ -86,6 +86,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     # convert the Comparisons into a Fields  for plotting 
     objects.to.plot <- list()
     max.for.scale <- 0
+    final.layers.to.plot <- c()
     for(object in sources){ 
       
       if(type == "difference") {
@@ -110,6 +111,17 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
       new.field@source@name <- paste0("\u0394(", object@source1@name, " - ", object@source2@name, ")")
       new.field@source@id <- paste(object@source1@id, object@source2@id, sep ="-")
       
+      # if comparing only one layer with the same name in both sources then append the layer to the 'difference' layer name to make a more descriptive layer name and hence plot title
+      # eg if comparing two different between two layers original called totally, then call the new layer "Difference Total" 
+      if(length(object@layers1) == 1 && length(object@layers2) == 1 && object@layers1 == object@layers2) {
+        new.name <- paste(layer.to.plot, object@layers1, sep = " ")
+        setnames(new.field@data, layer.to.plot, new.name)
+        final.layers.to.plot <- append(final.layers.to.plot, new.name)
+      }
+      else{
+        final.layers.to.plot <- append(final.layers.to.plot, layer.to.plot)
+      }
+     
       objects.to.plot[[length(objects.to.plot)+1]] <- new.field
       
       # get max value for making the scale symmetric
@@ -119,6 +131,9 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
       
     }
     
+    # get the unique layer names (since their might be duplicates)
+    final.layers.to.plot <- unique(final.layers.to.plot)
+    
     # set the colours
     if(missing(override.cols)) override.cols <-  rev(RColorBrewer::brewer.pal(11, "RdBu"))
     
@@ -127,10 +142,9 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     
   
     the.plot <- plotSpatial(objects.to.plot,
-                       layers = layer.to.plot,
+                       layers = final.layers.to.plot,
                        cols = override.cols,
                        limits = limits,
-                       title = title,
                        ...)
     
     

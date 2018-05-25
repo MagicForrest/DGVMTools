@@ -33,9 +33,12 @@ Imports:
 Suggests:
     zoo,
     mgcv,
-    udunits2
+    udunits2,
+    knitr,
+    rmarkdown
 License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr

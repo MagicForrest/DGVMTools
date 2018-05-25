@@ -380,7 +380,7 @@ setClass("Statistics",
 #' 
 #' This object is produced as the result of a call to the functions \code{compareLayers()} and shouldn't be directly created by a user.
 #'  
-#' It contains a data slot with each of the compared layers and the difference between them (layer 1 - layer 2), a SpatialComaprisons object with the calculated values of 
+#' It contains a data slot with each of the compared layers and the difference between them (layer 1 - layer 2), a Comparisons object with the calculated values of 
 #' various statistical metric, meta-data about the source of the two compared layers and spatio-temporal meta-data describing where the comparison is valid.
 #' 
 #' It can be plotted by functions like   
@@ -392,6 +392,8 @@ setClass("Statistics",
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant1 A Quantity object to define what quantity the data from first field represents
 #' @slot quant2 A Quantity object to define what quantity the data from second field represents
+#' @slot layers1 A character string (or vector thereof) of the layer(s) from the first field that were compared
+#' @slot layers2 A character string (or vector thereof) of the layer(s) from the second field that were compared
 #' @slot stats An SpatialComaprison object giving ther statistical comparison metric between these two layers
 #' @slot source1 A Source object describing the source of the first layer in the comparison
 #' @slot source2 A Source object describing the source of the second layer in the comparison
@@ -406,6 +408,8 @@ setClass("Comparison",
                    data = "data.table",
                    quant1 = "Quantity",
                    quant2 = "Quantity",
+                   layers1 = "character",
+                   layers2 = "character",
                    source1 = "Source",
                    source2 = "Source",
                    sta.info1 = "STAInfo",

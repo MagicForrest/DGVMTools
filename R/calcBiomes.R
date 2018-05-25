@@ -69,7 +69,6 @@ calcBiomes <-function(input, scheme){
   
   # now make a new Field and return
   sta.info <- as(input, "STAInfo")
-  print(sta.info)
   biomes <- new("Field",
                 id = makeFieldID(source = input@source, 
                                  var.string = scheme@id, 

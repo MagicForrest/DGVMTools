@@ -192,6 +192,8 @@ compareLayers <- function(field1,
                           quant2 = field2@quant,
                           source1 = source1,
                           source2 = source2,
+                          layers1 = layers1,
+                          layers2 = layers2,
                           sta.info1 = as(field1, "STAInfo"),
                           sta.info2 = as(field2, "STAInfo"),
                           stats = stats
