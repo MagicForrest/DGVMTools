@@ -8,6 +8,7 @@
 #' @param runs A Source or a list of Sources to plot
 #' @param quants A list of Quantity objects to plot
 #' @param title A character string to override the default title.
+#' @param subtitle A character string to override the default subtitle.
 #' @param spatial.extent For which spatial extent to plot the seasonal cycle.  For details of how to make this selection see the documnetation for getField().
 #' @param spatial.aggregate.method Charatacer string specifgin how to spatially aggregate if more than one gridcell are included in the spatial.extent.  Again, see documentation getField for  details.
 #' The default is "mean", simply straight averaging.
@@ -27,8 +28,10 @@
 plotSeasonal <- function(runs, 
                          quants, 
                          title = NULL,
+                         subtitle = NULL,
                          spatial.extent = NULL, 
                          spatial.aggregate.method = "mean", 
+                         spatial.extent.id,  
                          plotAverage = TRUE,
                          text.multiplier = NULL,
                          plot = TRUE,
@@ -112,14 +115,17 @@ plotSeasonal <- function(runs,
     
     ## for all quants
     quants.dts <- list()
+    all.fields <- list()
     for(quant in quants) {
       
       # open the and pull out the data that we want
       this.Field <- getField(run, 
-                                         quant@id, 
-                                         spatial.extent = spatial.extent,
-                                         spatial.aggregate.method = spatial.aggregate.method,
-                                         ...)
+                             quant@id, 
+                             spatial.extent = spatial.extent,
+                             spatial.aggregate.method = spatial.aggregate.method,
+                             spatial.extent.id = spatial.extent.id,
+                             ...)
+      all.fields[[paste(run@id, quant@id, "_")]] <- this.Field
       this.dt <-this.Field@data
       setnames(this.dt, quant@id, "Value")
       this.dt <- this.dt[, Quantity := quant@name]
@@ -151,6 +157,15 @@ plotSeasonal <- function(runs,
   setKeyDGVM(all.dt)
   rm(run.dts)
   
+  ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
+  if(missing(title) || missing(subtitle)) {
+    titles <- makePlotTitle(all.fields)  
+    if(missing(title)) title <- titles[["title"]]
+    else if(is.null(title)) title <- waiver()
+    if(missing(subtitle)) subtitle <- titles[["subtitle"]]
+    else if(is.null(subtitle)) subtitle <- waiver()
+  }
+  
   
   
   ###### MAKE THE PLOT ######
@@ -165,8 +180,9 @@ plotSeasonal <- function(runs,
   p <- p + scale_x_continuous(breaks = 1:12,labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep","Oct","Nov","Dec"))
   
   # set the title
-  p <- p + labs(title = title, y = paste(quant.str, " (", unit.str, ")", sep = ""), x = "Month")
-  p <- p + theme(plot.title = element_text(hjust = 0.5))
+  p <- p + labs(title = title, subtitle = subtitle,  y = paste(quant.str, " (", unit.str, ")", sep = ""), x = "Month")
+  p <- p + theme(plot.title = element_text(hjust = 0.5),
+                 plot.subtitle = element_text(hjust = 0.5))
   
   # set legend 
   p <- p + theme(legend.title=element_blank())

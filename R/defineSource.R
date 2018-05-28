@@ -33,6 +33,7 @@ defineSource <- function(id,
                          name,
                          dir,
                          format,
+                         quantities,
                          pft.set = list(),
                          lonlat.offset = c(0,0),
                          year.offset = 0,
@@ -65,6 +66,11 @@ defineSource <- function(id,
   # 
   if(missing(pft.set)){
     pft.set <- format@default.pfts
+  }
+  
+  # 
+  if(!missing(quantities)){
+    format@quantities <- quantities
   }
   
   # make Source object from the supplied meta data

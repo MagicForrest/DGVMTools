@@ -184,7 +184,7 @@ plotTemporal <- function(input.data,
   # now make the plot
   p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Time", y = "Value", colour = "Layer"))
   for(this.source in unique(plotting.data.dt.melted[["Source"]])) {
-    p <- p + geom_line(data = plotting.data.dt.melted[Source == this.source,], aes_string(linetype="Layer"), size = 1)
+    p <- p + geom_line(data = plotting.data.dt.melted[Source == this.source,], size = 1)
     #p <- p + geom_line(data = plotting.data.dt.melted[Source == this.source,], size = 1)
   }
   
