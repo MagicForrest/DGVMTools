@@ -37,6 +37,8 @@
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param cols A colour palette function to override the defaults.
 #' @param cuts Cut ranges (a numeric vector) to override the default colour delimitation,  discretise the data into discrete colour bands
+#' @param drops.cuts Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.  
+#' Default is TRUE.  Ignored if 'cuts' argument is not used.
 #' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
@@ -81,6 +83,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                         limits = NULL,
                         cols = NULL,
                         cuts = NULL,
+                        drop.cuts = TRUE,
                         map.overlay = NULL,
                         grid = FALSE,
                         plot = TRUE,
@@ -91,6 +94,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   ### CHECK FOR MISSING OR INCONSISTENT ARGUMENTS AND INITIALISE STUFF WHERE APPROPRIATE
   categorical.legend.labels <- waiver()
+  drop.from.scale <- waiver() # only set to FALSE when discretising a scale 
   
   
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
@@ -298,13 +302,42 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   if(continuous & !is.null(cuts)) {
     
-    data.toplot[,Value:= cut(Value, cuts, right = FALSE, include.lowest = TRUE)]
+    
+    # drop cut intervals at the beginning and the end to which don't have data in them to better use the colour scale.
+    if(drop.cuts) {
+      
+      # find minimum cut
+      this.min <- min(data.toplot[["Value"]], na.rm = TRUE)
+      min.cut.index <- 1
+      for(cut.index in 1:length(cuts)) {
+        if(this.min > cuts[cut.index]) min.cut.index <- cut.index
+      }
+      
+      # find maximum cut
+      this.max <- max(data.toplot[["Value"]], na.rm = TRUE)
+      max.cut.index <- length(cuts)
+      for(cut.index in length(cuts):1) {
+        if(this.max < cuts[cut.index]) max.cut.index <- cut.index
+      }
+      
+      # subset the cuts
+      cuts <- cuts[min.cut.index:max.cut.index]
+      
+    }
+    
+    # apply the cuts
+    data.toplot[,Value:= cut(Value, cuts, right = FALSE, include.lowest = TRUE, ordered_result = FALSE)]
+    
+    # set flags
     discrete <- TRUE
     continuous <- FALSE
-    breaks <- waiver()
-    if(length(cols) != length(cuts)){
-      cols <- grDevices::colorRampPalette(cols)(length(cuts))
-    }
+    
+    # set colours, labels and breaks
+    breaks <- levels(data.toplot[["Value"]])
+    categorical.legend.labels <- breaks
+    cols <- grDevices::colorRampPalette(cols)(length(cuts))
+    names(cols) <- breaks
+    drop.from.scale <- FALSE
     
   }
   else{
@@ -649,7 +682,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   if(discrete) {
     mp <- mp + scale_fill_manual(values = cols, 
                                  breaks = breaks,
-                                 labels = categorical.legend.labels)
+                                 labels = categorical.legend.labels, drop = drop.from.scale)
     # mp <- mp + guides(fill = guide_legend(keyheight = 1))
   }
   

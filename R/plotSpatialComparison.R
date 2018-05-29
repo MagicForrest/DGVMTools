@@ -162,6 +162,16 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     
     for(object in sources){ 
       
+      # SECOND INFO - putting this first because this is the 'base' dataset ("one minus two" convention)
+      new.dt <- object@data[, append(getDimInfo(object), names(object)[2]), with=FALSE]
+      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant2@id )
+      objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
+                                                          id = object@id,
+                                                          data = new.dt,
+                                                          quant = object@quant2,
+                                                          source = object@source2,
+                                                          object@sta.info2)
+      
       # FIRST INFO
       new.dt <- object@data[, append(getDimInfo(object), names(object)[1]), with=FALSE]
       setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant1@id )
@@ -171,16 +181,6 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                           quant = object@quant1,
                                                           source = object@source1,
                                                           object@sta.info1)
-      
-      # SECOND INFO
-      new.dt <- object@data[, append(getDimInfo(object), names(object)[2]), with=FALSE]
-      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant2@id )
-      objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
-                                                          id = object@id,
-                                                          data = new.dt,
-                                                          quant = object@quant2,
-                                                          source = object@source2,
-                                                          object@sta.info2)
       
     }
     
@@ -193,7 +193,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     #layers <- 
       
       return(plotSpatial(objects.to.plot,
-                         layers =  unique(c(object@quant1@id, object@quant2@id)),
+                         layers =  unique(c(object@quant2@id, object@quant1@id)),
                          cols = override.cols,
                          limits = limits,
                          title = title,

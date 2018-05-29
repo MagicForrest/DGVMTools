@@ -9,8 +9,8 @@ plotSpatial(sources, layers = NULL, title = character(0),
   plot.bg.col = "white", panel.bg.col = "#809DB8", useLongNames = FALSE,
   text.multiplier = NULL, xlim = NULL, ylim = NULL, years = NULL,
   days = NULL, months = NULL, seasons = NULL, limits = NULL,
-  cols = NULL, cuts = NULL, map.overlay = NULL, grid = FALSE,
-  plot = TRUE, interior.lines = TRUE)
+  cols = NULL, cuts = NULL, drop.cuts = TRUE, map.overlay = NULL,
+  grid = FALSE, plot = TRUE, interior.lines = TRUE)
 }
 \arguments{
 \item{sources}{The data to plot. Can be a Field, a DataObject, or a list of including both}
@@ -65,6 +65,9 @@ Useful when not all combinations of Sources x Layers exist which would leave bla
 
 \item{interior.lines}{Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 Other things can be overlain on the resulting plot with further ggplot2 commands.}
+
+\item{drops.cuts}{Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.
+Default is TRUE.  Ignored if 'cuts' argument is not used.}
 }
 \value{
 Returns a ggplot object
