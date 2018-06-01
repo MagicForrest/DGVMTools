@@ -1,9 +1,9 @@
 #!/usr/bin/Rscript
 
 
-##########################################################################################################################################
-################################################## PLOT VEG MAPS #########################################################################
-##########################################################################################################################################
+#################################################################################################################################################
+################################################## PLOT COMPARISON MAPS #########################################################################
+#################################################################################################################################################
 
 
 #' Plot a comparion between two layers
@@ -17,7 +17,7 @@
 #' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
 #' (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)
 #' @param title A character string to override the default title.
-#' Note that using these, especially "worldHires", can add quite a bit off time. 
+#' Note that using these, especially "worldHires", can add quite a bit of time. 
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param override.cols A colour palette function to override the defaults.
 #' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)

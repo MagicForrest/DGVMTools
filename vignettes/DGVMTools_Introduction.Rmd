@@ -4,7 +4,7 @@ author: "Matthew Forrest"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Introduction to DGVMTools}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -17,23 +17,45 @@ The package treats model output and observed data in an equivalent fashion and s
 
 Much of the package could be utilised for any data which follows comes distributed over space (longitude, latitude), time (multiple years of data with subannual time resolution of daily, monthly or annual) and conceptual layers (for example different vegetation types or soil carbon pools).  However it has several additional features which are focussed on vegetation modelling, namely: the ability to read data from selected DGVMs in their native formats (currently LPJ-GUESS(-SPITFIRE) and aDGVM2 are supported); facilities for handling metadata about Plant Functional Types (PFTs); and the means to classify vegetation model output into biomes.  
 
-
 ## Overview of key concepts
 
-Concepts in a typical DGVM workflow are encapsulated into objects (technically these are S4 classes).  For example, a `Source` object define a source of data, which can either be a model simulation or a dataset.  Once a `Source` has been defined, data can be extracted from it which will be stored as a `Field` object.  Conceptually a `Field` is the data of one particular variable (say biomass) over a period of time and an extent in space (say monthly over the whole globe for the years 1961 to 1990).  One can think of `Fields` are being similary to raster Stacks or Bricks, but with more metadata and implicit space and temporal information.  Like Stacks/Bricks, they also have layers, for example one layer per PFT.  These layers can be operated upon, for example to find the total of all of the layers, or the fraction of one layer divided another.  Each `Source` object includes `Format` object which contains  
+If you are an impatient sort of person you can skip ahead to the 'Tutorial' section below, but it might be helpful to read this section first.
+
+### Objects/classes
+
+Concepts in a typical DGVM workflow are encapsulated into objects (technically these are S4 classes).  For example, data always orginate from a particular source, typically a model simulation or a dataset.  This is represented as a `Source` object, which includes the location of the data on disk, an identifying string and other pertinent pieces of information.  Once a `Source` has been defined, data can be extracted from it which will be stored as a `Field` object.  Conceptually, a `Field` is the data of one particular variable (say biomass) over a period of time and an extent in space (say monthly over the whole globe for the years 1961 to 1990).  `Fields` are the most important objects in DGVMTools because they are manipulated by the users and they contain data (most other classes are metadata). One can think of a `Field` as being similar to raster Stacks or Bricks, but with more metadata and implicit temporal information.  Like Stacks/Bricks, they also have layers, for example one layer per PFT.  These layers can be operated upon, for example to find the total of all of the layers, or the fraction of one layer divided another, or many other operations.  They can also be plotted, and two `Field` objects can be compared to produce a `Comparison` object which has data on the difference between the two fields and statistical summary metrics (stored in a `Statistics` object).
+
+Apart from the all-important `Field`  and `Source` (and `Comparison`) objects, there are a few other objects defined in DGVMTools.  Each `Source` object includes `Format` object which describes the format of that data on disk - i.e. how to read data from it, which PFTs one might expect to find in a simulation etc.  Different physical quantities are described by `Quantity` objects which include units, a long name and a default colour scale for plotting. A `PFT` object contains metadata about a plant functional type such as its growth form, phenology, leaf type or climate zone, but also a default colour for consistency across plots.  The `Period` class contains information about sub-annual time periods such as months or seasons.  Users can also define custom periods to define special growing seasons, or 8-day MODIS intervals, or whatever.  The `BiomeScheme` class contains data about different discrete biome classifications (including rules for how to derive biomes from model output).  Oh yeah, spatial-temporal-annual information is encapsulated in an `STAInfo` meta-data object but this mostly is used behind the scenes.
+
+Many objects have an `id` which should be a unique alphanumeric character string, typically used for making filenames, and a `name` character string which can be formatted more prettily for use on graphics (although it should also be unique within one analysis).  Examples of most of these objects will follow in the subsequent tutorial.
+
+### Functions/methods
+
+Obviously there are quite a lot of the fuctions in the package as it aims to go from raw model output data to publication-quality plots.  Typically a script will start with calls to `defineSource()` to initialise one or more `Source` objects.  The next step might be to call `getField()` which actually extracts data from the `Source` and builds a `Field` objects.  The `getField()` function has options for selecting data in space and time, and also for aggregating it (for example to calculate the average of all years, or the total across a region).  However you can further refine the spatial-temporal dimensions of `Field` by applying the `aggregate` family of functions (`aggregateSpatial()`, `aggregateYears()` and `aggregateSubannual()`) or the `select` family of function (`selectGridcells()`, `selectMonth()`, `selectYears()`, `selectSeasons()`) and the `crop()` method (which crops the spatial extent exactly like the `raster::crop` function, indeed, it even work with raster objects).
+
+Having sorted out the spatial and temporal dimemsions, you can then manipulation the `Field` and plot it.  Rember that data is stored as 'layers' similar to GIS and raster?  To combine layers and perform other operations one can use the `layerOp()` function which supports arithmetic operators (+,-,/,*), finding maximum and minimums of a group of layers, and the mean, standard deviation and variance across layers.  One can plot layers in spatial layers (i.e. maps) with `plotSpatial()` and temporal layers (time series) with `plotTemporal()`.  Two layers can be quickly compared with a scatter plot using `plotScatter()`.  For a more rigorous comparison, one can use `compareLayers()` to a produce a `Comparison` objects which can be plotted in a variety of ways with dedicated functions.
+
+### `listPFTs()` and the `.Layer` (dot-layer) notation for the `layerOp()` function
+
+One special feature of DGVMTools that deserves it own mention at this point is the `.Layer` (dot-layer) short-hand notation that can be used with `layerOp()`.  The allows the selecting of layers based on PFT metadata.  For example `.Tree` will select all layers corresponding to a tree PFT.  `.Evergreen` will select all layers with evergreen phenology, `.Boreal` will choose all PFts associated with the boreal zone, etc.  This is done by a hidden call to the useful function `listPFTs()` which allows you to list all PFTs in a `Field`, or to list all PFTs based on a criteria (say 'Tree', 'Evergreen' or 'Boreal' as above.)
 
 
-## BLAH
+### Miscellaneous details
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+* DGVMTools objects can be really easily converted into rasters or data.frames, so you can mix and match the functionality you want and integrate DGVMTools into existing scripts.
+* For speed, the data is stored internally as `data.table` objects which are similar to `data.frames` but faster.
+* Although the concept of a 'layer' is important in `DGVMTools`, they are not represented by a class. Rather they are column in a `data.table`.  Normally this technical detail is not apparent or important, the columns/layers are manipulated using the functions in the package without handling the `data.tables` directly.
+* `Field` objects can be stored on disk and re-read by the `getField()` function, potentionally saving a lot of time (since often the bottle neck is reading the raw data from disk).
+* Plotting is done using the package ggplot which is especially useful as plots can be modified after they have been created (much more flexibly than base or lattice graphics).  This maintains relative simplicity in the DGVMTools plot function, but high levels of flexibility through subsequent modifications with ggplot2 commands.
+* Unlike raster objects, `Field`s do not need to be on grids of equally spaced longitude and latitude, or even on grids at all!  This is handy when working with sites, or with grid from climate models which often have unevenly spaced latitudes.
+* Regridding is not really supporting by DGVMTools, although there is a wrapper to the `cdo` (climate data operators package) included which handles some regridding (if `cdo` is installed.
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
 
-## Vignette Info
+## Tutorial
 
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+This tutorial uses a small 
+
+### Define a source 
 
 ## Styles
 
