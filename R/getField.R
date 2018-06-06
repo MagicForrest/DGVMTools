@@ -180,7 +180,7 @@ getField <- function(source,
     # if the provided spatial yields a valid extent, use the crop function
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
     if (class(possible.error) != "try-error") {
-      this.dt <- crop(this.dt, sta.info@spatial.extent, sta.info@spatial.extent.id)  
+      this.dt <- crop(x = this.dt, y = sta.info@spatial.extent)  
       actual.sta.info@spatial.extent <- extent(sta.info@spatial.extent)
       actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
       
