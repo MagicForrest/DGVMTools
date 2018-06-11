@@ -24,7 +24,7 @@ setGeneric("print", function(x, ...) standardGeneric("print"))
 setMethod("print", signature(x="PFT"), function(x) {
   
   cat(paste0("PFT: ", x@id," (", x@name, "): ", "Growth form=",  x@growth.form, ", Leaf form=", x@leaf.form, ", Phenology=", x@phenology, ", Climate zone=", x@climate.zone, ", Shade tolerance=", x@shade.tolerance, ", Preferred colour=", x@colour, "\n"))
-
+  
 })
 
 #' @rdname print
@@ -32,7 +32,7 @@ setMethod("print", signature(x="PFT"), function(x) {
 setMethod("print", signature(x="Quantity"), function(x) {
   
   cat(paste0("Quantity: ", x@id," (", x@name, "): ",  ", Units=", x@units, ", Defined for format: ", paste0(unlist(x@format), collapse = ', '), "\n"))
-
+  
 })
 
 
@@ -82,24 +82,42 @@ setMethod("print", signature(x="Source"), function(x) {
 })
 
 
+#' @rdname print
+#' @export
+setMethod("print", signature(x="STAInfo"), function(x) {
+  
+  cat(paste0("Spatial Info:\n"))
+  cat(paste0("\tSpatial aggregation =  ",  x@spatial.aggregate.method, "\n"))
+  cat(paste0("\tSpatial extent id =  ",  x@spatial.extent.id, "\n"))
+  cat(paste0("\tSpatial extent:  ",  x@spatial.extent.id, "\n"))
+  extent.string <- capture.output(print(x@spatial.extent))
+  for(part in extent.string){
+    cat(paste0("\t\t", part, "\n"))
+  }
+  cat(paste0("Year Info:\n"))
+  cat(paste0("\tYearly aggregation =  ",  x@year.aggregate.method, "\n"))
+  cat(paste0("\tFirst year = ", x@first.year, "\n"))
+  cat(paste0("\tLast year = ", x@last.year, "\n"))
+  cat(paste0("Subannual Info: \n"))
+  cat(paste0("\tSubannual original =  ",  x@subannual.original, "\n"))
+  cat(paste0("\tSubannual aggregation =  ",  x@subannual.aggregate.method, "\n"))
+  cat(paste0("\tSubannual resolution =  ",  x@subannual.resolution, "\n"))
+
+})
+
 
 #' @rdname print
 #' @export
 setMethod("print", signature(x="Field"), function(x) {
   
   cat(paste0("Field:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  #cat(paste0("name = ", x@name, "\"", "\n"))
+  cat(paste0("Id: ", "\"", x@id, "\"", "\n"))
   print(x@quant)
-  cat(paste0("Spatial aggregation =  ",  x@spatial.aggregate.method, "\n"))
-  print(x@spatial.extent)
-  cat(paste0("Yearly aggregation =  ",  x@year.aggregate.method, "\n"))
-  print(x@first.year)
-  print(x@last.year)
+  print(as(x, "STAInfo"))
   cat(paste0("Data: ",  "\n"))
   print(x@data)
-  cat(paste0("Source = ", "\"", x@source@name, "\"", "\n"))
-  cat("For full Source metadata type \"print(X@source)\", where X is this Field\n")
+  cat(paste0("Source: ", "\"", x@source@name, "\"", "\n"))
+  cat("(For full Source metadata type \"print(X@source)\", where X is this Field)\n")
   
 })
 
@@ -112,6 +130,10 @@ setMethod("print", signature(x="Comparison"), function(x) {
   cat(paste0("Comparison Layer:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   cat(paste0("name = ", x@name, "\"", "\n"))
+  cat(paste0("First layers: \n"))
+  print(x@layers1)
+  cat(paste0("Second layers: \n"))
+  print(x@layers2)
   cat(paste0("Quantity for first layer: \n"))
   print(x@quant1)
   cat(paste0("Quantity of second layer: \n"))
@@ -126,7 +148,7 @@ setMethod("print", signature(x="Comparison"), function(x) {
   print(x@source1)
   cat(paste0("Source for second layer: \n"))
   print(x@source2)
-
+  
 })
 
 
@@ -154,7 +176,7 @@ setMethod("print", signature(x="Statistics"), function(x) {
   for(kappa in x@individual.Kappas) {
     print(kappa)
   }
-
+  
 })
 
 
@@ -177,7 +199,7 @@ setMethod("print", signature(x="BiomeScheme"), function(x) {
   for(type in x@units) {
     cat(paste0("     ", type,"\n"))    
   }
-
+  
 })
 
 #' @rdname print
@@ -195,7 +217,7 @@ setMethod("print", signature(x="Format"), function(x) {
     print(quant)
   }
   
- 
+  
 })
 
 

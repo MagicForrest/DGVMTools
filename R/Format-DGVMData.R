@@ -74,14 +74,14 @@ getField_DGVMData <- function(source,
   
   
   # Open file and get global attributes
-  message(paste0("Opening file ", file.name.nc))     
+  if(verbose) message(paste0("Opening file ", file.name.nc))     
   if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
   else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
   global.attributes <- ncatt_get(this.nc, 0, attname=NA, verbose=FALSE)
   
   # Check out dimensions
   dims.present <- names(this.nc$dim)
-  message(paste("File has dimensions", paste(dims.present, collapse = ","), sep = " "))
+  if(verbose) message(paste("File has dimensions", paste(dims.present, collapse = ","), sep = " "))
   
   
   all.lats <- numeric(0)

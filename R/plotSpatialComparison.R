@@ -107,7 +107,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                        quant = object@quant1,
                        source = object@source1,
                        commonSTAInfo(list(object@sta.info1, object@sta.info2)))
-     
+      
       new.field@source@name <- paste0("\u0394(", object@source1@name, " - ", object@source2@name, ")")
       new.field@source@id <- paste(object@source1@id, object@source2@id, sep ="-")
       
@@ -121,7 +121,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
       else{
         final.layers.to.plot <- append(final.layers.to.plot, layer.to.plot)
       }
-     
+      
       objects.to.plot[[length(objects.to.plot)+1]] <- new.field
       
       # get max value for making the scale symmetric
@@ -140,12 +140,12 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     # set a symmetric scale (so zero always white/centre colour)
     if(symmetric.scale) limits <- c(-max.for.scale, max.for.scale)
     
-  
+    
     the.plot <- plotSpatial(objects.to.plot,
-                       layers = final.layers.to.plot,
-                       cols = override.cols,
-                       limits = limits,
-                       ...)
+                            layers = final.layers.to.plot,
+                            cols = override.cols,
+                            limits = limits,
+                            ...)
     
     
     
@@ -159,12 +159,14 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     
     # convert the Comparisons into a Fields  for plotting 
     objects.to.plot <- list()
-    
+    layers.to.plot <- c()
     for(object in sources){ 
       
       # SECOND INFO - putting this first because this is the 'base' dataset ("one minus two" convention)
       new.dt <- object@data[, append(getDimInfo(object), names(object)[2]), with=FALSE]
-      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant2@id )
+      #setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant2@id )
+      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@layers2)
+      layers.to.plot <- append(layers.to.plot, object@layers2)
       objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
                                                           id = object@id,
                                                           data = new.dt,
@@ -174,7 +176,9 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
       
       # FIRST INFO
       new.dt <- object@data[, append(getDimInfo(object), names(object)[1]), with=FALSE]
-      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant1@id )
+      #setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant1@id )
+      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@layers1 )
+      layers.to.plot <- append(layers.to.plot, object@layers1)
       objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
                                                           id = object@id,
                                                           data = new.dt,
@@ -183,21 +187,13 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                           object@sta.info1)
       
     }
-    
-    
-    # set the colours
-    #if(missing(override.cols)) override.cols <-  rev(RColorBrewer::brewer.pal(11, "RdBu"))
-    
-    # make an appropriate title if not provided
-    #if(missing(title)) title <- paste()
-    #layers <- 
-      
-      return(plotSpatial(objects.to.plot,
-                         layers =  unique(c(object@quant2@id, object@quant1@id)),
-                         cols = override.cols,
-                         limits = limits,
-                         title = title,
-                         ...))
+ 
+   
+    return(plotSpatial(objects.to.plot,
+                       layers =  unique(layers.to.plot),
+                       cols = override.cols,
+                       limits = limits,
+                       ...))
     
     
     

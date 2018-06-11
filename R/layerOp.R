@@ -64,6 +64,7 @@ layerOp <- function(x, operator, layers, new.layer){
     if(length(operator) > 1 ) stop(paste0("When assigning values to layers using layerOp() you need to provide a single value or NULL, you provided ", length(operator)))
     x@data <- x@data[, (layers) := operator]
     if(!missing(new.layer)) x@data <- x@data[, (new.layer) := operator]
+    return(x)
   }
   
   # else if character

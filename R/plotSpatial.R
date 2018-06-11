@@ -115,7 +115,6 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     stop(paste("plotSpatial can only handle single a DataObject or Field, or a list of Data/Fields can't plot an object of type", class(sources)[1], sep = " "))
   }
   
-  
   ### 2. LAYERS - check the number of layers
   
   layers.superset <- c()
@@ -184,7 +183,6 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   
   ###  Build lists of what to plot
-  
   # this functions either issues a warning if a year/season/month/day is requested to be plotted but is not present
   # or, if they have not explicitly been requested, it makes a list of possible years/seasons/months/days
   checkValues <- function(sources, input.values = NULL,  string) {
@@ -222,7 +220,6 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   ### PREPARE DATA FOR PLOTTING
   # Here we extract the data.table from the object to be plotted and melt it as appropriate
-  
   data.toplot.list <- list()
   
   # Loop through the objects and pull layers from each one into a large data.table for plotting
@@ -285,23 +282,19 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     } # end if something.present
     
   }
-  
-  
+ 
   # finally mash them all togther to make the final data.table to plot
   data.toplot <- rbindlist(data.toplot.list)
-  
-  
+
   ### Rename "variable" to "Layer" which makes more conceptual sense
   setnames(data.toplot, "variable", "Layer")
   setnames(data.toplot, "value", "Value")
   
   
   
-  
   ### APPLY CUSTOM CUTS TO DISCRETISE IF NECESSARY
   
   if(continuous & !is.null(cuts)) {
-    
     
     # drop cut intervals at the beginning and the end to which don't have data in them to better use the colour scale.
     if(drop.cuts) {
@@ -331,19 +324,18 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     # set flags
     discrete <- TRUE
     continuous <- FALSE
-    
+
     # set colours, labels and breaks
     breaks <- levels(data.toplot[["Value"]])
     categorical.legend.labels <- breaks
     cols <- grDevices::colorRampPalette(cols)(length(cuts))
     names(cols) <- breaks
     drop.from.scale <- FALSE
-    
+
   }
   else{
     cuts <- waiver()
   }
-  
   
   
   ### CALCULATE THE RANGE OF LONGITUDE AND LATITUDE TO BE PLOTTED AND CROP
@@ -670,8 +662,10 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                                     breaks = cuts,
                                     na.value="grey75",
                                     guide = "legend")
+ 
+    bar.height.unit <- unit(0.7, units = "npc")
     
-    mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = 20))
+    mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = bar.height.unit))
     #}
     #else {
     
