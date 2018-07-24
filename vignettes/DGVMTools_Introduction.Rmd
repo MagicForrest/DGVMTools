@@ -74,7 +74,7 @@ This tutorial uses small LPJ-GUESS output files (exactly in the format as they c
 
 The first job in pretty much any analysis is to define the source (or sources) of the data to be analysed.  Here we use the defineSource() function to do exactly that, and it produces an object of type `Source`.   
 
-To define a `Source` we need three key bits of information.  The location of the data on disk (the `dir` argument), the structure of the data on disk (the `format` argument) and a unique identifier to label this source (the `id` argument, should be alphanumeric with no spaces).  The `name` argument is optional and can be used to provide a more human-friendly string to identify the run (if not provided the `id` argument is used) 
+To define a `Source` we need three key bits of information.  The location of the data on disk (the `dir` argument), the structure of the data on disk (the `format` argument) and a unique identifier to label this source (the `id` argument, should be alphanumeric with no spaces).  The `name` argument is optional and can be used to provide a more human-friendly string to identify the run (if not provided, the `id` argument is used for the `name`) 
 
 ```{r Define source, echo=TRUE}
 GUESS.run <- defineSource(id = "LPJ-GUESS",
@@ -82,7 +82,7 @@ GUESS.run <- defineSource(id = "LPJ-GUESS",
                           dir = "/home/forrest/GuessRuns/trunk-v4.0/Standard",
                           format = GUESS)
 ```
-Experience R users may have noticed that here we are using a specific funtion to make out `Source` object as opposed to `new()` function.  Whilst it is possible to construct a `Source` using `new()` it is __strongly recommended not to do so__ because use `defineSource()` is safer because it ensures the integrity and internal consistency of the `Source`.  It is also _very_ much more convenient.
+Experienced R users may have noticed that here we are using a specific function to make out `Source` object as opposed to `new()` function.  Whilst it is possible to construct a `Source` using `new()` it is __strongly recommended not to do so__ because using `defineSource()` is safer because it ensures the integrity and internal consistency of the `Source`.  It is also _very_ much more convenient.
 
 ``` {r Source info, echo=TRUE}
 print(class(GUESS.run))

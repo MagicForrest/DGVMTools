@@ -4,7 +4,8 @@
 \alias{openLPJOutputFile}
 \title{Open an LPJ-GUESS .out file}
 \usage{
-openLPJOutputFile(run, variable, first.year, last.year, verbose = FALSE)
+openLPJOutputFile(run, variable, first.year, last.year, verbose = FALSE,
+  data.table.only = FALSE)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}

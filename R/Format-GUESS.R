@@ -19,12 +19,13 @@
 getField_GUESS <- function(source,
                            quant,
                            target.STAInfo,
-                           verbose) {
+                           verbose,
+                           ...) {
   
   
   # First check if quantity is for FireMIP, if so call a special function with the extra processing required
   if("FireMIP" %in% quant@format) {
-    data.list <- openLPJOutputFile_FireMIP(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+    data.list <- openLPJOutputFile_FireMIP(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose, ...)
   }
   else if("GUESS" %in% quant@format | "LPJ-GUESS-SPITFIRE" %in% quant@format) {
     data.list <- openLPJOutputFile(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
@@ -60,7 +61,8 @@ openLPJOutputFile <- function(run,
                               variable,
                               first.year,
                               last.year,
-                              verbose = FALSE){
+                              verbose = FALSE,
+                              data.table.only = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = NULL
@@ -170,7 +172,8 @@ openLPJOutputFile <- function(run,
                  subannual.original = subannual,
                  spatial.extent = extent(dt))
   
-  return(list(dt = dt,
+  if(data.table.only) return(dt)
+  else return(list(dt = dt,
               sta.info = sta.info))
   
 }
@@ -197,7 +200,8 @@ openLPJOutputFile_FireMIP <- function(run,
                                       variable,
                                       first.year,
                                       last.year,
-                                      verbose = FALSE){
+                                      verbose = FALSE,
+                                      soil_water_capacities = "none"){
   
   Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = NULL
   target.cols = SoilfC = SoilsC = NULL
@@ -356,9 +360,10 @@ openLPJOutputFile_FireMIP <- function(run,
   # Now calculate these bad boys
   if(monthly.to.second || monthly.to.percent || monthly){
     
-    dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose)
+    dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose, data.table.only = TRUE)
     setnames(dt, guess.var, variable)
     if(monthly.to.second){
+      #suppressWarnings(dt[, Seconds := seconds.in.month[Month]])
       dt[, Seconds := seconds.in.month[Month]]
       dt[, (variable) := get(variable)/Seconds]
       dt[, Seconds := NULL]
@@ -372,38 +377,66 @@ openLPJOutputFile_FireMIP <- function(run,
     if(CO.to.C){
       dt[, (variable) := get(variable) * 12 / 28]
     }
-    return(dt)
+    #return(dt)
     
   }
   
   ### Special monthly variables
   if(variable == "meanFire") {
     guess.var <- "real_fire_size"
-    dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose)
+    dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose, data.table.only = TRUE)
     setnames(dt, guess.var, variable)
     dt[, (variable) := get(variable) * 10000]
-    return(dt)
+    #return(dt)
   }
   
   if(variable == "mrso") {
-    dt_upper <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose)
+    
+    print(soil_water_capacities)
+    
+    # standard stuf for LPJ-GUESS
+    wcap <- c(0.110, 0.150, 0.120, 0.130, 0.115, 0.135, 0.127, 0.300, 0.100)
+    thickness_upper_layer_mm <- 500
+    thickness_lower_layer_mm <- 1000
+    
+    dt_cap <- fread(soil_water_capacities)
+    
+    print(dt_cap)
+    setnames(dt_cap, c("Lon", "Lat", "Code"))
+    dt_cap <- subset(dt_cap, Code>0)
+    setkey(dt_cap, Lon, Lat)
+    dt_cap[, Capacity := wcap[Code]]
+    dt_cap[, Code := NULL]
+    print(dt_cap)
+    
+    
+    dt_upper <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_upper)
-    dt_lower <- openLPJOutputFile(run, "mwcont_lower", first.year, last.year,  verbose)
+    print(dt_upper)
+    
+    dt_lower <- openLPJOutputFile(run, "mwcont_lower", first.year, last.year,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_lower)
     dt <- dt_upper[dt_lower]
-    dt[, (variable) := mwcont_lower + mwcont_upper]
+    print(dt_lower)
+    dt <- dt[dt_cap]
+    dt <- na.omit(dt)
+    dt[, mrso := (mwcont_lower * thickness_lower_layer_mm * Capacity) + (mwcont_upper * thickness_upper_layer_mm * Capacity)]
+    print(dt)
     dt[, mwcont_lower := NULL]
     dt[, mwcont_upper := NULL]
+    dt[, Capacity := NULL]
+    
+    print(dt)
     rm(dt_upper,dt_lower)
     gc()
-    return(dt)
+    #return(dt)
   }
   
   if(variable == "evapotrans") {
     
     # firstly combine transpiration and evaporation
-    dt_trans <- openLPJOutputFile(run, "maet", first.year, last.year,  verbose)
-    dt_evap <- openLPJOutputFile(run, "mevap", first.year, last.year,  verbose)
+    dt_trans <- openLPJOutputFile(run, "maet", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt_evap <- openLPJOutputFile(run, "mevap", first.year, last.year,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_trans)
     setKeyDGVM(dt_evap)
     dt_trans <- dt_evap[dt_trans]
@@ -411,7 +444,7 @@ openLPJOutputFile_FireMIP <- function(run,
     gc()
     
     # now add interception
-    dt_intercep <- openLPJOutputFile(run, "mintercep", first.year, last.year,  verbose)
+    dt_intercep <- openLPJOutputFile(run, "mintercep", first.year, last.year,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_intercep)
     dt_trans <- dt_trans[dt_intercep]
     rm(dt_intercep)
@@ -425,53 +458,72 @@ openLPJOutputFile_FireMIP <- function(run,
     dt_trans[, Seconds := seconds.in.month[Month]]
     dt_trans[, (variable) := get(variable)/Seconds]
     dt_trans[, Seconds := NULL]
-    return(dt_trans)
+    dt <- dt_trans
   }
   
   ### ANNUAL C POOLS FROM cpool.out FILE
   
   if(variable == "cVeg") {
-    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
+    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose, data.table.only = TRUE)
     target.cols <- append(getDimInfo(dt), "VegC")
     dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "VegC", "cVeg")
-    return(dt)
+    #return(dt)
   }
   if(variable == "cLitter") {
-    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
+    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose, data.table.only = TRUE)
     target.cols <- append(getDimInfo(dt), "LittC")
     dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "LittC", "cLitter")
-    return(dt)
+    #return(dt)
   }
   if(variable == "cSoil") {
-    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose)
+    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose, data.table.only = TRUE)
     target.cols <- append(unlist(getDimInfo(dt)), c("SoilfC", "SoilsC"))
     dt <- dt[,target.cols,with=FALSE]
     dt[, "cSoil" := SoilfC + SoilsC]
     dt[, SoilfC := NULL]
     dt[, SoilsC := NULL]
-    return(dt)
+    #return(dt)
   }
   
   ### LAND USE FLUX AND STORE FROM luflux.out FILE
   
   if(variable == "cProduct") {
-    dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose)
+    dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose, data.table.only = TRUE)
     target.cols <- append(getDimInfo(dt), "Products_Pool")
     dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Products_Pool", "cProduct")
-    return(dt)
+    #return(dt)
   }
   
   if(variable == "fLuc") {
     
-    dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose)
+    dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose, data.table.only = TRUE)
     target.cols <- append(getDimInfo(dt), "Deforest_Flux")
     dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Deforest_Flux", "fLuc")
-    return(dt)
+    #return(dt)
   }
+  
+  # Build as STAInfo object describing the data
+  all.years <- sort(unique(dt[["Year"]]))
+  dimensions <- getDimInfo(dt)
+  subannual <- "Year"
+  if("Month" %in% dimensions) subannual <- "Month"
+  else if("Day" %in% dimensions) subannual <- "Day"
+  
+  
+  sta.info = new("STAInfo",
+                 first.year = min(all.years),
+                 last.year = max(all.years),
+                 subannual.resolution = subannual,
+                 subannual.original = subannual,
+                 spatial.extent = extent(dt))
+  
+  return(list(dt = dt,
+              sta.info = sta.info))
+  
   
 }
 
