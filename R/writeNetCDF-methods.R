@@ -340,7 +340,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # ADD GENERAL ATTRIBUTES
   ncatt_put(outfile, 0, "Conventions", "CF-1.6")
   if(!is.null(source)) {
-    ncatt_put(outfile, 0, "Source_Format", source@format)
+    ncatt_put(outfile, 0, "Source_Format", source@format@id)
     ncatt_put(outfile, 0, "Name", source@name)
     ncatt_put(outfile, 0, "Forcing_data", source@forcing.data)
     if (source@contact != "")
