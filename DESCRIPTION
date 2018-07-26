@@ -31,9 +31,6 @@ Imports:
     viridis,
     rgeos
 Suggests:
-    zoo,
-    mgcv,
-    udunits2,
     knitr,
     rmarkdown
 License: GPL | file LICENSE

@@ -108,7 +108,7 @@ getBiomes <- function(source,
   
   ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
   target.field.id <- makeFieldID(source = source, 
-                                 scheme.string = scheme.string, 
+                                 var.string = scheme.string, 
                                  sta.info = sta.info)
   
   file.name <- file.path(source@dir, paste(target.field.id, "DGVMField", sep = "."))

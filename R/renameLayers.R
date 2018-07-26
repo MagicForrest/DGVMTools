@@ -27,7 +27,7 @@ renameLayers <- function(x, old, new) {
   
 }
 
-# first define (redfine) the generic
+# first define (redefine) the generic
 if (!isGeneric("setnames")) {
   setGeneric("setnames", function(x, old, new) standardGeneric("setnames"))
 }

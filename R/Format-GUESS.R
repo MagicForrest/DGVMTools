@@ -377,8 +377,7 @@ openLPJOutputFile_FireMIP <- function(run,
     if(CO.to.C){
       dt[, (variable) := get(variable) * 12 / 28]
     }
-    #return(dt)
-    
+
   }
   
   ### Special monthly variables
@@ -387,13 +386,11 @@ openLPJOutputFile_FireMIP <- function(run,
     dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose, data.table.only = TRUE)
     setnames(dt, guess.var, variable)
     dt[, (variable) := get(variable) * 10000]
-    #return(dt)
   }
   
   if(variable == "mrso") {
     
-    print(soil_water_capacities)
-    
+
     # standard stuf for LPJ-GUESS
     wcap <- c(0.110, 0.150, 0.120, 0.130, 0.115, 0.135, 0.127, 0.300, 0.100)
     thickness_upper_layer_mm <- 500
@@ -401,15 +398,14 @@ openLPJOutputFile_FireMIP <- function(run,
     
     dt_cap <- fread(soil_water_capacities)
     
-    print(dt_cap)
     setnames(dt_cap, c("Lon", "Lat", "Code"))
+    dt_cap[, Lat := Lat + 0.25]
+    dt_cap[, Lon := Lon + 0.25]
     dt_cap <- subset(dt_cap, Code>0)
     setkey(dt_cap, Lon, Lat)
     dt_cap[, Capacity := wcap[Code]]
     dt_cap[, Code := NULL]
-    print(dt_cap)
-    
-    
+
     dt_upper <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_upper)
     print(dt_upper)
@@ -421,16 +417,14 @@ openLPJOutputFile_FireMIP <- function(run,
     dt <- dt[dt_cap]
     dt <- na.omit(dt)
     dt[, mrso := (mwcont_lower * thickness_lower_layer_mm * Capacity) + (mwcont_upper * thickness_upper_layer_mm * Capacity)]
-    print(dt)
     dt[, mwcont_lower := NULL]
     dt[, mwcont_upper := NULL]
     dt[, Capacity := NULL]
     
-    print(dt)
     rm(dt_upper,dt_lower)
     gc()
-    #return(dt)
-  }
+
+    }
   
   if(variable == "evapotrans") {
     
@@ -468,14 +462,12 @@ openLPJOutputFile_FireMIP <- function(run,
     target.cols <- append(getDimInfo(dt), "VegC")
     dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "VegC", "cVeg")
-    #return(dt)
   }
   if(variable == "cLitter") {
     dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose, data.table.only = TRUE)
     target.cols <- append(getDimInfo(dt), "LittC")
     dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "LittC", "cLitter")
-    #return(dt)
   }
   if(variable == "cSoil") {
     dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose, data.table.only = TRUE)
@@ -484,7 +476,6 @@ openLPJOutputFile_FireMIP <- function(run,
     dt[, "cSoil" := SoilfC + SoilsC]
     dt[, SoilfC := NULL]
     dt[, SoilsC := NULL]
-    #return(dt)
   }
   
   ### LAND USE FLUX AND STORE FROM luflux.out FILE
@@ -494,7 +485,6 @@ openLPJOutputFile_FireMIP <- function(run,
     target.cols <- append(getDimInfo(dt), "Products_Pool")
     dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Products_Pool", "cProduct")
-    #return(dt)
   }
   
   if(variable == "fLuc") {
@@ -503,7 +493,6 @@ openLPJOutputFile_FireMIP <- function(run,
     target.cols <- append(getDimInfo(dt), "Deforest_Flux")
     dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Deforest_Flux", "fLuc")
-    #return(dt)
   }
   
   # Build as STAInfo object describing the data

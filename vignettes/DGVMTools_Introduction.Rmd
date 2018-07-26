@@ -21,7 +21,6 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
 ```
 
 ## Introduction
