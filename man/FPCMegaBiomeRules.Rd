@@ -4,7 +4,7 @@
 \alias{FPCMegaBiomeRules}
 \title{Rules for biome scheme based on FPC}
 \usage{
-FPCMegaBiomeRules(fpc)
+FPCMegaBiomeRules(x)
 }
 \arguments{
 \item{fpc}{Vector of FPC values}

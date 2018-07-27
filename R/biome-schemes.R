@@ -15,71 +15,71 @@
 #' 
 #' Based on LAI only, see paper for details.
 #' 
-#' @param lai Numerical vector of LAI values for a particular location. 
+#' @param x Numerical vector of LAI values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
 #' 
 #' @return Biomes code (1-17, ordering as in Smith et al 2014 Figure)
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-Smith2014BiomeRules <- function(lai){
+Smith2014BiomeRules <- function(x){
   
   # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['MaxTree']] == "TrBE") {return("Tropical Rain Forest")}
+  if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & as.numeric(x[['LAI_std_TrBEFractionOfTree']]) > 0.6 &  x[['LAI_std_MaxTree']] == "TrBE") {return("Tropical Rain Forest")}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return("Tropical Deciduous Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & (as.numeric(x[['LAI_std_TrBRFractionOfTree']]) > 0.6) & (x[['LAI_std_MaxTree']] == "TrBR" | x[['LAI_std_MaxTree']] == "TrTBR")) {return("Tropical Deciduous Forest")}
   
   # BIOME 3 - Tropical Seasonal Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['MaxTree']] == "TrBE" | lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return("Tropical Seasonal Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & as.numeric(x[['LAI_std_TropicalFractionOfTree']] )> 0.5 &  (x[['LAI_std_MaxTree']] == "TrBE" | x[['LAI_std_MaxTree']] == "TrBR" | x[['LAI_std_MaxTree']] == "TrTBR")) {return("Tropical Seasonal Forest")}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return("Boreal Evergreen Forest/Woodland")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & (x[['LAI_std_MaxTree']] == "BNE" | x[['LAI_std_MaxTree']] == "IBS" | x[['LAI_std_MaxTree']] == "BIBS")) {return("Boreal Evergreen Forest/Woodland")}
   
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['MaxTree']] == "BNS") {return("Boreal Deciduous Forest/Woodland")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 &  as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & x[['LAI_std_MaxTree']] == "BNS") {return("Boreal Deciduous Forest/Woodland")}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return("Temperate Broadleaved Evergreen Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & (as.numeric(x[['LAI_std_TeBEFractionOfTree']]) > 0.5 | as.numeric(x[['LAI_std_TeBSFractionOfTree']]) > 0.5) & x[['LAI_std_MaxTree']] == "TeBE") {return("Temperate Broadleaved Evergreen Forest")}
   
   # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBS") {return("Temperate Deciduous Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & (as.numeric(x[['LAI_std_TeBEFractionOfTree']]) > 0.5 | as.numeric(x[['LAI_std_TeBSFractionOfTree']]) > 0.5) & x[['LAI_std_MaxTree']] == "TeBS") {return("Temperate Deciduous Forest")}
   
   # BIOME 8 - Temperate/Boreal Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['BorealFractionOfTree']]) < 0.8 & as.numeric(lai[['BorealFractionOfTree']]) > 0.2 & as.numeric(lai[['TemperateFractionOfTree']]) < 0.8 & as.numeric(lai[['TemperateFractionOfTree']]) > 0.2) {return("Temperate/Boreal Mixed Forest") }
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) < 0.8 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.2 & as.numeric(x[['LAI_std_TemperateFractionOfTree']]) < 0.8 & as.numeric(x[['LAI_std_TemperateFractionOfTree']]) > 0.2) {return("Temperate/Boreal Mixed Forest") }
   
   # BIOME 9 - Temperate Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return("Temperate Mixed Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5) {return("Temperate Mixed Forest")}
   
   # BIOME 10 - Xeric Woodland/Shrubland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return("Xeric Woodland/Shrubland")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_GrassFraction']]) < 0.2) {return("Xeric Woodland/Shrubland")}
   
   # BIOME 11 - Moist Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return("Moist Savanna")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_Total']]) > 2.5) {return("Moist Savanna")}
   
   # BIOME 12 - Dry Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return("Dry Savanna")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_Total']]) <= 2.5) {return("Dry Savanna")}
   
   # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & as.numeric(lai[['Lat']]) >= 54) {return("Arctic/Alpine Tundra")}
+  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.5 & as.numeric(x[['Lat']]) >= 54) {return("Arctic/Alpine Tundra")}
   
   # BIOME 14 - Tall Grassland
-  else if(as.numeric(lai[['Grass']]) > 2.0) {return("Tall Grassland")}
+  else if(as.numeric(x[['LAI_std_Grass']]) > 2.0) {return("Tall Grassland")}
   
   # BIOME 16 (1) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Tree']]) > 0.2 & as.numeric(lai[['Grass']]) < 1.0) {return("Arid Shrubland/Steppe")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.2 & as.numeric(x[['LAI_std_Grass']]) < 1.0) {return("Arid Shrubland/Steppe")}
   
   # BIOME 15 - Dry Grassland
-  else if(as.numeric(lai[['Grass']]) > 0.2) {return("Dry Grassland")}
+  else if(as.numeric(x[['LAI_std_Grass']]) > 0.2) {return("Dry Grassland")}
   
   # BIOME 16 (2) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Total']]) > 0.2) {return("Arid Shrubland/Steppe")}
+  else if(as.numeric(x[['LAI_std_Total']]) > 0.2) {return("Arid Shrubland/Steppe")}
   
   # BIOME 17 - Desert
-  else if(as.numeric(lai[['Total']]) <= 0.2) {return("Desert")}
+  else if(as.numeric(x[['LAI_std_Total']]) <= 0.2) {return("Desert")}
   
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
+    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
     return(NA)
   }
   
@@ -130,21 +130,21 @@ Smith2014.scheme <- new("BiomeScheme",
                                       "Desert"),
                             format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                         rules = Smith2014BiomeRules,
-                        layers.needed = list(Tree = list(operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                             Grass = list(operator = "+", layers = ".Grass", new.layer = "Grass"),
-                                             Boreal = list(operator = "+", layers = ".Boreal", new.layer = "Boreal"),
-                                             Temperate = list(operator = "+", layers = ".Temperate", new.layer = "Temperate"),
-                                             Tropical = list(operator = "+", layers = ".Tropical", new.layer = "Tropical"),
-                                             Total = list(operator = "+", layers = ".PFTs", new.layer = "Total"),
-                                             MaxTree = list(operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
-                                             GrassFraction = list(operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
-                                             BorealFractionOfTree = list(operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
-                                             TemperateFractionOfTree = list(operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
-                                             TropicalFractionOfTree = list(operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
-                                             TrBEFractionOfTree = list(operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
-                                             TrBRFractionOfTree = list(operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
-                                             TeBEFractionOfTree = list(operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
-                                             TeBSFractionOfTree = list(operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")),
+                        layers.needed = list(Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                             Grass = list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                             Boreal = list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
+                                             Temperate = list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
+                                             Tropical = list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
+                                             Total = list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
+                                             MaxTree = list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
+                                             GrassFraction = list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
+                                             BorealFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
+                                             TemperateFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
+                                             TropicalFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
+                                             TrBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
+                                             TrBRFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
+                                             TeBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
+                                             TeBSFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")),
                         needGDD5 = FALSE,
                         data.reference = "Haxeltime and Prentice 1996",
                         published.reference = "Smith et al. 2014")
@@ -163,35 +163,35 @@ Smith2014.scheme <- new("BiomeScheme",
 #' 
 #' Based on LAI, GDD5 and lon/lat only, see paper for details.
 #' 
-#' @param lai Numerical vector of LAI values for a particular location. 
+#' @param x Numerical vector of LAI values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
 #' 
 #' @return Biomes code (1-13, ordering as in Hickler et al 2012 figure)
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-Hickler2012Rules <- function(lai){
+Hickler2012Rules <- function(x){
   
-  Mediterranean.Total <- as.numeric(lai[['Mediterranean']]) + as.numeric(lai[['Supra-mediterranean']])  
+  Mediterranean.Total <- as.numeric(x[['LAI_std_Mediterranean']]) + as.numeric(x[['LAI_std_Supra-mediterranean']])  
   
   ###### DESERTS (if LAI < 0.2)
-  if(as.numeric(lai[['Total']] < 0.2)){
+  if(as.numeric(x[['LAI_std_Total']] < 0.2)){
     
     # BIOME 1 - Arctic/alpine desert
-    if(as.numeric(lai[['gdd5']]) < 1200 & (lai[['MaxPFT']] == "BES" | lai[['MaxPFT']] == "C3_gr" | lai[['MaxPFT']] == "Barren")) {return(1)}
+    if(as.numeric(x[['LAI_std_gdd5']]) < 1200 & (x[['LAI_std_MaxPFT']] == "BES" | x[['LAI_std_MaxPFT']] == "C3_gr" | x[['LAI_std_MaxPFT']] == "Barren")) {return(1)}
     # BIOME 13 - Desert
-    else if (as.numeric(lai[['gdd5']]) > 1200) {return(13)}
+    else if (as.numeric(x[['LAI_std_gdd5']]) > 1200) {return(13)}
     
   } 
   
   
   ###### TEMPERATE BIOMES (temperate woody fraction > 80%)
-  if(as.numeric(lai[['TemperateFractionOfWoody']]) > 0.8){
+  if(as.numeric(x[['LAI_std_TemperateFractionOfWoody']]) > 0.8){
     
     ###### FORESTS (if tree LAI > 2.0)
-    if(as.numeric(lai[['Tree']]) > 2.0){
+    if(as.numeric(x[['LAI_std_Tree']]) > 2.0){
       
       # BIOME 6 - Temperate beech and mixed beech forest
-      if(lai[['MaxTree']] == "Fag_syl") {return(6)}
+      if(x[['LAI_std_MaxTree']] == "Fag_syl") {return(6)}
       # BIOME 7 - Temperate mixed broad-leaved forest
       else {return(7)}
       
@@ -200,39 +200,39 @@ Hickler2012Rules <- function(lai){
   
   
   ###### BOREAL BIOMES (boreal woody fraction > 80%)
-  if(as.numeric(lai[['BorealFractionOfWoody']]) > 0.8){
+  if(as.numeric(x[['LAI_std_BorealFractionOfWoody']]) > 0.8){
     
     # BIOME 4 - Boreal/alpine conifer forest
-    if(as.numeric(lai[['Tree']]) > 2.0) {return(4)}
+    if(as.numeric(x[['LAI_std_Tree']]) > 2.0) {return(4)}
     # BIOME 3 -  Boreal/alpine mixed woodland
-    if(as.numeric(lai[['Tree']]) > 0.5) {return(3)}
+    if(as.numeric(x[['LAI_std_Tree']]) > 0.5) {return(3)}
     
   }
   
   
   ###### MEDITERRANEAN BIOMES (mediterranean woody fraction > 80%)
-  if(as.numeric(lai[['MediterraneanFractionOfWoody']]) > 0.8){
+  if(as.numeric(x[['LAI_std_MediterraneanFractionOfWoody']]) > 0.8){
     
     # BIOME 9 - Mediterranean sclerophyllous forest/woodland
-    if(as.numeric(lai[['Tree']]) > 1.5) {return(9)}
+    if(as.numeric(x[['LAI_std_Tree']]) > 1.5) {return(9)}
     # BIOME 10 -  Mediterranean sclerophyllous shrubland
-    if(Mediterranean.Total > 0.5 & Mediterranean.Total > (0.5 * as.numeric(lai[['Woody']])) & (Mediterranean.Total > as.numeric(lai[['Grass']]))) {return(10)}
+    if(Mediterranean.Total > 0.5 & Mediterranean.Total > (0.5 * as.numeric(x[['LAI_std_Woody']])) & (Mediterranean.Total > as.numeric(x[['LAI_std_Grass']]))) {return(10)}
     
   }
   
   
   ###### TRANSITIONAL FOREST BIOMES 
-  if(as.numeric(lai[['Tree']]) > 2.0) {
+  if(as.numeric(x[['LAI_std_Tree']]) > 2.0) {
     
     # HEMIBOREAL CLASSIFICATION APPLIED WHERE LAT > 52, LON > 3 
     
     # BIOME 5 - Hemiboreal mixed forest - only defined for Lat > 52, Lon > 3 as in Hickler 2012
-    if(as.numeric(lai[['Boreal']]) > Mediterranean.Total & as.numeric(lai[["Lat"]]) > 52 & as.numeric(lai[["Lon"]]) > 3) {return(5)}
+    if(as.numeric(x[['LAI_std_Boreal']]) > Mediterranean.Total & as.numeric(x[["Lat"]]) > 52 & as.numeric(x[["Lon"]]) > 3) {return(5)}
     
     # ALTERNATE CLASSIFICATION OUTSIDE LAT > 52, LON > 3
     
     # If boreal fraction of woody > 0.5 classify as a boreal type
-    else if(as.numeric(lai[['Boreal']]) > Mediterranean.Total & as.numeric(lai[['Boreal']]) > as.numeric(lai[['Temperate']])) {
+    else if(as.numeric(x[['LAI_std_Boreal']]) > Mediterranean.Total & as.numeric(x[['LAI_std_Boreal']]) > as.numeric(x[['LAI_std_Temperate']])) {
       
       # BIOME 4-  Boreal/alpine conifer forest
       return(4)
@@ -240,10 +240,10 @@ Hickler2012Rules <- function(lai){
     }
     
     # If temperate fraction of woody >= 0.5 classify as a temperate type
-    else if(as.numeric(lai[['Boreal']]) > Mediterranean.Total & as.numeric(lai[['Boreal']]) <= as.numeric(lai[['Temperate']])){
+    else if(as.numeric(x[['LAI_std_Boreal']]) > Mediterranean.Total & as.numeric(x[['LAI_std_Boreal']]) <= as.numeric(x[['LAI_std_Temperate']])){
       
       # BIOME 6 - Temperate beech and mixed beech forest
-      if(lai[['MaxTree']] == "Fag_syl") {return(6)}
+      if(x[['LAI_std_MaxTree']] == "Fag_syl") {return(6)}
       # BIOME 7 - Temperate mixed broad-leaved forest
       else {return(7)}
       
@@ -251,7 +251,7 @@ Hickler2012Rules <- function(lai){
     
     
     # BIOME 8 - Themophillous mixed broad-leaved forest
-    else if(as.numeric(lai[['Boreal']]) < Mediterranean.Total) {return(8)}  
+    else if(as.numeric(x[['LAI_std_Boreal']]) < Mediterranean.Total) {return(8)}  
     
   }
   
@@ -259,20 +259,20 @@ Hickler2012Rules <- function(lai){
   ###### MISCELLENEOUS  
   
   # BIOME 11  - Steppe Woodland
-  if(as.numeric(lai[['Woody']]) > 0.5 & as.numeric(lai[['Grass']]) > 0.5 & as.numeric(lai[['gdd5']]) > 1200) {return(11)}
+  if(as.numeric(x[['LAI_std_Woody']]) > 0.5 & as.numeric(x[['LAI_std_Grass']]) > 0.5 & as.numeric(x[['LAI_std_gdd5']]) > 1200) {return(11)}
   
   # BIOME 2 - Arctic/Alpine Tundra
-  if(as.numeric(lai[['Tree']]) <= 0.5 & as.numeric(lai[['gdd5']]) < 1200 & (lai[['MaxPFT']] == "BES" | lai[['MaxPFT']] == "C3_gr")) {return(2)}
+  if(as.numeric(x[['LAI_std_Tree']]) <= 0.5 & as.numeric(x[['LAI_std_gdd5']]) < 1200 & (x[['LAI_std_MaxPFT']] == "BES" | x[['LAI_std_MaxPFT']] == "C3_gr")) {return(2)}
   
   # BIOME 12 - Steppe
-  if(as.numeric(lai[['Total']]) > 0.2 & as.numeric(lai[['gdd5']]) > 1200) {return(12)}
+  if(as.numeric(x[['LAI_std_Total']]) > 0.2 & as.numeric(x[['LAI_std_gdd5']]) > 1200) {return(12)}
   
   
   
   ###### REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
-    print(lai)
+    print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['LAI_std_Lat']]), ")" ))
+    print(x)
     return(as.numeric(NA))
   }
   
@@ -316,17 +316,17 @@ Hickler2012.scheme <- new("BiomeScheme",
                                         "Desert"),
                               format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = Hickler2012Rules,
-                          layers.needed = list(Tree = list(operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                               Grass = list(operator = "+", layers =".Grass", new.layer = "Grass"),
-                                               Woody = list(operator = "+", layers = c(".Tree", ".Grass"), new.layer = "Woody"),
-                                               Mediterranean = list(operator = "+", layers =c(".Mediterranean"), "new.layer = Mediterranean"),
-                                               SupraMediterranean = list(operator = "+", layers =c(".Supra-mediterranean"), new.layer = "Supra-mediterranean"),
-                                               MaxTree = list(operator = "max.layer", layers =".Tree", new.layer = "MaxTree"),
-                                               MaxPFT = list(operator = "max.layer","layers =.PFTs", new.layer = "MaxPFT"),
-                                               GrassFraction = list(operator = "/", layers =c("Grass", "Total"), new.layer = "GrassFraction"),
-                                               BorealFractionOfTree = list(operator = "/", layers = c("Boreal", "Woody"), new.layer = "BorealFractionOfTree"),
-                                               TemperateFractionOfTree = list(operator = "/", layers =c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
-                                               MediterraneanFractionOfTree = list(operator = "/", layers = c("Mediterranean", "Tree"), new.layer = "MediterraneanFractionOfTree")),
+                          layers.needed = list(Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                               Grass = list(quantity = "LAI_std", operator = "+", layers =".Grass", new.layer = "Grass"),
+                                               Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Grass"), new.layer = "Woody"),
+                                               Mediterranean = list(quantity = "LAI_std", operator = "+", layers =c(".Mediterranean"), "new.layer = Mediterranean"),
+                                               SupraMediterranean = list(quantity = "LAI_std", operator = "+", layers =c(".Supra-mediterranean"), new.layer = "Supra-mediterranean"),
+                                               MaxTree = list(quantity = "LAI_std", operator = "max.layer", layers =".Tree", new.layer = "MaxTree"),
+                                               MaxPFT = list(quantity = "LAI_std", operator = "max.layer","layers =.PFTs", new.layer = "MaxPFT"),
+                                               GrassFraction = list(quantity = "LAI_std", operator = "/", layers =c("Grass", "Total"), new.layer = "GrassFraction"),
+                                               BorealFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Woody"), new.layer = "BorealFractionOfTree"),
+                                               TemperateFractionOfTree = list(quantity = "LAI_std", operator = "/", layers =c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
+                                               MediterraneanFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Mediterranean", "Tree"), new.layer = "MediterraneanFractionOfTree")),
                           needGDD5 = TRUE,
                           data.reference = "- (Bohn)",
                           published.reference = "Hickler et al. 2012")
@@ -342,72 +342,72 @@ Hickler2012.scheme <- new("BiomeScheme",
 #' # This is described in Forrest et al. 2015 Climates of the Past.  Basically it calculates the Smith et al. 2014 biomes, 
 #' but assigns them to broader categories as per Harrison and Prentice 2006
 #' 
-#' @param lai Numerical vector of LAI values for a particular location. 
+#' @param x Numerical vector of LAI values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
 #' 
 #' @return Biomes code (1-8, ordering as in the Forrest et al. 2015 figure)
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-Forrest2015MegaBiomeRules <- function(lai){
+Forrest2015MegaBiomeRules <- function(x){
   
   # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TrBEFractionOfTree']]) > 0.6 &  lai[['MaxTree']] == "TrBE") {return("Tropical Forest")}
+  if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & as.numeric(x[['LAI_std_TrBEFractionOfTree']]) > 0.6 &  x[['LAI_std_MaxTree']] == "TrBE") {return("Tropical Forest")}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (as.numeric(lai[['TrBRFractionOfTree']]) > 0.6 | as.numeric(lai[['TrBRFractionOfTree']])) & (lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return("Savanna and Dry Woodlands")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & (as.numeric(x[['LAI_std_TrBRFractionOfTree']]) > 0.6 | as.numeric(x[['LAI_std_TrBRFractionOfTree']])) & (x[['LAI_std_MaxTree']] == "TrBR" | x[['LAI_std_MaxTree']] == "TrTBR")) {return("Savanna and Dry Woodlands")}
   
   # BIOME 3 - Tropical Seasonal Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & as.numeric(lai[['TropicalFractionOfTree']] )> 0.5 &  (lai[['MaxTree']] == "TrBE" | lai[['MaxTree']] == "TrBR" | lai[['MaxTree']] == "TrTBR")) {return("Tropical Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & as.numeric(x[['LAI_std_TropicalFractionOfTree']] )> 0.5 &  (x[['LAI_std_MaxTree']] == "TrBE" | x[['LAI_std_MaxTree']] == "TrBR" | x[['LAI_std_MaxTree']] == "TrTBR")) {return("Tropical Forest")}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return("Boreal Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & (x[['LAI_std_MaxTree']] == "BNE" | x[['LAI_std_MaxTree']] == "IBS" | x[['LAI_std_MaxTree']] == "BIBS")) {return("Boreal Forest")}
   
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['BorealFractionOfTree']]) > 0.5 & lai[['MaxTree']] == "BNS") {return("Boreal Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & x[['LAI_std_MaxTree']] == "BNS") {return("Boreal Forest")}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBE") {return("Temperate Evergreen Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 &  (as.numeric(x[['LAI_std_TeBEFractionOfTree']]) > 0.5 | as.numeric(x[['LAI_std_TeBSFractionOfTree']]) > 0.5) & x[['LAI_std_MaxTree']] == "TeBE") {return("Temperate Evergreen Forest")}
   
   # BIOME 7 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  (as.numeric(lai[['TeBEFractionOfTree']]) > 0.5 | as.numeric(lai[['TeBSFractionOfTree']]) > 0.5) & lai[['MaxTree']] == "TeBS") {return("Temperate Deciduous Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 &  (as.numeric(x[['LAI_std_TeBEFractionOfTree']]) > 0.5 | as.numeric(x[['LAI_std_TeBSFractionOfTree']]) > 0.5) & x[['LAI_std_MaxTree']] == "TeBS") {return("Temperate Deciduous Forest")}
   
   # BIOME 8 - Temperate/Boreal Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return("Temperate Deciduous Forest") }
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5) {return("Temperate Deciduous Forest") }
   
   # BIOME 9 - Temperate Mixed Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5) {return("Temperate Deciduous Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5) {return("Temperate Deciduous Forest")}
   
   # BIOME 10 - Xeric Woodland/Shrubland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return("Savanna and Dry Woodlands")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_GrassFraction']]) < 0.2) {return("Savanna and Dry Woodlands")}
   
   # BIOME 11 - Moist Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) > 2.5) {return("Savanna and Dry Woodlands")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_Total']]) > 2.5) {return("Savanna and Dry Woodlands")}
   
   # BIOME 12 - Dry Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Tree']]) < 2.5 & as.numeric(lai[['Total']]) <= 2.5) {return("Grasslands and Dry Shrublands")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_Total']]) <= 2.5) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(lai[['Tree']]) < 0.5 & as.numeric(lai[['Total']]) > 0.5 & as.numeric(lai[['Lat']]) >= 54) {return("Tundra")}
+  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.5 & as.numeric(x[['LAI_std_Lat']]) >= 54) {return("Tundra")}
   
   # BIOME 14 - Tall Grassland
-  else if(as.numeric(lai[['Grass']]) > 2.0) {return("Grasslands and Dry Shrublands")}
+  else if(as.numeric(x[['LAI_std_Grass']]) > 2.0) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 16 (1) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Tree']]) > 0.2 & as.numeric(lai[['Grass']]) < 1.0) {return("Grasslands and Dry Shrublands")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.2 & as.numeric(x[['LAI_std_Grass']]) < 1.0) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 15 - Dry Grassland
-  else if(as.numeric(lai[['Grass']]) > 0.2) {return("Grasslands and Dry Shrublands")}
+  else if(as.numeric(x[['LAI_std_Grass']]) > 0.2) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 16 (2) - Arid Shrubland/Steppe
-  else if(as.numeric(lai[['Total']]) > 0.2) {return("Grasslands and Dry Shrublands")}
+  else if(as.numeric(x[['LAI_std_Total']]) > 0.2) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 17 - Desert
-  else if(as.numeric(lai[['Total']]) < 0.2) {return("Desert")}
+  else if(as.numeric(x[['LAI_std_Total']]) < 0.2) {return("Desert")}
   
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
+    print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['LAI_std_Lat']]), ")" ))
     return(NA)
   }
   
@@ -441,20 +441,20 @@ Forrest2015.scheme <- new("BiomeScheme",
                                          "Desert"),
                               format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = Forrest2015MegaBiomeRules,
-                          layers.needed = list(Tree = list(operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                               Grass = list(operator = "+", layers = ".Grass", new.layer = "Grass"),
-                                               Boreal = list(operator = "+", layers = ".Boreal", new.layer = "Boreal"),
-                                               Temperate = list(operator = "+", layers = ".Temperate", new.layer = "Temperate"),
-                                               Tropical = list(operator = "+", layers = ".Tropical", new.layer = "Tropical"),
-                                               MaxTree = list(operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
-                                               GrassFraction = list(operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
-                                               BorealFractionOfTree = list(operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
-                                               TemperateFractionOfTree = list(operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
-                                               TropicalFractionOfTree = list(operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
-                                               TrBEFractionOfTree = list(operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
-                                               TrBRFractionOfTree = list(operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
-                                               TeBEFractionOfTree = list(operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
-                                               TeBSFractionOfTree = list(operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")),
+                          layers.needed = list(Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                               Grass = list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                               Boreal = list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
+                                               Temperate = list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
+                                               Tropical = list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
+                                               MaxTree = list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
+                                               GrassFraction = list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
+                                               BorealFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
+                                               TemperateFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
+                                               TropicalFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
+                                               TrBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
+                                               TrBRFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
+                                               TeBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
+                                               TeBSFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")),
                           needGDD5 = FALSE,
                           data.reference = "Haxeltime and Prentice 1996",
                           published.reference = "Forrest et al 2015, Smith et al. 2014")
@@ -471,37 +471,37 @@ Forrest2015.scheme <- new("BiomeScheme",
 #' 
 #' No reference yet
 #' 
-#' @param lai Numerical vector of LAI values for a particular location. 
+#' @param x Numerical vector of LAI values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
 #' 
 #' @return Biomes code (1-8, ordering as in the Forrest et al. 2015 figure)
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-MeditBiomeRules <- function(lai){
+MeditBiomeRules <- function(x){
   
   # BIOME 1 - Grass Steppe  
-  #else if(as.numeric(lai[['Grass']]) > 1.0 & as.numeric(lai[['Woody']] < 1.0)) {return(7)}
-  if(as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']])) {return("Grass Steppe or Montane Grassland")}
+  #else if(as.numeric(x[['LAI_std_Grass']]) > 1.0 & as.numeric(x[['LAI_std_Woody']] < 1.0)) {return(7)}
+  if(as.numeric(x[['LAI_std_Grass']]) > as.numeric(x[['LAI_std_Woody']])) {return("Grass Steppe or Montane Grassland")}
   # BIOME 4 - Deciduous forest
-  #if(as.numeric(lai[['Woody']]) > 2.5 && as.numeric(lai[['SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
-  else if(as.numeric(lai[['Woody']]) > 2.0 && (lai[['MaxWoody']] == "TeBS")) {return("Deciduous Forest")}  # 2
+  #if(as.numeric(x[['LAI_std_Woody']]) > 2.5 && as.numeric(x[['LAI_std_SummergreenFractionOfTree']]) > 0.5) {return(4)}  # 2
+  else if(as.numeric(x[['LAI_std_Woody']]) > 2.0 && (x[['LAI_std_MaxWoody']] == "TeBS")) {return("Deciduous Forest")}  # 2
   # BIOME 5 - Cold Montane forest
-  else if(as.numeric(lai[['Woody']]) > 1.5 && (lai[['MaxWoody']] == "BIBS" || lai[['MaxWoody']] == "BNE")) {return("Cold Montane Forest")} # 1.5
+  else if(as.numeric(x[['LAI_std_Woody']]) > 1.5 && (x[['LAI_std_MaxWoody']] == "BIBS" || x[['LAI_std_MaxWoody']] == "BNE")) {return("Cold Montane Forest")} # 1.5
   # BIOME 2 - Needle-leaved evergreen forest
-  else if(as.numeric(lai[['Woody']]) > 1.0 && lai[['MaxWoody']] == "TeNE") {return("Needle-leaved Woodlands/Forest")} # 1.5
+  else if(as.numeric(x[['LAI_std_Woody']]) > 1.0 && x[['LAI_std_MaxWoody']] == "TeNE") {return("Needle-leaved Woodlands/Forest")} # 1.5
   # BIOME 6 - Pre-steppe deciduous woodlands
-  #else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeNE")) {return(6)}
-  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && lai[['MaxWoody']] == "TeBS") {return("Deciduous Steppe-Woodlands")}
+  #else if(as.numeric(x[['LAI_std_Woody']]) > 1.0  && as.numeric(x[['LAI_std_Grass']]) > as.numeric(x[['LAI_std_Woody']]) * 0.2 && (x[['LAI_std_MaxWoody']] == "TeBS" || x[['LAI_std_MaxWoody']] == "TeNE")) {return(6)}
+  else if(as.numeric(x[['LAI_std_Woody']]) > 1.0  && as.numeric(x[['LAI_std_Grass']]) > as.numeric(x[['LAI_std_Woody']]) * 0.2 && x[['LAI_std_MaxWoody']] == "TeBS") {return("Deciduous Steppe-Woodlands")}
   # BIOME 6 - Pre-steppe deciduous woodlands
-  #else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && (lai[['MaxWoody']] == "TeBS" || lai[['MaxWoody']] == "TeNE")) {return(6)}
-  else if(as.numeric(lai[['Woody']]) > 1.0  && as.numeric(lai[['Grass']]) > as.numeric(lai[['Woody']]) * 0.2 && lai[['MaxWoody']] == "TeBE") {return("Evergreen Steppe-Woodlands")}
+  #else if(as.numeric(x[['LAI_std_Woody']]) > 1.0  && as.numeric(x[['LAI_std_Grass']]) > as.numeric(x[['LAI_std_Woody']]) * 0.2 && (x[['LAI_std_MaxWoody']] == "TeBS" || x[['LAI_std_MaxWoody']] == "TeNE")) {return(6)}
+  else if(as.numeric(x[['LAI_std_Woody']]) > 1.0  && as.numeric(x[['LAI_std_Grass']]) > as.numeric(x[['LAI_std_Woody']]) * 0.2 && x[['LAI_std_MaxWoody']] == "TeBE") {return("Evergreen Steppe-Woodlands")}
   # BIOME 3 - Mediterranean woodland/scrub
-  else if(as.numeric(lai[['Woody']]) > 1 && (lai[['MaxWoody']] == "TeBE" || lai[['MaxWoody']] == "MeES" || lai[['MaxWoody']] == "MeRS")) {return("Mediterranean Sclerophyllous Woodlands/Forest")} # 1.5
+  else if(as.numeric(x[['LAI_std_Woody']]) > 1 && (x[['LAI_std_MaxWoody']] == "TeBE" || x[['LAI_std_MaxWoody']] == "MeES" || x[['LAI_std_MaxWoody']] == "MeRS")) {return("Mediterranean Sclerophyllous Woodlands/Forest")} # 1.5
   # BIOME 7 - Remainder, Unclassified
   else {
-    #print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
-    #print(lai)
+    #print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['LAI_std_Lat']]), ")" ))
+    #print(x)
     return("Unclassifiable/Other")
   }
   
@@ -543,10 +543,10 @@ MeditBiomes.scheme <- new("BiomeScheme",
                                         "Evergreen Steppe-Woodlands"),
                               format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = MeditBiomeRules,
-                          layers.needed = list(Tree = list(operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                               Grass = list(operator = "+", layers = ".Grass", new.layer = "Grass"),
-                                               Woody = list(operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
-                                               MaxWoody = list(operator = "max.layer", layers = c(".Tree", ".Shrub"), new.layer = "MaxWoody")),
+                          layers.needed = list(Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                               Grass = list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                               Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
+                                               MaxWoody = list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree", ".Shrub"), new.layer = "MaxWoody")),
                           needGDD5 = FALSE,
                           data.reference = "-",
                           published.reference = "-")
@@ -561,57 +561,57 @@ MeditBiomes.scheme <- new("BiomeScheme",
 #' Unpublished but possibly useful in principle.  Simpler classes that Smith et al 2014,
 #' but more complex that Forrest et al 2015.  
 #' 
-#' @param lai Numerical vector of LAI values for a particular location. 
+#' @param x Numerical vector of LAI values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
 #' 
 #' @keywords internal
 #' @return Biomes code (1-13)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-MegaBiomeRules_dev <- function(lai){
+MegaBiomeRules_dev <- function(x){
   
   # BIOME 1 - Tropical Rain Forest
-  if(as.numeric(lai[['Tree']]) > 2.5 &  lai[['MaxTree']] == "TrBE") {return(1)}
+  if(as.numeric(x[['LAI_std_Tree']]) > 2.5 &  x[['LAI_std_MaxTree']] == "TrBE") {return(1)}
   
   # BIOME 2 - Tropical Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & lai[['MaxTree']] == "TrBR") {return(2)}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & x[['LAI_std_MaxTree']] == "TrBR") {return(2)}
   
   # BIOME 3 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  (lai[['MaxTree']] == "BNE" | lai[['MaxTree']] == "IBS" | lai[['MaxTree']] == "BIBS")) {return(3)}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 &  (x[['LAI_std_MaxTree']] == "BNE" | x[['LAI_std_MaxTree']] == "IBS" | x[['LAI_std_MaxTree']] == "BIBS")) {return(3)}
   
   # BIOME 4 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(lai[['Tree']]) > 0.5 &  lai[['MaxTree']] == "BNS") {return(4)}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 &  x[['LAI_std_MaxTree']] == "BNS") {return(4)}
   
   # BIOME 5 - Temperate Broadleaved Evergreen Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 & (lai[['MaxTree']] == "TeBE" | lai[['MaxTree']] == "TeNE")) {return(5)}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & (x[['LAI_std_MaxTree']] == "TeBE" | x[['LAI_std_MaxTree']] == "TeNE")) {return(5)}
   
   # BIOME 6 - Temperate Deciduous Forest
-  else if(as.numeric(lai[['Tree']]) > 2.5 &  lai[['MaxTree']] == "TeBS") {return(6)}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 &  x[['LAI_std_MaxTree']] == "TeBS") {return(6)}
   
   # BIOME 10 - Arctic/alpine Tundra
-  else if(as.numeric(lai[['Tree']]) < 0.1 & as.numeric(lai[['Total']]) > 0.5 & (as.numeric(lai[['Lat']]) >= 54 | as.numeric(lai[['GDD5']]) < 400)) {return(10)}
+  else if(as.numeric(x[['LAI_std_Tree']]) < 0.1 & as.numeric(x[['LAI_std_Total']]) > 0.5 & (as.numeric(x[['LAI_std_Lat']]) >= 54 | as.numeric(x[['LAI_std_GDD5']]) < 400)) {return(10)}
   
   # BIOME 7 - Xeric Woodland/Shrubland
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['GrassFraction']]) < 0.2) {return(7)}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_GrassFraction']]) < 0.2) {return(7)}
   
   # BIOME 8 - Moist Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5 & as.numeric(lai[['Total']]) > 2.5) {return(8)}
-  #else if(as.numeric(lai[['Tree']]) > 0.5) {return(9)}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Total']]) > 2.5) {return(8)}
+  #else if(as.numeric(x[['LAI_std_Tree']]) > 0.5) {return(9)}
   
   # BIOME 9 - Dry Savanna
-  else if(as.numeric(lai[['Tree']]) > 0.5  & as.numeric(lai[['Total']]) <= 2.5) {return(9)}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5  & as.numeric(x[['LAI_std_Total']]) <= 2.5) {return(9)}
   
   # BIOME 11 - Tall Grassland
-  else if(as.numeric(lai[['Grass']]) > 2.0) {return(11)}
+  else if(as.numeric(x[['LAI_std_Grass']]) > 2.0) {return(11)}
   
   # BIOME 12  - Arid Shrubland/Grassland
-  else if(as.numeric(lai[['Total']]) > 0.2) {return(12)}
+  else if(as.numeric(x[['LAI_std_Total']]) > 0.2) {return(12)}
   
   # BIOME 13 - Desert
-  else if(as.numeric(lai[['Total']]) < 0.2) {return(13)}
+  else if(as.numeric(x[['LAI_std_Total']]) < 0.2) {return(13)}
   
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(lai[['Lon']]), ",", as.numeric(lai[['Lat']]), ")" ))
+    print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['LAI_std_Lat']]), ")" ))
     return(NA)
   }
   
@@ -655,7 +655,7 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
                                             "Desert"),
                                  format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                              rules = MegaBiomeRules_dev,
-                             layers.needed = list(Tree = list(operator = "max.layer", layers = c(".Tree"), new.layer = "MaxTree")),
+                             layers.needed = list(Tree = list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree"), new.layer = "MaxTree")),
                              needGDD5 = TRUE,
                              data.reference = "Haxeltime and Prentice 1996",
                              published.reference = "-")
@@ -671,62 +671,62 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
 #' Unpublished but possibly useful in principle.  Simpler classes that Smith et al 2014,
 #' but more complex that Forrest et al 2015.  
 #' 
-#' @param fpc Numerical vector of FPC values for a particular location. 
+#' @param x Numerical vector of FPC values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
 #' 
 #' @keywords internal
 #' @return Biomes code (1-10)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-FireMIPBiomeRules <- function(fpc){
+FireMIPBiomeRules <- function(x){
   
   # BIOME 1 & 2 - croplands mosaics
   
-  if(as.numeric(fpc[['Crops']]) > 0.5) { return(1) }
+  if(as.numeric(x[['landCoverFrac_Crops']]) > 0.5) { return(1) }
   
-  if(as.numeric(fpc[['Crops']]) > 0.2) { return(2) }
+  if(as.numeric(x[['landCoverFrac_Crops']]) > 0.2) { return(2) }
   
   # BIOMES 2-6 - Forests
-  #if(as.numeric(fpc[['Tree']]) > 0.6 &  fpc[['Grass']] < 0.4) {
-  if(as.numeric(fpc[['Tree']]) > 0.6) {
+  #if(as.numeric(x[['landCoverFrac_Tree']]) > 0.6 &  x[['landCoverFrac_Grass']] < 0.4) {
+  if(as.numeric(x[['landCoverFrac_Tree']]) > 0.6) {
     
     
     # BIOME 2 Needleleaved forest
-    if(fpc[['MaxTree']] == "NE") { return(3) }
+    if(x[['landCoverFrac_MaxTree']] == "NE") { return(3) }
     
     # BIOME 3 NS forest
-    else if(fpc[['MaxTree']] == "NS") { return(4) }
+    else if(x[['landCoverFrac_MaxTree']] == "NS") { return(4) }
     
     # BIOME 4 Summergreen forest
-    else if(fpc[['MaxTree']] == "BS") { return(5) }
+    else if(x[['landCoverFrac_MaxTree']] == "BS") { return(5) }
     
     # BIOME 5 Evergreen forest
-    else if(fpc[['MaxTree']] == "BE") { return(6) }
+    else if(x[['landCoverFrac_MaxTree']] == "BE") { return(6) }
     
     # BIOME 6 Raingreen forest
-    else if(fpc[['MaxTree']] == "BR") { return(7) }
+    else if(x[['landCoverFrac_MaxTree']] == "BR") { return(7) }
     
   }
   
   # BIOME 3 Additional - Lower tree cover requirement for Needle-leaved Summergreen Forest
-  else if(as.numeric(fpc[['Tree']]) > 0.4 && fpc[['MaxTree']] == "NS") { return(4) }
+  else if(as.numeric(x[['landCoverFrac_Tree']]) > 0.4 && x[['landCoverFrac_MaxTree']] == "NS") { return(4) }
   
   
   # BIOMES 7 and 8 - Grassy systems
-  else if(as.numeric(fpc[['Grass']]) > 0.4 ) {
+  else if(as.numeric(x[['landCoverFrac_Grass']]) > 0.4 ) {
     
     # BIOME 7 C4 grassy system
-    if(fpc[['MaxGrass']] == "C4G") { return(8) }
+    if(x[['landCoverFrac_MaxGrass']] == "landCoverFrac_C4G") { return(8) }
     
     # BIOME 8 C3 grassy system
-    else if(fpc[['MaxGrass']] == "C3G") { return(9) }
+    else if(x[['landCoverFrac_MaxGrass']] == "landCoverFrac_C3G") { return(9) }
     
   }
   
   # BIOMES 9 - Shrublands
-  else if(as.numeric(fpc[['Shrub']]) > 0.3 ) { return(10) }
+  else if(as.numeric(x[['landCoverFrac_Shrub']]) > 0.3 ) { return(10) }
   
   # BIOME 10 - Sparse vegetation
-  else if(as.numeric(fpc[['Total']]) > 0.2 ) { return(11) }
+  else if(as.numeric(x[['landCoverFrac_Total']]) > 0.2 ) { return(11) }
   
   # BIOME 11 Barren/Unclassified 
   else { return(12) }
@@ -777,8 +777,8 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                            "Inferno-FireMIP",
                                            "ORCHIDEE-FireMIP")),
                             rules = FireMIPBiomeRules,
-                            layers.needed = list(Tree = list(operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
-                                              Grass = list(operator = "max.layer", layers = ".Grass", new.layer ="MaxGrass")),
+                            layers.needed = list(Tree = list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
+                                                 Grass = list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Grass", new.layer ="MaxGrass")),
                             needGDD5 = FALSE,
                             data.reference = "-",
                             published.reference = "-")
@@ -795,57 +795,57 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
 #' 
 #' @param fpc Vector of FPC values
 #' @keywords internal
-FPCMegaBiomeRules <- function(fpc) {
+FPCMegaBiomeRules <- function(x) {
   
   # 9 - Desert
-  if (as.numeric(fpc[['Total']]) <= 0.2 &
-      as.numeric(fpc[['GDD5']]) >= 1200) {return(9)}
+  if (as.numeric(x[['fpc_Total']]) <= 0.2 &
+      as.numeric(x[['fpc_GDD5']]) >= 1200) {return(9)}
   
   # 10 - Arctic desert
-  else if (as.numeric(fpc[['Total']]) <= 0.2 &
-           as.numeric(fpc[['GDD5']]) < 1200) {return(10)}
+  else if (as.numeric(x[['fpc_Total']]) <= 0.2 &
+           as.numeric(x[['fpc_GDD5']]) < 1200) {return(10)}
   
   # 1 - Tropical Forest
-  else if (as.numeric(fpc[['Tree']]) > 0.6 &
-           as.numeric(fpc[['Tropical']]) > as.numeric(fpc[['Temperate']]) &
-           as.numeric(fpc[['Tropical']]) > as.numeric(fpc[['Boreal']])) {return(1)}
+  else if (as.numeric(x[['fpc_Tree']]) > 0.6 &
+           as.numeric(x[['fpc_Tropical']]) > as.numeric(x[['fpc_Temperate']]) &
+           as.numeric(x[['fpc_Tropical']]) > as.numeric(x[['fpc_Boreal']])) {return(1)}
   
   # 2 - Temperate Forest
-  else if (as.numeric(fpc[['Tree']]) > 0.6 &
-           as.numeric(fpc[['Temperate']]) > as.numeric(fpc[['Tropical']]) &
-           as.numeric(fpc[['Temperate']]) > as.numeric(fpc[['Boreal']])) {return(2)}
+  else if (as.numeric(x[['fpc_Tree']]) > 0.6 &
+           as.numeric(x[['fpc_Temperate']]) > as.numeric(x[['fpc_Tropical']]) &
+           as.numeric(x[['fpc_Temperate']]) > as.numeric(x[['fpc_Boreal']])) {return(2)}
   
   # 3 - Boreal Forest
-  else if (as.numeric(fpc[['Tree']]) > 0.2 &
-           as.numeric(fpc[['Boreal']]) > as.numeric(fpc[['Temperate']]) &
-           as.numeric(fpc[['Boreal']]) > as.numeric(fpc[['Tropical']])) {return(3)}
+  else if (as.numeric(x[['fpc_Tree']]) > 0.2 &
+           as.numeric(x[['fpc_Boreal']]) > as.numeric(x[['fpc_Temperate']]) &
+           as.numeric(x[['fpc_Boreal']]) > as.numeric(x[['fpc_Tropical']])) {return(3)}
   
   # 4 - Savannah
-  else if (as.numeric(fpc[['Tree']]) > 0.1 &
-           as.numeric(fpc[['Tree']]) <= 0.6 &
-           as.numeric(fpc[['C4G']]) >= as.numeric(fpc[['C3G']])) {return(4)}
+  else if (as.numeric(x[['fpc_Tree']]) > 0.1 &
+           as.numeric(x[['fpc_Tree']]) <= 0.6 &
+           as.numeric(x[['fpc_C4G']]) >= as.numeric(x[['fpc_C3G']])) {return(4)}
   
   # 5 - Temperate woodland
-  else if (as.numeric(fpc[['Tree']]) > 0.1 &
-           as.numeric(fpc[['Tree']]) <= 0.6 &
-           as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
-           as.numeric(fpc[['GDD5']]) > 1800) {return(5)}
+  else if (as.numeric(x[['fpc_Tree']]) > 0.1 &
+           as.numeric(x[['fpc_Tree']]) <= 0.6 &
+           as.numeric(x[['fpc_C4G']]) < as.numeric(x[['fpc_C3G']]) &
+           as.numeric(x[['fpc_GDD5']]) > 1800) {return(5)}
   
   # 6 - Tropical grassland
-  else if (as.numeric(fpc[['Tree']]) <= 0.1 &
-           as.numeric(fpc[['C4G']]) >= as.numeric(fpc[['C3G']])) {return(6)}
+  else if (as.numeric(x[['fpc_Tree']]) <= 0.1 &
+           as.numeric(x[['fpc_C4G']]) >= as.numeric(x[['fpc_C3G']])) {return(6)}
   
   # 7 - Temperate grassland
-  else if (as.numeric(fpc[['Tree']]) <= 0.1 &
-           as.numeric(fpc[['C4G']]) < as.numeric(fpc[['C3G']]) &
-           as.numeric(fpc[['GDD5']]) > 1200) {return(7)}
+  else if (as.numeric(x[['fpc_Tree']]) <= 0.1 &
+           as.numeric(x[['fpc_C4G']]) < as.numeric(x[['fpc_C3G']]) &
+           as.numeric(x[['fpc_GDD5']]) > 1200) {return(7)}
   
   # 8 - Tundra
-  else if (as.numeric(fpc[['Tree']]) <= 0.2) {return(8)}
+  else if (as.numeric(x[['fpc_Tree']]) <= 0.2) {return(8)}
   
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(fpc[['Lon']]), ",", as.numeric(fpc[['Lat']]), ")" ))
+    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
     return(NA)
   }
 }
@@ -884,11 +884,11 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                                           "Arctic desert"),
                                 format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                             rules = FPCMegaBiomeRules,
-                            layers.needed = list(Tree = list(operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                                 Grass = list(operator = "+", layers = ".Grass", new.layer = "Grass"),
-                                                 Boreal = list(operator = "+", layers = ".Boreal", new.layer = "Boreal"),
-                                                 Temperate = list(operator = "+", layers = ".Temperate", new.layer = "Temperate"),
-                                                 Tropical = list(operator = "+", layers = ".Tropical", new.layer = "Tropical")),
+                            layers.needed = list(Tree = list(quantity = "fpc", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                                 Grass = list(quantity = "fpc", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                 Boreal = list(quantity = "fpc", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
+                                                 Temperate = list(quantity = "fpc", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
+                                                 Tropical = list(quantity = "fpc", operator = "+", layers = ".Tropical", new.layer = "Tropical")),
                             needGDD5 = TRUE,
                             data.reference = "-",
                             published.reference = "-")

@@ -4,10 +4,10 @@
 \alias{Forrest2015MegaBiomeRules}
 \title{Rules to classify coarses "mega biomes" as per Forrest et al. 2015}
 \usage{
-Forrest2015MegaBiomeRules(lai)
+Forrest2015MegaBiomeRules(x)
 }
 \arguments{
-\item{lai}{Numerical vector of LAI values for a particular location. 
+\item{x}{Numerical vector of LAI values for a particular location. 
 Certain fractions and quantities should have been pre-calculated.}
 }
 \value{

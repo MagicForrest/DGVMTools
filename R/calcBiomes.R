@@ -21,7 +21,9 @@
 calcBiomes <-function(input, scheme){
   
   message(paste("Classifying biomes using scheme", scheme@name, sep = " "))
+  message("DEPRECATED")
   
+    
   Grass = Biome = NULL
   
   ### Add the relevant totals, fractions and dominant PFTs which are needed for the classifaction

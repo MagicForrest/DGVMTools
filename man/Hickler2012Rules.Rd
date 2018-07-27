@@ -4,10 +4,10 @@
 \alias{Hickler2012Rules}
 \title{Rules to classify biomes as per Hickler et al. 2012}
 \usage{
-Hickler2012Rules(lai)
+Hickler2012Rules(x)
 }
 \arguments{
-\item{lai}{Numerical vector of LAI values for a particular location. 
+\item{x}{Numerical vector of LAI values for a particular location. 
 Certain fractions and quantities should have been pre-calculated.}
 }
 \value{

@@ -1,7 +1,7 @@
 #' Layer Operation
 #' 
 #' Perform an operation on some layers with a Field to make a new layer within the Field (or change their values, or remove them). For example, adding some layers, dividing one layer by another or setting some layers to a constant value. 
-#' \bold{NOTE}: this function performs 'in-place' operations which, unlike normal R functions, will actually change the arguments, not just return a value! Read what this means below. 
+#' \bold{NOTE}: this function performs 'in-place' operations which, unlike normal R functions, will actually change the objects passed in as the arguments, not just return a value! Read what this means below. 
 #' 
 #' @param x The x object on which we are operating.
 #' @param operator The operator we are applying, can be:
@@ -13,7 +13,7 @@
 #'  \item{"/" (or "divide" or "through")} {Divide one layer by another. Nore this does 'safe division' which returns zero if the denomination is zero. Requires exactly two layers to be specified, divides the second by the first, ie. layer1 / layer 2.}
 #'  \item{"max.layer"} {Gets the layer with the maximum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the max.}
 #'  \item{"min.layer"} {Gets the layer with the minimum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the min.}
-#'  \item{\emph{any numeric value}} {Sets each of the layers specified uniformly to the numeric value specified, most usefuly for 0.  Previously not existign layers in the layers and new.layer argument will be created.}
+#'  \item{\emph{any numeric value}} {Sets each of the layers specified uniformly to the numeric value specified, most usefuly for 0.  Previously not existing layers in the layers and new.layer argument will be created.}
 #'  \item{\emph{NULL}} {A special case of the above which removes the layers from the Field}
 #'  \item{\emph{Whatever function}} {Now we are into crazy territory!  You can provide any function (the actual function, not a string ) that operates on a vector of numerics and it might just work!  Works for sd, var, min and max, but your mileage may vary.}
 #'  \item{\emph{Something else?}}{Contact the author!}

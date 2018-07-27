@@ -4,10 +4,10 @@
 \alias{Smith2014BiomeRules}
 \title{Rules to classify biomes as per Smith et al. 2014}
 \usage{
-Smith2014BiomeRules(lai)
+Smith2014BiomeRules(x)
 }
 \arguments{
-\item{lai}{Numerical vector of LAI values for a particular location. 
+\item{x}{Numerical vector of LAI values for a particular location. 
 Certain fractions and quantities should have been pre-calculated.}
 }
 \value{

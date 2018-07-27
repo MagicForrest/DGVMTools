@@ -30,8 +30,10 @@
 #' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 #' Can be "Year", "Month" or "Day".  Currently ignored.
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
+#' @param read.full.components If TRUE ignore any pre-averaged file for the *component* variables on disk, if FALSE use thjm if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
+#' @param write.components If TRUE, write the data of the *component* \code{Field}s to disk as text file.
 #' @param ...  Other arguments that are passed to the getField function for the specific Format.  Currently this is only 'adgvm.scheme' (for the aDGVM Format) which can be 1 or 2.
 #' 
 #' @return A \code{Field}. 
@@ -40,21 +42,23 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 getBiomes <- function(source, 
-                     scheme, 
-                     first.year,
-                     last.year,
-                     year.aggregate.method, 
-                     spatial.extent, 
-                     spatial.extent.id, 
-                     spatial.aggregate.method,
-                     subannual.resolution,
-                     subannual.original,
-                     subannual.aggregate.method,
-                     sta.info,
-                     write = FALSE, 
-                     read.full = TRUE, 
-                     verbose = FALSE, 
-                     ...){
+                      scheme, 
+                      first.year,
+                      last.year,
+                      year.aggregate.method, 
+                      spatial.extent, 
+                      spatial.extent.id, 
+                      spatial.aggregate.method,
+                      subannual.resolution,
+                      subannual.original,
+                      subannual.aggregate.method,
+                      sta.info,
+                      write = FALSE, 
+                      write.components = FALSE,
+                      read.full = TRUE, 
+                      read.full.components = TRUE, 
+                      verbose = FALSE, 
+                      ...){
   
   # To avoid annoying NOTES when R CMD CHECK-ing
   Lon = Lat = Year = NULL  
@@ -64,8 +68,8 @@ getBiomes <- function(source,
   
   ### CONVERT SCHEME ID STRING TO A BIOME SCHEME
   if(class(scheme) == "character") {
-    scheme <- byIDfromList(scheme, supported.biome.schemes)
     scheme.string <- scheme
+    scheme <- byIDfromList(scheme, supported.biome.schemes)
   }
   else {
     scheme <- scheme
@@ -169,17 +173,58 @@ getBiomes <- function(source,
   if(verbose) message(paste("Field ", target.field.id, " not already saved (or 'read.full' argument set to TRUE), so reading full data file to create the field now.", sep = ""))
   
   
-  # check each 
+  # lookup the quantities required
+  all.quantities <- list()
+  for(this.layer in scheme@layers.needed){
+    if(!this.layer$quantity %in% all.quantities) all.quantities <- append(all.quantities, this.layer$quantity)
+  }
+  
+  # get the fields and layers required
+  all.fields <- list()
+  for(this.quantity in all.quantities){
+    
+    # get the raw field
+    this.field <- getField(source = source, var = this.quantity, sta.info = sta.info, read.full = read.full.components, write = write.components)
+    
+    # calculate the layers requried
+    for(this.layer in scheme@layers.needed){
+      if(this.layer$quantity == this.quantity) this.field <- do.call(layerOp, args = list(x=this.field, 
+                                                                                          operator = this.layer$operator, 
+                                                                                          layers = this.layer$layers, 
+                                                                                          new.layer = this.layer$new.layer))
+    } 
+    
+    renameLayers(this.field, names(this.field), paste(this.quantity, names(this.field), sep = "_"))
+    
+    # save to the list
+    all.fields[[this.quantity]] <- this.field
+    
+  }
+  
+  dt <- all.fields[[1]]@data
+  
+  if(length(all.fields) > 1){
+    for(counter in 1:length(all.fields)){
+      dt <- dt[all.fields[[counter]]@data]
+    }
+  }
   
   
-  
-  
-  
-  
-  data.list <- source@format@getField(source, scheme, sta.info, verbose, ...)
-  this.dt <- data.list[["dt"]]
+  print("Starting classification")
+  suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
+  this.dt <- dt[,append(getDimInfo(dt), scheme@id), with = FALSE]
   setKeyDGVM(this.dt)
-  actual.sta.info <- data.list[["sta.info"]]
+  actual.sta.info <- as(object = all.fields[[1]], Class = "STAInfo")
+  
+  # tidy up
+  rm(dt)
+  rm(all.fields)
+  gc()
+  
+  
+  
+  ### MF: I the rest is carried over from getField(), so I think that only the return statements is actually needed (because the STA info 
+  ### should have been sorted out by the previous getField() calls in this function)
   
   
   ### CROP THE SPATIAL EXTENT IF REQUESTED
@@ -267,7 +312,7 @@ getBiomes <- function(source,
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(sta.info@spatial.aggregate.method != "none") {
     
-     if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
+    if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
       
       this.dt <- aggregateSpatial(this.dt, method = sta.info@spatial.aggregate.method, verbose = verbose)
       
@@ -331,7 +376,7 @@ getBiomes <- function(source,
   model.field <- new("Field",
                      id = target.field.id,
                      data = this.dt,
-                     quant = scheme@quant,
+                     quant = as(object = scheme, Class = "Quantity"),
                      actual.sta.info,
                      source = source)
   

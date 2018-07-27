@@ -4,10 +4,10 @@
 \alias{FireMIPBiomeRules}
 \title{Rules to classify FireMIP biomes from fractionalcover of PFTs}
 \usage{
-FireMIPBiomeRules(fpc)
+FireMIPBiomeRules(x)
 }
 \arguments{
-\item{fpc}{Numerical vector of FPC values for a particular location. 
+\item{x}{Numerical vector of FPC values for a particular location. 
 Certain fractions and quantities should have been pre-calculated.}
 }
 \value{
