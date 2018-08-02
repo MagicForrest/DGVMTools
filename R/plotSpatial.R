@@ -94,6 +94,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   ### CHECK FOR MISSING OR INCONSISTENT ARGUMENTS AND INITIALISE STUFF WHERE APPROPRIATE
   categorical.legend.labels <- waiver()
+  legend.title <- NULL
   drop.from.scale <- waiver() # only set to FALSE when discretising a scale 
   
   
@@ -239,6 +240,10 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     
     if(something.present) {
       
+      ### TODO
+      # select only layers which are available in the object
+      
+      
       # select the layers and time periods required and mash the data into shape
       these.layers <- selectLayers(object, layers)
       if(!is.null(years)) {
@@ -267,14 +272,20 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       
       # check for meta-data to automagic the plots a little bit if possble
       if(first) {
-        if(is.null(cols) & continuous) cols <- object@quant@colours(20)
-        legend.title <- object@quant@units
+        
         quant <- object@quant
+        if(length(quant@units) > 1) quant.is.categorical <-  TRUE
+        else quant.is.categorical <-  FALSE
+        if(continuous & !quant.is.categorical) {
+          if(is.null(cols)) cols <- object@quant@colours(20)
+          legend.title <- object@quant@units
+        }
+        
       }
       else {
         
         # check for consistent Quantity
-        if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Data/ModeObjects supplied in the list have the same Quantity, I am using the Quantity from the first one")
+        if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Fields supplied in the list have the same Quantity, I am using the Quantity from the first one")
       }
       
       first <- FALSE
@@ -393,7 +404,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   
   ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
-  if(discrete & is.null(cols)){
+  # In this case the Field to be plotted is continuous, but the Quantity is categorical, and no cols were provided
+  # -> therefore default to viridis
+  if(continuous && quant.is.categorical && is.null(cols)) {
+    cols <- viridis::viridis(11)
+  }
+  # In this the Quantity is categorical (I think we can assume that the Field is discrete) and no colours were provided
+  # -> therefore build a colour list based on the colours provided by the Quantity
+  else if(quant.is.categorical & missing(cols)){
     
     # make a list of all the unique values (factors), each of these will need a colour
     unique.vals <- unique(data.toplot[["Value"]])
@@ -401,10 +419,9 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     # Final results of stuff below
     here.cols <- c()
     is.PFTs <- FALSE
-    is.categorical <- FALSE
-    
+
     ###  If the Quantity if specifically defined as categorical then use the colours defined in the Quantity's units slot
-    if(length(quant@units) > 1) {
+    if(length(quant@units) > 1 && discrete) {
       
       legend.title = NULL
       
@@ -419,18 +436,13 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
           }  
         }
       }
-      
-      if(length(here.cols) == length(unique.vals)){
-        is.categorical <- TRUE
-      }
-      
-      
+  
     }
     
     ### Else data is categorical, but not explicitly defined as so in the Quantity, so we need to scan the names to identify the PFTs or months
     # check if the factors are PFTs 
     # TODO - implement months below!!
-    else {
+    else if(quant.is.categorical) {
       
       pft.superset <- list()
       for(object in sources) {
@@ -469,7 +481,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
         }
       }
     }
-    else if(is.categorical) {
+    else if(quant.is.categorical && discrete) {
       if(is.null(cols)) cols <- here.cols
       legend.title <- quant@name
       breaks <- quant@units
@@ -654,8 +666,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   # colour bar
   if(continuous)  {
-    #if(is.null(cuts)) {
-    
+   
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
                                     colors = cols,

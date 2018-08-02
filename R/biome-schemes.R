@@ -271,7 +271,7 @@ Hickler2012Rules <- function(x){
   
   ###### REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['LAI_std_Lat']]), ")" ))
+    print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
     print(x)
     return(as.numeric(NA))
   }
@@ -388,7 +388,7 @@ Forrest2015MegaBiomeRules <- function(x){
   else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_Total']]) <= 2.5) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.5 & as.numeric(x[['LAI_std_Lat']]) >= 54) {return("Tundra")}
+  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.5 & as.numeric(x[['Lat']]) >= 54) {return("Tundra")}
   
   # BIOME 14 - Tall Grassland
   else if(as.numeric(x[['LAI_std_Grass']]) > 2.0) {return("Grasslands and Dry Shrublands")}
