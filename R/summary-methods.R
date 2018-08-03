@@ -21,6 +21,34 @@
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}         
 setGeneric("summary", function(object,...) standardGeneric("summary"))
 
+
+#' @rdname Summary-methods
+#' @aliases summary
+setMethod("summary", signature(object="Source"), function(object) {
+  
+  cat(paste0("Source:\n"))
+  cat(paste0("id = ", "\"", object@id, "\"", "\n"))
+  cat(paste0("name = ", "\"", object@name, "\"", "\n"))
+  cat(paste0("format = ", "\"", object@format@id, "\"", "\n"))
+  cat(paste0("directory = ", "\"", object@dir, "\"", "\n"))
+  cat(paste0("lon-lat offset = (", object@lonlat.offset[1], ",", object@lonlat.offset[2], ")\n"))
+  cat(paste0("year offset = ", object@year.offset, "\n"))
+  cat(paste0("forcing data = ", "\"", object@forcing.data, "\"", "\n"))
+  cat(paste0("london.centre = ", object@london.centre, "\n"))
+  cat(paste0("land.use.included = ", object@land.use.included, "\n"))
+  cat(paste0("institute = ", "\"", object@institute, "\"", "\n"))
+  cat(paste0("contact = ", "\"", object@contact, "\"", "\n"))
+  cat(paste0("PFT superset:", "\n"))
+  all.PFTs <- c()
+  for(PFT in object@pft.set){
+    all.PFTs <- append(all.PFTs, PFT@id)
+  }
+  cat(paste0(all.PFTs))
+  
+})
+
+
+
 #' @rdname Summary-methods
 #' @aliases summary
 setMethod("summary", signature("Field"), function(object, ...) {

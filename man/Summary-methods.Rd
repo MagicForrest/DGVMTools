@@ -3,11 +3,15 @@
 \docType{methods}
 \name{Summary-methods}
 \alias{Summary-methods}
+\alias{summary,Source-method}
+\alias{summary}
 \alias{summary,Field-method}
 \alias{summary}
 \title{Summary methods}
 \usage{
 summary(object, ...)
+
+\S4method{summary}{Source}(object)
 
 \S4method{summary}{Field}(object, ...)
 }

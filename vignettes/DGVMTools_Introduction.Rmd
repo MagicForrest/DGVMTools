@@ -27,9 +27,143 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 
 DGVMTools is designed to provide core functionality for developing and utilising DGVMs (Dynamic Global Vegetation Models) and similar models (such as Land Surface Models). The basic motivation is that many people work with such models but there is no centralised effort to provide convenient, reliable and efficient tools to perform common tasks such as reading model data, aggregating it in space, time and across vegetation types, producing plots, comparing to standard observed datasets etc.  Instead, people develop (and possibly share) scripts on an _ad hoc_ basis, often resulting in duplicated effort and technical limitations hindering scientific analysis.  DGVMTools aims to provide a common toolbox to enable such tasks.
 
-The package treats model output and observed data in an equivalent fashion and so is equally useful for model-to-data and data-to-data analyses.  A companion R package DGVMData reads data from a variety of sources (primarly satellite data) and formats it such that it can be read natively by DGVMTools (this is basically just CF-compliant netCDF files with a couple of extra attributes).
+### Applicability
+
+The package treats model output and observed data in an equivalent fashion and so is equally useful for model-to-data, model-to-model and data-to-data analyses.  A companion R package DGVMData reads data from a variety of sources (primarly satellite data) and formats it such that it can be read natively by DGVMTools (this is basically just CF-compliant netCDF files with a couple of extra attributes).
 
 Much of the package could be utilised for any data which follows comes distributed over space (longitude, latitude), time (multiple years of data with subannual time resolution of daily, monthly or annual) and and different conceptual layers (for example different vegetation types or soil carbon pools).  However it has several additional features which are focussed on vegetation modelling, namely: the ability to read data from selected DGVMs in their native formats (currently LPJ-GUESS(-SPITFIRE) and aDGVM2 are supported); facilities for handling metadata about Plant Functional Types (PFTs); and the means to classify vegetation model output into biomes.  
+
+
+
+## Tutorial
+
+Now we'll jump right in and start using the package to read, process and plot some DGVM output data and hopefully demonstrate the features, logic and power of the package.  This tutorial uses small LPJ-GUESS output files (exactly in the format as they come from the model but compressed) for distriubtion in the package.
+
+### Define a data source
+
+The first job in pretty much any analysis is to define the source (or sources) of the data to be analysed.  Here we use the `defineSource()` function to do exactly that, and it produces an object of type `Source`, like so...
+
+```{r Define source, echo=TRUE}
+GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
+                          dir = system.file("extdata", "CentralEurope", package = "DGVMTools"), # this would normlly just be a character string containing a path
+                          format = "LPJ-GUESS",
+                          name = "LPJ-GUESS Example Run")
+
+class(GUESS.run)
+```
+
+To define a `Source` we need three key bits of information and these are the three essential arguments to `defineSource()` [^1].  These are:  
+
+1. the **`id`** argument, a unique identifier to label this source (should be alphanumeric with no spaces)
+2. the **`dir`** argument, to specify the location of the data on disk (for the purposes of this tutorial we used a function, but it is normally just a character string)
+3. the **`format`** argument, which spcifies the structure of the data on disk (ie what model did it come from)
+
+The `name` argument is optional and can be used to provide a more human-friendly string to identify the run (if not provided, the `id` argument is used for the `name`). 
+
+We can take a look at the `Source` object using the handy `print` function
+
+``` {r Source info, echo=TRUE}
+
+print(GUESS.run)
+```
+
+That looks a little complicated, but it is mostly just meta-data designed to make things more convenient later on (or are needed for special cases), so we can ignore these for just now. Aside from the three obligatory things mentioned above,  the only thing that is information about the PFTs in the run, and even that is usually defined automatically in the `format` argument.  Note that at this stage we have only created a metadata object.  We actually retrieve data in the next step...
+
+[^1]:  Experienced R users may have noticed that here we are using a specific function to make out `Source` object as opposed to `new()` function.  Whilst it is possible to construct a `Source` using `new()` it is __strongly recommended not to do so__ because using `defineSource()` is safer because it ensures the integrity and internal consistency of the `Source`.  It is also just _very_ much more convenient.
+
+### Reading data
+
+To actually read data from disk with use the `getField()` function.  This can be as simple as the following:
+
+``` {r Get data, echo=TRUE}
+LAI.full <- getField(source = GUESS.run, 
+                           var = "lai")
+```
+
+This step read all the LAI data (across all available space and time) from the source and stores it as a `Field` object.  We can have look at this new object using a `print()` command.
+
+``` {r Field info, echo=TRUE}
+print(LAI.full)
+```
+
+This is a lot output but it basically describes everything that you might ever need to know about this `Field`.  The most most important part is the data, which is stored in what looks like an R `data.frame` (actually it is a `data.table` which is like a `data.frame` in many ways but often much faster) and each 'layer' (in this case each PFT) is stored as a column.  There is a bunch of meta-data included too, mostly about the spatial, temporal and annual dimensions of the data.  An important piece of metadata in the information about the type of data represented, this is stored in a `Quantity` object.  The `Quantity` was looked up automatically from the `var = "lai"` argument.  
+
+###  Aggregating Data
+
+Whilst reading in the entire data set may be useful, it is often to large and unweildy to work with or to plot.  When analysing DGVM output, one commonly aggregates the data across space or time. To get the data in a more managable form we are going to call `getField()` two more times, this time making use of its built in  __aggregation__ options.  First we open the file and simulateneously aggregate across all years using the `year.aggregate.method` (in this case we take the mean, but there are other options such a the total or the standard deviation)
+
+``` {r Get data with year aggregation, echo=TRUE}
+LAI.year.mean <- getField(source = GUESS.run, 
+                           var = "lai", 
+                           year.aggregate.method = "mean")
+
+```
+To see how this is different to the previous case, we use the `getDimInfo`.
+
+``` {r Check dimensions, echo = TRUE}
+getDimInfo(LAI.full)
+getDimInfo(LAI.year.mean)
+```
+
+We can see that the full data (`LAI.full`) has Lon, Lat and Year dimensions, but the yearly aggregated data (`LAI.year.mean`) has only Lon and Lat, since Year has been averaged away. 
+
+We can now do a similar thing and aggregate across __space__.
+
+
+``` {r Get data with spatial aggregation, echo = TRUE}
+LAI.spatial.mean <- getField(source = GUESS.run, 
+                           var = "lai", 
+                           spatial.aggregate.method = "mean")
+getDimInfo(LAI.spatial.mean)
+```
+
+Note that this time we have aggregated over space, sothe  Lon and Lat dimensions have gone, but Year remains.
+
+### Plotting data
+
+Having got some sensibly aggregated data, we can now plot it using `plotTemporal` and `plotSpatial`.  
+
+#### Spatial plots (maps)
+
+First we using `plotSpatial` to produce a map from the annually-averaged data.  Note the underlying plot system is ggplot and `plotSpatial` returns a ggplot2 object which we then need to print in order to actually see it.
+
+``` {r Spatial plot, out.width = "95%", fig.width = 8, fig.asp = 1, echo = TRUE}
+print(plotSpatial(LAI.year.mean))
+
+```
+
+By default all layers are plotted.  We can choose one (or more) using the `layers` argument.
+``` {r Spatial plot layers, out.width = "95%", fig.width = 8, fig.asp = 0.5, echo = TRUE}
+print(plotSpatial(LAI.year.mean, layers = c("TeBS", "Total")))
+
+```
+
+The `plotSpatial` function comes with a lot of arguments which provide a great deal of flexibility.  Also, since the the function returns a ggplot object, they can be further modified using standard ggplot commands, which also adds piles of flexibility.  There are more examples of this later on.
+
+#### Temporal plots (time series)
+
+The spatially.aggregated Field can be plotted as a time series using `plotTemporal`.
+
+``` {r Temporal plot, out.width = "95%", fig.width = 8, fig.asp = 1, echo = TRUE}
+print(plotTemporal(LAI.spatial.mean))
+
+```
+
+And so we see a pretty straightforward times series plot of LAI averaged over the simulated area.
+
+Note that trying to make plots of data with the incorrect dimensions should fail gracefully:
+
+``` {r Fail plot, out.width = "95%", fig.width = 8, fig.asp = 1, echo = TRUE}
+print(plotSpatial(LAI.spatial.mean))
+print(plotTemporal(LAI.year.mean))
+```
+
+
+## Analysis
+
+
+## Customising you plots
+
 
 ## Overview of key concepts
 
@@ -63,85 +197,4 @@ One special feature of DGVMTools that deserves it own mention at this point is t
 * Plotting is done using the package ggplot which is especially useful as plots can be modified after they have been created (much more flexibly than base or lattice graphics).  This maintains relative simplicity in the DGVMTools plot function, but high levels of flexibility through subsequent modifications with ggplot2 commands.
 * Unlike raster objects, `Field`s do not need to be on grids of equally spaced longitude and latitude, or even on grids at all!  This is handy when working with sites, or with grid from climate models which often have unevenly spaced latitudes.
 * Regridding is not really supporting by DGVMTools, although there is a wrapper to the `cdo` (climate data operators package) included which handles some regridding (if `cdo` is installed).
-
-
-## Tutorial
-
-This tutorial uses small LPJ-GUESS output files (exactly in the format as they come from the model) to demonstrate the features, logic and power of the package.
-
-### Define a `Source` 
-
-The first job in pretty much any analysis is to define the source (or sources) of the data to be analysed.  Here we use the defineSource() function to do exactly that, and it produces an object of type `Source`.   
-
-To define a `Source` we need three key bits of information.  The location of the data on disk (the `dir` argument), the structure of the data on disk (the `format` argument) and a unique identifier to label this source (the `id` argument, should be alphanumeric with no spaces).  The `name` argument is optional and can be used to provide a more human-friendly string to identify the run (if not provided, the `id` argument is used for the `name`) 
-
-```{r Define source, echo=TRUE}
-GUESS.run <- defineSource(id = "LPJ-GUESS",
-                          name = "Standard LPJ-GUESS",
-                          dir = "/home/forrest/GuessRuns/trunk-v4.0/Standard",
-                          format = GUESS)
-```
-Experienced R users may have noticed that here we are using a specific function to make out `Source` object as opposed to `new()` function.  Whilst it is possible to construct a `Source` using `new()` it is __strongly recommended not to do so__ because using `defineSource()` is safer because it ensures the integrity and internal consistency of the `Source`.  It is also _very_ much more convenient.
-
-``` {r Source info, echo=TRUE}
-print(class(GUESS.run))
-print(GUESS.run)
-```
-
-Examining our creation we can see its type and its components.  As well the obligatory fields mentioned above, there is a host of metadata which may or may not be useful (only the `lon-lat.offset` and `year.offset` have any bearing on the package functionality) and, usefully, information about the PFTs in the run.  Note that at this stage we have only created a metadata object.  We actually retrieve data in the next step...
-
-### Get data with `getField()`
-
-To actually read data from disk with use the `getField()` function.  This can be as simple as the following:
-
-``` {r Get data, echo=TRUE}
-LAI.full <- getField(source = GUESS.run, 
-                           var = "lai")
-```
-
-This step read all the LAI data (across all available space and time) from the source and stores it as a `Field` object.  We can have look at this new object using a `print()` command.
-``` {r Field info, echo=TRUE}
-print(LAI.full)
-```
-
-The data is stored in what looks like an R `data.frame` (actually it is a `data.table` which is like a `data.frame` in many ways but often much faster) and each 'layer' (inc this case each PFT) is stored as a column.  There is a bunch of meta-data included too, mostly about the spatial, temporal and annual dimensions of the data.  Importantly, information about the type of data represented is stored in a `Quantity` object.  The `Quantity` was looked up automatically from the `var = "lai"` argument.
-
-Whilst reading in all the data may be useful, it is not easy to plot so much data.  To get the data in a more managable form we are going to call `getField()` two more times, this time making use of its built in  __aggregation__ options.  First we aggregate across all years using the `year.aggregate.method` (in this case we take the mean, but there are other options such a the total or the standard deviation)
-
-``` {r Get data with year aggregation, echo=TRUE}
-LAI.year.mean <- getField(source = GUESS.run, 
-                           var = "lai", 
-                           year.aggregate.method = "mean")
-print(LAI.year.mean)
-
-```
-Note that the 'Year' column is not longer present in the data (since we averaged across all years) and the `data.table` has gotten veru much shorter.  Also "Year aggregation" is now set to "mean".
-
-We can now do a similar thing and aggregate across __space__.
-
-
-``` {r Get data with spatial aggregation, echo = TRUE}
-LAI.spatial.mean <- getField(source = GUESS.run, 
-                           var = "lai", 
-                           spatial.aggregate.method = "mean")
-print(LAI.spatial.mean)
-
-```
-
-Similar to the above, the Lon and Lat columns have been averaged away and the "Spatial Aggregation" is now set to "mean"
-
-### Simple plotting with `plotTemporal()` and `plotSpatial`
-
-Having got some sensibly aggregated data, we can now plot it using `plotTemporal()` and `plotSpatial`.  First we using `plotSpatial` to produce a map from the annually-averaged data.  Note the underlying plot system is ggplot and `plotSpatial()` returns a ggplot2 object which we then need to print in order to actually see it.
-
-``` {r Spatial plot, echo = TRUE}
-print(plotSpatial(LAI.year.mean))
-
-```
-
-By default all layers are plotted.  We can choose one (or more) using the `layers` argument.
-``` {r Spatial plot layers, echo = TRUE}
-print(plotSpatial(LAI.year.mean, layers = c("TeBS", "Total")))
-
-```
 

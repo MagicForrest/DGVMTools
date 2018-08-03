@@ -31,7 +31,8 @@ setMethod("print", signature(x="PFT"), function(x) {
 #' @export
 setMethod("print", signature(x="Quantity"), function(x) {
   
-  cat(paste0("Quantity: ", x@id," (", x@name, "): ",  ", Units=", x@units, ", Defined for format: ", paste0(unlist(x@format), collapse = ', '), "\n"))
+  cat(paste0("Quantity:\n"))
+  cat(paste0("\t\t", x@id," (", x@name, "): ",  "Units=", x@units, ", Defined for format: ", paste0(unlist(x@format), collapse = ', '), "\n"))
   
 })
 
@@ -63,22 +64,25 @@ setMethod("print", signature(x="Period"), function(x) {
 setMethod("print", signature(x="Source"), function(x) {
   
   cat(paste0("Source:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  cat(paste0("format = ", "\"", x@format@id, "\"", "\n"))
-  cat(paste0("directory = ", "\"", x@dir, "\"", "\n"))
-  cat(paste0("forcing data = ", "\"", x@forcing.data, "\"", "\n"))
-  cat(paste0("lon-lat offset = (", x@lonlat.offset[1], ",", x@lonlat.offset[2], ")\n"))
-  cat(paste0("year offset = ", x@year.offset, "\n"))
-  cat(paste0("london.centre = ", x@london.centre, "\n"))
-  cat(paste0("land.use.included = ", x@land.use.included, "\n"))
-  cat(paste0("institute = ", "\"", x@institute, "\"", "\n"))
-  cat(paste0("contact = ", "\"", x@contact, "\"", "\n"))
-  cat(paste0("PFT superset (all possible, not just those in the run):", "\n"))
+  cat(paste0("\tid = ", "\"", x@id, "\"", "\n"))
+  cat(paste0("\tname = ", "\"", x@name, "\"", "\n"))
+  cat(paste0("\tformat = ", "\"", x@format@id, "\"", "\n"))
+  cat(paste0("\tlon-lat offset = (", x@lonlat.offset[1], ",", x@lonlat.offset[2], ")\n"))
+  cat(paste0("\tyear offset = ", x@year.offset, "\n"))
+  cat(paste0("\tdirectory = ", "\"", x@dir, "\"", "\n"))
+  cat(paste0("\tforcing data = ", "\"", x@forcing.data, "\"", "\n"))
+  cat(paste0("\tlondon.centre = ", x@london.centre, "\n"))
+  cat(paste0("\tland.use.included = ", x@land.use.included, "\n"))
+  cat(paste0("\tinstitute = ", "\"", x@institute, "\"", "\n"))
+  cat(paste0("\tcontact = ", "\"", x@contact, "\"", "\n"))
+  cat(paste0("\tPFTs defined:\n"))
+  all.PFTs <- c()
   for(PFT in x@pft.set){
-    print(PFT)
+    all.PFTs <- append(all.PFTs, PFT@id)
   }
+  cat(paste0(all.PFTs))
   
+
 })
 
 
@@ -87,22 +91,22 @@ setMethod("print", signature(x="Source"), function(x) {
 setMethod("print", signature(x="STAInfo"), function(x) {
   
   cat(paste0("Spatial Info:\n"))
-  cat(paste0("\tSpatial aggregation =  ",  x@spatial.aggregate.method, "\n"))
-  cat(paste0("\tSpatial extent id =  ",  x@spatial.extent.id, "\n"))
-  cat(paste0("\tSpatial extent:  ",  x@spatial.extent.id, "\n"))
+  cat(paste0("\t\tSpatial aggregation = ",  x@spatial.aggregate.method, "\n"))
+  cat(paste0("\t\tSpatial extent id = ",  x@spatial.extent.id, "\n"))
+  cat(paste0("\t\tSpatial extent: \n"))
   extent.string <- capture.output(print(x@spatial.extent))
   for(part in extent.string){
-    cat(paste0("\t\t", part, "\n"))
+    cat(paste0("\t\t\t", part, "\n"))
   }
   cat(paste0("Year Info:\n"))
-  cat(paste0("\tYearly aggregation =  ",  x@year.aggregate.method, "\n"))
-  cat(paste0("\tFirst year = ", x@first.year, "\n"))
-  cat(paste0("\tLast year = ", x@last.year, "\n"))
+  cat(paste0("\t\tYearly aggregation =  ",  x@year.aggregate.method, "\n"))
+  cat(paste0("\t\tFirst year = ", x@first.year, "\n"))
+  cat(paste0("\t\tLast year = ", x@last.year, "\n"))
   cat(paste0("Subannual Info: \n"))
-  cat(paste0("\tSubannual original =  ",  x@subannual.original, "\n"))
-  cat(paste0("\tSubannual aggregation =  ",  x@subannual.aggregate.method, "\n"))
-  cat(paste0("\tSubannual resolution =  ",  x@subannual.resolution, "\n"))
-
+  cat(paste0("\t\tSubannual original = ",  x@subannual.original, "\n"))
+  cat(paste0("\t\tSubannual aggregation = ",  x@subannual.aggregate.method, "\n"))
+  cat(paste0("\t\tSubannual resolution = ",  x@subannual.resolution, "\n"))
+  
 })
 
 
@@ -110,13 +114,20 @@ setMethod("print", signature(x="STAInfo"), function(x) {
 #' @export
 setMethod("print", signature(x="Field"), function(x) {
   
-  cat(paste0("Field:\n"))
-  cat(paste0("Id: ", "\"", x@id, "\"", "\n"))
+  cat(paste0("A Field object\n"))
   print(x@quant)
+  cat(paste0("Id:\n"))
+  cat(paste0("\t\t", "\"", x@id,  "\"", "\n"))
+  cat(paste0("Layers: ",  "\n"))
+  cat(paste0("\t\t", paste0(names(x), collapse = " "), "\n"))
+  cat(paste0("Dimensions: ",  "\n"))
+  cat(paste0("\t\t", paste0(getDimInfo(x), collapse = " "), "\n"))
   print(as(x, "STAInfo"))
   cat(paste0("Data: ",  "\n"))
   print(x@data)
-  cat(paste0("Source: ", "\"", x@source@name, "\"", "\n"))
+  cat("\n")
+  cat(paste0("Source name:\n"))
+  cat(paste0("\t\t ", "\"", x@source@name, "\"", "\n"))
   cat("(For full Source metadata type \"print(X@source)\", where X is this Field)\n")
   
 })

@@ -55,7 +55,7 @@ plotTemporal <- function(input.data,
   single.object <- FALSE
   
   # Deal with class action and organise into a data.table for further manipulations and plotting
-  # if it is a single DataObject or Field, pull out the data (and PFTs if present)
+  # if it is a single Field, pull out the data (and PFTs if present)
   if(is.Field(input.data)){
 
     if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
@@ -69,10 +69,17 @@ plotTemporal <- function(input.data,
     }
     facet <- FALSE
     
+    # check temporal dimensions
+    stinfo.names <- getDimInfo(input.data)
+    if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names) {
+      warning("Neither Year nor Month found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
+      return(NULL)
+    }
+    
   }
   
   
-  # If we get a list it should be a list of Fields and/or DataObjects.  Here we check that, and mangle it in to a data.table
+  # If we get a list it should be a list of Fields.  Here we check that, and mangle it in to a data.table
   else if(class(input.data) == "list") {
     
     plotting.data.dt <- data.table()
@@ -88,12 +95,19 @@ plotTemporal <- function(input.data,
       # also make a superset of all the PFTs
       if(is.Field(x.object)) PFTs <- append(PFTs, x.object@source@pft.set)
       
+      # check temporal dimensions
+      stinfo.names <- getDimInfo(x.object)
+      if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names) {
+        warning("Neither Year nor Month found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
+        return(NULL)
+      }
+      
     }
     
     # assume Quantity is the same for each facet
     if(is.null(quant)) quant <- input.data[[1]]@quant
     
-  }
+ }
   
   # else fail
   else{
