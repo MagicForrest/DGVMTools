@@ -1,0 +1,294 @@
+---
+title: "Writing or Modifying a Format"
+author: "Matthew Forrest"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Writing or Modifying a Format}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+  
+  ```{r packages, echo=FALSE}
+library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
+#library(raster, quietly = TRUE, warn.conflicts = FALSE)
+#library(data.table, quietly = TRUE, warn.conflicts = FALSE)
+#library(plyr, quietly = TRUE, warn.conflicts = FALSE)
+#library(viridis, quietly = TRUE, warn.conflicts = FALSE)
+#library(Cairo, quietly = TRUE, warn.conflicts = FALSE)
+
+```
+
+
+```{r setup, include=FALSE}
+```
+
+# Introduction
+
+This vignette describes how to manipulate and create `Format` objects in DGVMTools.   A `Format` is an S4-class (like all objects in DGVMTools), and it has 6 slots (the slots are described below).  `Format` objects are pretty important because the contain a lot of metadata about a model output or data set files, so without it DGVMTools won't be able to read the data from disk.  One simple modification to a `Format` object is to add a new PFT.  This is a fairly common for a DGVM development task, so this will be described seperately in a short, first section.    
+
+Writing code to describe a new `Format` object is essential for reading a new DGVM or other data source.  So the second (and much longer) part of this vignette describes how to do that.  It is also a reference for making more complicated modifications to an existing `Format` (for example reading new model variables) 
+
+Note: It doesn't really make sense to write a new Format for one dataset (that is probably overkill and it would probably rather make sense to bash the data in a DGVMData `Format`, rather than define a new `Format`), but it might make sense for many datatsets with a standard file format, for example MODIS or Fluxnet. 
+
+
+## Simple case: Adding a new PFT to a `Format` object
+
+A `Format` is an S4-class, and like all S4 classes the slots are accessed using the @ symbol.  So, for example, to access the id slot of the pre-defined `GUESS` format:
+```{r accessing a slot, echo=TRUE}
+GUESS@id
+```
+The @default.pfts slot is just a list of DGVMTools::PFT objects.
+```{r get PFTs, echo=TRUE}
+original.PFTs <- GUESS@default.pfts
+
+str(original.PFTs)
+```
+To add a new PFT we can simple take our copy of the list, add a new PFT, and copy it back into the `Format` objects
+```{r modify PFTs, echo=TRUE}
+new.PFT =  new("PFT",
+               id = "NewPFT",
+               name = "Some New Tree PFT",
+               growth.form = "Tree",
+               leaf.form = "Broadleaved",
+               phenology = "Summergreen",
+               colour = "red",
+               climate.zone = "Temperate",
+               shade.tolerance = "None"
+)
+
+new.PFT.list <- append(original.PFTs, new.PFT)
+
+print(str(new.PFT.list))
+
+GUESS@default.pfts <- new.PFT.list
+
+```
+And done!
+
+Note that this change will only remain active in this particular R session (it doesn't modify the `Format` in the package), so you will need to do it once at the top of your analysis script. 
+
+## Writing a new `Format` (or more involved modifications)
+
+Writing a completely new `Format` is obviously more involved, and in this case details will depends very much on the way the data files are structered.  If you are making a new `Format` to read ASCII data then the Format-GUESS.R is a good reference.  If you are writing a format for netCDF data, use Format-DGVMData.R for reference.
+
+This section of the vignette also gives some idea for how to do 'intermediate level' modifications to a `Format` object, for example added a new `Quantity`.
+
+The function of each of the 6 slots in a `Format` is discussed below.
+
+
+### 1. The `id` slot
+
+This is very simple, just a character string to uniquely identify this format.
+
+```{r id slot, echo=TRUE}
+id_NewFormat <- "Example_Format"
+```
+
+
+### 2. The `default.pfts` slot
+
+This is a list of DGVMTools::PFT objects.  If the format is for a DGVM, these PFTs should correspond to the standard default PFTs in the DGVM.  If the format is for a data set, PFTs might not make sense so this can just be an empty list.  Alternatively the PFT or vegetation type concept might be useful for data, so they could be defined if they exist in the data.
+
+
+```{r default.pfts slot, echo=TRUE}
+PFTs_NewFormat <- list(
+  
+  # A couple of tree PFTs
+  
+  TeBE = new("PFT",
+             id = "TeBE",
+             name = "Temperate Broadleaved Evergreen Tree",
+             growth.form = "Tree",
+             leaf.form = "Broadleaved",
+             phenology = "Evergreen",
+             climate.zone = "Temperate",
+             colour = "darkgreen",
+             shade.tolerance = "None"
+  ),
+  
+  
+  TeBS = new("PFT",
+             id = "TeBS",
+             name = "Temperate Broadleaved Summergreen Tree",
+             growth.form = "Tree",
+             leaf.form = "Broadleaved",
+             phenology = "Summergreen",
+             colour = "darkolivegreen3",
+             climate.zone = "Temperate",
+             shade.tolerance = "None"
+  ),
+  
+  
+  # And a couple of grasses
+  
+  C3G = new("PFT",
+            id = "C3G",
+            name = "Boreal/Temperate Grass",
+            growth.form = "Grass",
+            leaf.form = "Broadleaved",
+            phenology = "GrassPhenology",
+            climate.zone = "NA",
+            colour = "lightgoldenrod1",
+            shade.tolerance = "None"
+  ),
+  
+  C4G = new("PFT",
+            id = "C4G",
+            name = "Tropical Grass",
+            growth.form = "Grass",
+            leaf.form = "Broadleaved",
+            phenology = "GrassPhenology",
+            climate.zone = "NA",
+            colour = "sienna2",
+            shade.tolerance = "None"
+  )
+  
+)
+
+# Now take a look at them
+for(PFT in PFTs_NewFormat) {
+  print(PFT)
+}
+
+```
+
+### 3. The `quantities` slot
+
+This is a list of DGVMTools::Quantity objects.  These correspond to the variables that might be in the dataset/model output that one might want to read.  For example LAI, biomass, evapotranspiation, GPP/NPP, soil water content.  Note that they don't _need_ to be there in every run, (and you don't need to define all variables straight away), but if you want to use them in DGVMTools you need to define them. 
+
+```{r quantities slot, echo=TRUE}
+quantities_NewFormat <- list(
+  
+  # Just a couple of example quantities
+  
+  new("Quantity",
+      id = "LAI",
+      name = "LAI",
+      units = "m^2/m^2",
+      colours = reversed.viridis,
+      format = c("Example_Format"),
+      cf.name = "leaf_area_index"),
+  
+  new("Quantity",
+      id = "Veg_C",
+      name = "Vegetation Carbon Mass",
+      units = "kgC/m^2",
+      colours = viridis::viridis,
+      format = c("Example_Format"))
+)
+
+# Now take a look at them
+for(quant in quantities_NewFormat ) {
+  print(quant)
+}
+```
+
+### 4. The `determinePFTs` slot
+
+This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of PFTs present. The first argument should be `Source` object called `x` (see main documentation), and it can have additional arguments that might be needed
+
+```{r determine PFTs, echo=TRUE}
+determinePFTs_NewFormat <- function(directory, names = TRUE){
+  
+  # typical stuff 
+  run.directory <- x@dir.dir
+  
+  # all possible PFTs present 
+  PFTs.possible <- x@pft.set
+  
+  # code to look for and open a commen per-PFT output file (for example LAI) 
+  # typical files to check could be specified in 'additional.args' argument for example
+  # ...
+  
+  # code check the ASCII header or netCDF meta info to see what PFTs are present
+  # ...
+  PFTs.present <- list() # dummy code
+  
+  return(PFTs.present)
+  
+} 
+```
+
+### 5. The `determineQuantities` slot
+
+This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of PFTs present. The first argument should be characters with the path to the files on disk, the second argument is a ogical called names.  If TRUE, the function should return a list of the ids of the quantities, otherwise it returns the list of DGVMTools::Quantity objects.
+
+
+```{r determine Quantities, echo=TRUE}
+determineQuantities_NewFormat <- function(x, additional.args){ 
+  
+  # typical stuff 
+  # * get a list of files in the directory
+  # * scan the files for different variables
+  # * build a list of qunatities present in the model outpu / dataset
+  
+  # dummy code
+  Quantities.present <- list()
+  return(Quantities.present)
+  
+} 
+```
+
+
+
+### 6. The `getField` slot
+
+This is the biggie!  This function (which will be long, but can of course make use of other functions) is responsible for reading data from disk and bashing it into a data.table; and for r.  As arguments it takes:
+
+* a DGVMTools::Source (source)object from which the data is to be read
+* a DGVMTools::Quantity (quant) object specifying what vairbale is be returned
+* a DGVMTools::STAInfo (sta.info) object specifying the spatial-temporal-annual dimensions of the field 
+* a logical (verbose), if TRUE then function should give more output
+* ... other flexible arguments which can be 
+
+It should return a two-element list comprising:
+
+* "dt" : a data.table containign the data, properly formatted
+* "sta.info" : an STAInfo describing the spatial-temporal-annual dimensions of the data being returned as the "dt"
+
+Note that the input and output "sta.info" don't need to match, the rest of the the cropping/aggregating is done automatically by the package, but it maybe more efficient to read only a subset of the data (eg. for netCDF files), rather than read the whole files and then crop it. 
+
+
+```{r get Field, echo=TRUE}
+getField_NewFormat <- function(source, quant, sta.info, verbose, ...){ 
+  
+  # code needs to get the data as a data.table
+  dt <- data.table()
+  
+  # also an STAInfo object
+  return.sta.info <- new("STAInfo")
+    
+  # dummy code
+  return.list <- list()
+  return.list[["dt"]] <- dt
+  return.list[["sta.info"]] <- return.sta.info
+   
+  return(return.list)
+  
+} 
+```
+
+### Combining
+
+Finally we can combine the six parts that we just made to make the new `Format` object,
+ 
+```{r Builing the Format, echo=TRUE}
+NewFormat <- new("Format", 
+                 id = id_NewFormat,
+                 default.pfts = PFTs_NewFormat, 
+                 quantities = quantities_NewFormat, 
+                 determinePFTs = determinePFTs_NewFormat, 
+                 determineQuantities = determineQuantities_NewFormat, 
+                 getField =getField_NewFormat)
+```
+
+And there we go.  A new `Format` object.  Obviously the trickness is defining the functions, `particularly getField()`
+
+```
+print(NewFormat)
+```
+
+
+
+
