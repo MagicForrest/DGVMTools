@@ -17,29 +17,24 @@ This is ultimately not flexible enough for all conceivable biome schemes from al
 
 \item{\code{name}}{A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")}
 
-\item{\code{type}}{A character string defining the type of Quantity, here should always be "categorical" (Inherited from Quantity via "contains")}
-
 \item{\code{units}}{A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")}
 
 \item{\code{colours}}{A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")}
 
-\item{\code{aggregate.method}}{A character string defining the default method for how to aggregate the quantity, should be set to "categorical" for BiomeSchemes (Inherited from Quantity via "contains")}
-
-\item{\code{model}}{Either a the string "Standard" to denote that this is a  standard quantity to be compared across all model and data, or vector of model names to denote to which models this BiomeScheme can generally be applied to. (Inherited from Quantity via "contains")}
+\item{\code{format}}{Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.}
 
 \item{\code{rules}}{A function which is applied to every row of the data.table and describes the biome classification rules.}
 
-\item{\code{combineShadeTolerance}}{If TRUE, call combineShadeTolerance before doing the biome classification}
+\item{\code{totals.needed}}{List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.
+For example one element could be to list(c(".Tree", ."Shrub"), "Woody") which would make a layer called "Woody" which would be the sum of all trees and shrubs.}
 
-\item{\code{totals.needed}}{List of vegetation totals needed to calculate biomes, for example c("Tree", "Grass")}
+\item{\code{max.needed}}{List of vegetation maximums needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.
+For example one element could be to list(c(".Tree", ."Shrub"), "MaxWoody") which would make a layer called "MaxWoody" which would be the maximum  of all trees and shrubs.}
 
-\item{\code{max.needed}}{List of maximum values needed to calculate biomes, for example c("PFT", "Tree")}
+\item{\code{fractions.needed}}{List of vegetation fractions needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of threeo-item list.
+For example one element could be to list("TeBE", "Tree", "TeBEFractionOFTree") which would make a layer called "TeBEFractionOFTre" and would the value for TeBE divided by the value for Tree.}
 
-\item{\code{fraction.of.total}}{List of vegetation fraction of totals needed to calculate biomes}
-
-\item{\code{fraction.of.tree}}{List of vegetation fraction of tree total needed to calculate biomes}
-
-\item{\code{fraction.of.woody}}{List of vegetation fraction of woody total needed to calculate biomes}
+\item{\code{needGDD5}}{If TRUE the biome rules require GDD5 for the classification}
 
 \item{\code{needGDD5}}{If TRUE the biome rules require GDD5 for the classification}
 

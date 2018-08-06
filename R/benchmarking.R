@@ -75,7 +75,7 @@ calcR2 <- function(vector2, vector1) {
 
 #' Compare continuous data
 #' 
-#' Compares two datasets of continuous data. Specifically calculates and returns a SpatialComparison object (which contains many metrics) given numeric two vectors of equal size 
+#' Compares two datasets of continuous data. Specifically calculates and returns a Statistics object (which contains many metrics) given numeric two vectors of equal size 
 #' 
 #' @param vector1 The first of the datasets to be compared to each other, as a vector of numerics (categorical data) 
 #' @param vector2 The second of the datasets to be compared to each other, as a vector of numerics(categorical data) 
@@ -83,10 +83,10 @@ calcR2 <- function(vector2, vector1) {
 #' @param name2 A character string giving the name of the second dataset (for making a useful id)
 #' @param verbose A logical, if TRUE print out all the Kappa scores
 #' 
-#' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are not for continuous data.
+#' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for continuous data.
 #' 
 #' @return A spatial comparison object
-#' 
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE){
@@ -131,7 +131,7 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
     print(paste("Pearson's PMCC (r) = ", round(P.cor, 4)))
   }
   
-  stats <- new("SpatialComparison",
+  stats <- new("Statistics",
                id = paste(name1, "vs",  name2,  sep = "."),
                R2 = R2, 
                R2.eff = R2.eff,
@@ -150,7 +150,7 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
 #' Compare relative proportions data
 #' 
 #' Compares two datasets of relative proportions of multiple classes (sum of classes equals one at each point) where the total for each  data where the totally value for each. 
-#' Specifically calculates and returns a SpatialComparison object (which contains many metrics) with the relevants slots are Manhattan Metric (MM) and Square Chord Distance (SCD).
+#' Specifically calculates and returns a Statistics object (which contains many metrics) with the relevants slots are Manhattan Metric (MM) and Square Chord Distance (SCD).
 #' 
 #' @param dt1 The first of the datasets to be compared to each other, as a data.table with a column for the  elative proportion of each class (sum of classes must equal one for metric to be meaningful)
 #' @param dt2 The second of the datasets to be compared to each other, as a data.table with a column for the  elative proportion of each class (sum of classes must equal one for metric to be meaningful)
@@ -158,21 +158,29 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
 #' @param name2 A character string giving the name of the second dataset (for making a useful id)
 #' @param verbose A logical, if TRUE print out all the Kappa scores
 #' 
-#' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are not for relative proportions data.
+#' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for relative proportions data.
 #' 
 #' @return A spatial comparison object
-#' 
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
   
   # check the incoming data.tables are the same size
-  if(ncol(dt1) != ncol(dt1)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of components")
+  if(ncol(dt1) != ncol(dt2)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of components")
+ 
+  # check the incoming data.tables are the same size
+  if(nrow(dt1) != nrow(dt2)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of rows")
   
+  # quick fix, divide by 100
+  dt1 <- dt1/100
+  dt2 <- dt2/100
+   
   # calculate Manhattan Metric and Squared Chord Distance
   MM <- 0
   SCD <- 0
   for(layer.index in 1:ncol(dt1)){
+
     
     # for Manhattan Metric
     difference.vector <- abs(dt1[[layer.index]] - dt2[[layer.index]])
@@ -193,7 +201,7 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
     print(paste("Squared Chord Distance (NME) = ", round(SCD, 4)))
   }
   
-  stats <- new("SpatialComparison",
+  stats <- new("Statistics",
                id = paste(name1, "vs",  name2,  sep = "."),
                MM = MM, 
                SCD = SCD
@@ -206,7 +214,7 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
 
 #' Comparison between two datasets of categorical variables
 #' 
-#' Calculates a SpatialComparison object (which contains the Cohen's Kappa scores) given a stack containing two maps of categorical data (eg. biomes, land cover classes).
+#' Calculates a Statistics object (which contains the Cohen's Kappa scores) given a stack containing two maps of categorical data (eg. biomes, land cover classes).
 #' 
 #' @param vector1 The first of the datasets to be compared to each other, as a vector of factors (categorical data) 
 #' @param vector2 The second of the datasets to be compared to each other, as a vector of factors (categorical data) 
@@ -214,10 +222,10 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
 #' @param name2 A character string giving the name of the second dataset (for making a useful id)
 #' @param verbose A logical, if TRUE print out all the Kappa scores
 #' 
-#' Note that there are many other slots in a SpatialComparison object which will not be filled in the resulting object because they are for continuous as opposed to categorical data
+#' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are for continuous as opposed to categorical data
 #' 
 #' @return A spatial comparison object
-#' 
+#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 categoricalComparison<- function(vector1,
@@ -313,7 +321,7 @@ categoricalComparison<- function(vector1,
   if(verbose) print(paste("Overall Kappa", round(kappa, 3), sep = " "))
   
   
-  return(new("SpatialComparison",
+  return(new("Statistics",
              id = paste(name1, "vs",  name2,  sep = "."),
              Kappa = kappa, 
              individual.Kappas = per.class.kappa)

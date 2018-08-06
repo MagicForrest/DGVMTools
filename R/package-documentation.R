@@ -10,7 +10,7 @@
 #' 
 #' \itemize{
 #'  \item Subsetting and averaging certain time periods or spatial extents,
-#'  \item Calculating total values for certain seasons, lifeforms (for example all trees), leaf phenologies (for example all evergreen vegetation), climate zones (for example all tropical vegetation), and others,
+#'  \item Calculating total values for certain seasons, growth forms (for example all trees), leaf phenologies (for example all evergreen vegetation), climate zones (for example all tropical vegetation), and others,
 #'  \item Making maps and time series plots of the model output,
 #'  \item Reading in observed data (satellite data, flux tower data etc.) to which model the model results can be compared,
 #'  \item Calculating statistical metrics to quantify the agreement between models and data, and producing plots (scatter plots, histograms of residuals) to visually compare models and data,

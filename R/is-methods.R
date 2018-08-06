@@ -8,7 +8,6 @@
 #' @param input Any R object to be checked
 #' @param spatial check if input is a spatial object
 #' @param temporal check if input is a temporal object
-#' @param site check if input is a site object
 #' @return logical
 #' @name is.object-methods
 #' @rdname is.object-methods
@@ -19,47 +18,18 @@ NULL
 
 #' @rdname is.object-methods
 #' @export
-is.DataObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
+is.Field <- function(input, spatial=FALSE, temporal=FALSE) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package"))) {
-    if (class.def[1] == "DataObject" && attr(class.def, "package") == "DGVMTools") {
+    if (class.def[1] == "Field" && attr(class.def, "package")=="DGVMTools") {
       ## JS: check more carefully if this if structure makes sense
-      if (spatial && !temporal && !site) {
-        if (!input@is.site && input@spatial.aggregate.method == "none")
+      if (spatial && !temporal) {
+        if (input@spatial.aggregate.method == "none")
           return(TRUE)
       } else if (!spatial && temporal) {
-        if (input@temporal.aggregate.method == "none")
+        if (input@year.aggregate.method == "none")
           return(TRUE)
-      } else if (site) {
-        if (input@is.site)
-          return(TRUE)
-      } else if (!spatial && !temporal && !site) {
-        return(TRUE)
-      } else {
-        return(FALSE)
-      }
-    }
-  }
-  return(FALSE)
-}
-
-#' @rdname is.object-methods
-#' @export
-is.ModelObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
-  class.def <- class(input)
-  if (!is.null(attr(class.def, "package"))) {
-    if (class.def[1] == "ModelObject" && attr(class.def, "package")=="DGVMTools") {
-      ## JS: check more carefully if this if structure makes sense
-      if (spatial && !temporal && !site) {
-        if (!input@is.site && input@spatial.aggregate.method == "none")
-          return(TRUE)
-      } else if (!spatial && temporal) {
-        if (input@temporal.aggregate.method == "none")
-          return(TRUE)
-      } else if (site) {
-        if (input@is.site)
-          return(TRUE)
-      } else if (!spatial && !temporal && !site) {
+      } else if (!spatial && !temporal) {
         return(TRUE)
       } else {
         return(FALSE)
@@ -72,10 +42,10 @@ is.ModelObject <- function(input, spatial=FALSE, temporal=FALSE, site=FALSE) {
 
 #' @rdname is.object-methods
 #' @export
-is.ComparisonLayer <- function(input) {
+is.Comparison <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "ComparisonLayer" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "Comparison" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
@@ -84,10 +54,10 @@ is.ComparisonLayer <- function(input) {
 
 #' @rdname is.object-methods
 #' @export
-is.ModelRun <- function(input) {
+is.Source<- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "ModelRun" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "Source" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }
@@ -103,13 +73,44 @@ is.Quantity <- function(input) {
   return(FALSE)
 }
 
+#' @rdname is.object-methods
+#' @export
+is.PFT <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "PFT" && attr(class.def, "package")=="DGVMTools")
+      return(TRUE)
+  return(FALSE)
+}
+
 
 #' @rdname is.object-methods
 #' @export
-is.SpatialComparison <- function(input) {
+is.Statistics <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "SpatialComparison" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "Statistics" && attr(class.def, "package")=="DGVMTools")
+      return(TRUE)
+  return(FALSE)
+}
+
+
+#' @rdname is.object-methods
+#' @export
+is.Format <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "Format" && attr(class.def, "package")=="DGVMTools")
+      return(TRUE)
+  return(FALSE)
+}
+
+#' @rdname is.object-methods
+#' @export
+is.STAInfo <- function(input) {
+  class.def <- class(input)
+  if (!is.null(attr(class.def, "package")))
+    if (class.def[1] == "STAInfo" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }

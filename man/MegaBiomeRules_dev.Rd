@@ -4,10 +4,10 @@
 \alias{MegaBiomeRules_dev}
 \title{Rules to classify coarser "mega biomes" from LAI, latitude and GDD5}
 \usage{
-MegaBiomeRules_dev(lai)
+MegaBiomeRules_dev(x)
 }
 \arguments{
-\item{lai}{Numerical vector of LAI values for a particular location. 
+\item{x}{Numerical vector of LAI values for a particular location. 
 Certain fractions and quantities should have been pre-calculated.}
 }
 \value{

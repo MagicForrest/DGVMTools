@@ -4,10 +4,10 @@
 \alias{MeditBiomeRules}
 \title{Rules to classify coarses Mediterranean biomes}
 \usage{
-MeditBiomeRules(lai)
+MeditBiomeRules(x)
 }
 \arguments{
-\item{lai}{Numerical vector of LAI values for a particular location. 
+\item{x}{Numerical vector of LAI values for a particular location. 
 Certain fractions and quantities should have been pre-calculated.}
 }
 \value{

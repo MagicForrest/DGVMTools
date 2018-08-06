@@ -4,48 +4,43 @@
 \name{export-methods}
 \alias{export-methods}
 \alias{export-methods}
-\alias{as.data.frame.ModelObject}
+\alias{as.data.frame.Field}
 \alias{export-methods}
-\alias{as.data.frame.DataObject}
+\alias{as.data.frame.Comparison}
 \alias{export-methods}
-\alias{as.data.frame.ComparisonLayer}
+\alias{as.data.table.Field}
 \alias{export-methods}
-\alias{as.data.table.ModelObject}
-\alias{export-methods}
-\alias{as.data.table.DataObject}
-\alias{export-methods}
-\alias{as.data.table.ComparisonLayer}
-\alias{export-methods}
+\alias{as.data.table.Comparison}
 \alias{export-methods}
 \alias{export-methods}
 \alias{as.Raster}
-\alias{as.Raster,DataObject-method}
-\alias{as.Raster,ModelObject-method}
-\alias{as.Raster,ComparisonLayer-method}
-\title{Coerce from ModelObjects and DataObjects}
+\alias{as.Raster,Field-method}
+\alias{as.Raster,Comparison-method}
+\alias{as.array}
+\alias{as.array,Field-method}
+\alias{as.array}
+\title{Coerce from Fields and DataObjects}
 \usage{
-\method{as.data.frame}{ModelObject}(x, row.names, optional, ...)
+\method{as.data.frame}{Field}(x, row.names, optional, ...)
 
-\method{as.data.frame}{DataObject}(x, row.names, optional, ...)
+\method{as.data.frame}{Comparison}(x, row.names, optional, ...)
 
-\method{as.data.frame}{ComparisonLayer}(x, row.names, optional, ...)
+\method{as.data.table}{Field}(x, keep.rownames, ...)
 
-\method{as.data.table}{ModelObject}(x, keep.rownames, ...)
-
-\method{as.data.table}{DataObject}(x, keep.rownames, ...)
-
-\method{as.data.table}{ComparisonLayer}(x, keep.rownames, ...)
+\method{as.data.table}{Comparison}(x, keep.rownames, ...)
 
 as.Raster(x)
 
-\S4method{as.Raster}{DataObject}(x)
+\S4method{as.Raster}{Field}(x)
 
-\S4method{as.Raster}{ModelObject}(x)
+\S4method{as.Raster}{Comparison}(x)
 
-\S4method{as.Raster}{ComparisonLayer}(x)
+as.array(x, ...)
+
+\S4method{as.array}{Field}(x, ...)
 }
 \arguments{
-\item{x}{A ModelObject or a DataObject}
+\item{x}{A Field or a DataObject}
 
 \item{row.names}{NULL or a character vector giving the row names for the data frame. Missing values are not allowed.}
 
@@ -58,9 +53,12 @@ basically with the meaning of data.frame(*, check.names = !optional).}
 \item{keep.rownames}{If ... is a matrix or data.frame, TRUE will retain the rownames of that object in a column named rn.}
 }
 \description{
-Functions to coerce ModelObjects and DataObjects into other objects (data.frame, data.table, RasterBrick, SpatialPixelsDataFrame)
+Functions to coerce Fields and DataObjects into other objects (data.frame, data.table, RasterBrick, SpatialPixelsDataFrame)
 }
 \details{
 Note that for coercing to a Raster* object (RasterLayer or RasterBrick) the function is called "as.Raster" (capital "R") to avoid conflict with  
 another function in the raster package called "as.raster"
+}
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}, Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
 }

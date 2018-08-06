@@ -23,44 +23,22 @@ setGeneric("print", function(x, ...) standardGeneric("print"))
 #' @export
 setMethod("print", signature(x="PFT"), function(x) {
   
-  cat(paste0("PFT: ", x@id," (", x@name, "): ", "Lifeform=",  x@lifeform, ", Leafform=", x@leafform, ", Phenology=", x@phenology, ", Climate zone=", x@zone, ", Preferred colour=", x@colour, ", Combine with=", x@combine, "\n"))
-
+  cat(paste0("PFT: ", x@id," (", x@name, "): ", "Growth form=",  x@growth.form, ", Leaf form=", x@leaf.form, ", Phenology=", x@phenology, ", Climate zone=", x@climate.zone, ", Shade tolerance=", x@shade.tolerance, ", Preferred colour=", x@colour, "\n"))
+  
 })
 
 #' @rdname print
 #' @export
 setMethod("print", signature(x="Quantity"), function(x) {
   
-  cat(paste0("Quantity: ", x@id," (", x@name, "): ", "Type=",  x@type, ", Units=", x@units, ", Aggregate Method=", x@aggregate.method, ", Defined for models: ", paste0(unlist(x@model), collapse = ', '), "\n"))
-
-})
-
-
-#' @rdname print
-#' @export
-setMethod("print", signature(x="TemporalExtent"), function(x) {
-  
-  cat(paste0("Temporal Extent:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  cat(paste0("start = ", x@start, "\n"))
-  cat(paste0("end = ", x@end, "\n"))
+  cat(paste0("Quantity:\n"))
+  cat(paste0("\t\t", x@id," (", x@name, "): ",  "Units=", x@units, ", Defined for format: ", paste0(unlist(x@format), collapse = ', '), "\n"))
   
 })
 
-#' @rdname print
-#' @export
-setMethod("print", signature(x="SpatialExtent"), function(x) {
-  
-  cat(paste0("Spatial Extent:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  cat(paste0("extent: xmin = ", x@xmin, "\n"))
-  cat(paste0("        xmax = ", x@xmax, "\n"))
-  cat(paste0("        ymin = ", x@ymin, "\n"))
-  cat(paste0("        ymax = ", x@ymax, "\n"))
-  
-})
+
+
+
 
 #' @rdname print
 #' @export
@@ -80,124 +58,115 @@ setMethod("print", signature(x="Period"), function(x) {
 
 
 
+
 #' @rdname print
 #' @export
-setMethod("print", signature(x="ModelRunInfo"), function(x) {
+setMethod("print", signature(x="Source"), function(x) {
   
-  cat(paste0("Model run:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  cat(paste0("run directory = ", "\"", x@run.dir, "\"", "\n"))
-  cat(paste0("driving data = ", "\"", x@driving.data, "\"", "\n"))
-  cat(paste0("lon-lat offset = (", x@lonlat.offset[1], ",", x@lonlat.offset[2], ")\n"))
-  cat(paste0("year offset = ", x@year.offset, "\n"))
-  cat(paste0("resolution tolerance = ", x@tolerance, "\n"))
-  cat(paste0("london.centre = ", x@london.centre, "\n"))
-  cat(paste0("landuseSimulated = ", x@landuseSimulated, "\n"))
-  cat(paste0("institute = ", "\"", x@institute, "\"", "\n"))
-  cat(paste0("contact = ", "\"", x@contact, "\"", "\n"))
-  cat(paste0("PFT superset (all possible, not just those in the run):", "\n"))
+  cat(paste0("Source:\n"))
+  cat(paste0("\tid = ", "\"", x@id, "\"", "\n"))
+  cat(paste0("\tname = ", "\"", x@name, "\"", "\n"))
+  cat(paste0("\tformat = ", "\"", x@format@id, "\"", "\n"))
+  cat(paste0("\tlon-lat offset = (", x@lonlat.offset[1], ",", x@lonlat.offset[2], ")\n"))
+  cat(paste0("\tyear offset = ", x@year.offset, "\n"))
+  cat(paste0("\tdirectory = ", "\"", x@dir, "\"", "\n"))
+  cat(paste0("\tforcing data = ", "\"", x@forcing.data, "\"", "\n"))
+  cat(paste0("\tlondon.centre = ", x@london.centre, "\n"))
+  cat(paste0("\tland.use.included = ", x@land.use.included, "\n"))
+  cat(paste0("\tinstitute = ", "\"", x@institute, "\"", "\n"))
+  cat(paste0("\tcontact = ", "\"", x@contact, "\"", "\n"))
+  cat(paste0("\tPFTs defined:\n"))
+  all.PFTs <- c()
   for(PFT in x@pft.set){
-    print(PFT)
+    all.PFTs <- append(all.PFTs, PFT@id)
   }
+  cat(paste0(all.PFTs))
   
-})
-
-#' @rdname print
-#' @export
-setMethod("print", signature(x="ModelRun"), function(x) {
-  
-  print(as(x, "ModelRunInfo"))
-  cat("The following ModelObjects have been stored internally in this ModelRun:\n")
-  if(length(x@objects) > 0){
-    for(object in x@objects) cat(paste0(object@id, "\n"))
-  }
-  else{
-    cat("(None)\n")
-  }
 
 })
 
 
 #' @rdname print
 #' @export
-setMethod("print", signature(x="ModelObject"), function(x) {
+setMethod("print", signature(x="STAInfo"), function(x) {
   
-  cat(paste0("Model object:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  #cat(paste0("name = ", x@name, "\"", "\n"))
+  cat(paste0("Spatial Info:\n"))
+  cat(paste0("\t\tSpatial aggregation = ",  x@spatial.aggregate.method, "\n"))
+  cat(paste0("\t\tSpatial extent id = ",  x@spatial.extent.id, "\n"))
+  cat(paste0("\t\tSpatial extent: \n"))
+  extent.string <- capture.output(print(x@spatial.extent))
+  for(part in extent.string){
+    cat(paste0("\t\t\t", part, "\n"))
+  }
+  cat(paste0("Year Info:\n"))
+  cat(paste0("\t\tYearly aggregation =  ",  x@year.aggregate.method, "\n"))
+  cat(paste0("\t\tFirst year = ", x@first.year, "\n"))
+  cat(paste0("\t\tLast year = ", x@last.year, "\n"))
+  cat(paste0("Subannual Info: \n"))
+  cat(paste0("\t\tSubannual original = ",  x@subannual.original, "\n"))
+  cat(paste0("\t\tSubannual aggregation = ",  x@subannual.aggregate.method, "\n"))
+  cat(paste0("\t\tSubannual resolution = ",  x@subannual.resolution, "\n"))
+  
+})
+
+
+#' @rdname print
+#' @export
+setMethod("print", signature(x="Field"), function(x) {
+  
+  cat(paste0("A Field object\n"))
   print(x@quant)
-  cat(paste0("Spatially Averaged =  ",  x@spatial.aggregate.method, "\n"))
-  print(x@spatial.extent)
-  cat(paste0("Temporally Averaged =  ",  x@temporal.aggregate.method, "\n"))
-  print(x@temporal.extent)
-  cat(paste0("Is a site single (not really used) =  ",  x@is.site, "\n"))
+  cat(paste0("Id:\n"))
+  cat(paste0("\t\t", "\"", x@id,  "\"", "\n"))
+  cat(paste0("Layers: ",  "\n"))
+  cat(paste0("\t\t", paste0(names(x), collapse = " "), "\n"))
+  cat(paste0("Dimensions: ",  "\n"))
+  cat(paste0("\t\t", paste0(getDimInfo(x), collapse = " "), "\n"))
+  print(as(x, "STAInfo"))
   cat(paste0("Data: ",  "\n"))
   print(x@data)
-  cat(paste0("Model Run = ", "\"", x@run@name, "\"", "\n"))
-  cat("For full ModelRun metadata type \"print(X@run)\", where X is this ModelObject")
+  cat("\n")
+  cat(paste0("Source name:\n"))
+  cat(paste0("\t\t ", "\"", x@source@name, "\"", "\n"))
+  cat("(For full Source metadata type \"print(X@source)\", where X is this Field)\n")
   
 })
 
-#' @rdname print
-#' @export
-setMethod("print", signature(x="DatasetInfo"), function(x) {
-  
-  cat(paste0("DatasetInfo:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", "\"", x@name, "\"", "\n"))
-  print(x@quant)
- 
-  
-})
-
-#' @rdname print
-#' @export
-setMethod("print", signature(x="DataObject"), function(x) {
-  
-  cat(paste0("DataObject:\n"))
-  cat(paste0("id = ", "\"", x@id, "\"", "\n"))
-  cat(paste0("name = ", x@name, "\"", "\n"))
-  print(x@quant)
-  #cat(paste0("Spatially Averaged =  ",  x@spatial.aggregate.method, "\n"))
-  print(x@spatial.extent)
-  #cat(paste0("Temporally Averaged =  ",  x@temporal.aggregate.method, "\n"))
-  print(x@temporal.extent)
-  cat("Data:")
-  print(x@data)
-  if(x@correction.layer == "") cat("No correction layer has been defined")
-  else cat(paste0("Correction layer is \"", x@correction.layer, "\""))
-
-})
 
 
 #' @rdname print
 #' @export
-setMethod("print", signature(x="ComparisonLayer"), function(x) {
+setMethod("print", signature(x="Comparison"), function(x) {
   
   cat(paste0("Comparison Layer:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   cat(paste0("name = ", x@name, "\"", "\n"))
-  print(x@quant)
-  cat(paste0("Spatially Averaged =  ",  x@spatial.aggregate.method, "\n"))
-  print(x@spatial.extent)
-  cat(paste0("Temporally Averaged =  ",  x@temporal.aggregate.method, "\n"))
-  print(x@temporal.extent)
-  cat(paste0("Is a site single (not really used) =  ",  x@is.site, "\n"))
+  cat(paste0("First layers: \n"))
+  print(x@layers1)
+  cat(paste0("Second layers: \n"))
+  print(x@layers2)
+  cat(paste0("Quantity for first layer: \n"))
+  print(x@quant1)
+  cat(paste0("Quantity of second layer: \n"))
+  print(x@quant2)
+  cat(paste0("STAInfo for first layer: \n"))
+  print(x@sta.info1)
+  cat(paste0("STAInfo of second layer: \n"))
+  print(x@sta.info2)
   cat(paste0("Data: ",  "\n"))
   print(x@data)
   cat(paste0("Source for first layer: \n"))
-  print(x@info1)
+  print(x@source1)
   cat(paste0("Source for second layer: \n"))
-  print(x@info2)
-
+  print(x@source2)
+  
 })
 
 
 
 #' @rdname print
 #' @export
-setMethod("print", signature(x="SpatialComparison"), function(x) {
+setMethod("print", signature(x="Statistics"), function(x) {
   
   cat(paste0("Spatial Comparison:\n"))
   cat("Continuous comparison metrics")
@@ -218,7 +187,7 @@ setMethod("print", signature(x="SpatialComparison"), function(x) {
   for(kappa in x@individual.Kappas) {
     print(kappa)
   }
-
+  
 })
 
 
@@ -229,20 +198,32 @@ setMethod("print", signature(x="BiomeScheme"), function(x) {
   cat(paste0("Biome Scheme:\n"))
   cat(paste0("id = ", "\"", x@id, "\"", "\n"))
   cat(paste0("name = ", x@name, "\"", "\n"))
-  cat(paste0("Combine shade tolerance classes: ", x@combineShadeTolerance, "\n"))  
-  cat(paste0("Totals needed: ", paste0(x@totals.needed, collapse = ' '), "\n"))
-  cat(paste0("Maximums needed: ", paste0(x@max.needed, collapse = ' '), "\n"))
-  cat(paste0("Fraction of Total needed: ", paste0(x@fraction.of.total, collapse = ' '), "\n"))
-  cat(paste0("Fraction of Tree needed: ", paste0(x@fraction.of.tree, collapse = ' '), "\n"))
-  cat(paste0("Fraction of Toody needed: ", paste0(x@fraction.of.woody, collapse = ' '), "\n"))
-  cat(paste0("Need Annual GDD5 data: ", "\"", x@needGDD5,  "\"", "\n"))  
+  #cat(paste0("Totals needed: ", paste0(x@totals.needed, collapse = ' '), "\n"))
   cat(paste0("Data reference: ", "\"", x@data.reference,  "\"", "\n"))  
   cat(paste0("Published reference: ", "\"", x@published.reference,  "\"", "\n"))  
   cat(paste0("Biomes:\n"))
   for(type in x@units) {
     cat(paste0("     ", type,"\n"))    
   }
+  
+})
 
+#' @rdname print
+#' @export 
+setMethod("print", signature(x="Format"), function(x) {
+  
+  cat(paste0("Format:\n"))
+  cat(paste0("id = \"", x@id, "\"", "\n"))
+  cat(paste0("Default PFTs:\n"))
+  for(PFT in x@default.pfts){
+    print(PFT)
+  }
+  cat(paste0("Defined Quantities:\n"))
+  for(quant in x@quantities){
+    print(quant)
+  }
+  
+  
 })
 
 

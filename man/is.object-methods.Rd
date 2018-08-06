@@ -2,25 +2,31 @@
 % Please edit documentation in R/is-methods.R
 \name{is.object-methods}
 \alias{is.object-methods}
-\alias{is.DataObject}
-\alias{is.ModelObject}
-\alias{is.ComparisonLayer}
-\alias{is.ModelRun}
+\alias{is.Field}
+\alias{is.Comparison}
+\alias{is.Source}
 \alias{is.Quantity}
-\alias{is.SpatialComparison}
+\alias{is.PFT}
+\alias{is.Statistics}
+\alias{is.Format}
+\alias{is.STAInfo}
 \title{Check if an object is a particular type of DGVMTools object.}
 \usage{
-is.DataObject(input, spatial = FALSE, temporal = FALSE, site = FALSE)
+is.Field(input, spatial = FALSE, temporal = FALSE)
 
-is.ModelObject(input, spatial = FALSE, temporal = FALSE, site = FALSE)
+is.Comparison(input)
 
-is.ComparisonLayer(input)
-
-is.ModelRun(input)
+is.Source(input)
 
 is.Quantity(input)
 
-is.SpatialComparison(input)
+is.PFT(input)
+
+is.Statistics(input)
+
+is.Format(input)
+
+is.STAInfo(input)
 }
 \arguments{
 \item{input}{Any R object to be checked}
@@ -28,8 +34,6 @@ is.SpatialComparison(input)
 \item{spatial}{check if input is a spatial object}
 
 \item{temporal}{check if input is a temporal object}
-
-\item{site}{check if input is a site object}
 }
 \value{
 logical
