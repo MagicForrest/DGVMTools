@@ -385,7 +385,8 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   yy <- ncvar_get(d,"lat")
   tt <- ncvar_get(d,"time")
   len_tt <- length(tt)
-  
+  print(tt)
+  print(length(tt))
   
   
   # select the years we want
@@ -401,14 +402,21 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
     actual.sta.info@subannual.original <- "Month"
     time.steps.per.year <- 12
   }
-  actual.sta.info@first.year <- first.year
-  actual.sta.info@last.year <- last.year
+  actual.sta.info@first.year <- run@year.offset
+  actual.sta.info@last.year <- run@year.offset + length(tt)/ time.steps.per.year - 1
   
-  start.point <- ((first.year-1) * time.steps.per.year) + 1 
+  
+  if(length(first.year) == 0) first.year <- actual.sta.info@first.year
+  if(length(last.year) == 0) last.year <- actual.sta.info@last.year
+  print(last.year)
+  
+  start.point <- ((first.year-actual.sta.info@first.year) * time.steps.per.year) + 1 
   n.years <- last.year - first.year +1
   time.count <-  time.steps.per.year * n.years
-  end.point <- last.year * time.steps.per.year
+  end.point <- start.point + time.count - 1
   
+  print(start.point)
+  print(end.point)
   
   dim.names <- list(xx, yy, start.point:end.point)
   
@@ -481,16 +489,20 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
     # merge the data tables for each PFT into one data.table
     out.all <- tr.dt[g3.dt[g4.dt]]
     
+    print(out.all)
     
     # sort out the time dimension
     # NOTE: something special is happening here. The ':=' operator is changing the data.table in place.
     # this means that you don't need to do a re-assignment using '<-' 
-    out.all[, Year := ceiling(Time/time.steps.per.year) ]
+    out.all[, Year := floor((Time-1)/time.steps.per.year) + first.year - 1]
+    print(out.all)
     if(adgvm.daily) {
       out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
+      print(out.all)
     }
     else {
       out.all[, Month := ((Time-1) %% time.steps.per.year) + 1]
+      print(out.all)
     }
     out.all[, Time := NULL]
     
