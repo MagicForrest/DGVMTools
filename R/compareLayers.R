@@ -48,7 +48,7 @@ compareLayers <- function(field1,
   # comparing one layer from each
   if(length(layers1) == 1){
     type1 <- class(field1@data[[layers1]])
-    type2 <- class(field1@data[[layers2]])
+    type2 <- class(field2@data[[layers2]])
     if(type1 == type2){
       if(type1 == "numeric") {
         single <- TRUE
@@ -60,7 +60,7 @@ compareLayers <- function(field1,
       }
     }
     else {
-      stop("Layer type don't match, check your layers1 and layers2 arguemnts and your input Fields")
+      stop("Layer type don't match, check your layers1 and layers2 arguments and your input Fields")
     }
   }
   else {

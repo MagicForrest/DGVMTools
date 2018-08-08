@@ -3,6 +3,8 @@ title: "Writing or Modifying a Format"
 author: "Matthew Forrest"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
+#output: 
+#  pdf_document: default
 vignette: >
   %\VignetteIndexEntry{Writing or Modifying a Format}
   %\VignetteEngine{knitr::rmarkdown}
@@ -44,7 +46,7 @@ original.PFTs <- GUESS@default.pfts
 
 str(original.PFTs)
 ```
-To add a new PFT we can simple take our copy of the list, add a new PFT, and copy it back into the `Format` objects
+To add a new PFT we can simple take our copy of the list, add a new PFT, and copy it back into the `Format` object.
 ```{r modify PFTs, echo=TRUE}
 new.PFT =  new("PFT",
                id = "NewPFT",
@@ -285,7 +287,7 @@ NewFormat <- new("Format",
 
 And there we go.  A new `Format` object.  Obviously the trickness is defining the functions, `particularly getField()`
 
-```
+``` {r Final print, echo=TRUE}
 print(NewFormat)
 ```
 

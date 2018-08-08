@@ -62,8 +62,8 @@
 #' @importFrom raster crs
 #' 
 #' @export 
-#' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
-
+#' @seealso \code{plotTemporal}
+#' 
 plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
                         layers = NULL,
                         title = character(0),
@@ -221,6 +221,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   ### PREPARE DATA FOR PLOTTING
   # Here we extract the data.table from the object to be plotted and melt it as appropriate
+  # we also make a list of PFTs in case we need them for colour matching later
   data.toplot.list <- list()
   
   # Loop through the objects and pull layers from each one into a large data.table for plotting
@@ -229,6 +230,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   continuous <- FALSE
   first <- TRUE
   final.fields <- list()
+  PFTs <- list()
   for(object in sources){
     
     # check that at least one layer is present in this object
@@ -265,10 +267,11 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       
       # check if layers are all continuous or discrete
       for(layer in layers) {
-        if(class(object@data[[layer]]) == "factor") discrete <- TRUE
-        if(class(object@data[[layer]]) == "numeric") continuous <- TRUE
+        if(class(object@data[[layer]]) == "factor" || class(object@data[[layer]]) == "logical") discrete <- TRUE
+        if(class(object@data[[layer]]) == "numeric" || class(object@data[[layer]]) == "integer" ) continuous <- TRUE
       }
-      if(discrete & continuous) stop("plotSpatial canot simultaneously plot discrete and continuous layers, check your layers")   
+      if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers") 
+      if(!discrete & !continuous) stop("plotSpatial can only plot 'numeric', 'integer', 'factor' or 'logical' layers, check your layers")   
       
       # check for meta-data to automagic the plots a little bit if possble
       if(first) {
@@ -289,22 +292,55 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       }
       
       first <- FALSE
-      
+      PFTs <- append(PFTs, object@source@pft.set)
     } # end if something.present
     
   }
- 
+  
   # finally mash them all togther to make the final data.table to plot
   data.toplot <- rbindlist(data.toplot.list)
-
+  
+  # check the PFTs present and make a unique list
+  PFTs <- unique(PFTs)
+  
   ### Rename "variable" to "Layer" which makes more conceptual sense
   setnames(data.toplot, "variable", "Layer")
   setnames(data.toplot, "value", "Value")
   
   
   
-  ### APPLY CUSTOM CUTS TO DISCRETISE IF NECESSARY
   
+  ### DETERMINE X- AND Y-LIMITS, CROP AND MAKE OVERLAY
+  all.lons <- sort(unique(data.toplot[["Lon"]]))
+  all.lats <- sort(unique(data.toplot[["Lat"]]))
+  
+  # y cropping
+  if(is.null(ylim)) {
+    # MF this code is not bullet proof, could possible be replaced with a dedicated getSpacing() function to handle this better
+    # expand to the limit to the edge of the gridcell rather than the gridcell centres
+    ylim <- c(min(all.lats) - abs(all.lats[1] - all.lats[2])/2, max(all.lats) + abs(all.lats[length(all.lats)] - all.lats[length(all.lats)-1])/2) 
+  }
+  else {
+    data.toplot <- data.toplot[Lat >= ylim[1] & Lat <= ylim[2],]
+  }
+  
+  # x cropping
+  if(is.null(xlim)) {
+    # MF  not bullet proof as above
+    # expand to the limit to the edge of the gridcell rather than the gridcell centres
+    xlim <- c(min(all.lons) - abs(all.lons[1] - all.lons[2])/2, max(all.lons) + abs(all.lons[length(all.lons)] - all.lons[length(all.lons)-1])/2) 
+  }
+  else {
+    data.toplot <- data.toplot[Lon >= xlim[1] & Lon <= xlim[2],]
+  }
+  
+  # prepare overlay
+  if(!is.null(map.overlay)) map.overlay.df <- makeMapOverlay(map.overlay, all.lons, interior.lines, xlim, ylim) 
+  
+  
+  ### DO CUTS IF DEFINED
+  #  variable  is continuous but should be discretised
+  has.been.discretized <- FALSE
   if(continuous & !is.null(cuts)) {
     
     # drop cut intervals at the beginning and the end to which don't have data in them to better use the colour scale.
@@ -335,161 +371,120 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     # set flags
     discrete <- TRUE
     continuous <- FALSE
-
+    has.been.discretized <- TRUE
+    
     # set colours, labels and breaks
     breaks <- levels(data.toplot[["Value"]])
     categorical.legend.labels <- breaks
     cols <- grDevices::colorRampPalette(cols)(length(cuts))
     names(cols) <- breaks
     drop.from.scale <- FALSE
-
-  }
-  else{
-    cuts <- waiver()
-  }
-  
-  
-  ### CALCULATE THE RANGE OF LONGITUDE AND LATITUDE TO BE PLOTTED AND CROP
-  all.lons <- sort(unique(data.toplot[["Lon"]]))
-  all.lats <- sort(unique(data.toplot[["Lat"]]))
-  
-  # y cropping
-  if(is.null(ylim)) {
-    # MF this code is not bullet proof, could possible be replaced with a dedicated getSpacing() function to handle this better
-    # expand to the limit to the edge of the gridcell rather than the gridcell centres
-    ylim <- c(min(all.lats) - abs(all.lats[1] - all.lats[2])/2, max(all.lats) + abs(all.lats[length(all.lats)] - all.lats[length(all.lats)-1])/2) 
-  }
-  else {
-    data.toplot <- data.toplot[Lat >= ylim[1] & Lat <= ylim[2],]
-  }
-  
-  # x cropping
-  if(is.null(xlim)) {
-    # MF  not bullet proof as above
-    # expand to the limit to the edge of the gridcell rather than the gridcell centres
-    xlim <- c(min(all.lons) - abs(all.lons[1] - all.lons[2])/2, max(all.lons) + abs(all.lons[length(all.lons)] - all.lons[length(all.lons)-1])/2) 
-  }
-  else {
-    data.toplot <- data.toplot[Lon >= xlim[1] & Lon <= xlim[2],]
-  }
-  
-  ### PREPARE THE MAP OVERLAY
-  if(class(map.overlay)[1] == "character"){
     
-    # determine if london centered (if not call "maps2" for Pacific centered versions)
-    gt.180 <- FALSE
-    for(lon in all.lons) {
-      if(lon > 180) gt.180 <- TRUE
+    
+  }
+  
+  
+  
+  ### FOR CONTININOUS VARIABLE CATCH THE CASE WHERE NO COLOURS HAVE BEEN PROVIDED
+  if(continuous) {
+    
+    # this solves the special case that a continuous layer has been derived from a categorical quant 
+    # and no colours have been supplied
+    if(quant.is.categorical && is.null(cols)) {
+      cols <- viridis::viridis(11)
     }
-    if(tolower(map.overlay)=="world" && gt.180) map.overlay <- "world2"
-    else if(tolower(map.overlay)=="worldHires" && gt.180) map.overlay <- "worldHires2"
-    else if(tolower(map.overlay)=="world2" && !gt.180) map.overlay <- "world"
-    else if(tolower(map.overlay)=="world2Hires" && !gt.180) map.overlay <- "worldHires"
-    
-    # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
-    
-    proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
-    map.sp.lines <- maptools::map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = sp::CRS(proj4str))
-    suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
-    rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
-    map.sp.lines.df <- SpatialLinesDataFrame(map.sp.lines, data = df)
-    map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
-    map.overlay <- fortify(map.sp.lines.df)
-    rm(df, map.sp.lines, map.sp.lines.df)   
     
   }
-  else if(!is.null(map.overlay)) {
-    stop("Some other overlay type, which is not implemented...")
-  }
-  
   
   ### IF PLOT IS DISCRETE, BUILD THE COLOURS 
-  # In this case the Field to be plotted is continuous, but the Quantity is categorical, and no cols were provided
-  # -> therefore default to viridis
-  if(continuous && quant.is.categorical && is.null(cols)) {
-    cols <- viridis::viridis(11)
-  }
-  # In this the Quantity is categorical (I think we can assume that the Field is discrete) and no colours were provided
-  # -> therefore build a colour list based on the colours provided by the Quantity
-  else if(quant.is.categorical & missing(cols)){
+  else if(discrete) {
     
     # make a list of all the unique values (factors), each of these will need a colour
     unique.vals <- unique(data.toplot[["Value"]])
     
     # Final results of stuff below
     here.cols <- c()
-    is.PFTs <- FALSE
-
+    all.Matched <- FALSE
+    
     ###  If the Quantity if specifically defined as categorical then use the colours defined in the Quantity's units slot
-    if(length(quant@units) > 1 && discrete) {
+    ###  or use the provided col arguments to over-ride
+    if(quant.is.categorical) {
       
       legend.title = NULL
       
-      # reverse engineer colours from palette
-      quant.cols <- quant@colours(length(quant@units))
-      names(quant.cols) <- quant@units
+      # if colours not supplied,  reverse engineer colours from palette
+      if(missing(cols)) { 
+        quant.cols <- quant@colours(length(quant@units)) 
+        names(quant.cols) <- quant@units
+      }
+      # else use supplied colours
+      else{
+        quant.cols <- cols
+      }
       
       for(val in unique.vals) {
         if(!is.na(val)){
           for(factor.value in quant@units) {
             if(val == factor.value) here.cols[[val]] <- quant.cols[[val]]
-          }  
+          }
         }
       }
+      
+      
+      # define breaks
+      breaks <- unique.vals
+      cols <- here.cols
+    }
+    
+    ### Else data is categorical, but not explicitly defined as so in the Quantity, so we need to lookup colours for each factor
+    else {
+      
+      # Attempt to match the colours
+      here.cols <- matchPFTCols(unique.vals, PFTs)
+      if(length(here.cols) == length(unique.vals)) all.Matched <- TRUE
+      
+      
+      # If found colours for all the factors, set the values for plotting
+      if(all.Matched) {
+        if(is.null(cols)) cols <- here.cols
+        legend.title <- element_blank()
+        breaks <- sort(names(cols))
+        if(useLongNames) {
+          categorical.legend.labels <- c()
+          for(this.break in breaks){
+            
+            if(this.break == "None") {
+              categorical.legend.labels <- append(categorical.legend.labels, "None")
+            }
+            else {
+              for(PFT in PFTs) {
+                if(this.break == PFT@id) categorical.legend.labels <- append(categorical.legend.labels, PFT@name)
+              } # for each PFT   
+            } # if note "None"
+            
+          } # for each breal
+        } # if useLongNames
+      } # if all.Matched 
+      
+      else if(!has.been.discretized){
+        breaks <- waiver()
+        cols <- viridis::viridis(length(unique.vals))
+      } # else if not been discretised
+      
+    } # if not categorical
+    
+  }  # if discrete
   
-    }
-    
-    ### Else data is categorical, but not explicitly defined as so in the Quantity, so we need to scan the names to identify the PFTs or months
-    # check if the factors are PFTs 
-    # TODO - implement months below!!
-    else if(quant.is.categorical) {
-      
-      pft.superset <- list()
-      for(object in sources) {
-        if(is.Field(object)) {
-          pft.superset <- append(pft.superset, object@source@pft.set)
-        }
-      }
-      
-      pft.superset <- unique(pft.superset)
-      
-      here.cols <- matchPFTCols(unique.vals, pft.superset)
-      if(length(here.cols) == length(unique.vals)) is.PFTs <- TRUE
-      
-    }
-    
-    
-    # If found colours for all the factors, set the values for plotting
-    if(is.PFTs) {
-      if(is.null(cols)) cols <- here.cols
-      legend.title <- "PFT"
-      breaks <- sort(names(cols))
-      if(useLongNames) {
-        categorical.legend.labels <- c()
-        for(this.break in breaks){
-          
-          if(this.break == "None") {
-            categorical.legend.labels <- append(categorical.legend.labels, "None")
-          }
-          else {
-            for(PFT in pft.superset) {
-              if(this.break == PFT@id) categorical.legend.labels <- append(categorical.legend.labels, PFT@name)
-            }   
-          }
-          
-          
-        }
-      }
-    }
-    else if(quant.is.categorical && discrete) {
-      if(is.null(cols)) cols <- here.cols
-      legend.title <- quant@name
-      breaks <- quant@units
-    }
-    
+  else {
+    stop("Not discrete or continuous??")
   }
   
-  ### Swap 1,2,3... for Jan,Feb,Mar... if plotting months
+  
+  
+  
+  
+  
+  ### DEAL WITH MONTHS - swap 1,2,3... for Jan,Feb,Mar... if plotting months
   if("Month" %in% names(data.toplot)) {
     
     # make a list of months from the meta data
@@ -666,29 +661,24 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   # colour bar
   if(continuous)  {
-   
+    
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
                                     colors = cols,
                                     breaks = cuts,
                                     na.value="grey75",
                                     guide = "legend")
- 
+    
     bar.height.unit <- unit(0.7, units = "npc")
     
     mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = bar.height.unit))
-    #}
-    #else {
     
-    #mp <- mp + scale_fill_manual(values = cols)
-    
-    #
   }
   if(discrete) {
     mp <- mp + scale_fill_manual(values = cols, 
                                  breaks = breaks,
-                                 labels = categorical.legend.labels, drop = drop.from.scale)
-    # mp <- mp + guides(fill = guide_legend(keyheight = 1))
+                                 labels = categorical.legend.labels, 
+                                 drop = drop.from.scale)
   }
   
   # crop to xlim and ylim as appropriate and fix the aspect ratio 
@@ -747,7 +737,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   # map overlay - suppress warning about missing values
   
   if(!is.null(map.overlay)) {
-    suppressWarnings(mp <- mp + geom_path(data=map.overlay, size=0.1, color = "black", aes(x=long, y=lat, group = group)))
+    suppressWarnings(mp <- mp + geom_path(data=map.overlay.df, size=0.1, color = "black", aes(x=long, y=lat, group = group)))
   }
   
   return(mp)

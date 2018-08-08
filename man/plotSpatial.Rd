@@ -86,7 +86,7 @@ However, the \code{plotGGSpatial} function makes pretty plots with a simpler syn
 The function works best for \code{Fields} (which contain a lot of useful metadata).
 }
 \seealso{
-\code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
+\code{plotTemporal}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

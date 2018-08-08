@@ -35,25 +35,40 @@ layerOp <- function(x, operator, layers, new.layer){
   final.layers <- c()
   for(layer in layers) {
     
+    # expand the ".xxxx" arguments
     if(substring(layer, 1, 1) == '.') {
       
       criteria <- substring(layer, 2)
       if(tolower(criteria) == "pfts" || tolower(criteria) == "pft") expanded.layers <- listPFTs(x)
       else expanded.layers <- listPFTs(x, criteria)
       final.layers <- append(final.layers, unlist(expanded.layers))
-              
+      
     }
+    # else if the layer is not present in  the input Field and the operator is *not* NULL or numeric
+    # then ignore the layer with a warning
+    else if(!(layer %in% layers(x)) && !(is.null(operator) || is.numeric(operator))) {
+      warning(paste0("Layer ", layer, " is not is in the available layers, so this layer will be ignored."))
+    }
+    # otherwise include the layer
     else {
       final.layers <- append(final.layers, layer)
     }
-  
     
   }
   
+  
+  
   # reset the layers to the new ones, and if no layers warn and exit
+  # but not if the operator is NULL or a numeric, we *expect* that layers from maybe be missing in this case
   layers <- final.layers
   if(length(layers) == 0) {
-    warning(paste0("No input layers found when building layer ", new.layer, ", so not making one and returning.  If subsequent code depends on this layer it will probably fail"))
+    if(!missing(new.layer)){
+      warning(paste0("No input layers found when building layer ", new.layer, ", so making a 'zero layer'.  Please check that is is really what you want"))
+      x@data <- x@data[, (new.layer) := 0]
+    }
+    else {
+      warning(paste0("No valid input layers found, so returning field unchanged"))
+    }
     return(x)
   }
   
@@ -72,8 +87,8 @@ layerOp <- function(x, operator, layers, new.layer){
     
     # add
     if(operator == "+" || operator == "sum" || operator == "add") {
-       if(missing(new.layer)) new.layer <- paste0(layers, collapse = "+")
-       x@data <- x@data[, (new.layer) := rowSums(.SD), .SDcols = layers]
+      if(missing(new.layer)) new.layer <- paste0(layers, collapse = "+")
+      x@data <- x@data[, (new.layer) := rowSums(.SD), .SDcols = layers]
     }
     
     # mean
