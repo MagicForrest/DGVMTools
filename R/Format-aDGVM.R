@@ -366,17 +366,13 @@ convertMonthlyScheme1 <- function( runid, fire, directory )
 #' @seealso \code{getQuantity_aDGVM_Scheme2}
 getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgvm.daily)
 {
-  
-  
   # To stop NOTES
   Day = Lat = Lon = Month = Time = Year = NULL
   
   fname <- file.path(run@dir, paste("pop_", run@id,".nc", sep=""))
   
-  
   # STAInfo object to summarise the spatial-temporal-annual dimensions of the data
   actual.sta.info <- new("STAInfo")
-  
   
   cat( "Convert", fname, "\n" )
   d <- nc_open(fname)
@@ -385,8 +381,8 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   yy <- ncvar_get(d,"lat")
   tt <- ncvar_get(d,"time")
   len_tt <- length(tt)
-  print(tt)
-  print(length(tt))
+  #print(tt)
+  #print(length(tt))
   
   
   # select the years we want
@@ -408,221 +404,172 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   
   if(length(first.year) == 0) first.year <- actual.sta.info@first.year
   if(length(last.year) == 0) last.year <- actual.sta.info@last.year
-  print(last.year)
+  print(c(first.year,last.year))
   
   start.point <- ((first.year-actual.sta.info@first.year) * time.steps.per.year) + 1 
   n.years <- last.year - first.year +1
   time.count <-  time.steps.per.year * n.years
   end.point <- start.point + time.count - 1
   
-  print(start.point)
-  print(end.point)
+  print(c(start.point, end.point))
   
   dim.names <- list(xx, yy, start.point:end.point)
-  
+    
+  nc.start.vec.tr <- c(  1, 1,1,start.point )
+  nc.start.vec.g4 <- c(  1, 1,2,start.point )
+  nc.start.vec.g3 <- c(  1, 1,3,start.point )
+  nc.count.vec    <- c( -1,-1,1,time.count )
   
   # number of years used to calculate fire return interval  
   years_fire <- 20
   
-  
-  
-  
-  
-  #for ( z in t_seq ) {
-  # if(variable@id == "agb"){
-  #   tmp.tr <-          ncvar_get( d, "SumBBark", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #   tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #   tmp.g4 <-          ncvar_get( d, "SumBLeaf", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-  #   tmp.g3 <-          ncvar_get( d, "SumBLeaf", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-  #   
-  #   tmp.tr <- tmp.tr/20
-  #   tmp.g4 <- tmp.g4/2
-  #   tmp.g3 <- tmp.g3/2
-  # 
-  #   #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #   out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-  #   out.all <- rbind( out.all, out.vec )
-  # }
-  
-  if(variable@id == "vegC_std"){
-    tmp.tr <-          ncvar_get( d, "SumBBark", start=c( 1,1,1,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=c( 1,1,1,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBLeaf", start=c( 1,1,1,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBStor", start=c( 1,1,1,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBRoot", start=c( 1,1,1,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBRepr", start=c( 1,1,1,start.point ), count=c( -1,-1,1,time.count ) )
+  #if(variable@id == "firefreq" | variable@id == "burntfraction_std" ){
     
-    tmp.g4 <-          ncvar_get( d, "SumBLeaf", start=c( 1,1,2,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.g4 <- tmp.g4 + ncvar_get( d, "SumBRoot", start=c( 1,1,2,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.g4 <- tmp.g4 + ncvar_get( d, "SumBStor", start=c( 1,1,2,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.g4 <- tmp.g4 + ncvar_get( d, "SumBRepr", start=c( 1,1,2,start.point ), count=c( -1,-1,1,time.count ) )
+   # tmp <- ncvar_get( d, "firecount", start=c( x,y,len_tt-(years_fire*12)+1 ), count=c( 1,1,years_fire*12 ) )
+  #  fir <- matrix( tmp, ncol=12, byrow=T )[,12]
+ #   tmp.fi <- min( sum(fir)/length(fir), 1)
+
+#    z <- max(t_seq)
+  #         #            Lon      Lat    Year            Tr      C4G     C3G     Total
+  #         out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.fi, tmp.fi, tmp.fi, tmp.fi )
+    #         out.all <- rbind( out.all, out.vec )
+  #}
+  
+  if(variable@id == "vegcover_std"){
+    tmp.tr <- ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.g3, count=nc.count.vec )
     
-    tmp.g3 <-          ncvar_get( d, "SumBLeaf", start=c( 1,1,3,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.g3 <- tmp.g3 + ncvar_get( d, "SumBRoot", start=c( 1,1,3,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.g3 <- tmp.g3 + ncvar_get( d, "SumBStor", start=c( 1,1,3,start.point ), count=c( -1,-1,1,time.count ) )
-    tmp.g3 <- tmp.g3 + ncvar_get( d, "SumBRepr", start=c( 1,1,3,start.point ), count=c( -1,-1,1,time.count ) )
+    tmp.g4  <-       tmp.g4/10000*100  # *100 to convert to %
+    tmp.g3  <-       tmp.g3/10000*100  # *100 to convert to %
+    tmp.tr  <- pmin( tmp.tr/20000*100, 100-(tmp.g4+tmp.g3))  # *100 to convert to %
+  }
+  
+  if(variable@id == "basalarea"){
+    tmp.tr <- ncvar_get( d, "SumBasalArea", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncvar_get( d, "SumBasalArea", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncvar_get( d, "SumBasalArea", start=nc.start.vec.g3, count=nc.count.vec )
+  }
+  
+  if(variable@id == "canopyheight_std"){
+    tmp.tr <- ncvar_get( d, "MeanHeight", start=nc.start.vec.tr, count=nc.count.vec )
+    message(paste("Warning: Canopy height currently equal to mean height!"))
+    tmp.g3 <- tmp.tr   # dummy to avoid error message
+    tmp.g4 <- tmp.tr   # dummy to avoid error message
+  }
+  
+  if(variable@id == "aGPP_std"){
+    tmp.tr <- ncvar_get( d, "MeanCGain",  start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncvar_get( d, "MeanCGain",  start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncvar_get( d, "MeanCGain",  start=nc.start.vec.g3, count=nc.count.vec )
+    ind.tr <- ncvar_get( d, "nind_alive", start=nc.start.vec.tr, count=nc.count.vec )
+    ind.g4 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g4, count=nc.count.vec )
+    ind.g3 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g3, count=nc.count.vec )
+    
+    tmp.tr <- tmp.tr*30.42*ind.tr/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
+    tmp.g4 <- tmp.g4*30.42*ind.g4/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
+    tmp.g3 <- tmp.g3*30.42*ind.g3/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
+  }
+  
+  if(variable@id == "LAI_std" | variable@id == "lai"){
+    tmp.tr <- ncvar_get( d, "MeanLai", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncvar_get( d, "MeanLai", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncvar_get( d, "MeanLai", start=nc.start.vec.g3, count=nc.count.vec )
+  }
+  
+  if(variable@id == "meanheight"){
+    tmp.tr <- ncvar_get( d, "MeanHeight", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncvar_get( d, "MeanHeight", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncvar_get( d, "MeanHeight", start=nc.start.vec.g3, count=nc.count.vec )
+  }
+  
+  if(variable@id == "pind"){
+    tmp.tr <- ncvar_get( d, "nind_alive", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g3, count=nc.count.vec )
+    
+    ind_tot <- tmp.tr+tmp.g4+tmp.g3
+    tmp.tr  <- tmp.tr/ind_tot
+    tmp.g4  <- tmp.g4/ind_tot
+    tmp.g3  <- tmp.g3/ind_tot
+  }
+  
+  if(variable@id == "nind"){
+    tmp.tr <- ncvar_get( d, "nind_alive", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g3, count=nc.count.vec )
+  }
+  
+  if(variable@id == "agb"){
+    tmp.tr <-          ncvar_get( d, "SumBBark", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <-          ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <-          ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )
     
     tmp.tr <- tmp.tr/20
     tmp.g4 <- tmp.g4/2
     tmp.g3 <- tmp.g3/2
-    
-    
-    
-    dimnames(tmp.tr) <- dim.names
-    dimnames(tmp.g4) <- dim.names
-    dimnames(tmp.g3) <- dim.names
-    
-    
-    # prepare data.table from the slice (array) for each PFT
-    tr.dt <- as.data.table(melt(tmp.tr))
-    names(tr.dt) <- c("Lon", "Lat", "Time", "Tree")
-    setkey(tr.dt, Lon, Lat, Time)
-    
-    g3.dt <- as.data.table(melt(tmp.g3))
-    names(g3.dt) <- c("Lon", "Lat", "Time", "C3G")
-    setkey(g3.dt, Lon, Lat, Time)
-    
-    g4.dt <- as.data.table(melt(tmp.g3))
-    names(g4.dt) <- c("Lon", "Lat", "Time", "C4G")
-    setkey(g4.dt, Lon, Lat, Time)
-    
-    # merge the data tables for each PFT into one data.table
-    out.all <- tr.dt[g3.dt[g4.dt]]
-    
-    print(out.all)
-    
-    # sort out the time dimension
-    # NOTE: something special is happening here. The ':=' operator is changing the data.table in place.
-    # this means that you don't need to do a re-assignment using '<-' 
-    out.all[, Year := floor((Time-1)/time.steps.per.year) + first.year - 1]
-    print(out.all)
-    if(adgvm.daily) {
-      out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
-      print(out.all)
-    }
-    else {
-      out.all[, Month := ((Time-1) %% time.steps.per.year) + 1]
-      print(out.all)
-    }
-    out.all[, Time := NULL]
-    
-    
-    
-    
-    
   }
   
-  #         if(variable@id == "LAI_std" | variable@id == "lai"){
-  #           tmp.tr <- ncvar_get( d, "MeanLai", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g4 <- ncvar_get( d, "MeanLai", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g3 <- ncvar_get( d, "MeanLai", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-  #         	
-  #           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #           out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-  #           out.all <- rbind( out.all, out.vec )
-  #         }
-  # 
-  #         if(variable@id == "aGPP_std"){
-  #           tmp.tr <- ncvar_get( d, "MeanCGain", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g4 <- ncvar_get( d, "MeanCGain", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g3 <- ncvar_get( d, "MeanCGain", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-  #           ind.tr <- ncvar_get( d, "nind_alive", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #           ind.g4 <- ncvar_get( d, "nind_alive", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-  #           ind.g3 <- ncvar_get( d, "nind_alive", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-  # 
-  #           tmp.tr <- tmp.tr*30.42*ind.tr/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
-  #           tmp.g4 <- tmp.g4*30.42*ind.g4/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
-  #           tmp.g3 <- tmp.g3*30.42*ind.g3/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
-  #         
-  #           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #           out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-  #           out.all <- rbind( out.all, out.vec )
-  #         }
-  # 
-  #         if(variable@id == "nind"){
-  #           tmp.tr <- ncvar_get( d, "nind_alive", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g4 <- ncvar_get( d, "nind_alive", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g3 <- ncvar_get( d, "nind_alive", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-  #         
-  #           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #           out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-  #           out.all <- rbind( out.all, out.vec )
-  #         }
-  # 
-  #         if(variable@id == "meanheight"){
-  #           tmp.tr <- ncvar_get( d, "MeanHeight", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g4 <- ncvar_get( d, "MeanHeight", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g3 <- ncvar_get( d, "MeanHeight", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-  #         
-  #           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #           out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-  #           out.all <- rbind( out.all, out.vec )
-  #         }
-  #         
-  #         if(variable@id == "canopyheight_std"){
-  #           tmp.tr <- ncvar_get( d, "MeanHeight", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #          
-  #           #            Lon      Lat    Year            CanHght
-  #           out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr)
-  #           out.all <- rbind( out.all, out.vec )
-  #         }
-  # 
-  #         if(variable@id == "basalarea"){
-  #           tmp.tr <- ncvar_get( d, "SumBasalArea", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g4 <- ncvar_get( d, "SumBasalArea", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g3 <- ncvar_get( d, "SumBasalArea", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-  #           
-  #           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #           out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-  #           out.all <- rbind( out.all, out.vec )
-  #         }
-  # 
-  #         if(variable@id == "pind"){
-  #           tmp.tr <- ncvar_get( d, "nind_alive", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g4 <- ncvar_get( d, "nind_alive", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g3 <- ncvar_get( d, "nind_alive", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-  #           
-  #           ind_tot <- tmp.tr+tmp.g4+tmp.g3
-  #           tmp.tr  <- tmp.tr/ind_tot
-  #           tmp.g4  <- tmp.g4/ind_tot
-  #           tmp.g3  <- tmp.g3/ind_tot
-  #                     
-  #           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #           out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-  #           out.all <- rbind( out.all, out.vec )
-  #         }
-  # 
-  #         if(variable@id == "vegcover_std"){
-  #           tmp.tr <- ncvar_get( d, "SumCanopyArea0", start=c( x,y,1,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g4 <- ncvar_get( d, "SumCanopyArea0", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-  #           tmp.g3 <- ncvar_get( d, "SumCanopyArea0", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-  #           
-  #           tmp.g4  <-      tmp.g4/10000*100  # *100 to convert to %
-  #           tmp.g3  <-      tmp.g3/10000*100  # *100 to convert to %
-  #           tmp.tr  <- min( tmp.tr/20000*100, 100-(tmp.g4+tmp.g3))  # *100 to convert to %
-  # 
-  #           #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #           out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.tr, tmp.g4, tmp.g3, tmp.tr+tmp.g4+tmp.g3 )
-  #           out.all <- rbind( out.all, out.vec )
-  #         }
-  # 
-  #       }  # end z in t_seq loop
-  # 
-  #       if(variable@id == "firefreq" | variable@id == "burntfraction_std" ){
-  #         tmp <- ncvar_get( d, "firecount", start=c( x,y,len_tt-(years_fire*12)+1 ), count=c( 1,1,years_fire*12 ) )
-  #         fir <- matrix( tmp, ncol=12, byrow=T )[,12]
-  #         tmp.fi <- min( sum(fir)/length(fir), 1)
-  # 		
-  # 		z <- max(t_seq)
-  #         #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #         out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.fi, tmp.fi, tmp.fi, tmp.fi )
-  #         out.all <- rbind( out.all, out.vec )
-  #       }
+  if(variable@id == "vegC_std"){
+    tmp.tr <-          ncvar_get( d, "SumBBark", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncvar_get( d, "SumBLeaf", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncvar_get( d, "SumBStor", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncvar_get( d, "SumBRoot", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncvar_get( d, "SumBRepr", start=nc.start.vec.tr, count=nc.count.vec )
+    
+    tmp.g4 <-          ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g4 <- tmp.g4 + ncvar_get( d, "SumBRoot", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g4 <- tmp.g4 + ncvar_get( d, "SumBStor", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g4 <- tmp.g4 + ncvar_get( d, "SumBRepr", start=nc.start.vec.g4, count=nc.count.vec )
+    
+    tmp.g3 <-          ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.g3 <- tmp.g3 + ncvar_get( d, "SumBRoot", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.g3 <- tmp.g3 + ncvar_get( d, "SumBStor", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.g3 <- tmp.g3 + ncvar_get( d, "SumBRepr", start=nc.start.vec.g3, count=nc.count.vec )
+    
+    tmp.tr <- tmp.tr/20
+    tmp.g4 <- tmp.g4/2
+    tmp.g3 <- tmp.g3/2
+  }
   
-  # }
+  dimnames(tmp.tr) <- dim.names
+  dimnames(tmp.g4) <- dim.names
+  dimnames(tmp.g3) <- dim.names
+
+  # prepare data.table from the slice (array) for each PFT
+  tr.dt <- as.data.table(melt(tmp.tr))
+  names(tr.dt) <- c("Lon", "Lat", "Time", "Tree")
+  setkey(tr.dt, Lon, Lat, Time)
   
+  g3.dt <- as.data.table(melt(tmp.g3))
+  names(g3.dt) <- c("Lon", "Lat", "Time", "C3G")
+  setkey(g3.dt, Lon, Lat, Time)
   
+  g4.dt <- as.data.table(melt(tmp.g3))
+  names(g4.dt) <- c("Lon", "Lat", "Time", "C4G")
+  setkey(g4.dt, Lon, Lat, Time)
   
+  # merge the data tables for each PFT into one data.table
+  out.all <- tr.dt[g3.dt[g4.dt]]
+  
+  # sort out the time dimension
+  # NOTE: something special is happening here. The ':=' operator is changing the data.table in place.
+  # this means that you don't need to do a re-assignment using '<-' 
+  out.all[, Year := floor((Time-1)/time.steps.per.year) + run@year.offset ] # - 1]
+
+  if(adgvm.daily) {
+    out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
+  }
+  else {
+    out.all[, Month := ((Time-1) %% time.steps.per.year) + 1]
+  }
+  out.all[, Time := NULL]
+  
+  print(out.all)
+
+
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
   
