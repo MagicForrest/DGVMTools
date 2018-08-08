@@ -380,12 +380,10 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     names(cols) <- breaks
     drop.from.scale <- FALSE
     
-    
   }
   
   
-  
-  ### FOR CONTININOUS VARIABLE CATCH THE CASE WHERE NO COLOURS HAVE BEEN PROVIDED
+  ### FOR CONTININOUS VARIABLE, CATCH THE CASE WHERE NO COLOURS HAVE BEEN PROVIDED
   if(continuous) {
     
     # this solves the special case that a continuous layer has been derived from a categorical quant 
@@ -665,13 +663,15 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
                                     colors = cols,
-                                    breaks = cuts,
                                     na.value="grey75",
                                     guide = "legend")
     
-    bar.height.unit <- unit(0.7, units = "npc")
     
+    # MF TODO this code is problematic if the legend is subsequently moved, should maybe change this.  Maybe scale barheight and barwidth by text.multiplier?
+    # In the meantine, workaround is finalplot <- finalplot +  guides(fill = guide_colorbar(barwidth = NULL, barheight = NULL))
+    bar.height.unit <- unit(0.7, units = "npc")
     mp <- mp + guides(fill = guide_colorbar(barwidth = 2, barheight = bar.height.unit))
+    
     
   }
   if(discrete) {
