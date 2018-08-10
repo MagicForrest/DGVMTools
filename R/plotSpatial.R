@@ -37,7 +37,7 @@
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param cols A colour palette function to override the defaults.
 #' @param cuts Cut ranges (a numeric vector) to override the default colour delimitation,  discretise the data into discrete colour bands
-#' @param drops.cuts Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.  
+#' @param drop.cuts Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.  
 #' Default is TRUE.  Ignored if 'cuts' argument is not used.
 #' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
@@ -56,10 +56,6 @@
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ggplot2 data.table
-#' @importFrom maptools map2SpatialLines
-#' @importFrom rgeos gLength
-#' @importFrom sp SpatialLinesDataFrame
-#' @importFrom raster crs
 #' 
 #' @export 
 #' @seealso \code{plotTemporal}
@@ -233,21 +229,21 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   PFTs <- list()
   for(object in sources){
     
-    # check that at least one layer is present in this object
+    # check that at least one layer is present in this object and make a list of those which are
     all.layers <- names(object)
     something.present <- FALSE
+    layers.present <- c()
     for(this.layer in layers) {
-      if(this.layer %in% all.layers) something.present <- TRUE
+      if(this.layer %in% all.layers)  layers.present <- append(layers.present, this.layer)
     }
+    if(length(layers.present) > 0) something.present <- TRUE
     
+    # if at least one layer present subset it
     if(something.present) {
-      
-      ### TODO
-      # select only layers which are available in the object
-      
-      
+    
+       
       # select the layers and time periods required and mash the data into shape
-      these.layers <- selectLayers(object, layers)
+      these.layers <- selectLayers(object, layers.present)
       if(!is.null(years)) {
         # set key to Year, subset by years, the set keys back
         # not were are not doing selectYears() because we may want to select non-contiguous years
@@ -261,12 +257,12 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       
       final.fields <- append(final.fields, these.layers)
       
-      these.layers.melted <- melt(these.layers@data, measure.vars = layers)
+      these.layers.melted <- melt(these.layers@data, measure.vars = layers.present)
       these.layers.melted[, Source := object@source@name]
       data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
       
       # check if layers are all continuous or discrete
-      for(layer in layers) {
+      for(layer in layers.present) {
         if(class(object@data[[layer]]) == "factor" || class(object@data[[layer]]) == "logical") discrete <- TRUE
         if(class(object@data[[layer]]) == "numeric" || class(object@data[[layer]]) == "integer" ) continuous <- TRUE
       }
@@ -293,6 +289,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       
       first <- FALSE
       PFTs <- append(PFTs, object@source@pft.set)
+      
     } # end if something.present
     
   }
@@ -411,7 +408,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       legend.title = NULL
       
       # if colours not supplied,  reverse engineer colours from palette
-      if(missing(cols)) { 
+      if(missing(cols) || is.null(cols)) { 
         quant.cols <- quant@colours(length(quant@units)) 
         names(quant.cols) <- quant@units
       }
@@ -420,18 +417,10 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
         quant.cols <- cols
       }
       
-      for(val in unique.vals) {
-        if(!is.na(val)){
-          for(factor.value in quant@units) {
-            if(val == factor.value) here.cols[[val]] <- quant.cols[[val]]
-          }
-        }
-      }
+      # and set the break and cols to what we just figured out
+      breaks <- quant@units
+      cols <- quant.cols
       
-      
-      # define breaks
-      breaks <- unique.vals
-      cols <- here.cols
     }
     
     ### Else data is categorical, but not explicitly defined as so in the Quantity, so we need to lookup colours for each factor

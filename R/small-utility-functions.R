@@ -141,7 +141,10 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
   
 }
 
-
+#' @importFrom maptools map2SpatialLines
+#' @importFrom rgeos gLength
+#' @importFrom sp SpatialLinesDataFrame
+#' @importFrom raster crs
 makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
   
   ### PREPARE THE MAP OVERLAY

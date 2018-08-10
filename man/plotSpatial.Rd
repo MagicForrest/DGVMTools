@@ -56,6 +56,9 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 
 \item{cuts}{Cut ranges (a numeric vector) to override the default colour delimitation,  discretise the data into discrete colour bands}
 
+\item{drop.cuts}{Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.
+Default is TRUE.  Ignored if 'cuts' argument is not used.}
+
 \item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.}
 
 \item{grid}{Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().
@@ -65,9 +68,6 @@ Useful when not all combinations of Sources x Layers exist which would leave bla
 
 \item{interior.lines}{Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 Other things can be overlain on the resulting plot with further ggplot2 commands.}
-
-\item{drops.cuts}{Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.
-Default is TRUE.  Ignored if 'cuts' argument is not used.}
 }
 \value{
 Returns a ggplot object
