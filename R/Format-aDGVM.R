@@ -26,7 +26,8 @@ getField_aDGVM <- function(source,
   
   if("aDGVM" %in% quant@format | "Standard" %in% quant@format) {
     if(adgvm.scheme == 1) data.list <- getQuantity_aDGVM_Scheme1(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant, adgvm.daily)
-    if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
+    if(adgvm.scheme == 2) data.list <-(getQuantity_aDGVM_Scheme2(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
+#    if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
   }
   #else if(quant@format == "Standard") {
   #  stop("Standard quantities nor currently defined for aDGVM")
@@ -425,15 +426,15 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   
   #if(variable@id == "firefreq" | variable@id == "burntfraction_std" ){
     
-   # tmp <- ncvar_get( d, "firecount", start=c( x,y,len_tt-(years_fire*12)+1 ), count=c( 1,1,years_fire*12 ) )
-  #  fir <- matrix( tmp, ncol=12, byrow=T )[,12]
- #   tmp.fi <- min( sum(fir)/length(fir), 1)
+  # tmp <- ncvar_get( d, "firecount", start=c( x,y,len_tt-(years_fire*12)+1 ), count=c( 1,1,years_fire*12 ) )
+  # fir <- matrix( tmp, ncol=12, byrow=T )[,12]
+  # tmp.fi <- min( sum(fir)/length(fir), 1)
 
-#    z <- max(t_seq)
+  # z <- max(t_seq)
   #         #            Lon      Lat    Year            Tr      C4G     C3G     Total
-  #         out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.fi, tmp.fi, tmp.fi, tmp.fi )
-    #         out.all <- rbind( out.all, out.vec )
-  #}
+  # out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.fi, tmp.fi, tmp.fi, tmp.fi )
+  # out.all <- rbind( out.all, out.vec )
+  # }
   
   if(variable@id == "vegcover_std"){
     tmp.tr <- ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.tr, count=nc.count.vec )
@@ -472,9 +473,13 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   }
   
   if(variable@id == "LAI_std" | variable@id == "lai"){
-    tmp.tr <- ncvar_get( d, "MeanLai", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.g4 <- ncvar_get( d, "MeanLai", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g3 <- ncvar_get( d, "MeanLai", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.tr <- ncvar_get( d, "SumBLeaf", start=nc.start.vec.tr, count=nc.count.vec )*ncvar_get( d, "meanSla", start=nc.start.vec.tr, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
+    tmp.g4 <- ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )*ncvar_get( d, "meanSla", start=nc.start.vec.g4, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
+    tmp.g3 <- ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )*ncvar_get( d, "meanSla", start=nc.start.vec.g3, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
+    
+#    tmp.tr <- ncvar_get( d, "MeanLai", start=nc.start.vec.tr, count=nc.count.vec )
+#    tmp.g4 <- ncvar_get( d, "MeanLai", start=nc.start.vec.g4, count=nc.count.vec )
+#    tmp.g3 <- ncvar_get( d, "MeanLai", start=nc.start.vec.g3, count=nc.count.vec )
   }
   
   if(variable@id == "meanheight"){
@@ -594,7 +599,13 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
 #' @seealso \code{getQuantity_aDGVM_Scheme1}
 getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
 {
+  # To stop NOTES
+  Day = Lat = Lon = Month = Time = Year = NULL
+
   fname <- file.path(run@dir, paste("trait_", run@id,".nc", sep=""))
+
+  # STAInfo object to summarise the spatial-temporal-annual dimensions of the data
+  actual.sta.info <- new("STAInfo")
   
   cat( "Convert", fname, "\n" )
   d <- nc_open(fname)
@@ -603,22 +614,54 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   yy <- ncvar_get(d,"lat")
   tt <- ncvar_get(d,"time")
   len_tt <- length(tt)
-  # process only the last nyears years of the simulation run
-  nyears <- 1
-  t_seq <- (len_tt-nyears+1):len_tt
-  
   max_pop_size <- length(ncvar_get(d,"individual"))          # maximum population size
   
-  cnames  <- c( "Lon", "Lat", "Year", "TrBE", "TrBR", "TrBES", "TrBRS", "C4G", "C3G", "Total")
-  out.all <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.all) <- cnames
+  timestep <- tt[2]-tt[1] # time step in file
+
+  print(tt)
+  print(len_tt)
+  print(timestep)
   
+  actual.sta.info@first.year <- run@year.offset
+  actual.sta.info@last.year <- run@year.offset + (length(tt)-1)*timestep 
+  
+  if(length(first.year) == 0) first.year <- actual.sta.info@first.year
+  if(length(last.year) == 0) last.year <- actual.sta.info@last.year
+  
+  actual.sta.info@subannual.resolution <- "Decade"
+  
+  print(c(first.year,last.year))
+  
+  start.point <- ((first.year-actual.sta.info@first.year) / timestep) + 1
+  n.years <- (last.year - first.year)/timestep + 1
+  time.count <-  n.years
+  end.point <- start.point + time.count - 1
+  
+  print(c(start.point, end.point))
+  
+  dim.names <- list(xx, yy, start.point:end.point)
+  print(dim.names)
+  
+  nc.start.vec <- c(  1,  1,            1, start.point )
+  nc.count.vec <- c( -1, -1, max_pop_size, time.count )
+  
+  print(nc.start.vec)
+  print(nc.count.vec)
+
+  tmp.te   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
+  tmp.td   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
+  tmp.se   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
+  tmp.sd   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
+  tmp.g4   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
+  tmp.g3   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
+  
+
   for ( x in 1:length(xx) )
   {
     cat( "Progress:", round(x/length(xx)*100,1), "%                                     \r")
     for ( y in 1:length(yy) )
     {
-      for ( z in t_seq )
+      for ( z in start.point:end.point )
       {
         alive       <- ncvar_get( d, "alive",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
         vegtp       <- ncvar_get( d, "VegType",   start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
@@ -634,173 +677,248 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         ind.g3    <- which( alive==1 & vegtp==2 )                           # indices of grasses in trait data
         
         if(variable@id == "agb"){
-          bm.leaf.all <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          bm.wood.all <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          bm.bark.all <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          tmp.te <- sum(bm.wood.all[ind.te]+bm.bark.all[ind.te])
-          tmp.td <- sum(bm.wood.all[ind.td]+bm.bark.all[ind.td])
-          tmp.se <- sum(bm.wood.all[ind.se]+bm.bark.all[ind.se])
-          tmp.sd <- sum(bm.wood.all[ind.sd]+bm.bark.all[ind.sd])
-          tmp.g4 <- sum(bm.leaf.all[ind.g4])
-          tmp.g3 <- sum(bm.leaf.all[ind.g3])
+          if (length(ind.alive)>0) {
+            bm.leaf.all <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.wood.all <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.bark.all <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            
+            tmp.te1 <- sum(bm.wood.all[ind.te]+bm.bark.all[ind.te])
+            tmp.td1 <- sum(bm.wood.all[ind.td]+bm.bark.all[ind.td])
+            tmp.se1 <- sum(bm.wood.all[ind.se]+bm.bark.all[ind.se])
+            tmp.sd1 <- sum(bm.wood.all[ind.sd]+bm.bark.all[ind.sd])
+            tmp.g41 <- sum(bm.leaf.all[ind.g4])
+            tmp.g31 <- sum(bm.leaf.all[ind.g3])
           
-          tmp.te <- tmp.te*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
-          tmp.td <- tmp.td*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
-          tmp.se <- tmp.se*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
-          tmp.sd <- tmp.sd*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
-          tmp.g4 <- tmp.g4*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
-          tmp.g3 <- tmp.g3*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
-          
-          #            Lon      Lat    Year            TrBE    TrBR    TrBES   TrBRS   C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.se, tmp.sd, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3 )
-          out.all <- rbind( out.all, out.vec )
+            tmp.te[x,y,z-start.point+1] <- tmp.te1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.td[x,y,z-start.point+1] <- tmp.td1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.se[x,y,z-start.point+1] <- tmp.se1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.sd[x,y,z-start.point+1] <- tmp.sd1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.g4[x,y,z-start.point+1] <- tmp.g41*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
+            tmp.g3[x,y,z-start.point+1] <- tmp.g31*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
+          }
         }
         
         if(variable@id == "vegC_std"){
-          bm.leaf <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          bm.wood <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          bm.bark <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          bm.repr <- ncvar_get( d, "BRepr",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          bm.stor <- ncvar_get( d, "BStor",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          bm.root <- ncvar_get( d, "BRoot",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+          if (length(ind.alive)>0) {
+            bm.leaf <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.wood <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.bark <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.repr <- ncvar_get( d, "BRepr",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.stor <- ncvar_get( d, "BStor",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.root <- ncvar_get( d, "BRoot",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
           
-          tmp.te <- sum(bm.leaf[ind.te]+bm.root[ind.te]+bm.stor[ind.te]+bm.repr[ind.te]+bm.wood[ind.te]+bm.bark[ind.te])
-          tmp.td <- sum(bm.leaf[ind.td]+bm.root[ind.td]+bm.stor[ind.td]+bm.repr[ind.td]+bm.wood[ind.td]+bm.bark[ind.td])
-          tmp.se <- sum(bm.leaf[ind.se]+bm.root[ind.se]+bm.stor[ind.se]+bm.repr[ind.se]+bm.wood[ind.se]+bm.bark[ind.se])
-          tmp.sd <- sum(bm.leaf[ind.sd]+bm.root[ind.sd]+bm.stor[ind.sd]+bm.repr[ind.sd]+bm.wood[ind.sd]+bm.bark[ind.sd])
-          tmp.g4 <- sum(bm.leaf[ind.g4]+bm.root[ind.g4]+bm.stor[ind.g4]+bm.repr[ind.g4])
-          tmp.g3 <- sum(bm.leaf[ind.g3]+bm.root[ind.g3]+bm.stor[ind.g3]+bm.repr[ind.g3])
+            tmp.te1 <- sum(bm.leaf[ind.te]+bm.root[ind.te]+bm.stor[ind.te]+bm.repr[ind.te]+bm.wood[ind.te]+bm.bark[ind.te])
+            tmp.td1 <- sum(bm.leaf[ind.td]+bm.root[ind.td]+bm.stor[ind.td]+bm.repr[ind.td]+bm.wood[ind.td]+bm.bark[ind.td])
+            tmp.se1 <- sum(bm.leaf[ind.se]+bm.root[ind.se]+bm.stor[ind.se]+bm.repr[ind.se]+bm.wood[ind.se]+bm.bark[ind.se])
+            tmp.sd1 <- sum(bm.leaf[ind.sd]+bm.root[ind.sd]+bm.stor[ind.sd]+bm.repr[ind.sd]+bm.wood[ind.sd]+bm.bark[ind.sd])
+            tmp.g41 <- sum(bm.leaf[ind.g4]+bm.root[ind.g4]+bm.stor[ind.g4]+bm.repr[ind.g4])
+            tmp.g31 <- sum(bm.leaf[ind.g3]+bm.root[ind.g3]+bm.stor[ind.g3]+bm.repr[ind.g3])
           
-          tmp.te <- tmp.te*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
-          tmp.td <- tmp.td*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
-          tmp.se <- tmp.se*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
-          tmp.sd <- tmp.sd*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
-          tmp.g4 <- tmp.g4*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
-          tmp.g3 <- tmp.g3*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
-          
-          #            Lon      Lat    Year            TrBE    TrBR    TrBES   TrBRS   C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.se, tmp.sd, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3 )
-          out.all <- rbind( out.all, out.vec )
+            tmp.te[x,y,z-start.point+1] <- tmp.te1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.td[x,y,z-start.point+1] <- tmp.td1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.se[x,y,z-start.point+1] <- tmp.se1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.sd[x,y,z-start.point+1] <- tmp.sd1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.g4[x,y,z-start.point+1] <- tmp.g41*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
+            tmp.g3[x,y,z-start.point+1] <- tmp.g31*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
+          }
         }
         
-        
         if(variable@id == "LAI_std"){
-          tmp.all  <- ncvar_get( d, "Lai", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          tmp.te   <- mean(tmp.all[ind.te])*(length(ind.te)/length(alive))
-          tmp.td   <- mean(tmp.all[ind.td])*(length(ind.td)/length(alive))
-          tmp.se   <- mean(tmp.all[ind.se])*(length(ind.se)/length(alive))
-          tmp.sd   <- mean(tmp.all[ind.sd])*(length(ind.sd)/length(alive))
-          tmp.g4   <- mean(tmp.all[ind.g4])*(length(ind.g4)/length(alive))
-          tmp.g3   <- mean(tmp.all[ind.g3])*(length(ind.g3)/length(alive))
-          
-          #            Lon      Lat    Year            TrBE    TrBR    TrBES   TrBRS   C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.se, tmp.sd, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3 )
-          out.all <- rbind( out.all, out.vec )
+          if (length(ind.alive)>0) {
+            tmp.blf  <- ncvar_get( d, "BLeaf", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.sla  <- ncvar_get( d, "Sla", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            
+            tmp.te[x,y,z-start.point+1]   <- sum(tmp.blf[ind.te]*tmp.sla[ind.te])/10000
+            tmp.td[x,y,z-start.point+1]   <- sum(tmp.blf[ind.td]*tmp.sla[ind.td])/10000
+            tmp.se[x,y,z-start.point+1]   <- sum(tmp.blf[ind.se]*tmp.sla[ind.se])/10000
+            tmp.sd[x,y,z-start.point+1]   <- sum(tmp.blf[ind.sd]*tmp.sla[ind.sd])/10000
+            tmp.g4[x,y,z-start.point+1]   <- sum(tmp.blf[ind.g4]*tmp.sla[ind.g4])/10000
+            tmp.g3[x,y,z-start.point+1]   <- sum(tmp.blf[ind.g3]*tmp.sla[ind.g3])/10000
+            
+#            tmp.all  <- ncvar_get( d, "Lai", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+#            tmp.te[x,y,z-start.point+1]   <- mean(tmp.all[ind.te])*(length(ind.te)/length(alive))
+#            tmp.td[x,y,z-start.point+1]   <- mean(tmp.all[ind.td])*(length(ind.td)/length(alive))
+#            tmp.se[x,y,z-start.point+1]   <- mean(tmp.all[ind.se])*(length(ind.se)/length(alive))
+#            tmp.sd[x,y,z-start.point+1]   <- mean(tmp.all[ind.sd])*(length(ind.sd)/length(alive))
+#            tmp.g4[x,y,z-start.point+1]   <- mean(tmp.all[ind.g4])*(length(ind.g4)/length(alive))
+#            tmp.g3[x,y,z-start.point+1]   <- mean(tmp.all[ind.g3])*(length(ind.g3)/length(alive))
+          }
         }
         
         if(variable@id == "basalarea"){
-          tmp.all  <- ncvar_get( d, "StemDiamTot", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          tmp.te   <- sum(tmp.all[ind.te])
-          tmp.td   <- sum(tmp.all[ind.td])
-          tmp.se   <- sum(tmp.all[ind.se])
-          tmp.sd   <- sum(tmp.all[ind.sd])
-          tmp.g4   <- sum(tmp.all[ind.g4])
-          tmp.g3   <- sum(tmp.all[ind.g3])
-          
-          #            Lon      Lat    Year            TrBE    TrBR    TrBES   TrBRS   C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.se, tmp.sd, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3 )
-          out.all <- rbind( out.all, out.vec )
+          if (length(ind.alive)>0) {
+            tmp.all  <- ncvar_get( d, "StemDiamTot", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.te[x,y,z-start.point+1]   <- sum(tmp.all[ind.te])
+            tmp.td[x,y,z-start.point+1]   <- sum(tmp.all[ind.td])
+            tmp.se[x,y,z-start.point+1]   <- sum(tmp.all[ind.se])
+            tmp.sd[x,y,z-start.point+1]   <- sum(tmp.all[ind.sd])
+            tmp.g4[x,y,z-start.point+1]   <- sum(tmp.all[ind.g4])
+            tmp.g3[x,y,z-start.point+1]   <- sum(tmp.all[ind.g3])
+          }
         }
         
         if(variable@id == "nind"){
-          tmp.te   <- length(ind.te)
-          tmp.td   <- length(ind.td)
-          tmp.se   <- length(ind.se)
-          tmp.sd   <- length(ind.sd)
-          tmp.g4   <- length(ind.g4)
-          tmp.g3   <- length(ind.g3)
-          
-          #            Lon      Lat    Year            TrBE    TrBR    TrBES   TrBRS   C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.se, tmp.sd, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3 )
-          out.all <- rbind( out.all, out.vec )
+          if (length(ind.alive)>0) {
+            tmp.te[x,y,z-start.point+1]   <- length(ind.te)
+            tmp.td[x,y,z-start.point+1]   <- length(ind.td)
+            tmp.se[x,y,z-start.point+1]   <- length(ind.se)
+            tmp.sd[x,y,z-start.point+1]   <- length(ind.sd)
+            tmp.g4[x,y,z-start.point+1]   <- length(ind.g4)
+            tmp.g3[x,y,z-start.point+1]   <- length(ind.g3)
+          }
         }
         
-        if(variable@id == "meanheight" | variable@id == "canopyheight_std"){
-          tmp.all  <- ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          tmp.te   <- mean(tmp.all[ind.te])
-          tmp.td   <- mean(tmp.all[ind.td])
-          tmp.se   <- mean(tmp.all[ind.se])
-          tmp.sd   <- mean(tmp.all[ind.sd])
-          tmp.g4   <- mean(tmp.all[ind.g4])
-          tmp.g3   <- mean(tmp.all[ind.g3])
-          
-          #            Lon      Lat    Year            TrBE    TrBR    TrBES   TrBRS   C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.se, tmp.sd, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3 )
-          out.all <- rbind( out.all, out.vec )
+        if(variable@id == "meanheight"){
+          if (length(ind.alive)>0) {
+            tmp.all  <- ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.te[x,y,z-start.point+1]   <- mean(tmp.all[ind.te])
+            tmp.td[x,y,z-start.point+1]   <- mean(tmp.all[ind.td])
+            tmp.se[x,y,z-start.point+1]   <- mean(tmp.all[ind.se])
+            tmp.sd[x,y,z-start.point+1]   <- mean(tmp.all[ind.sd])
+            tmp.g4[x,y,z-start.point+1]   <- mean(tmp.all[ind.g4])
+            tmp.g3[x,y,z-start.point+1]   <- mean(tmp.all[ind.g3])
+          }
+        }
+        
+        if(variable@id == "canopyheight_std"){
+          if (length(ind.alive)>0) {
+            tmp.all  <- ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.te[x,y,z-start.point+1]   <- quantile(tmp.all[ind.te],0.95)
+            tmp.td[x,y,z-start.point+1]   <- quantile(tmp.all[ind.td],0.95)
+            tmp.se[x,y,z-start.point+1]   <- quantile(tmp.all[ind.se],0.95)
+            tmp.sd[x,y,z-start.point+1]   <- quantile(tmp.all[ind.sd],0.95)
+            tmp.g4[x,y,z-start.point+1]   <- quantile(tmp.all[ind.g4],0.95)
+            tmp.g3[x,y,z-start.point+1]   <- quantile(tmp.all[ind.g3],0.95)
+          }
         }
         
         if(variable@id == "pind"){
-          tmp.te   <- length(ind.te)
-          tmp.td   <- length(ind.td)
-          tmp.se   <- length(ind.se)
-          tmp.sd   <- length(ind.sd)
-          tmp.g4   <- length(ind.g4)
-          tmp.g3   <- length(ind.g3)
+          if (length(ind.alive)>0) {
+            tmp.te1   <- length(ind.te)
+            tmp.td1   <- length(ind.td)
+            tmp.se1   <- length(ind.se)
+            tmp.sd1   <- length(ind.sd)
+            tmp.g41   <- length(ind.g4)
+            tmp.g31   <- length(ind.g3)
           
-          ind.tot  <- tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3
-          tmp.te   <- tmp.te/ind.tot
-          tmp.td   <- tmp.td/ind.tot
-          tmp.se   <- tmp.se/ind.tot
-          tmp.sd   <- tmp.sd/ind.tot
-          tmp.g4   <- tmp.g4/ind.tot
-          tmp.g3   <- tmp.g3/ind.tot
-          
-          #            Lon      Lat    Year            TrBE    TrBR    TrBES   TrBRS   C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.se, tmp.sd, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3 )
-          out.all <- rbind( out.all, out.vec )
+            ind.tot  <- tmp.te1+tmp.td1+tmp.se1+tmp.sd1+tmp.g41+tmp.g31
+            tmp.te[x,y,z-start.point+1]   <- tmp.te1/ind.tot
+            tmp.td[x,y,z-start.point+1]   <- tmp.td1/ind.tot
+            tmp.se[x,y,z-start.point+1]   <- tmp.se1/ind.tot
+            tmp.sd[x,y,z-start.point+1]   <- tmp.sd1/ind.tot
+            tmp.g4[x,y,z-start.point+1]   <- tmp.g41/ind.tot
+            tmp.g3[x,y,z-start.point+1]   <- tmp.g31/ind.tot
+          }
         }
         
         if(variable@id == "vegcover_std"){
-          tmp.all  <- ncvar_get( d, "CrownArea", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          tmp.te   <- sum(tmp.all[ind.te])/20000
-          tmp.td   <- sum(tmp.all[ind.td])/20000
-          tmp.se   <- sum(tmp.all[ind.se])/20000
-          tmp.sd   <- sum(tmp.all[ind.sd])/20000
-          tmp.g4   <- sum(tmp.all[ind.g4])/10000
-          tmp.g3   <- sum(tmp.all[ind.g3])/10000
+          if (length(ind.alive)>0) {
+            tmp.all  <- ncvar_get( d, "CrownArea", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.te1   <- sum(tmp.all[ind.te])/10000
+            tmp.td1   <- sum(tmp.all[ind.td])/10000
+            tmp.se1   <- sum(tmp.all[ind.se])/10000
+            tmp.sd1   <- sum(tmp.all[ind.sd])/10000
+            tmp.g41   <- sum(tmp.all[ind.g4])/10000
+            tmp.g31   <- sum(tmp.all[ind.g3])/10000
           
-          #ind.tot  <- tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3
-          tmp.te   <- tmp.te*100  # *100 to convert to %
-          tmp.td   <- tmp.td*100  # *100 to convert to %
-          tmp.se   <- tmp.se*100  # *100 to convert to %
-          tmp.sd   <- tmp.sd*100  # *100 to convert to %
-          tmp.g4   <- tmp.g4*100  # *100 to convert to %
-          tmp.g3   <- tmp.g3*100  # *100 to convert to %
-          
-          #            Lon      Lat    Year            TrBE    TrBR    TrBES   TrBRS   C4G     C3G     Total
-          out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.te, tmp.td, tmp.se, tmp.sd, tmp.g4, tmp.g3, tmp.te+tmp.td+tmp.se+tmp.sd+tmp.g4+tmp.g3 )
-          out.all <- rbind( out.all, out.vec )
+            if ( tmp.cov<1 ) tmp.cov <- 1
+            else tmp.cov  <- tmp.te1+tmp.td1+tmp.se1+tmp.sd1+tmp.g41+tmp.g31
+
+            tmp.te[x,y,z-start.point+1]   <- tmp.te1/tmp.cov*100  # *100 to convert to %
+            tmp.td[x,y,z-start.point+1]   <- tmp.td1/tmp.cov*100  # *100 to convert to %
+            tmp.se[x,y,z-start.point+1]   <- tmp.se1/tmp.cov*100  # *100 to convert to %
+            tmp.sd[x,y,z-start.point+1]   <- tmp.sd1/tmp.cov*100  # *100 to convert to %
+            tmp.g4[x,y,z-start.point+1]   <- tmp.g41/tmp.cov*100  # *100 to convert to %
+            tmp.g3[x,y,z-start.point+1]   <- tmp.g31/tmp.cov*100  # *100 to convert to %
+          }
         }
         
-        
         if(variable@id == "aGPP_std"){
-          message(paste(variable@id, "not available in scheme"))
-          out.all <- rbind( out.all, rep(0,length(cnames)) )
-          return(out.all)
+          message(paste(variable@id, "not available in scheme, all values set to zero."))
+          if (length(ind.alive)>0) {
+            tmp.te[x,y,z-start.point+1]   <- 0
+            tmp.td[x,y,z-start.point+1]   <- 0
+            tmp.se[x,y,z-start.point+1]   <- 0
+            tmp.sd[x,y,z-start.point+1]   <- 0
+            tmp.g4[x,y,z-start.point+1]   <- 0
+            tmp.g3[x,y,z-start.point+1]   <- 0
+          }
         }
         
         if(variable@id == "firefreq" | variable@id == "burntfraction_std" ){
-          out.all <- rbind( out.all, rep(0,length(cnames)) )
-          return(out.all)
+          message(paste(variable@id, "not available in scheme, all values set to zero."))
+          if (length(ind.alive)>0) {
+            tmp.te[x,y,z-start.point+1]   <- 0
+            tmp.td[x,y,z-start.point+1]   <- 0
+            tmp.se[x,y,z-start.point+1]   <- 0
+            tmp.sd[x,y,z-start.point+1]   <- 0
+            tmp.g4[x,y,z-start.point+1]   <- 0
+            tmp.g3[x,y,z-start.point+1]   <- 0
+          }
         }
         
       }
     }
   }
-  cat( "\n")
+  cat( "                                                       \n\n")
+
+  print(dim(tmp.g3))
   
-  return(out.all)
+  dimnames(tmp.te) <- dim.names
+  dimnames(tmp.td) <- dim.names
+  dimnames(tmp.se) <- dim.names
+  dimnames(tmp.sd) <- dim.names
+  dimnames(tmp.g4) <- dim.names
+  dimnames(tmp.g3) <- dim.names
   
+  # prepare data.table from the slice (array) for each PFT
+  te.dt <- as.data.table(melt(tmp.te))
+  names(te.dt) <- c("Lon", "Lat", "Time", "TrBE")
+  setkey(te.dt, Lon, Lat, Time)
+  
+  td.dt <- as.data.table(melt(tmp.td))
+  names(td.dt) <- c("Lon", "Lat", "Time", "TrBR")
+  setkey(td.dt, Lon, Lat, Time)
+  
+  se.dt <- as.data.table(melt(tmp.se))
+  names(se.dt) <- c("Lon", "Lat", "Time", "TrBES")
+  setkey(se.dt, Lon, Lat, Time)
+  
+  sd.dt <- as.data.table(melt(tmp.sd))
+  names(sd.dt) <- c("Lon", "Lat", "Time", "TrBRS")
+  setkey(sd.dt, Lon, Lat, Time)
+  
+  g3.dt <- as.data.table(melt(tmp.g3))
+  names(g3.dt) <- c("Lon", "Lat", "Time", "C3G")
+  setkey(g3.dt, Lon, Lat, Time)
+  
+  g4.dt <- as.data.table(melt(tmp.g3))
+  names(g4.dt) <- c("Lon", "Lat", "Time", "C4G")
+  setkey(g4.dt, Lon, Lat, Time)
+  
+  # merge the data tables for each PFT into one data.table
+  out.all <- se.dt[sd.dt[te.dt[td.dt[g3.dt[g4.dt]]]]]
+  
+  # sort out the time dimension
+  # NOTE: something special is happening here. The ':=' operator is changing the data.table in place.
+  # this means that you don't need to do a re-assignment using '<-' 
+  out.all[, Year := Time*timestep + run@year.offset - timestep ]
+  
+#  if(adgvm.daily) {
+#    out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
+#  }
+#  else {
+  out.all[, Month := 1]
+#  }
+  out.all[, Time := NULL]
+  
+  print(out.all)
+  
+  # Now that we have the data we can set a spatial.extent
+  actual.sta.info@spatial.extent <- extent(out.all)
+  
+  return(list(dt = out.all, 
+              sta.info = actual.sta.info))
 }
 
 #' Detemine PFTs present in an aDGVM  
@@ -880,7 +998,7 @@ aDGVM.PFTs <- list(
           name = "Tropical Tree",
           growth.form = "Tree",
           leaf.form = "Broadleaved",
-          phenology = "Evergreen",
+          phenology = "Mixed",
           climate.zone = "Tropical",
           colour = "palevioletred",
           shade.tolerance = "None"
@@ -946,8 +1064,6 @@ aDGVM.PFTs <- list(
 #' 
 #' 
 aDGVM.quantities <- list(
-  
-  
   new("Quantity",
       id = "agb",
       name = "Above Ground Biomass",
