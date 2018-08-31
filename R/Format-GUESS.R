@@ -450,7 +450,7 @@ openLPJOutputFile_FireMIP <- function(run,
     dt_cap[, Capacity := wcap[Code]]
     dt_cap[, Code := NULL]
     
-    dtr <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt)
     
     print(dt)
