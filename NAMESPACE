@@ -6,7 +6,6 @@ import(maps,
        maptools, 
        ggplot2, 
        ncdf4,
-       sp,
        data.table)
 
 

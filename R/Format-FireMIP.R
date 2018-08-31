@@ -793,6 +793,21 @@ new("Quantity",
     format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
     cf.name = "Number of individuals killed"),
 
+new("Quantity",
+    id = "RoS",
+    name = "Mean rate of spread",
+    units = "m/s",
+    colours = reversed.viridis,
+    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Mean rate of spread"),
+
+new("Quantity",
+    id = "durat",
+    name = "Mean fire duration",
+    units = "min",
+    colours = reversed.viridis,
+    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Mean fire duration"),
 
 ### HYDROLOGICAL VARIABLES
 
@@ -819,6 +834,14 @@ new("Quantity",
     colours = reversed.viridis,
     format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
     cf.name = "Total Soil Moisture Content"),
+
+new("Quantity",
+    id = "mrsos",
+    name = "Surface Layer (50cm) Soil Moisture Content",
+    units = "kg m-2",
+    colours = reversed.viridis,
+    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+    cf.name = "Surface Layer (50cm) Soil Moisture Content"),
 
 new("Quantity",
     id = "evspsblveg",
