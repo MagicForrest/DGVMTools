@@ -47,7 +47,7 @@ layerOp <- function(x, operator, layers, new.layer){
     # else if the layer is not present in  the input Field and the operator is *not* NULL or numeric
     # then ignore the layer with a warning
     else if(!(layer %in% layers(x)) && !(is.null(operator) || is.numeric(operator))) {
-      warning(paste0("Layer ", layer, " is not is in the available layers, so this layer will be ignored."))
+      warning(paste0("Layer ", layer, " is not is in the available layers, so this layer will be ignored.\n"))
     }
     # otherwise include the layer
     else {

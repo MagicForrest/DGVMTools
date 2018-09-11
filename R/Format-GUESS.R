@@ -456,12 +456,12 @@ openLPJOutputFile_FireMIP <- function(run,
     print(dt)
     dt <- dt[dt_cap]
     dt <- na.omit(dt)
-    dt[, mrso := mwcont_upper * thickness_upper_layer_mm * Capacity]
+    dt[, mrsos := mwcont_upper * thickness_upper_layer_mm * Capacity]
 
     dt[, mwcont_upper := NULL]
     dt[, Capacity := NULL]
     
-    rm(dt_upper)
+    rm(dt_cap)
     gc()
     
   }
