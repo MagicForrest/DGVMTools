@@ -343,6 +343,14 @@ openLPJOutputFile_FireMIP <- function(run,
     guess.var <- "real_intensity"
     monthly <- TRUE
   }
+  if(variable == "durat") {
+    guess.var <- "real_duration"
+    monthly <- TRUE
+  }
+  if(variable == "RoS") {
+    guess.var <- "mRoS"
+    monthly <- TRUE
+  }
   
   ## Finally we have a couple of monthly to second variables which also required molar conversion to C
   if(variable == "fFire") {
@@ -424,7 +432,39 @@ openLPJOutputFile_FireMIP <- function(run,
     rm(dt_upper,dt_lower)
     gc()
 
-    }
+  }
+  if(variable == "mrsos") {
+    
+    
+    # standard stuf for LPJ-GUESS
+    wcap <- c(0.110, 0.150, 0.120, 0.130, 0.115, 0.135, 0.127, 0.300, 0.100)
+    thickness_upper_layer_mm <- 500
+   
+    dt_cap <- fread(soil_water_capacities)
+    
+    setnames(dt_cap, c("Lon", "Lat", "Code"))
+    dt_cap[, Lat := Lat + 0.25]
+    dt_cap[, Lon := Lon + 0.25]
+    dt_cap <- subset(dt_cap, Code>0)
+    setkey(dt_cap, Lon, Lat)
+    dt_cap[, Capacity := wcap[Code]]
+    dt_cap[, Code := NULL]
+    
+    dt <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose, data.table.only = TRUE)
+    setKeyDGVM(dt)
+    
+    print(dt)
+    dt <- dt[dt_cap]
+    dt <- na.omit(dt)
+    dt[, mrsos := mwcont_upper * thickness_upper_layer_mm * Capacity]
+
+    dt[, mwcont_upper := NULL]
+    dt[, Capacity := NULL]
+    
+    rm(dt_cap)
+    gc()
+    
+  }
   
   if(variable == "evapotrans") {
     

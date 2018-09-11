@@ -45,7 +45,7 @@ The first job in pretty much any analysis is to define the source (or sources) o
 
 ```{r Define source, echo=TRUE}
 GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
-                          dir = system.file("extdata", "CentralEurope", package = "DGVMTools"), # this would normlly just be a character string containing a path
+                          dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), # this would normlly just be a character string containing a path
                           format = "LPJ-GUESS",
                           name = "LPJ-GUESS Example Run")
 

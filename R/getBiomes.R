@@ -186,12 +186,19 @@ getBiomes <- function(source,
     # get the raw field
     this.field <- getField(source = source, var = this.quantity, sta.info = sta.info, read.full = read.full.components, write = write.components)
     
-    # calculate the layers requried
+    # calculate the layers required
     for(this.layer in scheme@layers.needed){
-      if(this.layer$quantity == this.quantity) this.field <- do.call(layerOp, args = list(x=this.field, 
-                                                                                          operator = this.layer$operator, 
-                                                                                          layers = this.layer$layers, 
-                                                                                          new.layer = this.layer$new.layer))
+      
+      
+      these.arguments <- list(x=this.field, 
+                              operator = this.layer$operator, 
+                              layers = this.layer$layers)
+      if("new.layer" %in% names(this.layer)){
+        these.arguments[["new.layer"]] = this.layer$new.layer
+      }
+      
+      
+      if(this.layer$quantity == this.quantity) this.field <- do.call(layerOp, args = these.arguments)
     } 
     
     renameLayers(this.field, names(this.field), paste(this.quantity, names(this.field), sep = "_"))

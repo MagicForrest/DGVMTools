@@ -30,10 +30,6 @@
 #'  
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ggplot2 data.table
-#' @importFrom maptools map2SpatialLines
-#' @importFrom rgeos gLength
-#' @importFrom sp SpatialLinesDataFrame
-#' @importFrom raster crs
 #' 
 #' @export 
 #' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
@@ -177,8 +173,8 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
       # FIRST INFO
       new.dt <- object@data[, append(getDimInfo(object), names(object)[1]), with=FALSE]
       #setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant1@id )
-      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@layers1 )
-      layers.to.plot <- append(layers.to.plot, object@layers1)
+      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@layers2 )
+      layers.to.plot <- append(layers.to.plot, object@layers2)
       objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
                                                           id = object@id,
                                                           data = new.dt,
@@ -187,8 +183,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                           object@sta.info1)
       
     }
- 
-   
+    
     return(plotSpatial(objects.to.plot,
                        layers =  unique(layers.to.plot),
                        cols = override.cols,
