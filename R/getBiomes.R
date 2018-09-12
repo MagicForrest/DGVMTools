@@ -184,7 +184,7 @@ getBiomes <- function(source,
   for(this.quantity in all.quantities){
     
     # get the raw field
-    this.field <- getField(source = source, var = this.quantity, sta.info = sta.info, read.full = read.full.components, write = write.components)
+    this.field <- getField(source = source, var = this.quantity, sta.info = sta.info, read.full = read.full.components, write = write.components, ...)
     
     # calculate the layers requried
     for(this.layer in scheme@layers.needed){

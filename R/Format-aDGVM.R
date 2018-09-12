@@ -573,7 +573,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   out.all[, Time := NULL]
   
   print(out.all)
-
+  out.all = na.omit(out.all)
 
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
@@ -820,9 +820,9 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
             tmp.sd1   <- sum(tmp.all[ind.sd])/10000
             tmp.g41   <- sum(tmp.all[ind.g4])/10000
             tmp.g31   <- sum(tmp.all[ind.g3])/10000
-          
+            
+            tmp.cov   <- tmp.te1+tmp.td1+tmp.se1+tmp.sd1+tmp.g41+tmp.g31
             if ( tmp.cov<1 ) tmp.cov <- 1
-            else tmp.cov  <- tmp.te1+tmp.td1+tmp.se1+tmp.sd1+tmp.g41+tmp.g31
 
             tmp.te[x,y,z-start.point+1]   <- tmp.te1/tmp.cov*100  # *100 to convert to %
             tmp.td[x,y,z-start.point+1]   <- tmp.td1/tmp.cov*100  # *100 to convert to %
@@ -993,8 +993,8 @@ aDGVM.PFTs <- list(
             shade.tolerance = "None"
   ),
   
-  Tr= new("PFT",
-          id = "Tr",
+  Tree= new("PFT",
+          id = "Tree",
           name = "Tropical Tree",
           growth.form = "Tree",
           leaf.form = "Broadleaved",
