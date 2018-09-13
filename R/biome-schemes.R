@@ -372,7 +372,7 @@ Hickler2012.scheme <- new("BiomeScheme",
                             list(quantity = "LAI_std", operator = "/", layers =c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
                             # MediterraneanFractionOfTree
                             list(quantity = "LAI_std", operator = "/", layers = c("Mediterranean", "Tree"), new.layer = "MediterraneanFractionOfTree")),
-                          # needGDD5 = TRUE, !!! Need to implement this
+                          # needGDD5 = TRUE, !!! Need to implement this as a layer.needed in the style above above
                           data.reference = "- (Bohn)",
                           published.reference = "Hickler et al. 2012")
 
@@ -748,7 +748,7 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
                                             "Desert"),
                                  format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                              rules = MegaBiomeRules_dev,
-                             # needGDD5 = TRUE, !!! implement this!!!
+                             # needGDD5 = TRUE, !!! Need to implement this as a layer.needed in the style above above
                              layers.needed = list(
                                # Max Tree
                                list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree"), new.layer = "MaxTree")
@@ -1001,7 +1001,7 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                               # Tropical
                               list(quantity = "fpc", operator = "+", layers = ".Tropical", new.layer = "Tropical")
                             ),
-                            # needGDD5 = TRUE, - need to implement this!
+                            # needGDD5 = TRUE, !!! Need to implement this as a layer.needed in the style above above
                             data.reference = "-",
                             published.reference = "-")
 
@@ -1071,7 +1071,6 @@ SimpleAdgvm2Biomes.scheme <- new("BiomeScheme",
                                  rules = SimpleAdgvm2BiomeRules,
                                  layers.needed = list( list(quantity = "vegcover_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
                                                        list(quantity = "vegcover_std", operator = "+", layers = ".Tree", new.layer = "Tree")),
-                                 needGDD5 = FALSE,
                                  data.reference = "-",
                                  published.reference = "-")
 
@@ -1137,7 +1136,6 @@ SimpleHeightAdgvm2Biomes.scheme <- new("BiomeScheme",
                                                              list(quantity = "vegcover_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
                                                              list(quantity = "canopyheight_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
                                                              list(quantity = "canopyheight_std", operator = "+", layers = ".Grass", new.layer = "Grass")),
-                                       needGDD5 = FALSE,
                                        data.reference = "-",
                                        published.reference = "-")
 
@@ -1202,7 +1200,6 @@ GrowthFormAdgvm2Biomes.scheme <- new("BiomeScheme",
                                                            list(quantity = "vegcover_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
                                                            list(quantity = "vegcover_std", operator = "+", layers = ".Shrub", new.layer = "Shrub"),
                                                            list(quantity = "vegcover_std", operator = "+", layers = ".Tree",  new.layer = "Tree")),
-                                     needGDD5 = FALSE,
                                      data.reference = "-",
                                      published.reference = "-")
 
@@ -1269,7 +1266,6 @@ PhenologyAdgvm2Biomes.scheme <- new("BiomeScheme",
                                                           list(quantity = "vegcover_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
                                                           list(quantity = "vegcover_std", operator = "+", layers = ".Evergreen", new.layer = "Evergreen"),
                                                           list(quantity = "vegcover_std", operator = "+", layers = ".Raingreen",  new.layer = "Raingreen")),
-                                    needGDD5 = FALSE,
                                     data.reference = "-",
                                     published.reference = "-")
 
