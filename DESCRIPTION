@@ -2,8 +2,9 @@ Package: DGVMTools
 Type: Package
 Version: 0.5.1
 Title: DGVM Processing, Analysis and Plotting Tools
-Date: 2018-04-02
+Date: 2018-09-12
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
+             person("Simon", "Scheiter", role=c("aut"), email="simon.scheiter@senckenberg.de"),
              person("Joerg", "Steinkamp", role=c("aut"), email="joerg.steinkamp@senckenberg.de"))
 Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
 Maintainer: Matthew Forrest <matthew.forrest@senckenberg.de>

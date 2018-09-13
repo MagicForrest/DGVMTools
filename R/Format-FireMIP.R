@@ -483,7 +483,8 @@ FireMIP.PFTs <- list(
   
   # BOREAL TREES
   
-  NE = new("PFT",
+  # NE
+  new("PFT",
            id = "NE",
            name = "Needleleaved Evergreen Tree",
            growth.form = "Tree",
@@ -494,7 +495,8 @@ FireMIP.PFTs <- list(
            shade.tolerance = "no"
   ),
   
-  NS = new("PFT",
+  # NS
+  new("PFT",
            id = "NS",
            name = "Needleleaved Summergreen Tree",
            growth.form = "Tree",
@@ -505,7 +507,8 @@ FireMIP.PFTs <- list(
            shade.tolerance = "no"
   ),
   
-  BS = new("PFT",
+  # BS
+  new("PFT",
            id = "BS",
            name = "Broadleaved Summergreen Tree",
            growth.form = "Tree",
@@ -516,7 +519,8 @@ FireMIP.PFTs <- list(
            shade.tolerance = "no"
   ),
   
-  BE = new("PFT",
+  # BE
+  new("PFT",
            id = "BE",
            name = "Broadleaved Evergreen Tree",
            growth.form = "Tree",
@@ -527,8 +531,8 @@ FireMIP.PFTs <- list(
            shade.tolerance = "no"
   ),
   
-  
-  BR = new("PFT",
+  # BR
+  new("PFT",
            id = "BR",
            name = "Broadleaved Raingreen Tree",
            growth.form = "Tree",
@@ -541,7 +545,8 @@ FireMIP.PFTs <- list(
   
   # GRASSES
   
-  C3G = new("PFT",
+  # C3G
+  new("PFT",
             id = "C3G",
             name = "Boreal/Temperate Grass",
             growth.form = "Grass",
@@ -552,7 +557,8 @@ FireMIP.PFTs <- list(
             shade.tolerance = "no"
   ),
   
-  C4G = new("PFT",
+  # C4G
+  new("PFT",
             id = "C4G",
             name = "Tropical Grass",
             growth.form = "Grass",
@@ -563,8 +569,8 @@ FireMIP.PFTs <- list(
             shade.tolerance = "no"
   ),
   
-  # SHRUBS
-  Shb = new("PFT",
+  # Shb
+  new("PFT",
             id = "Shb",
             name = "Shrub",
             growth.form = "Shrub",
@@ -574,9 +580,9 @@ FireMIP.PFTs <- list(
             colour = "darkred",
             shade.tolerance = "no"
   ),
-  
-  # Agrcultural
-  Crops = new("PFT",
+ 
+  # Crops
+  new("PFT",
             id = "Crops",
             name = "Agricultural",
             growth.form = "Agricultural",
@@ -1022,7 +1028,7 @@ new("Quantity",
 ########### FireMIP FORMAT ########################
 ####################################################
 
-#' @description \code{FireMIP} - a Format for reading 'standard' FieMIP model output
+#' @description \code{FireMIP} - a Format for reading 'standard' FireMIP model output
 #' 
 #' @format A \code{Quantity} object is an S4 class.
 #' @aliases Format-class

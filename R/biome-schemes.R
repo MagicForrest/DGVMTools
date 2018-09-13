@@ -132,35 +132,54 @@ Smith2014.scheme <- new("BiomeScheme",
                         rules = Smith2014BiomeRules,
                         layers.needed = list(
                           
-                          # Combine shade tolerances
-                          BNE = list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
-                          BINE = list(quantity = "LAI_std", operator = 0, layers = "BINE"),
-                          BIBS = list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                          TeBS = list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
-                          TeIBS = list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                          IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                          TrBE = list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
-                          TrIBE = list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
-                          IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                          # make totals
-                          Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
-                          Grass = list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
-                          Boreal = list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
-                          Temperate = list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
-                          Tropical = list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
-                          Total = list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
-                          # get max tree
-                          MaxTree = list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
-                          # make fraction
-                          GrassFraction = list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
-                          BorealFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
-                          TemperateFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
-                          TropicalFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
-                          TrBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
-                          TrBRFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
-                          TeBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
-                          TeBSFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")),
-                        data.reference = "Haxeltime and Prentice 1996",
+                          ### Combine shade tolerances
+                          list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
+                          list(quantity = "LAI_std", operator = 0, layers = "BINE"),
+                          list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
+                          list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                          list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
+                          list(quantity = "LAI_std", operator = 0, layers = "IBS"),
+                          list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
+                          list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
+                          list(quantity = "LAI_std", operator = 0, layers = "IBS"),
+                          
+                          ### Make totals
+                          # Tree
+                          list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                          # Grass
+                          list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                          # Boreal
+                          list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
+                          # Temperate
+                          list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
+                          # Tropical
+                          list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
+                          # Total
+                          list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
+                          
+                          ### Get max tree
+                          list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
+                          
+                          # Make fractions
+                          # GrassFraction
+                          list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
+                          # BorealFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
+                          # TemperateFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
+                          # TropicalFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
+                          # TrBEFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
+                          # TrBRFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
+                          # TeBEFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
+                          # TeBSFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")
+                          
+                        ),
+                        data.reference = "Haxeltine and Prentice 1996",
                         published.reference = "Smith et al. 2014")
 
 
@@ -330,17 +349,29 @@ Hickler2012.scheme <- new("BiomeScheme",
                                         "Desert"),
                               format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = Hickler2012Rules,
-                          layers.needed = list(Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                               Grass = list(quantity = "LAI_std", operator = "+", layers =".Grass", new.layer = "Grass"),
-                                               Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
-                                               Mediterranean = list(quantity = "LAI_std", operator = "+", layers =c(".Mediterranean"), "new.layer = Mediterranean"),
-                                               SupraMediterranean = list(quantity = "LAI_std", operator = "+", layers =c(".Supra-mediterranean"), new.layer = "Supra-mediterranean"),
-                                               MaxTree = list(quantity = "LAI_std", operator = "max.layer", layers =".Tree", new.layer = "MaxTree"),
-                                               MaxPFT = list(quantity = "LAI_std", operator = "max.layer","layers =.PFTs", new.layer = "MaxPFT"),
-                                               GrassFraction = list(quantity = "LAI_std", operator = "/", layers =c("Grass", "Total"), new.layer = "GrassFraction"),
-                                               BorealFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Woody"), new.layer = "BorealFractionOfTree"),
-                                               TemperateFractionOfTree = list(quantity = "LAI_std", operator = "/", layers =c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
-                                               MediterraneanFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Mediterranean", "Tree"), new.layer = "MediterraneanFractionOfTree")),
+                          layers.needed = list(
+                            # Tree
+                            list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                            # Grass
+                            list(quantity = "LAI_std", operator = "+", layers =".Grass", new.layer = "Grass"),
+                            # Woody
+                            list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
+                            # Mediterranean
+                            list(quantity = "LAI_std", operator = "+", layers =c(".Mediterranean"), "new.layer = Mediterranean"),
+                            # SupraMediterranean
+                            list(quantity = "LAI_std", operator = "+", layers =c(".Supra-mediterranean"), new.layer = "Supra-mediterranean"),
+                            # MaxTree
+                            list(quantity = "LAI_std", operator = "max.layer", layers =".Tree", new.layer = "MaxTree"),
+                            # MaxPFT
+                            list(quantity = "LAI_std", operator = "max.layer","layers =.PFTs", new.layer = "MaxPFT"),
+                            # GrassFraction
+                            list(quantity = "LAI_std", operator = "/", layers =c("Grass", "Total"), new.layer = "GrassFraction"),
+                            # BorealFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Woody"), new.layer = "BorealFractionOfTree"),
+                            # TemperateFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers =c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
+                            # MediterraneanFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Mediterranean", "Tree"), new.layer = "MediterraneanFractionOfTree")),
                           # needGDD5 = TRUE, !!! Need to implement this
                           data.reference = "- (Bohn)",
                           published.reference = "Hickler et al. 2012")
@@ -456,33 +487,56 @@ Forrest2015.scheme <- new("BiomeScheme",
                               format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = Forrest2015MegaBiomeRules,
                           layers.needed = list(  
-                            # Combine shade tolerances
-                            BNE = list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
-                            BINE = list(quantity = "LAI_std", operator = 0, layers = "BINE"),
-                            BIBS = list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                            TeBS = list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
-                            TeIBS = list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                            IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                            TrBE = list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
-                            TrIBE = list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
-                            IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                            
+                            ### Combine shade tolerances
+                            list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "BINE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
+                            list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                            list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
+                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),
+                            list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),    
+                            
+                            ### Make totals
+                            # Tree
+                            list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                            # Grass
+                            list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                            # Boreal
+                            list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
+                            # Temperate
+                            list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
+                            # Tropical
+                            list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
                             # Total
-                            Grass = list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
-                            Boreal = list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
-                            Temperate = list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
-                            Tropical = list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
-                            # Max tree
-                            MaxTree = list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
-                            # Fractions
-                            GrassFraction = list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
-                            BorealFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
-                            TemperateFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
-                            TropicalFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
-                            TrBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
-                            TrBRFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
-                            TeBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
-                            TeBSFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")),
-                          data.reference = "Haxeltime and Prentice 1996",
+                            list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
+                            
+                            
+                            ### Max tree
+                            list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
+                            
+                            # Make fractions
+                            # GrassFraction
+                            list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
+                            # BorealFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
+                            # TemperateFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
+                            # TropicalFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
+                            # TrBEFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
+                            # TrBRFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
+                            # TeBEFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
+                            # TeBSFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")
+                            
+                          ),
+                          data.reference = "Haxeltine and Prentice 1996",
                           published.reference = "Forrest et al 2015, Smith et al. 2014")
 
 
@@ -569,16 +623,24 @@ MeditBiomes.scheme <- new("BiomeScheme",
                                         "Evergreen Steppe-Woodlands"),
                               format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = MeditBiomeRules,
-                          layers.needed = list(BNE = list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
-                                               BINE = list(quantity = "LAI_std", operator = 0, layers = "BINE"),
-                                               BIBS = list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                                               TeBS = list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
-                                               TeIBS = list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                                               IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                                               Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                               Grass = list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
-                                               Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
-                                               MaxWoody = list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree", ".Shrub"), new.layer = "MaxWoody")),
+                          layers.needed = list(
+                            ### Combine Shade Tolerances
+                            list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "BINE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
+                            list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                            list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
+                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),
+                            ### Calculate Totals
+                            # Tree
+                            list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                            # Grass
+                            list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                            # Woody
+                            list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
+                            ### Max woody
+                            list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree", ".Shrub"), new.layer = "MaxWoody")
+                          ),
                           data.reference = "-",
                           published.reference = "-")
 
@@ -687,8 +749,11 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
                                  format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                              rules = MegaBiomeRules_dev,
                              # needGDD5 = TRUE, !!! implement this!!!
-                             layers.needed = list(Tree = list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree"), new.layer = "MaxTree")),
-                             data.reference = "Haxeltime and Prentice 1996",
+                             layers.needed = list(
+                               # Max Tree
+                               list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree"), new.layer = "MaxTree")
+                             ),
+                             data.reference = "Haxeltine and Prentice 1996",
                              published.reference = "-")
 
 
@@ -808,8 +873,18 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                            "Inferno-FireMIP",
                                            "ORCHIDEE-FireMIP")),
                             rules = FireMIPBiomeRules,
-                            layers.needed = list(Tree = list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
-                                                 Grass = list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Grass", new.layer ="MaxGrass")),
+                            layers.needed = list(
+                              ## Totals
+                              # Tree
+                              list(quantity = "landCoverFrac", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                              # Grass
+                              list(quantity = "landCoverFrac", operator = "+", layers = ".Grass", new.layer ="Grass"),
+                              ### Maxes
+                              # Tree
+                              list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
+                              # Grass
+                              list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Grass", new.layer ="MaxGrass")
+                              ),
                             data.reference = "-",
                             published.reference = "-")
 
@@ -914,11 +989,18 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                                           "Arctic desert"),
                                 format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                             rules = FPCMegaBiomeRules,
-                            layers.needed = list(Tree = list(quantity = "fpc", operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                                 Grass = list(quantity = "fpc", operator = "+", layers = ".Grass", new.layer = "Grass"),
-                                                 Boreal = list(quantity = "fpc", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
-                                                 Temperate = list(quantity = "fpc", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
-                                                 Tropical = list(quantity = "fpc", operator = "+", layers = ".Tropical", new.layer = "Tropical")),
+                            layers.needed = list(
+                              # Tree
+                              list(quantity = "fpc", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                              # Grass
+                              list(quantity = "fpc", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                              # Boreal
+                              list(quantity = "fpc", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
+                              # Temperate
+                              list(quantity = "fpc", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
+                              # Tropical
+                              list(quantity = "fpc", operator = "+", layers = ".Tropical", new.layer = "Tropical")
+                            ),
                             # needGDD5 = TRUE, - need to implement this!
                             data.reference = "-",
                             published.reference = "-")
