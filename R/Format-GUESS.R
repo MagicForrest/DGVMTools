@@ -203,7 +203,7 @@ openLPJOutputFile_FireMIP <- function(run,
                                       verbose = FALSE,
                                       soil_water_capacities = "none"){
   
-  Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = NULL
+  Lon = Lat = Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = mrso = mrsos = Capacity = Code = NULL
   target.cols = SoilfC = SoilsC = NULL
   
   
@@ -423,7 +423,7 @@ openLPJOutputFile_FireMIP <- function(run,
     dt <- dt_upper[dt_lower]
     print(dt_lower)
     dt <- dt[dt_cap]
-    dt <- na.omit(dt)
+    dt <- stats::na.omit(dt)
     dt[, mrso := (mwcont_lower * thickness_lower_layer_mm * Capacity) + (mwcont_upper * thickness_upper_layer_mm * Capacity)]
     dt[, mwcont_lower := NULL]
     dt[, mwcont_upper := NULL]
@@ -455,7 +455,7 @@ openLPJOutputFile_FireMIP <- function(run,
     
     print(dt)
     dt <- dt[dt_cap]
-    dt <- na.omit(dt)
+    dt <- stats::na.omit(dt)
     dt[, mrsos := mwcont_upper * thickness_upper_layer_mm * Capacity]
     
     dt[, mwcont_upper := NULL]

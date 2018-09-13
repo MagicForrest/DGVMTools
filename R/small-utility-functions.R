@@ -166,7 +166,7 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     map.sp.lines <- maptools::map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = sp::CRS(proj4str))
     suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
-    map.sp.lines.df <- SpatialLinesDataFrame(map.sp.lines, data = df)
+    map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)
     map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
     return(fortify(map.sp.lines.df))
     
