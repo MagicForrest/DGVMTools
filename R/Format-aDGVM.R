@@ -545,7 +545,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
 
   # prepare data.table from the slice (array) for each PFT
   tr.dt <- as.data.table(melt(tmp.tr))
-  names(tr.dt) <- c("Lon", "Lat", "Time", "Tree")
+  names(tr.dt) <- c("Lon", "Lat", "Time", "Tr")
   setkey(tr.dt, Lon, Lat, Time)
   
   g3.dt <- as.data.table(melt(tmp.g3))
@@ -573,7 +573,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   out.all[, Time := NULL]
   
   print(out.all)
-
+  out.all = na.omit(out.all)
 
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
@@ -820,9 +820,9 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
             tmp.sd1   <- sum(tmp.all[ind.sd])/10000
             tmp.g41   <- sum(tmp.all[ind.g4])/10000
             tmp.g31   <- sum(tmp.all[ind.g3])/10000
-          
+            
+            tmp.cov   <- tmp.te1+tmp.td1+tmp.se1+tmp.sd1+tmp.g41+tmp.g31
             if ( tmp.cov<1 ) tmp.cov <- 1
-            else tmp.cov  <- tmp.te1+tmp.td1+tmp.se1+tmp.sd1+tmp.g41+tmp.g31
 
             tmp.te[x,y,z-start.point+1]   <- tmp.te1/tmp.cov*100  # *100 to convert to %
             tmp.td[x,y,z-start.point+1]   <- tmp.td1/tmp.cov*100  # *100 to convert to %
@@ -862,8 +862,6 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   }
   cat( "                                                       \n\n")
 
-  print(dim(tmp.g3))
-  
   dimnames(tmp.te) <- dim.names
   dimnames(tmp.td) <- dim.names
   dimnames(tmp.se) <- dim.names
@@ -892,7 +890,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   names(g3.dt) <- c("Lon", "Lat", "Time", "C3G")
   setkey(g3.dt, Lon, Lat, Time)
   
-  g4.dt <- as.data.table(melt(tmp.g3))
+  g4.dt <- as.data.table(melt(tmp.g4))
   names(g4.dt) <- c("Lon", "Lat", "Time", "C4G")
   setkey(g4.dt, Lon, Lat, Time)
   
@@ -913,6 +911,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   out.all[, Time := NULL]
   
   print(out.all)
+  out.all = na.omit(out.all)
   
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
@@ -971,7 +970,7 @@ determineQuantities_aDGVM <- function(source){
 #' @keywords datasets
 aDGVM.PFTs <- list(
   
-  C3G = new("PFT",
+  new("PFT",
             id = "C3G",
             name = "Boreal/Temperate Grass",
             growth.form = "Grass",
@@ -982,7 +981,7 @@ aDGVM.PFTs <- list(
             shade.tolerance = "None"
   ),
   
-  C4G = new("PFT",
+  new("PFT",
             id = "C4G",
             name = "Tropical Grass",
             growth.form = "Grass",
@@ -993,7 +992,7 @@ aDGVM.PFTs <- list(
             shade.tolerance = "None"
   ),
   
-  Tr= new("PFT",
+  new("PFT",
           id = "Tr",
           name = "Tropical Tree",
           growth.form = "Tree",
@@ -1004,7 +1003,7 @@ aDGVM.PFTs <- list(
           shade.tolerance = "None"
   ),
   
-  TrBE = new("PFT",
+  new("PFT",
              id = "TrBE",
              name = "Tropical Broadleaved Evergreen Tree",
              growth.form = "Tree",
@@ -1015,7 +1014,7 @@ aDGVM.PFTs <- list(
              shade.tolerance = "None"
   ),
   
-  TrBR = new("PFT",
+  new("PFT",
              id = "TrBR",
              name = "Tropical Broadleaved Raingreen Tree",
              growth.form = "Tree",
@@ -1026,8 +1025,8 @@ aDGVM.PFTs <- list(
              shade.tolerance = "None"
   ),
   
-  TrBES = new("PFT",
-              id = "TrBE",
+  new("PFT",
+              id = "TrBES",
               name = "Tropical Broadleaved Evergreen Shrub",
               growth.form = "Shrub",
               leaf.form = "Broadleaved",
@@ -1037,8 +1036,8 @@ aDGVM.PFTs <- list(
               shade.tolerance = "None"
   ),
   
-  TrBRS = new("PFT",
-              id = "TrBR",
+  new("PFT",
+              id = "TrBRS",
               name = "Tropical Broadleaved Raingreen Shrub",
               growth.form = "Shrub",
               leaf.form = "Broadleaved",
