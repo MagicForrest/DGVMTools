@@ -29,7 +29,9 @@ Imports:
     RColorBrewer,
     reshape2,
     viridis,
-    rgeos
+    rgeos,
+    plyr,
+    udunits2
 Suggests:
     knitr,
     rmarkdown

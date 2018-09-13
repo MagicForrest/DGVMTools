@@ -14,7 +14,7 @@
 #' @param name A character string describing this run, ie. "LPJ-GUESS v3.1"
 #' @param dir The location of this source on the file system (Mandatory)
 #' @param quantities A list of Quantity object what we expect to have in this Source.  The option allows the over-riding the default quantities in the Format object.  
-#' Not 100% sure why this might be useful though.
+#' Not 100\% sure why this might be useful though.
 #' @param lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the localities, somewhat legacy for old LPJ-GUESS runs.
 #' @param year.offset A numeric of length 1 to match be added to the years to convert them to calendar years,  somewhat legacy for old LPJ-GUESS runs.
 #' @param london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 

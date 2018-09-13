@@ -141,6 +141,20 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
   
 }
 
+#' Make a map overlay for ggplot2
+#' 
+#' Take a string and derives an approriate data.frame that can be used to add a map overlay 
+#' (eg coast or country lines from the maps and mapdata packages) with the ggplot::geom_path function.
+#' 
+#' @param map.overlay A character string specifying the overlay to be used a string matching maps package dataset
+#' @param all.lons A numeric vector of all the longitudes to be plotted, this is used to determine if it the over lay should be on longitues (-180,180) or (0,360).
+#' Maybe can be determines from xlim instead?
+#' @param interior.lines A logical, if TRUE include the internal country lines
+#' @param xlim A numeric vector of length 2 to giving the longitude window that the overlay should cover
+#' @param ylim A numeric vector of length 2 to giving the latitide window that the overlay should cover
+#' @return Returns data.frame suitable for plotting with ggplot::geom_path
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+
 #' @importFrom maptools map2SpatialLines
 #' @importFrom rgeos gLength
 #' @importFrom sp SpatialLinesDataFrame
