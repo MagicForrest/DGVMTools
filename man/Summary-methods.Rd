@@ -6,7 +6,6 @@
 \alias{summary,Source-method}
 \alias{summary}
 \alias{summary,Field-method}
-\alias{summary}
 \title{Summary methods}
 \usage{
 summary(object, ...)

@@ -34,4 +34,3 @@ S3method(as.data.frame, Field)
 
 S3method(as.data.table, Comparison)
 S3method(as.data.table, Field)
-

@@ -247,13 +247,13 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, g
   }
   
   # convert to SPDF
-  #sp.points <- SpatialPoints(data.frame(data[,list(Lon, Lat)]), proj4string = CRS("+proj=longlat +datum=WGS84"))
-  sp.points <- SpatialPoints(data.frame(input.data[,list(Lon, Lat)]))
+  #sp.points <- sp::SpatialPoints(data.frame(data[,list(Lon, Lat)]), proj4string = CRS("+proj=longlat +datum=WGS84"))
+  sp.points <- sp::SpatialPoints(data.frame(input.data[,list(Lon, Lat)]))
   suppressWarnings( # suppress the "grid has empty column/rows in dimension 1" warning
-    sp.pixels <- SpatialPixels(sp.points, tolerance = tolerance, grid = grid.topology)
+    sp.pixels <- sp::SpatialPixels(sp.points, tolerance = tolerance, grid = grid.topology)
   )
   suppressWarnings( # suppress the "grid has empty column/rows in dimension 1" warning
-    data.spdf <- SpatialPixelsDataFrame(sp.pixels, input.data[,layers,with=FALSE], tolerance = tolerance)
+    data.spdf <- sp::SpatialPixelsDataFrame(sp.pixels, input.data[,layers,with=FALSE], tolerance = tolerance)
   )
   # clean up
   rm(sp.points, sp.pixels)

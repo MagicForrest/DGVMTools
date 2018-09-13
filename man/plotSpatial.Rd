@@ -6,11 +6,12 @@
 \usage{
 plotSpatial(sources, layers = NULL, title = character(0),
   subtitle = character(0), facet.labels = NULL, facet.order = NULL,
-  plot.bg.col = "white", panel.bg.col = "#809DB8", useLongNames = FALSE,
-  text.multiplier = NULL, xlim = NULL, ylim = NULL, years = NULL,
-  days = NULL, months = NULL, seasons = NULL, limits = NULL,
-  cols = NULL, cuts = NULL, drop.cuts = TRUE, map.overlay = NULL,
-  grid = FALSE, plot = TRUE, interior.lines = TRUE)
+  plot.bg.col = "white", panel.bg.col = "#809DB8",
+  useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
+  ylim = NULL, years = NULL, days = NULL, months = NULL,
+  seasons = NULL, limits = NULL, cols = NULL, cuts = NULL,
+  drop.cuts = TRUE, map.overlay = NULL, grid = FALSE, plot = TRUE,
+  interior.lines = TRUE)
 }
 \arguments{
 \item{sources}{The data to plot. Can be a Field, a DataObject, or a list of including both}

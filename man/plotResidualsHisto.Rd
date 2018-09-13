@@ -4,9 +4,10 @@
 \alias{plotResidualsHisto}
 \title{Plot the residuals from a Comparison or list of Comparisons as histogram}
 \usage{
-plotResidualsHisto(input.CLayers, cols = NULL, fills = NULL, types = NULL,
-  labels = NULL, title = NULL, xlab = NULL, ylab = NULL, alpha = NULL,
-  reverse = FALSE, bin.width = NULL, xlim = NULL)
+plotResidualsHisto(input.CLayers, cols = NULL, fills = NULL,
+  types = NULL, labels = NULL, title = NULL, xlab = NULL,
+  ylab = NULL, alpha = NULL, reverse = FALSE, bin.width = NULL,
+  xlim = NULL)
 }
 \arguments{
 \item{input.CLayers}{The Comparison or Comparisons for which to plot the residuals}

@@ -573,7 +573,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   out.all[, Time := NULL]
   
   print(out.all)
-  out.all = na.omit(out.all)
+  out.all = stats::na.omit(out.all)
 
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
@@ -783,12 +783,12 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         if(variable@id == "canopyheight_std"){
           if (length(ind.alive)>0) {
             tmp.all  <- ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            tmp.te[x,y,z-start.point+1]   <- quantile(tmp.all[ind.te],0.95)
-            tmp.td[x,y,z-start.point+1]   <- quantile(tmp.all[ind.td],0.95)
-            tmp.se[x,y,z-start.point+1]   <- quantile(tmp.all[ind.se],0.95)
-            tmp.sd[x,y,z-start.point+1]   <- quantile(tmp.all[ind.sd],0.95)
-            tmp.g4[x,y,z-start.point+1]   <- quantile(tmp.all[ind.g4],0.95)
-            tmp.g3[x,y,z-start.point+1]   <- quantile(tmp.all[ind.g3],0.95)
+            tmp.te[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.te],0.95)
+            tmp.td[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.td],0.95)
+            tmp.se[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.se],0.95)
+            tmp.sd[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.sd],0.95)
+            tmp.g4[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.g4],0.95)
+            tmp.g3[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.g3],0.95)
           }
         }
         
@@ -911,7 +911,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   out.all[, Time := NULL]
   
   print(out.all)
-  out.all = na.omit(out.all)
+  out.all = stats::na.omit(out.all)
   
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
