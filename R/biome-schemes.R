@@ -893,6 +893,278 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                             data.reference = "-",
                             published.reference = "-")
 
+
+
+
+#####################################################################
+########### ADGVM2 BIOME CLASSIFICATION SCHEMES #####################
+#####################################################################
+
+
+
+#####################################################################
+########### SIMPLE BIOME CLASSIFICATION #############################
+#####################################################################
+
+#' Rules to classify coarse tropical biomes
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, woodland, forest)
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+
+SimpleAdgvm2BiomeRules <- function(x){
+  # BIOME 1 - Baren/Desert
+  if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Tree']])<=5) {return("Baren/Desert")}
+  # BIOME 2 - C4 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Tree']])<=5 & as.numeric(x[['vegcover_std_C3G']])<=as.numeric(x[['vegcover_std_C4G']])) {return("C4 Grassland")}
+  # BIOME 3 - C3 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Tree']])<=5 & as.numeric(x[['vegcover_std_C3G']])> as.numeric(x[['vegcover_std_C4G']])) {return("C3 Grassland")}
+  # BIOME 4 - Woodland
+  else if(as.numeric(x[['vegcover_std_Tree']])> 5 & as.numeric(x[['vegcover_std_Tree']])<=60) {return("Woodland")}
+  # BIOME 5 - Forest
+  else if(as.numeric(x[['vegcover_std_Tree']])> 60 ) {return("Forest")}
+  # BIOME 6 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' 
+SimpleAdgvm2Biomes.scheme <- new("BiomeScheme",
+                                 new("Quantity",
+                                     id = "SimpleAdgvm2Biomes",
+                                     name = "Simple aDGVM2 Biomes",
+                                     colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                             "C4 Grassland" = '#fff700',
+                                                                             "C3 Grassland" = '#ffcf0f',
+                                                                             "Woodland" = '#94b6ff',
+                                                                             "Forest" = '#308a0a',
+                                                                             "Unclassifiable/Other" = "grey75")),
+                                     units = c("Baren/Desert",
+                                               "C4 Grassland",
+                                               "C3 Grassland",
+                                               "Woodland",
+                                               "Forest",
+                                               "Unclassifiable/Other"),
+                                     format = c("aDGVM")),
+                                 rules = SimpleAdgvm2BiomeRules,
+                                 layers.needed = list( list(quantity = "vegcover_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                       list(quantity = "vegcover_std", operator = "+", layers = ".Tree", new.layer = "Tree")),
+                                 needGDD5 = FALSE,
+                                 data.reference = "-",
+                                 published.reference = "-")
+
+
+
+
+#####################################################################
+########### SIMPLE BIOME CLASSIFICATION WITH HEIGHT #################
+#####################################################################
+
+#' Rules to classify coarse tropical biomes
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, small forest, tall forest)
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+
+SimpleHeightAdgvm2BiomeRules <- function(x){
+  # BIOME 1 - Baren/Desert
+  if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Tree']])<=5) {return("Baren/Desert")}
+  # BIOME 2 - C4 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Tree']])<=5 & as.numeric(x[['vegcover_std_C3G']])<=as.numeric(x[['vegcover_std_C4G']])) {return("C4 Grassland")}
+  # BIOME 3 - C3 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Tree']])<=5 & as.numeric(x[['vegcover_std_C3G']])> as.numeric(x[['vegcover_std_C4G']])) {return("C3 Grassland")}
+  # BIOME 4 - Small forest
+  else if(as.numeric(x[['vegcover_std_Tree']])> 5 & as.numeric(x[['canopyheight_std_Tree']])<=5) {return("Small forest")}
+  # BIOME 5 - Tall forest
+  else if(as.numeric(x[['vegcover_std_Tree']])> 5 & as.numeric(x[['canopyheight_std_Tree']])> 5) {return("Tall forest")}
+  # BIOME 6 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' 
+SimpleHeightAdgvm2Biomes.scheme <- new("BiomeScheme",
+                                       new("Quantity",
+                                           id = "SimpleAdgvm2Biomes",
+                                           name = "Simple aDGVM2 Biomes",
+                                           colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                                   "C4 Grassland" = '#fff700',
+                                                                                   "C3 Grassland" = '#ffcf0f',
+                                                                                   "Small forest" = '#94b6ff',
+                                                                                   "Tall forest" = '#308a0a',
+                                                                                   "Unclassifiable/Other" = "grey75")),
+                                           units = c("Baren/Desert",
+                                                     "C4 Grassland",
+                                                     "C3 Grassland",
+                                                     "Small forest",
+                                                     "Tall forest",
+                                                     "Unclassifiable/Other"),
+                                           format = c("aDGVM")),
+                                       rules = SimpleHeightAdgvm2BiomeRules,
+                                       layers.needed = list( list(quantity = "vegcover_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                             list(quantity = "vegcover_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                                             list(quantity = "canopyheight_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                                             list(quantity = "canopyheight_std", operator = "+", layers = ".Grass", new.layer = "Grass")),
+                                       needGDD5 = FALSE,
+                                       data.reference = "-",
+                                       published.reference = "-")
+
+
+
+#####################################################################
+########### BIOME CLASSIFICATION, GROWTH FORM #######################
+#####################################################################
+
+#' Rules to classify coarse tropical biomes
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, woodland, shrubland)
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+
+GrowthFormAdgvm2BiomeRules <- function(x){
+  # BIOME 1 - Baren/Desert
+  if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Woody']])<=5) {return("Baren/Desert")}
+  # BIOME 2 - C4 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Woody']])<=5 & as.numeric(x[['vegcover_std_C3G']])<=as.numeric(x[['vegcover_std_C4G']])) {return("C4 Grassland")}
+  # BIOME 3 - C3 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Woody']])<=5 & as.numeric(x[['vegcover_std_C3G']])> as.numeric(x[['vegcover_std_C4G']])) {return("C3 Grassland")}
+  # BIOME 4 - Woodland
+  else if( as.numeric(x[['vegcover_std_Woody']])> 5 & as.numeric(x[['vegcover_std_Tree']])> as.numeric(x[['vegcover_std_Shrub']])) {return("Woodland")}
+  # BIOME 5 - Shrubland
+  else if( as.numeric(x[['vegcover_std_Woody']])> 5 & as.numeric(x[['vegcover_std_Tree']])<=as.numeric(x[['vegcover_std_Shrub']])) {return("Shrubland")}
+  # BIOME 6 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' 
+GrowthFormAdgvm2Biomes.scheme <- new("BiomeScheme",
+                                     new("Quantity",
+                                         id = "GrowthFormAdgvm2Biomes",
+                                         name = "Growth Form aDGVM2 Biomes",
+                                         colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                                 "C4 Grassland" = '#fff700',
+                                                                                 "C3 Grassland" = '#ffcf0f',
+                                                                                 "Woodland" = '#94b6ff',
+                                                                                 "Shrubland" = '#d6c100',
+                                                                                 "Unclassifiable/Other" = "grey75")),
+                                         units = c("Baren/Desert",
+                                                   "C4 Grassland",
+                                                   "C3 Grassland",
+                                                   "Woodland",
+                                                   "Shrubland",
+                                                   "Unclassifiable/Other"),
+                                         format = c("aDGVM")),
+                                     rules = GrowthFormAdgvm2BiomeRules,
+                                     layers.needed = list( list(quantity = "vegcover_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                           list(quantity = "vegcover_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
+                                                           list(quantity = "vegcover_std", operator = "+", layers = ".Shrub", new.layer = "Shrub"),
+                                                           list(quantity = "vegcover_std", operator = "+", layers = ".Tree",  new.layer = "Tree")),
+                                     needGDD5 = FALSE,
+                                     data.reference = "-",
+                                     published.reference = "-")
+
+#####################################################################
+########### BIOME CLASSIFICATION, PHENOLOGY #########################
+#####################################################################
+
+#' Rules to classify coarse tropical biomes
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-6, baren, C4 grassland, C3 grassland, woodland, evergreen forest, deciduous forest)
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+
+PhenologyAdgvm2BiomeRules <- function(x){
+  # BIOME 1 - Baren/Desert
+  if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Woody']])<=5) {return("Baren/Desert")}
+  # BIOME 2 - C4 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Woody']])<=5 & as.numeric(x[['vegcover_std_C3G']])<=as.numeric(x[['vegcover_std_C4G']])) {return("C4 Grassland")}
+  # BIOME 3 - C3 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Woody']])<=5 & as.numeric(x[['vegcover_std_C3G']])> as.numeric(x[['vegcover_std_C4G']])) {return("C3 Grassland")}
+  # BIOME 4 - Woodland
+  else if( as.numeric(x[['vegcover_std_Woody']])> 5 & as.numeric(x[['vegcover_std_Woody']])<=60) {return("Woodland")}
+  # BIOME 5 - Deciduous forest
+  else if( as.numeric(x[['vegcover_std_Woody']])>60 & as.numeric(x[['vegcover_std_Evergreen']])<=as.numeric(x[['vegcover_std_Raingreen']])) {return("Deciduous Forest")}
+  # BIOME 6 - Evergreen forest
+  else if( as.numeric(x[['vegcover_std_Woody']])>60 & as.numeric(x[['vegcover_std_Evergreen']])> as.numeric(x[['vegcover_std_Raingreen']])) {return("Evergreen Forest")}
+  # BIOME 7 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' 
+PhenologyAdgvm2Biomes.scheme <- new("BiomeScheme",
+                                    new("Quantity",
+                                        id = "PhenologyAdgvm2Biomes",
+                                        name = "Phenology aDGVM2 Biomes",
+                                        colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                                "C4 Grassland" = '#fff700',
+                                                                                "C3 Grassland" = '#ffcf0f',
+                                                                                "Woodland" = '#94b6ff',
+                                                                                "Deciduous Forest" = '#9c6007',
+                                                                                "Evergreen Forest" = '#308a0a',
+                                                                                "Unclassifiable/Other" = "grey75")),
+                                        units = c("Baren/Desert",
+                                                  "C4 Grassland",
+                                                  "C3 Grassland",
+                                                  "Woodland",
+                                                  "Deciduous Forest",
+                                                  "Evergreen Forest",
+                                                  "Unclassifiable/Other"),
+                                        format = c("aDGVM")),
+                                    rules = PhenologyAdgvm2BiomeRules,
+                                    layers.needed = list( list(quantity = "vegcover_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                          list(quantity = "vegcover_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
+                                                          list(quantity = "vegcover_std", operator = "+", layers = ".Evergreen", new.layer = "Evergreen"),
+                                                          list(quantity = "vegcover_std", operator = "+", layers = ".Raingreen",  new.layer = "Raingreen")),
+                                    needGDD5 = FALSE,
+                                    data.reference = "-",
+                                    published.reference = "-")
+
+
+
+
+
 #' Currently supported biome schemes
 #' 
 #' The biomes schemes that are currently supported for LPJ-GUESS output.  
@@ -921,4 +1193,8 @@ supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
                              "Megabiomes_dev" = Megabiomes_dev.scheme,
                              "FPCMegabiomes" = FPCMegabiomes.scheme,
                              "MeditBiomes" = MeditBiomes.scheme,
-                             "FireMIP" = FireMIPBiomes.scheme)
+                             "FireMIP" = FireMIPBiomes.scheme,
+                             "SimpleAdgvm2Biomes" = SimpleAdgvm2Biomes.scheme,
+                             "SimpleHeightAdgvm2Biomes" = SimpleAdgvm2Biomes.scheme,
+                             "GrowthFormAdgvm2Biomes" = GrowthFormAdgvm2Biomes.scheme,
+                             "PhenologyAdgvm2Biomes" = PhenologyAdgvm2Biomes.scheme)
