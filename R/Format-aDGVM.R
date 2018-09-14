@@ -63,293 +63,294 @@ getField_aDGVM <- function(source,
 #    changes in aDGVM2 output routines)
 # ----------------------------------------------------
 
+#
+
+## ----------------------------------------------------
+## Convert aDGVM2 results into LPJ output format.
+## The output file includes lon, lat, year and yearly
+## values of state variables for different PFTs.
+## Each state variable is in a seperate file.
+##
+## Vegetation classification scheme 1:
+##  * Trees
+##  * C4 grasses
+##
+## Currently there are two files for
+##  * Aboveground biomas
+##  * Lai
+##
+## The script reads pop files
+##
+## ----------------------------------------------------
+##
+##' Simple classification of yearly output for aDGVM 
+##' 
+##' Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the DGVM framework and is probably now
+##' redundant.  Classifies only as tree or grass based on only the pop file, doesn't open the trait file.
+##' 
+##' @param runid Character string identifying the run
+##' @param fire Character string denoting if fire was on or off
+##' @param directory Character string specifying the run directory
+##'
+##' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}
+##' @import ncdf4
+##' @keywords internal
+##' @seealso \code{getQuantity_aDGVM_Scheme1}
+#convertYearlyScheme1 <- function( runid, fire, directory )
+#{
+#  fname <- paste(directory, "/pop_", runid, "_", fire, ".nc", sep="" )
+#  cat( "Convert", fname, "\n" )
+#  d <- nc_open(fname)
+#  
+#  xx <- ncvar_get(d,"lon")
+#  yy <- ncvar_get(d,"lat")
+#  tt <- ncvar_get(d,"time")
+#  len_tt <- length(tt)
+#  
+#  # process only the last nyears years of the simulation run
+#  nyears <- 20
+#  t_seq <- seq( len_tt-(nyears*12), len_tt, by=12 )
+#  
+#  cnames <- c( "Lon", "Lat", "Year", "Tr", "C4G", "Total")
+#  
+#  out.abm <- matrix(0, ncol=length(cnames), nrow=0)
+#  colnames(out.abm) <- cnames
+#  
+#  out.lai <- matrix(0, ncol=length(cnames), nrow=0)
+#  colnames(out.lai) <- cnames
+#  
+#  for ( x in 1:length(xx) )
+#  {
+#    for ( y in 1:length(yy) )
+#    {
+#      for ( z in t_seq )
+#      {
+#        tmp.tr <-          ncvar_get( d, "SumBBark", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+#        tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+#        tmp.gr <-          ncvar_get( d, "SumBLeaf", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+#        
+#        #            Lon      Lat    Year            Tr      C4G     Total
+#        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.gr, tmp.tr+tmp.gr )
+#        out.abm <- rbind( out.abm, out.vec )
+#        
+#        tmp.tr <- ncvar_get( d, "MeanLai", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
+#        tmp.gr <- ncvar_get( d, "MeanLai", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
+#        
+#        #            Lon      Lat    Year            Tr      C4G     Total
+#        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.gr, tmp.tr+tmp.gr )
+#        out.lai <- rbind( out.lai, out.vec )
+#      }
+#    }
+#  }
+#  
+#  utils::write.table( out.abm, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_yearly_agbm", sep=""), row.names=F, quote=F )
+#  utils::write.table( out.lai, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_yearly_lai",  sep=""), row.names=F, quote=F )
+#  
+#  
+#  
+#  return(out.lai)
+#  
+#}
+#
+#
+## ----------------------------------------------------
+## Convert aDGVM2 results into LPJ output format.
+## The output file includes lon, lat, year and yearly
+## values of state variables for different PFTs.
+## Each state variable is in a seperate file.
+##
+## Vegetation classification scheme 2:
+##  * Deciduous trees
+##  * Evergreen trees
+##  * C4 grasses
+##
+## Currently there are two files for
+##  * Aboveground biomas
+##
+## The script reads trait files
+## ----------------------------------------------------
+##' Slightly more complex classification of yearly output for aDGVM output
+##' 
+##' 
+##' Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the DGVM framework and is probably now
+##' redundant.  Classifies as evergreen tree, deciduous tree or grass based on the pop file and the trait file.
+##' 
+##' @param runid Character string identifying the run
+##' @param fire Character string denoting if fire was on or off
+##' @param directory Character string specifying the run directory
+##'
+##' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}
+##' @import ncdf4
+##' @keywords internal
+##' @seealso \code{getQuantity_aDGVM_Scheme2}
+##' 
+#convertYearlyScheme2 <- function( runid, fire, directory )
+#{
+#  fname <- paste( "~/", directory, "/trait_", runid, "_", fire, ".nc", sep="" )
+#  cat( "Convert", fname, "\n" )
+#  d <- nc_open(fname)
+#  
+#  xx <- ncvar_get(d,"lon")
+#  yy <- ncvar_get(d,"lat")
+#  tt <- ncvar_get(d,"time")
+#  len_tt <- length(tt)
+#  
+#  # process only the last nyears years of the simulation run
+#  nyears <- 20
+#  t_seq <- (len_tt-nyears+1):len_tt
+#  
+#  max_pop_size <- 1600          # maximum population size
+#  biomass_conversion <- 1/1000  # convert from kg/ha to t/ha
+#  
+#  cnames <- c( "Lon", "Lat", "Year", "TrBE", "TrBR", "C4G", "Total")
+#  
+#  out.abm <- matrix(0, ncol=length(cnames), nrow=0)
+#  colnames(out.abm) <- cnames
+#  
+#  for ( x in 1:length(xx) )
+#  {
+#    cat( "x=", x, "of", length(xx), "\n")
+#    for ( y in 1:length(yy) )
+#    {
+#      for ( z in t_seq )
+#      {
+#        alive       <- ncvar_get( d, "alive",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+#        vegtp       <- ncvar_get( d, "VegType",   start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+#        pheno       <- ncvar_get( d, "Evergreen", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+#        bm_leaf_all <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+#        bm_wood_all <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+#        bm_bark_all <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+#        
+#        ind_te <- which( alive==1 & vegtp==0 & pheno==1 )   # indices of evergreen trees in trait data
+#        ind_td <- which( alive==1 & vegtp==0 & pheno==0 )   # indices of deciduous trees in trait data
+#        ind_gr <- which( alive==1 & vegtp==1 )              # indices of grasses in trait data
+#        
+#        bm_ag_te <- sum(bm_wood_all[ind_te]+bm_bark_all[ind_te])*biomass_conversion  # calculate biomass of evergreen trees and convert to t/ha
+#        bm_ag_td <- sum(bm_wood_all[ind_td]+bm_bark_all[ind_td])*biomass_conversion  # calculate biomass of deciduous trees and convert to t/ha
+#        bm_ag_gr <- sum(bm_leaf_all[ind_gr])*biomass_conversion  # calculate biomass of grasses and convert to t/ha
+#        
+#        #            Lon      Lat    Year            TrBE      TrBR      C4G       Total
+#        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), bm_ag_te, bm_ag_td, bm_ag_gr, bm_ag_te+bm_ag_td+bm_ag_gr )
+#        out.abm <- rbind( out.abm, out.vec )
+#      }
+#    }
+#  }
+#  
+#  utils::write.table( out.abm, file=paste("aDGVM2_", runid, "_", fire, "_scheme2_yearly_agbm", sep=""), row.names=F, quote=F )
+#  
+#}
+#
+#
+## ----------------------------------------------------
+## Convert aDGVM2 results into LPJ output format.
+## The output file includes lon, lat, year and monthly
+## values of state variables for different PFTs.
+## Each PFT and eachs tate variable is in a seperate
+## file.
+##
+## Vegetation classification scheme 1:
+##  * Trees
+##  * C4 grasses
+##
+## Currently there are four files for
+##  * Aboveground biomas trees
+##  * Aboveground biomas grasses
+##  * LAI trees
+##  * LAI grasses
+##
+## The script reads pop files
+##
+## ----------------------------------------------------
+##' Simple classification of monthly output for aDGVM 
+##' 
+##' Original from Simon Scheiter, ***THERE IS CURRENTLY NO INTERGATED VERSION OF THIS WHICH FITS INTO DGVM TOOLS*
+##' Someone needs to do that...    
+##' Classifies only as tree or grass based on only the pop file, doesn't open the trait file.
+##' 
+##' @param runid Character string identifying the run
+##' @param fire Character string denoting if fire was on or off
+##' @param directory Character string specifying the run directory
+##'
+##' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}
+##' @import ncdf4
+##' @keywords internal
+##' @seealso \code{getQuantity_aDGVM_Scheme1}
+#convertMonthlyScheme1 <- function( runid, fire, directory )
+#{
+#  fname <- paste( "~/", directory, "/pop_", runid, "_", fire, ".nc", sep="" )
+#  cat( "Convert", fname, "\n" )
+#  d <- nc_open(fname)
+#  
+#  xx <- ncvar_get(d,"lon")
+#  yy <- ncvar_get(d,"lat")
+#  tt <- ncvar_get(d,"time")
+#  len_tt <- length(tt)
+#  
+#  # process only the last nyears years of the simulation run
+#  nyears <- 20
+#  t_seq <- seq( len_tt-(nyears*12)+1, len_tt )
+#  
+#  tstart <- min(t_seq)
+#  tend   <- max(t_seq)
+#  tlen   <- length(t_seq)
+#  
+#  year_seq <- unique(floor(tt[t_seq]))
+#  
+#  cnames <- c( "Lon", "Lat", "Year", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" )
+#  
+#  out.abm.tr <- matrix(0, ncol=length(cnames), nrow=0)
+#  colnames(out.abm.tr) <- cnames
+#  
+#  out.abm.gr <- matrix(0, ncol=length(cnames), nrow=0)
+#  colnames(out.abm.gr) <- cnames
+#  
+#  out.lai.tr <- matrix(0, ncol=length(cnames), nrow=0)
+#  colnames(out.lai.tr) <- cnames
+#  
+#  out.lai.gr <- matrix(0, ncol=length(cnames), nrow=0)
+#  colnames(out.lai.gr) <- cnames
+#  
+#  for ( x in 1:length(xx) )
+#  {
+#    for ( y in 1:length(yy) )
+#    {
+#      # aboveground biomass
+#      tmp.tr <-          ncvar_get( d, "SumBBark", start=c( x,y,2,tstart ), count=c( 1,1,1,tlen ) )
+#      tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=c( x,y,2,tstart ), count=c( 1,1,1,tlen ) )
+#      tmp.gr <-          ncvar_get( d, "SumBLeaf", start=c( x,y,3,tstart ), count=c( 1,1,1,tlen ) )
+#      #                    Lon                 Lat                 Year         ... monthly data ...
+#      out.vec    <- cbind( rep(xx[x], nyears), rep(yy[y], nyears), year_seq, matrix( tmp.tr, ncol=12, byrow=T ) )
+#      out.abm.tr <- rbind( out.abm.tr, out.vec )
+#      
+#      #                    Lon                 Lat                 Year         ... monthly data ...
+#      out.vec    <- cbind( rep(xx[x], nyears), rep(yy[y], nyears), year_seq, matrix( tmp.gr, ncol=12, byrow=T ) )
+#      out.abm.gr <- rbind( out.abm.gr, out.vec )
+#      
+#      # lai
+#      tmp.tr <- ncvar_get( d, "MeanLai", start=c( x,y,2,tstart ), count=c( 1,1,1,tlen ) )
+#      tmp.gr <- ncvar_get( d, "MeanLai", start=c( x,y,3,tstart ), count=c( 1,1,1,tlen ) )
+#      #                    Lon                 Lat                 Year         ... monthly data ...
+#      out.vec    <- cbind( rep(xx[x], nyears), rep(yy[y], nyears), year_seq, matrix( tmp.tr, ncol=12, byrow=T ) )
+#      out.lai.tr <- rbind( out.lai.tr, out.vec )
+#      
+#      #                    Lon                 Lat                 Year         ... monthly data ...
+#      out.vec    <- cbind( rep(xx[x], nyears), rep(yy[y], nyears), year_seq, matrix( tmp.gr, ncol=12, byrow=T ) )
+#      out.lai.gr <- rbind( out.lai.gr, out.vec )
+#    }
+#  }
+#  
+ # utils::write.table( out.abm.tr, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_monthly_Tr_agbm", sep=""), row.names=F, quote=F )
+#  utils::write.table( out.lai.tr, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_monthly_Tr_lai",  sep=""), row.names=F, quote=F )
+#  
+#  utils::write.table( out.abm.gr, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_monthly_C4G_agbm", sep=""), row.names=F, quote=F )
+#  utils::write.table( out.lai.gr, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_monthly_C4G_lai",  sep=""), row.names=F, quote=F )
+#  
+#}
 
 
-# ----------------------------------------------------
-# Convert aDGVM2 results into LPJ output format.
-# The output file includes lon, lat, year and yearly
-# values of state variables for different PFTs.
-# Each state variable is in a seperate file.
-#
-# Vegetation classification scheme 1:
-#  * Trees
-#  * C4 grasses
-#
-# Currently there are two files for
-#  * Aboveground biomas
-#  * Lai
-#
-# The script reads pop files
-#
-# ----------------------------------------------------
-#
-#' Simple classification of yearly output for aDGVM 
-#' 
-#' Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the DGVM framework and is probably now
-#' redundant.  Classifies only as tree or grass based on only the pop file, doesn't open the trait file.
-#' 
-#' @param runid Character string identifying the run
-#' @param fire Character string denoting if fire was on or off
-#' @param directory Character string specifying the run directory
-#'
-#' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}
-#' @import ncdf4
-#' @keywords internal
-#' @seealso \code{getQuantity_aDGVM_Scheme1}
-convertYearlyScheme1 <- function( runid, fire, directory )
-{
-  fname <- paste(directory, "/pop_", runid, "_", fire, ".nc", sep="" )
-  cat( "Convert", fname, "\n" )
-  d <- nc_open(fname)
-  
-  xx <- ncvar_get(d,"lon")
-  yy <- ncvar_get(d,"lat")
-  tt <- ncvar_get(d,"time")
-  len_tt <- length(tt)
-  
-  # process only the last nyears years of the simulation run
-  nyears <- 20
-  t_seq <- seq( len_tt-(nyears*12), len_tt, by=12 )
-  
-  cnames <- c( "Lon", "Lat", "Year", "Tr", "C4G", "Total")
-  
-  out.abm <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.abm) <- cnames
-  
-  out.lai <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.lai) <- cnames
-  
-  for ( x in 1:length(xx) )
-  {
-    for ( y in 1:length(yy) )
-    {
-      for ( z in t_seq )
-      {
-        tmp.tr <-          ncvar_get( d, "SumBBark", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-        tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-        tmp.gr <-          ncvar_get( d, "SumBLeaf", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-        
-        #            Lon      Lat    Year            Tr      C4G     Total
-        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.gr, tmp.tr+tmp.gr )
-        out.abm <- rbind( out.abm, out.vec )
-        
-        tmp.tr <- ncvar_get( d, "MeanLai", start=c( x,y,2,z ), count=c( 1,1,1,1 ) )
-        tmp.gr <- ncvar_get( d, "MeanLai", start=c( x,y,3,z ), count=c( 1,1,1,1 ) )
-        
-        #            Lon      Lat    Year            Tr      C4G     Total
-        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), tmp.tr, tmp.gr, tmp.tr+tmp.gr )
-        out.lai <- rbind( out.lai, out.vec )
-      }
-    }
-  }
-  print(out.lai)
-  
-  utils::write.table( out.abm, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_yearly_agbm", sep=""), row.names=F, quote=F )
-  utils::write.table( out.lai, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_yearly_lai",  sep=""), row.names=F, quote=F )
-  
-  
-  
-  return(out.lai)
-  
-}
-
-
-# ----------------------------------------------------
-# Convert aDGVM2 results into LPJ output format.
-# The output file includes lon, lat, year and yearly
-# values of state variables for different PFTs.
-# Each state variable is in a seperate file.
-#
-# Vegetation classification scheme 2:
-#  * Deciduous trees
-#  * Evergreen trees
-#  * C4 grasses
-#
-# Currently there are two files for
-#  * Aboveground biomas
-#
-# The script reads trait files
-# ----------------------------------------------------
-#' Slightly more complex classification of yearly output for aDGVM output
-#' 
-#' 
-#' Original from Simon Scheiter, a modified version has been produced by M. Forrest to fit into the DGVM framework and is probably now
-#' redundant.  Classifies as evergreen tree, deciduous tree or grass based on the pop file and the trait file.
-#' 
-#' @param runid Character string identifying the run
-#' @param fire Character string denoting if fire was on or off
-#' @param directory Character string specifying the run directory
-#'
-#' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}
-#' @import ncdf4
-#' @keywords internal
-#' @seealso \code{getQuantity_aDGVM_Scheme2}
-#' 
-convertYearlyScheme2 <- function( runid, fire, directory )
-{
-  fname <- paste( "~/", directory, "/trait_", runid, "_", fire, ".nc", sep="" )
-  cat( "Convert", fname, "\n" )
-  d <- nc_open(fname)
-  
-  xx <- ncvar_get(d,"lon")
-  yy <- ncvar_get(d,"lat")
-  tt <- ncvar_get(d,"time")
-  len_tt <- length(tt)
-  
-  # process only the last nyears years of the simulation run
-  nyears <- 20
-  t_seq <- (len_tt-nyears+1):len_tt
-  
-  max_pop_size <- 1600          # maximum population size
-  biomass_conversion <- 1/1000  # convert from kg/ha to t/ha
-  
-  cnames <- c( "Lon", "Lat", "Year", "TrBE", "TrBR", "C4G", "Total")
-  
-  out.abm <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.abm) <- cnames
-  
-  for ( x in 1:length(xx) )
-  {
-    cat( "x=", x, "of", length(xx), "\n")
-    for ( y in 1:length(yy) )
-    {
-      for ( z in t_seq )
-      {
-        alive       <- ncvar_get( d, "alive",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        vegtp       <- ncvar_get( d, "VegType",   start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        pheno       <- ncvar_get( d, "Evergreen", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        bm_leaf_all <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        bm_wood_all <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        bm_bark_all <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        
-        ind_te <- which( alive==1 & vegtp==0 & pheno==1 )   # indices of evergreen trees in trait data
-        ind_td <- which( alive==1 & vegtp==0 & pheno==0 )   # indices of deciduous trees in trait data
-        ind_gr <- which( alive==1 & vegtp==1 )              # indices of grasses in trait data
-        
-        bm_ag_te <- sum(bm_wood_all[ind_te]+bm_bark_all[ind_te])*biomass_conversion  # calculate biomass of evergreen trees and convert to t/ha
-        bm_ag_td <- sum(bm_wood_all[ind_td]+bm_bark_all[ind_td])*biomass_conversion  # calculate biomass of deciduous trees and convert to t/ha
-        bm_ag_gr <- sum(bm_leaf_all[ind_gr])*biomass_conversion  # calculate biomass of grasses and convert to t/ha
-        
-        #            Lon      Lat    Year            TrBE      TrBR      C4G       Total
-        out.vec <- c( xx[x],  yy[y], ceiling(tt[z]), bm_ag_te, bm_ag_td, bm_ag_gr, bm_ag_te+bm_ag_td+bm_ag_gr )
-        out.abm <- rbind( out.abm, out.vec )
-      }
-    }
-  }
-  
-  utils::write.table( out.abm, file=paste("aDGVM2_", runid, "_", fire, "_scheme2_yearly_agbm", sep=""), row.names=F, quote=F )
-  
-}
-
-
-# ----------------------------------------------------
-# Convert aDGVM2 results into LPJ output format.
-# The output file includes lon, lat, year and monthly
-# values of state variables for different PFTs.
-# Each PFT and eachs tate variable is in a seperate
-# file.
-#
-# Vegetation classification scheme 1:
-#  * Trees
-#  * C4 grasses
-#
-# Currently there are four files for
-#  * Aboveground biomas trees
-#  * Aboveground biomas grasses
-#  * LAI trees
-#  * LAI grasses
-#
-# The script reads pop files
-#
-# ----------------------------------------------------
-#' Simple classification of monthly output for aDGVM 
-#' 
-#' Original from Simon Scheiter, ***THERE IS CURRENTLY NO INTERGATED VERSION OF THIS WHICH FITS INTO DGVM TOOLS*
-#' Someone needs to do that...    
-#' Classifies only as tree or grass based on only the pop file, doesn't open the trait file.
-#' 
-#' @param runid Character string identifying the run
-#' @param fire Character string denoting if fire was on or off
-#' @param directory Character string specifying the run directory
-#'
-#' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}
-#' @import ncdf4
-#' @keywords internal
-#' @seealso \code{getQuantity_aDGVM_Scheme1}
-convertMonthlyScheme1 <- function( runid, fire, directory )
-{
-  fname <- paste( "~/", directory, "/pop_", runid, "_", fire, ".nc", sep="" )
-  cat( "Convert", fname, "\n" )
-  d <- nc_open(fname)
-  
-  xx <- ncvar_get(d,"lon")
-  yy <- ncvar_get(d,"lat")
-  tt <- ncvar_get(d,"time")
-  len_tt <- length(tt)
-  
-  # process only the last nyears years of the simulation run
-  nyears <- 20
-  t_seq <- seq( len_tt-(nyears*12)+1, len_tt )
-  
-  tstart <- min(t_seq)
-  tend   <- max(t_seq)
-  tlen   <- length(t_seq)
-  
-  year_seq <- unique(floor(tt[t_seq]))
-  
-  cnames <- c( "Lon", "Lat", "Year", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" )
-  
-  out.abm.tr <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.abm.tr) <- cnames
-  
-  out.abm.gr <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.abm.gr) <- cnames
-  
-  out.lai.tr <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.lai.tr) <- cnames
-  
-  out.lai.gr <- matrix(0, ncol=length(cnames), nrow=0)
-  colnames(out.lai.gr) <- cnames
-  
-  for ( x in 1:length(xx) )
-  {
-    for ( y in 1:length(yy) )
-    {
-      # aboveground biomass
-      tmp.tr <-          ncvar_get( d, "SumBBark", start=c( x,y,2,tstart ), count=c( 1,1,1,tlen ) )
-      tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=c( x,y,2,tstart ), count=c( 1,1,1,tlen ) )
-      tmp.gr <-          ncvar_get( d, "SumBLeaf", start=c( x,y,3,tstart ), count=c( 1,1,1,tlen ) )
-      #                    Lon                 Lat                 Year         ... monthly data ...
-      out.vec    <- cbind( rep(xx[x], nyears), rep(yy[y], nyears), year_seq, matrix( tmp.tr, ncol=12, byrow=T ) )
-      out.abm.tr <- rbind( out.abm.tr, out.vec )
-      
-      #                    Lon                 Lat                 Year         ... monthly data ...
-      out.vec    <- cbind( rep(xx[x], nyears), rep(yy[y], nyears), year_seq, matrix( tmp.gr, ncol=12, byrow=T ) )
-      out.abm.gr <- rbind( out.abm.gr, out.vec )
-      
-      # lai
-      tmp.tr <- ncvar_get( d, "MeanLai", start=c( x,y,2,tstart ), count=c( 1,1,1,tlen ) )
-      tmp.gr <- ncvar_get( d, "MeanLai", start=c( x,y,3,tstart ), count=c( 1,1,1,tlen ) )
-      #                    Lon                 Lat                 Year         ... monthly data ...
-      out.vec    <- cbind( rep(xx[x], nyears), rep(yy[y], nyears), year_seq, matrix( tmp.tr, ncol=12, byrow=T ) )
-      out.lai.tr <- rbind( out.lai.tr, out.vec )
-      
-      #                    Lon                 Lat                 Year         ... monthly data ...
-      out.vec    <- cbind( rep(xx[x], nyears), rep(yy[y], nyears), year_seq, matrix( tmp.gr, ncol=12, byrow=T ) )
-      out.lai.gr <- rbind( out.lai.gr, out.vec )
-    }
-  }
-  
-  utils::write.table( out.abm.tr, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_monthly_Tr_agbm", sep=""), row.names=F, quote=F )
-  utils::write.table( out.lai.tr, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_monthly_Tr_lai",  sep=""), row.names=F, quote=F )
-  
-  utils::write.table( out.abm.gr, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_monthly_C4G_agbm", sep=""), row.names=F, quote=F )
-  utils::write.table( out.lai.gr, file=paste("aDGVM2_", runid, "_", fire, "_scheme1_monthly_C4G_lai",  sep=""), row.names=F, quote=F )
-  
-}
-
-
-
+##########################################################################
+##########################################################################
+##########################################################################
 
 #' Simple classification of yearly output for aDGVM
 #' 
@@ -382,10 +383,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   yy <- ncvar_get(d,"lat")
   tt <- ncvar_get(d,"time")
   len_tt <- length(tt)
-  #print(tt)
-  #print(length(tt))
-  
-  
+
   # select the years we want
   # note that here we are assuming monthing data, so set meta-data to monthly
   # also assume that all years are in the days
@@ -405,21 +403,18 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   
   if(length(first.year) == 0) first.year <- actual.sta.info@first.year
   if(length(last.year) == 0) last.year <- actual.sta.info@last.year
-  print(c(first.year,last.year))
-  
+
   start.point <- ((first.year-actual.sta.info@first.year) * time.steps.per.year) + 1 
   n.years <- last.year - first.year +1
   time.count <-  time.steps.per.year * n.years
   end.point <- start.point + time.count - 1
-  
-  print(c(start.point, end.point))
-  
+
   dim.names <- list(xx, yy, start.point:end.point)
-    
-  nc.start.vec.tr <- c(  1, 1,1,start.point )
-  nc.start.vec.g4 <- c(  1, 1,2,start.point )
-  nc.start.vec.g3 <- c(  1, 1,3,start.point )
-  nc.count.vec    <- c( -1,-1,1,time.count )
+  
+  nc.start.vec.tr <- c(  1, 1, 1, start.point )
+  nc.start.vec.g4 <- c(  1, 1, 2, start.point )
+  nc.start.vec.g3 <- c(  1, 1, 3, start.point )
+  nc.count.vec    <- c( -1,-1, 1, time.count )
   
   # number of years used to calculate fire return interval  
   years_fire <- 20
@@ -538,7 +533,16 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
     tmp.g4 <- tmp.g4/2
     tmp.g3 <- tmp.g3/2
   }
-  
+
+  # If simulations were done for single study sites only, the tmp.XX variables
+  # are only one-dimensional (time) and not tree-dimensional (x, y, time).
+  # Therefore, variables need to be converted into 3d arrays.
+  if (length(dim(tmp.tr))==1) {
+    tmp.tr   <- array( tmp.tr, c(length(xx), length(yy), length(start.point:end.point) ) )
+    tmp.g4   <- array( tmp.g4, c(length(xx), length(yy), length(start.point:end.point) ) )
+    tmp.g3   <- array( tmp.g3, c(length(xx), length(yy), length(start.point:end.point) ) )
+  }
+
   dimnames(tmp.tr) <- dim.names
   dimnames(tmp.g4) <- dim.names
   dimnames(tmp.g3) <- dim.names
@@ -552,7 +556,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   names(g3.dt) <- c("Lon", "Lat", "Time", "C3G")
   setkey(g3.dt, Lon, Lat, Time)
   
-  g4.dt <- as.data.table(melt(tmp.g3))
+  g4.dt <- as.data.table(melt(tmp.g4))
   names(g4.dt) <- c("Lon", "Lat", "Time", "C4G")
   setkey(g4.dt, Lon, Lat, Time)
   
@@ -572,9 +576,9 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   }
   out.all[, Time := NULL]
   
-  print(out.all)
   out.all = na.omit(out.all)
-
+  print(out.all)
+  
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
   
@@ -618,10 +622,6 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   
   timestep <- tt[2]-tt[1] # time step in file
 
-  print(tt)
-  print(len_tt)
-  print(timestep)
-  
   actual.sta.info@first.year <- run@year.offset
   actual.sta.info@last.year <- run@year.offset + (length(tt)-1)*timestep 
   
@@ -630,23 +630,15 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   
   actual.sta.info@subannual.resolution <- "Decade"
   
-  print(c(first.year,last.year))
-  
   start.point <- ((first.year-actual.sta.info@first.year) / timestep) + 1
   n.years <- (last.year - first.year)/timestep + 1
   time.count <-  n.years
   end.point <- start.point + time.count - 1
   
-  print(c(start.point, end.point))
-  
   dim.names <- list(xx, yy, start.point:end.point)
-  print(dim.names)
-  
+
   nc.start.vec <- c(  1,  1,            1, start.point )
   nc.count.vec <- c( -1, -1, max_pop_size, time.count )
-  
-  print(nc.start.vec)
-  print(nc.count.vec)
 
   tmp.te   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
   tmp.td   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
@@ -654,7 +646,6 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   tmp.sd   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
   tmp.g4   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
   tmp.g3   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
-  
 
   for ( x in 1:length(xx) )
   {
@@ -909,9 +900,9 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   out.all[, Month := 1]
 #  }
   out.all[, Time := NULL]
-  
-  print(out.all)
+
   out.all = na.omit(out.all)
+  print(out.all)
   
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
