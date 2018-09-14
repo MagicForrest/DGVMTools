@@ -16,10 +16,7 @@
 #' basically with the meaning of data.frame(*, check.names = !optional).
 #' @param ...	Just as ... in data.frame. Usual recycling rules are applied to vectors of different lengths to create a list of equal length vectors.
 #' @name export-methods
-#' @importMethodsFrom base as.data.frame
-#' @importMethodsFrom data.table as.data.frame
-#' @importMethodsFrom sp as.data.frame
-#' @importMethodsFrom raster as.data.frame
+#' @import methods
 #' 
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}, Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}    
@@ -30,30 +27,25 @@ NULL
 ###############    data.frame
 
 #' @name export-methods
-#' @export
 setAs("Field", "data.frame", function(from) as.data.frame(from@data))
 
 
 #' @rdname export-methods
-#' @method as.data.frame Field
 #' @export
 as.data.frame.Field = function(x, row.names, optional, ...) as(x, "data.frame") 
 
 
 #' @name export-methods
-#' @export
 setAs("Comparison", "data.frame", function(from) as.data.frame(from@data))
 
 
 #' @rdname export-methods
-#' @method as.data.frame Comparison
 #' @export
 as.data.frame.Comparison = function(x, row.names, optional, ...) as(x, "data.frame") 
 
 #############  data.table
 
 #' @name export-methods
-#' @export
 setAs("Field", "data.table", function(from) from@data)
 
 #' @rdname export-methods
@@ -61,7 +53,6 @@ setAs("Field", "data.table", function(from) from@data)
 as.data.table.Field = function(x, keep.rownames, ...) as(x, "data.table") 
 
 #' @name export-methods
-#' @export
 setAs("Comparison", "data.table", function(from) from@data)
 
 #' @rdname export-methods
@@ -72,45 +63,37 @@ as.data.table.Comparison = function(x, keep.rownames, ...) as(x, "data.table")
 ############# raster
 
 #' @name export-methods
-#' @export
 setAs("Field", "Raster", function(from) promoteToRaster(from@data))
 
 #' @name export-methods
-#' @export
 setAs("Comparison", "Raster", function(from) promoteToRaster(from@data))
 
 
-
+#' Generic method for coercing to raster
 #' @name as.Raster
 #' @rdname export-methods
-#' @export
 #' @exportMethod as.Raster
-#' Generic method for coercing to raster
 setGeneric("as.Raster", function(x) {
   standardGeneric("as.Raster")
 })
 
 #' @rdname export-methods
 #' @export
-#' @exportMethod as.Raster
 setMethod("as.Raster", signature("Field"),   function(x) promoteToRaster(x@data))
 
 #' @rdname export-methods
 #' @export
-#' @exportMethod as.Raster
 setMethod("as.Raster", signature("Comparison"),   function(x) promoteToRaster(x@data))
 
-
+#' Generic method for coercing to raster  
 #' @name as.array
 #' @rdname export-methods
-#' @export
 #' @exportMethod as.array
-#' Generic method for coercing to raster  
 setGeneric("as.array", function(x,...) standardGeneric("as.array"))
 
 #' @rdname export-methods
-#' @export
 #' @aliases as.array
+#' @export
 setMethod("as.array", signature("Field"), function(x, ...) {
   FieldToArray(x@data, ...)
 })
@@ -221,7 +204,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
 #' @param grid.topology A GridTopology defining the grid topology for the SpatialPixelsDataFrame object
 #' @return A SpatialPixelDataFrame
 #' @export
-#' @import data.table sp
+#' @import data.table
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
@@ -272,7 +255,6 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, g
 #' @param verbose print some information
 #' @return a array or a list or arrays
 #' 
-#' @importFrom reshape2 acast
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @keywords internal
 FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {

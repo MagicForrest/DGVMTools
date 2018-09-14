@@ -36,6 +36,7 @@
 #' 
 #' @return A \code{Field}. 
 #' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}}   
+#' @include classes.R
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 

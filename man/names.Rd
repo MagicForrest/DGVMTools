@@ -5,6 +5,7 @@
 \alias{layer-names-methods}
 \alias{names,Field-method}
 \alias{names,Comparison-method}
+\alias{layers}
 \alias{layers,Field-method}
 \alias{layers,Comparison-method}
 \title{Layer name methods}

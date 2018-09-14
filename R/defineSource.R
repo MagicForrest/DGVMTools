@@ -29,6 +29,7 @@
 #' @return A Source object including metadata defined by empty data slots
 #' @export
 #' @seealso Source
+#' @include classes.R
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 defineSource <- function(id,

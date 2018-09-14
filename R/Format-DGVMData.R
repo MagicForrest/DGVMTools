@@ -395,6 +395,7 @@ determinePFTs_DGVMData <- function(x, variables) {
 #' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
+#' @include colour-palettes.R
 #' 
 #' 
 DGVMData.quantities <- list(
@@ -493,13 +494,15 @@ DGVMData.quantities <- list(
 ####################################################
 
 
-#' @description \code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format.  It is essentially CF-compliant netCDF with a couplf of extra attributes defined. 
+#' @description \code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format.  It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
 #' Can be produced using the companion DGVMData package. 
 #' 
 #' @format A \code{Quantity} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
+#' @include colour-palettes.R
+#' @export
 DGVMData <- new("Format",
              
              # UNIQUE ID

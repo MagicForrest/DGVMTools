@@ -68,7 +68,6 @@ LondonCentre <- function(lon) {
 #' @return a the SpatialLines object 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @keywords internal
-#' @import raster
 correct.map.offset <- function(spl) {
   
   we <- raster::crop(spl, raster::extent(-180, 180, -90, 90))
@@ -154,11 +153,6 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
 #' @param ylim A numeric vector of length 2 to giving the latitide window that the overlay should cover
 #' @return Returns data.frame suitable for plotting with ggplot::geom_path
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
-
-#' @importFrom maptools map2SpatialLines
-#' @importFrom rgeos gLength
-#' @importFrom sp SpatialLinesDataFrame
-#' @importFrom raster crs
 makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
   
   ### PREPARE THE MAP OVERLAY
@@ -177,7 +171,7 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
     
     proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
-    map.sp.lines <- maptools::map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = sp::CRS(proj4str))
+    map.sp.lines <- maptools::map2SpatialLines(maps::map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = sp::CRS(proj4str))
     suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
     map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)

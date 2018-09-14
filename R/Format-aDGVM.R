@@ -1060,7 +1060,7 @@ aDGVM.PFTs <- list(
 #' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
-#' 
+#' @include colour-palettes.R
 #' 
 aDGVM.quantities <- list(
   new("Quantity",
@@ -1119,7 +1119,8 @@ aDGVM.quantities <- list(
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
-#' 
+#' @include colour-palettes.R
+#' @export
 #' 
 aDGVM <- new("Format",
              

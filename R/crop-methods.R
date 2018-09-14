@@ -12,9 +12,8 @@
 #' @name crop-methods
 #' @rdname crop-methods
 #' @aliases crop
-#' @importFrom raster crop
+#' @exportMethod crop
 #' @importMethodsFrom raster crop
-#' @exportMethod 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 #' 
 #' 

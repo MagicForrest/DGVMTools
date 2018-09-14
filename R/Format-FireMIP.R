@@ -605,6 +605,7 @@ FireMIP.PFTs <- list(
 #' @format The \code{Quantity} class is an S4 class with the slots defined below.
 #' @rdname Quantity-class
 #' @keywords datasets
+#' @include colour-palettes.R
 #' 
 FireMIP.quantities <- list(
 
@@ -1034,7 +1035,8 @@ new("Quantity",
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
-#' 
+#' @include colour-palettes.R
+#' @export
 #' 
 FireMIP<- new("Format",
                 

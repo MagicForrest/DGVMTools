@@ -43,7 +43,7 @@ plotScatterComparison <- function(input.CLayers,
                                    alpha = 0.05,
                                    text.size = 6){
   
-  Run = Model = OtherFacet = facet = NULL
+  Run = Model = OtherFacet = facet = label = NULL
   
   # checks
   # for a single Comparison

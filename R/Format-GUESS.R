@@ -1049,6 +1049,7 @@ GUESS.PFTs <- list(
 #' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
+#' @include colour-palettes.R
 #' 
 #' 
 GUESS.quantities <- list(
@@ -1798,7 +1799,8 @@ GUESS.quantities <- list(
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
-#' 
+#' @include colour-palettes.R
+#' @export
 #' 
 GUESS <- new("Format",
              

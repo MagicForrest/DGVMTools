@@ -1,12 +1,13 @@
 #' @rdname Quantity-class
-#' @keywords datasets
-#' @importFrom fields tim.colors  
+#' @docType data
 #' @seealso \code{lookupQuantity}
+#' @include colour-palettes.R
+#' @export
 Standard.quantities <- list(
   
   ######################################################################
-  ########## STANDARD (CROSS-FORMAT) QUANTITIES  ########################
-  #####################################################################
+  ########## STANDARD (CROSS-FORMAT) QUANTITIES  #######################
+  ######################################################################
   
   new("Quantity",
       id = "fraction",

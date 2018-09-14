@@ -1295,6 +1295,7 @@ PhenologyAdgvm2Biomes.scheme <- new("BiomeScheme",
 #'   
 #' @seealso \code{BiomeClassification}, \code{readHandPBiomes}
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
                              "Hickler2012" = Hickler2012.scheme,
                              "Forrest2015" = Forrest2015.scheme,
