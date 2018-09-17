@@ -8,7 +8,7 @@
 #' @name writeField-methods
 #' @rdname writeField-methods
 #' @aliases writeField
-#' @exportMethod 
+#' @exportMethod writeField
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 if (!isGeneric("writeField")) {
   setGeneric("writeField", function(x) standardGeneric("writeField"))

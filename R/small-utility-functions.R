@@ -68,7 +68,6 @@ LondonCentre <- function(lon) {
 #' @return a the SpatialLines object 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @keywords internal
-#' @import raster
 correct.map.offset <- function(spl) {
   
   we <- raster::crop(spl, raster::extent(-180, 180, -90, 90))
@@ -103,39 +102,89 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
   at.least.one.match <- FALSE
   for(val in values) {
     
-    # check if it is a PFT
-    done <- FALSE
-    for(PFT in pfts){
-      if(val == PFT@id) {
-        these.cols[[val]] <- PFT@colour
-        done <- TRUE
-        at.least.one.match <- TRUE
-      }
-    } 
-
-    # if not a PFT, check if it is as 'other' 
-    if(!done) {
-      for(other in names(others)) {
-        if(tolower(val) == tolower(other)) {
-          these.cols[[val]] <- others[[other]]
+    # ignore NAs
+    if(!is.na(val)) {
+      
+      # check if it is a PFT
+      done <- FALSE
+      for(PFT in pfts){
+        if(val == PFT@id) {
+          these.cols[[val]] <- PFT@colour
           done <- TRUE
           at.least.one.match <- TRUE
         }
+      } 
+      
+      # if not a PFT, check if it is as 'other' 
+      if(!done) {
+        for(other in names(others)) {
+          if(tolower(val) == tolower(other)) {
+            these.cols[[val]] <- others[[other]]
+            done <- TRUE
+            at.least.one.match <- TRUE
+          }
+        }
       }
-    }
+      
+      # if no colour can be found to match the value, fail gently
+      if(!done && at.least.one.match) {
+        warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchPFTCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument"))
+        return(NULL)
+      }  
+      
+    }  # if not NA
     
-    # if no colour can be found to match the value, fail gently
-    if(!done && at.least.one.match) {
-      warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchPFTCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument"))
-      return(NULL)
-    }  
-
-  }
+  } # for each value
   
   return(unlist(these.cols))
   
 }
 
+#' Make a map overlay for ggplot2
+#' 
+#' Take a string and derives an approriate data.frame that can be used to add a map overlay 
+#' (eg coast or country lines from the maps and mapdata packages) with the ggplot::geom_path function.
+#' 
+#' @param map.overlay A character string specifying the overlay to be used a string matching maps package dataset
+#' @param all.lons A numeric vector of all the longitudes to be plotted, this is used to determine if it the over lay should be on longitues (-180,180) or (0,360).
+#' Maybe can be determines from xlim instead?
+#' @param interior.lines A logical, if TRUE include the internal country lines
+#' @param xlim A numeric vector of length 2 to giving the longitude window that the overlay should cover
+#' @param ylim A numeric vector of length 2 to giving the latitide window that the overlay should cover
+#' @return Returns data.frame suitable for plotting with ggplot::geom_path
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
+  
+  ### PREPARE THE MAP OVERLAY
+  if(is.character("character")){
+    
+    # determine if london centered (if not call "maps2" for Pacific centered versions)
+    gt.180 <- FALSE
+    for(lon in all.lons) {
+      if(lon > 180) gt.180 <- TRUE
+    }
+    if(tolower(map.overlay)=="world" && gt.180) map.overlay <- "world2"
+    else if(tolower(map.overlay)=="worldHires" && gt.180) map.overlay <- "worldHires2"
+    else if(tolower(map.overlay)=="world2" && !gt.180) map.overlay <- "world"
+    else if(tolower(map.overlay)=="world2Hires" && !gt.180) map.overlay <- "worldHires"
+    
+    # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
+    
+    proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
+    map.sp.lines <- maptools::map2SpatialLines(maps::map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = sp::CRS(proj4str))
+    suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
+    rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
+    map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)
+    map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
+    return(fortify(map.sp.lines.df))
+    
+    
+  }
+  else {
+    stop(paste0("Can't make an overlay from type ", class(map.overlay)))
+  }
+  
+}
 
 ## Some date function
 ## not yet really needed. However, potentially useful with the daily LPJ-GUESS output.

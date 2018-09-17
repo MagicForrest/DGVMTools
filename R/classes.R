@@ -443,14 +443,10 @@ setClass("Comparison",
 #' @slot colours A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")
 #' @slot format Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.
 #' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
-#' @slot totals.needed List of vegetation totals needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.  
-#' For example one element could be to list(c(".Tree", ."Shrub"), "Woody") which would make a layer called "Woody" which would be the sum of all trees and shrubs.
-#' @slot max.needed List of vegetation maximums needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of two-item list.  
-#' For example one element could be to list(c(".Tree", ."Shrub"), "MaxWoody") which would make a layer called "MaxWoody" which would be the maximum  of all trees and shrubs.
-#' @slot fractions.needed List of vegetation fractions needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of threeo-item list.  
-#' For example one element could be to list("TeBE", "Tree", "TeBEFractionOFTree") which would make a layer called "TeBEFractionOFTre" and would the value for TeBE divided by the value for Tree.
-#' @slot needGDD5 If TRUE the biome rules require GDD5 for the classification
-#' @slot needGDD5 If TRUE the biome rules require GDD5 for the classification
+#' @slot layers.needed List of vegetation layers needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of three- or four-item list 
+#' whose elements first element id the id of a DGVMTools::Quantity and whose other elements are passed as arguements to the layerOp() function.  
+#' For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
+#' which would make a layer called "Woody" which would be the sum of all LAI trees and shrubs.
 #' @slot data.reference Character string giving a reference where the data for this biome scheme comes from
 #' @slot published.reference Character string giving a reference where this model output classification scheme was published
 #' @exportClass BiomeScheme
@@ -459,9 +455,6 @@ setClass("BiomeScheme",
          contains = "Quantity",
          slots = c(rules = "function",
                    layers.needed = "list",
-                   #totals.needed = "list",
-                   #fractions.needed = "list",
-                   needGDD5 = "logical",
                    data.reference = "character",
                    published.reference = "character"
          )

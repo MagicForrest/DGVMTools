@@ -3,22 +3,15 @@
 \docType{methods}
 \name{export-methods}
 \alias{export-methods}
-\alias{export-methods}
 \alias{as.data.frame.Field}
-\alias{export-methods}
 \alias{as.data.frame.Comparison}
-\alias{export-methods}
 \alias{as.data.table.Field}
-\alias{export-methods}
 \alias{as.data.table.Comparison}
-\alias{export-methods}
-\alias{export-methods}
 \alias{as.Raster}
 \alias{as.Raster,Field-method}
 \alias{as.Raster,Comparison-method}
 \alias{as.array}
 \alias{as.array,Field-method}
-\alias{as.array}
 \title{Coerce from Fields and DataObjects}
 \usage{
 \method{as.data.frame}{Field}(x, row.names, optional, ...)

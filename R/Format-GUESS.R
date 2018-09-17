@@ -174,7 +174,7 @@ openLPJOutputFile <- function(run,
   
   if(data.table.only) return(dt)
   else return(list(dt = dt,
-              sta.info = sta.info))
+                   sta.info = sta.info))
   
 }
 
@@ -203,7 +203,7 @@ openLPJOutputFile_FireMIP <- function(run,
                                       verbose = FALSE,
                                       soil_water_capacities = "none"){
   
-  Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = NULL
+  Lon = Lat = Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = mrso = mrsos = Capacity = Code = NULL
   target.cols = SoilfC = SoilsC = NULL
   
   
@@ -343,6 +343,14 @@ openLPJOutputFile_FireMIP <- function(run,
     guess.var <- "real_intensity"
     monthly <- TRUE
   }
+  if(variable == "durat") {
+    guess.var <- "real_duration"
+    monthly <- TRUE
+  }
+  if(variable == "RoS") {
+    guess.var <- "mRoS"
+    monthly <- TRUE
+  }
   
   ## Finally we have a couple of monthly to second variables which also required molar conversion to C
   if(variable == "fFire") {
@@ -377,7 +385,7 @@ openLPJOutputFile_FireMIP <- function(run,
     if(CO.to.C){
       dt[, (variable) := get(variable) * 12 / 28]
     }
-
+    
   }
   
   ### Special monthly variables
@@ -390,7 +398,7 @@ openLPJOutputFile_FireMIP <- function(run,
   
   if(variable == "mrso") {
     
-
+    
     # standard stuf for LPJ-GUESS
     wcap <- c(0.110, 0.150, 0.120, 0.130, 0.115, 0.135, 0.127, 0.300, 0.100)
     thickness_upper_layer_mm <- 500
@@ -405,7 +413,7 @@ openLPJOutputFile_FireMIP <- function(run,
     setkey(dt_cap, Lon, Lat)
     dt_cap[, Capacity := wcap[Code]]
     dt_cap[, Code := NULL]
-
+    
     dt_upper <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_upper)
     print(dt_upper)
@@ -415,7 +423,7 @@ openLPJOutputFile_FireMIP <- function(run,
     dt <- dt_upper[dt_lower]
     print(dt_lower)
     dt <- dt[dt_cap]
-    dt <- na.omit(dt)
+    dt <- stats::na.omit(dt)
     dt[, mrso := (mwcont_lower * thickness_lower_layer_mm * Capacity) + (mwcont_upper * thickness_upper_layer_mm * Capacity)]
     dt[, mwcont_lower := NULL]
     dt[, mwcont_upper := NULL]
@@ -423,8 +431,40 @@ openLPJOutputFile_FireMIP <- function(run,
     
     rm(dt_upper,dt_lower)
     gc()
-
-    }
+    
+  }
+  if(variable == "mrsos") {
+    
+    
+    # standard stuf for LPJ-GUESS
+    wcap <- c(0.110, 0.150, 0.120, 0.130, 0.115, 0.135, 0.127, 0.300, 0.100)
+    thickness_upper_layer_mm <- 500
+    
+    dt_cap <- fread(soil_water_capacities)
+    
+    setnames(dt_cap, c("Lon", "Lat", "Code"))
+    dt_cap[, Lat := Lat + 0.25]
+    dt_cap[, Lon := Lon + 0.25]
+    dt_cap <- subset(dt_cap, Code>0)
+    setkey(dt_cap, Lon, Lat)
+    dt_cap[, Capacity := wcap[Code]]
+    dt_cap[, Code := NULL]
+    
+    dt <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose, data.table.only = TRUE)
+    setKeyDGVM(dt)
+    
+    print(dt)
+    dt <- dt[dt_cap]
+    dt <- stats::na.omit(dt)
+    dt[, mrsos := mwcont_upper * thickness_upper_layer_mm * Capacity]
+    
+    dt[, mwcont_upper := NULL]
+    dt[, Capacity := NULL]
+    
+    rm(dt_cap)
+    gc()
+    
+  }
   
   if(variable == "evapotrans") {
     
@@ -565,7 +605,7 @@ getStandardQuantity_LPJ <- function(run,
     
     # vegcover.out provides the right quantity here (note this is not standard LPJ-GUESS)
     data.list <- openLPJOutputFile(run, "vegcover", first.year, last.year, verbose = TRUE)
-
+    
     # But we need to scale it to %
     if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
     mod.cols <- names(data.list[["dt"]])
@@ -591,7 +631,7 @@ getStandardQuantity_LPJ <- function(run,
     # lai provides the right quantity here - so done
     data.list <- openLPJOutputFile(run, "lai", first.year, last.year, verbose = TRUE)
     return(data.list)
-  
+    
     
   }
   
@@ -600,7 +640,7 @@ getStandardQuantity_LPJ <- function(run,
     
     # lai provides the right quantity here - so done
     data.list <- openLPJOutputFile(run, "fpc", first.year, last.year, verbose = TRUE)
-   
+    
     data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year", "Total")]
     data.list[["dt"]][, Total := pmin(Total, 1) * 100 * 0.83]
     return(data.list)
@@ -649,7 +689,7 @@ getStandardQuantity_LPJ <- function(run,
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     data.list <- openLPJOutputFile(run, "cflux", first.year, last.year, verbose = TRUE)
-   
+    
     # take NEE and  ditch the rest
     data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year","NEE"), with = FALSE]
     
@@ -846,28 +886,31 @@ GUESS.PFTs <- list(
   
   # BOREAL TREES
   
-  BNE = new("PFT",
-            id = "BNE",
-            name = "Boreal Needleleaved Evergreen Tree",
-            growth.form = "Tree",
-            leaf.form = "Needleleaved",
-            phenology = "Evergreen",
-            climate.zone = "Boreal",
-            colour = "darkblue",
-            shade.tolerance = "None"
+  # BNE
+  new("PFT",
+      id = "BNE",
+      name = "Boreal Needleleaved Evergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Needleleaved",
+      phenology = "Evergreen",
+      climate.zone = "Boreal",
+      colour = "darkblue",
+      shade.tolerance = "None"
   ),
   
-  BINE = new("PFT",
-             id = "BINE",
-             name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Needleleaved",
-             phenology = "Evergreen",
-             climate.zone = "Boreal",
-             colour = "dodgerblue3",
-             shade.tolerance = "BNE"
+  # BINE
+  new("PFT",
+      id = "BINE",
+      name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Needleleaved",
+      phenology = "Evergreen",
+      climate.zone = "Boreal",
+      colour = "dodgerblue3",
+      shade.tolerance = "BNE"
   ),
   
+  # BNS
   BNS = new("PFT",
             id = "BNS",
             name = "Boreal Needleleaved Summergreen Tree",
@@ -879,8 +922,8 @@ GUESS.PFTs <- list(
             shade.tolerance = "None"
   ),
   
-  
-  IBS = new("PFT",
+  # IBS
+  new("PFT",
             id = "IBS",
             name = "Shade-intolerant B/leaved Summergreen Tree",
             growth.form = "Tree",
@@ -893,7 +936,8 @@ GUESS.PFTs <- list(
   
   # TEMPERATE TREES
   
-  TeBE = new("PFT",
+  # TeBE
+  new("PFT",
              id = "TeBE",
              name = "Temperate Broadleaved Evergreen Tree",
              growth.form = "Tree",
@@ -904,7 +948,8 @@ GUESS.PFTs <- list(
              shade.tolerance = "None"
   ),
   
-  TeNE = new("PFT",
+  # TeNE
+  new("PFT",
              id = "TeNE",
              name = "Temperate Needleleaved Evergreen Tree",
              growth.form = "Tree",
@@ -915,7 +960,8 @@ GUESS.PFTs <- list(
              shade.tolerance = "None"
   ),
   
-  TeBS = new("PFT",
+  # TeBS
+  new("PFT",
              id = "TeBS",
              name = "Temperate Broadleaved Summergreen Tree",
              growth.form = "Tree",
@@ -929,7 +975,8 @@ GUESS.PFTs <- list(
   
   # TROPICAL TREES
   
-  TrBE = new("PFT",
+  # TrBE
+  new("PFT",
              id = "TrBE",
              name = "Tropical Broadleaved Evergreen Tree",
              growth.form = "Tree",
@@ -941,7 +988,8 @@ GUESS.PFTs <- list(
   ),
   
   
-  TrIBE = new("PFT",
+  # TrIBE
+  new("PFT",
               id = "TrIBE",
               name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
               growth.form = "Tree",
@@ -952,7 +1000,8 @@ GUESS.PFTs <- list(
               shade.tolerance = "TrBE"
   ),
   
-  TrBR = new("PFT",
+  # TrBR 
+  new("PFT",
              id = "TrBR",
              name = "Tropical Broadleaved Raingreen Tree",
              growth.form = "Tree",
@@ -966,7 +1015,8 @@ GUESS.PFTs <- list(
   
   # GRASSES
   
-  C3G = new("PFT",
+  # C3G 
+  new("PFT",
             id = "C3G",
             name = "Boreal/Temperate Grass",
             growth.form = "Grass",
@@ -977,7 +1027,8 @@ GUESS.PFTs <- list(
             shade.tolerance = "None"
   ),
   
-  C4G = new("PFT",
+  # C4G
+  new("PFT",
             id = "C4G",
             name = "Tropical Grass",
             growth.form = "Grass",
@@ -998,6 +1049,7 @@ GUESS.PFTs <- list(
 #' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
+#' @include colour-palettes.R
 #' 
 #' 
 GUESS.quantities <- list(
@@ -1721,7 +1773,7 @@ GUESS.quantities <- list(
       units = "kgC/m^2",
       colours = fields::tim.colors,
       format = c("LPJ-GUESS-SPITFIRE")),
-
+  
   new("Quantity",
       id = "mfiredays",
       name = "Monthly sum of daily fire probabilites",
@@ -1747,7 +1799,8 @@ GUESS.quantities <- list(
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
-#' 
+#' @include colour-palettes.R
+#' @export
 #' 
 GUESS <- new("Format",
              

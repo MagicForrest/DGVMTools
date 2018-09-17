@@ -578,7 +578,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   
   out.all = stats::na.omit(out.all)
   print(out.all)
-  
+
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
   
@@ -1051,7 +1051,7 @@ aDGVM.PFTs <- list(
 #' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
-#' 
+#' @include colour-palettes.R
 #' 
 aDGVM.quantities <- list(
   new("Quantity",
@@ -1110,7 +1110,8 @@ aDGVM.quantities <- list(
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
-#' 
+#' @include colour-palettes.R
+#' @export
 #' 
 aDGVM <- new("Format",
              

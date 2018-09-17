@@ -152,6 +152,5 @@ aggregateSpatial.uncompiled <- function(input.obj,
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @param ... Extra arguments passed to addArea function if a weighted method is being used.
 #' @return A Field, DataObject or data.table depending on the input object
-#' @import  compiler cmpfun
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateSpatial <- compiler::cmpfun(aggregateSpatial.uncompiled)

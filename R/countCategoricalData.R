@@ -24,7 +24,6 @@
 #' fell into each output raster gridcell,  
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import raster
 #' @export   
 #'  
 

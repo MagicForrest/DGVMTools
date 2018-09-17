@@ -35,6 +35,7 @@
 #' @name writeNetCDF-methods
 #' @rdname writeNetCDF-methods
 #' @aliases writeNetCDF
+#' @exportMethod writeNetCDF
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 #' 
 #' 

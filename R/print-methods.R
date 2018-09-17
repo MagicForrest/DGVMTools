@@ -94,7 +94,7 @@ setMethod("print", signature(x="STAInfo"), function(x) {
   cat(paste0("\t\tSpatial aggregation = ",  x@spatial.aggregate.method, "\n"))
   cat(paste0("\t\tSpatial extent id = ",  x@spatial.extent.id, "\n"))
   cat(paste0("\t\tSpatial extent: \n"))
-  extent.string <- capture.output(print(x@spatial.extent))
+  extent.string <- utils::capture.output(print(x@spatial.extent))
   for(part in extent.string){
     cat(paste0("\t\t\t", part, "\n"))
   }
