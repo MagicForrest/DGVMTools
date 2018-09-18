@@ -6,7 +6,7 @@
 #' 
 #' @return A Field or data.table depending on the type of the input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-'# @export
+#' @export
 
 selectSeasons <- function(x, seasons){
   
