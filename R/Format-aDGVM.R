@@ -516,6 +516,16 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
     tmp.g3 <- tmp.g3/2
   }
   
+  if(variable@id == "bgb"){
+    tmp.tr <-          ncvar_get( d, "SumBRoot", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <-          ncvar_get( d, "SumBRoot", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <-          ncvar_get( d, "SumBRoot", start=nc.start.vec.g3, count=nc.count.vec )
+    
+    tmp.tr <- tmp.tr/20
+    tmp.g4 <- tmp.g4/2
+    tmp.g3 <- tmp.g3/2
+  }
+  
   if(variable@id == "vegC_std"){
     tmp.tr <-          ncvar_get( d, "SumBBark", start=nc.start.vec.tr, count=nc.count.vec )
     tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=nc.start.vec.tr, count=nc.count.vec )
@@ -689,6 +699,27 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
             tmp.g41 <- sum(bm.leaf.all[ind.g4])
             tmp.g31 <- sum(bm.leaf.all[ind.g3])
           
+            tmp.te[x,y,z-start.point+1] <- tmp.te1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.td[x,y,z-start.point+1] <- tmp.td1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.se[x,y,z-start.point+1] <- tmp.se1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.sd[x,y,z-start.point+1] <- tmp.sd1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
+            tmp.g4[x,y,z-start.point+1] <- tmp.g41*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
+            tmp.g3[x,y,z-start.point+1] <- tmp.g31*1/1000*(1/2)   # convert from kg/ha to kgC/m^2
+          }
+        }
+        
+        
+        if(variable@id == "bgb"){
+          if (length(ind.alive)>0) {
+            bm.root.all <- ncvar_get( d, "BRoot",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            
+            tmp.te1 <- sum(bm.root.all[ind.te])
+            tmp.td1 <- sum(bm.root.all[ind.td])
+            tmp.se1 <- sum(bm.root.all[ind.se])
+            tmp.sd1 <- sum(bm.root.all[ind.sd])
+            tmp.g41 <- sum(bm.root.all[ind.g4])
+            tmp.g31 <- sum(bm.root.all[ind.g3])
+            
             tmp.te[x,y,z-start.point+1] <- tmp.te1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
             tmp.td[x,y,z-start.point+1] <- tmp.td1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
             tmp.se[x,y,z-start.point+1] <- tmp.se1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
@@ -1066,6 +1097,13 @@ aDGVM.quantities <- list(
   new("Quantity",
       id = "agb",
       name = "Above Ground Biomass",
+      units = "kgC/m^2",
+      colours = viridis::viridis,
+      format = c("aDGVM")),
+  
+  new("Quantity",
+      id = "bgb",
+      name = "Below Ground Biomass",
       units = "kgC/m^2",
       colours = viridis::viridis,
       format = c("aDGVM")),
