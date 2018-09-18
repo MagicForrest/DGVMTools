@@ -23,7 +23,7 @@
 #'
 #' @return A Field (but not this is not strictly necessary since the objects are changed in place)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#'  
+#' @export  
 #'    
 
 layerOp <- function(x, operator, layers, new.layer){
