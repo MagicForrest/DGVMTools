@@ -12,9 +12,9 @@ defineSource(id, name, dir, format, quantities = NULL,
 }
 \arguments{
 \item{id}{A unique character string to identify this particular data.  Recommended to be alphanumeric because it is used to construct file names and to use underscores and full stops (periods) 
-for separating characters where need be.   For example, "Standard_v4.0" or "Saatchi2011.HD"  (Mandatory)}
+for separating characters where need be.   For example, "Standard_v4.0" or "Saatchi2011.HD"  (can be derived from \code{name} if a \code{name} is supplied, otherwise mandatory)}
 
-\item{name}{A character string describing this run, ie. "LPJ-GUESS v3.1"}
+\item{name}{A character string describing this run, ie. "LPJ-GUESS v3.1" (can be derived from \code{id} if an \code{id} is supplied, otherwise mandatory)}
 
 \item{dir}{The location of this source on the file system (Mandatory)}
 
