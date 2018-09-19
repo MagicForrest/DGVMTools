@@ -258,5 +258,6 @@ aggregateSubannual.uncompiled <- function(input.obj,
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A Field or data.table depending on the input object
 #' @import data.table
+#' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateSubannual <- compiler::cmpfun(aggregateSubannual.uncompiled)

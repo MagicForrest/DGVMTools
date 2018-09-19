@@ -69,10 +69,9 @@ makePlotTitle <- function(fields){
   #######  MAKE THE MAIN TITLE
   
   # if a common subannual resolution check to see if there is a single value
+  subannual.period <- character(0)
   if(length(sta.info@subannual.resolution) > 0)  {
 
-    subannual.period <- character(0)
-    
     if(sta.info@subannual.resolution == "Month") {
       all.months.present <- c()
       for(field in fields) all.months.present <- append(all.months.present, getDimInfo(field, "values")[["Month"]])

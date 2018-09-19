@@ -28,6 +28,7 @@
 #' @param dt The data.table for which to set the key
 #' @return Returns nothing because changes the original data.table by reference (this is the data.table way)
 #' @import data.table
+#' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 setKeyDGVM <- function(dt){
@@ -93,7 +94,8 @@ correct.map.offset <- function(spl) {
 #' @param pfts A list of PFT objects (which should contain PFTs with ids provided in 'values)
 #' @param others A list of other name-colour combinations, for example to plot 'Total' as black, "None" as grey, or whatever.  Some defaults are defined.
 #' @return Returns a named list of colours, where the names are the values that the colours will represent
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 #' 
 #' 
 matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub = "red")) {

@@ -3,6 +3,4 @@
 .RData
 .Rbuildignore
 DGVMTools.Rproj
-man/*.Rd
-
 inst/doc
