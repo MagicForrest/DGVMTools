@@ -251,11 +251,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
 #' 
 #' Aggregates data with sub-annual time resultion to a coarser time resolution.  For example, going from monthly to annual. 
 #'
-#' @param input.obj data.table or Field 
-#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
-#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
-#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (default)  
-#' @param verbose If TRUE give some progress update about the averaging.
+#' @inheritParams aggregateSubannual.uncompiled
 #' @return A Field or data.table depending on the input object
 #' @import data.table
 #' @export
