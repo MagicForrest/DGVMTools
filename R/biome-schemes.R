@@ -1116,7 +1116,7 @@ SimpleHeightAdgvm2BiomeRules <- function(x){
 #' 
 SimpleHeightAdgvm2Biomes.scheme <- new("BiomeScheme",
                                        new("Quantity",
-                                           id = "SimpleAdgvm2Biomes",
+                                           id = "SimpleHeightAdgvm2Biomes",
                                            name = "Simple aDGVM2 Biomes",
                                            colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
                                                                                    "C4 Grassland" = '#fff700',
@@ -1304,6 +1304,6 @@ supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
                              "MeditBiomes" = MeditBiomes.scheme,
                              "FireMIP" = FireMIPBiomes.scheme,
                              "SimpleAdgvm2Biomes" = SimpleAdgvm2Biomes.scheme,
-                             "SimpleHeightAdgvm2Biomes" = SimpleAdgvm2Biomes.scheme,
+                             "SimpleHeightAdgvm2Biomes" = SimpleHeightAdgvm2Biomes.scheme,
                              "GrowthFormAdgvm2Biomes" = GrowthFormAdgvm2Biomes.scheme,
                              "PhenologyAdgvm2Biomes" = PhenologyAdgvm2Biomes.scheme)

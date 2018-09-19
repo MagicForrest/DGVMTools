@@ -51,12 +51,14 @@ getField_aDGVM <- function(source,
 ##########################################################################
 ##########################################################################
 
+#' Read aDGVM2 quantities from pop file
+#' 
 #' An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened
 #' 
-#' @param run A \code{source}
+#' @param run A \code{source} containing the meta-data about the aDGVM2 run
 #' @param first.year First year of data to read
 #' @param last.year Last year of data to read
-#' @param variable A character string specifying which variable/quantity to get, can be "agb","nind","meanheight","basalarea","pind","firefreq","vegcover_std","vegC_std","LAI_std","aGPP_std","canopyheight_std","burntfraction_std"
+#' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, meanheight“, "nind“, "pind“, "vegC_std“, "vegcover_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ncdf4
@@ -163,7 +165,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
     tmp.g3 <- tmp.g3*30.42*ind.g3/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
   }
   
-  if(variable@id == "LAI_std" | variable@id == "lai"){
+  if(variable@id == "LAI_std"){
     tmp.tr <- ncvar_get( d, "SumBLeaf", start=nc.start.vec.tr, count=nc.count.vec )*ncvar_get( d, "meanSla", start=nc.start.vec.tr, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
     tmp.g4 <- ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )*ncvar_get( d, "meanSla", start=nc.start.vec.g4, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
     tmp.g3 <- ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )*ncvar_get( d, "meanSla", start=nc.start.vec.g3, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
@@ -296,12 +298,14 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
 
 
 
+#' Read aDGVM2 quantities from trait file
+#' 
 #' An internal function to read quantities from aDGVM2 trait files. Quantities are currently provided for raingreen trees, evergreen trees, raingreen shrubs, evergreen shrubs, C4 grasses and C3 grasses. Pop files are not opened.
 #' 
-#' @param run A \code{source}
+#' @param run A \code{source} containing the meta-data about the aDGVM2 run
 #' @param first.year First year of data to read
 #' @param last.year Last year of data to read
-#' @param variable A character string specifying which variable/quantity to get, only "agb" currently supported
+#' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, "nind“, "meanheight“, "pind“, "vegC_std“, "vegcover_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ncdf4
@@ -563,17 +567,17 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
           }
         }
         
-        if(variable@id == "firefreq" | variable@id == "burntfraction_std" ){
-          message(paste(variable@id, "not available in scheme, all values set to zero."))
-          if (length(ind.alive)>0) {
-            tmp.te[x,y,z-start.point+1]   <- 0
-            tmp.td[x,y,z-start.point+1]   <- 0
-            tmp.se[x,y,z-start.point+1]   <- 0
-            tmp.sd[x,y,z-start.point+1]   <- 0
-            tmp.g4[x,y,z-start.point+1]   <- 0
-            tmp.g3[x,y,z-start.point+1]   <- 0
-          }
-        }
+        #if(variable@id == "firefreq" | variable@id == "burntfraction_std" ){
+        #  message(paste(variable@id, "not available in scheme, all values set to zero."))
+        #  if (length(ind.alive)>0) {
+        #    tmp.te[x,y,z-start.point+1]   <- 0
+        #    tmp.td[x,y,z-start.point+1]   <- 0
+        #    tmp.se[x,y,z-start.point+1]   <- 0
+        #    tmp.sd[x,y,z-start.point+1]   <- 0
+        #    tmp.g4[x,y,z-start.point+1]   <- 0
+        #    tmp.g3[x,y,z-start.point+1]   <- 0
+        #  }
+        #}
         
       }
     }
@@ -821,14 +825,14 @@ aDGVM.quantities <- list(
       name = "Fraction of individuals",
       units = "",
       colours = veg.palette,
-      format = c("aDGVM")),
-  
-  new("Quantity",
-      id = "firefreq",
-      name = "Fire Frequency",
-      units = "",
-      colours = reversed.fire.palette,
       format = c("aDGVM"))
+  
+  #new("Quantity",
+  #    id = "firefreq",
+  #    name = "Fire Frequency",
+  #    units = "",
+  #    colours = reversed.fire.palette,
+  #    format = c("aDGVM"))
   
   
 )

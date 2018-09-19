@@ -2,15 +2,15 @@
 % Please edit documentation in R/Format-aDGVM.R
 \name{getQuantity_aDGVM_Scheme1}
 \alias{getQuantity_aDGVM_Scheme1}
-\title{An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened}
+\title{Read aDGVM2 quantities from pop file}
 \usage{
 getQuantity_aDGVM_Scheme1(run, variable, first.year, last.year,
   adgvm.daily)
 }
 \arguments{
-\item{run}{A \code{source}}
+\item{run}{A \code{source} containing the meta-data about the aDGVM2 run}
 
-\item{variable}{A character string specifying which variable/quantity to get, can be "agb","nind","meanheight","basalarea","pind","firefreq","vegcover_std","vegC_std","LAI_std","aGPP_std","canopyheight_std","burntfraction_std"}
+\item{variable}{A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, meanheight“, "nind“, "pind“, "vegC_std“, "vegcover_std"}
 
 \item{first.year}{First year of data to read}
 
@@ -20,7 +20,7 @@ getQuantity_aDGVM_Scheme1(run, variable, first.year, last.year,
 An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened
 }
 \seealso{
-\code{getQuantity_aDGVM_Scheme2}
+\code{\link{getQuantity_aDGVM_Scheme2}}
 }
 \author{
 Simon Scheiter \email{simon.scheiter@senckenberg.de}, Matthew Forrest \email{matthew.forrest@senckenberg.de}
