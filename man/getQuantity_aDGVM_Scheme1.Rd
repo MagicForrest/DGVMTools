@@ -2,23 +2,22 @@
 % Please edit documentation in R/Format-aDGVM.R
 \name{getQuantity_aDGVM_Scheme1}
 \alias{getQuantity_aDGVM_Scheme1}
-\title{Simple classification of yearly output for aDGVM}
+\title{An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened}
 \usage{
 getQuantity_aDGVM_Scheme1(run, variable, first.year, last.year,
   adgvm.daily)
 }
 \arguments{
-\item{run}{A \code{Source}}
+\item{run}{A \code{source}}
 
-\item{variable}{A character string specifying which variable to get, can be "agb","nind","meanheight","basalarea","pind","firefreq","vegcover_std","vegC_std","LAI_std","aGPP_std","canopyheight_std","burntfraction_std"}
+\item{variable}{A character string specifying which variable/quantity to get, can be "agb","nind","meanheight","basalarea","pind","firefreq","vegcover_std","vegC_std","LAI_std","aGPP_std","canopyheight_std","burntfraction_std"}
 
-\item{first.year}{First year of data to read (not currently used)}
+\item{first.year}{First year of data to read}
 
-\item{last.year}{Last year of data to read (not currently used)}
+\item{last.year}{Last year of data to read}
 }
 \description{
-Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
-Simple scheme, classifies only as tree, C4 grass or C3 grass based on only the pop file, doesn't open the trait file.
+An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened
 }
 \seealso{
 \code{getQuantity_aDGVM_Scheme2}

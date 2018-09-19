@@ -2,22 +2,21 @@
 % Please edit documentation in R/Format-aDGVM.R
 \name{getQuantity_aDGVM_Scheme2}
 \alias{getQuantity_aDGVM_Scheme2}
-\title{Slightty more complex classification of yearly output for aDGVM}
+\title{An internal function to read quantities from aDGVM2 trait files. Quantities are currently provided for raingreen trees, evergreen trees, raingreen shrubs, evergreen shrubs, C4 grasses and C3 grasses. Pop files are not opened.}
 \usage{
 getQuantity_aDGVM_Scheme2(run, variable, first.year, last.year)
 }
 \arguments{
-\item{run}{A \code{Source}}
+\item{run}{A \code{source}}
 
-\item{variable}{A character string specifying which variable to get, only "agb" currently supported}
+\item{variable}{A character string specifying which variable/quantity to get, only "agb" currently supported}
 
-\item{first.year}{First year of data to read (not currently used)}
+\item{first.year}{First year of data to read}
 
-\item{last.year}{Last year of data to read (not currently used)}
+\item{last.year}{Last year of data to read}
 }
 \description{
-Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
-Classifies as evergreen tree, deciduous tree, evergreen shrub, deciduous shrub, C3 grass, C4 grass.
+An internal function to read quantities from aDGVM2 trait files. Quantities are currently provided for raingreen trees, evergreen trees, raingreen shrubs, evergreen shrubs, C4 grasses and C3 grasses. Pop files are not opened.
 }
 \seealso{
 \code{getQuantity_aDGVM_Scheme1}

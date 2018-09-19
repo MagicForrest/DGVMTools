@@ -4,16 +4,19 @@
 
 #' Get a Field for aDGVM
 #' 
-#' An internal function that reads data from an aDGVM run.  It actually call one of three other functions depending on the type of quantity specified.   
+#' An internal function that reads data from an aDGVM2 run. It actually calls one of two other functions depending on the type of quantity specified.   
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
-#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param run A \code{source} containing the meta-data about the aDGVM2 run
+#' @param quant A string the define what quantity from the aDGVM2 run to extract
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
-#' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
+#' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
+#' @param adgvm.daily A logical, set to true to read daily data (only for \code{adgvm.scheme=1} and if daily data are provided in pop file)
+#' @return A list containing firstly the data.table containing the data, and secondly the STA.info 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
+#' @seealso \code{\link{getQuantity_aDGVM_Scheme1}, \link{getQuantity_aDGVM_Scheme2}}
 getField_aDGVM <- function(source,
                            quant,
                            target.STAInfo,
@@ -48,20 +51,17 @@ getField_aDGVM <- function(source,
 ##########################################################################
 ##########################################################################
 
-#' Simple classification of yearly output for aDGVM
+#' An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened
 #' 
-#' Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
-#' Simple scheme, classifies only as tree, C4 grass or C3 grass based on only the pop file, doesn't open the trait file.
-#' 
-#' @param run A \code{Source}
-#' @param first.year First year of data to read (not currently used)
-#' @param last.year Last year of data to read (not currently used)
-#' @param variable A character string specifying which variable to get, can be "agb","nind","meanheight","basalarea","pind","firefreq","vegcover_std","vegC_std","LAI_std","aGPP_std","canopyheight_std","burntfraction_std"
+#' @param run A \code{source}
+#' @param first.year First year of data to read
+#' @param last.year Last year of data to read
+#' @param variable A character string specifying which variable/quantity to get, can be "agb","nind","meanheight","basalarea","pind","firefreq","vegcover_std","vegC_std","LAI_std","aGPP_std","canopyheight_std","burntfraction_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ncdf4
 #' @keywords internal
-#' @seealso \code{getQuantity_aDGVM_Scheme2}
+#' @seealso \code{\link{getQuantity_aDGVM_Scheme2}}
 getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgvm.daily)
 {
   # To stop NOTES
@@ -283,20 +283,20 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
               sta.info = actual.sta.info))
 }
 
-#' Slightty more complex classification of yearly output for aDGVM
+
+
+
+#' An internal function to read quantities from aDGVM2 trait files. Quantities are currently provided for raingreen trees, evergreen trees, raingreen shrubs, evergreen shrubs, C4 grasses and C3 grasses. Pop files are not opened.
 #' 
-#' Original from Simon Scheiter, this version modified by M. Forrest to fit into the DGVM framework. 
-#' Classifies as evergreen tree, deciduous tree, evergreen shrub, deciduous shrub, C3 grass, C4 grass.
-#' 
-#' @param run A \code{Source}
-#' @param first.year First year of data to read (not currently used)
-#' @param last.year Last year of data to read (not currently used)
-#' @param variable A character string specifying which variable to get, only "agb" currently supported
+#' @param run A \code{source}
+#' @param first.year First year of data to read
+#' @param last.year Last year of data to read
+#' @param variable A character string specifying which variable/quantity to get, only "agb" currently supported
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ncdf4
 #' @keywords internal
-#' @seealso \code{getQuantity_aDGVM_Scheme1}
+#' @seealso \code{\link{getQuantity_aDGVM_Scheme1}}
 getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
 {
   # To stop NOTES
@@ -607,7 +607,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
               sta.info = actual.sta.info))
 }
 
-#' Detemine PFTs present in an aDGVM  
+#' Detemine PFTs present in an aDGVM2; currently only returns a warning.
 #' 
 #' @param x  A Source objects describing a DGVMData source
 #' @param variables Some variable to look for to detremine the PFTs present in the run.  Not the function automatically searches:
