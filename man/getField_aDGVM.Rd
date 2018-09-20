@@ -8,21 +8,28 @@ getField_aDGVM(source, quant, target.STAInfo, verbose, adgvm.scheme,
   adgvm.daily)
 }
 \arguments{
+\item{quant}{A string the define what quantity from the aDGVM2 run to extract}
+
 \item{verbose}{A logical, set to true to give progress/debug information}
 
-\item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
+\item{adgvm.scheme}{A number that defines if pop-files (=1) or trait-files (=2) are used.}
 
-\item{variable}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
+\item{adgvm.daily}{A logical, set to true to read daily data (only for \code{adgvm.scheme=1} and if daily data are provided in pop file)}
+
+\item{run}{A \code{source} containing the meta-data about the aDGVM2 run}
 
 \item{first.year}{The first year (as a numeric) of the data to be return}
 
 \item{last.year}{The last year (as a numeric) of the data to be return}
 }
 \value{
-A list containing firstly the data.tabel containing the data, and secondly the STA.info
+A list containing firstly the data.table containing the data, and secondly the STA.info
 }
 \description{
-An internal function that reads data from an aDGVM run.  It actually call one of three other functions depending on the type of quantity specified.
+An internal function that reads data from an aDGVM2 run. It actually calls one of two other functions depending on the type of quantity specified.
+}
+\seealso{
+\code{\link{getQuantity_aDGVM_Scheme1}, \link{getQuantity_aDGVM_Scheme2}}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
