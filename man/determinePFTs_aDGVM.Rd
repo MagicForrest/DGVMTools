@@ -2,7 +2,7 @@
 % Please edit documentation in R/Format-aDGVM.R
 \name{determinePFTs_aDGVM}
 \alias{determinePFTs_aDGVM}
-\title{Detemine PFTs present in an aDGVM}
+\title{Detemine PFTs present in an aDGVM2; currently only returns a warning.}
 \usage{
 determinePFTs_aDGVM(x, variables)
 }
@@ -13,7 +13,7 @@ determinePFTs_aDGVM(x, variables)
 "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.  Currently ignored.}
 }
 \description{
-Detemine PFTs present in an aDGVM
+Detemine PFTs present in an aDGVM2; currently only returns a warning.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
