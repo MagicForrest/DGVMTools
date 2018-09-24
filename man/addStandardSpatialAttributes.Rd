@@ -16,4 +16,3 @@ A netcdf object
 \description{
 A very simple convenience function for filling the the standard Lon/Lat info when preparing a netCDF file
 }
-\keyword{internal}

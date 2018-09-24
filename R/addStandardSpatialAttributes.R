@@ -5,7 +5,7 @@
 #' 
 #' @param nc.file The netcdf object to which the attributes should be added
 #' @return A netcdf object
-#' @keywords internal
+#' @export
 
 addStandardSpatialAttributes <- function(nc.file, lat.name = "Lat", lon.name = "Lon") { 
   
