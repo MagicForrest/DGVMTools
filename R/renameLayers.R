@@ -11,6 +11,8 @@
 #'   
 #' @name renameLayers
 #' @rdname renameLayers
+#' @export
+#' @exportMethod setnames
 #' @return A Field (but not this is not strictly necessary since the Field object is changed in place)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #'  
