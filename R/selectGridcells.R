@@ -10,7 +10,8 @@
 #' @param decimal.places A single numeric specifying how many decimal place to which the coordinates should rounded to facilitate a match.  
 #' 
 #' @return A Field, DataObject, data.table or data.frame depending on the type of the input x.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
 selectGridcells <- function(x, gridcells, tolerance = NULL, spatial.extent.id = NULL, decimal.places = NULL) {
   

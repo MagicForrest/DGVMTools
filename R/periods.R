@@ -1,6 +1,7 @@
 ############### SUB ANNUAL PERIODS
 
 #' @rdname Period-class
+#' @export
 all.periods <- list(Jan = new("Period",
                               id = "Jan",
                               name = "January",
@@ -178,13 +179,17 @@ all.periods <- list(Jan = new("Period",
 # subsets of periods
 #' @rdname Period-class
 #' @format List of\code{Period} objects
+#' @export
 periods <- all.periods
 
 #' @rdname Period-class
+#' @export
 all.months <- all.periods[1:12]
 
 #' @rdname Period-class
+#' @export
 all.seasons <- all.periods[13:16]
 
 #' @rdname Period-class
+#' @export
 annual <- all.periods[17]

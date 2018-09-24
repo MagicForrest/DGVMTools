@@ -1,11 +1,10 @@
 
 #' Adds standard spatial attributes to a netCDF file
 #' 
-#' 
-#' lala
+#' A very simple convenience function for filling the the standard Lon/Lat info when preparing a netCDF file 
 #' 
 #' @param nc.file The netcdf object to which the attributes should be added
-#' 
+#' @return A netcdf object
 #' @keywords internal
 
 addStandardSpatialAttributes <- function(nc.file, lat.name = "Lat", lon.name = "Lon") { 

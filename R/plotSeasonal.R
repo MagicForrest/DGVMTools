@@ -22,7 +22,8 @@
 #' which spatial extent to plot the seasonal cycle and, if that extent includes more that one gridcell, how to aggregate across that extent)
 #' 
 #' @return Returns either a ggplot2 object or a data.table (depending on the 'plot' argument)
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
 
 
