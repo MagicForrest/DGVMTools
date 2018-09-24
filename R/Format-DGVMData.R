@@ -89,13 +89,17 @@ getField_DGVMData <- function(source,
   all.times <- numeric(0)
   for(this.dimension in dims.present) {
     
-    # pick up Lat/lat
+    # pick up Lat
     if(this.dimension == "lat") { all.lats <- this.nc$dim$lat$vals  }
     else if(this.dimension == "Lat") { all.lats <- this.nc$dim$Lat$vals }
+    else if(this.dimension == "latitude") { all.lats <- this.nc$dim$latitude$vals }
+    else if(this.dimension == "Latitude") { all.lats <- this.nc$dim$Latitude$vals }
     
-    # pick up Lon/lon
+    # pick up Lon
     else if(this.dimension == "lon") { all.lons <- this.nc$dim$lon$vals }
     else if(this.dimension == "Lon") { all.lons <- this.nc$dim$Lon$vals }
+    else if(this.dimension == "longitude") { all.lons <- this.nc$dim$longitude$vals }
+    else if(this.dimension == "Longitude") { all.lons <- this.nc$dim$Longitude$vals }
     
     # pick up Time/time
     else if(this.dimension == "time") { all.time <- this.nc$dim$time$vals }

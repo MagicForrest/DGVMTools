@@ -4,8 +4,7 @@
 \alias{addStandardSpatialAttributes}
 \title{Adds standard spatial attributes to a netCDF file}
 \usage{
-addStandardSpatialAttributes(nc.file, lat.name = "Lat",
-  lon.name = "Lon")
+addStandardSpatialAttributes(nc.file)
 }
 \arguments{
 \item{nc.file}{The netcdf object to which the attributes should be added}

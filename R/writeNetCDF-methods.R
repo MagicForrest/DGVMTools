@@ -335,7 +335,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   
   
   # STANDARD SPATIAL ATTRIBUTES
-  outfile <- addStandardSpatialAttributes(outfile, lat.name = lat.dim.name, lon.name = lon.dim.name)
+  outfile <- addStandardSpatialAttributes(outfile)
   
   
   # ADD GENERAL ATTRIBUTES
