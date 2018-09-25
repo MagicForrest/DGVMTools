@@ -67,6 +67,12 @@ openLPJOutputFile <- function(run,
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = NULL
   
+  #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
+  compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
+  new.data.table.version <- FALSE
+  if(compare.string >= 0) new.data.table.version <- TRUE
+  
+ 
   # Make the filename and check for the file, gunzip if necessary, fail if not present
   file.string = file.path(run@dir, paste(variable, ".out", sep=""))
   if(file.exists(file.string)){ 
@@ -75,8 +81,8 @@ openLPJOutputFile <- function(run,
   }
   else if(file.exists(paste(file.string, "gz", sep = "."))){
     if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
-    dt <- fread(paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
-    
+    if(new.data.table.version) dt <- fread(cmd = paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
+    else dt <- fread(paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
   }
   else {
     stop(paste("File (or gzipped file) not found:", file.string))
