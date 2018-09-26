@@ -186,7 +186,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     # make the time dimension values
     # maybe make this more vectorised and elegant
     time.list <- c()
-    for(layer.counter in 0:(nlayers(x)-1)) {
+    for(layer.counter in 0:(raster::nlayers(x)-1)) {
       
       start.year <- as.numeric(format(start.date,"%Y"))
       start.month <- as.numeric(format(start.date,"%m")) 

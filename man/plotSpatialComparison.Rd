@@ -5,8 +5,8 @@
 \title{Plot a comparion between two layers}
 \usage{
 plotSpatialComparison(sources, type = c("difference",
-  "percentage.difference", "values", "nme"), title = NULL,
-  limits = NULL, override.cols = NULL, symmetric.scale = TRUE,
+  "percentage.difference", "values", "nme"), limits = NULL,
+  override.cols = NULL, symmetric.scale = TRUE,
   percentage.difference.limit = 300, ...)
 }
 \arguments{
@@ -14,9 +14,6 @@ plotSpatialComparison(sources, type = c("difference",
 
 \item{type}{A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
 (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)}
-
-\item{title}{A character string to override the default title.
-Note that using these, especially "worldHires", can add quite a bit of time.}
 
 \item{limits}{A numeric vector with two members (lower and upper limit) to limit the plotted values.}
 
