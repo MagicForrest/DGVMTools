@@ -4,7 +4,7 @@
 \alias{determineQuantities}
 \title{List available quantities}
 \usage{
-determineQuantities(source, names = TRUE)
+determineQuantities(source, names = TRUE, ...)
 }
 \arguments{
 \item{source}{The DGVMTools::Source object for which the avaiable variables are to be determined.}

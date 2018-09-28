@@ -653,10 +653,31 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-determinePFTs_aDGVM <- function(x, variables) {
+determinePFTs_aDGVM <- function(x) {
   
-  warning("Need aDGVMers to write this function! For now I am returning the source@format@default.set argument directly.")
-  return(x@format@default.pfts)
+  #if (scheme==1....) 
+  #warning("Need aDGVMers to write this function! For now I am returning the source@format@default.set argument directly.")
+
+  PFT.list.s1 <- c("Tr", "C4G", "C3G")
+  PFT.list.s2 <- c("TrBE", "TrBR", "TrBES", "TrBRS", "C4G", "C3G")
+
+  cat(paste("PFTs for adgvm.scheme==1: Tr, C4G, C3G \n"))
+  cat(paste("PFTs for adgvm.scheme==2: TrBE, TrBR, TrBES, TrBRS, C4G, C3G \n"))
+  cat(paste("determinePFTs returns list with all available aDGVM2 PFTs.\n"))
+  
+#  PFTs.present <- list()
+#  for ( PFTname in PFT.list) {
+#    for(PFT in aDGVM.PFTs){
+#      if(PFT@id == PFTname) {
+#        PFTs.present <- append(PFTs.present, PFT)
+#      }
+#    }
+#  }
+  
+  return(aDGVM.PFTs)
+  
+  
+  #return(x@format@default.pfts)
   
 }
 
@@ -674,11 +695,13 @@ determinePFTs_aDGVM <- function(x, variables) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-determineQuantities_aDGVM <- function(source){
+determineQuantities_aDGVM <- function(source, names, adgvm.scheme){
+  message(paste("Using adgvm.scheme", adgvm.scheme, "\n"))
   
-  warning("Needs to be implemented by an aDGVMer.")
+  quantities.present <- NULL #list()
+  if ( adgvm.scheme==1 ) quantities.present <- c("agb", "aGPP_std", "basalarea", "bgb", "canopyheight_std", "LAI_std", "meanheight", "nind", "pind", "vegC_std", "vegcover_std")
+  if ( adgvm.scheme==2 ) quantities.present <- c("agb", "aGPP_std", "basalarea", "bgb", "canopyheight_std", "LAI_std", "meanheight", "nind", "pind", "vegC_std", "vegcover_std")
   
-  quantities.present <- list()
   return(quantities.present)
   
 }

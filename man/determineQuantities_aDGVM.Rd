@@ -4,7 +4,7 @@
 \alias{determineQuantities_aDGVM}
 \title{List aDGVM quantities avialable}
 \usage{
-determineQuantities_aDGVM(source)
+determineQuantities_aDGVM(source, names, adgvm.scheme)
 }
 \arguments{
 \item{source}{A path to a directory on the file system containing some .out files}
