@@ -48,8 +48,8 @@ setKeyDGVM <- function(dt){
 #'
 #' @param lon A vector longitude value to transform 
 #' @return The transformed longitude values
-#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 LondonCentre <- function(lon) {
   
   return(ifelse(lon > 180, lon - 360, lon))

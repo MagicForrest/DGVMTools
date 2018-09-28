@@ -4,13 +4,14 @@
 \alias{addStandardSpatialAttributes}
 \title{Adds standard spatial attributes to a netCDF file}
 \usage{
-addStandardSpatialAttributes(nc.file, lat.name = "Lat",
-  lon.name = "Lon")
+addStandardSpatialAttributes(nc.file)
 }
 \arguments{
 \item{nc.file}{The netcdf object to which the attributes should be added}
 }
-\description{
-lala
+\value{
+A netcdf object
 }
-\keyword{internal}
+\description{
+A very simple convenience function for filling the the standard Lon/Lat info when preparing a netCDF file
+}

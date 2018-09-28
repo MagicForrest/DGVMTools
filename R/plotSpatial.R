@@ -187,6 +187,12 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     all.values <- c()
     for(object in sources){
       
+      # check if year/season/month/day is actually present in the source
+      if(!string %in% getDimInfo(object)) {
+        warning(paste("In plotSpatial you requested plotting of maps per", string, "but not all the fields have", string, "data.\n I am therefore returning NULL for this plot, but your script should continue.  Check that your input Fields have the time dimensions that you think they have.", sep = " "))
+        return(NULL)     
+       }
+      
       # get a list of all unique days present
       values.present <- unique(object@data[[string]])
       

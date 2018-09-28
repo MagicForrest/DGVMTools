@@ -18,7 +18,7 @@
 The name of the file written out (probably not so useful, just want to return something)
 }
 \description{
-Simply writes a field to disk (using the saveRDS() command), with a specific filename, based on the Field's id.
+Simply writes a field to disk (using the saveRDS() command), with a specific filename, based on the Field's id and the Source's directory.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

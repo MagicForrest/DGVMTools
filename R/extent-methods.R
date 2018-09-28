@@ -10,6 +10,7 @@
 #' @rdname extent-methods
 #' @aliases extent
 #' @importMethodsFrom raster extent
+#' @exportMethod extent
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 if (!isGeneric("extent")) {
   setGeneric("extent", function(x) standardGeneric("extent"))

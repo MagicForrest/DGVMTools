@@ -59,7 +59,6 @@ Collate:
     'benchmarking.R'
     'biome-schemes.R'
     'byIDfromList.R'
-    'calcBiomes.R'
     'calcNewField.R'
     'commonSTAInfo.R'
     'compareLayers.R'

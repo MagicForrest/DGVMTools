@@ -7,7 +7,7 @@
 aggregateSpatial(input.obj, method = "mean", verbose = FALSE, ...)
 }
 \arguments{
-\item{input.obj}{A Field, DataObject or data.table to be averaged}
+\item{input.obj}{Field, DataObject or data.table to be averaged}
 
 \item{method}{The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".}

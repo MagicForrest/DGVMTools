@@ -11,6 +11,7 @@
 #' 
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
 listPFTs <- function(x, criteria = NULL, return.ids = TRUE) {
   

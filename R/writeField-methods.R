@@ -1,6 +1,6 @@
 #' Write methods
 #' 
-#' Simply writes a field to disk (using the saveRDS() command), with a specific filename, based on the Field's id.
+#' Simply writes a field to disk (using the saveRDS() command), with a specific filename, based on the Field's id and the Source's directory.
 #' 
 #' @param x A Field
 #' @param ... Other arguments, not currently used
@@ -13,7 +13,6 @@
 if (!isGeneric("writeField")) {
   setGeneric("writeField", function(x) standardGeneric("writeField"))
 }
-#' must have columns named "Lon" and "Lat" otherwise these methods fail.  
 
 
 #' @rdname writeField-methods

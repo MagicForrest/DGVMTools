@@ -10,6 +10,7 @@
 #' @param verbose Logical, if TRUE (default) give some extra information
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @return A \code{Quantity} object if it finds the right one.  Otherwise the code halts.
+#' @export
 lookupQuantity <- function(quant.id, context = Standard.quantities, verbose = TRUE){
   
   if(is.Format(context)) {

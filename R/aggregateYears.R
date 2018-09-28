@@ -112,9 +112,7 @@ aggregateYears.uncompiled <- function(input.obj,
 #' 
 #' Aggregated all available years in a Field or a data.table object (with years denoted by column "Years"). 
 #'
-#' @param input.obj A Field or data.table (with a "Year" column)   
-#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
-#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' @inheritParams aggregateYears.uncompiled
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A Field or data.table depending on the input object
 #' @export

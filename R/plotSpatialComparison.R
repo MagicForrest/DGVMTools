@@ -16,8 +16,6 @@
 #' @param sources The data to plot, must be a Comparison or a list of Comparisons
 #' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
 #' (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)
-#' @param title A character string to override the default title.
-#' Note that using these, especially "worldHires", can add quite a bit of time. 
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param override.cols A colour palette function to override the defaults.
 #' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)
@@ -36,7 +34,6 @@
 
 plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
                                   type = c("difference", "percentage.difference", "values", "nme"),
-                                  title = NULL,
                                   limits = NULL,
                                   override.cols = NULL,
                                   symmetric.scale = TRUE,

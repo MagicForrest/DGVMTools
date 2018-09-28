@@ -41,11 +41,11 @@ of a RasterStack or RasterBrick where each layer represents a month.}
 
 \item{verbose}{Logical, if TRUE print a bunch of progress and debug output}
 
-\item{quantity}{A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but not
+\item{quantity}{A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
 if you want to use different meta-data for a Field just alter the Quantity object in the Field object before you call writeNetCDF)}
 
-\item{source}{A DGVMTools::Source object.  This is to provide meta-data about teh source of the data (model run/dataset, climate forcing, cintact person etc)
-if saving a Raster* object. It is ignored in the case of a Field (but not if you want to use different meta-data for a Field just alter the Source object in the Field object before you call writeNetCDF)}
+\item{source}{A DGVMTools::Source object.  This is to provide meta-data about the source of the data (model run/dataset, climate forcing, contact person etc)
+if saving a Raster* object. It is ignored in the case of a Field (but note  that if you want to use different meta-data for a Field just alter the Source object in the Field object before you call writeNetCDF)}
 
 \item{layer.dim.name}{A character string specifing the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension.}
@@ -56,7 +56,7 @@ is created and each layer gets its own variable in the netCDF.  If it is specifi
 
 \item{time.dim.name}{Character, the time dimension name. Defaults to "Time".}
 
-\item{precision}{Character, the output precision (alternatively type, confusingly) to use in the netCDF file (see the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
+\item{precision}{Character, the output precision (alternatively type, confusingly) to use in the netCDF file.  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
 
 \item{time.values}{The time dimension information (in the case of Raster*, is ignored for a Field).  Format is 'days since' the 'start.date' argument.  NOT CURRENTLY IMPLEMENT, CAN MAYBE REPLACE 'monthly'?}
 
