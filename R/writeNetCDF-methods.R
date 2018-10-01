@@ -46,9 +46,11 @@ if (!isGeneric("writeNetCDF")) {
                                      filename, 
                                      start.date = NULL, 
                                      monthly = FALSE, 
+                                     annual = FALSE, 
                                      verbose = FALSE, 
                                      quantity = NULL, 
                                      source = NULL, 
+                                     layer.names = NULL,
                                      layer.dim.name = NULL,
                                      lat.dim.name = "Lat",
                                      lon.dim.name = "Lon",
@@ -60,6 +62,11 @@ if (!isGeneric("writeNetCDF")) {
 
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(x, filename, ...) {
+  
+  # ignore parameters and give warnings
+  if(!is.null(layer.names)) warning("Argument layer.names is ignored when calling writeNetCDF() for a Field. Layer names are taken from the layer names in the Field.")
+  if(!is.null(monthly)) warning("Argument monthly is ignored when calling writeNetCDF() for a Field. Time resolution is determined from the data in the Field.")
+  if(!is.null(annual)) warning("Argument annual is ignored when calling writeNetCDF() for a Field. Time resolution is determined from the data in the Field.")
   
   monthly <- FALSE
   st.names <- getDimInfo(x)
@@ -81,6 +88,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   writeNetCDF(array.list, 
               filename, 
               monthly = monthly, 
+              annual = annual, 
               verbose = verbose, 
               start.date = start.date,
               quantity = this.quant ,
@@ -98,49 +106,31 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function(x, filename, ...) {
   
+  if(is.null(quantity) || missing(quantity)) stop("When calling a writeNetCDF() on a raster you *need* to pass in a quantity object supply metadata. \n Fortunately the is easy to define if you don't have one, see Quantity-class")
   
-  # check arguments for interpreting time vs layers
-  multiple.variables <- FALSE
+  
+  # If only a single layer or  if multiple layers and the length of layer.names matches then assume a single time slice with one variabe per layer
   single.time.slice <- FALSE
-  multiple.time.slices <- FALSE
-  monthly.time.slices <- FALSE
-  
-  # If only a single layer, for sure we have only a single variable, check to see if we want to include a timestep.
-  if(raster::nlayers(x) == 1) {
-    message("Got a single layer, so we have a single variable")
-    if(!is.null(start.date)) {
-      single.time.slice <- TRUE
-      message("Also got a start date (\'start.date\' argument) so setting the time info for this valiable to be simply this date")
-    }
+  if(raster::nlayers(x) == 1 || raster::nlayers(x) == length(layer.names)) {
+    single.time.slice <- TRUE
   }
-  # Else got multiple layers, can be multiple variable or multiples timesteps, here determine which.
+  
+  # Else layers correspond to time steps, here make checks
   else {
     
-    # if a start date
-    if(!is.null(start.date)) {
-      
-      if(monthly) {
-        monthly.time.slices <- TRUE
-        message("Got a start date (\'start.date\' argument) and \'monthly\' argument is TRUE so assuming that each raster layer corresponds to consecutive months, starting from the month of \'start.date\'")
-      }
-      else if(is.null(time.values)) {
-        single.time.slice <- TRUE
-        message("Got a start date (\'start.date\' argument) but \'monthly\' argument is FALSE and the \'time.values\' argument is not set so assuming that each raster layer corresponds to a different variable, each covering the same time period.")
-      }
-      else {
-        message("Got a start date (\'start.date\' argument) and \'time.values\' argument so assuming that the raster layers corresponds to different time slices of a single variable")
-        multiple.time.slices <- TRUE
-        
-      } 
-      
-      
+    # check that we have consistent time arguments
+    if(sum(monthly, annual, !is.null(time.values)) != 1) {
+      stop("When calling writeNetCDF for multi-layered Rasters without layer names, you must set one and only one of monthly or annual to TRUE, or provide time values in the time.values argument.")
     }
     
+    # if a start date
+    if(is.null(start.date)) {
+      stop("When calling writeNetCDF for multi-layered Rasters, you must supply the start.date argument")
+    }
     
   }
   
   # make a list of lons and lats
-  # make the list of lons and lats
   xres <- raster::xres(x)
   lon.list <- seq(from =  raster::xmin(x) + xres/2 , to = raster::xmax(x) - xres/2,  by = xres)
   yres <- raster::yres(x)
@@ -148,36 +138,41 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
   
   # if a single time slice (but potentially multiple layers) put the Raster* object into a list of arrays
   # with one array in the list per layer
+  array.list <- list()
   if(single.time.slice) {
+    
+    if(verbose) message("Got a single layer, so we have a single variable")
+    
     layers <- names(x)
-    array.list <- list()
-    layer.counter <- 0
-    for(layer in layers) {
+    for(layer.index in 1:length(layers)) {
       
       # make the array
-      this.layer <- raster::subset(x, layer)
+      this.layer <- raster::subset(x, layer.index)
       this.array <- raster::as.matrix(this.layer)
       this.array <- t(this.array)
       this.array <- this.array[, dim(this.array)[2]:1]
-      ## MF consider instead reversing the order of lat.list below?
-      
-      colnames(this.array) <- lat.list
-      rownames(this.array) <- lon.list
       
       # add a new dimensinsion for the time info
-      dim(this.array) <- append(dim(this.array),1)
-      dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = as.numeric(format(start.date,"%Y")))
+      if(!null(start.date)) {
+        dim(this.array) <- append(dim(this.array),1)
+        dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = as.numeric(format(start.date,"%Y")))
+      }
+      else{
+        dimnames(this.array) <- list(lon = lon.list, lat = lat.list)
+      }
       
-      array.list[[layer]] <- this.array
-      
+      # append the array to the list
+      array.list[[layer.names[layer.index]]] <- this.array
       rm(this.layer)
       
-      layer.counter <- layer.counter +1
     }
   }
   
   # else if each layer corresponds to a month 
-  else if(monthly.time.slices) {
+  else if(monthly) {
+    
+    if(verbose) message("Got a start date (\'start.date\' argument) and \'monthly\' argument is TRUE so assuming that each raster layer corresponds to consecutive months, starting from the month of \'start.date\'")
+    
     
     # what the whole raster into an array (taking care of the stupid inverted lats)
     this.array <- aperm(raster::as.array(x), c(2,1,3))
@@ -205,23 +200,66 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     }
     
     dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = time.list)
-    array.list <- list("Total" = this.array)
+    array.list[[layer.names[1]]] <- this.array
+    rm(this.array)
+    gc()
+    
+  }
+  
+  # else if each layer corresponds to a year
+  else if(annual) {
+    
+    if(verbose) message("Got a start date (\'start.date\' argument) and \'annual\' argument is TRUE so assuming that each raster layer corresponds to consecutive years, starting from the year of \'start.date\'")
+    
+    
+    # what the whole raster into an array (taking care of the stupid inverted lats)
+    this.array <- aperm(raster::as.array(x), c(2,1,3))
+    this.array <- this.array[, dim(this.array)[2]:1, ]
+    
+    # make the time dimension values
+    # maybe make this more vectorised and elegant
+    time.list <- c()
+    start.year <- as.numeric(format(start.date,"%Y"))
+    time.list <- as.character(seq(start.year, start.year+nlayers(x)-1))
+    
+    dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = time.list)
+    array.list[[layer.names[1]]] <- this.array
     rm(this.array)
     gc()
     
   }
   
   # not  yet implemented
-  else if(multiple.time.slices) {
-    #print(as.numeric(paste(format(start.date,"%Y"), format(start.date,"%m"), sep = ".")))
-    #dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = as.numeric(paste(format(start.date,"%Y"), format(start.date,"%m"), sep = ".")))
+  else if(!is.null(time.values)) {
+    
+    if(verbose) message("Got a start date (\'start.date\' argument) and \'time.values\' argument so assuming that the raster layers corresponds to different time slices of a single variable")
+    stop("time.values argument not yet implemented in writeNetCDF.")
   }
   
-  
+  # # else simple case of a 2D raster
+  # else {
+  #   # make the array
+  #   this.array <- raster::as.matrix(x)
+  #   this.array <- t(this.array)
+  #   this.array <- this.array[, dim(this.array)[2]:1]
+  #   
+  #   if(!is.null(start.date)) {
+  #     if(verbose) message("Also got a start date (\'start.date\' argument) so setting the time info for this valiable to be simply this date")
+  #     dim(this.array) <- append(dim(this.array),1)
+  #     dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = as.numeric(format(start.date,"%Y")))
+  #   }
+  #   else {
+  #     dimnames(this.array) <- list(lon = lon.list, lat = lat.list)
+  #   }
+  #   array.list[[layer.names[1]]] <- this.array
+  # }
+  # 
+  # 
   
   writeNetCDF(array.list, 
               filename, 
               monthly = monthly, 
+              annual = annual,
               verbose = verbose, 
               start.date = start.date,
               quantity = quantity,

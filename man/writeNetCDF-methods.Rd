@@ -10,19 +10,22 @@
 \title{writeNetCDF methods}
 \usage{
 \S4method{writeNetCDF}{Field,character}(x, filename, start.date = NULL,
-  monthly = FALSE, verbose = FALSE, quantity = NULL, source = NULL,
+  monthly = FALSE, annual = FALSE, verbose = FALSE,
+  quantity = NULL, source = NULL, layer.names = NULL,
   layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
   time.dim.name = "Time", precision = "float", time.values = NULL,
   ...)
 
 \S4method{writeNetCDF}{Raster,character}(x, filename, start.date = NULL,
-  monthly = FALSE, verbose = FALSE, quantity = NULL, source = NULL,
+  monthly = FALSE, annual = FALSE, verbose = FALSE,
+  quantity = NULL, source = NULL, layer.names = NULL,
   layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
   time.dim.name = "Time", precision = "float", time.values = NULL,
   ...)
 
 \S4method{writeNetCDF}{list,character}(x, filename, start.date = NULL,
-  monthly = FALSE, verbose = FALSE, quantity = NULL, source = NULL,
+  monthly = FALSE, annual = FALSE, verbose = FALSE,
+  quantity = NULL, source = NULL, layer.names = NULL,
   layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
   time.dim.name = "Time", precision = "float", time.values = NULL,
   ...)

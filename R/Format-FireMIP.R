@@ -23,10 +23,10 @@ getField_FireMIP <- function(source,
   
   
   
-  this.dt <- openFireMIPOutputFile(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+  return.list<- openFireMIPOutputFile(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
   
   
-  return(list(this.dt, NULL))
+  return(return.list)
   
 }
 
@@ -58,26 +58,27 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
   Year = Lon = Total = NULL
   
   # get the name of the model
-  model.string <- gsub("-FireMIP", "", run@format)
-
+  model.string <- gsub("-FireMIP", "", run@format@id)
+  print(model.string)
+  
   # ANNUAL, PER-VEGTYPE
   # Any annual, per PFT variable should be manageable here, eg landCoverFrac
   if(quantity@id == "landCoverFrac" ||
      quantity@id == "lai"           ||
      quantity@id == "theightpft") {
     
+    subannual = "Annual"
+    
     # make the string (note special cases)
     file.string <- file.path(run@dir, paste0(run@id, "_", quantity@id, ".nc"))
     if(model.string == "Inferno" && quantity@id == "landCoverFrac") { file.string <- file.path(run@dir, paste0(run@id, "_", "LandCoverFrac", ".nc")) }
-    
+   
     
     # open the netCDF file (not ORCHIDEE! - those are single files, need to open them one by one)
     if(model.string != "ORCHIDEE") this.nc <- nc_open(file.string, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
     
-    
     # get the dimensions (depends on model type) and the ordering type
     africa.centre <- FALSE
-    remove.total <- FALSE
     requires.averaging <- FALSE
     if(model.string == "LPJ-GUESS-SPITFIRE-OLD") {
       if(quantity@id != "theightpft") this.pfts <- c("BNE", "BINE", "BNS", "BIBS", "TeNE", "TeBS", "TeIBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "Total")
@@ -86,7 +87,14 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
       this.lon <- ncvar_get(this.nc,"longitude",verbose=verbose)
       this.time <- 1700:2013
       ordering <- c(1,2,3)
-      if(quantity@id != "theightpft") remove.total <- TRUE
+    }
+    else if(model.string == "LPJ-GUESS-SPITFIRE") {
+      if(quantity@id != "theightpft") this.pfts <- c("BNE", "BINE", "BNS", "BIBS", "TeNE", "TeBS", "TeIBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G")
+      else this.pfts <- c("BNE", "BINE", "BNS", "BIBS", "TeNE", "TeBS", "TeIBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G")
+      this.lat <- ncvar_get(this.nc,"latitude",verbose=verbose)
+      this.lon <- ncvar_get(this.nc,"longitude",verbose=verbose)
+      this.time <- 1700:2013
+      ordering <- c(3,1,2)
     }
     else if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
       this.pfts <- c("C3G_pas", "C4G_pas", "BNE", "BINE", "BNS", "TeBS", "IBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "TeSW", "TeSWirr", "TeWW", "TeWWirr", "TeCo", "TeCoirr")
@@ -140,7 +148,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
       ordering <- c(3,1,2)
       africa.centre <- TRUE
     }
-    
+ 
     # choose range of years (if specifed, else take the whole range)
     if(!is.null(first.year) &  !is.null(last.year)){
       
@@ -178,7 +186,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
     for(counter in 0:(n.years-1)) {
       
       # get one year - depends on the structure of each model
-      if(model.string == "LPJ-GUESS-SPITFIRE-OLD" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
+      if(model.string == "LPJ-GUESS-SPITFIRE-OLD" || model.string == "LPJ-GUESS-SPITFIRE" || model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
         this.slice <- ncvar_get(this.nc, start = c(1,1,1, counter+start.index), count = c(-1,-1,-1, 1))
       }
       else if(model.string == "CLM") {
@@ -206,6 +214,10 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
       # average and permute dimensions (of necessary) and rename dimesions
       if(requires.averaging) this.slice <- apply(this.slice, c(1,2,3), mean)
       if(!identical(ordering, c(1,2,3))) this.slice <- aperm(this.slice, ordering)
+      # print(dim(this.slice))
+      # print(this.pfts)
+      # print(this.lon)
+      # print(this.lat)
       dimnames(this.slice) <- list(this.pfts, this.lon, this.lat)
       
       # melt to a data.table, via data.frame
@@ -243,6 +255,8 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
      quantity@id == "npp" ||
      quantity@id == "nbp") {
     
+    subannual = "Monthly"
+    
     # make the string (note special cases)
     file.string <- file.path(run@dir, paste0(run@id, "_", quantity@id, ".nc"))
     
@@ -253,7 +267,6 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
     
     # get the dimensions (depends on model type) and the ordering type
     africa.centre <- FALSE
-    remove.total <- FALSE
     requires.averaging <- FALSE
     if(model.string == "LPJ-GUESS-SPITFIRE-OLD") {
       if(quantity@id != "theightpft") this.pfts <- c("BNE", "BINE", "BNS", "BIBS", "TeNE", "TeBS", "TeIBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "Total")
@@ -262,7 +275,6 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
       this.lon <- ncvar_get(this.nc,"longitude",verbose=verbose)
       this.time <- 1700:2013
       ordering <- c(1,2,3)
-      if(quantity@id != "theightpft") remove.total <- TRUE
     }
     else if(model.string == "LPJ-GUESS-GlobFIRM" || model.string == "LPJ-GUESS-SIMFIRE-BLAZE") {
       this.pfts <- c("C3G_pas", "C4G_pas", "BNE", "BINE", "BNS", "TeBS", "IBS", "TeBE", "TrBE", "TrIBE", "TrBR", "C3G", "C4G", "TeSW", "TeSWirr", "TeWW", "TeWWirr", "TeCo", "TeCoirr")
@@ -419,11 +431,21 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
   
   # Tidy stuff
   if(africa.centre) full.dt[,Lon := LondonCentre(Lon)]
-  if(remove.total) full.dt[, Total := NULL]
   full.dt <- stats::na.omit(full.dt)
   
-  return(full.dt)
-
+  all.years <- sort(unique(full.dt[["Year"]]))
+  sta.info = new("STAInfo",
+                 first.year = min(all.years),
+                 last.year = max(all.years),
+                 subannual.resolution = subannual,
+                 subannual.original = subannual,
+                 spatial.extent = extent(full.dt))
+  
+ 
+  return(list(dt = full.dt,
+                   sta.info = sta.info))
+  
+ 
 }
 
 
@@ -438,7 +460,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
 determinePFTs_FireMIP <- function(x, variables) {
   
   warning("determinePFTs_FireMIP not currently implmented.")
-  return(x@format@pft.set)
+  return(x@format@default.pfts)
   
 }
 
@@ -1059,3 +1081,36 @@ FireMIP<- new("Format",
                 quantities = FireMIP.quantities
                 
 )
+
+### 
+#' @export
+LPJ_GUESS_SPITFIRE_FireMIP <- FireMIP
+LPJ_GUESS_SPITFIRE_FireMIP@id <- "LPJ-GUESS-SPITFIRE-FireMIP"
+
+#' @export
+LPJ_GUESS_GlobFIRM_FireMIP <- FireMIP
+LPJ_GUESS_GlobFIRM_FireMIP@id <- "LPJ-GUESS-GlobFIRM-FireMIP"
+
+#' @export
+LPJ_GUESS_SIMFIRE_BLAZE_FireMIP <- FireMIP
+LPJ_GUESS_SIMFIRE_BLAZE_FireMIP@id <- "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP"
+
+#' @export
+CLM_FireMIP <- FireMIP
+CLM_FireMIP@id <- "CLM-FireMIP"
+
+#' @export
+CTEM_FireMIP <- FireMIP
+CTEM_FireMIP@id <- "CTEM-FireMIP"
+
+#' @export
+Inferno_FireMIP <- FireMIP
+Inferno_FireMIP@id <- "Inferno-FireMIP"
+
+#' @export
+JSBACH_FireMIP <- FireMIP
+JSBACH_FireMIP@id <- "JSBACH-FireMIP"
+
+#' @export
+ORCHIDEE_FireMIP <- FireMIP
+ORCHIDEE_FireMIP@id <- "ORCHIDEE-FireMIP"

@@ -102,7 +102,7 @@ getField_DGVMData <- function(source,
     else if(this.dimension == "Longitude") { all.lons <- this.nc$dim$Longitude$vals }
     
     # pick up Time/time
-    else if(this.dimension == "time") { all.time <- this.nc$dim$time$vals }
+    else if(this.dimension == "time") { all.times <- this.nc$dim$time$vals }
     else if(this.dimension == "Time") { all.times <- this.nc$dim$Time$vals }
     
     # Catch the rest
@@ -139,8 +139,14 @@ getField_DGVMData <- function(source,
       if(is.na(check.thing)) time.NAs.present <- TRUE
     }
     if(time.NAs.present) {
-      all.times <- first.year:last.year
-      dimension.names[["Time"]] <- all.times
+      # quick check if yearly data
+      if(length(first.year:last.year) == length(all.times)) {
+        dimension.names[["Time"]] <- first.year:last.year
+      }
+      # else assume monthly data
+      else {
+        dimension.names[["Time"]] <- 1:length(all.times)
+      }
     }
   }
   
@@ -155,6 +161,8 @@ getField_DGVMData <- function(source,
     
     # prepare data.table from the slice (array)
     this.slice.dt <- as.data.table(melt(this.slice))
+    rm(this.slice)
+    gc()
     this.slice.dt <- stats::na.omit(this.slice.dt)
     setnames(this.slice.dt, "value", this.var$name)
     
@@ -189,16 +197,20 @@ getField_DGVMData <- function(source,
         
         all.years <- first.year:last.year
         
+        ### MF: This might be slow, consider optimising
+        
         # sort data.table by Time axis
         this.slice.dt[order(Time)] 
         
         # make Year vector and add it do the data.table
         temp.nentries.per.year <- nrow(this.slice.dt)/length(all.years)
         year.vector <- c()
+
         for(year in all.years) {
           year.vector <- append(year.vector, rep.int(year, temp.nentries.per.year))
         }
         this.slice.dt[, Year := year.vector]
+        rm(year.vector)
         
         # Make Month vector
         month.vector <- c()
@@ -208,11 +220,11 @@ getField_DGVMData <- function(source,
           }
         }
         this.slice.dt[, Month := month.vector]
-        
-        
+        rm(month.vector)
+
         # Remove the Time columns
         this.slice.dt[, Time := NULL]
-        
+
         # make new colum order so that the quant is last
         all.names <- names(this.slice.dt)
         all.names <- all.names[-which(all.names == this.var$name)]
@@ -259,6 +271,9 @@ getField_DGVMData <- function(source,
      dt <- merge(x = dt, y = this.dt)
     }
   }
+  
+  rm(dt.list)
+  gc()
   
   if(verbose) message("Setting key")
   dt <- setKeyDGVM(dt)

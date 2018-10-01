@@ -1,42 +1,41 @@
-# DGVM Tools
-Tools for processing, analysing and plotting output from DGVMs (Dynamic Global Vegetation Models) in R
+## **DGVMTools**:  R tools for processing, analysing and plotting output from DGVMs (Dynamic Global Vegetation Models)
+
+
+### Features
+
+DGVMTools is a high-level framework for analysing DGVM data output.  The framework enables a complete DGVM analysis workflow, taking raw model output through comprehensive analysis and evaluation to publication-quality figures.  It also easily interfaces with both the raster pakage and base R functionality. Functionality includes:
+
+* Read raw output from supported DGVMs (currently LPJ-GUESS, aDGVM and the FireMIP output).
+* Read pre-prepared benchmarking datasets at commonly used spatial resolutions (contact matthew.forrest@senckenberg.de for access to data files). 
+* Crop and aggregate the data space and time (and sub-annual dimensions).
+* Convenient and flexible potting of data in time and space (also seasonal cycles).  Plots further customisable with ggplot2.
+* Easy aggregation across layers PFTs, to calculate for example, total tree biomass, grass productivety or evergreen tree cover.
+* Compare models and data and calculate benchmarking metrics.
+* Perform biomisations.
+* Export data as R rasters or data.frames, also save data to disk in portable format with convenient netCDF writing functionality.
+* Thorough tracking of metadata.
+
+==== 
+
+### News
+
+**2018-10-01** - DGVMTools is publicly available.  Whilst package is pretty much fully featured, there may be bugs, so it should be considered in the late-beta phase.  New v0.6 release to come this month.
+
+====
 
 ### Installation
-execute 'R CMD build DGVMTools' from the parent directory
 
-### Uplading modifications
-Before uploading modifications, make sure there are no error messages by executing
-R CMD check DGVMTools
+First release for CRAN is in preparation.
 
-git commit -a -m  "short text about the modifications"
-git push origin master
+To install the latest development version, first install **[devtools](https://cran.r-project.org/package=devtools)** and subsequently run
 
-### Automatic version and date increment
-For an automatic version increment on each commit add the following content to '.git/hooks/post-commit':
-
+```S
+devtools::install_github("MagicForrest/DGVMTools", ref = "dev")
 ```
-#!/usr/bin/env Rscript
 
-doIncrement <- TRUE
+====
 
-# get the environment variable and modify if necessary
-tmpEnv <- as.logical(Sys.getenv("doIncrement"))
-if (!is.na(tmpEnv)) {
-    doIncrement <- tmpEnv
-}
+### Contact
 
-if (doIncrement) {
-  DCF                <- read.dcf("DESCRIPTION")
-  Version            <- DCF[1, "Version"]
-  splitVersion       <- strsplit(Version, ".", fixed = TRUE)[[1]]
-  nVer               <- length(splitVersion)
-  EndVersion         <- as.integer(splitVersion[nVer])
-  newEndVersion      <- as.character(EndVersion + 1)
-  splitVersion[nVer] <- newEndVersion
-  newVersion         <- paste(splitVersion, collapse = ".")
-  DCF[1, "Date"]     <- format(Sys.time(), "%Y-%m-%d")
-  DCF[1, "Version"]  <- newVersion
-  write.dcf(DCF, "DESCRIPTION")
-}
-```
-To disable it, set the environmental bash variable 'doIncrement=FALSE', before executing a git commit.
+Please file bug reports and feature requests at https://github.com/MagicForrest/DGVMTools/issues.
+
