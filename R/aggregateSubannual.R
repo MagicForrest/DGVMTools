@@ -12,7 +12,7 @@
 #' @param input.obj data.table or Field 
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
-#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (default)  
+#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (also "Annual" is valid)  (default)  
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A Field or data.table depending on the input object
 #' @keywords internal
@@ -86,7 +86,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
   ###### DO THE AGGREGATION
   
   ### AGGREGATION TO ANNUAL
-  if(tolower(target) == "annual"){
+  if(tolower(target) == "annual"  || tolower(target) == "year"  || tolower(target) == "yearly"){
     
     # FROM DAILY
     if("Day" %in% avail.dims) {

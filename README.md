@@ -1,4 +1,6 @@
-## **DGVMTools**:  R tools for processing, analysing and plotting output from DGVMs (Dynamic Global Vegetation Models)
+## **DGVMTools**
+***
+R tools for processing, analysing and plotting output from DGVMs (Dynamic Global Vegetation Models)
 
 
 ### Features
@@ -19,7 +21,7 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 
 ### News
 
-**2018-10-01** - DGVMTools is publicly available.  Whilst package is pretty much fully featured, there may be bugs, so it should be considered in the late-beta phase.  New v0.6 release to come this month.
+**2018-10-01** - DGVMTools is now publicly available!  Whilst package is pretty much fully featured, there may be bugs, so it should be considered in the late-beta phase.  New v0.6 release to come this month.
 
 ====
 
