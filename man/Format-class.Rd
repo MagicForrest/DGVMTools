@@ -6,6 +6,14 @@
 \alias{Format-class}
 \alias{DGVMData}
 \alias{FireMIP}
+\alias{LPJ_GUESS_SPITFIRE_FireMIP}
+\alias{LPJ_GUESS_GlobFIRM_FireMIP}
+\alias{LPJ_GUESS_SIMFIRE_BLAZE_FireMIP}
+\alias{CTEM_FireMIP}
+\alias{Inferno_FireMIP}
+\alias{JSBACH_FireMIP}
+\alias{ORCHIDEE_FireMIP}
+\alias{MC2_FireMIP}
 \alias{GUESS}
 \alias{aDGVM}
 \title{Format class}
@@ -14,6 +22,22 @@
 DGVMData
 
 FireMIP
+
+LPJ_GUESS_SPITFIRE_FireMIP
+
+LPJ_GUESS_GlobFIRM_FireMIP
+
+LPJ_GUESS_SIMFIRE_BLAZE_FireMIP
+
+CTEM_FireMIP
+
+Inferno_FireMIP
+
+JSBACH_FireMIP
+
+ORCHIDEE_FireMIP
+
+MC2_FireMIP
 
 GUESS
 
@@ -30,6 +54,22 @@ This class encapsulates all the specific details of a supported model or dataset
 Can be produced using the companion DGVMData package.
 
 \code{FireMIP} - a Format for reading 'standard' FireMIP model output
+
+\code{LPJ_GUESS_SPITFIRE_FireMIP} - a Format for reading LPJ-GUESS-SPITFIRE FireMIP model output
+
+\code{LPJ_GUESS_GlobFIRM_FireMIP} - a Format for reading LPJ-GUESS-GlobFIRM FireMIP model output
+
+\code{LPJ_GUESS_SIMFIRE_BLAZE_FireMIP} - a Format for reading LPJ-GUESS-SIMFIRE-BLAZE FireMIP model output
+
+\code{CTEM_FireMIP} - a Format for reading CLASS-CTEM FireMIP model output
+
+\code{Inferno_FireMIP} - a Format for reading Inferno FireMIP model output
+
+\code{JSBACH_FireMIP} - a Format for reading JSBACH FireMIP model output
+
+\code{ORCHIDEE_FireMIP} - a Format for reading ORCHIDEE FireMIP model output
+
+\code{MC2_FireMIP} - a Format for reading MC2 FireMIP model output
 
 \code{GUESS} - a Format for reading standard LPJ-GUESS(-SPITFIRE) model output
 

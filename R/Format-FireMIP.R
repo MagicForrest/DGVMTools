@@ -17,12 +17,10 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 getField_FireMIP <- function(source,
-                              quant,
-                              target.STAInfo,
-                              verbose) {
-  
-  
-  
+                             quant,
+                             target.STAInfo,
+                             verbose) {
+
   return.list<- openFireMIPOutputFile(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
   
   
@@ -60,6 +58,22 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
   # get the name of the model
   model.string <- gsub("-FireMIP", "", run@format@id)
   print(model.string)
+  africa.centre <- FALSE
+  
+  
+  
+  # make the string (note special cases)
+  file.string <- file.path(run@dir, paste0(run@id, "_", quantity@id, ".nc"))
+  if(model.string == "Inferno" && quantity@id == "landCoverFrac") { file.string <- file.path(run@dir, paste0(run@id, "_", "LandCoverFrac", ".nc")) }
+  if(model.string == "CLM"){
+    if(quantity@id == "BA") file.string <- file.path(run@dir, "BAF.nc")
+    else file.string <- file.path(run@dir, paste0(quantity@id, ".nc"))
+    
+  }
+  
+  # open the netCDF file (not ORCHIDEE! - those are single files, need to open them one by one)
+  if(model.string != "ORCHIDEE") this.nc <- nc_open(file.string, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
+  
   
   # ANNUAL, PER-VEGTYPE
   # Any annual, per PFT variable should be manageable here, eg landCoverFrac
@@ -69,14 +83,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
     
     subannual = "Annual"
     
-    # make the string (note special cases)
-    file.string <- file.path(run@dir, paste0(run@id, "_", quantity@id, ".nc"))
-    if(model.string == "Inferno" && quantity@id == "landCoverFrac") { file.string <- file.path(run@dir, paste0(run@id, "_", "LandCoverFrac", ".nc")) }
-   
-    
-    # open the netCDF file (not ORCHIDEE! - those are single files, need to open them one by one)
-    if(model.string != "ORCHIDEE") this.nc <- nc_open(file.string, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
-    
+  
     # get the dimensions (depends on model type) and the ordering type
     africa.centre <- FALSE
     requires.averaging <- FALSE
@@ -148,12 +155,12 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
       ordering <- c(3,1,2)
       africa.centre <- TRUE
     }
- 
+    
     # choose range of years (if specifed, else take the whole range)
     if(!is.null(first.year) &  !is.null(last.year)){
       
       # match the range to the time axis
-        index.range <- match(c(first.year, last.year), this.time)
+      index.range <- match(c(first.year, last.year), this.time)
       
       # check it is sensible
       if(class(index.range) != "integer" || length(index.range) != 2 || index.range[1] > index.range[2]){
@@ -250,19 +257,14 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
   
   
   # MONTHLY, ALL VEGTYPES COMBINED
-  # Any annual, per PFT variable should be manageable here, eg gpp
-  if(quantity@id == "gpp" ||
+  if(quantity@id == "BA" ||
+     quantity@id == "gpp" ||
      quantity@id == "npp" ||
      quantity@id == "nbp") {
     
     subannual = "Monthly"
     
-    # make the string (note special cases)
-    file.string <- file.path(run@dir, paste0(run@id, "_", quantity@id, ".nc"))
     
-    
-    # open the netCDF file (not ORCHIDEE! - those are single files, need to open them one by one)
-    if(model.string != "ORCHIDEE") this.nc <- nc_open(file.string, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
     
     
     # get the dimensions (depends on model type) and the ordering type
@@ -290,6 +292,7 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
       this.lon <- ncvar_get(this.nc,"lon",verbose=verbose)
       if(quantity@id == "landCoverFrac") this.time <- 1700:2013
       if(quantity@id == "lai" || quantity@id == "theightpft") this.time <- 1950:2013
+      if(quantity@id == "BA") this.time <- 1850:2013
       ordering <- c(1,3,2)
       africa.centre <- TRUE
     }
@@ -402,13 +405,13 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
       
       # melt to a data.table, via data.frame
       this.slice.dt <- as.data.table(melt(this.slice))
-
+      
       # chuck out the NAs (to save space)
       this.slice.dt <- stats::na.omit(this.slice.dt)
       
       # re-label the columns
       setnames(this.slice.dt, c("Lon", "Lat", "Month", "value"))
-  
+      
       # dcast back to a column for every PFT
       this.slice.dt <- dcast(this.slice.dt, Lon + Lat  ~ Month, value.var = "value")
       
@@ -441,11 +444,11 @@ openFireMIPOutputFile <- function(run, quantity, first.year = NULL, last.year = 
                  subannual.original = subannual,
                  spatial.extent = extent(full.dt))
   
- 
-  return(list(dt = full.dt,
-                   sta.info = sta.info))
   
- 
+  return(list(dt = full.dt,
+              sta.info = sta.info))
+  
+  
 }
 
 
@@ -466,7 +469,7 @@ determinePFTs_FireMIP <- function(x, variables) {
 
 
 
-#' List all LPJ-GUESS *.out files in a source directory
+#' List all quantities available for a FireMIP Source
 #'
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
@@ -478,7 +481,7 @@ determinePFTs_FireMIP <- function(x, variables) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-determineQuantities_FireMIP <- function(source){
+determineQuantities_FireMIP <- function(source, names){
   
   # First get the list of *.out files present
   files.present <- list.files(source@dir, "*.nc")
@@ -486,7 +489,32 @@ determineQuantities_FireMIP <- function(source){
   quantities.present <- list()
   for(file in files.present) {
     
-      # simple code to deparse the filename and find the variables
+    
+    # CLM
+    if(source@format@id == "CLM-FireMIP") {
+      
+      # remove the.nc 
+      var.str <- gsub(".nc", "", file)
+      if(var.str == "BAF") var.str <- "BA"
+      else if (var.str == "CFFIRE") var.str <- "Cfire"
+      else if (var.str == "cLittert") var.str <- NULL # not consistent with other models
+      else if (var.str == "cSoilt") var.str <- NULL # not consistent with other models
+      else if (var.str == "peatfc") var.str <- NULL # not standard FireMIP
+      else if (var.str == "convfc") var.str <- NULL # not standard FireMIP
+      else if (var.str == "mrsol") var.str <- NULL # not standard FireMIP - too many layers
+      else if (var.str == "CLM-gridcell") var.str <- NULL # not a quantity
+      print(var.str)
+      
+      if(!is.null(var.str)) {
+        print(lookupQuantity(var.str, source@format@quantities))
+        if(names) quantities.present <- append(quantities.present, var.str)
+        else   quantities.present <- append(quantities.present, lookupQuantity(var.str, source@format@quantities))
+        
+      }
+      
+    }
+    
+    
     
   }
   
@@ -507,112 +535,112 @@ FireMIP.PFTs <- list(
   
   # NE
   new("PFT",
-           id = "NE",
-           name = "Needleleaved Evergreen Tree",
-           growth.form = "Tree",
-           leaf.form = "Needleleaved",
-           phenology = "Evergreen",
-           climate.zone = "NA",
-           colour = "darkblue",
-           shade.tolerance = "no"
+      id = "NE",
+      name = "Needleleaved Evergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Needleleaved",
+      phenology = "Evergreen",
+      climate.zone = "NA",
+      colour = "darkblue",
+      shade.tolerance = "no"
   ),
   
   # NS
   new("PFT",
-           id = "NS",
-           name = "Needleleaved Summergreen Tree",
-           growth.form = "Tree",
-           leaf.form = "Needleleaved",
-           phenology = "Summergreen",
-           climate.zone = "NA",
-           colour = "cornflowerblue",
-           shade.tolerance = "no"
+      id = "NS",
+      name = "Needleleaved Summergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Needleleaved",
+      phenology = "Summergreen",
+      climate.zone = "NA",
+      colour = "cornflowerblue",
+      shade.tolerance = "no"
   ),
   
   # BS
   new("PFT",
-           id = "BS",
-           name = "Broadleaved Summergreen Tree",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Summergreen",
-           climate.zone = "NA",
-           colour = "cyan",
-           shade.tolerance = "no"
+      id = "BS",
+      name = "Broadleaved Summergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Broadleaved",
+      phenology = "Summergreen",
+      climate.zone = "NA",
+      colour = "cyan",
+      shade.tolerance = "no"
   ),
   
   # BE
   new("PFT",
-           id = "BE",
-           name = "Broadleaved Evergreen Tree",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Evergreen",
-           climate.zone = "NA",
-           colour = "darkgreen",
-           shade.tolerance = "no"
+      id = "BE",
+      name = "Broadleaved Evergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Broadleaved",
+      phenology = "Evergreen",
+      climate.zone = "NA",
+      colour = "darkgreen",
+      shade.tolerance = "no"
   ),
   
   # BR
   new("PFT",
-           id = "BR",
-           name = "Broadleaved Raingreen Tree",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Raingreen",
-           climate.zone = "NA",
-           colour = "maroon",
-           shade.tolerance = "no"
+      id = "BR",
+      name = "Broadleaved Raingreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Broadleaved",
+      phenology = "Raingreen",
+      climate.zone = "NA",
+      colour = "maroon",
+      shade.tolerance = "no"
   ),
   
   # GRASSES
   
   # C3G
   new("PFT",
-            id = "C3G",
-            name = "Boreal/Temperate Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
-            colour = "lightgoldenrod1",
-            shade.tolerance = "no"
+      id = "C3G",
+      name = "Boreal/Temperate Grass",
+      growth.form = "Grass",
+      leaf.form = "Broadleaved",
+      phenology = "GrassPhenology",
+      climate.zone = "NA",
+      colour = "lightgoldenrod1",
+      shade.tolerance = "no"
   ),
   
   # C4G
   new("PFT",
-            id = "C4G",
-            name = "Tropical Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
-            colour = "sienna2",
-            shade.tolerance = "no"
+      id = "C4G",
+      name = "Tropical Grass",
+      growth.form = "Grass",
+      leaf.form = "Broadleaved",
+      phenology = "GrassPhenology",
+      climate.zone = "NA",
+      colour = "sienna2",
+      shade.tolerance = "no"
   ),
   
   # Shb
   new("PFT",
-            id = "Shb",
-            name = "Shrub",
-            growth.form = "Shrub",
-            leaf.form = "NA",
-            phenology = "NA",
-            climate.zone = "NA",
-            colour = "darkred",
-            shade.tolerance = "no"
+      id = "Shb",
+      name = "Shrub",
+      growth.form = "Shrub",
+      leaf.form = "NA",
+      phenology = "NA",
+      climate.zone = "NA",
+      colour = "darkred",
+      shade.tolerance = "no"
   ),
- 
+  
   # Crops
   new("PFT",
-            id = "Crops",
-            name = "Agricultural",
-            growth.form = "Agricultural",
-            leaf.form = "NA",
-            phenology = "NA",
-            climate.zone = "NA",
-            colour = "black",
-            shade.tolerance = "no"
+      id = "Crops",
+      name = "Agricultural",
+      growth.form = "Agricultural",
+      leaf.form = "NA",
+      phenology = "NA",
+      climate.zone = "NA",
+      colour = "black",
+      shade.tolerance = "no"
   )
   
 )
@@ -630,420 +658,436 @@ FireMIP.PFTs <- list(
 #' @include colour-palettes.R
 #' 
 FireMIP.quantities <- list(
-
-#### BURNT AREA AND EMISSIONS
-
-new("Quantity",
-    id = "fFirePFT",
-    name = "C emitted from fire (per PFT)",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "C emitted from fire (per PFT)"),
-
-new("Quantity",
-    id = "fFire",
-    name = "C emitted from fire",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "CO2 emitted from fire"),
-
-new("Quantity",
-    id = "coFire",
-    name = "CO emitted from fire",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "CO emitted from fire"),
-
-new("Quantity",
-    id = "burntArea",
-    name = "Burnt Area Fraction (per PFT)",
-    units = "%",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Burnt Area Fraction (per PFT)"),
-
-new("Quantity",
-    id = "BA",
-    name = "Burnt Area Fraction (monthly)",
-    units = "%",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Burnt Area Fraction (monthly)"),
-
-new("Quantity",
-    id = "fFirepft",
-    name = "C emitted from fire (per PFT)",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "C emitted from fire (per PFT)"),
-
-
-
-### FUEL LOADS
-
-new("Quantity",
-    id = "cFuelLiveGrass",
-    name = "Carbon in live grass fuel",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Carbon in live grass fuel"),
-
-new("Quantity",
-    id = "cFuel1hr",
-    name = "Carbon in 1hr fuel",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Carbon in 1hr fuel"),
-
-new("Quantity",
-    id = "cFuel10hr",
-    name = "Carbon in 10hr fuel",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Carbon in 10hr fuel"),
-
-new("Quantity",
-    id = "cFuel100hr",
-    name = "Carbon in 100hr fuel",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Carbon in 100hr fuel"),
-
-new("Quantity",
-    id = "cFuel1000hr",
-    name = "Carbon in 1000hr fuel",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Carbon in 1000hr fuel"),
-
-
-### COMBUSION COMPLETENESS
-
-new("Quantity",
-    id = "ccFuelLiveGrass",
-    name = "Combusion Completeness in live grass fuel",
-    units = "%",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Combusion Completeness live grass fuel"),
-
-new("Quantity",
-    id = "ccFuel1hr",
-    name = "Combustion Completeness in 1hr fuel",
-    units = "%",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Combustion Completenessin 1hr fuel"),
-
-new("Quantity",
-    id = "ccFuel10hr",
-    name = "Combustion Completenessin 10hr fuel",
-    units = "%",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Combustion Completeness in 10hr fuel"),
-
-new("Quantity",
-    id = "ccFuel100hr",
-    name = "Combustion Completenessin 100hr fuel",
-    units = "%",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Combustion Completeness in 100hr fuel"),
-
-new("Quantity",
-    id = "ccFuel1000hr",
-    name = "Combustion Completenessin 1000hr fuel",
-    units = "%",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Combustion Completeness in 1000hr fuel"),
-
-
-### FUEL MOISTURE
-
-new("Quantity",
-    id = "mFuelDead",
-    name = "Fuel moisture of dead fuel",
-    units = "",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Fuel moisture of dead fuel"),
-
-new("Quantity",
-    id = "mFuelLiveGrass",
-    name = "Fuel moisture of live grass fuel",
-    units = "",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Fuel moisture of live grass fuel"),
-
-
-### FIRE PROPERTIES AND MORTALITY
-
-new("Quantity",
-    id = "intensFire",
-    name = "Fireline intensity",
-    units = "kW m-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Fireline intensity"),
-
-new("Quantity",
-    id = "nrfire",
-    name = "Number of fires",
-    units = "nr m-2 month-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Number of fires"),
-
-new("Quantity",
-    id = "meanFire",
-    name = "Mean fire size",
-    units = "m2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Mean fire size"),
-
-new("Quantity",
-    id = "cMortality",
-    name = "Number of individuals killed",
-    units = "indiv m-2 month-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Number of individuals killed"),
-
-new("Quantity",
-    id = "RoS",
-    name = "Mean rate of spread",
-    units = "m/s",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Mean rate of spread"),
-
-new("Quantity",
-    id = "durat",
-    name = "Mean fire duration",
-    units = "min",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Mean fire duration"),
-
-### HYDROLOGICAL VARIABLES
-
-new("Quantity",
-    id = "mrro",
-    name = "Total Runoff",
-    units = "kg m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Total Runoff"),
-
-new("Quantity",
-    id = "evapotrans",
-    name = "Total Evapo-Transpiration",
-    units = "kg m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Total Evapo-Transpiration"),
-
-new("Quantity",
-    id = "mrso",
-    name = "Total Soil Moisture Content",
-    units = "kg m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Total Soil Moisture Content"),
-
-new("Quantity",
-    id = "mrsos",
-    name = "Surface Layer (50cm) Soil Moisture Content",
-    units = "kg m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Surface Layer (50cm) Soil Moisture Content"),
-
-new("Quantity",
-    id = "evspsblveg",
-    name = "Evaporation from Canopy",
-    units = "kg m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Evaporation from Canopy"),
-
-new("Quantity",
-    id = "evspsblsoi",
-    name = "Evaporation from Soil",
-    units = "kg m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Evaporation from Soil"),
-
-new("Quantity",
-    id = "tran",
-    name = "Transpiration",
-    units = "kg m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Transpiration"),
-
-
-
-### FLUXES
-
-new("Quantity",
-    id = "gpp",
-    name = "Gross Primary Production",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Gross Primary Production"),
-
-new("Quantity",
-    id = "npp",
-    name = "Net Primary Production",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Net Primary Production"),
-
-new("Quantity",
-    id = "nbp",
-    name = "Net Biospheric Production",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Net Biospheric Production"),
-
-new("Quantity",
-    id = "ra",
-    name = "Autotrophic (Plant) Respiration",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Autotrophic (Plant) Respiration"),
-
-new("Quantity",
-    id = "rh",
-    name = "Heterotrophic Respiration",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Heterotrophic Respiration"),
-
-new("Quantity",
-    id = "gpppft",
-    name = "Vegtype level GPP",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Vegtype level GPP"),
-
-new("Quantity",
-    id = "npppft",
-    name = "Vegtype level NPP",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Vegtype level NPP"),
-
-new("Quantity",
-    id = "fLuc",
-    name = "CO2 Flux to Atmosphere from Land Use Change",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "CO2 Flux to Atmosphere from Land Use Change"),
-
-
-# POOLS
-
-new("Quantity",
-    id = "cVegpft",
-    name = "Vegtype level Carbon in Vegetation",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Vegtype level Carbon in Vegetation"),
-
-new("Quantity",
-    id = "cVeg",
-    name = "Carbon in Vegetation",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Carbon in Vegetation"),
-
-new("Quantity",
-    id = "cLitter",
-    name = "Carbon in Above-ground Litter Pool",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Carbon in Above-ground Litter Pool"),
-
-new("Quantity",
-    id = "cSoil",
-    name = "Carbon in Soil (including below-ground litter)",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Carbon in Soil (including below-ground litter)"),
-
-
-###  STRUCTURE
-
-new("Quantity",
-    id = "landCoverFrac",
-    name = "Fractional Land Cover of PFT",
-    units = "",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Fractional Land Cover of PFT"),
-
-new("Quantity",
-    id = "lai",
-    name = "Leaf Area Index",
-    units = "",
-    colours = reversed.viridis,
-    format = "FireMIP",
-    cf.name = "Leaf Area Index"),
-
-new("Quantity",
-    id = "theightpft",
-    name = "Vegtype level tree heights",
-    units = "m",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Vegtype level tree heights"),
-
-### LAND USE
-
-new("Quantity",
-    id = "cProduct",
-    name = "Carbon in Products of Land Use Change",
-    units = "kg C m-2",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "Carbon in Products of Land Use Change"),
-
-new("Quantity",
-    id = "fLuc",
-    name = "CO2 Flux to Atmosphere from Land Use Change",
-    units = "kg C m-2 s-1",
-    colours = reversed.viridis,
-    format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
-    cf.name = "CO2 Flux to Atmosphere from Land Use Change")
-
+  
+  #### BURNT AREA AND EMISSIONS
+  
+  new("Quantity",
+      id = "fFirePFT",
+      name = "C emitted from fire (per PFT)",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "C emitted from fire (per PFT)"),
+  
+  new("Quantity",
+      id = "fFire",
+      name = "C emitted from fire",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "CO2 emitted from fire"),
+  
+  new("Quantity",
+      id = "coFire",
+      name = "CO emitted from fire",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "CO emitted from fire"),
+  
+  new("Quantity",
+      id = "Cfire",
+      name = "C emitted from fire",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "C emitted from fire"),
+  
+  new("Quantity",
+      id = "burntArea",
+      name = "Burnt Area Fraction (per PFT)",
+      units = "%",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Burnt Area Fraction (per PFT)"),
+  
+  new("Quantity",
+      id = "BA",
+      name = "Burnt Area Fraction (monthly)",
+      units = "%",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Burnt Area Fraction (monthly)"),
+  
+  new("Quantity",
+      id = "fFirepft",
+      name = "C emitted from fire (per PFT)",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "C emitted from fire (per PFT)"),
+  
+  
+  
+  ### FUEL LOADS
+  
+  new("Quantity",
+      id = "cFuelLiveGrass",
+      name = "Carbon in live grass fuel",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in live grass fuel"),
+  
+  new("Quantity",
+      id = "cFuel",
+      name = "Carbon in fuel fuel",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in fuel"),
+  
+  new("Quantity",
+      id = "cFuel1hr",
+      name = "Carbon in 1hr fuel",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in 1hr fuel"),
+  
+  new("Quantity",
+      id = "cFuel10hr",
+      name = "Carbon in 10hr fuel",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in 10hr fuel"),
+  
+  new("Quantity",
+      id = "cFuel100hr",
+      name = "Carbon in 100hr fuel",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in 100hr fuel"),
+  
+  new("Quantity",
+      id = "cFuel1000hr",
+      name = "Carbon in 1000hr fuel",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in 1000hr fuel"),
+  
+  
+  ### COMBUSION COMPLETENESS
+  
+  new("Quantity",
+      id = "ccFuelLiveGrass",
+      name = "Combusion Completeness in live grass fuel",
+      units = "%",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Combusion Completeness live grass fuel"),
+  
+  new("Quantity",
+      id = "ccFuel1hr",
+      name = "Combustion Completeness in 1hr fuel",
+      units = "%",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Combustion Completenessin 1hr fuel"),
+  
+  new("Quantity",
+      id = "ccFuel10hr",
+      name = "Combustion Completenessin 10hr fuel",
+      units = "%",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Combustion Completeness in 10hr fuel"),
+  
+  new("Quantity",
+      id = "ccFuel100hr",
+      name = "Combustion Completenessin 100hr fuel",
+      units = "%",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Combustion Completeness in 100hr fuel"),
+  
+  new("Quantity",
+      id = "ccFuel1000hr",
+      name = "Combustion Completenessin 1000hr fuel",
+      units = "%",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Combustion Completeness in 1000hr fuel"),
+  
+  
+  ### FUEL MOISTURE
+  
+  new("Quantity",
+      id = "mFuelDead",
+      name = "Fuel moisture of dead fuel",
+      units = "",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Fuel moisture of dead fuel"),
+  
+  new("Quantity",
+      id = "mFuelLiveGrass",
+      name = "Fuel moisture of live grass fuel",
+      units = "",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Fuel moisture of live grass fuel"),
+  
+  
+  ### FIRE PROPERTIES AND MORTALITY
+  
+  new("Quantity",
+      id = "intensFire",
+      name = "Fireline intensity",
+      units = "kW m-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Fireline intensity"),
+  
+  new("Quantity",
+      id = "nrfire",
+      name = "Number of fires",
+      units = "nr m-2 month-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Number of fires"),
+  
+  new("Quantity",
+      id = "meanFire",
+      name = "Mean fire size",
+      units = "m2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Mean fire size"),
+  
+  new("Quantity",
+      id = "cMortality",
+      name = "Number of individuals killed",
+      units = "indiv m-2 month-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Number of individuals killed"),
+  
+  new("Quantity",
+      id = "RoS",
+      name = "Mean rate of spread",
+      units = "m/s",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Mean rate of spread"),
+  
+  new("Quantity",
+      id = "durat",
+      name = "Mean fire duration",
+      units = "min",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Mean fire duration"),
+  
+  ### HYDROLOGICAL VARIABLES
+  
+  new("Quantity",
+      id = "mrro",
+      name = "Total Runoff",
+      units = "kg m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Total Runoff"),
+  
+  new("Quantity",
+      id = "evapotrans",
+      name = "Total Evapo-Transpiration",
+      units = "kg m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Total Evapo-Transpiration"),
+  
+  new("Quantity",
+      id = "mrso",
+      name = "Total Soil Moisture Content",
+      units = "kg m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Total Soil Moisture Content"),
+  
+  new("Quantity",
+      id = "mrsos",
+      name = "Surface Layer (50cm) Soil Moisture Content",
+      units = "kg m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Surface Layer (50cm) Soil Moisture Content"),
+  
+  new("Quantity",
+      id = "evspsblveg",
+      name = "Evaporation from Canopy",
+      units = "kg m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Evaporation from Canopy"),
+  
+  new("Quantity",
+      id = "evspsblsoi",
+      name = "Evaporation from Soil",
+      units = "kg m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Evaporation from Soil"),
+  
+  new("Quantity",
+      id = "tran",
+      name = "Transpiration",
+      units = "kg m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Transpiration"),
+  
+  
+  
+  ### FLUXES
+  
+  new("Quantity",
+      id = "gpp",
+      name = "Gross Primary Production",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Gross Primary Production"),
+  
+  new("Quantity",
+      id = "npp",
+      name = "Net Primary Production",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Net Primary Production"),
+  
+  new("Quantity",
+      id = "nbp",
+      name = "Net Biospheric Production",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Net Biospheric Production"),
+  
+  new("Quantity",
+      id = "ra",
+      name = "Autotrophic (Plant) Respiration",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Autotrophic (Plant) Respiration"),
+  
+  new("Quantity",
+      id = "rh",
+      name = "Heterotrophic Respiration",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Heterotrophic Respiration"),
+  
+  new("Quantity",
+      id = "gpppft",
+      name = "Vegtype level GPP",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Vegtype level GPP"),
+  
+  new("Quantity",
+      id = "npppft",
+      name = "Vegtype level NPP",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Vegtype level NPP"),
+  
+  new("Quantity",
+      id = "fLuc",
+      name = "CO2 Flux to Atmosphere from Land Use Change",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "CO2 Flux to Atmosphere from Land Use Change"),
+  
+  
+  # POOLS
+  
+  new("Quantity",
+      id = "cVegpft",
+      name = "Vegtype level Carbon in Vegetation",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Vegtype level Carbon in Vegetation"),
+  
+  new("Quantity",
+      id = "cVeg",
+      name = "Carbon in Vegetation",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in Vegetation"),
+  
+  new("Quantity",
+      id = "cLitter",
+      name = "Carbon in Above-ground Litter Pool",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in Above-ground Litter Pool"),
+  
+  new("Quantity",
+      id = "cSoil",
+      name = "Carbon in Soil (including below-ground litter)",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in Soil (including below-ground litter)"),
+  
+  
+  ###  STRUCTURE
+  
+  new("Quantity",
+      id = "landCoverFrac",
+      name = "Fractional Land Cover of PFT",
+      units = "",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Fractional Land Cover of PFT"),
+  
+  new("Quantity",
+      id = "lai",
+      name = "Leaf Area Index",
+      units = "",
+      colours = reversed.viridis,
+      format = "FireMIP",
+      cf.name = "Leaf Area Index"),
+  
+  new("Quantity",
+      id = "theightpft",
+      name = "Vegtype level tree heights",
+      units = "m",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Vegtype level tree heights"),
+  
+  ### LAND USE
+  
+  new("Quantity",
+      id = "cProduct",
+      name = "Carbon in Products of Land Use Change",
+      units = "kg C m-2",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "Carbon in Products of Land Use Change"),
+  
+  new("Quantity",
+      id = "fLuc",
+      name = "CO2 Flux to Atmosphere from Land Use Change",
+      units = "kg C m-2 s-1",
+      colours = reversed.viridis,
+      format = c("FireMIP", "LPJ-GUESS-SPITFIRE"),
+      cf.name = "CO2 Flux to Atmosphere from Land Use Change")
+  
 )
 
 
@@ -1061,56 +1105,114 @@ new("Quantity",
 #' @export
 #' 
 FireMIP<- new("Format",
-                
-                # UNIQUE ID
-                id = "FireMIP",
-                
-                # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-                determinePFTs = determinePFTs_FireMIP,
-                
-                # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-                determineQuantities = determineQuantities_FireMIP,
-                
-                # FUNCTION TO READ A FIELD 
-                getField = getField_FireMIP,
-                
-                # DEFAULT GLOBAL PFTS  
-                default.pfts = FireMIP.PFTs,
-                
-                # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
-                quantities = FireMIP.quantities
-                
+              
+              # UNIQUE ID
+              id = "FireMIP",
+              
+              # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
+              determinePFTs = determinePFTs_FireMIP,
+              
+              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
+              determineQuantities = determineQuantities_FireMIP,
+              
+              # FUNCTION TO READ A FIELD 
+              getField = getField_FireMIP,
+              
+              # DEFAULT GLOBAL PFTS  
+              default.pfts = FireMIP.PFTs,
+              
+              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
+              quantities = FireMIP.quantities
+              
 )
 
 ### 
+
+#' @description \code{LPJ_GUESS_SPITFIRE_FireMIP} - a Format for reading LPJ-GUESS-SPITFIRE FireMIP model output
+#' 
+#' @format A \code{Quantity} object is an S4 class.
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' @include colour-palettes.R
 #' @export
 LPJ_GUESS_SPITFIRE_FireMIP <- FireMIP
 LPJ_GUESS_SPITFIRE_FireMIP@id <- "LPJ-GUESS-SPITFIRE-FireMIP"
 
+#' @description \code{LPJ_GUESS_GlobFIRM_FireMIP} - a Format for reading LPJ-GUESS-GlobFIRM FireMIP model output
+#' 
+#' @format A \code{Quantity} object is an S4 class.
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' @include colour-palettes.R
 #' @export
 LPJ_GUESS_GlobFIRM_FireMIP <- FireMIP
 LPJ_GUESS_GlobFIRM_FireMIP@id <- "LPJ-GUESS-GlobFIRM-FireMIP"
 
+#' @description \code{LPJ_GUESS_SIMFIRE_BLAZE_FireMIP} - a Format for reading LPJ-GUESS-SIMFIRE-BLAZE FireMIP model output
+#' 
+#' @format A \code{Quantity} object is an S4 class.
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' @include colour-palettes.R
 #' @export
 LPJ_GUESS_SIMFIRE_BLAZE_FireMIP <- FireMIP
 LPJ_GUESS_SIMFIRE_BLAZE_FireMIP@id <- "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP"
 
-#' @export
-CLM_FireMIP <- FireMIP
-CLM_FireMIP@id <- "CLM-FireMIP"
 
+#' @description \code{CTEM_FireMIP} - a Format for reading CLASS-CTEM FireMIP model output
+#' 
+#' @format A \code{Quantity} object is an S4 class.
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' @include colour-palettes.R
 #' @export
 CTEM_FireMIP <- FireMIP
 CTEM_FireMIP@id <- "CTEM-FireMIP"
 
+#' @description \code{Inferno_FireMIP} - a Format for reading Inferno FireMIP model output
+#' 
+#' @format A \code{Quantity} object is an S4 class.
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' @include colour-palettes.R
 #' @export
 Inferno_FireMIP <- FireMIP
 Inferno_FireMIP@id <- "Inferno-FireMIP"
 
+#' @description \code{JSBACH_FireMIP} - a Format for reading JSBACH FireMIP model output
+#' 
+#' @format A \code{Quantity} object is an S4 class.
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' @include colour-palettes.R
 #' @export
 JSBACH_FireMIP <- FireMIP
 JSBACH_FireMIP@id <- "JSBACH-FireMIP"
 
+#' @description \code{ORCHIDEE_FireMIP} - a Format for reading ORCHIDEE FireMIP model output
+#' 
+#' @format A \code{Quantity} object is an S4 class.
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' @include colour-palettes.R
 #' @export
 ORCHIDEE_FireMIP <- FireMIP
 ORCHIDEE_FireMIP@id <- "ORCHIDEE-FireMIP"
+
+#' @description \code{MC2_FireMIP} - a Format for reading MC2 FireMIP model output
+#' 
+#' @format A \code{Quantity} object is an S4 class.
+#' @aliases Format-class
+#' @rdname Format-class
+#' @keywords datasets
+#' @include colour-palettes.R
+#' @export
+MC2_FireMIP <- FireMIP
+MC2_FireMIP@id <- "MC2-FireMIP"

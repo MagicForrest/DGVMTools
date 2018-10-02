@@ -10,11 +10,15 @@
 #' a RasterStack or RasterBrick with a time dimension. 
 #' @param monthly Logical specifying if the data has has a monthly time resolution. Is ignored for a Field, but it is necessary to set it to TRUE if you want to make a netCDF file out
 #' of a RasterStack or RasterBrick where each layer represents a month.
+#' @param annual Logical specifying if the data has has a annual time resolution. Is ignored for a Field, but it is necessary to set it to TRUE if you want to make a netCDF file out
+#' of a RasterStack or RasterBrick where each layer represents a year.
 #' @param verbose Logical, if TRUE print a bunch of progress and debug output
 #' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
 #' if you want to use different meta-data for a Field just alter the Quantity object in the Field object before you call writeNetCDF)
 #' @param source A DGVMTools::Source object.  This is to provide meta-data about the source of the data (model run/dataset, climate forcing, contact person etc)
 #' if saving a Raster* object. It is ignored in the case of a Field (but note  that if you want to use different meta-data for a Field just alter the Source object in the Field object before you call writeNetCDF)
+#' @param layer.names A vector of characters to specify the names of the variables in the netCDF file, ignored for a Field.  
+#' Should be length 1 or the number of layers in the input raster. 
 #' @param layer.dim.name A character string specifing the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 #' is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension. 
 #' @param lat.dim.name Character, the latitude dimension name. Defaults to "Lat".  
@@ -153,7 +157,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
       this.array <- this.array[, dim(this.array)[2]:1]
       
       # add a new dimensinsion for the time info
-      if(!null(start.date)) {
+      if(!is.null(start.date)) {
         dim(this.array) <- append(dim(this.array),1)
         dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = as.numeric(format(start.date,"%Y")))
       }
@@ -220,7 +224,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     # maybe make this more vectorised and elegant
     time.list <- c()
     start.year <- as.numeric(format(start.date,"%Y"))
-    time.list <- as.character(seq(start.year, start.year+nlayers(x)-1))
+    time.list <- as.character(seq(start.year, start.year+raster::nlayers(x)-1))
     
     dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = time.list)
     array.list[[layer.names[1]]] <- this.array

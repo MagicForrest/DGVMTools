@@ -718,7 +718,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "burntfraction_std") {
     
     # if mfirefrac is present the open it and use it
-    if("mfirefrac" %in% determineQuantities_GUESS(run@dir, names=TRUE)){
+    if("mfirefrac" %in% determineQuantities_GUESS(run, names=TRUE)){
       data.list <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = TRUE)
       data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum")
       
@@ -760,7 +760,9 @@ getStandardQuantity_LPJ <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-determineQuantities_GUESS <- function(directory, names = TRUE){
+determineQuantities_GUESS <- function(source, names = TRUE){
+  
+  directory <- source@dir
   
   # First get the list of *.out files present
   files.present <- list.files(directory, ".out$")
@@ -818,7 +820,7 @@ determineQuantities_GUESS <- function(directory, names = TRUE){
 determinePFTs_GUESS <- function(x, variables) {
   
   # first get a list of all avaiable variables
-  available.vars <- suppressWarnings(determineQuantities_GUESS(x@dir))
+  available.vars <- suppressWarnings(determineQuantities_GUESS(x))
   
   # check for the presence the following variables (in order)
   possible.vars <- c("lai", "cmass", "dens", "fpc")

@@ -10,6 +10,6 @@
 
 determineQuantities <- function(source, names = TRUE) {
   
-    return(source@format@determineQuantities(source@dir, names = names))
+    return(source@format@determineQuantities(source, names = names))
   
 }

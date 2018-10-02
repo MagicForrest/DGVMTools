@@ -2,9 +2,9 @@
 % Please edit documentation in R/Format-FireMIP.R
 \name{determineQuantities_FireMIP}
 \alias{determineQuantities_FireMIP}
-\title{List all LPJ-GUESS *.out files in a source directory}
+\title{List all quantities available for a FireMIP Source}
 \usage{
-determineQuantities_FireMIP(source)
+determineQuantities_FireMIP(source, names)
 }
 \arguments{
 \item{source}{A path to a directory on the file system containing some .out files}

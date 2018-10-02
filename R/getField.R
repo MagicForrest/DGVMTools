@@ -172,6 +172,7 @@ getField <- function(source,
   data.list <- source@format@getField(source, quant, sta.info, verbose, ...)
   this.dt <- data.list[["dt"]]
   setKeyDGVM(this.dt)
+  if(source@london.centre) this.dt[, Lon := LondonCentre(Lon)]
   actual.sta.info <- data.list[["sta.info"]]
   
   

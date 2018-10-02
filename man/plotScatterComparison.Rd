@@ -6,8 +6,9 @@
 \usage{
 plotScatterComparison(input.CLayers, run.ids = NULL, run.labels = NULL,
   wrap = TRUE, facet.labels = NULL, xlim = NULL, ylim = NULL,
-  xlab = NULL, ylab = NULL, showFitLine = TRUE, showStats = TRUE,
-  alpha = 0.05, text.size = 6)
+  xlab = NULL, ylab = NULL, text.multiplier = NULL,
+  showFitLine = TRUE, showStats = TRUE, alpha = 0.05,
+  text.size = 6)
 }
 \arguments{
 \item{input.CLayers}{The DataObject for which to plot the residual}
@@ -28,6 +29,9 @@ where each element has a name corresponding to the value in the facet column.}
 \item{xlab}{An optional character string for the x-axis}
 
 \item{ylab}{An optional character string for the y-axis}
+
+\item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
+Make it bigger if the text is too small on large plots and vice-versa.}
 
 \item{showFitLine}{Boolean, if TRUE shows a linear fit and the fit equation}
 

@@ -4,12 +4,12 @@
 \alias{determineQuantities_GUESS}
 \title{List all LPJ-GUESS *.out files in a run directory}
 \usage{
-determineQuantities_GUESS(directory, names = TRUE)
+determineQuantities_GUESS(source, names = TRUE)
 }
 \arguments{
-\item{directory}{A path to a directory on the file system containing some .out files}
-
 \item{names}{Logical, if TRUE return the namse of the quantities, if FLASE return the quanties themseleves}
+
+\item{directory}{A path to a directory on the file system containing some .out files}
 }
 \value{
 A list of all the .out files present, with the ".out" removed.

@@ -12,7 +12,7 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 ## ----Define source, echo=TRUE--------------------------------------------
 GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
                           dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), # this would normlly just be a character string containing a path
-                          format = "LPJ-GUESS",
+                          format = GUESS,
                           name = "LPJ-GUESS Example Run")
 
 class(GUESS.run)
