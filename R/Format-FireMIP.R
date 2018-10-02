@@ -1161,18 +1161,6 @@ LPJ_GUESS_GlobFIRM_FireMIP@id <- "LPJ-GUESS-GlobFIRM-FireMIP"
 LPJ_GUESS_SIMFIRE_BLAZE_FireMIP <- FireMIP
 LPJ_GUESS_SIMFIRE_BLAZE_FireMIP@id <- "LPJ-GUESS-SIMFIRE-BLAZE-FireMIP"
 
-
-#' @description \code{CTEM_FireMIP} - a Format for reading CLASS-CTEM FireMIP model output
-#' 
-#' @format A \code{Quantity} object is an S4 class.
-#' @aliases Format-class
-#' @rdname Format-class
-#' @keywords datasets
-#' @include colour-palettes.R
-#' @export
-CTEM_FireMIP <- FireMIP
-CTEM_FireMIP@id <- "CTEM-FireMIP"
-
 #' @description \code{Inferno_FireMIP} - a Format for reading Inferno FireMIP model output
 #' 
 #' @format A \code{Quantity} object is an S4 class.

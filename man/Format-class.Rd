@@ -9,7 +9,6 @@
 \alias{LPJ_GUESS_SPITFIRE_FireMIP}
 \alias{LPJ_GUESS_GlobFIRM_FireMIP}
 \alias{LPJ_GUESS_SIMFIRE_BLAZE_FireMIP}
-\alias{CTEM_FireMIP}
 \alias{Inferno_FireMIP}
 \alias{JSBACH_FireMIP}
 \alias{ORCHIDEE_FireMIP}
@@ -28,8 +27,6 @@ LPJ_GUESS_SPITFIRE_FireMIP
 LPJ_GUESS_GlobFIRM_FireMIP
 
 LPJ_GUESS_SIMFIRE_BLAZE_FireMIP
-
-CTEM_FireMIP
 
 Inferno_FireMIP
 
@@ -60,8 +57,6 @@ Can be produced using the companion DGVMData package.
 \code{LPJ_GUESS_GlobFIRM_FireMIP} - a Format for reading LPJ-GUESS-GlobFIRM FireMIP model output
 
 \code{LPJ_GUESS_SIMFIRE_BLAZE_FireMIP} - a Format for reading LPJ-GUESS-SIMFIRE-BLAZE FireMIP model output
-
-\code{CTEM_FireMIP} - a Format for reading CLASS-CTEM FireMIP model output
 
 \code{Inferno_FireMIP} - a Format for reading Inferno FireMIP model output
 
