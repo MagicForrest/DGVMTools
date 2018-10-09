@@ -6,7 +6,6 @@
 \alias{Format-class}
 \alias{DGVMData}
 \alias{FireMIP}
-\alias{MC2_FireMIP}
 \alias{GUESS}
 \alias{aDGVM}
 \title{Format class}
@@ -15,8 +14,6 @@
 DGVMData
 
 FireMIP
-
-MC2_FireMIP
 
 GUESS
 
@@ -33,8 +30,6 @@ This class encapsulates all the specific details of a supported model or dataset
 Can be produced using the companion DGVMData package.
 
 \code{FireMIP} - a Format for reading 'standard' FireMIP model output
-
-\code{MC2_FireMIP} - a Format for reading MC2 FireMIP model output
 
 \code{GUESS} - a Format for reading standard LPJ-GUESS(-SPITFIRE) model output
 

@@ -1126,15 +1126,3 @@ FireMIP<- new("Format",
               
 )
 
-### 
-
-#' @description \code{MC2_FireMIP} - a Format for reading MC2 FireMIP model output
-#' 
-#' @format A \code{Quantity} object is an S4 class.
-#' @aliases Format-class
-#' @rdname Format-class
-#' @keywords datasets
-#' @include colour-palettes.R
-#' @export
-MC2_FireMIP <- FireMIP
-MC2_FireMIP@id <- "MC2-FireMIP"
