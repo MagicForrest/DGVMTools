@@ -369,7 +369,7 @@ getField_DGVMData <- function(source,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-determineQuantities_DGVMData <- function(source){
+availableQuantities_DGVMData <- function(source){
   
   # First get the list of *.out files present
   files.present <- list.files(source@dir, "*.nc")
@@ -531,7 +531,7 @@ DGVMData <- new("Format",
              determinePFTs = determinePFTs_DGVMData,
              
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-             determineQuantities = determineQuantities_DGVMData,
+             availableQuantities = availableQuantities_DGVMData,
              
              # FUNCTION TO READ A FIELD 
              getField = getField_DGVMData,

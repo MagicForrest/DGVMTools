@@ -52,7 +52,7 @@ This is just a default PFT set available for convenience, can be easily over-rid
 
 \item{\code{determinePFTs}}{A function to determine which PFTs are present in a run or dataset.}
 
-\item{\code{determineQuantities}}{A function to determine which quantities \emph{are actually available} from the model run or dataset.}
+\item{\code{availableQuantities}}{A function to determine which quantities \emph{are actually available} from the model run or dataset.}
 
 \item{\code{getField}}{A function to retrieve actually data from the model output or dataset.  This is likely to be a fairly complex function, and really depends on the specifics 
 and idiosynchrasies of the model output format or dataset.}

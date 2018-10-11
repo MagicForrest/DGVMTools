@@ -15,7 +15,7 @@
 #' This is just a default PFT set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
 #' @slot quantities 'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output or dataset.
 #' @slot determinePFTs A function to determine which PFTs are present in a run or dataset.
-#' @slot determineQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
+#' @slot availableQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
 #' @slot getField A function to retrieve actually data from the model output or dataset.  This is likely to be a fairly complex function, and really depends on the specifics 
 #' and idiosynchrasies of the model output format or dataset.
 #' 
@@ -31,7 +31,7 @@ setClass("Format",
                    default.pfts = "list",
                    quantities = "list",
                    determinePFTs = "function",
-                   determineQuantities = "function",
+                   availableQuantities = "function",
                    getField = "function"
          )
 )

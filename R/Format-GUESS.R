@@ -718,7 +718,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "burntfraction_std") {
     
     # if mfirefrac is present the open it and use it
-    if("mfirefrac" %in% determineQuantities_GUESS(run, names=TRUE)){
+    if("mfirefrac" %in% availableQuantities_GUESS(run, names=TRUE)){
       data.list <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = TRUE)
       data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum")
       
@@ -760,7 +760,7 @@ getStandardQuantity_LPJ <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-determineQuantities_GUESS <- function(source, names = TRUE){
+availableQuantities_GUESS <- function(source, names = TRUE){
   
   directory <- source@dir
   
@@ -820,7 +820,7 @@ determineQuantities_GUESS <- function(source, names = TRUE){
 determinePFTs_GUESS <- function(x, variables) {
   
   # first get a list of all avaiable variables
-  available.vars <- suppressWarnings(determineQuantities_GUESS(x))
+  available.vars <- suppressWarnings(availableQuantities_GUESS(x))
   
   # check for the presence the following variables (in order)
   possible.vars <- c("lai", "cmass", "dens", "fpc")
@@ -1819,7 +1819,7 @@ GUESS <- new("Format",
              determinePFTs = determinePFTs_GUESS,
              
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-             determineQuantities = determineQuantities_GUESS,
+             availableQuantities = availableQuantities_GUESS,
              
              # FUNCTION TO READ A FIELD 
              getField = getField_GUESS,

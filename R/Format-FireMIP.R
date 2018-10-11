@@ -481,7 +481,7 @@ determinePFTs_FireMIP <- function(x, variables) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-determineQuantities_FireMIP <- function(source, names){
+availableQuantities_FireMIP <- function(source, names){
   
   # First get the list of *.out files present
   files.present <- list.files(source@dir, "*.nc")
@@ -1113,7 +1113,7 @@ FireMIP<- new("Format",
               determinePFTs = determinePFTs_FireMIP,
               
               # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-              determineQuantities = determineQuantities_FireMIP,
+              availableQuantities = availableQuantities_FireMIP,
               
               # FUNCTION TO READ A FIELD 
               getField = getField_FireMIP,

@@ -674,7 +674,7 @@ determinePFTs_aDGVM <- function(x, variables) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-determineQuantities_aDGVM <- function(source){
+availableQuantities_aDGVM <- function(source){
   
   warning("Needs to be implemented by an aDGVMer.")
   
@@ -863,7 +863,7 @@ aDGVM <- new("Format",
              determinePFTs = determinePFTs_aDGVM,
              
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-             determineQuantities = determineQuantities_aDGVM,
+             availableQuantities = availableQuantities_aDGVM,
              
              # FUNCTION TO READ A FIELD 
              getField = getField_aDGVM,
