@@ -9,9 +9,8 @@ Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.f
 Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
 Maintainer: Matthew Forrest <matthew.forrest@senckenberg.de>
 Description: Process output data produced by dynamic global vegetation
-    models (DGVMs) LPJ-GUESS(-SPITFIRE), FireMIP standard output, aDGVM2 (under
-    development) and possibly others, for use in R. Create standard figures and
-    benchmarking.
+    models (DGVMs) LPJ-GUESS(-SPITFIRE), aDGVM2 and possibly soon others, for use in R. Also reads many standard datasets. Create standard figures and
+    benchmarking.  FireMIP model output is supported with an additional package (FireMIPTools).
 Depends:
     R (>= 2.15.0),
     data.table (>= 1.9.6),
@@ -46,7 +45,6 @@ Collate:
     'classes.R'
     'colour-palettes.R'
     'Format-DGVMData.R'
-    'Format-FireMIP.R'
     'Format-GUESS.R'
     'Format-aDGVM.R'
     'Standard-Quantities.R'
