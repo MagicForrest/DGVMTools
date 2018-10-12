@@ -120,7 +120,7 @@ setMethod("as.array", signature("Field"), function(x, ...) {
 #' @return A RasterLayer (or RasterBrick)
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
+promoteToRaster <- function(input.data, layers = "all", tolerance = 0.01, grid.topology = NULL){
   
   ###  Get class of the object we are dealing with
   this.class = class(input.data)[1]
@@ -207,7 +207,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
 #' @import data.table
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
+makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.topology = NULL) {
   
   # to stop complaints at build time
   Lon = Lat = NULL
