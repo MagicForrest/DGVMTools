@@ -7,7 +7,7 @@ R tools for processing, analysing and plotting output from DGVMs (Dynamic Global
 
 DGVMTools is a high-level framework for analysing DGVM data output.  The framework enables a complete DGVM analysis workflow, taking raw model output through comprehensive analysis and evaluation to publication-quality figures.  It also easily interfaces with both the raster pakage and base R functionality. Functionality includes:
 
-* Read raw output from supported DGVMs (currently LPJ-GUESS, aDGVM and the FireMIP output).
+* Read raw output from supported DGVMs, currently LPJ-GUESS, aDGVM (and the FireMIP output with the companion FireMIPTools package).
 * Read pre-prepared benchmarking datasets at commonly used spatial resolutions (contact matthew.forrest@senckenberg.de for access to data files). 
 * Crop and aggregate the data space and time (and sub-annual dimensions).
 * Convenient and flexible potting of data in time and space (also seasonal cycles).  Plots further customisable with ggplot2.
@@ -20,6 +20,8 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 ==== 
 
 ### News
+
+**2018-10-12** - Release v0.5.2 for visiting collaborators.  Release v0.6 still planned in the next two weeks.
 
 **2018-10-01** - DGVMTools is now publicly available!  Whilst package is pretty much fully featured, there may be bugs, so it should be considered in the late-beta phase.  New v0.6 release to come this month.
 
