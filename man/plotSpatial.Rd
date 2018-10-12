@@ -6,7 +6,7 @@
 \usage{
 plotSpatial(sources, layers = NULL, title = character(0),
   subtitle = character(0), facet.labels = NULL, facet.order = NULL,
-  plot.bg.col = "white", panel.bg.col = "#809DB8",
+  plot.bg.col = "white", panel.bg.col = "white",
   useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
   ylim = NULL, years = NULL, days = NULL, months = NULL,
   seasons = NULL, limits = NULL, cols = NULL, cuts = NULL,
@@ -30,11 +30,11 @@ Sensible titles will be constructed if this is not specified.}
 and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 in this function).}
 
-\item{plot.bg.col}{Colour string for the plot background.  "white"}
+\item{plot.bg.col}{Colour string for the plot background, default "white".}
 
-\item{panel.bg.col}{Colour string for the panel background, default it a sort of sky blue.}
+\item{panel.bg.col}{Colour string for the panel background, default "white".}
 
-\item{useLongNames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!}
+\item{useLongNames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots.}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}

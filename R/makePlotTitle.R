@@ -41,11 +41,24 @@ makePlotTitle <- function(fields){
   
   ##### make subannual section
   subannual.string <- character(0)
-  if(length(sta.info@subannual.resolution) > 0) subannual.string <- trimws(paste(subannual.string, sta.info@subannual.resolution, sep = " "))
+  
+  # convert Month -> Monthly, Year -> Annual etc for nicer formatting
+  original.subannual <- sta.info@subannual.original
+  final.subannual <- sta.info@subannual.resolution
+  if(original.subannual == "Year") original.subannual <- "Annual"
+  if(final.subannual == "Year") final.subannual <- "Annual"
+  if(original.subannual == "Month") original.subannual <- "Monthly"
+  if(final.subannual == "Month") final.subannual <- "Monthly"
+  if(original.subannual == "Season") original.subannual <- "Seasonal"
+  if(final.subannual == "Season") final.subannual <- "Seasonal"
+  if(original.subannual == "Day") original.subannual <- "Daily"
+  if(final.subannual == "Day") final.subannual <- "Daily"
+  
+  if(length(final.subannual ) > 0) subannual.string <- trimws(paste(subannual.string, final.subannual , sep = " "))
   if(sta.info@subannual.aggregate.method != "none") subannual.string <- trimws(paste(subannual.string, sta.info@subannual.aggregate.method, "of", sep = " "))
-  if(length(sta.info@subannual.original) > 0 && sta.info@subannual.aggregate.method != "none")   {
-    if(sta.info@subannual.original != sta.info@subannual.resolution){
-    subannual.string <- trimws(paste(subannual.string, sta.info@subannual.original, sep = " "))
+  if(length(original.subannual) > 0 && sta.info@subannual.aggregate.method != "none")   {
+    if(original.subannual != final.subannual){
+      subannual.string <- trimws(paste(subannual.string, original.subannual, sep = " "))
     }
   }
     

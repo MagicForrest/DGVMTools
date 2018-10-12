@@ -149,7 +149,6 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
 #' 
 #' @param map.overlay A character string specifying the overlay to be used a string matching maps package dataset
 #' @param all.lons A numeric vector of all the longitudes to be plotted, this is used to determine if it the over lay should be on longitues (-180,180) or (0,360).
-#' Maybe can be determines from xlim instead?
 #' @param interior.lines A logical, if TRUE include the internal country lines
 #' @param xlim A numeric vector of length 2 to giving the longitude window that the overlay should cover
 #' @param ylim A numeric vector of length 2 to giving the latitide window that the overlay should cover
@@ -163,21 +162,21 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     # determine if london centered (if not call "maps2" for Pacific centered versions)
     gt.180 <- FALSE
     for(lon in all.lons) {
-      if(lon > 180) gt.180 <- TRUE
+       if(lon > 180) gt.180 <- TRUE
     }
-    if(tolower(map.overlay)=="world" && gt.180) map.overlay <- "world2"
-    else if(tolower(map.overlay)=="worldHires" && gt.180) map.overlay <- "worldHires2"
-    else if(tolower(map.overlay)=="world2" && !gt.180) map.overlay <- "world"
-    else if(tolower(map.overlay)=="world2Hires" && !gt.180) map.overlay <- "worldHires"
-    
+
+    if(map.overlay=="world" && gt.180) map.overlay <- "world2"
+    else if(map.overlay=="worldHires" && gt.180) map.overlay <- "worldHires2"
+    else if(map.overlay=="world2" && !gt.180) map.overlay <- "world"
+    else if(map.overlay=="world2Hires" && !gt.180) map.overlay <- "worldHires"
+
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
-    
     proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
     map.sp.lines <- maptools::map2SpatialLines(maps::map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = sp::CRS(proj4str))
     suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
     map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)
-    map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
+    if(!gt.180) map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
     return(fortify(map.sp.lines.df))
     
     

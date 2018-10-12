@@ -9,8 +9,7 @@ makeMapOverlay(map.overlay, all.lons, interior.lines, xlim, ylim)
 \arguments{
 \item{map.overlay}{A character string specifying the overlay to be used a string matching maps package dataset}
 
-\item{all.lons}{A numeric vector of all the longitudes to be plotted, this is used to determine if it the over lay should be on longitues (-180,180) or (0,360).
-Maybe can be determines from xlim instead?}
+\item{all.lons}{A numeric vector of all the longitudes to be plotted, this is used to determine if it the over lay should be on longitues (-180,180) or (0,360).}
 
 \item{interior.lines}{A logical, if TRUE include the internal country lines}
 

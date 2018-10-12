@@ -17,6 +17,7 @@
 #' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
 #' (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
+#' @param panel.bg.col Colour string for the panel background, default to "white" for absolute values plots, and a sort of blue grey for difference plots.
 #' @param override.cols A colour palette function to override the defaults.
 #' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)
 #' @param percentage.difference.limit If precentage difference to be plotted, what to limit the scale to.
@@ -35,6 +36,7 @@
 plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
                                   type = c("difference", "percentage.difference", "values", "nme"),
                                   limits = NULL,
+                                  panel.bg.col = "white",
                                   override.cols = NULL,
                                   symmetric.scale = TRUE,
                                   percentage.difference.limit = 300,
@@ -49,8 +51,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   
   
   if(!missing(limits)) symmetric.scale <- FALSE
-  
-  
+
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
   ### 1. SOURCES - check the sources
@@ -133,11 +134,15 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     # set a symmetric scale (so zero always white/centre colour)
     if(symmetric.scale) limits <- c(-max.for.scale, max.for.scale)
     
+    # if no panel background panel colour specified, using a non-white one
+    if(missing(panel.bg.col)) panel.bg.col = "809DB8"
+    
     
     the.plot <- plotSpatial(objects.to.plot,
                             layers = final.layers.to.plot,
                             cols = override.cols,
                             limits = limits,
+                            panel.bg.col = panel.bg.col,
                             ...)
     
     
