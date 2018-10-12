@@ -7,6 +7,7 @@
 #' @param last The last year to be selected (numeric)
 #' 
 #' @return A Field or data.table depending on the type of the input x.
+#' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 selectYears <- function(x, first, last){

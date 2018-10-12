@@ -28,6 +28,7 @@
 #' @param dt The data.table for which to set the key
 #' @return Returns nothing because changes the original data.table by reference (this is the data.table way)
 #' @import data.table
+#' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 setKeyDGVM <- function(dt){
@@ -47,8 +48,8 @@ setKeyDGVM <- function(dt){
 #'
 #' @param lon A vector longitude value to transform 
 #' @return The transformed longitude values
-#' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 LondonCentre <- function(lon) {
   
   return(ifelse(lon > 180, lon - 360, lon))
@@ -68,7 +69,6 @@ LondonCentre <- function(lon) {
 #' @return a the SpatialLines object 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @keywords internal
-#' @import raster
 correct.map.offset <- function(spl) {
   
   we <- raster::crop(spl, raster::extent(-180, 180, -90, 90))
@@ -94,7 +94,8 @@ correct.map.offset <- function(spl) {
 #' @param pfts A list of PFT objects (which should contain PFTs with ids provided in 'values)
 #' @param others A list of other name-colour combinations, for example to plot 'Total' as black, "None" as grey, or whatever.  Some defaults are defined.
 #' @return Returns a named list of colours, where the names are the values that the colours will represent
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 #' 
 #' 
 matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub = "red")) {
@@ -141,10 +142,18 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
   
 }
 
-#' @importFrom maptools map2SpatialLines
-#' @importFrom rgeos gLength
-#' @importFrom sp SpatialLinesDataFrame
-#' @importFrom raster crs
+#' Make a map overlay for ggplot2
+#' 
+#' Take a string and derives an approriate data.frame that can be used to add a map overlay 
+#' (eg coast or country lines from the maps and mapdata packages) with the ggplot::geom_path function.
+#' 
+#' @param map.overlay A character string specifying the overlay to be used a string matching maps package dataset
+#' @param all.lons A numeric vector of all the longitudes to be plotted, this is used to determine if it the over lay should be on longitues (-180,180) or (0,360).
+#' @param interior.lines A logical, if TRUE include the internal country lines
+#' @param xlim A numeric vector of length 2 to giving the longitude window that the overlay should cover
+#' @param ylim A numeric vector of length 2 to giving the latitide window that the overlay should cover
+#' @return Returns data.frame suitable for plotting with ggplot::geom_path
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
   
   ### PREPARE THE MAP OVERLAY
@@ -153,21 +162,21 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     # determine if london centered (if not call "maps2" for Pacific centered versions)
     gt.180 <- FALSE
     for(lon in all.lons) {
-      if(lon > 180) gt.180 <- TRUE
+       if(lon > 180) gt.180 <- TRUE
     }
-    if(tolower(map.overlay)=="world" && gt.180) map.overlay <- "world2"
-    else if(tolower(map.overlay)=="worldHires" && gt.180) map.overlay <- "worldHires2"
-    else if(tolower(map.overlay)=="world2" && !gt.180) map.overlay <- "world"
-    else if(tolower(map.overlay)=="world2Hires" && !gt.180) map.overlay <- "worldHires"
-    
+
+    if(map.overlay=="world" && gt.180) map.overlay <- "world2"
+    else if(map.overlay=="worldHires" && gt.180) map.overlay <- "worldHires2"
+    else if(map.overlay=="world2" && !gt.180) map.overlay <- "world"
+    else if(map.overlay=="world2Hires" && !gt.180) map.overlay <- "worldHires"
+
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
-    
     proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
-    map.sp.lines <- maptools::map2SpatialLines(map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = sp::CRS(proj4str))
+    map.sp.lines <- maptools::map2SpatialLines(maps::map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = sp::CRS(proj4str))
     suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
-    map.sp.lines.df <- SpatialLinesDataFrame(map.sp.lines, data = df)
-    map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
+    map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)
+    if(!gt.180) map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
     return(fortify(map.sp.lines.df))
     
     

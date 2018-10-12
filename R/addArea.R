@@ -20,6 +20,7 @@
 #' @keywords internal
 #' @return vector of gridcell area is m^2
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
 #' @examples
 #' dlon <- 0.5
 #' lat <- seq(-89.75,89.75,0.5)
@@ -62,6 +63,7 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
 #' @import data.table
 #' @return data.table of gridcells with columns c("Lon", "Lat", "area")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @export
 #' @examples
 #' lon <- seq(- 179.75, 179.75, 0.5)
 #' lat <- seq(89.75,-89.75,-0.5) 

@@ -132,35 +132,54 @@ Smith2014.scheme <- new("BiomeScheme",
                         rules = Smith2014BiomeRules,
                         layers.needed = list(
                           
-                          # Combine shade tolerances
-                          BNE = list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
-                          BINE = list(quantity = "LAI_std", operator = 0, layers = "BINE"),
-                          BIBS = list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                          TeBS = list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
-                          TeIBS = list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                          IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                          TrBE = list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
-                          TrIBE = list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
-                          IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                          # make totals
-                          Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
-                          Grass = list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
-                          Boreal = list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
-                          Temperate = list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
-                          Tropical = list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
-                          Total = list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
-                          # get max tree
-                          MaxTree = list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
-                          # make fraction
-                          GrassFraction = list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
-                          BorealFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
-                          TemperateFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
-                          TropicalFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
-                          TrBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
-                          TrBRFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
-                          TeBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
-                          TeBSFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")),
-                        data.reference = "Haxeltime and Prentice 1996",
+                          ### Combine shade tolerances
+                          list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
+                          list(quantity = "LAI_std", operator = 0, layers = "BINE"),
+                          list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
+                          list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                          list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
+                          list(quantity = "LAI_std", operator = 0, layers = "IBS"),
+                          list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
+                          list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
+                          list(quantity = "LAI_std", operator = 0, layers = "IBS"),
+                          
+                          ### Make totals
+                          # Tree
+                          list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                          # Grass
+                          list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                          # Boreal
+                          list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
+                          # Temperate
+                          list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
+                          # Tropical
+                          list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
+                          # Total
+                          list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
+                          
+                          ### Get max tree
+                          list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
+                          
+                          # Make fractions
+                          # GrassFraction
+                          list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
+                          # BorealFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
+                          # TemperateFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
+                          # TropicalFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
+                          # TrBEFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
+                          # TrBRFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
+                          # TeBEFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
+                          # TeBSFractionOfTree
+                          list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")
+                          
+                        ),
+                        data.reference = "Haxeltine and Prentice 1996",
                         published.reference = "Smith et al. 2014")
 
 
@@ -330,18 +349,30 @@ Hickler2012.scheme <- new("BiomeScheme",
                                         "Desert"),
                               format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = Hickler2012Rules,
-                          layers.needed = list(Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                               Grass = list(quantity = "LAI_std", operator = "+", layers =".Grass", new.layer = "Grass"),
-                                               Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
-                                               Mediterranean = list(quantity = "LAI_std", operator = "+", layers =c(".Mediterranean"), "new.layer = Mediterranean"),
-                                               SupraMediterranean = list(quantity = "LAI_std", operator = "+", layers =c(".Supra-mediterranean"), new.layer = "Supra-mediterranean"),
-                                               MaxTree = list(quantity = "LAI_std", operator = "max.layer", layers =".Tree", new.layer = "MaxTree"),
-                                               MaxPFT = list(quantity = "LAI_std", operator = "max.layer","layers =.PFTs", new.layer = "MaxPFT"),
-                                               GrassFraction = list(quantity = "LAI_std", operator = "/", layers =c("Grass", "Total"), new.layer = "GrassFraction"),
-                                               BorealFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Woody"), new.layer = "BorealFractionOfTree"),
-                                               TemperateFractionOfTree = list(quantity = "LAI_std", operator = "/", layers =c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
-                                               MediterraneanFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Mediterranean", "Tree"), new.layer = "MediterraneanFractionOfTree")),
-                          # needGDD5 = TRUE, !!! Need to implement this
+                          layers.needed = list(
+                            # Tree
+                            list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                            # Grass
+                            list(quantity = "LAI_std", operator = "+", layers =".Grass", new.layer = "Grass"),
+                            # Woody
+                            list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
+                            # Mediterranean
+                            list(quantity = "LAI_std", operator = "+", layers =c(".Mediterranean"), "new.layer = Mediterranean"),
+                            # SupraMediterranean
+                            list(quantity = "LAI_std", operator = "+", layers =c(".Supra-mediterranean"), new.layer = "Supra-mediterranean"),
+                            # MaxTree
+                            list(quantity = "LAI_std", operator = "max.layer", layers =".Tree", new.layer = "MaxTree"),
+                            # MaxPFT
+                            list(quantity = "LAI_std", operator = "max.layer","layers =.PFTs", new.layer = "MaxPFT"),
+                            # GrassFraction
+                            list(quantity = "LAI_std", operator = "/", layers =c("Grass", "Total"), new.layer = "GrassFraction"),
+                            # BorealFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Woody"), new.layer = "BorealFractionOfTree"),
+                            # TemperateFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers =c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
+                            # MediterraneanFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Mediterranean", "Tree"), new.layer = "MediterraneanFractionOfTree")),
+                          # needGDD5 = TRUE, !!! Need to implement this as a layer.needed in the style above above
                           data.reference = "- (Bohn)",
                           published.reference = "Hickler et al. 2012")
 
@@ -456,33 +487,56 @@ Forrest2015.scheme <- new("BiomeScheme",
                               format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = Forrest2015MegaBiomeRules,
                           layers.needed = list(  
-                            # Combine shade tolerances
-                            BNE = list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
-                            BINE = list(quantity = "LAI_std", operator = 0, layers = "BINE"),
-                            BIBS = list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                            TeBS = list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
-                            TeIBS = list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                            IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                            TrBE = list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
-                            TrIBE = list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
-                            IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                            
+                            ### Combine shade tolerances
+                            list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "BINE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
+                            list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                            list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
+                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),
+                            list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),    
+                            
+                            ### Make totals
+                            # Tree
+                            list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                            # Grass
+                            list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                            # Boreal
+                            list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
+                            # Temperate
+                            list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
+                            # Tropical
+                            list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
                             # Total
-                            Grass = list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
-                            Boreal = list(quantity = "LAI_std", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
-                            Temperate = list(quantity = "LAI_std", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
-                            Tropical = list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
-                            # Max tree
-                            MaxTree = list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
-                            # Fractions
-                            GrassFraction = list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
-                            BorealFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
-                            TemperateFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
-                            TropicalFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
-                            TrBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
-                            TrBRFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
-                            TeBEFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
-                            TeBSFractionOfTree = list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")),
-                          data.reference = "Haxeltime and Prentice 1996",
+                            list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
+                            
+                            
+                            ### Max tree
+                            list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
+                            
+                            # Make fractions
+                            # GrassFraction
+                            list(quantity = "LAI_std", operator = "/", layers = c("Grass", "Total"), new.layer = "GrassFraction"),
+                            # BorealFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Boreal", "Tree"), new.layer = "BorealFractionOfTree"),
+                            # TemperateFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Temperate", "Tree"), new.layer = "TemperateFractionOfTree"),
+                            # TropicalFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("Tropical", "Tree"), new.layer = "TropicalFractionOfTree"),
+                            # TrBEFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("TrBE", "Tree"), new.layer = "TrBEFractionOfTree"),
+                            # TrBRFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("TrBR", "Tree"), new.layer = "TrBRFractionOfTree"),
+                            # TeBEFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("TeBE", "Tree"), new.layer = "TeBEFractionOfTree"),
+                            # TeBSFractionOfTree
+                            list(quantity = "LAI_std", operator = "/", layers = c("TeBS", "Tree"), new.layer = "TeBSFractionOfTree")
+                            
+                          ),
+                          data.reference = "Haxeltine and Prentice 1996",
                           published.reference = "Forrest et al 2015, Smith et al. 2014")
 
 
@@ -569,16 +623,24 @@ MeditBiomes.scheme <- new("BiomeScheme",
                                         "Evergreen Steppe-Woodlands"),
                               format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                           rules = MeditBiomeRules,
-                          layers.needed = list(BNE = list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
-                                               BINE = list(quantity = "LAI_std", operator = 0, layers = "BINE"),
-                                               BIBS = list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                                               TeBS = list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
-                                               TeIBS = list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                                               IBS = list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                                               Tree = list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                               Grass = list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
-                                               Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
-                                               MaxWoody = list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree", ".Shrub"), new.layer = "MaxWoody")),
+                          layers.needed = list(
+                            ### Combine Shade Tolerances
+                            list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "BINE"),
+                            list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
+                            list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                            list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
+                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),
+                            ### Calculate Totals
+                            # Tree
+                            list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                            # Grass
+                            list(quantity = "LAI_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                            # Woody
+                            list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
+                            ### Max woody
+                            list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree", ".Shrub"), new.layer = "MaxWoody")
+                          ),
                           data.reference = "-",
                           published.reference = "-")
 
@@ -686,9 +748,12 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
                                             "Desert"),
                                  format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                              rules = MegaBiomeRules_dev,
-                             # needGDD5 = TRUE, !!! implement this!!!
-                             layers.needed = list(Tree = list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree"), new.layer = "MaxTree")),
-                             data.reference = "Haxeltime and Prentice 1996",
+                             # needGDD5 = TRUE, !!! Need to implement this as a layer.needed in the style above above
+                             layers.needed = list(
+                               # Max Tree
+                               list(quantity = "LAI_std", operator = "max.layer", layers = c(".Tree"), new.layer = "MaxTree")
+                             ),
+                             data.reference = "Haxeltine and Prentice 1996",
                              published.reference = "-")
 
 
@@ -808,8 +873,18 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
                                            "Inferno-FireMIP",
                                            "ORCHIDEE-FireMIP")),
                             rules = FireMIPBiomeRules,
-                            layers.needed = list(Tree = list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
-                                                 Grass = list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Grass", new.layer ="MaxGrass")),
+                            layers.needed = list(
+                              ## Totals
+                              # Tree
+                              list(quantity = "landCoverFrac", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                              # Grass
+                              list(quantity = "landCoverFrac", operator = "+", layers = ".Grass", new.layer ="Grass"),
+                              ### Maxes
+                              # Tree
+                              list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
+                              # Grass
+                              list(quantity = "landCoverFrac", operator = "max.layer", layers = ".Grass", new.layer ="MaxGrass")
+                              ),
                             data.reference = "-",
                             published.reference = "-")
 
@@ -914,14 +989,289 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
                                           "Arctic desert"),
                                 format = c("LPJ-GUESS", "LPJ-GUESS-SPITFIRE")),
                             rules = FPCMegaBiomeRules,
-                            layers.needed = list(Tree = list(quantity = "fpc", operator = "+", layers = ".Tree", new.layer = "Tree"),
-                                                 Grass = list(quantity = "fpc", operator = "+", layers = ".Grass", new.layer = "Grass"),
-                                                 Boreal = list(quantity = "fpc", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
-                                                 Temperate = list(quantity = "fpc", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
-                                                 Tropical = list(quantity = "fpc", operator = "+", layers = ".Tropical", new.layer = "Tropical")),
-                            # needGDD5 = TRUE, - need to implement this!
+                            layers.needed = list(
+                              # Tree
+                              list(quantity = "fpc", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                              # Grass
+                              list(quantity = "fpc", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                              # Boreal
+                              list(quantity = "fpc", operator = "+", layers = ".Boreal", new.layer = "Boreal"),
+                              # Temperate
+                              list(quantity = "fpc", operator = "+", layers = ".Temperate", new.layer = "Temperate"),
+                              # Tropical
+                              list(quantity = "fpc", operator = "+", layers = ".Tropical", new.layer = "Tropical")
+                            ),
+                            # needGDD5 = TRUE, !!! Need to implement this as a layer.needed in the style above above
                             data.reference = "-",
                             published.reference = "-")
+
+
+
+
+#####################################################################
+########### ADGVM2 BIOME CLASSIFICATION SCHEMES #####################
+#####################################################################
+
+
+
+#####################################################################
+########### SIMPLE BIOME CLASSIFICATION #############################
+#####################################################################
+
+#' Rules to classify coarse tropical biomes
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, woodland, forest)
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+
+SimpleAdgvm2BiomeRules <- function(x){
+  # BIOME 1 - Baren/Desert
+  if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Tree']])<=5) {return("Baren/Desert")}
+  # BIOME 2 - C4 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Tree']])<=5 & as.numeric(x[['vegcover_std_C3G']])<=as.numeric(x[['vegcover_std_C4G']])) {return("C4 Grassland")}
+  # BIOME 3 - C3 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Tree']])<=5 & as.numeric(x[['vegcover_std_C3G']])> as.numeric(x[['vegcover_std_C4G']])) {return("C3 Grassland")}
+  # BIOME 4 - Woodland
+  else if(as.numeric(x[['vegcover_std_Tree']])> 5 & as.numeric(x[['vegcover_std_Tree']])<=60) {return("Woodland")}
+  # BIOME 5 - Forest
+  else if(as.numeric(x[['vegcover_std_Tree']])> 60 ) {return("Forest")}
+  # BIOME 6 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' 
+SimpleAdgvm2Biomes.scheme <- new("BiomeScheme",
+                                 new("Quantity",
+                                     id = "SimpleAdgvm2Biomes",
+                                     name = "Simple aDGVM2 Biomes",
+                                     colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                             "C4 Grassland" = '#fff700',
+                                                                             "C3 Grassland" = '#ffcf0f',
+                                                                             "Woodland" = '#94b6ff',
+                                                                             "Forest" = '#308a0a',
+                                                                             "Unclassifiable/Other" = "grey75")),
+                                     units = c("Baren/Desert",
+                                               "C4 Grassland",
+                                               "C3 Grassland",
+                                               "Woodland",
+                                               "Forest",
+                                               "Unclassifiable/Other"),
+                                     format = c("aDGVM")),
+                                 rules = SimpleAdgvm2BiomeRules,
+                                 layers.needed = list( list(quantity = "vegcover_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                       list(quantity = "vegcover_std", operator = "+", layers = ".Tree", new.layer = "Tree")),
+                                 data.reference = "-",
+                                 published.reference = "-")
+
+
+
+
+#####################################################################
+########### SIMPLE BIOME CLASSIFICATION WITH HEIGHT #################
+#####################################################################
+
+#' Rules to classify coarse tropical biomes
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, small forest, tall forest)
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+
+SimpleHeightAdgvm2BiomeRules <- function(x){
+  # BIOME 1 - Baren/Desert
+  if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Tree']])<=5) {return("Baren/Desert")}
+  # BIOME 2 - C4 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Tree']])<=5 & as.numeric(x[['vegcover_std_C3G']])<=as.numeric(x[['vegcover_std_C4G']])) {return("C4 Grassland")}
+  # BIOME 3 - C3 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Tree']])<=5 & as.numeric(x[['vegcover_std_C3G']])> as.numeric(x[['vegcover_std_C4G']])) {return("C3 Grassland")}
+  # BIOME 4 - Small forest
+  else if(as.numeric(x[['vegcover_std_Tree']])> 5 & as.numeric(x[['canopyheight_std_Tree']])<=5) {return("Small forest")}
+  # BIOME 5 - Tall forest
+  else if(as.numeric(x[['vegcover_std_Tree']])> 5 & as.numeric(x[['canopyheight_std_Tree']])> 5) {return("Tall forest")}
+  # BIOME 6 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' 
+SimpleHeightAdgvm2Biomes.scheme <- new("BiomeScheme",
+                                       new("Quantity",
+                                           id = "SimpleHeightAdgvm2Biomes",
+                                           name = "Simple aDGVM2 Biomes",
+                                           colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                                   "C4 Grassland" = '#fff700',
+                                                                                   "C3 Grassland" = '#ffcf0f',
+                                                                                   "Small forest" = '#94b6ff',
+                                                                                   "Tall forest" = '#308a0a',
+                                                                                   "Unclassifiable/Other" = "grey75")),
+                                           units = c("Baren/Desert",
+                                                     "C4 Grassland",
+                                                     "C3 Grassland",
+                                                     "Small forest",
+                                                     "Tall forest",
+                                                     "Unclassifiable/Other"),
+                                           format = c("aDGVM")),
+                                       rules = SimpleHeightAdgvm2BiomeRules,
+                                       layers.needed = list( list(quantity = "vegcover_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                             list(quantity = "vegcover_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                                             list(quantity = "canopyheight_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                                             list(quantity = "canopyheight_std", operator = "+", layers = ".Grass", new.layer = "Grass")),
+                                       data.reference = "-",
+                                       published.reference = "-")
+
+
+
+#####################################################################
+########### BIOME CLASSIFICATION, GROWTH FORM #######################
+#####################################################################
+
+#' Rules to classify coarse tropical biomes
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, woodland, shrubland)
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+
+GrowthFormAdgvm2BiomeRules <- function(x){
+  # BIOME 1 - Baren/Desert
+  if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Woody']])<=5) {return("Baren/Desert")}
+  # BIOME 2 - C4 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Woody']])<=5 & as.numeric(x[['vegcover_std_C3G']])<=as.numeric(x[['vegcover_std_C4G']])) {return("C4 Grassland")}
+  # BIOME 3 - C3 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Woody']])<=5 & as.numeric(x[['vegcover_std_C3G']])> as.numeric(x[['vegcover_std_C4G']])) {return("C3 Grassland")}
+  # BIOME 4 - Woodland
+  else if( as.numeric(x[['vegcover_std_Woody']])> 5 & as.numeric(x[['vegcover_std_Tree']])> as.numeric(x[['vegcover_std_Shrub']])) {return("Woodland")}
+  # BIOME 5 - Shrubland
+  else if( as.numeric(x[['vegcover_std_Woody']])> 5 & as.numeric(x[['vegcover_std_Tree']])<=as.numeric(x[['vegcover_std_Shrub']])) {return("Shrubland")}
+  # BIOME 6 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' 
+GrowthFormAdgvm2Biomes.scheme <- new("BiomeScheme",
+                                     new("Quantity",
+                                         id = "GrowthFormAdgvm2Biomes",
+                                         name = "Growth Form aDGVM2 Biomes",
+                                         colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                                 "C4 Grassland" = '#fff700',
+                                                                                 "C3 Grassland" = '#ffcf0f',
+                                                                                 "Woodland" = '#94b6ff',
+                                                                                 "Shrubland" = '#d6c100',
+                                                                                 "Unclassifiable/Other" = "grey75")),
+                                         units = c("Baren/Desert",
+                                                   "C4 Grassland",
+                                                   "C3 Grassland",
+                                                   "Woodland",
+                                                   "Shrubland",
+                                                   "Unclassifiable/Other"),
+                                         format = c("aDGVM")),
+                                     rules = GrowthFormAdgvm2BiomeRules,
+                                     layers.needed = list( list(quantity = "vegcover_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                           list(quantity = "vegcover_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
+                                                           list(quantity = "vegcover_std", operator = "+", layers = ".Shrub", new.layer = "Shrub"),
+                                                           list(quantity = "vegcover_std", operator = "+", layers = ".Tree",  new.layer = "Tree")),
+                                     data.reference = "-",
+                                     published.reference = "-")
+
+#####################################################################
+########### BIOME CLASSIFICATION, PHENOLOGY #########################
+#####################################################################
+
+#' Rules to classify coarse tropical biomes
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-6, baren, C4 grassland, C3 grassland, woodland, evergreen forest, deciduous forest)
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+
+PhenologyAdgvm2BiomeRules <- function(x){
+  # BIOME 1 - Baren/Desert
+  if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Woody']])<=5) {return("Baren/Desert")}
+  # BIOME 2 - C4 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Woody']])<=5 & as.numeric(x[['vegcover_std_C3G']])<=as.numeric(x[['vegcover_std_C4G']])) {return("C4 Grassland")}
+  # BIOME 3 - C3 grassland
+  else if( as.numeric(x[['vegcover_std_Grass']])> 2 & as.numeric(x[['vegcover_std_Woody']])<=5 & as.numeric(x[['vegcover_std_C3G']])> as.numeric(x[['vegcover_std_C4G']])) {return("C3 Grassland")}
+  # BIOME 4 - Woodland
+  else if( as.numeric(x[['vegcover_std_Woody']])> 5 & as.numeric(x[['vegcover_std_Woody']])<=60) {return("Woodland")}
+  # BIOME 5 - Deciduous forest
+  else if( as.numeric(x[['vegcover_std_Woody']])>60 & as.numeric(x[['vegcover_std_Evergreen']])<=as.numeric(x[['vegcover_std_Raingreen']])) {return("Deciduous Forest")}
+  # BIOME 6 - Evergreen forest
+  else if( as.numeric(x[['vegcover_std_Woody']])>60 & as.numeric(x[['vegcover_std_Evergreen']])> as.numeric(x[['vegcover_std_Raingreen']])) {return("Evergreen Forest")}
+  # BIOME 7 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' @keywords internal
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' 
+PhenologyAdgvm2Biomes.scheme <- new("BiomeScheme",
+                                    new("Quantity",
+                                        id = "PhenologyAdgvm2Biomes",
+                                        name = "Phenology aDGVM2 Biomes",
+                                        colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                                "C4 Grassland" = '#fff700',
+                                                                                "C3 Grassland" = '#ffcf0f',
+                                                                                "Woodland" = '#94b6ff',
+                                                                                "Deciduous Forest" = '#9c6007',
+                                                                                "Evergreen Forest" = '#308a0a',
+                                                                                "Unclassifiable/Other" = "grey75")),
+                                        units = c("Baren/Desert",
+                                                  "C4 Grassland",
+                                                  "C3 Grassland",
+                                                  "Woodland",
+                                                  "Deciduous Forest",
+                                                  "Evergreen Forest",
+                                                  "Unclassifiable/Other"),
+                                        format = c("aDGVM")),
+                                    rules = PhenologyAdgvm2BiomeRules,
+                                    layers.needed = list( list(quantity = "vegcover_std", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                          list(quantity = "vegcover_std", operator = "+", layers = c(".Tree", ".Shrub"), new.layer = "Woody"),
+                                                          list(quantity = "vegcover_std", operator = "+", layers = ".Evergreen", new.layer = "Evergreen"),
+                                                          list(quantity = "vegcover_std", operator = "+", layers = ".Raingreen",  new.layer = "Raingreen")),
+                                    data.reference = "-",
+                                    published.reference = "-")
+
+
+
+
 
 #' Currently supported biome schemes
 #' 
@@ -945,10 +1295,15 @@ FPCMegabiomes.scheme <- new("BiomeScheme",
 #'   
 #' @seealso \code{BiomeClassification}, \code{readHandPBiomes}
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
                              "Hickler2012" = Hickler2012.scheme,
                              "Forrest2015" = Forrest2015.scheme,
                              "Megabiomes_dev" = Megabiomes_dev.scheme,
                              "FPCMegabiomes" = FPCMegabiomes.scheme,
                              "MeditBiomes" = MeditBiomes.scheme,
-                             "FireMIP" = FireMIPBiomes.scheme)
+                             "FireMIP" = FireMIPBiomes.scheme,
+                             "SimpleAdgvm2Biomes" = SimpleAdgvm2Biomes.scheme,
+                             "SimpleHeightAdgvm2Biomes" = SimpleHeightAdgvm2Biomes.scheme,
+                             "GrowthFormAdgvm2Biomes" = GrowthFormAdgvm2Biomes.scheme,
+                             "PhenologyAdgvm2Biomes" = PhenologyAdgvm2Biomes.scheme)

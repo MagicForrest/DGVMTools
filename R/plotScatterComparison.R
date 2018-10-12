@@ -16,6 +16,8 @@
 #' @param showStats Boolean, if TRUE show some stats do quantify how well the model fits the data
 #' @param labels Character vector of labels (one for each run).  If not provided uses the run ids
 #' @param alpha Numeric for the transparency of tre points (range (0,1], default = 0.05))
+#' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
+#' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param text.size Numeric to scale the text size on the plot (default = 6)
 #' 
 #' 
@@ -38,12 +40,13 @@ plotScatterComparison <- function(input.CLayers,
                                    ylim = NULL,
                                    xlab = NULL,
                                    ylab = NULL,
+                                   text.multiplier = NULL,
                                    showFitLine = TRUE,
                                    showStats = TRUE,
                                    alpha = 0.05,
                                    text.size = 6){
   
-  Run = Model = OtherFacet = facet = NULL
+  Run = Model = OtherFacet = facet = label = NULL
   
   # checks
   # for a single Comparison
@@ -143,12 +146,13 @@ plotScatterComparison <- function(input.CLayers,
   scatter.plot <- ggplot(as.data.frame(stats::na.omit(temp.dt)), aes_string(x="ValueX", y="ValueY")) +  geom_point(size=3, alpha =alpha)
   
   
-  scatter.plot <- scatter.plot + theme(text = element_text(size=25))
-  if(is.null(wrap)) scatter.plot <- scatter.plot + ggtitle(paste(input.CLayers@source1@name, "vs.", input.CLayers@source2@name)) + theme(plot.title = element_text(lineheight=.8, face="bold", hjust = 0.5))
+  if(!missing(text.multiplier)) scatter.plot <-  scatter.plot + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
+  
+  if(!wrap) scatter.plot <- scatter.plot + ggtitle(paste(input.CLayers@source1@name, "vs.", input.CLayers@source2@name)) + theme(plot.title = element_text(lineheight=.8, face="bold", hjust = 0.5))
 
   # x and y labels
-  if(is.null(wrap)) {
-    scatter.plot <- scatter.plot +  xlab(input.CLayers@source1@name) + ylab(input.CLayers@source2@name)  
+  if(!wrap) {
+    scatter.plot <- scatter.plot +  xlab(paste(input.CLayers@layers1, input.CLayers@quant1@name, input.CLayers@source1@name, sep = " ")) + ylab(paste(input.CLayers@layers2, input.CLayers@quant2@name, input.CLayers@source2@name, sep = " "))  
   }
   else{
     if(!is.null(xlab)) scatter.plot <- scatter.plot +  xlab(xlab)
@@ -172,9 +176,7 @@ plotScatterComparison <- function(input.CLayers,
   if(wrap) scatter.plot <- scatter.plot + facet_wrap(~ Source)
   
   return(scatter.plot)
-  
 
-  
   
   if( facet.run && !facet.other) { scatter.plot <- scatter.plot + facet_wrap(~ Run, labeller = as_labeller(run.labels)) }
   if(!facet.run &&  facet.other) { scatter.plot <- scatter.plot + facet_wrap(~ OtherFacet, labeller = as_labeller(facet.labels))}

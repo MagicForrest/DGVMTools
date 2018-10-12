@@ -18,4 +18,3 @@ Transform a vector of longitude values to lie in the range (-180,180) instead of
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
-\keyword{internal}

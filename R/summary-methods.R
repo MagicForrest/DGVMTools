@@ -17,8 +17,8 @@
 #' @return A list of strings
 #' @name Summary-methods
 #' @rdname Summary-methods
-#' @exportMethod 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}         
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @exportMethod summary
 setGeneric("summary", function(object,...) standardGeneric("summary"))
 
 

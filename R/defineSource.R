@@ -7,12 +7,14 @@
 #' Note that initially no actual data is stored, only metadata. The data, stored as Fields, can be added to a Source object, are added built with later with other commands and added to \code{Source} command using \code{addToSource}
 #'
 #' @param id A unique character string to identify this particular data.  Recommended to be alphanumeric because it is used to construct file names and to use underscores and full stops (periods) 
-#' for separating characters where need be.   For example, "Standard_v4.0" or "Saatchi2011.HD"  (Mandatory)
+#' for separating characters where need be.   For example, "Standard_v4.0" or "Saatchi2011.HD"  (can be derived from \code{name} if a \code{name} is supplied, otherwise mandatory)
 #' @param format A character string to identify the format of the files of this data sorce. This can be anything, but should be in order for "getField()" to work corrected 
 #' it needs be a \code{supported.format} which is either a supported model that produced this (e.g. "LPJ-GUESS") or "DGVMData" for data files produced by the DGVMData package (Mandatory)
 #' @param pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
-#' @param name A character string describing this run, ie. "LPJ-GUESS v3.1"
+#' @param name A character string describing this run, ie. "LPJ-GUESS v3.1" (can be derived from \code{id} if an \code{id} is supplied, otherwise mandatory)
 #' @param dir The location of this source on the file system (Mandatory)
+#' @param quantities A list of Quantity object what we expect to have in this Source.  The option allows the over-riding the default quantities in the Format object.  
+#' Not 100\% sure why this might be useful though.
 #' @param lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the localities, somewhat legacy for old LPJ-GUESS runs.
 #' @param year.offset A numeric of length 1 to match be added to the years to convert them to calendar years,  somewhat legacy for old LPJ-GUESS runs.
 #' @param london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
@@ -27,13 +29,14 @@
 #' @return A Source object including metadata defined by empty data slots
 #' @export
 #' @seealso Source
+#' @include classes.R
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 
 defineSource <- function(id,
                          name,
                          dir,
                          format,
-                         quantities,
+                         quantities = NULL, # why do we have this?  is it useful?
                          pft.set = list(),
                          lonlat.offset = c(0,0),
                          year.offset = 0,
@@ -46,9 +49,14 @@ defineSource <- function(id,
   
   
   
-  # if no name provided use the id
+  # check for name or id
+  if(missing(name) && missing(id)) stop("Need to provide at least one of a name or an id")
   if(missing(name))  name <- id
-  
+  if(missing(id))  {
+    id <- gsub(" ", "_", name, fixed = TRUE)
+    id <- gsub("/", ".", id, fixed = TRUE)
+  }
+      
   # Retreive a Format object if a string is provided
   if(is.character(format)) {
     if(format == "LPJ-GUESS" || format == "GUESS" || format == "LPJ-GUESS-SPITFIRE") {

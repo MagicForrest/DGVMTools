@@ -12,6 +12,7 @@
 #' @param spatial.extent For which spatial extent to plot the seasonal cycle.  For details of how to make this selection see the documnetation for getField().
 #' @param spatial.aggregate.method Charatacer string specifgin how to spatially aggregate if more than one gridcell are included in the spatial.extent.  Again, see documentation getField for  details.
 #' The default is "mean", simply straight averaging.
+#' @param spatial.extent.id A character string describing the spatial extent over which the data should be aggregated
 #' @param plotAverage Boolean, if TRUE plot the mean of all years
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
@@ -21,7 +22,8 @@
 #' which spatial extent to plot the seasonal cycle and, if that extent includes more that one gridcell, how to aggregate across that extent)
 #' 
 #' @return Returns either a ggplot2 object or a data.table (depending on the 'plot' argument)
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
 
 

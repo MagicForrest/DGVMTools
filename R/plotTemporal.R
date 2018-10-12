@@ -26,6 +26,7 @@
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ggplot2
+#' @export
 #' @return A ggplot
 #'
 plotTemporal <- function(input.data, 

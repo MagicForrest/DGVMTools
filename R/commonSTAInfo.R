@@ -7,7 +7,7 @@
 #' 
 #' @return Either a logical or an STAInfo object, depending on the value of 'logical'
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-
+#' @export
 
 commonSTAInfo <- function(sta.objects, logical = FALSE) {
   

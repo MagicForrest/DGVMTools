@@ -1,12 +1,13 @@
 #' @rdname Quantity-class
-#' @keywords datasets
-#' @importFrom fields tim.colors  
+#' @docType data
 #' @seealso \code{lookupQuantity}
+#' @include colour-palettes.R
+#' @export
 Standard.quantities <- list(
   
   ######################################################################
-  ########## STANDARD (CROSS-FORMAT) QUANTITIES  ########################
-  #####################################################################
+  ########## STANDARD (CROSS-FORMAT) QUANTITIES  #######################
+  ######################################################################
   
   new("Quantity",
       id = "fraction",
@@ -91,6 +92,41 @@ Standard.quantities <- list(
       name = "Annual land sink (NEE)",
       units = "GtC/year",
       colours = veg.palette,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "mprec",
+      name = "Monthly total precipitation",
+      units = "mm/month",
+      colours = fields::tim.colors,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "mtemp",
+      name = "Monthly mean temperature",
+      units = "deg C",
+      colours = fields::tim.colors,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "minsol",
+      name = "Montly mean daily solar radiation",
+      units = "W m-2",
+      colours = fields::tim.colors,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "mwetdays",
+      name = "Wet days per month",
+      units = "d mm-1",
+      colours = fields::tim.colors,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "mwetdays_3",
+      name = "Wet days per month (3 mm threshold)",
+      units = "d mm-1",
+      colours = fields::tim.colors,
       format = c("Standard"))
   
 )

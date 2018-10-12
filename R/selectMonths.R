@@ -5,7 +5,8 @@
 #' @param months A numeric vector of the months to be selected (Can also be abbreviations, "Jan", "Feb" etc... )
 #' 
 #' @return A Field or data.table depending on the type of the input x.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
 selectMonths <- function(x, months){
   

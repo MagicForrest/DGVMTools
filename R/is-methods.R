@@ -13,7 +13,7 @@
 #' @rdname is.object-methods
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @export
+#' @import methods
 NULL
 
 #' @rdname is.object-methods

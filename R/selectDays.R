@@ -5,7 +5,8 @@
 #' @param days A numeric vector of the days to be selected
 #' 
 #' @return A Field or data.table depending on the type of the input x.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export
 
 selectDays <- function(x, days){
   
