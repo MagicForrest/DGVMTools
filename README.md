@@ -1,5 +1,5 @@
 ## **DGVMTools**
-***
+
 R tools for processing, analysing and plotting output from DGVMs (Dynamic Global Vegetation Models)
 
 

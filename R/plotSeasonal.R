@@ -43,7 +43,7 @@ plotSeasonal <- function(runs,
                          ...) {
   
   
-  Quantity = Type = Month = Source = Value = Year = NULL
+  Quantity = Month = Source = Value = Year = NULL
   
   ###### 
   getQuant_local <- function(quant.str, list.of.runs){
@@ -58,15 +58,13 @@ plotSeasonal <- function(runs,
   if(!missing(year.col.gradient) && !is.null(year.col.gradient)) {
     
     if(length(quants) > 1) {
-      warning("Since plotSeasonal is already trying to plot multiple quantities, and therefore multiple line colours, the yaer.col.gradient argument is being ignored ")
+      warning("Since plotSeasonal is already trying to plot multiple quantities, and therefore multiple line colours, the year.col.gradient argument is being ignored ")
       year.col.gradient <- NULL
     }
     
     else if(is.logical(year.col.gradient) && year.col.gradient) year.col.gradient <- viridis::viridis
     
     else if(is.logical(year.col.gradient) && !year.col.gradient) year.col.gradient <- NULL
-    
-    
     
   }
   
@@ -119,7 +117,8 @@ plotSeasonal <- function(runs,
     unit.str <- unique(unit.str) 
   }  
   else {
-    warning("Quants to be plotted have non-identical units in plotSeasonal(). Using the first only for the axis, label.")
+    unit.str <- paste(unique(unit.str), collapse = ", ")
+    warning("Quants to be plotted have non-identical units in plotSeasonal().")
   }   
   
   
@@ -132,11 +131,11 @@ plotSeasonal <- function(runs,
   
   ## for all runs
   run.dts <- list()
+  all.fields <- list()
   for(run in runs){
     
     ## for all quants
     quants.dts <- list()
-    all.fields <- list()
     for(quant in quants) {
       
       # open the and pull out the data that we want
@@ -150,7 +149,6 @@ plotSeasonal <- function(runs,
       this.dt <-this.Field@data
       setnames(this.dt, quant@id, "Value")
       this.dt <- this.dt[, Quantity := quant@name]
-      this.dt <- this.dt[, Type := "Single Year"]
       setKeyDGVM(this.dt)
       
       quants.dts[[length(quants.dts)+1]] <- this.dt
@@ -166,7 +164,7 @@ plotSeasonal <- function(runs,
     
     # set the Source and save for later
     this.run.dt[, Source := run@name]
-    run.dts[[run@id]] <- this.run.dt
+    run.dts[[paste(run@id, quant@id, sep = "_")]] <- this.run.dt
     rm(this.run.dt)
     
     
@@ -187,24 +185,29 @@ plotSeasonal <- function(runs,
     else if(is.null(subtitle)) subtitle <- waiver()
   }
   
-  
+  # return the data if plot = FALSE
+  if(!plot) return(all.dt)
   
   ###### MAKE THE PLOT ######
   
   # basic plot
   if(is.null(year.col.gradient)) {
     p <- ggplot(as.data.frame(all.dt), aes(Month, Value, colour = Quantity, group = interaction(Year, Quantity)), alpha = alpha) + geom_line(alpha = alpha)
+    if(plotAverage) {
+      p <- p + stat_summary(aes(group=Quantity, color=paste("mean", Quantity)), fun.y=mean, geom="line", size = 1, linetype = "longdash")
+    }
   }
   else {
     p <- ggplot(as.data.frame(all.dt), aes(Month, Value, colour = Year, group = interaction(Year, Quantity)), alpha = alpha) + geom_line(alpha = alpha)
     p <- p + scale_color_gradientn(colours = year.col.gradient(100))
+    if(plotAverage) {
+      p <- p + stat_summary(aes(group=Quantity, linetype = "mean year"), fun.y=mean, geom="line", size = 1)
+      p <- p + scale_linetype_manual(values=c("mean year"="longdash"), name = element_blank())
+    }
   }
   
   # add average line if chosen
-  if(plotAverage) {
-    p <- p + stat_summary(aes(group=Quantity, linetype = "mean year"), fun.y=mean, geom="line", size = 1)
-    p <- p + scale_linetype_manual(values=c("mean year"="longdash"), name = element_blank())
-  }
+ 
   
   
   
