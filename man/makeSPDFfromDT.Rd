@@ -4,7 +4,7 @@
 \alias{makeSPDFfromDT}
 \title{Make SpatialPixelDataFrame from a data.table}
 \usage{
-makeSPDFfromDT(input.data, layers = "all", tolerance = 1e-07,
+makeSPDFfromDT(input.data, layers = "all", tolerance = 0.01,
   grid.topology = NULL)
 }
 \arguments{

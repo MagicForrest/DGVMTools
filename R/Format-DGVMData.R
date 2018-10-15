@@ -23,7 +23,10 @@ getField_DGVMData <- function(source,
                            target.STAInfo,
                            verbose = FALSE) {
   
-   # To avoid annoying NOTES when R CMD check-ing
+  # first check that ncdf4 netCDF package is installed
+  if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read DGVMData files.")
+  
+  # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Year = Month = Time = NULL
   
   # get fist and last year for use later on
@@ -77,7 +80,7 @@ getField_DGVMData <- function(source,
   if(verbose) message(paste0("Opening file ", file.name.nc))     
   if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
   else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
-  global.attributes <- ncatt_get(this.nc, 0, attname=NA, verbose=FALSE)
+  global.attributes <- ncdf4::ncatt_get(this.nc, 0, attname=NA, verbose=FALSE)
   
   # Check out dimensions
   dims.present <- names(this.nc$dim)

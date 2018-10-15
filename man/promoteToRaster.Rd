@@ -4,7 +4,7 @@
 \alias{promoteToRaster}
 \title{Prepares data as a raster object for plotting.}
 \usage{
-promoteToRaster(input.data, layers = "all", tolerance = 1e-07,
+promoteToRaster(input.data, layers = "all", tolerance = 0.01,
   grid.topology = NULL)
 }
 \arguments{
