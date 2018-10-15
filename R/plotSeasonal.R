@@ -38,6 +38,8 @@ plotSeasonal <- function(runs,
                          text.multiplier = NULL,
                          plot = TRUE,
                          facet.scales = "fixed",
+                         year.col.gradient = NULL,
+                         alpha = 0.2,
                          ...) {
   
   
@@ -51,6 +53,23 @@ plotSeasonal <- function(runs,
     }
     
   }
+  
+  ##### Year colour gradient
+  if(!missing(year.col.gradient) && !is.null(year.col.gradient)) {
+    
+    if(length(quants) > 1) {
+      warning("Since plotSeasonal is already trying to plot multiple quantities, and therefore multiple line colours, the yaer.col.gradient argument is being ignored ")
+      year.col.gradient <- NULL
+    }
+    
+    else if(is.logical(year.col.gradient) && year.col.gradient) year.col.gradient <- viridis::viridis
+    
+    else if(is.logical(year.col.gradient) && !year.col.gradient) year.col.gradient <- NULL
+    
+    
+    
+  }
+  
   
   ### SOURCES - check the sources
   if(is.Source(runs)) {
@@ -173,10 +192,21 @@ plotSeasonal <- function(runs,
   ###### MAKE THE PLOT ######
   
   # basic plot
-  p <- ggplot(as.data.frame(all.dt), aes(Month, Value, colour = Quantity, group = interaction(Year, Quantity)), alpha = 0.2) + geom_line(alpha = 0.2)
+  if(is.null(year.col.gradient)) {
+    p <- ggplot(as.data.frame(all.dt), aes(Month, Value, colour = Quantity, group = interaction(Year, Quantity)), alpha = alpha) + geom_line(alpha = alpha)
+  }
+  else {
+    p <- ggplot(as.data.frame(all.dt), aes(Month, Value, colour = Year, group = interaction(Year, Quantity)), alpha = alpha) + geom_line(alpha = alpha)
+    p <- p + scale_color_gradientn(colours = year.col.gradient(100))
+  }
   
   # add average line if chosen
-  if(plotAverage) p <- p + stat_summary(aes(group=Quantity, color=paste("mean", Quantity) ), fun.y=mean, geom="line", size = 1, linetype = "longdash")
+  if(plotAverage) {
+    p <- p + stat_summary(aes(group=Quantity, linetype = "mean year"), fun.y=mean, geom="line", size = 1)
+    p <- p + scale_linetype_manual(values=c("mean year"="longdash"), name = element_blank())
+  }
+  
+  
   
   # set the x-axis
   p <- p + scale_x_continuous(breaks = 1:12,labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep","Oct","Nov","Dec"))
@@ -187,7 +217,7 @@ plotSeasonal <- function(runs,
                  plot.subtitle = element_text(hjust = 0.5))
   
   # set legend 
-  p <- p + theme(legend.title=element_blank())
+  if(is.null(year.col.gradient)) p <- p + theme(legend.title=element_blank())
   p <- p + theme(legend.position = "right", legend.key.size = unit(2, 'lines'))
   
   # wrap to split by source

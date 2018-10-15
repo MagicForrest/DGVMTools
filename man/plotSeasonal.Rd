@@ -7,7 +7,8 @@
 plotSeasonal(runs, quants, title = NULL, subtitle = NULL,
   spatial.extent = NULL, spatial.aggregate.method = "mean",
   spatial.extent.id, plotAverage = TRUE, text.multiplier = NULL,
-  plot = TRUE, facet.scales = "fixed", ...)
+  plot = TRUE, facet.scales = "fixed", year.col.gradient = NULL,
+  alpha = 0.2, ...)
 }
 \arguments{
 \item{runs}{A Source or a list of Sources to plot}
