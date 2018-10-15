@@ -434,9 +434,6 @@ setClass("Comparison",
 #' 
 #' This class stores the information about a biome scheme.  It describes what how the model output (in the form of a data.table) must be prepared, and then the rules which are used to classify the biomes.
 #' 
-#' This is ultimately not flexible enough for all conceivable biome schemes from all models and will need to be somehow generalised and expanded at some point.  This is most certainly a challenge for another day!
-#' 
-#' 
 #' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")
 #' @slot name A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")
 #' @slot units A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")
@@ -449,6 +446,8 @@ setClass("Comparison",
 #' which would make a layer called "Woody" which would be the sum of all LAI trees and shrubs.
 #' @slot data.reference Character string giving a reference where the data for this biome scheme comes from
 #' @slot published.reference Character string giving a reference where this model output classification scheme was published
+#' @name BiomeScheme-class
+#' @rdname BiomeScheme-class
 #' @exportClass BiomeScheme
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("BiomeScheme",
