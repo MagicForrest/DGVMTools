@@ -171,8 +171,8 @@ getField <- function(source,
   
   data.list <- source@format@getField(source, quant, sta.info, verbose, ...)
   this.dt <- data.list[["dt"]]
-  setKeyDGVM(this.dt)
   if(source@london.centre) this.dt[, Lon := LondonCentre(Lon)]
+  setKeyDGVM(this.dt)
   actual.sta.info <- data.list[["sta.info"]]
   
   
@@ -207,7 +207,6 @@ getField <- function(source,
     if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
     
   }
-  
   
   ### SELECT THE YEARS IF REQUESTED
   if("Year" %in% getDimInfo(this.dt)) {
@@ -253,11 +252,9 @@ getField <- function(source,
     
   }
   
-  
   ### CHECK THAT WE HAVE A VALID DATA.TABLE
   if(nrow(this.dt) == 0) stop("getField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
-  
-  
+
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(sta.info@spatial.aggregate.method != "none") {
     
@@ -274,7 +271,6 @@ getField <- function(source,
     }
   }
   
-  
   ###  DO YEAR AGGREGATATION
   if(sta.info@year.aggregate.method != "none"){
     if("Year" %in% getDimInfo(this.dt, "names")){
@@ -289,7 +285,6 @@ getField <- function(source,
       }
     }
   }
-  
   
   ###  DO SUBANNUAL AGGREGATION
   if(length(sta.info@subannual.resolution) > 0 ){
@@ -319,8 +314,6 @@ getField <- function(source,
     }
   }
   
-  
-  
   ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
   model.field <- new("Field",
                      id = target.field.id,
@@ -328,8 +321,7 @@ getField <- function(source,
                      quant = quant,
                      actual.sta.info,
                      source = source)
-  
-  
+
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMField object...")}

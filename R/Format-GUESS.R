@@ -177,7 +177,7 @@ openLPJOutputFile <- function(run,
                  subannual.resolution = subannual,
                  subannual.original = subannual,
                  spatial.extent = extent(dt))
-  
+
   if(data.table.only) return(dt)
   else return(list(dt = dt,
                    sta.info = sta.info))

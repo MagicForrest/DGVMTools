@@ -135,7 +135,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     if(symmetric.scale) limits <- c(-max.for.scale, max.for.scale)
     
     # if no panel background panel colour specified, using a non-white one
-    if(missing(panel.bg.col)) panel.bg.col = "809DB8"
+    if(missing(panel.bg.col)) panel.bg.col = "#809DB8"
     
     
     the.plot <- plotSpatial(objects.to.plot,

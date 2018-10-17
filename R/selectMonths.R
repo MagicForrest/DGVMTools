@@ -50,7 +50,8 @@ selectMonths <- function(x, months){
   
   # subset the data.table
   output.dt <- subset(input.dt, Month %in% months)
-
+  setKeyDGVM(output.dt)
+  
   # and return
   if(is.Field(x)) {
     x@data <- output.dt

@@ -1297,14 +1297,14 @@ PhenologyAdgvm2BiomeScheme <- new("BiomeScheme",
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
-supported.biome.schemes <- c("Smith2014BiomeScheme" = Smith2014BiomeScheme,
-                             "Hickler2012BiomeScheme" = Hickler2012BiomeScheme,
-                             "Forrest2015BiomeScheme" = Forrest2015BiomeScheme,
-                             "DevMegaBiomeScheme" = DevMegaBiomeScheme,
-                             "FPCMegaBiomeScheme" = FPCMegaBiomeScheme,
-                             "MeditBiomeScheme" = MeditBiomeScheme,
-                             "FireMIPBiomeScheme" = FireMIPBiomeScheme,
-                             "SimpleAdgvm2BiomeScheme" = SimpleAdgvm2BiomeScheme,
-                             "SimpleHeightAdgvm2BiomeScheme" = SimpleHeightAdgvm2BiomeScheme,
-                             "GrowthFormAdgvm2BiomeScheme" = GrowthFormAdgvm2BiomeScheme,
-                             "PhenologyAdgvm2BiomeScheme" = PhenologyAdgvm2BiomeScheme)
+supported.biome.schemes <- c("Smith2014" = Smith2014BiomeScheme,
+                             "Hickler2012" = Hickler2012BiomeScheme,
+                             "Forrest2015" = Forrest2015BiomeScheme,
+                             "DevMegaBiomes" = DevMegaBiomeScheme,
+                             "FPCMegaBiomes" = FPCMegaBiomeScheme,
+                             "MeditBiomes" = MeditBiomeScheme,
+                             "FireMIPBiomes" = FireMIPBiomeScheme,
+                             "SimpleAdgvm2Biomes" = SimpleAdgvm2BiomeScheme,
+                             "SimpleHeightAdgvm2Biomes" = SimpleHeightAdgvm2BiomeScheme,
+                             "GrowthFormAdgvm2Biomes" = GrowthFormAdgvm2BiomeScheme,
+                             "PhenologyAdgvm2Biomes" = PhenologyAdgvm2BiomeScheme)

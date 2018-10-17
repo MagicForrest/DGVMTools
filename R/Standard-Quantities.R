@@ -110,7 +110,7 @@ Standard.quantities <- list(
   
   new("Quantity",
       id = "minsol",
-      name = "Montly mean daily solar radiation",
+      name = "Monthly mean daily solar radiation",
       units = "W m-2",
       colours = fields::tim.colors,
       format = c("Standard")),
@@ -118,14 +118,14 @@ Standard.quantities <- list(
   new("Quantity",
       id = "mwetdays",
       name = "Wet days per month",
-      units = "d mm-1",
+      units = "days/month",
       colours = fields::tim.colors,
       format = c("Standard")),
   
   new("Quantity",
       id = "mwetdays_3",
       name = "Wet days per month (3 mm threshold)",
-      units = "d mm-1",
+      units = "days/month",
       colours = fields::tim.colors,
       format = c("Standard"))
   
