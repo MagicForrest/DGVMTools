@@ -102,7 +102,8 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                        source = object@source1,
                        commonSTAInfo(list(object@sta.info1, object@sta.info2)))
       
-      new.field@source@name <- paste0("\u0394(", object@source1@name, " - ", object@source2@name, ")")
+      #new.field@source@name <- paste0("\u0394(", object@source1@name, " - ", object@source2@name, ")")
+      new.field@source@name <- object@name
       new.field@source@id <- paste(object@source1@id, object@source2@id, sep ="-")
       
       # if comparing only one layer with the same name in both sources then append the layer to the 'difference' layer name to make a more descriptive layer name and hence plot title

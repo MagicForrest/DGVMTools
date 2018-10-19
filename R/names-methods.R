@@ -67,3 +67,13 @@ setMethod("layers", signature(x="Comparison"), function(x) {
   return(col.names)
   
 })
+
+#' @rdname names
+setMethod("layers", signature(x="data.table"), function(x) {
+  
+  # get all column names, remove the spatial and temporal dimensions and return
+  col.names <- names(x)
+  col.names <- col.names[!col.names %in% getDimInfo(x)]
+  return(col.names)
+  
+})

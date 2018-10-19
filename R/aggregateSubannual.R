@@ -27,6 +27,9 @@ aggregateSubannual.uncompiled <- function(input.obj,
   # Possible can solve this by replace the subset function
   Year = Season = Month = Day = Lat = Lon = Weight = NULL
   
+  # standardise arguments
+  if(tolower(target) == "annual"  || tolower(target) == "yearly") target = "Year"
+  
  
   # Function for weighting months by their number of days
   addMonthlyWeights <- function(x){
@@ -144,7 +147,8 @@ aggregateSubannual.uncompiled <- function(input.obj,
     }
     
     else{
-      stop("Subannual aggregation requested but not time dimensions present.  Exiting...")
+      warning("Subannual aggregation requested but no subannual dimensions present, it looks like this has already been aggregated!\n Just returning the original data.")
+      return(input.obj)
     }
   }
   
