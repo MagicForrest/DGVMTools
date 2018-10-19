@@ -147,13 +147,13 @@ determinePFTs_NewFormat <- function(directory, names = TRUE){
   
 } 
 
-## ----determine Quantities, echo=TRUE-------------------------------------
-determineQuantities_NewFormat <- function(x, additional.args){ 
+## ----available Quantities, echo=TRUE-------------------------------------
+availableQuantities_NewFormat <- function(x, additional.args){ 
   
   # typical stuff 
   # * get a list of files in the directory
   # * scan the files for different variables
-  # * build a list of qunatities present in the model outpu / dataset
+  # * build a list of qunatities present in the model output / dataset
   
   # dummy code
   Quantities.present <- list()
@@ -185,7 +185,7 @@ NewFormat <- new("Format",
                  default.pfts = PFTs_NewFormat, 
                  quantities = quantities_NewFormat, 
                  determinePFTs = determinePFTs_NewFormat, 
-                 determineQuantities = determineQuantities_NewFormat, 
+                 availableQuantities = availableQuantities_NewFormat, 
                  getField =getField_NewFormat)
 
 ## ----Final print, echo=TRUE----------------------------------------------

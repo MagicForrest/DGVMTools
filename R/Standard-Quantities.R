@@ -92,6 +92,41 @@ Standard.quantities <- list(
       name = "Annual land sink (NEE)",
       units = "GtC/year",
       colours = veg.palette,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "mprec",
+      name = "Monthly total precipitation",
+      units = "mm/month",
+      colours = fields::tim.colors,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "mtemp",
+      name = "Monthly mean temperature",
+      units = "deg C",
+      colours = fields::tim.colors,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "minsol",
+      name = "Monthly mean daily solar radiation",
+      units = "W m-2",
+      colours = fields::tim.colors,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "mwetdays",
+      name = "Wet days per month",
+      units = "days/month",
+      colours = fields::tim.colors,
+      format = c("Standard")),
+  
+  new("Quantity",
+      id = "mwetdays_3",
+      name = "Wet days per month (3 mm threshold)",
+      units = "days/month",
+      colours = fields::tim.colors,
       format = c("Standard"))
   
 )

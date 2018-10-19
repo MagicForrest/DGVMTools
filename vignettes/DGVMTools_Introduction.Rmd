@@ -37,33 +37,38 @@ Much of the package could be utilised for any data which follows comes distribut
 
 ## Tutorial
 
-Now we'll jump right in and start using the package to read, process and plot some DGVM output data and hopefully demonstrate the features, logic and power of the package.  This tutorial uses small LPJ-GUESS output files (exactly in the format as they come from the model but compressed) for distriubtion in the package.
+Now we'll jump right in and start using the package to read, process and plot some DGVM output data and hopefully demonstrate the features, logic and power of the package.  This tutorial uses small LPJ-GUESS output files included in the package.
 
-### Define a data source
+### Step 1: Define a **`Source`**
 
-The first job in pretty much any analysis is to define the source (or sources) of the data to be analysed.  Here we use the `defineSource()` function to do exactly that, and it produces an object of type `Source`, like so...
-
-```{r Define source, echo=TRUE}
-GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
-                          dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), # this would normlly just be a character string containing a path
-                          format = "LPJ-GUESS",
-                          name = "LPJ-GUESS Example Run")
-
-class(GUESS.run)
-```
-
-To define a `Source` we need three key bits of information and these are the three essential arguments to `defineSource()` [^1].  These are:  
+The first job in pretty much any analysis is to define the source (or sources) of the data to be analysed.  Here we use the `defineSource()` function to do exactly that, and it produces an object of type `Source`. To define a `Source` we need three key bits of information and these are the three essential arguments to `defineSource()` [^1].  These are:  
 
 1. the **`id`** argument, a unique identifier to label this source (should be alphanumeric with no spaces)
-2. the **`dir`** argument, to specify the location of the data on disk (for the purposes of this tutorial we used a function, but it is normally just a character string)
-3. the **`format`** argument, which spcifies the structure of the data on disk (ie what model did it come from)
+2. the **`dir`** argument, to specify the location of the data on disk (for the purposes of this tutorial we generate this with a function, but it is normally just a character string)
+3. the **`format`** argument, which specifies the structure of the data on disk (ie what model did it come from)
 
 The `name` argument is optional and can be used to provide a more human-friendly string to identify the run (if not provided, the `id` argument is used for the `name`). 
 
-We can take a look at the `Source` object using the handy `print` function
+```{r Define source, echo=TRUE}
+
+# a little bit of magic to get the path to the example data on your system
+example.run.directory <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+print(example.run.directory)
+
+GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
+                          dir = example.run.directory, # this would normlly just be a character string containing a path
+                          format = GUESS,
+                          name = "LPJ-GUESS Example Run")
+
+
+```
+
+
+
+We can check the object's class take a look at it using the handy `print` function.
 
 ``` {r Source info, echo=TRUE}
-
+class(GUESS.run)
 print(GUESS.run)
 ```
 
@@ -71,7 +76,7 @@ That looks a little complicated, but it is mostly just meta-data designed to mak
 
 [^1]:  Experienced R users may have noticed that here we are using a specific function to make out `Source` object as opposed to `new()` function.  Whilst it is possible to construct a `Source` using `new()` it is __strongly recommended not to do so__ because using `defineSource()` is safer because it ensures the integrity and internal consistency of the `Source`.  It is also just _very_ much more convenient.
 
-### Reading data
+### Step 2: Reading data
 
 To actually read data from disk with use the `getField()` function.  This can be as simple as the following:
 
@@ -88,7 +93,7 @@ print(LAI.full)
 
 This is a lot output but it basically describes everything that you might ever need to know about this `Field`.  The most most important part is the data, which is stored in what looks like an R `data.frame` (actually it is a `data.table` which is like a `data.frame` in many ways but often much faster) and each 'layer' (in this case each PFT) is stored as a column.  There is a bunch of meta-data included too, mostly about the spatial, temporal and annual dimensions of the data.  An important piece of metadata in the information about the type of data represented, this is stored in a `Quantity` object.  The `Quantity` was looked up automatically from the `var = "lai"` argument.  
 
-###  Aggregating Data
+###  Step 3: Aggregating Data
 
 Whilst reading in the entire data set may be useful, it is often to large and unweildy to work with or to plot.  When analysing DGVM output, one commonly aggregates the data across space or time. To get the data in a more managable form we are going to call `getField()` two more times, this time making use of its built in  __aggregation__ options.  First we open the file and simulateneously aggregate across all years using the `year.aggregate.method` (in this case we take the mean, but there are other options such a the total or the standard deviation)
 
@@ -117,15 +122,15 @@ LAI.spatial.mean <- getField(source = GUESS.run,
 getDimInfo(LAI.spatial.mean)
 ```
 
-Note that this time we have aggregated over space, sothe  Lon and Lat dimensions have gone, but Year remains.
+Note that this time we have aggregated over space, so the Lon and Lat dimensions have gone, but Year remains.
 
-### Plotting data
+### Step 4: Plotting data
 
 Having got some sensibly aggregated data, we can now plot it using `plotTemporal` and `plotSpatial`.  
 
 #### Spatial plots (maps)
 
-First we using `plotSpatial` to produce a map from the annually-averaged data.  Note the underlying plot system is ggplot and `plotSpatial` returns a ggplot2 object which we then need to print in order to actually see it.
+First we us `plotSpatial` to produce a map from the annually-averaged data.  Note the underlying plot system is ggplot and `plotSpatial` returns a ggplot2 object which we then need to print in order to actually see it.
 
 ``` {r Spatial plot, out.width = "95%", fig.width = 8, fig.asp = 1, echo = TRUE}
 print(plotSpatial(LAI.year.mean))
@@ -159,13 +164,13 @@ print(plotTemporal(LAI.year.mean))
 ```
 
 
-## Analysis
+### Analysis
 
 
-## Customising you plots
+### Customising you plots
 
 
-## Overview of key concepts
+## Further Details
 
 If you are an impatient sort of person you can skip ahead to the 'Tutorial' section below, but it might be helpful to read this section first.
 

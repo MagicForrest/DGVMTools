@@ -63,10 +63,36 @@ as.data.table.Comparison = function(x, keep.rownames, ...) as(x, "data.table")
 ############# raster
 
 #' @name export-methods
-setAs("Field", "Raster", function(from) promoteToRaster(from@data))
+setAs("Field", "Raster", function(from) {
+  
+  field.as.raster = tryCatch({
+     promoteToRaster(from@data)
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Field to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the defailt tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  return(field.as.raster)
+  
+})
 
 #' @name export-methods
-setAs("Comparison", "Raster", function(from) promoteToRaster(from@data))
+setAs("Comparison", "Raster", function(from) { 
+  
+  field.as.raster = tryCatch({
+    promoteToRaster(from@data)
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Comparison to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the defailt tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  return(field.as.raster)
+  
+})
 
 
 #' Generic method for coercing to raster
@@ -79,11 +105,37 @@ setGeneric("as.Raster", function(x) {
 
 #' @rdname export-methods
 #' @export
-setMethod("as.Raster", signature("Field"),   function(x) promoteToRaster(x@data))
+setMethod("as.Raster", signature("Field"),   function(x) {
+  
+  field.as.raster = tryCatch({
+     promoteToRaster(x@data)
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Field to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the defailt tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  return(field.as.raster)
+  
+})
 
 #' @rdname export-methods
 #' @export
-setMethod("as.Raster", signature("Comparison"),   function(x) promoteToRaster(x@data))
+setMethod("as.Raster", signature("Comparison"),   function(x){ 
+  
+  field.as.raster = tryCatch({
+     promoteToRaster(x@data)
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Comparison to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the defailt tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  return(field.as.raster)
+  
+})
 
 #' Generic method for coercing to raster  
 #' @name as.array
@@ -120,7 +172,7 @@ setMethod("as.array", signature("Field"), function(x, ...) {
 #' @return A RasterLayer (or RasterBrick)
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, grid.topology = NULL){
+promoteToRaster <- function(input.data, layers = "all", tolerance = 0.01, grid.topology = NULL){
   
   ###  Get class of the object we are dealing with
   this.class = class(input.data)[1]
@@ -207,7 +259,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.0000001, g
 #' @import data.table
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.0000001, grid.topology = NULL) {
+makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.topology = NULL) {
   
   # to stop complaints at build time
   Lon = Lat = NULL

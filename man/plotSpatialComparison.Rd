@@ -6,8 +6,8 @@
 \usage{
 plotSpatialComparison(sources, type = c("difference",
   "percentage.difference", "values", "nme"), limits = NULL,
-  override.cols = NULL, symmetric.scale = TRUE,
-  percentage.difference.limit = 300, ...)
+  panel.bg.col = "white", override.cols = NULL,
+  symmetric.scale = TRUE, percentage.difference.limit = 300, ...)
 }
 \arguments{
 \item{sources}{The data to plot, must be a Comparison or a list of Comparisons}
@@ -16,6 +16,8 @@ plotSpatialComparison(sources, type = c("difference",
 (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)}
 
 \item{limits}{A numeric vector with two members (lower and upper limit) to limit the plotted values.}
+
+\item{panel.bg.col}{Colour string for the panel background, default to "white" for absolute values plots, and a sort of blue grey for difference plots.}
 
 \item{override.cols}{A colour palette function to override the defaults.}
 

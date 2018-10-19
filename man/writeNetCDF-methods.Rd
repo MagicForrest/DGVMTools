@@ -10,19 +10,22 @@
 \title{writeNetCDF methods}
 \usage{
 \S4method{writeNetCDF}{Field,character}(x, filename, start.date = NULL,
-  monthly = FALSE, verbose = FALSE, quantity = NULL, source = NULL,
+  monthly = FALSE, annual = FALSE, verbose = FALSE,
+  quantity = NULL, source = NULL, layer.names = NULL,
   layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
   time.dim.name = "Time", precision = "float", time.values = NULL,
   ...)
 
 \S4method{writeNetCDF}{Raster,character}(x, filename, start.date = NULL,
-  monthly = FALSE, verbose = FALSE, quantity = NULL, source = NULL,
+  monthly = FALSE, annual = FALSE, verbose = FALSE,
+  quantity = NULL, source = NULL, layer.names = NULL,
   layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
   time.dim.name = "Time", precision = "float", time.values = NULL,
   ...)
 
 \S4method{writeNetCDF}{list,character}(x, filename, start.date = NULL,
-  monthly = FALSE, verbose = FALSE, quantity = NULL, source = NULL,
+  monthly = FALSE, annual = FALSE, verbose = FALSE,
+  quantity = NULL, source = NULL, layer.names = NULL,
   layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
   time.dim.name = "Time", precision = "float", time.values = NULL,
   ...)
@@ -39,6 +42,9 @@ a RasterStack or RasterBrick with a time dimension.}
 \item{monthly}{Logical specifying if the data has has a monthly time resolution. Is ignored for a Field, but it is necessary to set it to TRUE if you want to make a netCDF file out
 of a RasterStack or RasterBrick where each layer represents a month.}
 
+\item{annual}{Logical specifying if the data has has a annual time resolution. Is ignored for a Field, but it is necessary to set it to TRUE if you want to make a netCDF file out
+of a RasterStack or RasterBrick where each layer represents a year.}
+
 \item{verbose}{Logical, if TRUE print a bunch of progress and debug output}
 
 \item{quantity}{A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
@@ -46,6 +52,9 @@ if you want to use different meta-data for a Field just alter the Quantity objec
 
 \item{source}{A DGVMTools::Source object.  This is to provide meta-data about the source of the data (model run/dataset, climate forcing, contact person etc)
 if saving a Raster* object. It is ignored in the case of a Field (but note  that if you want to use different meta-data for a Field just alter the Source object in the Field object before you call writeNetCDF)}
+
+\item{layer.names}{A vector of characters to specify the names of the variables in the netCDF file, ignored for a Field.
+Should be length 1 or the number of layers in the input raster.}
 
 \item{layer.dim.name}{A character string specifing the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension.}

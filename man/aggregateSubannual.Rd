@@ -13,7 +13,7 @@ aggregateSubannual(input.obj, method = "mean", target = "Year",
 \item{method}{A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!}
 
-\item{target}{A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (default)}
+\item{target}{A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (also "Annual" is valid)  (default)}
 
 \item{verbose}{If TRUE give some progress update about the averaging.}
 }

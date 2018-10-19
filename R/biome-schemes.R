@@ -85,12 +85,14 @@ Smith2014BiomeRules <- function(x){
   
 }
 
-#' Meta-data describing the Smith 2014 et al. 2014 biome scheme for LPJ-GUESS output.
+#' Smith et al 2014
+#'  
+#' \strong{Smith2014BiomeScheme} Classification of global output as per Smith et al. 2014. Designed to be compared to Haxeltine and Prentice (1996) 
+#' map of potential natural biomes.
 #' 
-#' 
-#' @keywords internal
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-Smith2014.scheme <- new("BiomeScheme",
+#' @rdname BiomeScheme-class
+#' @export
+Smith2014BiomeScheme <- new("BiomeScheme",
                         new("Quantity",
                             id = "Smith2014",
                             name = "Smith et al. 2014 Biomes", 
@@ -314,10 +316,12 @@ Hickler2012Rules <- function(x){
 
 #' Meta-data describing the Hickler et al. 2012 european biome scheme for LPJ-GUESS output.
 #' 
-#' @keywords internal
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' \strong{Hickler2012BiomeScheme}  Classification of european output as per Hickler et al. 2012.
+#' 
+#' @rdname BiomeScheme-class
+#' @export
 
-Hickler2012.scheme <- new("BiomeScheme",
+Hickler2012BiomeScheme <- new("BiomeScheme",
                           new("Quantity",
                               id = "Hickler2012",
                               name = "Hickler2012",
@@ -460,11 +464,14 @@ Forrest2015MegaBiomeRules <- function(x){
 }
 
 #' Meta-data describing the Forrest et al. 2015 "mega biome" scheme for LPJ-GUESS output.
+#' 
+#' \strong{Forrest2015BiomeScheme}  Classification of global output into coarser mega biomes as per Forrest et al. 2015 (see appendix), 
+#'  which is really just an aggregation of biomes following Harrison and Prentice 2006.  Can be compared to aggregated Haxeltine and Prentice (1996) map.
 #'
-#' @keywords internal
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @rdname BiomeScheme-class
+#' @export
 #'
-Forrest2015.scheme <- new("BiomeScheme",
+Forrest2015BiomeScheme <- new("BiomeScheme",
                           new("Quantity",
                               id = "Forrest2015",
                               name = "Forrest et al. 2015",
@@ -590,12 +597,14 @@ MeditBiomeRules <- function(x){
 
 #' Meta-data describing a Mediterranean scheme for LPJ-GUESS output.
 #' 
-#' @keywords internal
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' \strong{MeditBiomeScheme} A biome classification scheme used for Turkey.
 #' 
-MeditBiomes.scheme <- new("BiomeScheme",
+#' @rdname BiomeScheme-class
+#' @export
+#' 
+MeditBiomeScheme <- new("BiomeScheme",
                           new("Quantity",
-                              id = "MeditBiomes",
+                              id = "MeditBiomeScheme",
                               name = "Mediterranean Biomes",
                               colours = grDevices::colorRampPalette(c("Cold Montane Forest" = "royalblue4",
                                                                       "Deciduous Forest" = "darkgreen",
@@ -713,10 +722,12 @@ MegaBiomeRules_dev <- function(x){
 
 #' Meta-data describing an unpublished "mega biome" scheme for LPJ-GUESS output.
 #' 
-#' @keywords internal
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' \strong{DevMegaBiomeScheme}  Unpublished for potentially useful classification of global biomes which is slightly simpler than Smith et al. 2014.
 #' 
-Megabiomes_dev.scheme <- new("BiomeScheme",
+#' @rdname BiomeScheme-class
+#' @export
+#' 
+DevMegaBiomeScheme <- new("BiomeScheme",
                              new("Quantity",
                                  id = "Megabiomes",
                                  name = "Megabiomes",
@@ -772,7 +783,6 @@ Megabiomes_dev.scheme <- new("BiomeScheme",
 #' 
 #' @keywords internal
 #' @return Biomes code (1-10)
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 FireMIPBiomeRules <- function(x){
   
   # BIOME 1 & 2 - croplands mosaics
@@ -831,12 +841,14 @@ FireMIPBiomeRules <- function(x){
 }
 
 
-#' Meta-data describing an unpublished "mega biome" scheme for LPJ-GUESS output.
+#' Meta-data describing FireMIP biomes
 #' 
-#' @keywords internal
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' \strong{FireMIPBiomeScheme}  Simple biomes based on a common PFT set for the FireMIP models
 #' 
-FireMIPBiomes.scheme <- new("BiomeScheme",
+#' @rdname BiomeScheme-class
+#' @export
+#' 
+FireMIPBiomeScheme <- new("BiomeScheme",
                             new("Quantity",
                                 id = "FireMIP",
                                 name = "FireMIP Biomes",
@@ -896,7 +908,7 @@ FireMIPBiomes.scheme <- new("BiomeScheme",
 
 #' Rules for biome scheme based on FPC
 #' 
-#' Joerg fill this in
+#' lalala
 #' 
 #' @param fpc Vector of FPC values
 #' @keywords internal
@@ -957,14 +969,15 @@ FPCMegaBiomeRules <- function(x) {
 
 #' Meta-data for an FPC-based mega biome scheme
 #' 
-#' Joerg stuff here
+#' \strong{FPCMegaBiome} an unpublished scheme based on fractional cover developed by Joerg Steinkamp
 #'
-#' @keywords internal
+#' @rdname BiomeScheme-class
+#' @export
 #' 
-FPCMegabiomes.scheme <- new("BiomeScheme",
+FPCMegaBiomeScheme <- new("BiomeScheme",
                             new("Quantity",
-                                id = "FPCMegabiomes",
-                                name = "FPCMegabiomes",
+                                id = "FPCMegaBiomeScheme",
+                                name = "FPCMegaBiomeScheme",
                                 colours = grDevices::colorRampPalette(c("Tropical forest" = "darkgreen",
                                                                         "Temperate forest" = "seagreen",
                                                                         "Boreal forest" = "turquoise4",
@@ -1048,12 +1061,14 @@ SimpleAdgvm2BiomeRules <- function(x){
 
 #' Meta-data describing a simple scheme for aDGVM2 output.
 #' 
-#' @keywords internal
-#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' \strong{SimpleAdgvm2BiomeScheme} SS document here
 #' 
-SimpleAdgvm2Biomes.scheme <- new("BiomeScheme",
+#' @rdname BiomeScheme-class
+#' @export
+#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+SimpleAdgvm2BiomeScheme <- new("BiomeScheme",
                                  new("Quantity",
-                                     id = "SimpleAdgvm2Biomes",
+                                     id = "SimpleAdgvm2BiomeScheme",
                                      name = "Simple aDGVM2 Biomes",
                                      colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
                                                                              "C4 Grassland" = '#fff700',
@@ -1091,7 +1106,6 @@ SimpleAdgvm2Biomes.scheme <- new("BiomeScheme",
 #' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, small forest, tall forest)
 #' @keywords internal
 #' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
-
 SimpleHeightAdgvm2BiomeRules <- function(x){
   # BIOME 1 - Baren/Desert
   if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Tree']])<=5) {return("Baren/Desert")}
@@ -1111,12 +1125,13 @@ SimpleHeightAdgvm2BiomeRules <- function(x){
 
 #' Meta-data describing a simple scheme for aDGVM2 output.
 #' 
-#' @keywords internal
-#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#' \strong{SimpleHeightAdgvm2BiomeScheme} SS document here
+#' @rdname BiomeScheme-class
+#' @export
 #' 
-SimpleHeightAdgvm2Biomes.scheme <- new("BiomeScheme",
+SimpleHeightAdgvm2BiomeScheme <- new("BiomeScheme",
                                        new("Quantity",
-                                           id = "SimpleHeightAdgvm2Biomes",
+                                           id = "SimpleHeightAdgvm2BiomeScheme",
                                            name = "Simple aDGVM2 Biomes",
                                            colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
                                                                                    "C4 Grassland" = '#fff700',
@@ -1155,7 +1170,6 @@ SimpleHeightAdgvm2Biomes.scheme <- new("BiomeScheme",
 #' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, woodland, shrubland)
 #' @keywords internal
 #' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
-
 GrowthFormAdgvm2BiomeRules <- function(x){
   # BIOME 1 - Baren/Desert
   if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Woody']])<=5) {return("Baren/Desert")}
@@ -1175,12 +1189,14 @@ GrowthFormAdgvm2BiomeRules <- function(x){
 
 #' Meta-data describing a simple scheme for aDGVM2 output.
 #' 
-#' @keywords internal
-#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#'\strong{GrowthFormAdgvm2BiomeSchemes} SS document here
+#'
+#' @rdname BiomeScheme-class
+#' @export
 #' 
-GrowthFormAdgvm2Biomes.scheme <- new("BiomeScheme",
+GrowthFormAdgvm2BiomeScheme <- new("BiomeScheme",
                                      new("Quantity",
-                                         id = "GrowthFormAdgvm2Biomes",
+                                         id = "GrowthFormAdgvm2BiomeScheme",
                                          name = "Growth Form aDGVM2 Biomes",
                                          colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
                                                                                  "C4 Grassland" = '#fff700',
@@ -1217,7 +1233,6 @@ GrowthFormAdgvm2Biomes.scheme <- new("BiomeScheme",
 #' @return Biomes code (1-6, baren, C4 grassland, C3 grassland, woodland, evergreen forest, deciduous forest)
 #' @keywords internal
 #' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
-
 PhenologyAdgvm2BiomeRules <- function(x){
   # BIOME 1 - Baren/Desert
   if(      as.numeric(x[['vegcover_std_Grass']])<=2 & as.numeric(x[['vegcover_std_Woody']])<=5) {return("Baren/Desert")}
@@ -1239,12 +1254,15 @@ PhenologyAdgvm2BiomeRules <- function(x){
 
 #' Meta-data describing a simple scheme for aDGVM2 output.
 #' 
-#' @keywords internal
-#' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
+#'\strong{PhenologyAdgvm2BiomeScheme} SS document here
 #' 
-PhenologyAdgvm2Biomes.scheme <- new("BiomeScheme",
+#' 
+#' @rdname BiomeScheme-class
+#' @export
+#' 
+PhenologyAdgvm2BiomeScheme <- new("BiomeScheme",
                                     new("Quantity",
-                                        id = "PhenologyAdgvm2Biomes",
+                                        id = "PhenologyAdgvm2BiomeScheme",
                                         name = "Phenology aDGVM2 Biomes",
                                         colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
                                                                                 "C4 Grassland" = '#fff700',
@@ -1275,35 +1293,18 @@ PhenologyAdgvm2Biomes.scheme <- new("BiomeScheme",
 
 #' Currently supported biome schemes
 #' 
-#' The biomes schemes that are currently supported for LPJ-GUESS output.  
-#' It a list of biomes schemes with elements with the followinf names/ids:
+#' This is a list of all BiomeSchemes defined by DGVMTools.
 #' 
-#' \describe{
-#' \item{Smith2014}{Classification of global output as per Smith et al. 2014. 
-#'  Designed to be compared to Haxeltine and Prentice (1996) map of potential natural biomes.}
-#'  \item{Forrest2015}{Classification of of global output into coarser mega biomes as per Forrest et al. 2015 (see appendix), 
-#'  which is really just an aggregation of biomes following Harrison and Prentice 2006.  Can be compared to aggregated Haxeltine and Prentice (1996) map.}
-#'  \item{Hickler2012}{Classification of european output as per Hickler et al. 2012.}
-#'  \item{Megabiomes_dev}{Unpublished for potentially useful classification of global biomes 
-#'  which is slightly simpler than Smith et al. 2014.}
-#'  \item{FPCMegabiomes}{Global biomes classification based on FPC.  Ask Joerg Steinkamp 
-#'  about this one.} 
-#' }
-#' 
-#' The mechanics of all this could do with a serious overhaul to deal with other model outputs
-#' and classifications involving more that one 'primary variable', ie FPC and biomass.
-#'   
-#' @seealso \code{BiomeClassification}, \code{readHandPBiomes}
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
-supported.biome.schemes <- c("Smith2014" = Smith2014.scheme,
-                             "Hickler2012" = Hickler2012.scheme,
-                             "Forrest2015" = Forrest2015.scheme,
-                             "Megabiomes_dev" = Megabiomes_dev.scheme,
-                             "FPCMegabiomes" = FPCMegabiomes.scheme,
-                             "MeditBiomes" = MeditBiomes.scheme,
-                             "FireMIP" = FireMIPBiomes.scheme,
-                             "SimpleAdgvm2Biomes" = SimpleAdgvm2Biomes.scheme,
-                             "SimpleHeightAdgvm2Biomes" = SimpleHeightAdgvm2Biomes.scheme,
-                             "GrowthFormAdgvm2Biomes" = GrowthFormAdgvm2Biomes.scheme,
-                             "PhenologyAdgvm2Biomes" = PhenologyAdgvm2Biomes.scheme)
+supported.biome.schemes <- c("Smith2014" = Smith2014BiomeScheme,
+                             "Hickler2012" = Hickler2012BiomeScheme,
+                             "Forrest2015" = Forrest2015BiomeScheme,
+                             "DevMegaBiomes" = DevMegaBiomeScheme,
+                             "FPCMegaBiomes" = FPCMegaBiomeScheme,
+                             "MeditBiomes" = MeditBiomeScheme,
+                             "FireMIPBiomes" = FireMIPBiomeScheme,
+                             "SimpleAdgvm2Biomes" = SimpleAdgvm2BiomeScheme,
+                             "SimpleHeightAdgvm2Biomes" = SimpleHeightAdgvm2BiomeScheme,
+                             "GrowthFormAdgvm2Biomes" = GrowthFormAdgvm2BiomeScheme,
+                             "PhenologyAdgvm2Biomes" = PhenologyAdgvm2BiomeScheme)

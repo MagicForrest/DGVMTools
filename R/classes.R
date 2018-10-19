@@ -15,7 +15,7 @@
 #' This is just a default PFT set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
 #' @slot quantities 'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output or dataset.
 #' @slot determinePFTs A function to determine which PFTs are present in a run or dataset.
-#' @slot determineQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
+#' @slot availableQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
 #' @slot getField A function to retrieve actually data from the model output or dataset.  This is likely to be a fairly complex function, and really depends on the specifics 
 #' and idiosynchrasies of the model output format or dataset.
 #' 
@@ -31,7 +31,7 @@ setClass("Format",
                    default.pfts = "list",
                    quantities = "list",
                    determinePFTs = "function",
-                   determineQuantities = "function",
+                   availableQuantities = "function",
                    getField = "function"
          )
 )
@@ -434,9 +434,6 @@ setClass("Comparison",
 #' 
 #' This class stores the information about a biome scheme.  It describes what how the model output (in the form of a data.table) must be prepared, and then the rules which are used to classify the biomes.
 #' 
-#' This is ultimately not flexible enough for all conceivable biome schemes from all models and will need to be somehow generalised and expanded at some point.  This is most certainly a challenge for another day!
-#' 
-#' 
 #' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")
 #' @slot name A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")
 #' @slot units A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")
@@ -449,6 +446,8 @@ setClass("Comparison",
 #' which would make a layer called "Woody" which would be the sum of all LAI trees and shrubs.
 #' @slot data.reference Character string giving a reference where the data for this biome scheme comes from
 #' @slot published.reference Character string giving a reference where this model output classification scheme was published
+#' @name BiomeScheme-class
+#' @rdname BiomeScheme-class
 #' @exportClass BiomeScheme
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("BiomeScheme",

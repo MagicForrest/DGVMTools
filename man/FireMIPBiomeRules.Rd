@@ -17,7 +17,4 @@ Biomes code (1-10)
 Unpublished but possibly useful in principle.  Simpler classes that Smith et al 2014,
 but more complex that Forrest et al 2015.
 }
-\author{
-Matthew Forrest \email{matthew.forrest@senckenberg.de}
-}
 \keyword{internal}

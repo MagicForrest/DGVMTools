@@ -12,7 +12,7 @@
 
 <meta name="author" content="Matthew Forrest" />
 
-<meta name="date" content="2018-09-14" />
+<meta name="date" content="2018-10-02" />
 
 <title>Introduction to DGVMTools</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introduction to DGVMTools</h1>
 <h4 class="author"><em>Matthew Forrest</em></h4>
-<h4 class="date"><em>2018-09-14</em></h4>
+<h4 class="date"><em>2018-10-02</em></h4>
 
 
 
@@ -91,7 +91,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>The first job in pretty much any analysis is to define the source (or sources) of the data to be analysed. Here we use the <code>defineSource()</code> function to do exactly that, and it produces an object of type <code>Source</code>, like so…</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GUESS.run &lt;-<span class="st"> </span><span class="kw">defineSource</span>(<span class="dt">id =</span> <span class="st">&quot;LPJ-GUESS_Example&quot;</span>,
                           <span class="dt">dir =</span> <span class="kw">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;LPJ-GUESS_Runs&quot;</span>, <span class="st">&quot;CentralEurope&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;DGVMTools&quot;</span>), <span class="co"># this would normlly just be a character string containing a path</span>
-                          <span class="dt">format =</span> <span class="st">&quot;LPJ-GUESS&quot;</span>,
+                          <span class="dt">format =</span> GUESS,
                           <span class="dt">name =</span> <span class="st">&quot;LPJ-GUESS Example Run&quot;</span>)
 
 <span class="kw">class</span>(GUESS.run)</code></pre></div>
@@ -113,7 +113,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##  format = &quot;GUESS&quot;
 ##  lon-lat offset = (0,0)
 ##  year offset = 0
-##  directory = &quot;/home/matthew/Tools/DGVMTools/inst/extdata/LPJ-GUESS_Runs/CentralEurope&quot;
+##  directory = &quot;/home/forrest/Tools/R-packages/DGVMTools/inst/extdata/LPJ-GUESS_Runs/CentralEurope&quot;
 ##  forcing data = &quot;Not specified&quot;
 ##  london.centre = TRUE
 ##  land.use.included = FALSE

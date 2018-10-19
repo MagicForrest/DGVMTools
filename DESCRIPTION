@@ -1,6 +1,6 @@
 Package: DGVMTools
 Type: Package
-Version: 0.5.1
+Version: 0.5.2
 Title: DGVM Processing, Analysis and Plotting Tools
 Date: 2018-09-12
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
@@ -9,9 +9,9 @@ Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.f
 Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
 Maintainer: Matthew Forrest <matthew.forrest@senckenberg.de>
 Description: Process output data produced by dynamic global vegetation
-    models (DGVMs) LPJ-GUESS(-SPITFIRE), FireMIP standard output, aDGVM2 (under
-    development) and possibly others, for use in R. Create standard figures and
-    benchmarking.
+    models (DGVMs) LPJ-GUESS(-SPITFIRE) and aDGVM2 and potentially soon others, for use in R. 
+    Also reads many standard datasets as processed by companion DGVMData package. Create standard figures and
+    benchmarking.  FireMIP model output is supported with an additional package (FireMIPTools).
 Depends:
     R (>= 2.15.0),
     data.table (>= 1.9.6),
@@ -24,7 +24,6 @@ Imports:
     maps,
     maptools,
     mapdata,
-    ncdf4,
     fields,
     RColorBrewer,
     reshape2,
@@ -34,7 +33,8 @@ Imports:
     udunits2
 Suggests:
     knitr,
-    rmarkdown
+    rmarkdown,
+    ncdf4
 License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
@@ -46,7 +46,6 @@ Collate:
     'classes.R'
     'colour-palettes.R'
     'Format-DGVMData.R'
-    'Format-FireMIP.R'
     'Format-GUESS.R'
     'Format-aDGVM.R'
     'Standard-Quantities.R'
@@ -55,6 +54,7 @@ Collate:
     'aggregateSpatial.R'
     'aggregateSubannual.R'
     'aggregateYears.R'
+    'availableQuantities.R'
     'averageFields.R'
     'benchmarking.R'
     'biome-schemes.R'
@@ -67,7 +67,6 @@ Collate:
     'crop-methods.R'
     'defineSource.R'
     'determinePFTs.R'
-    'determineQuantities.R'
     'export-methods.R'
     'extent-methods.R'
     'getBiomes.R'

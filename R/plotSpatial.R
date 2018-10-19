@@ -23,9 +23,9 @@
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
 #' and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
-#' @param plot.bg.col Colour string for the plot background.  "white"
-#' @param panel.bg.col Colour string for the panel background, default it a sort of sky blue.
-#' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots. NOT CURRENTLY IMPLEMENTED!!
+#' @param plot.bg.col Colour string for the plot background, default "white".
+#' @param panel.bg.col Colour string for the panel background, default "white".
+#' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots.
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param ylim An optional vector of two numerics to specify the y/latitude range of the plot.
@@ -67,7 +67,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                         facet.labels =  NULL,
                         facet.order = NULL,
                         plot.bg.col =  "white",
-                        panel.bg.col = "#809DB8", #"cae1ff",
+                        panel.bg.col = "white", #"809DB8", #"cae1ff",
                         useLongNames = FALSE,
                         text.multiplier = NULL,
                         xlim = NULL,
@@ -269,7 +269,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       
       # check if layers are all continuous or discrete
       for(layer in layers.present) {
-        if(class(object@data[[layer]]) == "factor" || class(object@data[[layer]]) == "logical") discrete <- TRUE
+        if(class(object@data[[layer]]) == "factor" || class(object@data[[layer]]) == "logical" || class(object@data[[layer]]) == "ordered") discrete <- TRUE
         if(class(object@data[[layer]]) == "numeric" || class(object@data[[layer]]) == "integer" ) continuous <- TRUE
       }
       if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers") 
