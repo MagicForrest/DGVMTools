@@ -687,21 +687,72 @@ determinePFTs_aDGVM <- function(x) {
 #' Simply lists all quantitied aDGVM  output variables 
 #' 
 #' @param source A path to a directory on the file system containing some .out files
+#' @id An id of the model run
+#' @adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
-#' Needs to be implemented by an aDGVMer
 #' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-determineQuantities_aDGVM <- function(source, names, adgvm.scheme){
-  message(paste("Using adgvm.scheme", adgvm.scheme, "\n"))
+determineQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
+
+  if ( adgvm.scheme==1 ) {
+    fname <- file.path(source, paste("pop_", id,".nc", sep=""))
+    message(paste("Check quantities in adgvm.scheme=1,", fname, "\n"))
+    d <- nc_open(fname)
+    quantities.ncfile <- names(d[['var']])
+
+    quantities.present <- NULL
+    if(all(c("SumCanopyArea0") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegcover_std" )
+    if(all(c("SumBasalArea") %in% quantities.ncfile)==TRUE)   quantities.present <- c( quantities.present, "basalarea" )
+    if(all(c("MeanHeight") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "canopyheight_std" )
+    if(all(c("MeanCGain", "nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "aGPP_std" )
+    if(all(c("SumBLeaf", "meanSla") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "LAI_std" )
+    if(all(c("MeanHeight") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "meanheight" )
+    if(all(c("nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "pind" )
+    if(all(c("nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "nind" )
+    if(all(c("SumBBark", "SumBWood", "SumBLeaf") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "abg" )
+    if(all(c("SumBRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
+    if(all(c("SumBBark", "SumBWood", "SumBLeaf", "SumBStor", "SumBRoot", "SumBRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
   
-  quantities.present <- NULL #list()
-  if ( adgvm.scheme==1 ) quantities.present <- c("agb", "aGPP_std", "basalarea", "bgb", "canopyheight_std", "LAI_std", "meanheight", "nind", "pind", "vegC_std", "vegcover_std")
-  if ( adgvm.scheme==2 ) quantities.present <- c("agb", "aGPP_std", "basalarea", "bgb", "canopyheight_std", "LAI_std", "meanheight", "nind", "pind", "vegC_std", "vegcover_std")
-  
+    #message("Quantities available for adgvm.scheme=1: ")
+    #print( quantities.present )
+  }
+  else if (adgvm.scheme==2) {
+    fname <- file.path(source, paste("trait_", id,".nc", sep=""))
+    message(paste("Check quantities in adgvm.scheme=2,", fname, "\n"))
+    d <- nc_open(fname)
+    quantities.ncfile <- names(d[['var']])
+
+    quantities.present <- NULL
+
+    if(all(c("alive", "VegType", "Evergreen", "StemCount") %in% quantities.ncfile)==TRUE) { 
+      if(all(c("CrownArea") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegcover_std" )
+      if(all(c("StemDiamTot") %in% quantities.ncfile)==TRUE)   quantities.present <- c( quantities.present, "basalarea" )
+      if(all(c("Height") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "canopyheight_std" )
+      #if(all(c("MeanCGain", "nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "aGPP_std" )
+      if(all(c("BLeaf", "Sla") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "LAI_std" )
+      if(all(c("Height") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "meanheight" )
+      if(all(c("alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "pind" )
+      if(all(c("alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "nind" )
+      if(all(c("BBark", "BWood", "BLeaf") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "abg" )
+      if(all(c("BRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
+      if(all(c("BBark", "BWood", "BLeaf", "BStor", "BRoot", "BRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
+    
+      #message("Quantities available for adgvm.scheme=2: ")
+      #print( quantities.present )
+    }
+    else {
+      message("alive, VegType, Evergreen or StemCount missing in trait file, can't extract quantities for adgvm.scheme=2.")
+    }
+  }
+  else {
+    message("Invalid value for adgvm.scheme.")
+    quantities.present <- NULL
+  }
+
   return(quantities.present)
   
 }
