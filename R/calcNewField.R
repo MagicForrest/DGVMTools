@@ -84,7 +84,7 @@ calcNewField <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbose=T
   if (is.null(x.col) && is.null(y.col)) {
     if (length(colnames(x.dt)) != length(colnames(y.dt)))
       stop(paste("Number of columns in run (", length(colnames(x.dt)), "/", length(colnames(y.dt)), ") differ.", sep=""))
-    if (all(colnames(x.dt) %in% colnames(y.dt)) && all(colnames(y.dt) %in% colnames(x.dt)))
+    if (!all(colnames(x.dt) %in% colnames(y.dt)) || !all(colnames(y.dt) %in% colnames(x.dt)))
       stop(paste("run Objects have different column names:\n", colnames(x.dt), "\n", colnames(y.dt)))
 
     key.names <- key(x.dt)

@@ -28,13 +28,13 @@ Imports:
     RColorBrewer,
     reshape2,
     viridis,
-    rgeos,
-    plyr,
-    udunits2
+    plyr
 Suggests:
     knitr,
     rmarkdown,
-    ncdf4
+    ncdf4,
+    rgeos,
+    udunits2
 License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues

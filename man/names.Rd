@@ -8,6 +8,7 @@
 \alias{layers}
 \alias{layers,Field-method}
 \alias{layers,Comparison-method}
+\alias{layers,data.table-method}
 \title{Layer name methods}
 \usage{
 \S4method{names}{Field}(x)
@@ -17,6 +18,8 @@
 \S4method{layers}{Field}(x)
 
 \S4method{layers}{Comparison}(x)
+
+\S4method{layers}{data.table}(x)
 }
 \arguments{
 \item{x}{A Field or Comparison.}

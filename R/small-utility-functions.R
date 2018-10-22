@@ -156,6 +156,13 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
   
+  # first check that rgeos package is installed
+  if (! requireNamespace("rgeos", quietly = TRUE))  {
+    warning("Please install the rgoes R package and, if necessary the GEOS libraries, on your system to make map overlays.")
+    return(NULL)
+  }
+  
+  
   ### PREPARE THE MAP OVERLAY
   if(is.character("character")){
     
@@ -178,7 +185,6 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)
     if(!gt.180) map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
     return(fortify(map.sp.lines.df))
-    
     
   }
   else {

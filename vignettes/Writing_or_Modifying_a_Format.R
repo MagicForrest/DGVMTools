@@ -130,7 +130,7 @@ for(quant in quantities_NewFormat ) {
 determinePFTs_NewFormat <- function(directory, names = TRUE){
   
   # typical stuff 
-  run.directory <- x@dir.dir
+  run.directory <- x@dir
   
   # all possible PFTs present 
   PFTs.possible <- x@pft.set
