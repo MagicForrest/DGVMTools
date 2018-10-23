@@ -7,7 +7,8 @@
 plotSeasonal(runs, quants, title = NULL, subtitle = NULL,
   spatial.extent = NULL, spatial.aggregate.method = "mean",
   spatial.extent.id, plotAverage = TRUE, text.multiplier = NULL,
-  plot = TRUE, facet.scales = "fixed", ...)
+  plot = TRUE, facet.scales = "fixed", year.col.gradient = NULL,
+  alpha = 0.2, ...)
 }
 \arguments{
 \item{runs}{A Source or a list of Sources to plot}
@@ -20,7 +21,7 @@ plotSeasonal(runs, quants, title = NULL, subtitle = NULL,
 
 \item{spatial.extent}{For which spatial extent to plot the seasonal cycle.  For details of how to make this selection see the documnetation for getField().}
 
-\item{spatial.aggregate.method}{Charatacer string specifgin how to spatially aggregate if more than one gridcell are included in the spatial.extent.  Again, see documentation getField for  details.
+\item{spatial.aggregate.method}{Charatacer string specifying how to spatially aggregate if more than one gridcell are included in the spatial.extent.  Again, see documentation getField for  details.
 The default is "mean", simply straight averaging.}
 
 \item{spatial.extent.id}{A character string describing the spatial extent over which the data should be aggregated}
@@ -33,6 +34,10 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 \item{plot}{Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
 
 \item{facet.scales}{Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales}
+
+\item{year.col.gradient}{A colour palette as a function to use to colour the annual lines according to their Year.  Only works for a single Quantity and a single Source.}
+
+\item{alpha}{A numeric (range 0-1), to give the transparency (alpha) of the annual lines}
 
 \item{...}{Arguments passed to getField().  Of particular relevance are \code{spatial.extent} and \code{spatial.aggregate.method} (to determine over 
 which spatial extent to plot the seasonal cycle and, if that extent includes more that one gridcell, how to aggregate across that extent)}

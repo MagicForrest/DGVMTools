@@ -10,6 +10,6 @@ FPCMegaBiomeRules(x)
 \item{fpc}{Vector of FPC values}
 }
 \description{
-Joerg fill this in
+lalala
 }
 \keyword{internal}

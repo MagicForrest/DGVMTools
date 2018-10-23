@@ -26,6 +26,9 @@ getField_aDGVM <- function(source,
                            adgvm.scheme,
                            adgvm.daily) {
   
+  # first check that ncdf4 netCDF package is installed
+  if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read aDGVM data.")
+
   if(missing(adgvm.scheme)) adgvm.scheme <- 1
   if(missing(adgvm.daily)) adgvm.daily <- FALSE
   
@@ -63,7 +66,6 @@ getField_aDGVM <- function(source,
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, meanheight“, "nind“, "pind“, "vegC_std“, "vegcover_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import ncdf4
 #' @keywords internal
 #' @seealso \code{\link{getQuantity_aDGVM_Scheme2}}
 getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgvm.daily)
@@ -77,11 +79,11 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   actual.sta.info <- new("STAInfo")
   
   cat( "Convert", fname, "\n" )
-  d <- nc_open(fname)
+  d <- ncdf4::nc_open(fname)
   
-  xx <- ncvar_get(d,"lon")
-  yy <- ncvar_get(d,"lat")
-  tt <- ncvar_get(d,"time")
+  xx <- ncdf4::ncvar_get(d,"lon")
+  yy <- ncdf4::ncvar_get(d,"lat")
+  tt <- ncdf4::ncvar_get(d,"time")
   len_tt <- length(tt)
 
   # select the years we want
@@ -121,7 +123,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   
   #if(variable@id == "firefreq" | variable@id == "burntfraction_std" ){
     
-  # tmp <- ncvar_get( d, "firecount", start=c( x,y,len_tt-(years_fire*12)+1 ), count=c( 1,1,years_fire*12 ) )
+  # tmp <- ncdf4::ncvar_get( d, "firecount", start=c( x,y,len_tt-(years_fire*12)+1 ), count=c( 1,1,years_fire*12 ) )
   # fir <- matrix( tmp, ncol=12, byrow=T )[,12]
   # tmp.fi <- min( sum(fir)/length(fir), 1)
 
@@ -132,9 +134,9 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   # }
   
   if(variable@id == "vegcover_std"){
-    tmp.tr <- ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.g4 <- ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g3 <- ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.tr <- ncdf4::ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncdf4::ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncdf4::ncvar_get( d, "SumCanopyArea0", start=nc.start.vec.g3, count=nc.count.vec )
     
     tmp.g4  <-       tmp.g4/10000*100  # *100 to convert to %
     tmp.g3  <-       tmp.g3/10000*100  # *100 to convert to %
@@ -142,25 +144,25 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   }
   
   if(variable@id == "basalarea"){
-    tmp.tr <- ncvar_get( d, "SumBasalArea", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.g4 <- ncvar_get( d, "SumBasalArea", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g3 <- ncvar_get( d, "SumBasalArea", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.tr <- ncdf4::ncvar_get( d, "SumBasalArea", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncdf4::ncvar_get( d, "SumBasalArea", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncdf4::ncvar_get( d, "SumBasalArea", start=nc.start.vec.g3, count=nc.count.vec )
   }
   
   if(variable@id == "canopyheight_std"){
-    tmp.tr <- ncvar_get( d, "MeanHeight", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- ncdf4::ncvar_get( d, "MeanHeight", start=nc.start.vec.tr, count=nc.count.vec )
     message(paste("Warning: Canopy height currently equal to mean height!"))
     tmp.g3 <- tmp.tr   # dummy to avoid error message
     tmp.g4 <- tmp.tr   # dummy to avoid error message
   }
   
   if(variable@id == "aGPP_std"){
-    tmp.tr <- ncvar_get( d, "MeanCGain",  start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.g4 <- ncvar_get( d, "MeanCGain",  start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g3 <- ncvar_get( d, "MeanCGain",  start=nc.start.vec.g3, count=nc.count.vec )
-    ind.tr <- ncvar_get( d, "nind_alive", start=nc.start.vec.tr, count=nc.count.vec )
-    ind.g4 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g4, count=nc.count.vec )
-    ind.g3 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.tr <- ncdf4::ncvar_get( d, "MeanCGain",  start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncdf4::ncvar_get( d, "MeanCGain",  start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncdf4::ncvar_get( d, "MeanCGain",  start=nc.start.vec.g3, count=nc.count.vec )
+    ind.tr <- ncdf4::ncvar_get( d, "nind_alive", start=nc.start.vec.tr, count=nc.count.vec )
+    ind.g4 <- ncdf4::ncvar_get( d, "nind_alive", start=nc.start.vec.g4, count=nc.count.vec )
+    ind.g3 <- ncdf4::ncvar_get( d, "nind_alive", start=nc.start.vec.g3, count=nc.count.vec )
     
     tmp.tr <- tmp.tr*30.42*ind.tr/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
     tmp.g4 <- tmp.g4*30.42*ind.g4/2  # 30.42 to scale from monthly to annual, ind. for all plants, 2 for kg->C
@@ -168,25 +170,25 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   }
   
   if(variable@id == "LAI_std"){
-    tmp.tr <- ncvar_get( d, "SumBLeaf", start=nc.start.vec.tr, count=nc.count.vec )*ncvar_get( d, "meanSla", start=nc.start.vec.tr, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
-    tmp.g4 <- ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )*ncvar_get( d, "meanSla", start=nc.start.vec.g4, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
-    tmp.g3 <- ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )*ncvar_get( d, "meanSla", start=nc.start.vec.g3, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
+    tmp.tr <- ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.tr, count=nc.count.vec )*ncdf4::ncvar_get( d, "meanSla", start=nc.start.vec.tr, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
+    tmp.g4 <- ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )*ncdf4::ncvar_get( d, "meanSla", start=nc.start.vec.g4, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
+    tmp.g3 <- ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )*ncdf4::ncvar_get( d, "meanSla", start=nc.start.vec.g3, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
     
-#    tmp.tr <- ncvar_get( d, "MeanLai", start=nc.start.vec.tr, count=nc.count.vec )
-#    tmp.g4 <- ncvar_get( d, "MeanLai", start=nc.start.vec.g4, count=nc.count.vec )
-#    tmp.g3 <- ncvar_get( d, "MeanLai", start=nc.start.vec.g3, count=nc.count.vec )
+#    tmp.tr <- ncdf4::ncvar_get( d, "MeanLai", start=nc.start.vec.tr, count=nc.count.vec )
+#    tmp.g4 <- ncdf4::ncvar_get( d, "MeanLai", start=nc.start.vec.g4, count=nc.count.vec )
+#    tmp.g3 <- ncdf4::ncvar_get( d, "MeanLai", start=nc.start.vec.g3, count=nc.count.vec )
   }
   
   if(variable@id == "meanheight"){
-    tmp.tr <- ncvar_get( d, "MeanHeight", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.g4 <- ncvar_get( d, "MeanHeight", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g3 <- ncvar_get( d, "MeanHeight", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.tr <- ncdf4::ncvar_get( d, "MeanHeight", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncdf4::ncvar_get( d, "MeanHeight", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncdf4::ncvar_get( d, "MeanHeight", start=nc.start.vec.g3, count=nc.count.vec )
   }
   
   if(variable@id == "pind"){
-    tmp.tr <- ncvar_get( d, "nind_alive", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.g4 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g3 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.tr <- ncdf4::ncvar_get( d, "nind_alive", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncdf4::ncvar_get( d, "nind_alive", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncdf4::ncvar_get( d, "nind_alive", start=nc.start.vec.g3, count=nc.count.vec )
     
     ind_tot <- tmp.tr+tmp.g4+tmp.g3
     tmp.tr  <- tmp.tr/ind_tot
@@ -195,16 +197,16 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   }
   
   if(variable@id == "nind"){
-    tmp.tr <- ncvar_get( d, "nind_alive", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.g4 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g3 <- ncvar_get( d, "nind_alive", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.tr <- ncdf4::ncvar_get( d, "nind_alive", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <- ncdf4::ncvar_get( d, "nind_alive", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <- ncdf4::ncvar_get( d, "nind_alive", start=nc.start.vec.g3, count=nc.count.vec )
   }
   
   if(variable@id == "agb"){
-    tmp.tr <-          ncvar_get( d, "SumBBark", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.g4 <-          ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g3 <-          ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.tr <-          ncdf4::ncvar_get( d, "SumBBark", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncdf4::ncvar_get( d, "SumBWood", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <-          ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <-          ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )
     
     tmp.tr <- tmp.tr/20
     tmp.g4 <- tmp.g4/2
@@ -212,9 +214,9 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   }
   
   if(variable@id == "bgb"){
-    tmp.tr <-          ncvar_get( d, "SumBRoot", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.g4 <-          ncvar_get( d, "SumBRoot", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g3 <-          ncvar_get( d, "SumBRoot", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.tr <-          ncdf4::ncvar_get( d, "SumBRoot", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.g4 <-          ncdf4::ncvar_get( d, "SumBRoot", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g3 <-          ncdf4::ncvar_get( d, "SumBRoot", start=nc.start.vec.g3, count=nc.count.vec )
     
     tmp.tr <- tmp.tr/20
     tmp.g4 <- tmp.g4/2
@@ -222,22 +224,22 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   }
   
   if(variable@id == "vegC_std"){
-    tmp.tr <-          ncvar_get( d, "SumBBark", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBWood", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBLeaf", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBStor", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBRoot", start=nc.start.vec.tr, count=nc.count.vec )
-    tmp.tr <- tmp.tr + ncvar_get( d, "SumBRepr", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <-          ncdf4::ncvar_get( d, "SumBBark", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncdf4::ncvar_get( d, "SumBWood", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncdf4::ncvar_get( d, "SumBStor", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncdf4::ncvar_get( d, "SumBRoot", start=nc.start.vec.tr, count=nc.count.vec )
+    tmp.tr <- tmp.tr + ncdf4::ncvar_get( d, "SumBRepr", start=nc.start.vec.tr, count=nc.count.vec )
     
-    tmp.g4 <-          ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g4 <- tmp.g4 + ncvar_get( d, "SumBRoot", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g4 <- tmp.g4 + ncvar_get( d, "SumBStor", start=nc.start.vec.g4, count=nc.count.vec )
-    tmp.g4 <- tmp.g4 + ncvar_get( d, "SumBRepr", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g4 <-          ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g4 <- tmp.g4 + ncdf4::ncvar_get( d, "SumBRoot", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g4 <- tmp.g4 + ncdf4::ncvar_get( d, "SumBStor", start=nc.start.vec.g4, count=nc.count.vec )
+    tmp.g4 <- tmp.g4 + ncdf4::ncvar_get( d, "SumBRepr", start=nc.start.vec.g4, count=nc.count.vec )
     
-    tmp.g3 <-          ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )
-    tmp.g3 <- tmp.g3 + ncvar_get( d, "SumBRoot", start=nc.start.vec.g3, count=nc.count.vec )
-    tmp.g3 <- tmp.g3 + ncvar_get( d, "SumBStor", start=nc.start.vec.g3, count=nc.count.vec )
-    tmp.g3 <- tmp.g3 + ncvar_get( d, "SumBRepr", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.g3 <-          ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.g3 <- tmp.g3 + ncdf4::ncvar_get( d, "SumBRoot", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.g3 <- tmp.g3 + ncdf4::ncvar_get( d, "SumBStor", start=nc.start.vec.g3, count=nc.count.vec )
+    tmp.g3 <- tmp.g3 + ncdf4::ncvar_get( d, "SumBRepr", start=nc.start.vec.g3, count=nc.count.vec )
     
     tmp.tr <- tmp.tr/20
     tmp.g4 <- tmp.g4/2
@@ -310,7 +312,6 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, "nind“, "meanheight“, "pind“, "vegC_std“, "vegcover_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @import ncdf4
 #' @keywords internal
 #' @seealso \code{\link{getQuantity_aDGVM_Scheme1}}
 getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
@@ -324,13 +325,13 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   actual.sta.info <- new("STAInfo")
   
   cat( "Convert", fname, "\n" )
-  d <- nc_open(fname)
+  d <- ncdf4::nc_open(fname)
   
-  xx <- ncvar_get(d,"lon")
-  yy <- ncvar_get(d,"lat")
-  tt <- ncvar_get(d,"time")
+  xx <- ncdf4::ncvar_get(d,"lon")
+  yy <- ncdf4::ncvar_get(d,"lat")
+  tt <- ncdf4::ncvar_get(d,"time")
   len_tt <- length(tt)
-  max_pop_size <- length(ncvar_get(d,"individual"))          # maximum population size
+  max_pop_size <- length(ncdf4::ncvar_get(d,"individual"))          # maximum population size
   
   timestep <- tt[2]-tt[1] # time step in file
 
@@ -366,10 +367,10 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
     {
       for ( z in start.point:end.point )
       {
-        alive       <- ncvar_get( d, "alive",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        vegtp       <- ncvar_get( d, "VegType",   start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        pheno       <- ncvar_get( d, "Evergreen", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-        stems       <- ncvar_get( d, "StemCount", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+        alive       <- ncdf4::ncvar_get( d, "alive",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+        vegtp       <- ncdf4::ncvar_get( d, "VegType",   start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+        pheno       <- ncdf4::ncvar_get( d, "Evergreen", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+        stems       <- ncdf4::ncvar_get( d, "StemCount", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
         
         ind.alive <- which( alive==1 )
         ind.te    <- which( alive==1 & vegtp==0 & pheno==1 & stems<=2.5 )   # indices of evergreen trees in trait data
@@ -381,9 +382,9 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         
         if(variable@id == "agb"){
           if (length(ind.alive)>0) {
-            bm.leaf.all <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            bm.wood.all <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            bm.bark.all <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.leaf.all <- ncdf4::ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.wood.all <- ncdf4::ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.bark.all <- ncdf4::ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
             
             tmp.te1 <- sum(bm.wood.all[ind.te]+bm.bark.all[ind.te])
             tmp.td1 <- sum(bm.wood.all[ind.td]+bm.bark.all[ind.td])
@@ -404,7 +405,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         
         if(variable@id == "bgb"){
           if (length(ind.alive)>0) {
-            bm.root.all <- ncvar_get( d, "BRoot",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.root.all <- ncdf4::ncvar_get( d, "BRoot",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
             
             tmp.te1 <- sum(bm.root.all[ind.te])
             tmp.td1 <- sum(bm.root.all[ind.td])
@@ -424,12 +425,12 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         
         if(variable@id == "vegC_std"){
           if (length(ind.alive)>0) {
-            bm.leaf <- ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            bm.wood <- ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            bm.bark <- ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            bm.repr <- ncvar_get( d, "BRepr",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            bm.stor <- ncvar_get( d, "BStor",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            bm.root <- ncvar_get( d, "BRoot",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.leaf <- ncdf4::ncvar_get( d, "BLeaf",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.wood <- ncdf4::ncvar_get( d, "BWood",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.bark <- ncdf4::ncvar_get( d, "BBark",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.repr <- ncdf4::ncvar_get( d, "BRepr",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.stor <- ncdf4::ncvar_get( d, "BStor",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            bm.root <- ncdf4::ncvar_get( d, "BRoot",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
           
             tmp.te1 <- sum(bm.leaf[ind.te]+bm.root[ind.te]+bm.stor[ind.te]+bm.repr[ind.te]+bm.wood[ind.te]+bm.bark[ind.te])
             tmp.td1 <- sum(bm.leaf[ind.td]+bm.root[ind.td]+bm.stor[ind.td]+bm.repr[ind.td]+bm.wood[ind.td]+bm.bark[ind.td])
@@ -449,8 +450,8 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         
         if(variable@id == "LAI_std"){
           if (length(ind.alive)>0) {
-            tmp.blf  <- ncvar_get( d, "BLeaf", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            tmp.sla  <- ncvar_get( d, "Sla", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.blf  <- ncdf4::ncvar_get( d, "BLeaf", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.sla  <- ncdf4::ncvar_get( d, "Sla", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
             
             tmp.te[x,y,z-start.point+1]   <- sum(tmp.blf[ind.te]*tmp.sla[ind.te])/10000
             tmp.td[x,y,z-start.point+1]   <- sum(tmp.blf[ind.td]*tmp.sla[ind.td])/10000
@@ -459,7 +460,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
             tmp.g4[x,y,z-start.point+1]   <- sum(tmp.blf[ind.g4]*tmp.sla[ind.g4])/10000
             tmp.g3[x,y,z-start.point+1]   <- sum(tmp.blf[ind.g3]*tmp.sla[ind.g3])/10000
             
-#            tmp.all  <- ncvar_get( d, "Lai", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+#            tmp.all  <- ncdf4::ncvar_get( d, "Lai", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
 #            tmp.te[x,y,z-start.point+1]   <- mean(tmp.all[ind.te])*(length(ind.te)/length(alive))
 #            tmp.td[x,y,z-start.point+1]   <- mean(tmp.all[ind.td])*(length(ind.td)/length(alive))
 #            tmp.se[x,y,z-start.point+1]   <- mean(tmp.all[ind.se])*(length(ind.se)/length(alive))
@@ -471,7 +472,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         
         if(variable@id == "basalarea"){
           if (length(ind.alive)>0) {
-            tmp.all  <- ncvar_get( d, "StemDiamTot", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.all  <- ncdf4::ncvar_get( d, "StemDiamTot", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
             tmp.te[x,y,z-start.point+1]   <- sum(tmp.all[ind.te])
             tmp.td[x,y,z-start.point+1]   <- sum(tmp.all[ind.td])
             tmp.se[x,y,z-start.point+1]   <- sum(tmp.all[ind.se])
@@ -494,7 +495,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         
         if(variable@id == "meanheight"){
           if (length(ind.alive)>0) {
-            tmp.all  <- ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.all  <- ncdf4::ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
             tmp.te[x,y,z-start.point+1]   <- mean(tmp.all[ind.te])
             tmp.td[x,y,z-start.point+1]   <- mean(tmp.all[ind.td])
             tmp.se[x,y,z-start.point+1]   <- mean(tmp.all[ind.se])
@@ -506,7 +507,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         
         if(variable@id == "canopyheight_std"){
           if (length(ind.alive)>0) {
-            tmp.all  <- ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.all  <- ncdf4::ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
             tmp.te[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.te],0.95)
             tmp.td[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.td],0.95)
             tmp.se[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.se],0.95)
@@ -537,7 +538,7 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         
         if(variable@id == "vegcover_std"){
           if (length(ind.alive)>0) {
-            tmp.all  <- ncvar_get( d, "CrownArea", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            tmp.all  <- ncdf4::ncvar_get( d, "CrownArea", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
             tmp.te1   <- sum(tmp.all[ind.te])/10000
             tmp.td1   <- sum(tmp.all[ind.td])/10000
             tmp.se1   <- sum(tmp.all[ind.se])/10000

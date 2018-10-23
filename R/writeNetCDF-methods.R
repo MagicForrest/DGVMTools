@@ -281,6 +281,10 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x, filename, ...) {
   
+  # first check that ncdf4 netCDF package is installed
+  if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to write netCDF files.")
+  
+  
   ### GET METADATA FROM QUANTITY IF PRESENT
   quantity.units <- "Not_defined"
   quantity.id <- "Not_defined"
@@ -310,14 +314,14 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   all.dims <- list()
   
   # Lon and Lat - easy-peasy
-  all.dims[["Lon"]] <- ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
-  all.dims[["Lat"]] <- ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
+  all.dims[["Lon"]] <- ncdf4::ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
+  all.dims[["Lat"]] <- ncdf4::ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
   
   # Layer - only if a layer.dim.name has been specifed which mean collapse all the different layers as values along a dimension
   if(!is.null(layer.dim.name)) {
     
     if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
-    all.dims[[layer.dim.name]] <- ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
+    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
     
   }
   
@@ -368,7 +372,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     calendar <- "365_day" 
     time.unit <- paste("days since", start.date)
     
-    all.dims[["Time"]] <- ncdim_def(name = time.dim.name, units = time.unit, vals = time.vals , calendar = calendar, unlim=TRUE, create_dimvar=TRUE)
+    all.dims[["Time"]] <- ncdf4::ncdim_def(name = time.dim.name, units = time.unit, vals = time.vals , calendar = calendar, unlim=TRUE, create_dimvar=TRUE)
     
   }
   
@@ -377,13 +381,13 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # individual layers
   if(is.null(layer.dim.name)) {  
     for(layer in layers) {
-      all.vars[[layer]] <- ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = standard.name, prec = precision, -99999)  # standard
+      all.vars[[layer]] <- ncdf4::ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = standard.name, prec = precision, -99999)  # standard
     }
   }
   # else turn layers into a dimension
   else {
     
-    all.vars <- ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = standard.name, prec = precision, -99999)  # standard
+    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = standard.name, prec = precision, -99999)  # standard
     old.layers <- layers # for storing the key from dimension values to layer
     
   } 
@@ -391,7 +395,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   
   ### MAKE THE NETCDF FILE
   if(verbose) print(paste("Creating the output file", filename))
-  outfile <- nc_create(filename, all.vars, verbose=verbose, force_v4=TRUE)
+  outfile <- ncdf4::nc_create(filename, all.vars, verbose=verbose, force_v4=TRUE)
   
   
   ### PUT EACH VARIABLE INTO THE FILE
@@ -400,24 +404,24 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     if(verbose) print(paste("Saving variable", layer, "to file",  filename, sep =" " ), quote=FALSE)
     # simple case of one variable per layer
     if(is.null(layer.dim.name)) {
-      ncvar_put(nc = outfile, varid = layer,  vals = x[[layer]], start=NA, count=NA, verbose=verbose)
-      ncatt_put(outfile, layer, "standard_name", standard.name)
+      ncdf4::ncvar_put(nc = outfile, varid = layer,  vals = x[[layer]], start=NA, count=NA, verbose=verbose)
+      ncdf4::ncatt_put(outfile, layer, "standard_name", standard.name)
     }
     # else slightly more complicated case of all layers going into one variable
     else{
       this.layer.index <- which(layer == layers)
       start.indices <- c(1,1,this.layer.index,1)
       count.indices <- c(-1,-1,1,-1)
-      ncvar_put(nc = outfile, varid = all.vars,  vals = x[[layer]], start=start.indices, count=count.indices, verbose=verbose)
+      ncdf4::ncvar_put(nc = outfile, varid = all.vars,  vals = x[[layer]], start=start.indices, count=count.indices, verbose=verbose)
     }
     
   }
   
   # add meta-data if layers collapsed to a dimension
   if(!is.null(layer.dim.name)) {
-    ncatt_put(outfile, quantity@id, "standard_name", standard.name)
+    ncdf4::ncatt_put(outfile, quantity@id, "standard_name", standard.name)
     for(counter in 1:length(old.layers)){
-      ncatt_put(outfile, all.vars, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
+      ncdf4::ncatt_put(outfile, all.vars, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
     }
   }
   
@@ -427,29 +431,29 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   
   
   # ADD GENERAL ATTRIBUTES
-  ncatt_put(outfile, 0, "Conventions", "CF-1.6")
+  ncdf4::ncatt_put(outfile, 0, "Conventions", "CF-1.6")
   if(!is.null(source)) {
-    ncatt_put(outfile, 0, "Source_Format", source@format@id)
-    ncatt_put(outfile, 0, "Name", source@name)
-    ncatt_put(outfile, 0, "Forcing_data", source@forcing.data)
+    ncdf4::ncatt_put(outfile, 0, "Source_Format", source@format@id)
+    ncdf4::ncatt_put(outfile, 0, "Name", source@name)
+    ncdf4::ncatt_put(outfile, 0, "Forcing_data", source@forcing.data)
     if (source@contact != "")
-      ncatt_put(outfile, 0, "Contact", source@contact)
+      ncdf4::ncatt_put(outfile, 0, "Contact", source@contact)
     if (source@institute != "" || source@institute != "none")
-      ncatt_put(outfile, 0, "Institute", source@institute)
+      ncdf4::ncatt_put(outfile, 0, "Institute", source@institute)
   }
   
   # ADD DGVMDATA ATTRIBUTES
-  ncatt_put(outfile, 0, "DGVMData_quant", quantity.id)
-  #ncatt_put(outfile, 0, "DGVMData_name", name)
-  #ncatt_put(outfile, 0, "DGVMData_id", id)
-  #ncatt_put(outfile, 0, "DGVMData_spatial.extent", "Original")
-  #ncatt_put(outfile, 0, "DGVMData_first.year", first.year)
-  #ncatt_put(outfile, 0, "DGVMData_last.year", last.year)
-  #ncatt_put(outfile, 0, "DGVMData_year.aggregation.method", "mean")
-  #ncatt_put(outfile, 0, "DGVMData_quantity", quantity.id)
+  ncdf4::ncatt_put(outfile, 0, "DGVMData_quant", quantity.id)
+  #ncdf4::ncatt_put(outfile, 0, "DGVMData_name", name)
+  #ncdf4::ncatt_put(outfile, 0, "DGVMData_id", id)
+  #ncdf4::ncatt_put(outfile, 0, "DGVMData_spatial.extent", "Original")
+  #ncdf4::ncatt_put(outfile, 0, "DGVMData_first.year", first.year)
+  #ncdf4::ncatt_put(outfile, 0, "DGVMData_last.year", last.year)
+  #ncdf4::ncatt_put(outfile, 0, "DGVMData_year.aggregation.method", "mean")
+  #ncdf4::ncatt_put(outfile, 0, "DGVMData_quantity", quantity.id)
   
   # CLOSE
-  nc_close(outfile)
+  ncdf4::nc_close(outfile)
   
   
 })

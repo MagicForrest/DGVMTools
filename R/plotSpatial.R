@@ -269,7 +269,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       
       # check if layers are all continuous or discrete
       for(layer in layers.present) {
-        if(class(object@data[[layer]]) == "factor" || class(object@data[[layer]]) == "logical") discrete <- TRUE
+        if(class(object@data[[layer]]) == "factor" || class(object@data[[layer]]) == "logical" || class(object@data[[layer]]) == "ordered") discrete <- TRUE
         if(class(object@data[[layer]]) == "numeric" || class(object@data[[layer]]) == "integer" ) continuous <- TRUE
       }
       if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers") 

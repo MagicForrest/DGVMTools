@@ -10,15 +10,20 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 ## ----setup, include=FALSE------------------------------------------------
 
 ## ----Define source, echo=TRUE--------------------------------------------
+
+# a little bit of magic to get the path to the example data on your system
+example.run.directory <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+print(example.run.directory)
+
 GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
-                          dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), # this would normlly just be a character string containing a path
+                          dir = example.run.directory, # this would normlly just be a character string containing a path
                           format = GUESS,
                           name = "LPJ-GUESS Example Run")
 
-class(GUESS.run)
+
 
 ## ----Source info, echo=TRUE----------------------------------------------
-
+class(GUESS.run)
 print(GUESS.run)
 
 ## ----Get data, echo=TRUE-------------------------------------------------

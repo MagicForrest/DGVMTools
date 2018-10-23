@@ -194,7 +194,7 @@ This is a function which will look at a some output files on a disk (normally ou
 determinePFTs_NewFormat <- function(directory, names = TRUE){
   
   # typical stuff 
-  run.directory <- x@dir.dir
+  run.directory <- x@dir
   
   # all possible PFTs present 
   PFTs.possible <- x@pft.set

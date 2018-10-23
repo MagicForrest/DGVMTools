@@ -35,6 +35,7 @@ selectYears <- function(x, first, last){
   
   # subset the data.table
   output.dt <- subset(input.dt, Year >= first & Year <= last)
+  setKeyDGVM(output.dt)
   rm(input.dt)
   gc()
   

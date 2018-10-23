@@ -5,11 +5,12 @@
 #' 
 #' @param nc.file The netcdf object to which the attributes should be added
 #' @return A netcdf object
-#' @import ncdf4
 #' @export
 
 addStandardSpatialAttributes <- function(nc.file) { 
   
+  # first check that ncdf4 netCDF package is installed
+  if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to manipulate netCDF files.")
   
   # FIND CORRECT DIMENSION NAMES
   all.dim.names <- names(nc.file$dim)
@@ -30,15 +31,15 @@ addStandardSpatialAttributes <- function(nc.file) {
   
   
   # ADD ATTRIBUTES
-  ncatt_put(nc.file, lon.name , "units", "degrees_east")
-  ncatt_put(nc.file, lon.name , "axis", "X")
-  ncatt_put(nc.file, lon.name , "standard_name", "longitude")
-  ncatt_put(nc.file, lon.name , "long_name", "longitude")
+  ncdf4::ncatt_put(nc.file, lon.name , "units", "degrees_east")
+  ncdf4::ncatt_put(nc.file, lon.name , "axis", "X")
+  ncdf4::ncatt_put(nc.file, lon.name , "standard_name", "longitude")
+  ncdf4::ncatt_put(nc.file, lon.name , "long_name", "longitude")
   
-  ncatt_put(nc.file, lat.name , "units", "degrees_north")
-  ncatt_put(nc.file, lat.name , "axis", "Y")
-  ncatt_put(nc.file, lat.name , "standard_name", "latitude")
-  ncatt_put(nc.file, lat.name , "long_name", "latitude")
+  ncdf4::ncatt_put(nc.file, lat.name , "units", "degrees_north")
+  ncdf4::ncatt_put(nc.file, lat.name , "axis", "Y")
+  ncdf4::ncatt_put(nc.file, lat.name , "standard_name", "latitude")
+  ncdf4::ncatt_put(nc.file, lat.name , "long_name", "latitude")
   
   return(nc.file)
   

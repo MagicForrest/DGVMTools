@@ -9,27 +9,7 @@
 supported.biome.schemes
 }
 \description{
-The biomes schemes that are currently supported for LPJ-GUESS output.  
-It a list of biomes schemes with elements with the followinf names/ids:
-}
-\details{
-\describe{
-\item{Smith2014}{Classification of global output as per Smith et al. 2014. 
- Designed to be compared to Haxeltine and Prentice (1996) map of potential natural biomes.}
- \item{Forrest2015}{Classification of of global output into coarser mega biomes as per Forrest et al. 2015 (see appendix), 
- which is really just an aggregation of biomes following Harrison and Prentice 2006.  Can be compared to aggregated Haxeltine and Prentice (1996) map.}
- \item{Hickler2012}{Classification of european output as per Hickler et al. 2012.}
- \item{Megabiomes_dev}{Unpublished for potentially useful classification of global biomes 
- which is slightly simpler than Smith et al. 2014.}
- \item{FPCMegabiomes}{Global biomes classification based on FPC.  Ask Joerg Steinkamp 
- about this one.} 
-}
-
-The mechanics of all this could do with a serious overhaul to deal with other model outputs
-and classifications involving more that one 'primary variable', ie FPC and biomass.
-}
-\seealso{
-\code{BiomeClassification}, \code{readHandPBiomes}
+This is a list of all BiomeSchemes defined by DGVMTools.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

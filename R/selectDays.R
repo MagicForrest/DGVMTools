@@ -29,7 +29,8 @@ selectDays <- function(x, days){
   
   # subset the data.table
   output.dt <- subset(input.dt, Day %in% days)
-
+  setKeyDGVM(output.dt)
+  
   # and return
   if(is.Field(x)) {
     x@data <- output.dt

@@ -29,6 +29,7 @@ selectSeasons <- function(x, seasons){
   
   # subset the data.table
   output.dt <- subset(input.dt, Season %in% seasons)
+  setKeyDGVM(output.dt)
 
   # and return
   if(is.Field(x)) {

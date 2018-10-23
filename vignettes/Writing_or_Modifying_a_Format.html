@@ -12,7 +12,7 @@
 
 <meta name="author" content="Matthew Forrest" />
 
-<meta name="date" content="2018-09-14" />
+<meta name="date" content="2018-10-22" />
 
 <title>Writing or Modifying a Format</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Writing or Modifying a Format</h1>
 <h4 class="author"><em>Matthew Forrest</em></h4>
-<h4 class="date"><em>2018-09-14</em></h4>
+<h4 class="date"><em>2018-10-22</em></h4>
 
 
 
@@ -449,7 +449,7 @@ for(quant in quantities_NewFormat ) {
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">determinePFTs_NewFormat &lt;-<span class="st"> </span>function(directory, <span class="dt">names =</span> <span class="ot">TRUE</span>){
   
   <span class="co"># typical stuff </span>
-  run.directory &lt;-<span class="st"> </span>x@dir.dir
+  run.directory &lt;-<span class="st"> </span>x@dir
   
   <span class="co"># all possible PFTs present </span>
   PFTs.possible &lt;-<span class="st"> </span>x@pft.set
@@ -469,12 +469,12 @@ for(quant in quantities_NewFormat ) {
 <div id="the-determinequantities-slot" class="section level3">
 <h3>5. The <code>determineQuantities</code> slot</h3>
 <p>This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of PFTs present. The first argument should be characters with the path to the files on disk, the second argument is a ogical called names. If TRUE, the function should return a list of the ids of the quantities, otherwise it returns the list of DGVMTools::Quantity objects.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">determineQuantities_NewFormat &lt;-<span class="st"> </span>function(x, additional.args){ 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">availableQuantities_NewFormat &lt;-<span class="st"> </span>function(x, additional.args){ 
   
   <span class="co"># typical stuff </span>
   <span class="co"># * get a list of files in the directory</span>
   <span class="co"># * scan the files for different variables</span>
-  <span class="co"># * build a list of qunatities present in the model outpu / dataset</span>
+  <span class="co"># * build a list of qunatities present in the model output / dataset</span>
   
   <span class="co"># dummy code</span>
   Quantities.present &lt;-<span class="st"> </span><span class="kw">list</span>()
@@ -523,7 +523,7 @@ for(quant in quantities_NewFormat ) {
                  <span class="dt">default.pfts =</span> PFTs_NewFormat, 
                  <span class="dt">quantities =</span> quantities_NewFormat, 
                  <span class="dt">determinePFTs =</span> determinePFTs_NewFormat, 
-                 <span class="dt">determineQuantities =</span> determineQuantities_NewFormat, 
+                 <span class="dt">availableQuantities =</span> availableQuantities_NewFormat, 
                  <span class="dt">getField =</span>getField_NewFormat)</code></pre></div>
 <p>And there we go. A new <code>Format</code> object. Obviously the trickness is defining the functions, <code>particularly getField()</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(NewFormat)</code></pre></div>
