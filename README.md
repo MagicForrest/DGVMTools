@@ -21,6 +21,8 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 
 ### News
 
+**2018-10-23** - Release v0.6.0 for FireMIP workshop.
+
 **2018-10-12** - Release v0.5.2 for visiting collaborators.  Release v0.6 still planned in the next two weeks.
 
 **2018-10-01** - DGVMTools is now publicly available!  Whilst package is pretty much fully featured, there may be bugs, so it should be considered in the late-beta phase.  New v0.6 release to come this month.
