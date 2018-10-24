@@ -19,9 +19,9 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 getField_DGVMData <- function(source,
-                           quant,
-                           target.STAInfo,
-                           verbose = FALSE) {
+                              quant,
+                              target.STAInfo,
+                              verbose = FALSE) {
   
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read DGVMData files.")
@@ -48,32 +48,40 @@ getField_DGVMData <- function(source,
   
   # STAInfo object describing the data
   sta.info = new("STAInfo")
-
   
   
   # Make the filename and check for the file, gunzip if necessary, fail if not present
-  file.name.nc <- file.path(source@dir, paste(source@id, quant@id, "nc", sep = "."))
+  file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
+  file.name.nc.gz <- paste(file.name.nc, "gz", sep = ".")
+  zipped <- FALSE
   if(file.exists(file.name.nc)){ 
     if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
   }
-  else if(file.exists(paste(file.name.nc, "gz", sep = "."))){
-    #dt <- fread(paste("zcat < ", paste(file.name.nc, "gz", sep = "."), sep = ""))
-    stop("Gunzipping not yet supported for DGVMData.")
-  }
-  else {
-    file.name.nc.old <- file.name.nc
-    file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
-    if(file.exists(file.name.nc)){ 
-      if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
-    }
-    else if(file.exists(paste(file.name.nc, "gz", sep = "."))){
-      #dt <- fread(paste("zcat < ", paste(file.name.nc, "gz", sep = "."), sep = ""))
-      stop("Gunzipping not yet supported for DGVMData.")
+  else if(file.exists(file.name.nc.gz)){
+    if(.Platform$OS.type == "unix") {
+      zipped <- TRUE
+      system(paste("gunzip",  file.name.nc.gz, sep = " "))
+      if(verbose) message(paste("Found, gunzipping and opening file", file.name.nc.gz, sep = " "))
     }
     else {
-      stop(paste("File (or gzipped file) not found:", file.name.nc.old, "or", file.name.nc))
+      stop(paste("Need to implement gzip support for netCDF files under .Platform$OS.type = ", .Platform$OS.type))
     }
   }
+  
+  # else {
+  #   file.name.nc.old <- file.name.nc
+  #   file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
+  #   if(file.exists(file.name.nc)){ 
+  #     if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
+  #   }
+  #   else if(file.exists(paste(file.name.nc, "gz", sep = "."))){
+  #     #dt <- fread(paste("zcat < ", paste(file.name.nc, "gz", sep = "."), sep = ""))
+  #     stop("Gunzipping not yet supported for DGVMData.")
+  #   }
+  #   else {
+  #     stop(paste("File (or gzipped file) not found:", file.name.nc.old, "or", file.name.nc))
+  #   }
+  # }
   
   
   # Open file and get global attributes
@@ -131,7 +139,7 @@ getField_DGVMData <- function(source,
   if(!is.null(first.year)) sta.info@first.year <- first.year
   if(!is.null(last.year)) sta.info@last.year <- last.year
   if(!is.null(year.aggregate.method)) sta.info@year.aggregate.method <- year.aggregate.method
-
+  
   
   ###  HACK!! - for some reason this ncdf4 package is reading time value dimensions as NA
   ###  These values seem to be perfectly valid according to ncview and ncdump, so I don't know what is going on.
@@ -210,7 +218,7 @@ getField_DGVMData <- function(source,
         # make Year vector and add it do the data.table
         temp.nentries.per.year <- nrow(this.slice.dt)/length(all.years)
         year.vector <- c()
-
+        
         for(year in all.years) {
           year.vector <- append(year.vector, rep.int(year, temp.nentries.per.year))
         }
@@ -226,10 +234,10 @@ getField_DGVMData <- function(source,
         }
         this.slice.dt[, Month := month.vector]
         rm(month.vector)
-
+        
         # Remove the Time columns
         this.slice.dt[, Time := NULL]
-
+        
         # make new colum order so that the quant is last
         all.names <- names(this.slice.dt)
         all.names <- all.names[-which(all.names == this.var$name)]
@@ -255,14 +263,14 @@ getField_DGVMData <- function(source,
       # # remove categories which aren't present
       categories.present <- unique(this.slice.dt[[this.var$name]])
       all.categories <- quant@units
-    
+      
       this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = all.categories[sort(categories.present)], ordered = TRUE)]
     }
-  
+    
     # now join this to all.dt
     dt.list[[length(dt.list)+1]] <- this.slice.dt
     
-   
+    
     
   }
   
@@ -270,10 +278,10 @@ getField_DGVMData <- function(source,
   # join all together and set key
   dt <- dt.list[[1]]
   
-
+  
   if(length(dt.list) > 1) {
     for(this.dt in dt.list[2:length(dt.list)]) {
-     dt <- merge(x = dt, y = this.dt)
+      dt <- merge(x = dt, y = this.dt)
     }
   }
   
@@ -335,7 +343,7 @@ getField_DGVMData <- function(source,
   }
   
   
- 
+  
   # if london.centre is requested, shift to -180 to +180
   if(length(all.lons) > 0) {
     if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
@@ -350,7 +358,11 @@ getField_DGVMData <- function(source,
   
   # remove any NAs, complete list and return
   dt <- stats::na.omit(dt)
- 
+  
+  
+  if(zipped) {
+    system(paste("gzip",  file.name.nc, sep = " "))
+  }
   
   return(list(dt = dt, 
               sta.info = sta.info))
@@ -389,6 +401,7 @@ availableQuantities_DGVMData <- function(source){
     
     
   }
+  
   
   return(quantities.present)
   
@@ -528,24 +541,24 @@ DGVMData.quantities <- list(
 #' @include colour-palettes.R
 #' @export
 DGVMData <- new("Format",
-             
-             # UNIQUE ID
-             id = "DGVMData",
-             
-             # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-             determinePFTs = determinePFTs_DGVMData,
-             
-             # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-             availableQuantities = availableQuantities_DGVMData,
-             
-             # FUNCTION TO READ A FIELD 
-             getField = getField_DGVMData,
-             
-             # DEFAULT GLOBAL PFTS  
-             default.pfts = list(),
-             
-             # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
-             quantities = DGVMData.quantities
-             
+                
+                # UNIQUE ID
+                id = "DGVMData",
+                
+                # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
+                determinePFTs = determinePFTs_DGVMData,
+                
+                # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
+                availableQuantities = availableQuantities_DGVMData,
+                
+                # FUNCTION TO READ A FIELD 
+                getField = getField_DGVMData,
+                
+                # DEFAULT GLOBAL PFTS  
+                default.pfts = list(),
+                
+                # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
+                quantities = DGVMData.quantities
+                
 )
 
