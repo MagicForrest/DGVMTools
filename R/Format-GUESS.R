@@ -754,7 +754,7 @@ getStandardQuantity_LPJ <- function(run,
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
-#' @param directory A path to a directory on the file system containing some .out files
+#' @param source A GUESS source object
 #' @param names Logical, if TRUE return the namse of the quantities, if FLASE return the quanties themseleves
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -783,7 +783,7 @@ availableQuantities_GUESS <- function(source, names = TRUE){
     if(!variable %in% ignore.list) {
       
       result = tryCatch({
-        dummy.quant <- suppressWarnings(lookupQuantity(variable, GUESS))
+        dummy.quant <- suppressWarnings(lookupQuantity(variable, source@format))
       },  warning = function(w) {
         #warning(w)
       }, error = function(e) {
