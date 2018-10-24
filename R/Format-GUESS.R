@@ -128,7 +128,7 @@ openLPJOutputFile <- function(run,
     message("Offsets applied. Head of full .out file (after offsets):")
     print(utils::head(dt))
   }
-  
+
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
   if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   
@@ -138,7 +138,7 @@ openLPJOutputFile <- function(run,
   all.cols <- names(dt)
   st.cols <- getDimInfo(dt)
   nonst.cols <- all.cols[!all.cols %in% st.cols]
-  
+ 
   # if monthly then melt
   standard.monthly.ljp.col.names <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
   if(identical(nonst.cols, standard.monthly.ljp.col.names)){
@@ -152,11 +152,11 @@ openLPJOutputFile <- function(run,
   
   # if daily then melt
   # TODO - implement daily melting, follow above for implementation
+ 
   
-  
-  # set some attributes about the file - works!
-  attr(dt, "shadeToleranceCombined") <- FALSE
-  
+  # set some attributes about the data - works!
+  setattr(dt, "shadeToleranceCombined", FALSE)
+ 
   # set keys
   setKeyDGVM(dt)
   
