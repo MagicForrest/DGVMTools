@@ -264,7 +264,7 @@ getField_DGVMData <- function(source,
       categories.present <- unique(this.slice.dt[[this.var$name]])
       all.categories <- quant@units
       
-      this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = all.categories[sort(categories.present)], ordered = TRUE)]
+      this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = all.categories[sort(categories.present)])]
     }
     
     # now join this to all.dt
