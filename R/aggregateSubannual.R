@@ -30,7 +30,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
   # standardise arguments
   if(tolower(target) == "annual"  || tolower(target) == "yearly") target = "Year"
   
- 
+  
   # Function for weighting months by their number of days
   addMonthlyWeights <- function(x){
     
@@ -45,6 +45,20 @@ aggregateSubannual.uncompiled <- function(input.obj,
   
   # Function for weighting months by their number of days
   addSeasonalWeights <- function(x){
+    
+    days.in.season <- c()
+    for(season in all.seasons) {
+      days.in.season <- append(days.in.season, season@days)
+    }
+    
+    return(days.in.season[x])
+    
+  }
+  
+  # Function for weighting months by their number of days
+  monthFromDay <- function(x){
+    
+    
     
     days.in.season <- c()
     for(season in all.seasons) {
@@ -84,7 +98,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
     if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
   }
   
- 
+  
   
   ###### DO THE AGGREGATION
   
@@ -138,7 +152,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
         output.dt[,Weight:=NULL]
         
       }
-    
+      
     }
     
     else if("Year" %in% avail.dims) {
@@ -175,13 +189,13 @@ aggregateSubannual.uncompiled <- function(input.obj,
       output.dt <- copy(input.dt)[, Season := lapply(.SD, monthToSeason), .SDcols = c("Month")]
       by.dims <- append(by.dims, "Season")
       
-    
+      
       # if not doing mean, simply apply the required function
       if(!identical(method.function, mean)){
         
         output.dt <- output.dt[, Month:=NULL]
         output.dt <- output.dt[,lapply(.SD, method.function), by=by.dims]
-
+        
       }
       
       # else use the weighted mean, weighted by the days in the month
@@ -194,7 +208,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
         # do weighted mean
         output.dt <- output.dt[,lapply(.SD, stats::weighted.mean, w = Weight), by=by.dims]
         output.dt[,Weight:=NULL]
-
+        
       }
       
     }
@@ -211,10 +225,23 @@ aggregateSubannual.uncompiled <- function(input.obj,
   
   ### AGGREGATE TO MONTHLY
   else if(tolower(target) == "month"){
-
+    
     # FROM DAILY
     if("Day" %in% avail.dims) { 
-      stop("Daily to monthly aggregration not yet implemented")
+      
+      # make look up vector for days -> months
+      days.to.months <- c()
+      for(month in all.months) {
+        days.to.months <- append(days.to.months, rep(month@index, month@days))
+      }
+      
+      # add months column 
+      if(0 %in% unique(input.dt[["Day"]])) output.dt <- copy(input.dt)[, Month := days.to.months[Day+1]]
+      else output.dt <- copy(input.dt)[, Month := days.to.months[Day]]
+      output.dt[,Day:=NULL]
+      by.dims <- append(by.dims, "Month")
+      output.dt <- output.dt[,lapply(.SD, method.function), by=by.dims]
+
     }
     else if("Month" %in% avail.dims) {warning("Aggregation to monthly requested but data already are already monthly, so no averging done and returning original data!")
       return(input.obj)}
@@ -228,11 +255,13 @@ aggregateSubannual.uncompiled <- function(input.obj,
   else{
     stop(paste("Unknown target for sub-annual aggregation \"", target, "\" found. Exiting..."))
   }
-
+  
   if(verbose) message("...done.")
   
   # Set keys and return the averaged table
   setKeyDGVM(output.dt)
+  
+  if(target == "month") target <- "Month"
   
   # sort out the input object class
   if(is.Field(input.obj)) {
