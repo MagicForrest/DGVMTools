@@ -236,8 +236,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
       }
       
       # add months column 
-      if(0 %in% unique(input.dt[["Day"]])) output.dt <- copy(input.dt)[, Month := days.to.months[Day+1]]
-      else output.dt <- copy(input.dt)[, Month := days.to.months[Day]]
+      output.dt <- copy(input.dt)[, Month := days.to.months[Day]]
       output.dt[,Day:=NULL]
       by.dims <- append(by.dims, "Month")
       output.dt <- output.dt[,lapply(.SD, method.function), by=by.dims]

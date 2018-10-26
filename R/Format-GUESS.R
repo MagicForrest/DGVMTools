@@ -124,6 +124,11 @@ openLPJOutputFile <- function(run,
     if(run@lonlat.offset[1] != 0) dt[, Lat := Lat + run@lonlat.offset[1]]
   }
   
+  # also correct days to be 1-365 instead of 0-364, if necessary
+  if("Day" %in% names(dt)) {
+    if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]
+  }
+  
   if(verbose) {
     message("Offsets applied. Head of full .out file (after offsets):")
     print(utils::head(dt))

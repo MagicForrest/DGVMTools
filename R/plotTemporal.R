@@ -183,12 +183,21 @@ plotTemporal <- function(input.data,
   ### Make a 'Time' column of data objects for the x-axis 
   earliest.year <- min(plotting.data.dt.melted[["Year"]])
   if(earliest.year >= 0) {
+    # convert years and months to dates 
     if("Year" %in% names(plotting.data.dt.melted) && "Month" %in% names(plotting.data.dt.melted)) {
       pad <- function(x) { ifelse(x < 10, paste0(0,x), paste0(x)) }
       plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-", pad(Month), "-01"), format = "%Y-%m-%d")]
       plotting.data.dt.melted[, Year := NULL]
       plotting.data.dt.melted[, Month := NULL]
     }
+    # convert years and days to dates 
+    else if("Year" %in% names(plotting.data.dt.melted) && "Day" %in% names(plotting.data.dt.melted)) {
+      pad <- function(x) { ifelse(x < 10, paste0(0,x), paste0(x)) }
+      plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-", Day), format = "%Y-%j")]
+      plotting.data.dt.melted[, Year := NULL]
+      plotting.data.dt.melted[, Day := NULL]
+    }
+    # convert years to dates 
     else if("Year" %in% names(plotting.data.dt.melted)) {
       plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-01-01"), format = "%Y-%m-%d")]
       plotting.data.dt.melted[, Year := NULL]
