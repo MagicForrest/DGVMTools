@@ -81,8 +81,8 @@ openLPJOutputFile <- function(run,
   }
   else if(file.exists(paste(file.string, "gz", sep = "."))){
     if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
-    if(new.data.table.version) dt <- fread(cmd = paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
-    else dt <- fread(paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
+    if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+    else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
   }
   else {
     stop(paste("File (or gzipped file) not found:", file.string))

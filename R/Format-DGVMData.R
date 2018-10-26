@@ -58,31 +58,10 @@ getField_DGVMData <- function(source,
     if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
   }
   else if(file.exists(file.name.nc.gz)){
-    if(.Platform$OS.type == "unix") {
-      zipped <- TRUE
-      system(paste("gunzip",  file.name.nc.gz, sep = " "))
-      if(verbose) message(paste("Found, gunzipping and opening file", file.name.nc.gz, sep = " "))
-    }
-    else {
-      stop(paste("Need to implement gzip support for netCDF files under .Platform$OS.type = ", .Platform$OS.type))
-    }
+    zipped <- TRUE
+    system(paste("gzip -d",  file.name.nc.gz, sep = " "))
+    if(verbose) message(paste("Found, gunzipping and opening file", file.name.nc.gz, sep = " "))
   }
-  
-  # else {
-  #   file.name.nc.old <- file.name.nc
-  #   file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
-  #   if(file.exists(file.name.nc)){ 
-  #     if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
-  #   }
-  #   else if(file.exists(paste(file.name.nc, "gz", sep = "."))){
-  #     #dt <- fread(paste("zcat < ", paste(file.name.nc, "gz", sep = "."), sep = ""))
-  #     stop("Gunzipping not yet supported for DGVMData.")
-  #   }
-  #   else {
-  #     stop(paste("File (or gzipped file) not found:", file.name.nc.old, "or", file.name.nc))
-  #   }
-  # }
-  
   
   # Open file and get global attributes
   if(verbose) message(paste0("Opening file ", file.name.nc))     
@@ -359,7 +338,8 @@ getField_DGVMData <- function(source,
   # remove any NAs, complete list and return
   dt <- stats::na.omit(dt)
   
-  
+  # close the netcdf file and if necessary zip again
+  ncdf4::nc_close(this.nc)
   if(zipped) {
     system(paste("gzip",  file.name.nc, sep = " "))
   }

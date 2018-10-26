@@ -7,9 +7,9 @@ vignette: >
   %\VignetteIndexEntry{Introduction to DGVMTools}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  ---
+---
   
-  ```{r packages and setup, echo=FALSE}
+```{r packages and setup, echo=FALSE}
   knitr::opts_chunk$set(echo=FALSE, cache=TRUE, fig.width=8, autodep=TRUE)
 library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 
