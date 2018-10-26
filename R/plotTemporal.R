@@ -72,10 +72,15 @@ plotTemporal <- function(input.data,
     
     # check temporal dimensions
     stinfo.names <- getDimInfo(input.data)
-    if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names) {
-      warning("Neither Year nor Month found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
+    if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names && !"Day" %in% stinfo.names) {
+      warning("Neither Year nor Month nor Day found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
       return(NULL)
     }
+    if("Lon" %in% stinfo.names || "Lat" %in% stinfo.names) {
+      warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
+      return(NULL)
+    }
+    
     
   }
   
@@ -98,8 +103,12 @@ plotTemporal <- function(input.data,
       
       # check temporal dimensions
       stinfo.names <- getDimInfo(x.object)
-      if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names) {
-        warning("Neither Year nor Month found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
+      if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names && !"Day" %in% stinfo.names) {
+        warning("Neither Year nor Month nor Day found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
+        return(NULL)
+      }
+      if("Lon" %in% stinfo.names || "Lat" %in% stinfo.names) {
+        warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
         return(NULL)
       }
       
