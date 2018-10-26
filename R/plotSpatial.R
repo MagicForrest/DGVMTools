@@ -402,14 +402,23 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     
     # make a list of all the unique values (factors), each of these will need a colour
     unique.vals <- unique(data.toplot[["Value"]])
+    values.are.logical <- is.logical(data.toplot[["Value"]])
     
     # Final results of stuff below
     here.cols <- c()
     all.Matched <- FALSE
     
     ###  If the Quantity if specifically defined as categorical then use the colours defined in the Quantity's units slot
-    ###  or use the provided col arguments to over-ride
-    if(quant.is.categorical) {
+    ###  or use the provided col arguments to over-ride.
+    ###  Catch the logical case first
+    if(values.are.logical) {
+      
+      # and set the break and cols to what we just figured out
+      breaks <- c(TRUE,FALSE)
+      cols <- c("red", "blue")
+      
+    }
+    else if(quant.is.categorical) {
       
       legend.title = NULL
       

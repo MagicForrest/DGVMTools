@@ -65,7 +65,7 @@ openLPJOutputFile <- function(run,
                               data.table.only = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Annual = Year = Month = NULL
+  Lon = Lat = Annual = Year = Month = Day = NULL
   
   #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
   compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
@@ -81,8 +81,8 @@ openLPJOutputFile <- function(run,
   }
   else if(file.exists(paste(file.string, "gz", sep = "."))){
     if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
-    if(new.data.table.version) dt <- fread(cmd = paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
-    else dt <- fread(paste("zcat < ", paste(file.string, "gz", sep = "."), sep = ""))
+    if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+    else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
   }
   else {
     stop(paste("File (or gzipped file) not found:", file.string))
@@ -124,11 +124,16 @@ openLPJOutputFile <- function(run,
     if(run@lonlat.offset[1] != 0) dt[, Lat := Lat + run@lonlat.offset[1]]
   }
   
+  # also correct days to be 1-365 instead of 0-364, if necessary
+  if("Day" %in% names(dt)) {
+    if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]
+  }
+  
   if(verbose) {
     message("Offsets applied. Head of full .out file (after offsets):")
     print(utils::head(dt))
   }
-  
+
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
   if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   
@@ -138,7 +143,7 @@ openLPJOutputFile <- function(run,
   all.cols <- names(dt)
   st.cols <- getDimInfo(dt)
   nonst.cols <- all.cols[!all.cols %in% st.cols]
-  
+ 
   # if monthly then melt
   standard.monthly.ljp.col.names <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
   if(identical(nonst.cols, standard.monthly.ljp.col.names)){
@@ -152,11 +157,11 @@ openLPJOutputFile <- function(run,
   
   # if daily then melt
   # TODO - implement daily melting, follow above for implementation
+ 
   
-  
-  # set some attributes about the file - works!
-  attr(dt, "shadeToleranceCombined") <- FALSE
-  
+  # set some attributes about the data - works!
+  setattr(dt, "shadeToleranceCombined", FALSE)
+ 
   # set keys
   setKeyDGVM(dt)
   
@@ -754,7 +759,7 @@ getStandardQuantity_LPJ <- function(run,
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
-#' @param directory A path to a directory on the file system containing some .out files
+#' @param source A GUESS source object
 #' @param names Logical, if TRUE return the namse of the quantities, if FLASE return the quanties themseleves
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -783,7 +788,7 @@ availableQuantities_GUESS <- function(source, names = TRUE){
     if(!variable %in% ignore.list) {
       
       result = tryCatch({
-        dummy.quant <- suppressWarnings(lookupQuantity(variable, GUESS))
+        dummy.quant <- suppressWarnings(lookupQuantity(variable, source@format))
       },  warning = function(w) {
         #warning(w)
       }, error = function(e) {

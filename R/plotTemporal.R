@@ -50,7 +50,7 @@ plotTemporal <- function(input.data,
 ){
   
   
-  Time = Year = Month = Source = value = variable = Lat = Lon = NULL
+  Time = Year = Month = Day = Source = value = variable = Lat = Lon = NULL
   
   # whether to to use the a grouping (ie plot many objects on one plot)
   single.object <- FALSE
@@ -58,7 +58,7 @@ plotTemporal <- function(input.data,
   # Deal with class action and organise into a data.table for further manipulations and plotting
   # if it is a single Field, pull out the data (and PFTs if present)
   if(is.Field(input.data)){
-
+    
     if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
     plotting.data.dt <- input.data@data
     plotting.data.dt[,"Source" := input.data@source@name]
@@ -72,10 +72,15 @@ plotTemporal <- function(input.data,
     
     # check temporal dimensions
     stinfo.names <- getDimInfo(input.data)
-    if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names) {
-      warning("Neither Year nor Month found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
+    if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names && !"Day" %in% stinfo.names) {
+      warning("Neither Year nor Month nor Day found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
       return(NULL)
     }
+    if("Lon" %in% stinfo.names || "Lat" %in% stinfo.names) {
+      warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
+      return(NULL)
+    }
+    
     
   }
   
@@ -98,8 +103,12 @@ plotTemporal <- function(input.data,
       
       # check temporal dimensions
       stinfo.names <- getDimInfo(x.object)
-      if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names) {
-        warning("Neither Year nor Month found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
+      if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names && !"Day" %in% stinfo.names) {
+        warning("Neither Year nor Month nor Day found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
+        return(NULL)
+      }
+      if("Lon" %in% stinfo.names || "Lat" %in% stinfo.names) {
+        warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
         return(NULL)
       }
       
@@ -108,7 +117,7 @@ plotTemporal <- function(input.data,
     # assume Quantity is the same for each facet
     if(is.null(quant)) quant <- input.data[[1]]@quant
     
- }
+  }
   
   # else fail
   else{
@@ -174,22 +183,51 @@ plotTemporal <- function(input.data,
       }
     }
     if(length(new.types) == length(all.layers)) {
-       types <- unlist(new.types)
+      types <- unlist(new.types)
     }
   }
   
   
   
   ### Make a 'Time' column of data objects for the x-axis 
-  if("Year" %in% names(plotting.data.dt.melted) && "Month" %in% names(plotting.data.dt.melted)) {
-    pad <- function(x) { ifelse(x < 10, paste0(0,x), paste0(x)) }
-    plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-", pad(Month), "-01"), format = "%Y-%m-%d")]
-    plotting.data.dt.melted[, Year := NULL]
-    plotting.data.dt.melted[, Month := NULL]
+  earliest.year <- min(plotting.data.dt.melted[["Year"]])
+  if(earliest.year >= 0) {
+    # convert years and months to dates 
+    if("Year" %in% names(plotting.data.dt.melted) && "Month" %in% names(plotting.data.dt.melted)) {
+      pad <- function(x) { ifelse(x < 10, paste0(0,x), paste0(x)) }
+      plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-", pad(Month), "-01"), format = "%Y-%m-%d")]
+      plotting.data.dt.melted[, Year := NULL]
+      plotting.data.dt.melted[, Month := NULL]
+    }
+    # convert years and days to dates 
+    else if("Year" %in% names(plotting.data.dt.melted) && "Day" %in% names(plotting.data.dt.melted)) {
+      pad <- function(x) { ifelse(x < 10, paste0(0,x), paste0(x)) }
+      plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-", Day), format = "%Y-%j")]
+      plotting.data.dt.melted[, Year := NULL]
+      plotting.data.dt.melted[, Day := NULL]
+    }
+    # convert years to dates 
+    else if("Year" %in% names(plotting.data.dt.melted)) {
+      plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-01-01"), format = "%Y-%m-%d")]
+      plotting.data.dt.melted[, Year := NULL]
+    }
   }
-  else if("Year" %in% names(plotting.data.dt.melted)) {
-    plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-01-01"), format = "%Y-%m-%d")]
-    plotting.data.dt.melted[, Year := NULL]
+  else {
+    if("Year" %in% names(plotting.data.dt.melted) && "Month" %in% names(plotting.data.dt.melted)) {
+      latest.year <- max(plotting.data.dt.melted[["Year"]])
+      print(latest.year)
+      print(earliest.year)
+      earliest.year.days <- as.numeric(earliest.year, as.Date(("0001-01-01")))
+      latest.year.days <- as.numeric(latest.year, as.Date(("0001-01-01")))
+      print(earliest.year.days)
+      print(latest.year.days)
+      stop("Hmm... not yet sure how to plot months with negative years")
+    }
+    else if("Year" %in% names(plotting.data.dt.melted)) {
+      plotting.data.dt.melted[, Time := Year]
+      plotting.data.dt.melted[, Year := NULL]
+    }
+    #
   }
   
   
