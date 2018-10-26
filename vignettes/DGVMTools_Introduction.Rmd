@@ -10,7 +10,7 @@ vignette: >
 ---
   
 ```{r packages and setup, echo=FALSE}
-  knitr::opts_chunk$set(echo=FALSE, cache=TRUE, fig.width=8, autodep=TRUE)
+  knitr::opts_chunk$set(echo=FALSE, fig.width=8, autodep=TRUE)
 library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 
 ```

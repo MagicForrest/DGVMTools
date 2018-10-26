@@ -7,9 +7,9 @@
 availableQuantities_GUESS(source, names = TRUE)
 }
 \arguments{
-\item{names}{Logical, if TRUE return the namse of the quantities, if FLASE return the quanties themseleves}
+\item{source}{A GUESS source object}
 
-\item{directory}{A path to a directory on the file system containing some .out files}
+\item{names}{Logical, if TRUE return the namse of the quantities, if FLASE return the quanties themseleves}
 }
 \value{
 A list of all the .out files present, with the ".out" removed.

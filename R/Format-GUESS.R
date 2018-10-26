@@ -65,7 +65,7 @@ openLPJOutputFile <- function(run,
                               data.table.only = FALSE){
   
   # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Annual = Year = Month = NULL
+  Lon = Lat = Annual = Year = Month = Day = NULL
   
   #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
   compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
