@@ -88,7 +88,7 @@ openLPJOutputFile <- function(run,
     }
     else {
       re.zip <- TRUE
-      gunzip(paste(file.string, "gz", sep = "."))
+      R.utils::gunzip(paste(file.string, "gz", sep = "."))
     }
   }
   else {
@@ -176,7 +176,7 @@ openLPJOutputFile <- function(run,
   dt <- stats::na.omit(dt)
   
   # if re-zip
-  if(re.zip) gzip(file.string)
+  if(re.zip) R.utils::gzip(file.string)
   
   # Build as STAInfo object describing the data
   all.years <- sort(unique(dt[["Year"]]))
