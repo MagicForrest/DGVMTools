@@ -72,17 +72,24 @@ openLPJOutputFile <- function(run,
   new.data.table.version <- FALSE
   if(compare.string >= 0) new.data.table.version <- TRUE
   
- 
+  
   # Make the filename and check for the file, gunzip if necessary, fail if not present
   file.string = file.path(run@dir, paste(variable, ".out", sep=""))
+  re.zip <- FALSE
   if(file.exists(file.string)){ 
     if(verbose) message(paste("Found and opening file", file.string, sep = " "))
     dt <- fread(file.string)
   }
   else if(file.exists(paste(file.string, "gz", sep = "."))){
     if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
-    if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-    else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+    if(.Platform$OS.type == "unix") {
+      if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+      else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+    }
+    else {
+      re.zip <- TRUE
+      gunzip(paste(file.string, "gz", sep = "."))
+    }
   }
   else {
     stop(paste("File (or gzipped file) not found:", file.string))
@@ -133,7 +140,7 @@ openLPJOutputFile <- function(run,
     message("Offsets applied. Head of full .out file (after offsets):")
     print(utils::head(dt))
   }
-
+  
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
   if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   
@@ -143,7 +150,7 @@ openLPJOutputFile <- function(run,
   all.cols <- names(dt)
   st.cols <- getDimInfo(dt)
   nonst.cols <- all.cols[!all.cols %in% st.cols]
- 
+  
   # if monthly then melt
   standard.monthly.ljp.col.names <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
   if(identical(nonst.cols, standard.monthly.ljp.col.names)){
@@ -157,16 +164,19 @@ openLPJOutputFile <- function(run,
   
   # if daily then melt
   # TODO - implement daily melting, follow above for implementation
- 
+  
   
   # set some attributes about the data - works!
   setattr(dt, "shadeToleranceCombined", FALSE)
- 
+  
   # set keys
   setKeyDGVM(dt)
   
   # remove any NAs
   dt <- stats::na.omit(dt)
+  
+  # if re-zip
+  if(re.zip) gzip(file.string)
   
   # Build as STAInfo object describing the data
   all.years <- sort(unique(dt[["Year"]]))
@@ -182,7 +192,7 @@ openLPJOutputFile <- function(run,
                  subannual.resolution = subannual,
                  subannual.original = subannual,
                  spatial.extent = extent(dt))
-
+  
   if(data.table.only) return(dt)
   else return(list(dt = dt,
                    sta.info = sta.info))
@@ -937,52 +947,52 @@ GUESS.PFTs <- list(
   
   # IBS
   new("PFT",
-            id = "IBS",
-            name = "Shade-intolerant B/leaved Summergreen Tree",
-            growth.form = "Tree",
-            leaf.form = "Broadleaved",
-            phenology = "Summergreen",
-            climate.zone = "Temperate",
-            colour = "chartreuse",
-            shade.tolerance = "None"
+      id = "IBS",
+      name = "Shade-intolerant B/leaved Summergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Broadleaved",
+      phenology = "Summergreen",
+      climate.zone = "Temperate",
+      colour = "chartreuse",
+      shade.tolerance = "None"
   ),
   
   # TEMPERATE TREES
   
   # TeBE
   new("PFT",
-             id = "TeBE",
-             name = "Temperate Broadleaved Evergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Evergreen",
-             climate.zone = "Temperate",
-             colour = "darkgreen",
-             shade.tolerance = "None"
+      id = "TeBE",
+      name = "Temperate Broadleaved Evergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Broadleaved",
+      phenology = "Evergreen",
+      climate.zone = "Temperate",
+      colour = "darkgreen",
+      shade.tolerance = "None"
   ),
   
   # TeNE
   new("PFT",
-             id = "TeNE",
-             name = "Temperate Needleleaved Evergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Needleleaved",
-             phenology = "Evergreen",
-             climate.zone = "Temperate",
-             colour = "lightseagreen",
-             shade.tolerance = "None"
+      id = "TeNE",
+      name = "Temperate Needleleaved Evergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Needleleaved",
+      phenology = "Evergreen",
+      climate.zone = "Temperate",
+      colour = "lightseagreen",
+      shade.tolerance = "None"
   ),
   
   # TeBS
   new("PFT",
-             id = "TeBS",
-             name = "Temperate Broadleaved Summergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Summergreen",
-             colour = "darkolivegreen3",
-             climate.zone = "Temperate",
-             shade.tolerance = "None"
+      id = "TeBS",
+      name = "Temperate Broadleaved Summergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Broadleaved",
+      phenology = "Summergreen",
+      colour = "darkolivegreen3",
+      climate.zone = "Temperate",
+      shade.tolerance = "None"
   ),
   
   
@@ -990,39 +1000,39 @@ GUESS.PFTs <- list(
   
   # TrBE
   new("PFT",
-             id = "TrBE",
-             name = "Tropical Broadleaved Evergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Evergreen",
-             climate.zone = "Tropical",
-             colour = "orchid4",
-             shade.tolerance = "None"
+      id = "TrBE",
+      name = "Tropical Broadleaved Evergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Broadleaved",
+      phenology = "Evergreen",
+      climate.zone = "Tropical",
+      colour = "orchid4",
+      shade.tolerance = "None"
   ),
   
   
   # TrIBE
   new("PFT",
-              id = "TrIBE",
-              name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
-              growth.form = "Tree",
-              leaf.form = "Broadleaved",
-              phenology = "Evergreen",
-              climate.zone = "Tropical", 
-              colour = "orchid",
-              shade.tolerance = "TrBE"
+      id = "TrIBE",
+      name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Broadleaved",
+      phenology = "Evergreen",
+      climate.zone = "Tropical", 
+      colour = "orchid",
+      shade.tolerance = "TrBE"
   ),
   
   # TrBR 
   new("PFT",
-             id = "TrBR",
-             name = "Tropical Broadleaved Raingreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Raingreen",
-             climate.zone = "Tropical",
-             colour = "palevioletred",
-             shade.tolerance = "None"
+      id = "TrBR",
+      name = "Tropical Broadleaved Raingreen Tree",
+      growth.form = "Tree",
+      leaf.form = "Broadleaved",
+      phenology = "Raingreen",
+      climate.zone = "Tropical",
+      colour = "palevioletred",
+      shade.tolerance = "None"
   ),
   
   
@@ -1030,26 +1040,26 @@ GUESS.PFTs <- list(
   
   # C3G 
   new("PFT",
-            id = "C3G",
-            name = "Boreal/Temperate Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
-            colour = "lightgoldenrod1",
-            shade.tolerance = "None"
+      id = "C3G",
+      name = "Boreal/Temperate Grass",
+      growth.form = "Grass",
+      leaf.form = "Broadleaved",
+      phenology = "GrassPhenology",
+      climate.zone = "NA",
+      colour = "lightgoldenrod1",
+      shade.tolerance = "None"
   ),
   
   # C4G
   new("PFT",
-            id = "C4G",
-            name = "Tropical Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
-            colour = "sienna2",
-            shade.tolerance = "None"
+      id = "C4G",
+      name = "Tropical Grass",
+      growth.form = "Grass",
+      leaf.form = "Broadleaved",
+      phenology = "GrassPhenology",
+      climate.zone = "NA",
+      colour = "sienna2",
+      shade.tolerance = "None"
   )
   
 )

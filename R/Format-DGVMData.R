@@ -59,7 +59,7 @@ getField_DGVMData <- function(source,
   }
   else if(file.exists(file.name.nc.gz)){
     zipped <- TRUE
-    system(paste("gzip -d",  file.name.nc.gz, sep = " "))
+    R.utils::gunzip(file.name.nc.gz)
     if(verbose) message(paste("Found, gunzipping and opening file", file.name.nc.gz, sep = " "))
   }
   
@@ -341,7 +341,7 @@ getField_DGVMData <- function(source,
   # close the netcdf file and if necessary zip again
   ncdf4::nc_close(this.nc)
   if(zipped) {
-    system(paste("gzip",  file.name.nc, sep = " "))
+    R.utils::gzip(file.name.nc)
   }
   
   return(list(dt = dt, 

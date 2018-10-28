@@ -28,7 +28,8 @@ Imports:
     RColorBrewer,
     reshape2,
     viridis,
-    plyr
+    plyr,
+    R.utils
 Suggests:
     knitr,
     rmarkdown,
