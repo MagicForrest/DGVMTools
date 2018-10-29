@@ -89,6 +89,7 @@ openLPJOutputFile <- function(run,
     else {
       re.zip <- TRUE
       R.utils::gunzip(paste(file.string, "gz", sep = "."))
+      dt <- fread(file.string)
     }
   }
   else {
