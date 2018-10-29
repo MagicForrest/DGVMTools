@@ -18,7 +18,7 @@ selectYears <- function(x, first, last){
   # check input class
   if(is.Field(x)) input.dt <- x@data 
   else if(is.data.table(x))  input.dt <- x
-  else stop("Called for an object which is not a Data/Model object or a data.table.  Exiting...")
+  else stop("Called for an object which is not a Field or a data.table.  Exiting...")
   
   # 
   if(first > last) stop("Error, first year must be smaller or equal to the last year!")

@@ -21,6 +21,8 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 
 ### News
 
+**2018-10-29** - Release v0.6.2 Removed dependmcy om external gzip on windows machines for better portability.
+
 **2018-10-26** - Release v0.6.1 featuring aggregation and time series plotting of daily data, use of gzip for compressed DGVMData (also on windows systems), extended vignette and bug fixes.
 
 **2018-10-23** - Release v0.6.0 for FireMIP workshop.
@@ -40,10 +42,6 @@ To install the latest development version, first install **[devtools](https://cr
 ```S
 devtools::install_github("MagicForrest/DGVMTools", ref = "dev")
 ```
-
-**NOTE** Windows users, please install the GNU gzip utility to read the gzipped example data, available here:
-
-**https://sourceforge.net/projects/gnuwin32/files/gzip/**
 
 ====
 
