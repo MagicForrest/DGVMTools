@@ -40,7 +40,7 @@ First release for CRAN is in preparation.
 To install the latest development version, first install **[devtools](https://cran.r-project.org/package=devtools)** and subsequently run
 
 ```S
-devtools::install_github("MagicForrest/DGVMTools", ref = "dev")
+devtools::install_github("MagicForrest/DGVMTools", ref = "dev", build_vignettes = TRUE)
 ```
 
 ====
