@@ -45,6 +45,8 @@
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
 #' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
+#' @param time Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
+#' for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
 #' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
@@ -83,7 +85,8 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                         map.overlay = NULL,
                         grid = FALSE,
                         plot = TRUE,
-                        interior.lines = TRUE){
+                        interior.lines = TRUE,
+                        tile = FALSE){
   
   J = Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = NULL
@@ -642,15 +645,17 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     # note that we add each facet as an individual layer to support multiple resolutions
     if(wrap){
       for(facet in levels(data.toplot[["Facet"]])){
-        mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+        if(!tile) mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+        else mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
       }
       mp <- mp + facet_wrap(~Facet)      
     }
     if(grid){
       for(col1 in unique(data.toplot[[grid.columns[1]]])){ 
         for(col2 in unique(data.toplot[[grid.columns[2]]])){ 
-          mp <- mp + geom_raster(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
-        }
+          if(!tile) mp <- mp + geom_raster(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+          else mp <- mp + geom_tile(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+         }
       }
       mp <- mp + facet_grid(stats::as.formula(paste(grid.string)), switch = "y")    
     }
@@ -658,7 +663,8 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   }
   # else simple case with no facetting
   else {
-    mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+    if(!tile) mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+    else mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value")) 
   }
   
   # colour bar
