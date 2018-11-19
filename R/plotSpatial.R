@@ -622,7 +622,11 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     }
     if(multiple.seasons) {
       grid.columns <- append(grid.columns, "Season")
-      data.toplot[, Season := factor(Season, levels = unique(data.toplot[["Season"]]))]
+      final.ordered <- c()
+      for(season in all.seasons){
+        if(season@id %in% unique(data.toplot[["Season"]])) final.ordered <- append(final.ordered, season@id)
+      }
+      data.toplot[, Season := factor(Season, levels = final.ordered)]
     }
     grid.string <- paste(grid.columns, collapse = "~")
   }
