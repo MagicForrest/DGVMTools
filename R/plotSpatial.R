@@ -570,8 +570,16 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Month"]]), paste))
     }
     if(multiple.seasons) { 
+      
       data.toplot[, Facet := paste(Facet, Season)] 
-      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Season"]]), paste))
+      #  special case for the seasons (since they have an 'inherent' ordering not reflected in their alphabetical ordering)
+      #  -> re-order the "unique(data.toplot[["Season"]])" part to orders the panels correctly
+      final.ordered <- c()
+      for(season in all.seasons){
+        if(season@id %in% unique(data.toplot[["Season"]])) final.ordered <- append(final.ordered, season@id)
+      }
+      factor.levels <- as.vector(outer(factor.levels, final.ordered, paste))
+      
     }
     data.toplot[, Facet := factor(trimws(Facet), levels = trimws(factor.levels))]
     
