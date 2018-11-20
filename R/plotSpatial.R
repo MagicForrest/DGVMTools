@@ -62,7 +62,7 @@
 #' @export 
 #' @seealso \code{plotTemporal}
 #' 
-plotSpatial <- function(fields, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
+plotSpatial <- function(fields, # can be a Field or a list of Fields
                         layers = NULL,
                         title = character(0),
                         subtitle = character(0),
@@ -99,21 +99,8 @@ plotSpatial <- function(fields, # can be a data.table, a SpatialPixelsDataFrame,
   
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
-  ### 1. fields - check the fields
-  if(is.Field(fields)) {
-    fields <- list(fields)
-  }
-  else if(class(fields)[1] == "list") {
-    for(object in fields){ 
-      if(!is.Field(object)) {
-        warning("You have passed me a list of items to plot but the items are not exclusively Fields.  Returning NULL")
-        return(NULL)
-      }
-    }
-  }
-  else{
-    stop(paste("plotSpatial can only handle single a DataObject or Field, or a list of Data/Fields can't plot an object of type", class(fields)[1], sep = " "))
-  }
+  ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
+  fields <- santiseFieldsForPlotting(fields)
   
   ### 2. LAYERS - check the number of layers
   

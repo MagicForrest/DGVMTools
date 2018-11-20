@@ -1,8 +1,34 @@
+#' Sanitise input fields
+#' 
+#' This is an internal helper function which checks the inputs to a plotXXXX function (which should be a single Field or a list of Fields) and returns a list of Fields
+#' 
+#' @param fields The input to a plotXXXX() functions to be checked
+#' @return Returns a list of DGVMTools::Field objects
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
 
-
-
-
-
+santiseFieldsForPlotting <- function(fields) {
+  
+  if(is.Field(fields)) {
+    fields <- list(fields)
+  }
+  else if(class(fields)[1] == "list") {
+    for(object in fields){ 
+      if(!is.Field(object)) {
+        warning("You have passed me a list of items to plot but the items are not exclusively Fields.  Returning NULL")
+        return(NULL)
+      }
+    }
+  }
+  else{
+    stop(paste("plotSpatial can only handle single a DataObject or Field, or a list of Data/Fields can't plot an object of type", class(fields)[1], sep = " "))
+  }
+  
+  return(fields)
+  
+}
 
 
 
