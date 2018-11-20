@@ -1,14 +1,13 @@
-#' Sanitise input fields
+#' Sanitise input fields for plotting
 #' 
 #' This is an internal helper function which checks the inputs to a plotXXXX function (which should be a single Field or a list of Fields) and returns a list of Fields
 #' 
 #' @param fields The input to a plotXXXX() functions to be checked
-#' @return Returns a list of DGVMTools::Field objects
+#' @return Returns a list of DGVMTools::Field objects or NULL if a problem was found
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' 
 #' 
-
 santiseFieldsForPlotting <- function(fields) {
   
   if(is.Field(fields)) {
@@ -23,14 +22,159 @@ santiseFieldsForPlotting <- function(fields) {
     }
   }
   else{
-    stop(paste("plotSpatial can only handle single a DataObject or Field, or a list of Data/Fields can't plot an object of type", class(fields)[1], sep = " "))
+    warning(paste("plotSpatial can only handle single a Field, or a list of Fields, it can't plot an object of type", class(fields)[1], sep = " "))
+    return(NULL)
   }
   
   return(fields)
   
 }
 
+#' Sanitise input layers for plotting
+#' 
+#' This is an internal helper function which checks the layers requested to be plotted against the layers in the the fields to be plotted.  If layers is NULL, then 
+#' it returns all layers present in any fields
+#' 
+#' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
+#' @param layers The layers requested to be plotted
+#' @return Returns character vector of the layers to be plotted
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
+santiseLayersForPlotting <- function(fields, layers) {
+  
+  
+  layers.superset <- c()
+  num.layers.x.fields <- 0
+  
+  # if no layers argument supplied make a list of all layers present (in any object)
+  if(is.null(layers) || missing(layers)){
+    
+    for(object in fields){
+      temp.layers <- names(object)
+      num.layers.x.fields <- num.layers.x.fields + length(temp.layers)
+      layers.superset <- append(layers.superset, temp.layers)
+    } 
+    layers <- unique(layers.superset)
+    
+  }
+  
+  # else if layers have been specified check that we have some of the requested layers present
+  else{
+    
+    for(object in fields){
+      
+      layers.present <- intersect(names(object), layers)
+      num.layers.x.fields <- num.layers.x.fields + length(layers.present)
+      
+      if(length(layers.present) == 0) {warning("Some Fields to plot don't have all the layers that were requested to plot")}
+      layers.superset <- append(layers.superset, layers.present)
+      
+    } 
+    
+    # Return empty plot if not layers found
+    if(num.layers.x.fields == 0){
+      warning("None of the specified layers found in the objects provided to plot.  Returning NULL.")
+      return(NULL)
+    }
+    
+    # Also check for missing layers and given a warning
+    missing.layers <- layers[!(layers %in% unique(layers.superset))]
+    if(length(missing.layers) != 0) { warning(paste("The following layers were requested to plot but not present in any of the supplied objects:", paste(missing.layers, collapse = " "), sep = " ")) }
+    
+    # finally make a unique list of layers to be carried in to the actual plotting
+    layers <- unique(layers.superset)
+    
+  }
+  
+  return(layers)
+  
+}
 
+
+
+#' Sanitise STAInfo for plotting
+#' 
+#' This is an internal helper function which checks the dimensions of the Fields to be plotted 
+#' 
+#' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
+#' @return Returns character vector of the layers to be plotted
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
+santiseDimensionsForPlotting <- function(fields, require = NULL) {
+  
+  ### Check if all the fields have the same ST dimensions and that Lon and Lat are present.  If not, warn and return NULL
+  sta.info <- getDimInfo(fields[[1]], info = "names")
+  
+  # check Lon and Lat present
+  for(required.sta in require)
+  if(!required.sta %in% sta.info) {
+    warning(paste0("Dimension ", required.sta, " is missing from an input Field but is required for this plot type.  Obviously this won't work, returning NULL."))
+    return(NULL)
+  }
+  
+  # check all the same dimensions
+  if(length(fields) > 1) {
+    for(counter in 2:length(fields)){
+      if(!identical(sta.info, getDimInfo(fields[[counter]], info = "names"))) {
+        warning(paste0("Trying to plot two Fields with different Spatial-Temporal dimensions.  One has \"", paste(sta.info, collapse = ","), "\" and the other has \"",  paste(getDimInfo(fields[[counter]], info = "names"), collapse = ","), "\".  So not plotting and returning NULL."))
+        return(NULL)
+      }
+    }
+  }
+  
+  return(sta.info)
+  
+}
+
+
+
+#' Check values of a particular dimension 
+#' 
+#' This is an internal helper function which either stops if a dimension is requested to be plotted but is not present
+#  or, if they have not explicitly been requested, it makes a list of possible values of that dimension.  If a value has been reuqested but is not present for the 
+#' dimension, it gives a warning
+#' 
+#' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
+#' @param input.values A list of the values that have been requested to be plotted
+#' @param dimension A character string specifying which dimension is to be checked (one of "Lon", "Lat", "Year", "Month", "Day" or "Season") 
+#' @return Returns character vector of the layers to be plotted
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
+checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
+  
+  all.values <- c()
+  for(object in fields){
+    
+    # check if dimension is actually present in the source
+    if(!dimension %in% getDimInfo(object)) {
+      stop(paste("In plotSpatial you requested plotting of maps per", dimension, "but not all the fields have", dimension, "data.\n I am therefore returning NULL for this plot, but your script should continue.  Check that your input Fields have the time dimensions that you think they have.", sep = " "))
+    }
+    
+    # get a list of all unique days present
+    values.present <- unique(object@data[[dimension]])
+    
+    # input.list specified so check that they are present
+    if(!is.null(input.values)) {
+      for(counter in input.values) { if(!counter %in% values.present) warning(paste0(dimension, " ", counter, " not present in Field ", object@id)) }
+    }
+    # else input.list not specified so make a list of unique days across all Fields
+    else { all.values <- append(all.values, values.present) }
+    
+  }
+  
+  # make a unique and sorted list of values
+  if(is.null(input.values)) input.values <- sort(unique(all.values))
+  
+  # return
+  return(input.values)
+  
+}
 
 #####################################################################################################################
 ################ CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED ########################
