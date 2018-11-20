@@ -245,6 +245,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   }
   
   # prepare overlay
+  all.lons <- sort(unique(data.toplot[["Lon"]]))
   if(!is.null(map.overlay)) map.overlay.df <- makeMapOverlay(map.overlay, all.lons, interior.lines, xlim, ylim) 
   
   
