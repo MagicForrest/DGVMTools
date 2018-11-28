@@ -217,7 +217,7 @@ getBiomes <- function(source,
   }
   
   
-  print("Starting classification")
+  if(verbose) print("Starting classification")
   suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
   this.dt <- dt[,append(getDimInfo(dt), scheme@id), with = FALSE]
   setKeyDGVM(this.dt)

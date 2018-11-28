@@ -626,7 +626,7 @@ getStandardQuantity_LPJ <- function(run,
   if(quant@id == "vegcover_std") {
     
     # vegcover.out provides the right quantity here (note this is not standard LPJ-GUESS)
-    data.list <- openLPJOutputFile(run, "vegcover", first.year, last.year, verbose = TRUE)
+    data.list <- openLPJOutputFile(run, "vegcover", first.year, last.year, verbose = verbose)
     
     # But we need to scale it to %
     if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
@@ -642,7 +642,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "vegC_std") {
     
     # cmass provides the right quantity here - so done
-    data.list <- openLPJOutputFile(run, "cmass", first.year, last.year, verbose = TRUE)
+    data.list <- openLPJOutputFile(run, "cmass", first.year, last.year, verbose = verbose)
     return(data.list)
     
   }
@@ -651,7 +651,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "LAI_std") {
     
     # lai provides the right quantity here - so done
-    data.list <- openLPJOutputFile(run, "lai", first.year, last.year, verbose = TRUE)
+    data.list <- openLPJOutputFile(run, "lai", first.year, last.year, verbose = verbose)
     return(data.list)
     
     
@@ -661,7 +661,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "FPAR_std") {
     
     # lai provides the right quantity here - so done
-    data.list <- openLPJOutputFile(run, "fpc", first.year, last.year, verbose = TRUE)
+    data.list <- openLPJOutputFile(run, "fpc", first.year, last.year, verbose = verbose)
     
     data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year", "Total")]
     data.list[["dt"]][, Total := pmin(Total, 1) * 100 * 0.83]
@@ -675,11 +675,11 @@ getStandardQuantity_LPJ <- function(run,
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     if(file.exists(file.path(run@dir, "agpp.out")) || file.exists(file.path(run@dir, "agpp.out.gz"))){
-      data.list <-  openLPJOutputFile(run, "agpp", first.year, last.year, verbose = TRUE)
+      data.list <-  openLPJOutputFile(run, "agpp", first.year, last.year, verbose = verbose)
       data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
     else {
-      data.list <- openLPJOutputFile(run, "mgpp", first.year, last.year, verbose = TRUE)
+      data.list <- openLPJOutputFile(run, "mgpp", first.year, last.year, verbose = verbose)
       data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum", target = "Year")
     }
     return(data.list)
@@ -694,11 +694,11 @@ getStandardQuantity_LPJ <- function(run,
     # newer versions have the agpp output variable which has the per PFT version
     
     if(file.exists(file.path(run@dir, "anpp.out") || file.path(run@dir, "anpp.out.gz"))){
-      data.list <- openLPJOutputFile(run, "anpp", first.year, last.year, verbose = TRUE)
+      data.list <- openLPJOutputFile(run, "anpp", first.year, last.year, verbose = verbose)
       data.list[["dt"]] <-  data.list[["dt"]][, c("Lon", "Lat", "Year","Total"), with = FALSE]
     }
     else{
-      data.list <- openLPJOutputFile(run, "mnpp", first.year, last.year, verbose = TRUE)
+      data.list <- openLPJOutputFile(run, "mnpp", first.year, last.year, verbose = verbose)
       data.list[["dt"]]  <- aggregateSubannual(data.list[["dt"]] , method = "sum", target = "Year")
     }
     return(data.list)
@@ -710,7 +710,7 @@ getStandardQuantity_LPJ <- function(run,
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
-    data.list <- openLPJOutputFile(run, "cflux", first.year, last.year, verbose = TRUE)
+    data.list <- openLPJOutputFile(run, "cflux", first.year, last.year, verbose = verbose)
     
     # take NEE and  ditch the rest
     data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year","NEE"), with = FALSE]
@@ -723,7 +723,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "canopyheight_std") {
     
     # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
-    data.list <- openLPJOutputFile(run, "canopyheight", first.year, last.year, verbose = TRUE)
+    data.list <- openLPJOutputFile(run, "canopyheight", first.year, last.year, verbose = verbose)
     setnames(data.list[["dt"]], "CanHght", "CanopyHeight")
     
     return(data.list)
@@ -735,14 +735,15 @@ getStandardQuantity_LPJ <- function(run,
     
     # if mfirefrac is present the open it and use it
     if("mfirefrac" %in% availableQuantities_GUESS(run, names=TRUE)){
-      data.list <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = TRUE)
+      data.list <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = verbose)
       data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum")
+      setnames(data.list[["dt"]], old = "mfirefrac", new = quant@id)
       
     }
     
     # otherwise open firert to get GlobFIRM fire return interval and invert it
     else {
-      data.list <- openLPJOutputFile(run, "firert", first.year, last.year, verbose = TRUE)
+      data.list <- openLPJOutputFile(run, "firert", first.year, last.year, verbose = verbose)
       data.list[["dt"]][, "burntfraction_std" :=  1 / FireRT]
       data.list[["dt"]][, FireRT :=  NULL]
     }
@@ -776,7 +777,7 @@ getStandardQuantity_LPJ <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-availableQuantities_GUESS <- function(source, names = TRUE){
+availableQuantities_GUESS <- function(source, names = TRUE, verbose = FALSE){
   
   directory <- source@dir
   
@@ -812,7 +813,7 @@ availableQuantities_GUESS <- function(source, names = TRUE){
         else good.list <- append(good.list, result)
       }
       else {
-        warning("Although I have found file with an appropriate extension that looks like an LPJ-GUESS output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
+        if(verbose) warning("Although I have found file with an appropriate extension that looks like an LPJ-GUESS output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
       }
       
     }
