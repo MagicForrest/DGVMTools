@@ -148,7 +148,7 @@ getField_DGVMData <- function(source,
   for(this.var in this.nc$var) {
     
     # Get the actual data and set the dimension names    
-    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose)
+    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
     dimnames(this.slice) <- dimension.names
     
     # prepare data.table from the slice (array)
