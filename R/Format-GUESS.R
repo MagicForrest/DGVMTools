@@ -159,7 +159,7 @@ openLPJOutputFile <- function(run,
     # replace column names with 1,2,3.. etc before melting, and then melt
     setnames(dt, old = standard.monthly.ljp.col.names, new = paste(1:12))
     dt <- melt(dt, id.vars = st.cols, measure.vars = paste(1:12), variable.name = "Month", value.name = variable)
-    dt <- dt[, Month := as.numeric(Month)]
+    dt <- dt[, Month := as.integer(Month)]
     
   }
   

@@ -284,7 +284,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
     out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
   }
   else {
-    out.all[, Month := ((Time-1) %% time.steps.per.year) + 1]
+    out.all[, Month := as.integer(((Time-1) %% time.steps.per.year) + 1)]
   }
   out.all[, Time := NULL]
   
