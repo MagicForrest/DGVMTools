@@ -278,10 +278,10 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   # sort out the time dimension
   # NOTE: something special is happening here. The ':=' operator is changing the data.table in place.
   # this means that you don't need to do a re-assignment using '<-' 
-  out.all[, Year := floor((Time-1)/time.steps.per.year) + run@year.offset ] # - 1]
+  out.all[, Year := as.integer(floor((Time-1)/time.steps.per.year) + run@year.offset) ] # - 1]
 
   if(adgvm.daily) {
-    out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
+    out.all[, Day := as.integer(((Time-1) %% time.steps.per.year) + 1)]
   }
   else {
     out.all[, Month := as.integer(((Time-1) %% time.steps.per.year) + 1)]
@@ -625,13 +625,13 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   # sort out the time dimension
   # NOTE: something special is happening here. The ':=' operator is changing the data.table in place.
   # this means that you don't need to do a re-assignment using '<-' 
-  out.all[, Year := Time*timestep + run@year.offset - timestep ]
+  out.all[, Year := as.integer(Time*timestep + run@year.offset - timestep) ]
   
 #  if(adgvm.daily) {
 #    out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
 #  }
 #  else {
-  out.all[, Month := 1]
+  out.all[, Month := 1L]
 #  }
   out.all[, Time := NULL]
   out.all[, Day := NULL]
