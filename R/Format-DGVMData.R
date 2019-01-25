@@ -211,7 +211,7 @@ getField_DGVMData <- function(source,
             month.vector <-append(month.vector, rep.int(month, temp.nentries.per.year/12))
           }
         }
-        this.slice.dt[, Month := month.vector]
+        this.slice.dt[, Month := as.integer(month.vector)]
         rm(month.vector)
         
         # Remove the Time columns
