@@ -175,6 +175,9 @@ getField <- function(source,
   setKeyDGVM(this.dt)
   actual.sta.info <- data.list[["sta.info"]]
   
+  rm(data.list)
+  gc()
+  
   
   ### CROP THE SPATIAL EXTENT IF REQUESTED
   if(!is.null(sta.info@spatial.extent))  {
@@ -329,6 +332,8 @@ getField <- function(source,
     if(verbose) {message("...done.")}
   }
   
+  # clean up and return
+  # gc()
   return(model.field)
   
 }

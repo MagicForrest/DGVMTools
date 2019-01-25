@@ -7,15 +7,13 @@
 getField_GUESS(source, quant, target.STAInfo, verbose, ...)
 }
 \arguments{
+\item{source}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
+
+\item{quant}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
+
+\item{target.STAInfo}{The spatial-temporal target domain}
+
 \item{verbose}{A logical, set to true to give progress/debug information}
-
-\item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
-
-\item{variable}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
-
-\item{first.year}{The first year (as a numeric) of the data to be return}
-
-\item{last.year}{The last year (as a numeric) of the data to be return}
 }
 \value{
 A list containing firstly the data.tabel containing the data, and secondly the STA.info
