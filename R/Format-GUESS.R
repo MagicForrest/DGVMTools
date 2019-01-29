@@ -27,10 +27,10 @@ getField_GUESS <- function(source,
     data.list <- openLPJOutputFile_FireMIP(source, quant@id, target.sta = target.STAInfo, verbose = verbose, ...)
   }
   else if("GUESS" %in% quant@format | "LPJ-GUESS-SPITFIRE" %in% quant@format) {
-    data.list <- openLPJOutputFile(source, quant@id, target.sta = target.STAInfo, verbose = verbose)
+    data.list <- openLPJOutputFile(source, quant@id, target.sta = target.STAInfo, verbose = verbose, ...)
   }
   else if("Standard" %in% quant@format) {
-    data.list <- getStandardQuantity_LPJ(source, quant, target.sta = target.STAInfo, verbose = verbose)
+    data.list <- getStandardQuantity_LPJ(source, quant, target.sta = target.STAInfo, verbose = verbose, ...)
   }
   
   
@@ -60,7 +60,8 @@ openLPJOutputFile <- function(run,
                               variable,
                               target.sta,
                               verbose = FALSE,
-                              data.table.only = FALSE){
+                              data.table.only = FALSE,
+                              ...){
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = Day = NULL
@@ -124,6 +125,10 @@ openLPJOutputFile <- function(run,
     dt <- selectYears(dt, first.year, last.year)
   }
   
+    # also correct days to be 1-365 instead of 0-364, if necessary
+  if("Day" %in% names(dt)) {
+    if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]
+  }
   
   # Correct lon and lats
   if(length(run@lonlat.offset) == 2 ){
@@ -136,21 +141,36 @@ openLPJOutputFile <- function(run,
     if(run@lonlat.offset[1] != 0) dt[, Lon := Lon + run@lonlat.offset[1]]
     if(run@lonlat.offset[1] != 0) dt[, Lat := Lat + run@lonlat.offset[1]]
   }
-  
-  # also correct days to be 1-365 instead of 0-364, if necessary
-  if("Day" %in% names(dt)) {
-    if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]
-  }
-  
+ 
   if(verbose) {
     message("Offsets applied. Head of full .out file (after offsets):")
     print(utils::head(dt))
   }
-  print("london centring")
+ 
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
   if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   
+  # if spatial extent specified, crop to it
+  new.extent <- NULL
+  if(!is.null(target.sta@spatial.extent)) {
+    
+    spatial.extent.class <- class(target.sta@spatial.extent)[1]
+    
+    if(spatial.extent.class == "SpatialPolygonsDataFrame" || spatial.extent.class == "numeric" || is.data.frame(target.sta@spatial.extent) || is.data.table(target.sta@spatial.extent)) {
+      dt <- selectGridcells(x = dt, gridcells = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id, ...)
+      new.extent <- target.sta@spatial.extent
+    }
+    
+    else {
+      dt <- crop(x = dt, y = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id)
+      new.extent <- extent(dt)
+    } 
+    
+  }
+  
   gc()
+  
+  
   
   # If data is has monthly or daily columns, melt to long/tidy data where "Month" becomes a column
   
@@ -158,19 +178,20 @@ openLPJOutputFile <- function(run,
   all.cols <- names(dt)
   st.cols <- getDimInfo(dt)
   nonst.cols <- all.cols[!all.cols %in% st.cols]
-  print("dmelting")
+
   # if monthly then melt
   standard.monthly.ljp.col.names <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-  print(object.size(dt))
+
   if(identical(nonst.cols, standard.monthly.ljp.col.names)){
     
     # replace column names with 1,2,3.. etc before melting, and then melt
     setnames(dt, old = standard.monthly.ljp.col.names, new = paste(1:12))
     dt <- melt(dt, id.vars = st.cols, measure.vars = paste(1:12), variable.name = "Month", value.name = variable)
-    dt <- dt[, Month := as.integer(Month)]
+    dt[, Month := as.integer(Month)]
     
   }
-  print(object.size(dt))
+
+  
   # if daily then melt
   # TODO - implement daily melting, follow above for implementation
   
@@ -182,10 +203,10 @@ openLPJOutputFile <- function(run,
  
   # remove any NAs
   dt <- stats::na.omit(dt)
-  print("set key")
+  
   # if re-zip
   if(re.zip) R.utils::gzip(file.string)
-  print("regzipped")
+
   # Build as STAInfo object describing the data
   all.years <- sort(unique(dt[["Year"]]))
   dimensions <- getDimInfo(dt)
@@ -198,8 +219,12 @@ openLPJOutputFile <- function(run,
                  first.year = min(all.years),
                  last.year = max(all.years),
                  subannual.resolution = subannual,
-                 subannual.original = subannual,
-                 spatial.extent = extent(dt))
+                 subannual.original = subannual)
+  
+  if(!is.null(new.extent))  {
+    sta.info@spatial.extent = extent(dt)
+    sta.info@spatial.extent.id <- target.sta@spatial.extent.id
+  }
   
   gc()
   
@@ -231,7 +256,8 @@ openLPJOutputFile_FireMIP <- function(run,
                                       variable,
                                       target.sta,
                                       verbose = FALSE,
-                                      soil_water_capacities = "none"){
+                                      soil_water_capacities = "none",
+                                      ...){
   
   Lon = Lat = Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = mrso = mrsos = Capacity = Code = NULL
   target.cols = SoilfC = SoilsC = NULL

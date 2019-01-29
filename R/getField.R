@@ -32,8 +32,12 @@
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
-#' @param ...  Other arguments that are passed to the getField function for the specific Format.  Currently this is only 'adgvm.scheme' (for the aDGVM Format) which can be 1 or 2.
-#' 
+#' @param ...  Other arguments that are passed to the getField function for the specific Format or for selecting space/time/years.  Currently this can be
+#' \itemize{
+#'  \item{adgvm.scheme}  For the aDGVM Format, defines the aDGVM PFT scheme which can be 1 or 2.
+#'  \item{cover.fraction}  Optional when selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, should be between 0 and 1.
+#' }
+#'  
 #' @return A \code{Field}. 
 #' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}}   
 #' @include classes.R
@@ -180,7 +184,7 @@ getField <- function(source,
   
   
   ### CROP THE SPATIAL EXTENT IF REQUESTED
-  if(!is.null(sta.info@spatial.extent))  {
+  if(!is.null(sta.info@spatial.extent) && sta.info@spatial.extent.id != actual.sta.info@spatial.extent.id)  {
     
     # if the provided spatial yields a valid extent, use the crop function
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
@@ -192,8 +196,8 @@ getField <- function(source,
     }
     
     # else check if some gridcells to be selected with getGridcells
-    else if(is.data.frame(sta.info@spatial.extent) || is.data.table(sta.info@spatial.extent) || is.numeric(sta.info@spatial.extent) || is.list(sta.info@spatial.extent)){
-      this.dt <- selectGridcells(this.dt, sta.info@spatial.extent)
+    else if(is.data.frame(sta.info@spatial.extent) || is.data.table(sta.info@spatial.extent) || is.numeric(sta.info@spatial.extent) || class(sta.info@spatial.extent)[1] == "SpatialPolygonsDataFrame"){
+      this.dt <- selectGridcells(this.dt, sta.info@spatial.extent, ...)
       actual.sta.info@spatial.extent <- sta.info@spatial.extent
       actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
     }

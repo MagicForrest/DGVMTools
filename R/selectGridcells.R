@@ -25,7 +25,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 
-selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = NULL, decimal.places = NULL, cover.threshold = NULL) {
+selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = NULL, decimal.places = NULL, cover.threshold = NULL, ...) {
   
   Lon = Lat = NULL
   
