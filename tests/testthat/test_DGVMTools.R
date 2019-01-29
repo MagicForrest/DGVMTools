@@ -3,7 +3,7 @@ library(DGVMTools)
 library(stats)
 library(compiler)
 
-context("DGMTools")
+context("DGVMTools")
 
 test_that("Sources, Fields and Aggregating",{
   

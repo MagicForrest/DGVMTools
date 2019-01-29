@@ -225,7 +225,7 @@ openLPJOutputFile <- function(run,
     sta.info@spatial.extent = extent(dt)
     sta.info@spatial.extent.id <- target.sta@spatial.extent.id
   }
-  
+ 
   gc()
   
   if(data.table.only) return(dt)

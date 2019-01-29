@@ -208,7 +208,7 @@ getField <- function(source,
     }
     
   }
-  else {
+  else if(is.null(sta.info@spatial.extent)){
     
     actual.sta.info@spatial.extent.id <- "Full"
     if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
