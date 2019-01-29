@@ -328,10 +328,6 @@ getField_DGVMData <- function(source,
     if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   }
   
-  
-  # set some attributes about the file - works!
-  attr(dt, "shadeToleranceCombined") <- FALSE
-  
   # set keys
   setKeyDGVM(dt)
   

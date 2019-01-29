@@ -199,7 +199,8 @@ openLPJOutputFile <- function(run,
   # 
   
   # set some attributes about the data - works!
-  setattr(dt, "shadeToleranceCombined", FALSE)
+  # currently screws up unit tests and isn't used.  Consider using if updating metadata system.
+  # setattr(dt, "shadeToleranceCombined", FALSE)
  
   # remove any NAs
   dt <- stats::na.omit(dt)
