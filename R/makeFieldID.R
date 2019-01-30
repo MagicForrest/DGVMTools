@@ -42,7 +42,7 @@ makeFieldID <- function(field,
     
     this.id <- makeFieldID(source = field@source,
                            var.string = field@quant@id, 
-                           sta.info = field@sta.info)
+                           sta.info = as(field, "STAInfo"))
     return(this.id)
     
   }

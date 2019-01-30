@@ -21,8 +21,8 @@
 #' See \code{\link{aggregateYears}} 
 #' @param spatial.extent An extent in space to which this Field should be cropped, supplied as a raster::extent object or an object from which a raster::extent object can be derived - eg. a Raster* object or another Field object.
 #' @param spatial.extent.id A character string to give an identifier for the spatial extent this ModelField covers.
-#' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
-#' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
+#' "weighted.sum"/"w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' See \code{\link{aggregateSpatial}} 
 #' @param subannual.resolution A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".
 #' @param subannual.aggregate.method A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "sd" or "var".
@@ -173,15 +173,9 @@ getField <- function(source,
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   if(verbose) message(paste("Field ", target.field.id, " not already saved (or 'read.full' argument set to TRUE), so reading full data file to create the field now.", sep = ""))
   
-  data.list <- source@format@getField(source, quant, sta.info, verbose, ...)
-  this.dt <- data.list[["dt"]]
-  if(source@london.centre) this.dt[, Lon := LondonCentre(Lon)]
-  setKeyDGVM(this.dt)
-  actual.sta.info <- data.list[["sta.info"]]
-  
-  rm(data.list)
-  gc()
-  
+  this.Field <- source@format@getField(source, quant, sta.info, verbose, ...)
+  actual.sta.info <- as(this.Field, "STAInfo")
+ 
   
   ### CROP THE SPATIAL EXTENT IF REQUESTED
   if(!is.null(sta.info@spatial.extent) && sta.info@spatial.extent.id != actual.sta.info@spatial.extent.id)  {
@@ -189,17 +183,17 @@ getField <- function(source,
     # if the provided spatial yields a valid extent, use the crop function
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
     if (class(possible.error) != "try-error") {
-      this.dt <- crop(x = this.dt, y = sta.info@spatial.extent)  
-      actual.sta.info@spatial.extent <- extent(sta.info@spatial.extent)
-      actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
+      this.Field <- crop(x = this.Field, y = sta.info@spatial.extent)  
+      #actual.sta.info@spatial.extent <- extent(sta.info@spatial.extent)
+      #actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
       
     }
     
     # else check if some gridcells to be selected with getGridcells
     else if(is.data.frame(sta.info@spatial.extent) || is.data.table(sta.info@spatial.extent) || is.numeric(sta.info@spatial.extent) || class(sta.info@spatial.extent)[1] == "SpatialPolygonsDataFrame"){
-      this.dt <- selectGridcells(this.dt, sta.info@spatial.extent, ...)
-      actual.sta.info@spatial.extent <- sta.info@spatial.extent
-      actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
+      this.Field <- selectGridcells(this.Field, sta.info@spatial.extent, ...)
+      #actual.sta.info@spatial.extent <- sta.info@spatial.extent
+      #actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
     }
     
     # else fail with error message
@@ -216,7 +210,7 @@ getField <- function(source,
   }
   
   ### SELECT THE YEARS IF REQUESTED
-  if("Year" %in% getDimInfo(this.dt)) {
+  if("Year" %in% getDimInfo(this.Field)) {
     
     crop.first <- FALSE
     if(length(sta.info@first.year) == 1) {
@@ -245,10 +239,11 @@ getField <- function(source,
     if(crop.first || crop.last) {
       
       if(verbose) message(paste("Selecting years from", first.year, "to", last.year, sep = " "))
-      this.dt <- selectYears(this.dt, first = first.year, last = last.year) 
+      this.Field <- selectYears(this.Field, first = first.year, last = last.year) 
       
       # update meta-data
-      years.present <- sort(unique(this.dt[["Year"]]))
+      years.present <- getDimInfo(this.Field, info = "range")
+      print(years.present)
       actual.sta.info@first.year <- min(years.present)
       actual.sta.info@last.year <- max(years.present)
       
@@ -260,35 +255,35 @@ getField <- function(source,
   }
   
   ### CHECK THAT WE HAVE A VALID DATA.TABLE
-  if(nrow(this.dt) == 0) stop("getField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
+  if(nrow(this.Field@data) == 0) stop("getField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
 
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(sta.info@spatial.aggregate.method != "none") {
     
      if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
       
-      this.dt <- aggregateSpatial(this.dt, method = sta.info@spatial.aggregate.method, verbose = verbose)
+      this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose)
       
       # update meta-data and report  
       actual.sta.info@spatial.aggregate.method <- sta.info@spatial.aggregate.method
       if(verbose) {
         message("Head of spatially aggregated data.table:")
-        print(utils::head(this.dt))
+        print(utils::head(this.Field@data))
       }
     }
   }
   
   ###  DO YEAR AGGREGATATION
   if(sta.info@year.aggregate.method != "none"){
-    if("Year" %in% getDimInfo(this.dt, "names")){
+    if("Year" %in% getDimInfo(this.Field, "names")){
       
-      this.dt <- aggregateYears(this.dt, method = sta.info@year.aggregate.method, verbose = verbose)
+      this.Field <- aggregateYears(this.Field, method = sta.info@year.aggregate.method, verbose = verbose)
       
       # update meta-data and report  
       actual.sta.info@year.aggregate.method <- sta.info@year.aggregate.method
       if(verbose) {
-        message("Head of year aggregated data.table:")
-        print(utils::head(this.dt))
+        message("Head of year aggregated data:")
+        print(utils::head(this.Field@data))
       }
     }
   }
@@ -297,7 +292,7 @@ getField <- function(source,
   if(length(sta.info@subannual.resolution) > 0 ){
     
     # get the original subannual resolution
-    these.dims <- getDimInfo(this.dt, info = "names")
+    these.dims <- getDimInfo(this.Field, info = "names")
     if("Day" %in% these.dims) actual.sta.info@subannual.original <- "Day"
     if("Month" %in% these.dims) actual.sta.info@subannual.original <- "Month"
     else actual.sta.info@subannual.original <- "Year"
@@ -308,36 +303,36 @@ getField <- function(source,
         stop(paste0("Please provide a subannual.aggregate.method if you want to aggregate the data from ", actual.sta.info@subannual.original, " to ", sta.info@subannual.resolution))
       }
       
-      this.dt <- aggregateSubannual(this.dt, method = sta.info@subannual.aggregate.method, target = sta.info@subannual.resolution, verbose = verbose)
+      this.Field <- aggregateSubannual(this.Field, method = sta.info@subannual.aggregate.method, target = sta.info@subannual.resolution, verbose = verbose)
       
       # update meta-data and report  
       actual.sta.info@subannual.aggregate.method <- sta.info@subannual.aggregate.method
       actual.sta.info@subannual.resolution <- sta.info@subannual.resolution
       if(verbose) {
-        message("Head of year aggregated data.table:")
-        print(utils::head(this.dt))
+        message("Head of year aggregated data:")
+        print(utils::head(this.Field@data))
       }
       
     }
   }
   
-  ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
-  model.field <- new("Field",
-                     id = target.field.id,
-                     data = this.dt,
-                     quant = quant,
-                     actual.sta.info,
-                     source = source)
+  # ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
+  # model.field <- new("Field",
+  #                    id = target.field.id,
+  #                    data = this.dt,
+  #                    quant = quant,
+  #                    actual.sta.info,
+  #                    source = source)
 
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMField object...")}
-    saveRDS(model.field, file = file.name)
+    saveRDS(this.Field, file = file.name)
     if(verbose) {message("...done.")}
   }
   
   # clean up and return
   # gc()
-  return(model.field)
+  return(this.Field)
   
 }

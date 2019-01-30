@@ -53,7 +53,7 @@ setMethod("crop", signature(x="Field", y = "ANY"), function(x, y, spatial.extent
   # adjust the meta-data to reflext the new cropped extent
   x@spatial.extent <- extent(x@data)
   x@spatial.extent.id <- paste0(spatial.extent.id)
-  
+  x@id <- makeFieldID(x)
   
   return(x)
   
@@ -84,6 +84,7 @@ setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y, spatial.e
   # adjust the meta-data to reflext the new cropped extent
   x@spatial.extent <- extent(x@data)
   x@spatial.extent.id <-paste0(spatial.extent.id)
+  x@id <- makeFieldID(x)
   
   return(x)
   

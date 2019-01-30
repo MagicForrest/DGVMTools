@@ -13,7 +13,7 @@
 
 \S4method{crop}{Comparison}(x, y, spatial.extent.id = NULL, ...)
 
-\S4method{crop}{data.table}(x, y)
+\S4method{crop}{data.table}(x, y, spatial.extent.id = NULL, ...)
 }
 \arguments{
 \item{x}{A Field or Comparison or a stand-alone data.table to be cropped}

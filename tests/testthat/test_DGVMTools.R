@@ -5,20 +5,37 @@ library(compiler)
 
 
 
-# SIMPLE SOURCE AND FIELD
-context("Field and Source")
+# SOURCE 
+context("Source")
 
 test.source <- defineSource(id = "LPJ-GUESS_Example",
                             dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), 
                             format = GUESS,
                             name = "LPJ-GUESS Europe Example Run")
+
+# test Source and Field
+test_that("Sources",{
+  
+  expect_is(test.source, "Source")
+  
+})
+
+# Field 
+context("Field")
+
 test.field.full <- getField(test.source, "mlai")
 
 # test Source and Field
-test_that("Sources and Fields",{
- 
-  expect_is(test.source, "Source")
+test_that("Field",{
+  
+  # Normal LPJ-GUESS variable
   expect_is(test.field.full, "Field")
+  
+  # Also check a "standard" variable
+  expect_is(getField(test.source, "LAI_std"), "Field")
+  
+  # And a FireMIP variable
+  #expect_is(getField(test.source, lookupQuantity("lai", context = )), "Field")
   
   
 })
@@ -54,13 +71,12 @@ test_that("Aggregation",{
   expect_is(test.field.spatial.mean.1, "Field")
   expect_is(test.field.spatial.mean.2, "Field")
   
-  # checl the results are the same
-  expect_identical(test.field.monthly.mean.1@data ,  test.field.monthly.mean.2@data)
-  expect_identical(test.field.yearly.mean.1@data ,  test.field.yearly.mean.2@data)
-  expect_identical(test.field.spatial.mean.1@data ,  test.field.spatial.mean.2@data)
-  expect_identical(test.field.seasonal.mean.1@data ,  test.field.seasonal.mean.2@data)
-  
-  # MF NOTE:  metadata by both methods not identical, work on this.
+  # check the results are the same
+  expect_identical(test.field.monthly.mean.1 ,  test.field.monthly.mean.2)
+  expect_identical(test.field.yearly.mean.1 ,  test.field.yearly.mean.2)
+  expect_identical(test.field.spatial.mean.1 ,  test.field.spatial.mean.2)
+  expect_identical(test.field.seasonal.mean.1 ,  test.field.seasonal.mean.2)
+ 
   
   
 })
@@ -98,11 +114,12 @@ test.field.selected.gridcells.dt.1 <- getField(test.source, "mlai", spatial.exte
 test.field.selected.gridcells.dt.2 <- selectGridcells(x = test.field.full, gridcells = test.gridcells.dt, spatial.extent.id = "TestGridcellsDT")
 
 # by a polygon?
+# - not sure, maybe pull something from the maps package
 
 # crop by a raster
 test.raster <- raster::raster(ymn=48, ymx=59, xmn=4, xmx=17, resolution = 0.5, vals=0)
-test.field.selected.raster.1 <- getField(test.source, "mlai", spatial.extent = test.raster, spatial.extent.id = "TestRaster")
-test.field.selected.raster.2 <- crop(x = test.field.full, y = test.raster, spatial.extent.id = "TestRaster")
+test.field.selected.raster.1 <- getField(test.source, "mlai", spatial.extent = test.raster, spatial.extent.id = "TestExtent")
+test.field.selected.raster.2 <- crop(x = test.field.full, y = test.raster, spatial.extent.id = "TestExtent")
 
 # crop by an extent 
 test.extent <- extent(test.raster)
@@ -140,19 +157,19 @@ test_that("Aggregation",{
   
  
   # check the results are the same by two different routes
-  expect_identical(test.field.selected.years.1@data ,  test.field.selected.years.2@data)
-  expect_identical(test.field.selected.months.1@data ,  test.field.selected.months.2@data)
-  expect_identical(test.field.selected.gridcell.1@data ,  test.field.selected.gridcell.2@data)
-  expect_identical(test.field.selected.gridcells.df.1@data ,  test.field.selected.gridcells.df.2@data)
-  expect_identical(test.field.selected.gridcells.dt.1@data ,  test.field.selected.gridcells.dt.2@data)
-  expect_identical(test.field.selected.raster.1@data ,  test.field.selected.raster.2@data)
-  expect_identical(test.field.selected.extent.1@data ,  test.field.selected.extent.2@data)
-  expect_identical(test.field.selected.Field.1@data ,  test.field.selected.Field.2@data)
-  expect_identical(test.field.selected.extent.1@data ,  test.field.selected.Field.1@data)
  
-  # MF NOTE:  metadata by both methods not identical, work on this.
+  expect_identical(test.field.selected.years.1,  test.field.selected.years.2)
+  expect_identical(test.field.selected.months.1 ,  test.field.selected.months.2)
+  expect_identical(test.field.selected.gridcell.1 ,  test.field.selected.gridcell.2)
+  expect_identical(test.field.selected.gridcells.df.1,  test.field.selected.gridcells.df.2)
+  expect_identical(test.field.selected.gridcells.dt.1,  test.field.selected.gridcells.dt.2)
+  expect_identical(test.field.selected.raster.1,  test.field.selected.raster.2)
+  expect_identical(test.field.selected.extent.1,  test.field.selected.extent.2)
+  expect_identical(test.field.selected.Field.1,  test.field.selected.Field.2)
+  expect_identical(test.field.selected.extent.1,  test.field.selected.Field.1)
   
-  
+  expect_identical(test.field.selected.raster.1,  test.field.selected.Field.1)
+
 })
 
 
