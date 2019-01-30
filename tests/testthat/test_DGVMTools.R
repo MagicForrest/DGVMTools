@@ -3,9 +3,10 @@ library(DGVMTools)
 library(stats)
 library(compiler)
 
-context("DGVMTools")
+
 
 # SIMPLE SOURCE AND FIELD
+context("Field and Source")
 
 test.source <- defineSource(id = "LPJ-GUESS_Example",
                             dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), 
@@ -24,6 +25,7 @@ test_that("Sources and Fields",{
 
 
 # AGGREGATIONS
+context("Aggregations")
 
 # subannual to monthly
 test.field.monthly.mean.1 <- getField(test.source, "mlai", subannual.aggregate.method = "mean", subannual.resolution = "Year")
@@ -65,6 +67,7 @@ test_that("Aggregation",{
 
 
 ### SELECTIONS
+context("Selections and Cropping")
 
 # years
 test.field.selected.years.1 <- getField(test.source, "mlai", first.year = 2001, last.year = 2005)
@@ -94,6 +97,21 @@ test.gridcells.dt <- data.table("Lon" = c(16.25, 7.25, 3.75), "Lat" = c(58.75, 4
 test.field.selected.gridcells.dt.1 <- getField(test.source, "mlai", spatial.extent = test.gridcells.dt, spatial.extent.id = "TestGridcellsDT")
 test.field.selected.gridcells.dt.2 <- selectGridcells(x = test.field.full, gridcells = test.gridcells.dt, spatial.extent.id = "TestGridcellsDT")
 
+# by a polygon?
+
+# crop by a raster
+test.raster <- raster::raster(ymn=48, ymx=59, xmn=4, xmx=17, resolution = 0.5, vals=0)
+test.field.selected.raster.1 <- getField(test.source, "mlai", spatial.extent = test.raster, spatial.extent.id = "TestRaster")
+test.field.selected.raster.2 <- crop(x = test.field.full, y = test.raster, spatial.extent.id = "TestRaster")
+
+# crop by an extent 
+test.extent <- extent(test.raster)
+test.field.selected.extent.1 <- getField(test.source, "mlai", spatial.extent = test.extent, spatial.extent.id = "TestExtent")
+test.field.selected.extent.2 <- crop(x = test.field.full, y = test.extent, spatial.extent.id = "TestExtent")
+
+# crop by another Field 
+test.field.selected.Field.1 <- getField(test.source, "mlai", spatial.extent = test.field.selected.extent.1, spatial.extent.id = "TestExtent")
+test.field.selected.Field.2 <- crop(x = test.field.full, y = test.field.selected.extent.1, spatial.extent.id = "TestExtent")
 
 
 
@@ -113,17 +131,25 @@ test_that("Aggregation",{
   expect_is(test.field.selected.gridcells.df.2, "Field")
   expect_is(test.field.selected.gridcells.dt.1, "Field")
   expect_is(test.field.selected.gridcells.dt.2, "Field")
+  expect_is(test.field.selected.raster.1, "Field")
+  expect_is(test.field.selected.raster.2, "Field")
+  expect_is(test.field.selected.extent.1, "Field")
+  expect_is(test.field.selected.extent.2, "Field")
+  expect_is(test.field.selected.Field.1, "Field")
+  expect_is(test.field.selected.Field.2, "Field")
   
  
-  # checl the results are the same
+  # check the results are the same by two different routes
   expect_identical(test.field.selected.years.1@data ,  test.field.selected.years.2@data)
   expect_identical(test.field.selected.months.1@data ,  test.field.selected.months.2@data)
   expect_identical(test.field.selected.gridcell.1@data ,  test.field.selected.gridcell.2@data)
   expect_identical(test.field.selected.gridcells.df.1@data ,  test.field.selected.gridcells.df.2@data)
   expect_identical(test.field.selected.gridcells.dt.1@data ,  test.field.selected.gridcells.dt.2@data)
-  #expect_identical(test.field.spatial.mean.1@data ,  test.field.spatial.mean.2@data)
-  #expect_identical(test.field.seasonal.mean.1@data ,  test.field.seasonal.mean.2@data)
-  
+  expect_identical(test.field.selected.raster.1@data ,  test.field.selected.raster.2@data)
+  expect_identical(test.field.selected.extent.1@data ,  test.field.selected.extent.2@data)
+  expect_identical(test.field.selected.Field.1@data ,  test.field.selected.Field.2@data)
+  expect_identical(test.field.selected.extent.1@data ,  test.field.selected.Field.1@data)
+ 
   # MF NOTE:  metadata by both methods not identical, work on this.
   
   
@@ -132,7 +158,8 @@ test_that("Aggregation",{
 
 
 
-
+### PLOTTING - expand these to test more plotting options
+context("Plotting")
 
 
 test_that("Plotting", {
@@ -144,8 +171,20 @@ test_that("Plotting", {
   # temporal plotting
   expect_is(plotTemporal(test.field.spatial.mean.1), "ggplot")
   
-  # seaconal cycle plotting
-  # expect_is(plotSeasonal(test.field.spatial.mean.1), "ggplot")
+  # seaconal cycle plotting -- update after plotSeasonal rebuilt
+  #expect_is(plotSeasonal(test.field.spatial.mean.1), "ggplot")
   
  
 })
+
+
+
+### READ DGVMData 
+
+
+
+### COMPARISIONS AND BENCHMARKING
+
+
+###  EXPORTING
+

@@ -91,8 +91,8 @@ setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y, spatial.e
 
 
 #' @rdname crop-methods
-setMethod("crop", signature(x="data.table", y = "ANY"), function(x, y) {
-
+setMethod("crop", signature(x="data.table", y = "ANY"), function(x, y, spatial.extent.id = NULL, ...) {
+  
   y <- try ( extent(y), silent=TRUE )
   if (class(y) == "try-error") {
     stop('Cannot get a raster::Extent object from argument y')
