@@ -90,6 +90,7 @@ Collate:
     'plotSpatial.R'
     'plotSpatialComparison.R'
     'plotTemporal.R'
+    'plotting-framework-functions.R'
     'print-methods.R'
     'renameLayers.R'
     'selectDays.R'

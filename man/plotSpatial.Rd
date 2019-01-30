@@ -4,7 +4,7 @@
 \alias{plotSpatial}
 \title{Plot maps from a \code{Field} and a lists of \code{Field}.}
 \usage{
-plotSpatial(sources, layers = NULL, title = character(0),
+plotSpatial(fields, layers = NULL, title = character(0),
   subtitle = character(0), facet.labels = NULL, facet.order = NULL,
   plot.bg.col = "white", panel.bg.col = "white",
   useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
@@ -15,7 +15,7 @@ plotSpatial(sources, layers = NULL, title = character(0),
   tile = FALSE)
 }
 \arguments{
-\item{sources}{The data to plot. Can be a Field, a DataObject, or a list of including both}
+\item{fields}{The data to plot. Can be a Field, a DataObject, or a list of including both}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
