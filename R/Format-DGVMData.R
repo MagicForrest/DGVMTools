@@ -148,7 +148,7 @@ getField_DGVMData <- function(source,
   for(this.var in this.nc$var) {
     
     # Get the actual data and set the dimension names    
-    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose)
+    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
     dimnames(this.slice) <- dimension.names
     
     # prepare data.table from the slice (array)
@@ -211,7 +211,7 @@ getField_DGVMData <- function(source,
             month.vector <-append(month.vector, rep.int(month, temp.nentries.per.year/12))
           }
         }
-        this.slice.dt[, Month := month.vector]
+        this.slice.dt[, Month := as.integer(month.vector)]
         rm(month.vector)
         
         # Remove the Time columns
@@ -327,10 +327,6 @@ getField_DGVMData <- function(source,
   if(length(all.lons) > 0) {
     if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   }
-  
-  
-  # set some attributes about the file - works!
-  attr(dt, "shadeToleranceCombined") <- FALSE
   
   # set keys
   setKeyDGVM(dt)

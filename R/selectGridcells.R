@@ -1,19 +1,31 @@
-#' Select gridcells from a Data/Field
+#' Select gridcells  
 #' 
+#' Select gridcells from a Field (or a data.table or a data.frame) using either gridcell coordinates or polgyons (from, for example, a shapefile).
 #' 
-#' @param x The Field, DataObject, data.table or data.frame from which the gridcells should be selected.  Note that a data.table or data.frame 
+#' @param x The Field, data.table or data.frame from which the gridcells should be selected.  Note that a data.table or data.frame 
 #' should have columns "Lon" and "Lat" included.
-#' @param gridcells The gridcells to be extracted.  Can either be a simple two-element numeric to pull out one gridcell (ordering is lon, lat), or it can be a data.frame or data.table
-#' in which the first two columns are assumed to be longitude and latitude.
-#' @param tolerance A single numeric specifying how close a required gridcell in gridcells must be to one in x.  Doesn't currently work, non-exact matching is not implemented.
-#' @param spatial.extent.id A character string to describe the gridcells selected, this is required for meta-data consistency.
+#' @param gridcells The gridcells to be extracted.  Can either be:
+#' \itemize{
+#'  \item{A simple two-element numeric to pull out one gridcell (ordering is lon, lat)} 
+#'  \item{A data.frame or data.table in which the first two columns are assumed to be longitude and latitude.}
+#'  \item{An sp::SpatialPolygonsDataFrame.  By default points will be selected that lie under a polygon (feature), 
+#'  but see the argument \code{cover.threshold} to select based on an overlap threshold.}
+#' }
+#' @param spatial.extent.id A character string to describe the gridcells selected.  When selecting gridcells from a Field you *must* specify 
+#' a \code{spatial.extent.id} for meta-data consistency (you have free choice here, but avoid spaces).
+#' @param tolerance A single numeric specifying how close a required gridcell in gridcells must be to one in \code{x}.  
+#' Doesn't currently work, non-exact matching is not implemented!  Contact the author if this is a critical feature for you.
 #' @param decimal.places A single numeric specifying how many decimal place to which the coordinates should rounded to facilitate a match.  
+#' If not specified not rounding is done.
+#' @param cover.threshold An optional numeric specifying what fraction of the gridcell must be covered by a feature in the case the \code{gricells} argument 
+#' is a SpatialPolygonsDataFrame.  Note that is done using the \code{getCover} argument of \code{raster::rasterize()} which is only sensitive to about 1\% cover. 
+#' fractions 
 #' 
-#' @return A Field, DataObject, data.table or data.frame depending on the type of the input x.
+#' @return A Field, data.table or data.frame depending on the type of the input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 
-selectGridcells <- function(x, gridcells, tolerance = NULL, spatial.extent.id = NULL, decimal.places = NULL) {
+selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = NULL, decimal.places = NULL, cover.threshold = NULL, ...) {
   
   Lon = Lat = NULL
   
@@ -36,6 +48,10 @@ selectGridcells <- function(x, gridcells, tolerance = NULL, spatial.extent.id = 
     stop(paste("Can't extract gridcells from object of type", class(x)[1], "using getGridcells()", sep = " "))
   }
   
+  # check that dt has both Lon and Lat columns
+  all.dim.names <- getDimInfo(dt)
+  if(!("Lon" %in% all.dim.names && "Lat" %in% all.dim.names)) stop("Argument x to function selectGridcells doesn't seem to have both Lon and Lat info")
+  
   
   ### check class  of gridcells
   
@@ -47,11 +63,42 @@ selectGridcells <- function(x, gridcells, tolerance = NULL, spatial.extent.id = 
     else {
       stop("Got a numeric vector but it doesn't have two elements (ie first longitude/x then latitude/y), so I don't know to handle this to I am aborting.")
     }
+  }
+  # if got "SpatialPolygonsDataFrame" rasterise the SpatialPolygonsDataFrame and make a cell list
+  else if(class(gridcells)[1] == "SpatialPolygonsDataFrame") {
     
+    # first make a raster for the input field
+    all.dims <- getDimInfo(x= dt, info = "full")
+    all.unique.lonlats <- unique(all.dims[, c("Lon","Lat")])
+    all.unique.lonlats[, Dummy := 1]
+    x_grid <- promoteToRaster(all.unique.lonlats)
+    x_grid <- raster::crop(x = x_grid, y = gridcells, snap = 'out')
+    
+    # if no threshold apply raster::rasterize() with getCover = FALSE and get a list of gridcells
+    # note that this is a bit more code than just using the case below but it should be faster that with getCover == TRUE
+    if(is.null(cover.threshold)) {
+
+      gridcells_rasterised <- raster::rasterize(x = gridcells, y = x_grid)
+      gridcells_dt <- as.data.table(raster::as.data.frame(gridcells_rasterised, xy = TRUE))
+      gridcells_dt[, SLM := as.numeric(layer_OBJECTID)]
+      setnames(gridcells_dt, c("x", "y"), c("Lon", "Lat"))
+      gridcells_dt <- gridcells_dt[, c("Lon", "Lat", "SLM")]
+      selection.dt <- na.omit(gridcells_dt)[, c("Lon", "Lat")]
+      
+    }
+    
+    # else rasterise with getCover = TRUE and apply the cover.threshold and get the list of gridcells
+    else {
+
+      gridcells_rasterised <- raster::rasterize(x = gridcells, y = x_grid, getCover = TRUE)
+      gridcells_dt <- as.data.table(raster::as.data.frame(gridcells_rasterised, xy = TRUE))
+      setnames(gridcells_dt, c("Lon", "Lat", "SLM"))
+      gridcells_dt <- gridcells_dt[SLM >= cover.threshold, ]
+      selection.dt <- na.omit(gridcells_dt)[, c("Lon", "Lat")]
+      
+    }
     
   }
-  
-  # if 
   else if(!(is.data.table(gridcells) || is.data.frame(gridcells))) {
     stop(paste("Arguments 'gridcells' not of correct type in call to getGridcells(), it should be 'data.table' or 'data.frame', got ", class(gridcells)[1], sep = " "))
   }

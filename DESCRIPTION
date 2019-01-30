@@ -35,15 +35,16 @@ Suggests:
     rmarkdown,
     ncdf4,
     rgeos,
-    udunits2
+    udunits2,
+    testthat
 License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Encoding: UTF-8
-Collate: 
+Collate:
     'classes.R'
     'colour-palettes.R'
     'Format-DGVMData.R'

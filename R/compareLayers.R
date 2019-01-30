@@ -105,8 +105,6 @@ compareLayers <- function(field1,
   ### Easy-life case, both objects are on exactly the same domain
   if(identical(getDimInfo(field1, "full"), getDimInfo(field2, "full"))) {
     if(verbose) message("Easy life! Both fields have the same dimensions, can do a data.table join operation.")
-    print(key(layer.field1@data))
-    print(key(layer.field2@data))
     new.data <- layer.field1@data[layer.field2@data] 
   }
   

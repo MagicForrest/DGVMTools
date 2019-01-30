@@ -41,6 +41,8 @@
 #' Default is TRUE.  Ignored if 'cuts' argument is not used.
 #' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
+#' @param grid.switch Boolean, if TRUE reverse the default panel layout of plots, such plots arranged horizontally are arranged vertically and vice-versa.  Ignored 
+#' if the 'grid' option is FALSE. 
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
 #' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
@@ -84,6 +86,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
                         drop.cuts = TRUE,
                         map.overlay = NULL,
                         grid = FALSE,
+                        grid.switch = FALSE,
                         plot = TRUE,
                         interior.lines = TRUE,
                         tile = FALSE){
@@ -533,7 +536,8 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
       }
       data.toplot[, Season := factor(Season, levels = final.ordered)]
     }
-    grid.string <- paste(grid.columns, collapse = "~")
+    if(!grid.switch) grid.string <- paste(grid.columns, collapse = "~")
+    else grid.string <- paste(rev(grid.columns), collapse = "~")
   }
   
   
@@ -549,6 +553,13 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     else if(is.null(title)) title <- waiver()
     if(missing(subtitle)) subtitle <- titles[["subtitle"]]
     else if(is.null(subtitle)) subtitle <- waiver()
+  }
+  
+  
+  ### IF A 'limits' ARGUMENT HAS BEEN SET THEN LIMITS THE PLOTTED VALUES ACCORDINGLY
+  if(!missing(limits) && !is.null(limits)){
+    data.toplot[, Value := pmax(Value, limits[1])]
+    data.toplot[, Value := pmin(Value, limits[2])]
   }
   
   ### BUILD THE PLOT

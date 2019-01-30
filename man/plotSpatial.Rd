@@ -10,8 +10,9 @@ plotSpatial(fields, layers = NULL, title = character(0),
   useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
   ylim = NULL, years = NULL, days = NULL, months = NULL,
   seasons = NULL, limits = NULL, cols = NULL, cuts = NULL,
-  drop.cuts = TRUE, map.overlay = NULL, grid = FALSE, plot = TRUE,
-  interior.lines = TRUE, tile = FALSE)
+  drop.cuts = TRUE, map.overlay = NULL, grid = FALSE,
+  grid.switch = FALSE, plot = TRUE, interior.lines = TRUE,
+  tile = FALSE)
 }
 \arguments{
 \item{fields}{The data to plot. Can be a Field, a DataObject, or a list of including both}
@@ -64,6 +65,9 @@ Default is TRUE.  Ignored if 'cuts' argument is not used.}
 
 \item{grid}{Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().
 Useful when not all combinations of Sources x Layers exist which would leave blank panels.}
+
+\item{grid.switch}{Boolean, if TRUE reverse the default panel layout of plots, such plots arranged horizontally are arranged vertically and vice-versa.  Ignored 
+if the 'grid' option is FALSE.}
 
 \item{plot}{Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
 
