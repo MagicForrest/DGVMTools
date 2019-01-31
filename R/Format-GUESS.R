@@ -36,7 +36,7 @@ getField_GUESS <- function(source,
     stop("Unrecognised Quantity in 'quant' argument to getField_GUESS()")
   }
   
-
+  
   
 }
 
@@ -50,10 +50,12 @@ getField_GUESS <- function(source,
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
-#' @param quant A Quant to define what output file from the LPJ-GUESS run to open
+#' @param quant A Quant to define what output file from the LPJ-GUESS run to open, 
+#' can also be a simple string defining the LPJ-GUESS output file if the \code{return.data.table} argument is TRUE
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
+#' @param data.table.only A logical, if TRUE return a data.table and not a Field
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
@@ -71,9 +73,11 @@ openLPJOutputFile <- function(run,
   # extract from the target.sta
   first.year = target.sta@first.year
   last.year = target.sta@last.year
+
+  if(!data.table.only && class(quant)[1] != "Quantity") stop("Please supply a formal Quantity object as the quant argument since you are not requesting at data.table")
   
-  #
-  variable <- quant@id
+  if(class(quant)[1] == "Quantity") variable <- quant@id
+  else variable <- quant
   
   #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
   compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
@@ -241,16 +245,16 @@ openLPJOutputFile <- function(run,
     
     # make the ID and then make and return Field
     field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
- 
+   
     return(
       
       new("Field",
-               id = field.id,
-               data = dt,
-               quant = quant,
-               source = run,
-               sta.info 
-          )
+          id = field.id,
+          data = dt,
+          quant = quant,
+          source = run,
+          sta.info 
+      )
       
     )
     
@@ -301,13 +305,13 @@ openLPJOutputFile_FireMIP <- function(run,
   ############# PER PFT VARIABLES
   
   if(variable == "lai") {
-    return(openLPJOutputFile(run, "lai", target.sta,  verbose))
+    dt <- openLPJOutputFile(run, "lai", data.table.only = TRUE, target.sta = target.sta,  verbose = verbose)
   }
   if(variable == "landCoverFrac") {
-    return(openLPJOutputFile(run, "fpc", target.sta,  verbose))
+    dt <- openLPJOutputFile(run, "fpc", data.table.only = TRUE, target.sta = target.sta,  verbose = verbose)
   }
   if(variable == "theightpft") {
-    return(openLPJOutputFile(run, "speciesheights", target.sta,  verbose))
+    dt <- openLPJOutputFile(run, "speciesheights", data.table.only = TRUE, target.sta = target.sta,  verbose = verbose)
   }
   
   
@@ -499,12 +503,11 @@ openLPJOutputFile_FireMIP <- function(run,
     
     dt_upper <- openLPJOutputFile(run, "mwcont_upper", target.sta,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_upper)
-    print(dt_upper)
-    
+
     dt_lower <- openLPJOutputFile(run, "mwcont_lower", target.sta,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_lower)
     dt <- dt_upper[dt_lower]
-    print(dt_lower)
+
     dt <- dt[dt_cap]
     dt <- stats::na.omit(dt)
     dt[, mrso := (mwcont_lower * thickness_lower_layer_mm * Capacity) + (mwcont_upper * thickness_upper_layer_mm * Capacity)]
@@ -536,7 +539,6 @@ openLPJOutputFile_FireMIP <- function(run,
     dt <- openLPJOutputFile(run, "mwcont_upper", target.sta,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt)
     
-    print(dt)
     dt <- dt[dt_cap]
     dt <- stats::na.omit(dt)
     dt[, mrsos := mwcont_upper * thickness_upper_layer_mm * Capacity]
@@ -633,8 +635,22 @@ openLPJOutputFile_FireMIP <- function(run,
                  subannual.original = subannual,
                  spatial.extent = extent(dt))
   
-  return(list(dt = dt,
-              sta.info = sta.info))
+  
+  # make the ID and then make and return Field
+  field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
+  
+  
+  return(
+    
+    new("Field",
+        id = field.id,
+        data = dt,
+        quant = quant,
+        source = run,
+        sta.info 
+    )
+    
+  )
   
   
 }
@@ -703,7 +719,7 @@ getStandardQuantity_LPJ <- function(run,
     
     # cmass provides the right quantity here - so done
     this.Field <- openLPJOutputFile(run, lookupQuantity("cmass", GUESS), target.sta, verbose = verbose)
-
+    
   }
   
   # LAI_std 
@@ -711,7 +727,7 @@ getStandardQuantity_LPJ <- function(run,
     
     # lai provides the right quantity here - so done
     this.Field <- openLPJOutputFile(run, lookupQuantity("lai", GUESS), target.sta, verbose = verbose)
-   
+    
   }
   
   # FPAR_std 
@@ -738,7 +754,7 @@ getStandardQuantity_LPJ <- function(run,
       this.Field <- openLPJOutputFile(run, lookupQuantity("mgpp", GUESS), target.sta, verbose = verbose)
       this.Field <- aggregateSubannual(this.Field, method = "sum", target = "Year")
     }
- 
+    
   }
   
   
@@ -755,7 +771,7 @@ getStandardQuantity_LPJ <- function(run,
       this.Field <-  openLPJOutputFile(run, lookupQuantity("mnpp", GUESS), target.sta, verbose = verbose)
       this.Field <- aggregateSubannual(this.Field , method = "sum", target = "Year")
     }
-
+    
   }
   
   # mNPP_std 
@@ -767,7 +783,7 @@ getStandardQuantity_LPJ <- function(run,
     all.layers <- layers(this.Field)
     drop.layers <- all.layers [! all.layers %in% c("NEE")]
     this.Field@data[, (drop.layers) := NULL]
-   
+    
   }
   
   # canopyheight_std 
@@ -787,7 +803,7 @@ getStandardQuantity_LPJ <- function(run,
       this.Field <- openLPJOutputFile(run, lookupQuantity("mfirefrac", GUESS), target.sta, verbose = verbose)
       this.Field <- aggregateSubannual(this.Field, method = "sum")
       renameLayers(this.Field, "mfirefrac", quant@id)
-    
+      
     }
     
     # otherwise open firert to get GlobFIRM fire return interval and invert it
@@ -796,7 +812,7 @@ getStandardQuantity_LPJ <- function(run,
       this.Field@data[, "burntfraction_std" :=  1 / FireRT]
       this.Field@data[, FireRT :=  NULL]
     }
-   
+    
   }
   
   # else stop

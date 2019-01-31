@@ -47,7 +47,7 @@
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
 #' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
-#' @param time Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
+#' @param tile Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
 #' for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots

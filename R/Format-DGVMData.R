@@ -11,7 +11,7 @@
 #' An internal function that reads data from an DGVMData .nc file.  
 #' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
-#' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param last.year The last year (as a numeric) of the data to be returned
 #' @param verbose A logical, set to true to give progress/debug information
@@ -340,8 +340,20 @@ getField_DGVMData <- function(source,
     R.utils::gzip(file.name.nc)
   }
   
-  return(list(dt = dt, 
-              sta.info = sta.info))
+  # make the ID and then make and return Field
+  field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
+  
+  return(
+    
+    new("Field",
+        id = field.id,
+        data = dt,
+        quant = quant,
+        source = source,
+        sta.info 
+    )
+    
+  )
   
 }
 

@@ -32,6 +32,8 @@ If not specified not rounding is done.}
 \item{cover.threshold}{An optional numeric specifying what fraction of the gridcell must be covered by a feature in the case the \code{gricells} argument 
 is a SpatialPolygonsDataFrame.  Note that is done using the \code{getCover} argument of \code{raster::rasterize()} which is only sensitive to about 1\% cover. 
 fractions}
+
+\item{...}{Further arguments.  Currently not used.}
 }
 \value{
 A Field, data.table or data.frame depending on the type of the input x.

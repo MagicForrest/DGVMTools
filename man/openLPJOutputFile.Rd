@@ -10,9 +10,12 @@ openLPJOutputFile(run, quant, target.sta, verbose = FALSE,
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
 
-\item{quant}{A Quant to define what output file from the LPJ-GUESS run to open}
+\item{quant}{A Quant to define what output file from the LPJ-GUESS run to open, 
+can also be a simple string defining the LPJ-GUESS output file if the \code{return.data.table} argument is TRUE}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
+
+\item{data.table.only}{A logical, if TRUE return a data.table and not a Field}
 
 \item{first.year}{The first year (as a numeric) of the data to be return}
 

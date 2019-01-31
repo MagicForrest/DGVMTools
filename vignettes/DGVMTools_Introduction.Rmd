@@ -332,7 +332,7 @@ print(biome.comparison )
 print(plotSpatialComparison(biome.comparison, type = "values"))
 
 # plot difference map
-print(plotSpatialComparison(biome.comparison, type = "difference"))
+#print(plotSpatialComparison(biome.comparison, type = "difference"))
 
 
 ```

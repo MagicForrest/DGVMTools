@@ -20,6 +20,7 @@
 #' @param cover.threshold An optional numeric specifying what fraction of the gridcell must be covered by a feature in the case the \code{gricells} argument 
 #' is a SpatialPolygonsDataFrame.  Note that is done using the \code{getCover} argument of \code{raster::rasterize()} which is only sensitive to about 1\% cover. 
 #' fractions 
+#' @param ... Further arguments.  Currently not used.
 #' 
 #' @return A Field, data.table or data.frame depending on the type of the input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -27,7 +28,7 @@
 
 selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = NULL, decimal.places = NULL, cover.threshold = NULL, ...) {
   
-  Lon = Lat = NULL
+  Lon = Lat = Dummy = SLM = layer_OBJECTID = NULL
   
   # deal with the class of x,
   isDataTable <- FALSE
@@ -83,7 +84,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
       gridcells_dt[, SLM := as.numeric(layer_OBJECTID)]
       setnames(gridcells_dt, c("x", "y"), c("Lon", "Lat"))
       gridcells_dt <- gridcells_dt[, c("Lon", "Lat", "SLM")]
-      selection.dt <- na.omit(gridcells_dt)[, c("Lon", "Lat")]
+      selection.dt <- stats::na.omit(gridcells_dt)[, c("Lon", "Lat")]
       
     }
     
@@ -94,7 +95,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
       gridcells_dt <- as.data.table(raster::as.data.frame(gridcells_rasterised, xy = TRUE))
       setnames(gridcells_dt, c("Lon", "Lat", "SLM"))
       gridcells_dt <- gridcells_dt[SLM >= cover.threshold, ]
-      selection.dt <- na.omit(gridcells_dt)[, c("Lon", "Lat")]
+      selection.dt <- stats::na.omit(gridcells_dt)[, c("Lon", "Lat")]
       
     }
     

@@ -184,17 +184,12 @@ getField <- function(source,
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
     if (class(possible.error) != "try-error") {
       this.Field <- crop(x = this.Field, y = sta.info@spatial.extent)  
-      #actual.sta.info@spatial.extent <- extent(sta.info@spatial.extent)
-      #actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
-      
     }
     
     # else check if some gridcells to be selected with getGridcells
     else if(is.data.frame(sta.info@spatial.extent) || is.data.table(sta.info@spatial.extent) || is.numeric(sta.info@spatial.extent) || class(sta.info@spatial.extent)[1] == "SpatialPolygonsDataFrame"){
       this.Field <- selectGridcells(this.Field, sta.info@spatial.extent, ...)
-      #actual.sta.info@spatial.extent <- sta.info@spatial.extent
-      #actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
-    }
+     }
     
     # else fail with error message
     else {
@@ -316,15 +311,8 @@ getField <- function(source,
     }
   }
   
-  # ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
-  # model.field <- new("Field",
-  #                    id = target.field.id,
-  #                    data = this.dt,
-  #                    quant = quant,
-  #                    actual.sta.info,
-  #                    source = source)
-
-  ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
+ 
+  ### WRITE THE FIELD TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMField object...")}
     saveRDS(this.Field, file = file.name)
@@ -332,7 +320,7 @@ getField <- function(source,
   }
   
   # clean up and return
-  # gc()
+  gc()
   return(this.Field)
   
 }
