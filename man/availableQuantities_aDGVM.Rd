@@ -4,15 +4,17 @@
 \alias{availableQuantities_aDGVM}
 \title{List aDGVM quantities avialable}
 \usage{
-availableQuantities_aDGVM(source, names, adgvm.scheme)
+availableQuantities_aDGVM(source, names, id, adgvm.scheme)
 }
 \arguments{
 \item{source}{A path to a directory on the file system containing some .out files}
+
+\item{id}{An id of the model run}
+
+\item{adgvm.scheme}{A number that defines if pop-files (=1) or trait-files (=2) are used.}
 }
 \value{
-A list of all the .out files present, with the ".out" removed. 
-
-Needs to be implemented by an aDGVMer
+A list of all the .out files present, with the ".out" removed.
 }
 \description{
 Simply lists all quantitied aDGVM  output variables

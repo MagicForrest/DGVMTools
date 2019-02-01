@@ -688,8 +688,8 @@ determinePFTs_aDGVM <- function(x) {
 #' Simply lists all quantitied aDGVM  output variables 
 #' 
 #' @param source A path to a directory on the file system containing some .out files
-#' @id An id of the model run
-#' @adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
+#' @param id An id of the model run
+#' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
 #' 
@@ -700,7 +700,7 @@ availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
   if ( adgvm.scheme==1 ) {
     fname <- file.path(source, paste("pop_", id,".nc", sep=""))
     message(paste("Check quantities in adgvm.scheme=1,", fname, "\n"))
-    d <- nc_open(fname)
+    d <- ncdf4::nc_open(fname)
     quantities.ncfile <- names(d[['var']])
 
     quantities.present <- NULL
@@ -722,7 +722,7 @@ availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
   else if (adgvm.scheme==2) {
     fname <- file.path(source, paste("trait_", id,".nc", sep=""))
     message(paste("Check quantities in adgvm.scheme=2,", fname, "\n"))
-    d <- nc_open(fname)
+    d <- ncdf4::nc_open(fname)
     quantities.ncfile <- names(d[['var']])
 
     quantities.present <- NULL
