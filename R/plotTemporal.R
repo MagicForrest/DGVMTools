@@ -162,8 +162,7 @@ plotTemporal <- function(input.data,
   if(length(dim) == 0) warning("plotTemporal: No suitable time axis found, aborting")  
   if("Source" %in% names(plotting.data.dt)) id.vars <- append(id.vars, "Source")
   plotting.data.dt.melted <- melt(plotting.data.dt, id.vars = id.vars)
-  setnames(plotting.data.dt.melted, "variable", "Layer")
-  setnames(plotting.data.dt.melted, "value", "Value")
+  setnames(plotting.data.dt.melted, old = c("variable", "value"), new = c("Layer", "Value"))
   
   # helpful check here
   if(nrow(plotting.data.dt.melted) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are selecting a site that isn't there?")
