@@ -4,16 +4,14 @@
 \alias{getQuantity_aDGVM_Scheme2}
 \title{Read aDGVM2 quantities from trait file}
 \usage{
-getQuantity_aDGVM_Scheme2(run, variable, first.year, last.year)
+getQuantity_aDGVM_Scheme2(run, variable, target.sta)
 }
 \arguments{
 \item{run}{A \code{source} containing the meta-data about the aDGVM2 run}
 
 \item{variable}{A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, "nind“, "meanheight“, "pind“, "vegC_std“, "vegcover_std"}
 
-\item{first.year}{First year of data to read}
-
-\item{last.year}{Last year of data to read}
+\item{target.sta}{STAInfo object containing the space-time-annual extent required.}
 }
 \description{
 An internal function to read quantities from aDGVM2 trait files. Quantities are currently provided for raingreen trees, evergreen trees, raingreen shrubs, evergreen shrubs, C4 grasses and C3 grasses. Pop files are not opened.

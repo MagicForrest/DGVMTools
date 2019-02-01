@@ -9,8 +9,8 @@
 #' An internal function that reads data from an aDGVM2 run. It actually calls one of two other functions depending on the type of quantity specified.   
 #' 
 #' @param run A \code{source} containing the meta-data about the aDGVM2 run
-#' @param quant A string the define what quantity from the aDGVM2 run to extract
-#' @param first.year The first year (as a numeric) of the data to be return
+#' @param quant A Quantity object to define what quantity from the aDGVM2 run to extract
+#' @param target.STAInfo STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
@@ -33,20 +33,16 @@ getField_aDGVM <- function(source,
   if(missing(adgvm.daily)) adgvm.daily <- FALSE
   
   if("aDGVM" %in% quant@format | "Standard" %in% quant@format) {
-    if(adgvm.scheme == 1) data.list <- getQuantity_aDGVM_Scheme1(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant, adgvm.daily)
-    if(adgvm.scheme == 2) data.list <-(getQuantity_aDGVM_Scheme2(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
-#    if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
+    
+    if(adgvm.scheme == 1) return(getQuantity_aDGVM_Scheme1(source, target.STAInfo, quant, adgvm.daily))
+    if(adgvm.scheme == 2) return(getQuantity_aDGVM_Scheme2(source, target.STAInfo, quant))
+
   }
-  #else if(quant@format == "Standard") {
-  #  stop("Standard quantities nor currently defined for aDGVM")
-  #}
   else {
     stop(paste("Quantity", quant@id, "doesn't seem to be defined for aDGVM"))
   }
   
-  actual.sta.info = new("STAInfo")
-  
-  return(data.list)
+
   
 }
 
@@ -61,17 +57,20 @@ getField_aDGVM <- function(source,
 #' An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened
 #' 
 #' @param run A \code{source} containing the meta-data about the aDGVM2 run
-#' @param first.year First year of data to read
-#' @param last.year Last year of data to read
+#' @param target.sta STAInfo object containing the space-time-annual extent required.
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, meanheight“, "nind“, "pind“, "vegC_std“, "vegcover_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @seealso \code{\link{getQuantity_aDGVM_Scheme2}}
-getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgvm.daily)
+getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, adgvm.daily)
 {
   # To stop NOTES
   Day = Lat = Lon = Month = Time = Year = NULL
+  
+  # extract first and last year from STAInfo
+  first.year = target.sta@first.year
+  last.year =target.sta@last.year
   
   fname <- file.path(run@dir, paste("pop_", run@id,".nc", sep=""))
   
@@ -295,8 +294,20 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   actual.sta.info@spatial.extent <- extent(out.all)
   
   
-  return(list(dt = out.all, 
-              sta.info = actual.sta.info))
+  # make the ID and then make and return Field
+  field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)
+  
+  return(
+    
+    new("Field",
+        id = field.id,
+        data = out.all,
+        quant = variable,
+        source = run,
+        actual.sta.info
+    )
+    
+  )
 }
 
 
@@ -307,18 +318,21 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
 #' An internal function to read quantities from aDGVM2 trait files. Quantities are currently provided for raingreen trees, evergreen trees, raingreen shrubs, evergreen shrubs, C4 grasses and C3 grasses. Pop files are not opened.
 #' 
 #' @param run A \code{source} containing the meta-data about the aDGVM2 run
-#' @param first.year First year of data to read
-#' @param last.year Last year of data to read
+#' @param target.sta STAInfo object containing the space-time-annual extent required.
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, "nind“, "meanheight“, "pind“, "vegC_std“, "vegcover_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @seealso \code{\link{getQuantity_aDGVM_Scheme1}}
-getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
+getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta)
 {
   # To stop NOTES
   Day = Lat = Lon = Month = Time = Year = NULL
-
+  
+  # extract first and last year from STAInfo
+  first.year = target.sta@first.year
+  last.year = target.sta@last.year
+  
   fname <- file.path(run@dir, paste("trait_", run@id,".nc", sep=""))
 
   # STAInfo object to summarise the spatial-temporal-annual dimensions of the data
@@ -642,8 +656,21 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
   
-  return(list(dt = out.all, 
-              sta.info = actual.sta.info))
+  # make the ID and then make and return Field
+  field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)
+  
+  return(
+    
+    new("Field",
+        id = field.id,
+        data = out.all,
+        quant = variable,
+        source = run,
+        actual.sta.info
+    )
+    
+  )
+  
 }
 
 #' Detemine PFTs present in an aDGVM2; currently only returns a warning.
