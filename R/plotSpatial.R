@@ -253,7 +253,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   
   ### DO CUTS IF DEFINED
-  #  variable  is continuous but should be discretised
+  #  variable is continuous but should be discretised
   has.been.discretized <- FALSE
   if(continuous & !is.null(cuts)) {
     
@@ -325,9 +325,12 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     if(values.are.logical) {
       
       # and set the break and cols to what we just figured out
-      breaks <- c(TRUE,FALSE)
+      breaks <- c("Matches", "Different")
       cols <- c("red", "blue")
       
+      # also set the values to be factors
+      data.toplot[, Value := sapply(X = Value, FUN = function(x){ if(x) return("Matches"); return("Different")})]
+
     }
     else if(quant.is.categorical) {
       
@@ -557,7 +560,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   
   ### IF A 'limits' ARGUMENT HAS BEEN SET THEN LIMITS THE PLOTTED VALUES ACCORDINGLY
-  if(!missing(limits) && !is.null(limits)){
+  if(!missing(limits) && !is.null(limits) && !is.character(data.toplot[["Value"]])){
     data.toplot[, Value := pmax(Value, limits[1])]
     data.toplot[, Value := pmin(Value, limits[2])]
   }
@@ -597,7 +600,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   # colour bar
   if(continuous)  {
-    
+
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
                                     colors = cols,
@@ -625,7 +628,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   if(!is.null(ylim)) mp <- mp + scale_y_continuous(limits = ylim, expand = c(0, 0))
   else   mp <- mp + scale_y_continuous(expand = c(0, 0))
-  
+
   mp <- mp + coord_fixed()
   
   # labels and positioning
@@ -635,7 +638,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   else { mp <- mp + theme(legend.title = element_blank()) }
   mp <- mp + theme(plot.title = element_text(hjust = 0.5),
                    plot.subtitle = element_text(hjust = 0.5))
-  
+
   # overall text multiplier
   if(!missing(text.multiplier)) mp <- mp + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
@@ -650,7 +653,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     panel.border = element_rect(colour = "black", fill=NA),
     strip.background  = element_rect(fill=NA)
   )
-  
+
   
   # list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
   #            panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),

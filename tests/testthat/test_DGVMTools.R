@@ -9,22 +9,35 @@ library(compiler)
 # SOURCE 
 context("Source")
 
-GUESS.CE.test.Source <- defineSource(id = "LPJ-GUESS_Example",
+GUESS.Europe.test.Source <- defineSource(id = "LPJ-GUESS_Example",
                             dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), 
                             format = GUESS,
                             name = "LPJ-GUESS Europe Example Run")
 
+GUESS.Africa.test.Source <- defineSource(id = "LPJ-GUESS_Example",
+                                     dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools"), 
+                                     format = GUESS,
+                                     name = "LPJ-GUESS Africa Example Run")
 
-DGVMData.Saatchi.test.Source <- defineSource(id = "Saatchi2011",
-                                     dir = system.file("extdata", "DGVMData", "Saatchi2011", "HD", package = "DGVMTools"), 
+
+DGVMData.PNVBiomes.test.Source <- defineSource(id = "HandP_PNV",
+                                     dir = system.file("extdata", "DGVMData", "HandP_PNV", "HD", package = "DGVMTools"), 
                                      format = DGVMData,
-                                     name = "Saatchi et al. 2011 Vegetation Carbon")
+                                     name = "Haxeltine & Prentice 1996 PNV Biomes")
+
+
+DGVMData.SaatchiBiomass.test.Source <- defineSource(id = "Saatchi2011",
+                                             dir = system.file("extdata", "DGVMData", "Saatchi2011", "HD", package = "DGVMTools"), 
+                                             format = DGVMData,
+                                             name = "Saatchi et al. 2011 Vegetation Carbon")
 
 # test Source and Field
 test_that("Sources",{
   
-  expect_is(GUESS.CE.test.Source, "Source")
-  expect_is(DGVMData.Saatchi.test.Source, "Source")
+  expect_is(GUESS.Europe.test.Source, "Source")
+  expect_is(GUESS.Africa.test.Source, "Source")
+  expect_is(DGVMData.SaatchiBiomass.test.Source, "Source")
+  expect_is(DGVMData.PNVBiomes.test.Source, "Source")
   
 })
 
@@ -48,31 +61,41 @@ test_that("Quantity",{
 # FIELD
 context("Field")
 
-test.field.full <- getField(GUESS.CE.test.Source, "mlai")
-Saatchi.Field.full <- getField(DGVMData.Saatchi.test.Source, vegC_std.Quantity)
+# get Fields for checking and also using later
+GUESS.mlai.Field.full <- getField(GUESS.Europe.test.Source, "mlai")
+GUESS.lai.Field.full <- getField(GUESS.Europe.test.Source, "lai")
+GUESS.cmass.Field.full <- getField(GUESS.Africa.test.Source, "cmass")
+GUESS.vegC_std.Field.full <- getField(GUESS.Africa.test.Source, vegC_std.Quantity)
+Saatchi.Field.full <- getField(DGVMData.SaatchiBiomass.test.Source, vegC_std.Quantity)
+Biomes.Field.full <- getField(DGVMData.PNVBiomes.test.Source, "Smith2014")
+
 
 # test Source and Field
 test_that("Field",{
   
-  # check the quantity
-  
   # Normal LPJ-GUESS variable
-  expect_is(test.field.full, "Field")
+  expect_is(GUESS.mlai.Field.full, "Field")
+  expect_is(GUESS.lai.Field.full, "Field")
+  expect_is(GUESS.cmass.Field.full, "Field")
+  expect_is(GUESS.vegC_std.Field.full, "Field")
+  expect_is(Saatchi.Field.full, "Field")
+  expect_is(Biomes.Field.full, "Field")
   
-  # Also check LPJ-GUESS, "Standard" and FireMIP variables
-  GUESS.Field <- getField(GUESS.CE.test.Source, "lai")
-  Standard.Field <- getField(GUESS.CE.test.Source, "LAI_std")
-  FireMIP.Field <- getField(GUESS.CE.test.Source, LAI_FireMIP.Quantity)
-  expect_is(GUESS.Field, "Field")
+  
+  # Also check "Standard" and FireMIP variables
+  Standard.Field <- getField(GUESS.Europe.test.Source, "LAI_std")
+  FireMIP.Field <- getField(GUESS.Europe.test.Source, LAI_FireMIP.Quantity)
   expect_is(Standard.Field, "Field")
   expect_is(FireMIP.Field, "Field")
   
   # Check the data are the same
-  expect_identical(Standard.Field@data, GUESS.Field@data)
-  expect_identical(FireMIP.Field@data, GUESS.Field@data)
+  expect_identical(Standard.Field@data, GUESS.lai.Field.full@data)
+  expect_identical(FireMIP.Field@data, GUESS.lai.Field.full@data)
   
   # check the DGVMData
   expect_is(Saatchi.Field.full, "Field")
+  expect_is(Biomes.Field.full, "Field")
+  
   
 })
 
@@ -81,37 +104,37 @@ test_that("Field",{
 context("Aggregations")
 
 # subannual to monthly
-test.field.monthly.mean.1 <- getField(GUESS.CE.test.Source, "mlai", subannual.aggregate.method = "mean", subannual.resolution = "Year")
-test.field.monthly.mean.2 <- aggregateSubannual(input.obj = test.field.full, method = "mean", target = "Year")
+GUESS.Field.monthly.mean.1 <- getField(GUESS.Europe.test.Source, "mlai", subannual.aggregate.method = "mean", subannual.resolution = "Year")
+GUESS.Field.monthly.mean.2 <- aggregateSubannual(input.obj = GUESS.mlai.Field.full, method = "mean", target = "Year")
 # subannual to seasonal
-test.field.seasonal.mean.1 <- getField(GUESS.CE.test.Source, "mlai", subannual.aggregate.method = "mean", subannual.resolution = "Season")
-test.field.seasonal.mean.2 <- aggregateSubannual(input.obj = test.field.full, method = "mean", target = "Season")
+GUESS.Field.seasonal.mean.1 <- getField(GUESS.Europe.test.Source, "mlai", subannual.aggregate.method = "mean", subannual.resolution = "Season")
+GUESS.Field.seasonal.mean.2 <- aggregateSubannual(input.obj = GUESS.mlai.Field.full, method = "mean", target = "Season")
 # yearly
-test.field.yearly.mean.1 <- getField(GUESS.CE.test.Source, "mlai", year.aggregate.method = "mean")
-test.field.yearly.mean.2 <- aggregateYears(test.field.full, "mean")
+GUESS.Field.yearly.mean.1 <- getField(GUESS.Europe.test.Source, "mlai", year.aggregate.method = "mean")
+GUESS.Field.yearly.mean.2 <- aggregateYears(GUESS.mlai.Field.full, "mean")
 # spatial
-test.field.spatial.mean.1 <- getField(GUESS.CE.test.Source, "mlai", spatial.aggregate.method = "mean")
-test.field.spatial.mean.2 <- aggregateSpatial(test.field.full, "mean")
+GUESS.Field.spatial.mean.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.aggregate.method = "mean")
+GUESS.Field.spatial.mean.2 <- aggregateSpatial(GUESS.mlai.Field.full, "mean")
 
 
 # test aggregations
 test_that("Aggregation",{
   
   # check they give Field
-  expect_is(test.field.monthly.mean.1, "Field")
-  expect_is(test.field.monthly.mean.2, "Field")
-  expect_is(test.field.seasonal.mean.1, "Field")
-  expect_is(test.field.seasonal.mean.2, "Field")
-  expect_is(test.field.yearly.mean.1, "Field")
-  expect_is(test.field.yearly.mean.2, "Field")
-  expect_is(test.field.spatial.mean.1, "Field")
-  expect_is(test.field.spatial.mean.2, "Field")
+  expect_is(GUESS.Field.monthly.mean.1, "Field")
+  expect_is(GUESS.Field.monthly.mean.2, "Field")
+  expect_is(GUESS.Field.seasonal.mean.1, "Field")
+  expect_is(GUESS.Field.seasonal.mean.2, "Field")
+  expect_is(GUESS.Field.yearly.mean.1, "Field")
+  expect_is(GUESS.Field.yearly.mean.2, "Field")
+  expect_is(GUESS.Field.spatial.mean.1, "Field")
+  expect_is(GUESS.Field.spatial.mean.2, "Field")
   
   # check the results are the same
-  expect_identical(test.field.monthly.mean.1 ,  test.field.monthly.mean.2)
-  expect_identical(test.field.yearly.mean.1 ,  test.field.yearly.mean.2)
-  expect_identical(test.field.spatial.mean.1 ,  test.field.spatial.mean.2)
-  expect_identical(test.field.seasonal.mean.1 ,  test.field.seasonal.mean.2)
+  expect_identical(GUESS.Field.monthly.mean.1 ,  GUESS.Field.monthly.mean.2)
+  expect_identical(GUESS.Field.yearly.mean.1 ,  GUESS.Field.yearly.mean.2)
+  expect_identical(GUESS.Field.spatial.mean.1 ,  GUESS.Field.spatial.mean.2)
+  expect_identical(GUESS.Field.seasonal.mean.1 ,  GUESS.Field.seasonal.mean.2)
  
   
   
@@ -122,49 +145,49 @@ test_that("Aggregation",{
 context("Selections and Cropping")
 
 # years
-test.field.selected.years.1 <- getField(GUESS.CE.test.Source, "mlai", first.year = 2001, last.year = 2005)
-test.field.selected.years.2 <- selectYears(x = test.field.full, first = 2001, last = 2005)
+GUESS.Field.selected.years.1 <- getField(GUESS.Europe.test.Source, "mlai", first.year = 2001, last.year = 2005)
+GUESS.Field.selected.years.2 <- selectYears(x = GUESS.mlai.Field.full, first = 2001, last = 2005)
 
 # months (not available in getField but test by numbers and abbreviation)
-test.field.selected.months.1 <- selectMonths(x = test.field.full, months = c(1,4,12) )
-test.field.selected.months.2 <- selectMonths(x = test.field.full, months = c("Jan","Apr","Dec") )
+GUESS.Field.selected.months.1 <- selectMonths(x = GUESS.mlai.Field.full, months = c(1,4,12) )
+GUESS.Field.selected.months.2 <- selectMonths(x = GUESS.mlai.Field.full, months = c("Jan","Apr","Dec") )
 
 # days (not available in test data)
 
 # seasons (not available in getField)
-test.field.selected.seasons.1 <- selectSeasons(x = test.field.seasonal.mean.1, seasons = c("JJA", "SON") )
+GUESS.Field.selected.seasons.1 <- selectSeasons(x = GUESS.Field.seasonal.mean.1, seasons = c("JJA", "SON") )
 
 # single gridcell
 test.gridcell <- c(16.25, 58.75)
-test.field.selected.gridcell.1 <- getField(GUESS.CE.test.Source, "mlai", spatial.extent = test.gridcell, spatial.extent.id = "TestGridcell")
-test.field.selected.gridcell.2 <- selectGridcells(x = test.field.full, gridcells = test.gridcell, spatial.extent.id = "TestGridcell")
+GUESS.Field.selected.gridcell.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = test.gridcell, spatial.extent.id = "TestGridcell")
+GUESS.Field.selected.gridcell.2 <- selectGridcells(x = GUESS.mlai.Field.full, gridcells = test.gridcell, spatial.extent.id = "TestGridcell")
 
 # by a data.frame
 test.gridcells.df <- data.frame("Lon" = c(16.25, 7.25, 3.75), "Lat" = c(58.75, 49.25, 50.75))
-test.field.selected.gridcells.df.1 <- getField(GUESS.CE.test.Source, "mlai", spatial.extent = test.gridcells.df, spatial.extent.id = "TestGridcellsDF")
-test.field.selected.gridcells.df.2 <- selectGridcells(x = test.field.full, gridcells = test.gridcells.df, spatial.extent.id = "TestGridcellsDF")
+GUESS.Field.selected.gridcells.df.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = test.gridcells.df, spatial.extent.id = "TestGridcellsDF")
+GUESS.Field.selected.gridcells.df.2 <- selectGridcells(x = GUESS.mlai.Field.full, gridcells = test.gridcells.df, spatial.extent.id = "TestGridcellsDF")
 
 # by a data.table
 test.gridcells.dt <- data.table("Lon" = c(16.25, 7.25, 3.75), "Lat" = c(58.75, 49.25, 50.75))
-test.field.selected.gridcells.dt.1 <- getField(GUESS.CE.test.Source, "mlai", spatial.extent = test.gridcells.dt, spatial.extent.id = "TestGridcellsDT")
-test.field.selected.gridcells.dt.2 <- selectGridcells(x = test.field.full, gridcells = test.gridcells.dt, spatial.extent.id = "TestGridcellsDT")
+GUESS.Field.selected.gridcells.dt.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = test.gridcells.dt, spatial.extent.id = "TestGridcellsDT")
+GUESS.Field.selected.gridcells.dt.2 <- selectGridcells(x = GUESS.mlai.Field.full, gridcells = test.gridcells.dt, spatial.extent.id = "TestGridcellsDT")
 
 # by a polygon?
 # - not sure, maybe pull something from the maps package
 
 # crop by a raster
 test.raster <- raster::raster(ymn=48, ymx=59, xmn=4, xmx=17, resolution = 0.5, vals=0)
-test.field.selected.raster.1 <- getField(GUESS.CE.test.Source, "mlai", spatial.extent = test.raster, spatial.extent.id = "TestExtent")
-test.field.selected.raster.2 <- crop(x = test.field.full, y = test.raster, spatial.extent.id = "TestExtent")
+GUESS.Field.selected.raster.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = test.raster, spatial.extent.id = "TestExtent")
+GUESS.Field.selected.raster.2 <- crop(x = GUESS.mlai.Field.full, y = test.raster, spatial.extent.id = "TestExtent")
 
 # crop by an extent 
 test.extent <- extent(test.raster)
-test.field.selected.extent.1 <- getField(GUESS.CE.test.Source, "mlai", spatial.extent = test.extent, spatial.extent.id = "TestExtent")
-test.field.selected.extent.2 <- crop(x = test.field.full, y = test.extent, spatial.extent.id = "TestExtent")
+GUESS.Field.selected.extent.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = test.extent, spatial.extent.id = "TestExtent")
+GUESS.Field.selected.extent.2 <- crop(x = GUESS.mlai.Field.full, y = test.extent, spatial.extent.id = "TestExtent")
 
 # crop by another Field 
-test.field.selected.Field.1 <- getField(GUESS.CE.test.Source, "mlai", spatial.extent = test.field.selected.extent.1, spatial.extent.id = "TestExtent")
-test.field.selected.Field.2 <- crop(x = test.field.full, y = test.field.selected.extent.1, spatial.extent.id = "TestExtent")
+GUESS.Field.selected.Field.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = GUESS.Field.selected.extent.1, spatial.extent.id = "TestExtent")
+GUESS.Field.selected.Field.2 <- crop(x = GUESS.mlai.Field.full, y = GUESS.Field.selected.extent.1, spatial.extent.id = "TestExtent")
 
 
 
@@ -173,38 +196,37 @@ test.field.selected.Field.2 <- crop(x = test.field.full, y = test.field.selected
 test_that("Aggregation",{
   
   # check they give Fields
-  expect_is(test.field.selected.years.1, "Field")
-  expect_is(test.field.selected.years.2, "Field")
-  expect_is(test.field.selected.months.1, "Field")
-  expect_is(test.field.selected.months.2, "Field")
-  expect_is(test.field.selected.seasons.1, "Field")
-  expect_is(test.field.selected.gridcell.1, "Field")
-  expect_is(test.field.selected.gridcell.2, "Field")
-  expect_is(test.field.selected.gridcells.df.1, "Field")
-  expect_is(test.field.selected.gridcells.df.2, "Field")
-  expect_is(test.field.selected.gridcells.dt.1, "Field")
-  expect_is(test.field.selected.gridcells.dt.2, "Field")
-  expect_is(test.field.selected.raster.1, "Field")
-  expect_is(test.field.selected.raster.2, "Field")
-  expect_is(test.field.selected.extent.1, "Field")
-  expect_is(test.field.selected.extent.2, "Field")
-  expect_is(test.field.selected.Field.1, "Field")
-  expect_is(test.field.selected.Field.2, "Field")
+  expect_is(GUESS.Field.selected.years.1, "Field")
+  expect_is(GUESS.Field.selected.years.2, "Field")
+  expect_is(GUESS.Field.selected.months.1, "Field")
+  expect_is(GUESS.Field.selected.months.2, "Field")
+  expect_is(GUESS.Field.selected.seasons.1, "Field")
+  expect_is(GUESS.Field.selected.gridcell.1, "Field")
+  expect_is(GUESS.Field.selected.gridcell.2, "Field")
+  expect_is(GUESS.Field.selected.gridcells.df.1, "Field")
+  expect_is(GUESS.Field.selected.gridcells.df.2, "Field")
+  expect_is(GUESS.Field.selected.gridcells.dt.1, "Field")
+  expect_is(GUESS.Field.selected.gridcells.dt.2, "Field")
+  expect_is(GUESS.Field.selected.raster.1, "Field")
+  expect_is(GUESS.Field.selected.raster.2, "Field")
+  expect_is(GUESS.Field.selected.extent.1, "Field")
+  expect_is(GUESS.Field.selected.extent.2, "Field")
+  expect_is(GUESS.Field.selected.Field.1, "Field")
+  expect_is(GUESS.Field.selected.Field.2, "Field")
   
  
   # check the results are the same by two different routes
  
-  expect_identical(test.field.selected.years.1,  test.field.selected.years.2)
-  expect_identical(test.field.selected.months.1 ,  test.field.selected.months.2)
-  expect_identical(test.field.selected.gridcell.1 ,  test.field.selected.gridcell.2)
-  expect_identical(test.field.selected.gridcells.df.1,  test.field.selected.gridcells.df.2)
-  expect_identical(test.field.selected.gridcells.dt.1,  test.field.selected.gridcells.dt.2)
-  expect_identical(test.field.selected.raster.1,  test.field.selected.raster.2)
-  expect_identical(test.field.selected.extent.1,  test.field.selected.extent.2)
-  expect_identical(test.field.selected.Field.1,  test.field.selected.Field.2)
-  expect_identical(test.field.selected.extent.1,  test.field.selected.Field.1)
-  
-  expect_identical(test.field.selected.raster.1,  test.field.selected.Field.1)
+  expect_identical(GUESS.Field.selected.years.1,  GUESS.Field.selected.years.2)
+  expect_identical(GUESS.Field.selected.months.1 ,  GUESS.Field.selected.months.2)
+  expect_identical(GUESS.Field.selected.gridcell.1 ,  GUESS.Field.selected.gridcell.2)
+  expect_identical(GUESS.Field.selected.gridcells.df.1,  GUESS.Field.selected.gridcells.df.2)
+  expect_identical(GUESS.Field.selected.gridcells.dt.1,  GUESS.Field.selected.gridcells.dt.2)
+  expect_identical(GUESS.Field.selected.raster.1,  GUESS.Field.selected.raster.2)
+  expect_identical(GUESS.Field.selected.extent.1,  GUESS.Field.selected.extent.2)
+  expect_identical(GUESS.Field.selected.Field.1,  GUESS.Field.selected.Field.2)
+  expect_identical(GUESS.Field.selected.extent.1,  GUESS.Field.selected.Field.1)
+  expect_identical(GUESS.Field.selected.raster.1,  GUESS.Field.selected.Field.1)
 
 })
 
@@ -218,25 +240,90 @@ context("Plotting")
 test_that("Plotting", {
   
   # spatial plotting
-  expect_is(plotSpatial(test.field.monthly.mean.1), "ggplot")
-  expect_is(plotSpatial(test.field.yearly.mean.1), "ggplot")
+  expect_is(plotSpatial(GUESS.Field.monthly.mean.1), "ggplot")
+  expect_is(plotSpatial(GUESS.Field.yearly.mean.1), "ggplot")
+  expect_is(plotSpatial(Biomes.Field.full), "ggplot")
+  expect_is(plotSpatial(Saatchi.Field.full), "ggplot")
   
+  # test plot options?
+
   # temporal plotting
-  expect_is(plotTemporal(test.field.spatial.mean.1), "ggplot")
+  expect_is(plotTemporal(GUESS.Field.spatial.mean.1), "ggplot")
   
   # seaconal cycle plotting -- update after plotSeasonal rebuilt
-  #expect_is(plotSeasonal(test.field.spatial.mean.1), "ggplot")
+  #expect_is(plotSeasonal(GUESS.Field.spatial.mean.1), "ggplot")
   
  
 })
 
 
 
-### READ DGVMData 
 
 
+### NUMERIC COMPARISONS AND BENCHMARKING
+context("Numeric Comparisons and Benchmarks")
 
-### COMPARISIONS AND BENCHMARKING
+test_that("Numeric Comparisons and Benchmarks", {
+  
+  # build and test a numeric Comparison
+  GUESS.Field.vegC_std.annual <- aggregateYears(GUESS.vegC_std.Field.full, "mean")
+  GUESS.Field.vegC_std.annual <- layerOp(GUESS.Field.vegC_std.annual, "+", ".Tree", "Tree")
+  expect_is(GUESS.Field.vegC_std.annual, "Field")
+  Saatchi.comparison <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", verbose = FALSE, show.stats = FALSE)
+  expect_is(Saatchi.comparison, "Comparison")
+  
+  # plot said numeric Comparison
+  expect_is(plotSpatialComparison(Saatchi.comparison), "ggplot")
+  expect_is(plotSpatialComparison(Saatchi.comparison, type = "difference"), "ggplot")
+  expect_is(plotSpatialComparison(Saatchi.comparison, type = "percentage.difference"), "ggplot")
+  expect_is(plotSpatialComparison(Saatchi.comparison, type = "values"), "ggplot")
+  # expect_is(plotSpatialComparison(Saatchi.comparison, type = "nme"), "ggplot")
+  
+  
+})
+
+### CATEGORICAL QUANTITIES
+context("Categorical Quantities")
+
+# biomes
+# Note: Known and deliberate warning when calculating biomes, suppress for clarity in results
+GUESS.Smith2014.Biomes <- suppressWarnings(getBiomes(source = GUESS.Europe.test.Source, scheme = Smith2014BiomeScheme, year.aggregate.method = "mean"))
+
+# max PFT
+GUESS.Field.lai.annual <- aggregateYears(GUESS.lai.Field.full, "mean")
+GUESS.Field.lai.annual <- layerOp(GUESS.Field.lai.annual, operator = "max.layer", ".PFTs", "MaxPFT")
+
+
+test_that("Categorical Quantities", {
+  
+  expect_is(GUESS.Smith2014.Biomes, "Field")
+  expect_is(GUESS.Field.lai.annual, "Field")
+  
+  expect_is(plotSpatial(GUESS.Smith2014.Biomes), "ggplot")
+  expect_is(plotSpatial(GUESS.Field.lai.annual, layer = "MaxPFT"), "ggplot")
+  
+})
+
+
+### CATEGORIAL COMPARISONS AND BENCHMARKING
+context("Categorical Comparisons and Benchmarks")
+
+test_that("Categorical Comparisons and Benchmarks", {
+  
+  # build and test a categroal Comparison
+  Biomes.comparison <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, show.stats = FALSE)
+  expect_is(Biomes.comparison, "Comparison")
+  
+  # plot said numeric Comparison
+  expect_is(plotSpatialComparison(Biomes.comparison), "ggplot")
+  expect_is(plotSpatialComparison(Biomes.comparison, type = "difference"), "ggplot")
+  expect_warning(plotSpatialComparison(Biomes.comparison, type = "percentage.difference"))
+  expect_is(plotSpatialComparison(Biomes.comparison, type = "values"), "ggplot")
+  # expect_is(plotSpatialComparison(Saatchi.comparison, type = "nme"), "ggplot")
+  
+  
+})
+
 
 
 ###  EXPORTING
