@@ -4,7 +4,7 @@
 \alias{determinePFTs_aDGVM}
 \title{Detemine PFTs present in an aDGVM2; currently only returns a warning.}
 \usage{
-determinePFTs_aDGVM(x, variables)
+determinePFTs_aDGVM(x)
 }
 \arguments{
 \item{x}{A Source objects describing a DGVMData source}

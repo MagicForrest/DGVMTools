@@ -654,10 +654,31 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-determinePFTs_aDGVM <- function(x, variables) {
+determinePFTs_aDGVM <- function(x) {
   
-  warning("Need aDGVMers to write this function! For now I am returning the source@format@default.set argument directly.")
-  return(x@format@default.pfts)
+  #if (scheme==1....) 
+  #warning("Need aDGVMers to write this function! For now I am returning the source@format@default.set argument directly.")
+
+  PFT.list.s1 <- c("Tr", "C4G", "C3G")
+  PFT.list.s2 <- c("TrBE", "TrBR", "TrBES", "TrBRS", "C4G", "C3G")
+
+  cat(paste("PFTs for adgvm.scheme==1: Tr, C4G, C3G \n"))
+  cat(paste("PFTs for adgvm.scheme==2: TrBE, TrBR, TrBES, TrBRS, C4G, C3G \n"))
+  cat(paste("determinePFTs returns list with all available aDGVM2 PFTs.\n"))
+  
+#  PFTs.present <- list()
+#  for ( PFTname in PFT.list) {
+#    for(PFT in aDGVM.PFTs){
+#      if(PFT@id == PFTname) {
+#        PFTs.present <- append(PFTs.present, PFT)
+#      }
+#    }
+#  }
+  
+  return(aDGVM.PFTs)
+  
+  
+  #return(x@format@default.pfts)
   
 }
 
@@ -667,21 +688,71 @@ determinePFTs_aDGVM <- function(x, variables) {
 #' Simply lists all quantitied aDGVM  output variables 
 #' 
 #' @param source A path to a directory on the file system containing some .out files
+#' @param id An id of the model run
+#' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
-#' Needs to be implemented by an aDGVMer
 #' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
+availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
+  if ( adgvm.scheme==1 ) {
+    fname <- file.path(source, paste("pop_", id,".nc", sep=""))
+    message(paste("Check quantities in adgvm.scheme=1,", fname, "\n"))
+    d <- ncdf4::nc_open(fname)
+    quantities.ncfile <- names(d[['var']])
 
-availableQuantities_aDGVM <- function(source){
+    quantities.present <- NULL
+    if(all(c("SumCanopyArea0") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegcover_std" )
+    if(all(c("SumBasalArea") %in% quantities.ncfile)==TRUE)   quantities.present <- c( quantities.present, "basalarea" )
+    if(all(c("MeanHeight") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "canopyheight_std" )
+    if(all(c("MeanCGain", "nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "aGPP_std" )
+    if(all(c("SumBLeaf", "meanSla") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "LAI_std" )
+    if(all(c("MeanHeight") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "meanheight" )
+    if(all(c("nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "pind" )
+    if(all(c("nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "nind" )
+    if(all(c("SumBBark", "SumBWood", "SumBLeaf") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "abg" )
+    if(all(c("SumBRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
+    if(all(c("SumBBark", "SumBWood", "SumBLeaf", "SumBStor", "SumBRoot", "SumBRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
   
-  warning("Needs to be implemented by an aDGVMer.")
-  
-  quantities.present <- list()
-  return(quantities.present)
-  
+    #message("Quantities available for adgvm.scheme=1: ")
+    #print( quantities.present )
+  }
+  else if (adgvm.scheme==2) {
+    fname <- file.path(source, paste("trait_", id,".nc", sep=""))
+    message(paste("Check quantities in adgvm.scheme=2,", fname, "\n"))
+    d <- ncdf4::nc_open(fname)
+    quantities.ncfile <- names(d[['var']])
+
+    quantities.present <- NULL
+
+    if(all(c("alive", "VegType", "Evergreen", "StemCount") %in% quantities.ncfile)==TRUE) { 
+      if(all(c("CrownArea") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegcover_std" )
+      if(all(c("StemDiamTot") %in% quantities.ncfile)==TRUE)   quantities.present <- c( quantities.present, "basalarea" )
+      if(all(c("Height") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "canopyheight_std" )
+      #if(all(c("MeanCGain", "nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "aGPP_std" )
+      if(all(c("BLeaf", "Sla") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "LAI_std" )
+      if(all(c("Height") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "meanheight" )
+      if(all(c("alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "pind" )
+      if(all(c("alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "nind" )
+      if(all(c("BBark", "BWood", "BLeaf") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "abg" )
+      if(all(c("BRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
+      if(all(c("BBark", "BWood", "BLeaf", "BStor", "BRoot", "BRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
+    
+      #message("Quantities available for adgvm.scheme=2: ")
+      #print( quantities.present )
+    }
+    else {
+      message("alive, VegType, Evergreen or StemCount missing in trait file, can't extract quantities for adgvm.scheme=2.")
+    }
+  }
+  else {
+    message("Invalid value for adgvm.scheme.")
+    quantities.present <- NULL
+  }
+
+  return(quantities.present)  
 }
 
 
