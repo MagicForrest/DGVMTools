@@ -34,8 +34,8 @@ getField_aDGVM <- function(source,
   
   if("aDGVM" %in% quant@format | "Standard" %in% quant@format) {
     
-    if(adgvm.scheme == 1) return(getQuantity_aDGVM_Scheme1(source, target.STAInfo, quant, adgvm.daily))
-    if(adgvm.scheme == 2) return(getQuantity_aDGVM_Scheme2(source, target.STAInfo, quant))
+    if(adgvm.scheme == 1) return(getQuantity_aDGVM_Scheme1(run = source, target.sta = target.STAInfo, variable = quant, adgvm.daily))
+    if(adgvm.scheme == 2) return(getQuantity_aDGVM_Scheme2(run = source, target.sta = target.STAInfo, variable = quant))
 
   }
   else {
