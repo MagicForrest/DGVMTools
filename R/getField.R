@@ -235,13 +235,7 @@ getField <- function(source,
       
       if(verbose) message(paste("Selecting years from", first.year, "to", last.year, sep = " "))
       this.Field <- selectYears(this.Field, first = first.year, last = last.year) 
-      
-      # update meta-data
-      years.present <- getDimInfo(this.Field, info = "range")
-      print(years.present)
-      actual.sta.info@first.year <- min(years.present)
-      actual.sta.info@last.year <- max(years.present)
-      
+ 
     }
     else {
       if(verbose) message("No year selection being applied")
