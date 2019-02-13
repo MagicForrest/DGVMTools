@@ -3,6 +3,7 @@ title: "Introduction to DGVMTools"
 author: "Matthew Forrest"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
+#output: pdf_document
 vignette: >
   %\VignetteIndexEntry{Introduction to DGVMTools}
   %\VignetteEngine{knitr::rmarkdown}
