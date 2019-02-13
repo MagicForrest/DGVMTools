@@ -314,68 +314,6 @@ setClass("Quantity",
 )
 
 
-
-
-
-
-#' Comparison statistics
-#' 
-#' This class stores the statistics resulting from the comparison of two layers from DGVMTools::Field objects.
-#' 
-#' @slot id A unique character string to identify this particular raster compariosn.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot R2 The R^2 between the two datasets
-#' @slot R2.eff The model efficiency of the two datasets
-#' @slot P.cor The Pearsons product moment correlation between the two datasets
-#' @slot ME The Mean Error (mean of residuals) between two datasets
-#' @slot NME The Normalised Mean Error (mean of residuals after the residuals have been divided the value of the data point) between two datasets
-#' @slot NMSE The Normalised Square Mean Error (mean of the square of the residuals after the residuals have been divided the value of the data point) two datasets
-#' @slot RMSE The Root Mean Squared Error between the two datasets
-#' @slot sd.diff The standard deviation of the difference between the two datasets (all gridcells)
-#' @slot MM The Manhattan Metric (for comparisons of relative proportions)
-#' @slot SCD The Manhattan Metric (for comparisons of relative proportions)
-#' @slot Kappa The overall Cohen's Kappa obtained when comparing categorical variables.
-#' @slot individual.Kappas The individual Cohen's Kappas for each category when comparing categorical data
-#' @exportClass Statistics
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' 
-setClass("Statistics",
-         slots = c(id = "character",
-                   R2 = "numeric", 
-                   R2.eff = "numeric",
-                   P.cor = "numeric",
-                   ME = "numeric", 
-                   NME = "numeric",
-                   NMSE = "numeric",
-                   RMSE = "numeric", 
-                   sd.diff = "numeric",
-                   Kappa = "numeric", 
-                   individual.Kappas = "numeric",
-                   MM = "numeric",
-                   SCD = "numeric"
-         ),
-         prototype = c(id = "-",
-                       R2 = NA,
-                       R2.eff = NA, 
-                       P.cor = NA,
-                       ME = NA, 
-                       NME = NA,
-                       NMSE = NA,
-                       RMSE = NA, 
-                       sd.diff = NA,
-                       Kappa = NA, 
-                       individual.Kappas = NA,
-                       MM = NA,
-                       SCD = NA
-         ) 
-)
-
-
-
-
-
-
-
-
 #' Contains a comparison between two layers 
 #' 
 #' This object is produced as the result of a call to the functions \code{compareLayers()} and shouldn't be directly created by a user.
@@ -394,7 +332,8 @@ setClass("Statistics",
 #' @slot quant2 A Quantity object to define what quantity the data from second field represents
 #' @slot layers1 A character string (or vector thereof) of the layer(s) from the first field that were compared
 #' @slot layers2 A character string (or vector thereof) of the layer(s) from the second field that were compared
-#' @slot stats An SpatialComaprison object giving ther statistical comparison metric between these two layers
+#' @slot stats A simple R list containing the (named) statistics produced by the comparison (very flexible, items will depend on the type of comparison done and
+#'  can even be a another list)
 #' @slot source1 A Source object describing the source of the first layer in the comparison
 #' @slot source2 A Source object describing the source of the second layer in the comparison
 #' @slot sta.info1 The STAInfo object for the first field
@@ -414,7 +353,7 @@ setClass("Comparison",
                    source2 = "Source",
                    sta.info1 = "STAInfo",
                    sta.info2 = "STAInfo",
-                   stats = "Statistics"
+                   stats = "list"
                    
          )#,
          #validity = checkComparison

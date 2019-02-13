@@ -10,7 +10,6 @@
 \alias{print,STAInfo-method}
 \alias{print,Field-method}
 \alias{print,Comparison-method}
-\alias{print,Statistics-method}
 \alias{print,BiomeScheme-method}
 \alias{print,Format-method}
 \title{Print a DGVMTools object}
@@ -28,8 +27,6 @@
 \S4method{print}{Field}(x)
 
 \S4method{print}{Comparison}(x)
-
-\S4method{print}{Statistics}(x)
 
 \S4method{print}{BiomeScheme}(x)
 

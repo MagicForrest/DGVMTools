@@ -32,7 +32,8 @@ Generally these are not created directly by the user, but rather by functions li
 
 \item{\code{layers2}}{A character string (or vector thereof) of the layer(s) from the second field that were compared}
 
-\item{\code{stats}}{An SpatialComaprison object giving ther statistical comparison metric between these two layers}
+\item{\code{stats}}{A simple R list containing the (named) statistics produced by the comparison (very flexible, items will depend on the type of comparison done and
+can even be a another list)}
 
 \item{\code{source1}}{A Source object describing the source of the first layer in the comparison}
 

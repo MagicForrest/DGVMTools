@@ -131,16 +131,14 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
     print(paste("Pearson's PMCC (r) = ", round(P.cor, 4)))
   }
   
-  stats <- new("Statistics",
-               id = paste(name1, "vs",  name2,  sep = "."),
-               R2 = R2, 
-               R2.eff = R2.eff,
-               P.cor = P.cor,
-               ME = ME, 
-               NME = NME,
-               NMSE = NMSE,
-               RMSE = RMSE
-  )
+  stats <- list("R2" = R2, 
+               "R2_eff" = R2.eff,
+               "r" = P.cor,
+               "ME" = ME, 
+               "NME" = NME,
+               "NMSE" = NMSE,
+               "RMSE" = RMSE)
+  
   
   
   return(stats)
@@ -201,10 +199,8 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
     print(paste("Squared Chord Distance (NME) = ", round(SCD, 4)))
   }
   
-  stats <- new("Statistics",
-               id = paste(name1, "vs",  name2,  sep = "."),
-               MM = MM, 
-               SCD = SCD
+  stats <- list("MM" = MM, 
+               "SCD" = SCD
   )
   
   
@@ -320,12 +316,10 @@ categoricalComparison<- function(vector1,
   
   if(verbose) print(paste("Overall Kappa", round(kappa, 3), sep = " "))
   
+  stats = list( "Kappa" = kappa, 
+                "individual.Kappas" = per.class.kappa)
   
-  return(new("Statistics",
-             id = paste(name1, "vs",  name2,  sep = "."),
-             Kappa = kappa, 
-             individual.Kappas = per.class.kappa)
-  )
+  return(stats)
   
   
 }
