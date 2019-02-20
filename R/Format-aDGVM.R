@@ -510,24 +510,31 @@ getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta)
         if(variable@id == "meanheight"){
           if (length(ind.alive)>0) {
             tmp.all  <- ncdf4::ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            tmp.te[x,y,z-start.point+1]   <- mean(tmp.all[ind.te])
-            tmp.td[x,y,z-start.point+1]   <- mean(tmp.all[ind.td])
-            tmp.se[x,y,z-start.point+1]   <- mean(tmp.all[ind.se])
-            tmp.sd[x,y,z-start.point+1]   <- mean(tmp.all[ind.sd])
-            tmp.g4[x,y,z-start.point+1]   <- mean(tmp.all[ind.g4])
-            tmp.g3[x,y,z-start.point+1]   <- mean(tmp.all[ind.g3])
+
+            tmp.te[x,y,z-start.point+1]   <- ifelse( length(ind.te)>0, mean(tmp.all[ind.te]), 0 )
+            tmp.td[x,y,z-start.point+1]   <- ifelse( length(ind.td)>0, mean(tmp.all[ind.td]), 0 )
+            tmp.se[x,y,z-start.point+1]   <- ifelse( length(ind.se)>0, mean(tmp.all[ind.se]), 0 )
+            tmp.sd[x,y,z-start.point+1]   <- ifelse( length(ind.sd)>0, mean(tmp.all[ind.sd]), 0 )
+            tmp.g4[x,y,z-start.point+1]   <- ifelse( length(ind.g4)>0, mean(tmp.all[ind.g4]), 0 )
+            tmp.g3[x,y,z-start.point+1]   <- ifelse( length(ind.g3)>0, mean(tmp.all[ind.g3]), 0 )
+            #tmp.te[x,y,z-start.point+1]   <- sum(tmp.all[ind.te])/length(ind.te)
+            #tmp.td[x,y,z-start.point+1]   <- sum(tmp.all[ind.td])/length(ind.td)
+            #tmp.se[x,y,z-start.point+1]   <- sum(tmp.all[ind.se])/length(ind.se)
+            #tmp.sd[x,y,z-start.point+1]   <- sum(tmp.all[ind.sd])/length(ind.sd)
+            #tmp.g4[x,y,z-start.point+1]   <- sum(tmp.all[ind.g4])/length(ind.g4)
+            #tmp.g3[x,y,z-start.point+1]   <- sum(tmp.all[ind.g3])/length(ind.g3)
           }
         }
         
         if(variable@id == "canopyheight_std"){
           if (length(ind.alive)>0) {
             tmp.all  <- ncdf4::ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            tmp.te[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.te],0.95)
-            tmp.td[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.td],0.95)
-            tmp.se[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.se],0.95)
-            tmp.sd[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.sd],0.95)
-            tmp.g4[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.g4],0.95)
-            tmp.g3[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.g3],0.95)
+            tmp.te[x,y,z-start.point+1]   <- ifelse( length(ind.te)>0, stats::quantile(tmp.all[ind.te],0.95), 0 )
+            tmp.td[x,y,z-start.point+1]   <- ifelse( length(ind.td)>0, stats::quantile(tmp.all[ind.td],0.95), 0 )
+            tmp.se[x,y,z-start.point+1]   <- ifelse( length(ind.se)>0, stats::quantile(tmp.all[ind.se],0.95), 0 )
+            tmp.sd[x,y,z-start.point+1]   <- ifelse( length(ind.sd)>0, stats::quantile(tmp.all[ind.sd],0.95), 0 )
+            tmp.g4[x,y,z-start.point+1]   <- ifelse( length(ind.g4)>0, stats::quantile(tmp.all[ind.g4],0.95), 0 )
+            tmp.g3[x,y,z-start.point+1]   <- ifelse( length(ind.g3)>0, stats::quantile(tmp.all[ind.g3],0.95), 0 )
           }
         }
         
