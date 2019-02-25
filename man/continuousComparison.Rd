@@ -4,23 +4,23 @@
 \alias{continuousComparison}
 \title{Compare continuous data}
 \usage{
-continuousComparison(vector1, vector2, name1, name2, verbose = TRUE)
+continuousComparison(x, layers1, layers2, additional, verbose = TRUE)
 }
 \arguments{
-\item{vector1}{The first of the datasets to be compared to each other, as a vector of numerics (categorical data)}
+\item{x}{A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared}
 
-\item{vector2}{The second of the datasets to be compared to each other, as a vector of numerics(categorical data)}
+\item{layers1}{A character string giving the first layer to compare (should be a column in x)}
 
-\item{name1}{A character string giving the name of the first dataset (for making a useful id)}
+\item{layers2}{A character string giving the second layer to compare (should be a column in x)}
 
-\item{name2}{A character string giving the name of the second dataset (for making a useful id)}
+\item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
 
-\item{verbose}{A logical, if TRUE print out all the Kappa scores
+\item{verbose}{A logical, if TRUE print out all the metric scores
 
 Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for continuous data.}
 }
 \value{
-A spatial comparison object
+A Comparison object
 }
 \description{
 Compares two datasets of continuous data. Specifically calculates and returns a Statistics object (which contains many metrics) given numeric two vectors of equal size

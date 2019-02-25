@@ -127,10 +127,10 @@ for(quant in quantities_NewFormat ) {
 }
 
 ## ----determine PFTs, echo=TRUE-------------------------------------------
-determinePFTs_NewFormat <- function(directory, names = TRUE){
+determinePFTs_NewFormat <- function(x, names = TRUE){
   
   # typical stuff 
-  run.directory <- x@dir
+  run.dir <- x@dir
   
   # all possible PFTs present 
   PFTs.possible <- x@pft.set
@@ -164,18 +164,47 @@ availableQuantities_NewFormat <- function(x, additional.args){
 ## ----get Field, echo=TRUE------------------------------------------------
 getField_NewFormat <- function(source, quant, sta.info, verbose, ...){ 
   
-  # code needs to get the data as a data.table
+  # open the file and read the data with ncvar_get() or read.table() or whatever
+  
+  # code needs to get the data as a data.table so reformat it
+  # data.tables should be melted down to one column for Lat, Lon, Year, Month and Day (as appropriate).
+  # days run from 1-365, and if data is daily no Month column should be used
+  
+  # dummy code
   dt <- data.table()
+ 
   
   # also an STAInfo object
-  return.sta.info <- new("STAInfo")
+  # define this properly based on the actual data in the data.table
+  return.sta.info <- new("STAInfo",
+                         first.year = 1901, # let's say
+                         last.year = 2018, # let's say
+                         year.aggregate.method = "none", # see NOTE 1 below
+                         spatial.extent = extent(dt), # raster::extent function has been define for data.tables, might be useful
+                         spatial.extent.id = character(0), # see NOTE 2 below
+                         spatial.aggregate.method = "none", # see NOTE 1 below
+                         subannual.resolution = "monthly", # let's say
+                         subannual.aggregate.method = "none", # see NOTE 1 below
+                         subannual.original = "monthly" # let's say
+                         )
+  
+   # NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)
+   # NOTE 2: if no spatial cropping at this stage set this to be the empty character string "character(0)", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
+  
+  
+  # make the Field ID based on the STAInfo and 
+  field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
     
-  # dummy code
-  return.list <- list()
-  return.list[["dt"]] <- dt
-  return.list[["sta.info"]] <- return.sta.info
+  # build a new Field
+  return.Field <- new("Field",
+                      id = field.id,
+                      quant = quant,
+                      data = dt,
+                      sta.info = return.sta.info,
+                      source = source)
+
    
-  return(return.list)
+  return(return.field)
   
 } 
 

@@ -279,6 +279,13 @@ test_that("Numeric Comparisons and Benchmarks", {
   expect_is(plotSpatialComparison(Saatchi.comparison, type = "values"), "ggplot")
   # expect_is(plotSpatialComparison(Saatchi.comparison, type = "nme"), "ggplot")
   
+  # test with a dummy benchmark
+  dummy.benchmark <- function(x, layer1, layer2) { return(1)}
+  Saatchi.comparison.with.dummy.benchmark <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
+  expect_is(Saatchi.comparison.with.dummy.benchmark, "Comparison")
+  
+  # can possible place extra tests on metrics here
+
   
 })
 
@@ -322,6 +329,11 @@ test_that("Categorical Comparisons and Benchmarks", {
   # expect_is(plotSpatialComparison(Saatchi.comparison, type = "nme"), "ggplot")
   
   
+  # test with a dummy benchmark
+  dummy.benchmark <- function(x, layer1, layer2) { return(1)}
+  Biomes.comparison.with.dummy.benchmark <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
+  expect_is(Biomes.comparison.with.dummy.benchmark, "Comparison")
+
 })
 
 

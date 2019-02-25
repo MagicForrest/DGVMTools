@@ -138,3 +138,87 @@ Saatchi.vegC <- getField(source = Saatchi.dataset,
 print(Saatchi.vegC)
 print(plotSpatial(Saatchi.vegC))
 
+## ----comparison, fig.asp = 1, echo=TRUE----------------------------------
+# compare layers to produce a Comparison object
+vegC.comparison <- compareLayers(field1 = GUESS.vegC, field2 = Saatchi.vegC, layers1 = "Tree", layers2 = "Tree")
+
+# have a look at this comparison object (lots of metadata tracked)
+print(vegC.comparison )
+
+# plot difference map
+print(plotSpatialComparison(vegC.comparison))
+
+# plot side-by-side
+print(plotSpatialComparison(vegC.comparison, type = "values"))
+
+# make scatter plot
+print(plotScatterComparison(vegC.comparison))
+
+
+## ----select, fig.asp = 1, echo=TRUE--------------------------------------
+
+# London gridcell
+gridcell <- data.frame(Lon = c(0.25), Lat = c(51.25))
+
+# plot LAI
+print(plotSeasonal(runs = GUESS.run, 
+                   quants = "mlai", 
+                   spatial.extent = gridcell, 
+                   spatial.extent.id = "London",
+                   write = FALSE,
+                   read.full = FALSE,
+                   year.col.gradient = TRUE,
+                   alpha = 0.5))
+
+
+## ----model biomes, echo=TRUE---------------------------------------------
+
+# read and plot global biomes
+biomes.model <- getBiomes(GUESS.run, Smith2014BiomeScheme, year.aggregate.method = "mean")
+print(plotSpatial(biomes.model, map.overlay = "world"))
+
+
+## ----data biomes, echo=TRUE----------------------------------------------
+
+# data biomes source
+biomes.source <- defineSource(id = "DataBiomes",
+                              dir = system.file("extdata", "DGVMData", "HandP_PNV", "HD", package = "DGVMTools"), 
+                              format = DGVMData,
+                              name = "Haxeltine and Prentice Biomes")
+biomes.data <- getField(source = biomes.source, var = "Smith2014")
+print(plotSpatial(biomes.data))
+
+
+## ----biomes comparison, echo=TRUE----------------------------------------
+
+biome.comparison <- compareLayers(field1 = biomes.model, field2 = biomes.data, layers1 = "Smith2014", layers2 = "Smith2014")
+
+# have a look at this comparison object
+print(biome.comparison )
+
+# plot side-by-side
+print(plotSpatialComparison(biome.comparison, type = "values"))
+
+# plot difference map
+print(plotSpatialComparison(biome.comparison, type = "difference"))
+
+
+
+## ----facetting, echo=TRUE------------------------------------------------
+# make a plot with silly facets
+lifeform.plot <- plotSpatial(LAI.year.mean, layers = c("Tree", "Grass", "Total"), ylim = c(35,45))
+print(lifeform.plot)
+
+# arrange facets with three rows
+lifeform.plot <- lifeform.plot + facet_wrap(~Facet, nrow =3)
+print(lifeform.plot)
+
+## ----legends, echo=TRUE--------------------------------------------------
+
+# ove and format legends, and make the text slightly smaller
+biome.plot <- plotSpatialComparison(biome.comparison, type = "values")
+print(biome.plot)
+biome.plot <- biome.plot + theme(legend.position = "bottom", text = element_text(size = theme_get()$text$size * 0.75))
+biome.plot <- biome.plot+ guides(fill = guide_legend(ncol = 2))
+print(biome.plot)
+

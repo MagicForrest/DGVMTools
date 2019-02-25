@@ -77,21 +77,29 @@ calcR2 <- function(vector2, vector1) {
 #' 
 #' Compares two datasets of continuous data. Specifically calculates and returns a Statistics object (which contains many metrics) given numeric two vectors of equal size 
 #' 
-#' @param vector1 The first of the datasets to be compared to each other, as a vector of numerics (categorical data) 
-#' @param vector2 The second of the datasets to be compared to each other, as a vector of numerics(categorical data) 
-#' @param name1 A character string giving the name of the first dataset (for making a useful id)
-#' @param name2 A character string giving the name of the second dataset (for making a useful id)
-#' @param verbose A logical, if TRUE print out all the Kappa scores
+#' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
+#' @param layers1 A character string giving the first layer to compare (should be a column in x)
+#' @param layers2 A character string giving the second layer to compare (should be a column in x)
+#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
+#' @param verbose A logical, if TRUE print out all the metric scores
 #' 
 #' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for continuous data.
 #' 
-#' @return A spatial comparison object
+#' @return A Comparison object
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE){
+continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
+ 
+  # check the layers are present
+  if(!layers1 %in% layers(x)) stop("Argument layers1 is not a column in x")
+  if(!layers2 %in% layers(x)) stop("Argument layers2 is not a column in x")
   
-  # Preamble - remove NAs from both vectors 
+  ###  STANDARD PACKAGE BENCHMARKS WHICH CAN RUN SIMPLY ON TWO VECTORS
+   
+  # Preamble - extract vectors and remove NAs from both vectors 
+  vector1 <- x[[layers1]]
+  vector2 <- x[[layers2]]
   
   # first remove where there are NAs in vector1
   vector2 <- vector2[!is.na(vector1)]
@@ -121,7 +129,7 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
   P.cor <- stats::cor(vector1, vector2, method = "pearson")
   
   if(verbose) {
-    print(paste("+++ Stats for", name1, "vs",  name2,  "+++", sep = " "))
+    print(paste("+++ Stats for", layers1, "vs",  layers2,  "+++", sep = " "))
     print(paste("Mean Error (ME) = ", round(ME, 4)))
     print(paste("Normalised Mean Error (NME) = ", round(NME, 4)))
     print(paste("Normalised Mean Squared Error (NMSE) = ", round(NMSE, 4)))
@@ -140,6 +148,16 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
                "RMSE" = RMSE)
   
   
+  ##### HERE DO CUSTOM BENCHMARKS
+  if(length(additional) > 0) {
+    
+    for(counter in 1:length(additional)) {
+      
+      stats[[names(additional)[counter]]] <- additional[[counter]](x, layers1, layers2) 
+      
+    }
+    
+  }
   
   return(stats)
   
@@ -150,11 +168,11 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
 #' Compares two datasets of relative proportions of multiple classes (sum of classes equals one at each point) where the total for each  data where the totally value for each. 
 #' Specifically calculates and returns a Statistics object (which contains many metrics) with the relevants slots are Manhattan Metric (MM) and Square Chord Distance (SCD).
 #' 
-#' @param dt1 The first of the datasets to be compared to each other, as a data.table with a column for the  elative proportion of each class (sum of classes must equal one for metric to be meaningful)
-#' @param dt2 The second of the datasets to be compared to each other, as a data.table with a column for the  elative proportion of each class (sum of classes must equal one for metric to be meaningful)
-#' @param name1 A character string giving the name of the first dataset (for making a useful id)
-#' @param name2 A character string giving the name of the second dataset (for making a useful id)
-#' @param verbose A logical, if TRUE print out all the Kappa scores
+#' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
+#' @param layers1 A vector of character strings giving the layers from the first dataset to compare (should be columns in x and sum to 1 or 100)
+#' @param layers1 A vector of character strings giving the layers from the second dataset to compare (should be columns in x and sum to 1 or 100)
+#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
+#' @param verbose A logical, if TRUE print out all the metric scores
 #' 
 #' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for relative proportions data.
 #' 
@@ -162,7 +180,14 @@ continuousComparison <- function(vector1, vector2, name1, name2, verbose = TRUE)
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
+proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
+  
+  # check the layers are present
+  if(!sum(layers1 %in% names(x)) == length(layers1)) stop("Some of argument layers1 are not a column in x")
+  if(!sum(layers2 %in% names(x)) == length(layers2)) stop("Some of argument layers2 are not a column in x")
+  
+  dt1 <- x[, layers1]
+  dt2 <- x[, layers2]
   
   # check the incoming data.tables are the same size
   if(ncol(dt1) != ncol(dt2)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of components")
@@ -170,10 +195,14 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
   # check the incoming data.tables are the same size
   if(nrow(dt1) != nrow(dt2)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of rows")
   
-  # quick fix, divide by 100
-  dt1 <- dt1/100
-  dt2 <- dt2/100
-   
+  # quick fix, divide by 100 if max > 1.01
+  dt1.sum <- rowSums(dt1)
+  dt2.sum <- rowSums(dt2)
+  if(max(dt1.sum) > 1.01 || max(dt2.sum) > 1.01){
+    dt1 <- dt1/100
+    dt2 <- dt2/100
+  }
+
   # calculate Manhattan Metric and Squared Chord Distance
   MM <- 0
   SCD <- 0
@@ -194,7 +223,7 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
   SCD <- SCD/nrow(dt1)
   
   if(verbose) {
-    print(paste("+++ Stats for", name1, "vs",  name2,  "+++", sep = " "))
+    print(paste("+++ Stats for", paste(layers1, sep = ","), "vs",  paste(layers2, sep = ","),  "+++", sep = " "))
     print(paste("Manhattan Metric (MM) = ", round(MM, 4)))
     print(paste("Squared Chord Distance (NME) = ", round(SCD, 4)))
   }
@@ -204,18 +233,29 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
   )
   
   
+  ##### HERE DO CUSTOM BENCHMARKS
+  if(length(additional) > 0) {
+    
+    for(counter in 1:length(additional)) {
+      
+      stats[[names(additional)[counter]]] <- additional[[counter]](x, layers1, layers2) 
+      
+    }
+    
+  }
+  
   return(stats)
   
 }
 
 #' Comparison between two datasets of categorical variables
 #' 
-#' Calculates a Statistics object (which contains the Cohen's Kappa scores) given a stack containing two maps of categorical data (eg. biomes, land cover classes).
+#' Calculates a Statistics object (which contains the Cohen's Kappa scores) given data.table of with two layers of categorical data (eg. biomes, land cover classes).
 #' 
-#' @param vector1 The first of the datasets to be compared to each other, as a vector of factors (categorical data) 
-#' @param vector2 The second of the datasets to be compared to each other, as a vector of factors (categorical data) 
-#' @param name1 A character string giving the name of the first dataset (for making a useful id)
-#' @param name2 A character string giving the name of the second dataset (for making a useful id)
+#' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
+#' @param layers1 A character string giving the first layer to compare (should be a column in x)
+#' @param layers2 A character string giving the second layer to compare (should be a column in x)
+#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
 #' @param verbose A logical, if TRUE print out all the Kappa scores
 #' 
 #' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are for continuous as opposed to categorical data
@@ -224,16 +264,27 @@ proportionsComparison <- function(dt1, dt2, name1, name2, verbose = TRUE){
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-categoricalComparison<- function(vector1,
-                                 vector2, 
-                                 name1, 
-                                 name2, 
-                                 verbose = TRUE){
+categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE){
   
   
   dataset1 = dataset2 = code = NULL
   
-  # Old south order new nothern horizon
+  # check the layers are present
+  if(!layers1 %in% layers(x)) stop("Argument layers1 is not a column in x")
+  if(!layers2 %in% layers(x)) stop("Argument layers2 is not a column in x")
+  ###  STANDARD PACKAGE BENCHMARKS WHICH CAN RUN SIMPLY ON TWO VECTORS
+  
+  # Preamble - extract vectors and remove NAs from both vectors 
+  vector1 <- x[[layers1]]
+  vector2 <- x[[layers2]]
+  
+  # first remove where there are NAs in vector1
+  vector2 <- vector2[!is.na(vector1)]
+  vector1 <- vector1[!is.na(vector1)]
+  # now for vector2
+  vector1 <- vector1[!is.na(vector2)]
+  vector2 <- vector2[!is.na(vector2)]
+  
   # make a factor with all possibilities (ie from both vector)
   all.factors <- factor(append(as.character(vector1), as.character(vector2)))
   
@@ -314,10 +365,23 @@ categoricalComparison<- function(vector1,
     if(verbose) print(paste(names(labels[which(labels == counter)]), round(per.class.kappa[counter], 3), sep = " "))
   }
   
-  if(verbose) print(paste("Overall Kappa", round(kappa, 3), sep = " "))
+  if(verbose) {
+    print(paste("+++ Stats for", layers1, "vs",  layers2,  "+++", sep = " "))
+    print(paste("Overall Kappa", round(kappa, 3), sep = " "))
+  }
   
   stats = list( "Kappa" = kappa, 
                 "individual.Kappas" = per.class.kappa)
+  
+  
+  ##### HERE DO CUSTOM BENCHMARKS
+  if(length(additional) > 0) {
+    
+    for(counter in 1:length(additional)) {
+      stats[[names(additional)[counter]]] <- additional[[counter]](x, layers1, layers2) 
+    }
+    
+  }
   
   return(stats)
   
