@@ -15,12 +15,10 @@ continuousComparison(x, layers1, layers2, additional, verbose = TRUE)
 
 \item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
 
-\item{verbose}{A logical, if TRUE print out all the metric scores
-
-Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for continuous data.}
+\item{verbose}{A logical, if TRUE print out all the metric scores}
 }
 \value{
-A Comparison object
+A named list of metric statistics
 }
 \description{
 Compares two datasets of continuous data. Specifically calculates and returns a Statistics object (which contains many metrics) given numeric two vectors of equal size

@@ -20,7 +20,7 @@ categoricalComparison(x, layers1, layers2, additional, verbose = TRUE)
 Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are for continuous as opposed to categorical data}
 }
 \value{
-A spatial comparison object
+A named list of metric statistics
 }
 \description{
 Calculates a Statistics object (which contains the Cohen's Kappa scores) given data.table of with two layers of categorical data (eg. biomes, land cover classes).

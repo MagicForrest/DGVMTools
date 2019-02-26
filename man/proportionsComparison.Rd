@@ -13,18 +13,16 @@ proportionsComparison(x, layers1, layers2, additional, verbose = TRUE)
 
 \item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
 
-\item{verbose}{A logical, if TRUE print out all the metric scores
-
-Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for relative proportions data.}
+\item{verbose}{A logical, if TRUE print out all the metric scores}
 
 \item{layers1}{A vector of character strings giving the layers from the second dataset to compare (should be columns in x and sum to 1 or 100)}
 }
 \value{
-A spatial comparison object
+A named list of metric statistics
 }
 \description{
 Compares two datasets of relative proportions of multiple classes (sum of classes equals one at each point) where the total for each  data where the totally value for each. 
-Specifically calculates and returns a Statistics object (which contains many metrics) with the relevants slots are Manhattan Metric (MM) and Square Chord Distance (SCD).
+Specifically calculates and returns a list with the Manhattan Metric (MM) and Square Chord Distance (SCD).
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

@@ -57,21 +57,6 @@ calcNashSutcliffe <- function(vector2, vector1) {
 }
 
 
-#' Calculate Coefficient of Determination
-#' 
-#' Calculates Coefficient of Determination between two datasets (represented as two equally sized numeric vectors) 
-#' 
-#' @param vector1 A numeric vector of data
-#' @param vector2 A numeric vector of data (same size as vector2)
-#' 
-#' @details  No check currently done on vector lengths.
-#' 
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-#' @return A numeric
-calcR2 <- function(vector2, vector1) {
-  return( sum( (vector1 - mean(vector1)) * (vector2 - mean(vector2)) )^2 / (sum( (vector1 - mean(vector1))^2 ) * sum( (vector2 - mean(vector2)) ^2)) )
-}
 
 #' Compare continuous data
 #' 
@@ -83,20 +68,18 @@ calcR2 <- function(vector2, vector1) {
 #' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
 #' @param verbose A logical, if TRUE print out all the metric scores
 #' 
-#' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for continuous data.
-#' 
-#' @return A Comparison object
+#' @return A named list of metric statistics
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
- 
+  
   # check the layers are present
   if(!layers1 %in% layers(x)) stop("Argument layers1 is not a column in x")
   if(!layers2 %in% layers(x)) stop("Argument layers2 is not a column in x")
   
   ###  STANDARD PACKAGE BENCHMARKS WHICH CAN RUN SIMPLY ON TWO VECTORS
-   
+  
   # Preamble - extract vectors and remove NAs from both vectors 
   vector1 <- x[[layers1]]
   vector2 <- x[[layers2]]
@@ -107,7 +90,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   # now for vector2
   vector1 <- vector1[!is.na(vector2)]
   vector2 <- vector2[!is.na(vector2)]
-
+  
   difference.vector <- vector1 - vector2
   
   # ME and NME 
@@ -118,45 +101,65 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   MSE <- mean(difference.vector^2, na.rm=TRUE)
   NMSE <- MSE / mean((vector2 - mean(vector2))^2)
   RMSE <- MSE^0.5
-
-  # R2 - coefficient of determination
-  R2 <- calcR2(vector2, vector1)
   
-  # R2eff - model efficiency
-  R2.eff <- calcNashSutcliffe(vector2, vector1)
+  # r2_eff - model efficiency
+  r2_eff <- calcNashSutcliffe(vector2, vector1)
   
-  # Pearson product moment correlation coefficient
-  P.cor <- stats::cor(vector1, vector2, method = "pearson")
+  # Pearson product moment correlation coefficient, and then R^2
+  r <- stats::cor(vector1, vector2, method = "pearson")
+  r2 <- r^2
   
-  if(verbose) {
-    print(paste("+++ Stats for", layers1, "vs",  layers2,  "+++", sep = " "))
-    print(paste("Mean Error (ME) = ", round(ME, 4)))
-    print(paste("Normalised Mean Error (NME) = ", round(NME, 4)))
-    print(paste("Normalised Mean Squared Error (NMSE) = ", round(NMSE, 4)))
-    print(paste("Root Mean Squared Error (RMSE) = ", round(RMSE, 4)))
-    print(paste("Coefficient of Determiantion (R^2) = ", round(R2, 4)))
-    print(paste("Nash-Sutcliffe Model Efficiency (R^2_eff) = ", round(R2.eff, 4)))
-    print(paste("Pearson's PMCC (r) = ", round(P.cor, 4)))
-  }
   
-  stats <- list("R2" = R2, 
-               "R2_eff" = R2.eff,
-               "r" = P.cor,
-               "ME" = ME, 
-               "NME" = NME,
-               "NMSE" = NMSE,
-               "RMSE" = RMSE)
+  stats <- list("ME" = ME, 
+                "NME" = NME,
+                "NMSE" = NMSE,
+                "RMSE" = RMSE,
+                "r2" = r2, 
+                "r2_eff" = r2_eff,
+                "r" = r)
   
   
   ##### HERE DO CUSTOM BENCHMARKS
   if(length(additional) > 0) {
-    
     for(counter in 1:length(additional)) {
-      
       stats[[names(additional)[counter]]] <- additional[[counter]](x, layers1, layers2) 
-      
     }
+  }
+  
+  
+  if(verbose) {
     
+    print(paste("+++ Stats for", paste(layers1, sep = ","), "vs",  paste(layers2, sep = ","),  "+++", sep = " "))
+    for(counter in 1:length(stats)) {
+      
+      stat.val <- stats[[counter]]
+      stat.name <- names(stats)[counter]
+      
+      if(length(stat.val) == 1) {
+        
+        # also give a little more info for the standard metrics (ie their full name) before printing
+        if(stat.name == "ME") stat.name <- "ME (Mean Error)"
+        else if(stat.name == "NME") stat.name <- "NME (Normalised Mean Error)"
+        else if(stat.name == "NMSE") stat.name <- "NMSE (Normalised Mean Square Error)"
+        else if(stat.name == "RMSE") stat.name <- "RMSE (Root Mean Squared Error)"
+        else if(stat.name == "r2_eff") stat.name <- "r2_eff (Nash-Sutcliffe Model Efficiency)"
+        else if(stat.name == "r2") stat.name <- "r2 (Coefficient of Determination)"
+        else if(stat.name == "r") stat.name <- "r (Pearson's PMCC)"
+        print(paste(stat.name,  "=", round(stat.val, 4), sep = " "))
+        
+      }
+      else {
+        
+        # here print each sub value of the metric
+        print(paste0(stat.name, ":"))
+        for(counter2 in 1:length(stat.val)) {
+          sub.stat.val <- stat.val[[counter2]]
+          sub.stat.name <- names(stat.val)[[counter2]]
+          print(paste("  ", sub.stat.name,  "=", round(sub.stat.val, 4), sep = " "))
+        }
+        
+      }
+    }
   }
   
   return(stats)
@@ -166,7 +169,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
 #' Compare relative proportions data
 #' 
 #' Compares two datasets of relative proportions of multiple classes (sum of classes equals one at each point) where the total for each  data where the totally value for each. 
-#' Specifically calculates and returns a Statistics object (which contains many metrics) with the relevants slots are Manhattan Metric (MM) and Square Chord Distance (SCD).
+#' Specifically calculates and returns a list with the Manhattan Metric (MM) and Square Chord Distance (SCD).
 #' 
 #' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
 #' @param layers1 A vector of character strings giving the layers from the first dataset to compare (should be columns in x and sum to 1 or 100)
@@ -174,9 +177,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
 #' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
 #' @param verbose A logical, if TRUE print out all the metric scores
 #' 
-#' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for relative proportions data.
-#' 
-#' @return A spatial comparison object
+#' @return A named list of metric statistics
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
@@ -191,7 +192,7 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
   
   # check the incoming data.tables are the same size
   if(ncol(dt1) != ncol(dt2)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of components")
- 
+  
   # check the incoming data.tables are the same size
   if(nrow(dt1) != nrow(dt2)) stop("Trying to compare proportions (Manhattan Metric and Square Chord Distance) with different number of rows")
   
@@ -202,12 +203,12 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
     dt1 <- dt1/100
     dt2 <- dt2/100
   }
-
+  
   # calculate Manhattan Metric and Squared Chord Distance
   MM <- 0
   SCD <- 0
   for(layer.index in 1:ncol(dt1)){
-
+    
     
     # for Manhattan Metric
     difference.vector <- abs(dt1[[layer.index]] - dt2[[layer.index]])
@@ -222,27 +223,49 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
   MM <- MM/nrow(dt1)
   SCD <- SCD/nrow(dt1)
   
-  if(verbose) {
-    print(paste("+++ Stats for", paste(layers1, sep = ","), "vs",  paste(layers2, sep = ","),  "+++", sep = " "))
-    print(paste("Manhattan Metric (MM) = ", round(MM, 4)))
-    print(paste("Squared Chord Distance (NME) = ", round(SCD, 4)))
-  }
   
   stats <- list("MM" = MM, 
-               "SCD" = SCD
+                "SCD" = SCD
   )
-  
   
   ##### HERE DO CUSTOM BENCHMARKS
   if(length(additional) > 0) {
-    
     for(counter in 1:length(additional)) {
-      
       stats[[names(additional)[counter]]] <- additional[[counter]](x, layers1, layers2) 
-      
     }
-    
   }
+  
+ 
+  if(verbose) {
+    
+    print(paste("+++ Stats for", paste(layers1, sep = ","), "vs",  paste(layers2, sep = ","),  "+++", sep = " "))
+    for(counter in 1:length(stats)) {
+      
+      stat.val <- stats[[counter]]
+      stat.name <- names(stats)[counter]
+      
+      if(length(stat.val) == 1) {
+        
+        # also give a little more info for the standard metrics (ie their full name) before printing
+        if(stat.name == "MM") stat.name <- "MM (Manhattan Metric)"
+        else if(stat.name == "SCD") stat.name <- "SCD (Square Chord Distance)"
+        print(paste(stat.name,  "=", round(stat.val, 4), sep = " "))
+        
+      }
+      else {
+        
+        # here print each sub value of the metric
+        print(paste0(stat.name, ":"))
+        for(counter2 in 1:length(stat.val)) {
+          sub.stat.val <- stat.val[[counter2]]
+          sub.stat.name <- names(stat.val)[[counter2]]
+          print(paste("  ", sub.stat.name,  "=", round(sub.stat.val, 4), sep = " "))
+        }
+        
+      }
+    }
+  }
+  
   
   return(stats)
   
@@ -260,7 +283,7 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
 #' 
 #' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are for continuous as opposed to categorical data
 #' 
-#' @return A spatial comparison object
+#' @return A named list of metric statistics
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
@@ -362,26 +385,49 @@ categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE
     #per.class.kappa <- append(per.class.kappa, (a - p1*p2)/( (p1+p2)/2.0 -p1*p2))
     per.class.kappa[[names(labels[which(labels == counter)])]] <- (a - p1*p2)/( (p1+p2)/2.0 -p1*p2)
     
-    if(verbose) print(paste(names(labels[which(labels == counter)]), round(per.class.kappa[counter], 3), sep = " "))
-  }
-  
-  if(verbose) {
-    print(paste("+++ Stats for", layers1, "vs",  layers2,  "+++", sep = " "))
-    print(paste("Overall Kappa", round(kappa, 3), sep = " "))
   }
   
   stats = list( "Kappa" = kappa, 
-                "individual.Kappas" = per.class.kappa)
+                "Individual Kappas" = per.class.kappa)
   
   
   ##### HERE DO CUSTOM BENCHMARKS
   if(length(additional) > 0) {
-    
     for(counter in 1:length(additional)) {
       stats[[names(additional)[counter]]] <- additional[[counter]](x, layers1, layers2) 
     }
-    
   }
+  
+  
+  if(verbose) {
+    
+    print(paste("+++ Stats for", paste(layers1, sep = ","), "vs",  paste(layers2, sep = ","),  "+++", sep = " "))
+    for(counter in 1:length(stats)) {
+      
+      stat.val <- stats[[counter]]
+      stat.name <- names(stats)[counter]
+      
+      if(length(stat.val) == 1) {
+       
+        # also give a little more info for the standard metrics (ie their full name) before printing
+        if(stat.name == "Kappa") stat.name <- "Kappa (Overall Cohen's Kappa)"
+        print(paste(stat.name,  "=", round(stat.val, 4), sep = " "))
+        
+      }
+      else {
+        
+        # here print each sub value of the metric
+        print(paste0(stat.name, ":"))
+        for(counter2 in 1:length(stat.val)) {
+          sub.stat.val <- stat.val[[counter2]]
+          sub.stat.name <- names(stat.val)[[counter2]]
+          print(paste("  ", sub.stat.name,  "=", round(sub.stat.val, 4), sep = " "))
+        }
+        
+      }
+    }
+  }
+  
   
   return(stats)
   
