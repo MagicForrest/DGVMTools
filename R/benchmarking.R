@@ -26,34 +26,34 @@ lm_eqn <- function(linear.model) {
 #' 
 #' Calculates NME between two datasets (represented as two equally sized numeric vectors) 
 #' 
-#' @param vector1 A numeric vector of data
-#' @param vector2 A numeric vector of data (same size as vector2)
+#' @param obs A numeric vector of observed values
+#' @param mod A numeric vector of modelled values (same size as obs)
 #' 
 #' @details  No check currently done on vector lengths
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @return A numeric
-calcNME <- function(vector2, vector1) {
-  return( sum(abs(vector2 - vector1), na.rm=TRUE) / sum(abs(vector2 - mean(vector2)), na.rm=TRUE)) 
+calcNME <- function(mod, obs) {
+  
+   return( sum(abs(mod - obs), na.rm=TRUE) / sum(abs(obs - mean(obs)), na.rm=TRUE)) 
 }
 
 
-#' Calculate Nash-Sutcliff Model Efficiency
+#' Calculate Normalised Mean Square Error
 #' 
-#' Calculates Nash-Sutcliff Model Efficiency between two datasets (represented as two equally sized numeric vectors) 
+#' Calculates NMSE between two datasets (represented as two equally sized numeric vectors) 
 #' 
-#' @param vector1 A numeric vector of data
-#' @param vector2 A numeric vector of data (same size as vector2)
+#' @param mod A numeric vector of observed values
+#' @param obs A numeric vector of modelled values (same size as mod)
 #' 
-#' @details  No check currently done on vector lengths. See:
-#' Nash, J. E. and J. V. Sutcliffe (1970), River flow forecasting through conceptual models part I - A discussion of principles, Jounral of Hydrology, 10 (3), 282-290.
+#' @details  No check currently done on vector lengths
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @return A numeric
-calcNashSutcliffe <- function(vector2, vector1) {
-  return( 1 -  (sum((vector2 - vector1)^2, na.rm=TRUE) / length(vector2)) / stats::var(vector2) )
+calcNMSE <- function(mod, obs) {
+  return( sum((mod - obs)^2, na.rm=TRUE) / sum((obs - mean(obs))^2, na.rm=TRUE)) 
 }
 
 
@@ -63,8 +63,8 @@ calcNashSutcliffe <- function(vector2, vector1) {
 #' Compares two datasets of continuous data. Specifically calculates and returns a Statistics object (which contains many metrics) given numeric two vectors of equal size 
 #' 
 #' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
-#' @param layers1 A character string giving the first layer to compare (should be a column in x)
-#' @param layers2 A character string giving the second layer to compare (should be a column in x)
+#' @param layers1 A character string giving the first layer to compare (should be a column in x).  For the normalised metrics, this is the *modelled* values.
+#' @param layers2 A character string giving the second layer to compare (should be a column in x).  For the normalised metrics, this is the *observed* values.
 #' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
 #' @param verbose A logical, if TRUE print out all the metric scores
 #' 
@@ -91,32 +91,64 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   vector1 <- vector1[!is.na(vector2)]
   vector2 <- vector2[!is.na(vector2)]
   
-  difference.vector <- vector1 - vector2
   
-  # ME and NME 
-  ME <- mean(abs(vector2 - vector1))
-  NME <- calcNME(vector2, vector1)
+  #### KELLEY ET AL 2013 METRICS
   
-  # MSE, RMSE, NMSE
-  MSE <- mean(difference.vector^2, na.rm=TRUE)
-  NMSE <- MSE / mean((vector2 - mean(vector2))^2)
+  # Unnormalised metrics:  ME, MSE and RSME
+  ME <- mean(abs(vector1 - vector2))
+  MSE <- mean((vector1 - vector2)^2, na.rm=TRUE)
   RMSE <- MSE^0.5
   
-  # r2_eff - model efficiency
-  r2_eff <- calcNashSutcliffe(vector2, vector1)
+  # Normalised metrics: NME and NMSE (step 1)
+  NME <- calcNME(mod = vector1, obs = vector2)
+  NMSE <- calcNMSE(mod = vector1, obs = vector2)
+  
+  # and step 2 for NME and NMSE
+  vector1_step2 <- vector1 - mean(vector1)
+  vector2_step2 <- vector2 - mean(vector2)
+  NME_2 <- calcNME(mod = vector1_step2, obs = vector2_step2)
+  NMSE_2 <- calcNMSE(mod = vector1_step2, obs = vector2_step2)
+  
+  # and step 3 for NME and NMSE
+  vector1_step3_NME <- vector1_step2 / sum(abs(vector1_step2 - mean(vector1_step2)))/ length(vector1_step2)
+  vector2_step3_NME <- vector2_step2 / sum(abs(vector2_step2 - mean(vector2_step2)))/ length(vector2_step2)
+  NME_3 <- calcNME(mod = vector1_step3_NME, obs = vector2_step3_NME)
+  
+  vector1_step3_NMSE <- vector1_step2 / stats::var(vector1_step2)
+  vector2_step3_NMSE <- vector2_step2 / stats::var(vector2_step2)
+  NMSE_3 <- calcNMSE(mod = vector1_step3_NMSE, obs = vector2_step3_NMSE)
+  
+  
+  #### MORE 'STANDARD' METRICS MORE BASED ON LINEAR REGRESSION AND NOT FOCUSSED ON MODEL-OBSERVATION COMPARISON
+  
+  # r2_eff - Nash-Sutcliffe model efficiency (actually is focussed on model-obs comaprisons)
+  r2_eff <- 1 - NMSE
   
   # Pearson product moment correlation coefficient, and then R^2
+  # MF: not the best thing in my opinion
   r <- stats::cor(vector1, vector2, method = "pearson")
   r2 <- r^2
   
+  # calculate a simple linear regression 
+  simple.regression <- stats::lm(formula = mod ~ obs, data = data.frame("mod" = vector1, "obs" = vector2))
+  c <- stats::coef(simple.regression)[1]
+  m <- stats::coef(simple.regression)[2]
+ 
   
   stats <- list("ME" = ME, 
                 "NME" = NME,
                 "NMSE" = NMSE,
                 "RMSE" = RMSE,
-                "r2" = r2, 
+                "NME_2" = NME_2,
+                "NMSE_2" = NMSE_2,
+                "NME_3" = NME_3,
+                "NMSE_3" = NMSE_3,
                 "r2_eff" = r2_eff,
-                "r" = r)
+                "r" = r,
+                "r2" = r2, 
+                "m" = m,
+                "c" = c
+                )
   
   
   ##### HERE DO CUSTOM BENCHMARKS
@@ -142,9 +174,15 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
         else if(stat.name == "NME") stat.name <- "NME (Normalised Mean Error)"
         else if(stat.name == "NMSE") stat.name <- "NMSE (Normalised Mean Square Error)"
         else if(stat.name == "RMSE") stat.name <- "RMSE (Root Mean Squared Error)"
+        else if(stat.name == "NME_2") stat.name <- "NME_2 (NME with mean removed)"
+        else if(stat.name == "NMSE_2") stat.name <- "NMSE_2 (NMSE with mean removed)"
+        else if(stat.name == "NME_3") stat.name <- "NME_3 (NME with mean and variance removed)"
+        else if(stat.name == "NMSE_3") stat.name <- "NMSE_3 (NMSE with mean and variance removed)"
         else if(stat.name == "r2_eff") stat.name <- "r2_eff (Nash-Sutcliffe Model Efficiency)"
         else if(stat.name == "r2") stat.name <- "r2 (Coefficient of Determination)"
         else if(stat.name == "r") stat.name <- "r (Pearson's PMCC)"
+        else if(stat.name == "m") stat.name <- "m (gradient of linear fit mod = m * obs + c)"
+        else if(stat.name == "c") stat.name <- "c (intercept of linear fit mod = m * obs + c)"
         print(paste(stat.name,  "=", round(stat.val, 4), sep = " "))
         
       }

@@ -7,7 +7,7 @@
 availableQuantities_aDGVM(source, names, id, adgvm.scheme)
 }
 \arguments{
-\item{source}{A path to a directory on the file system containing some .out files}
+\item{source}{A Source object defining the aDGVM model run}
 
 \item{id}{An id of the model run}
 

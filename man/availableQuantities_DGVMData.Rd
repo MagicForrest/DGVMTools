@@ -4,10 +4,12 @@
 \alias{availableQuantities_DGVMData}
 \title{List all LPJ-GUESS *.out files in a source directory}
 \usage{
-availableQuantities_DGVMData(source)
+availableQuantities_DGVMData(source, names)
 }
 \arguments{
-\item{source}{A path to a directory on the file system containing some .out files}
+\item{source}{A \code{Source} containing the meta-data about the DGVMData source}
+
+\item{names}{A boolean, if TRUE return a character vector of names of available quantities, if FALSE return a list of the actual Quantities.}
 }
 \value{
 A list of all the .out files present, with the ".out" removed.

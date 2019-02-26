@@ -10,7 +10,7 @@
 #' 
 #' An internal function that reads data from an DGVMData .nc file.  
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param source A \code{Source} containing the meta-data about the DGVMData source
 #' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param last.year The last year (as a numeric) of the data to be returned
@@ -367,19 +367,21 @@ getField_DGVMData <- function(source,
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
-#' @param source A path to a directory on the file system containing some .out files
+#' @param source A \code{Source} containing the meta-data about the DGVMData source
+#' @param names A boolean, if TRUE return a character vector of names of available quantities, if FALSE return a list of the actual Quantities.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-availableQuantities_DGVMData <- function(source){
+availableQuantities_DGVMData <- function(source, names){
   
   # First get the list of *.out files present
   files.present <- list.files(source@dir, "*.nc")
   
-  quantities.present <- list()
+  if(!names) quantities.present <- list()
+  else quantities.present <- c()
   for(file in files.present) {
     
     # check if file contains paste(".", source@id, ".nc")
@@ -389,7 +391,6 @@ availableQuantities_DGVMData <- function(source){
     
     
   }
-  
   
   return(quantities.present)
   

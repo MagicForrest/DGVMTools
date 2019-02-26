@@ -680,9 +680,9 @@ getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta)
   
 }
 
-#' Detemine PFTs present in an aDGVM2; currently only returns a warning.
+#' Determine PFTs present in an aDGVM2; currently only returns a warning.
 #' 
-#' @param x  A Source objects describing a DGVMData source
+#' @param x  A Source objects describing an aDGVMData run
 #' @param variables Some variable to look for to detremine the PFTs present in the run.  Not the function automatically searches:
 #'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.  Currently ignored.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -721,7 +721,7 @@ determinePFTs_aDGVM <- function(x) {
 #'
 #' Simply lists all quantitied aDGVM  output variables 
 #' 
-#' @param source A path to a directory on the file system containing some .out files
+#' @param source A Source object defining the aDGVM model run
 #' @param id An id of the model run
 #' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
 #' @return A list of all the .out files present, with the ".out" removed. 
@@ -731,8 +731,11 @@ determinePFTs_aDGVM <- function(x) {
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
+  
+  run.dir <- source@dir
+  
   if ( adgvm.scheme==1 ) {
-    fname <- file.path(source, paste("pop_", id,".nc", sep=""))
+    fname <- file.path(run.dir, paste("pop_", id,".nc", sep=""))
     message(paste("Check quantities in adgvm.scheme=1,", fname, "\n"))
     d <- ncdf4::nc_open(fname)
     quantities.ncfile <- names(d[['var']])
@@ -754,7 +757,7 @@ availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
     #print( quantities.present )
   }
   else if (adgvm.scheme==2) {
-    fname <- file.path(source, paste("trait_", id,".nc", sep=""))
+    fname <- file.path(run.dir, paste("trait_", id,".nc", sep=""))
     message(paste("Check quantities in adgvm.scheme=2,", fname, "\n"))
     d <- ncdf4::nc_open(fname)
     quantities.ncfile <- names(d[['var']])

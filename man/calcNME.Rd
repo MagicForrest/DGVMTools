@@ -4,12 +4,12 @@
 \alias{calcNME}
 \title{Calculate Normalised Mean Error}
 \usage{
-calcNME(vector2, vector1)
+calcNME(mod, obs)
 }
 \arguments{
-\item{vector2}{A numeric vector of data (same size as vector2)}
+\item{mod}{A numeric vector of modelled values (same size as obs)}
 
-\item{vector1}{A numeric vector of data}
+\item{obs}{A numeric vector of observed values}
 }
 \value{
 A numeric

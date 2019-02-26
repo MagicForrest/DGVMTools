@@ -11,6 +11,6 @@
 
 availableQuantities <- function(source, names = TRUE, ...) {
   
-    return(source@format@availableQuantities(source@dir, names = names, ...))
+    return(source@format@availableQuantities(source, names = names, ...))
   
 }

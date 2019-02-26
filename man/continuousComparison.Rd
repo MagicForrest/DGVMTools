@@ -9,9 +9,9 @@ continuousComparison(x, layers1, layers2, additional, verbose = TRUE)
 \arguments{
 \item{x}{A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared}
 
-\item{layers1}{A character string giving the first layer to compare (should be a column in x)}
+\item{layers1}{A character string giving the first layer to compare (should be a column in x).  For the normalised metrics, this is the *modelled* values.}
 
-\item{layers2}{A character string giving the second layer to compare (should be a column in x)}
+\item{layers2}{A character string giving the second layer to compare (should be a column in x).  For the normalised metrics, this is the *observed* values.}
 
 \item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
 

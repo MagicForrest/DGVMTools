@@ -31,7 +31,7 @@ DGVMData.SaatchiBiomass.test.Source <- defineSource(id = "Saatchi2011",
                                              format = DGVMData,
                                              name = "Saatchi et al. 2011 Vegetation Carbon")
 
-# test Source and Field
+# test Source
 test_that("Sources",{
   
   expect_is(GUESS.Europe.test.Source, "Source")
@@ -53,6 +53,21 @@ test_that("Quantity",{
 
   expect_is(vegC_std.Quantity , "Quantity")
   expect_is(LAI_FireMIP.Quantity  , "Quantity")
+  
+  expect_is(availableQuantities(GUESS.Europe.test.Source, names = TRUE), "character")
+  expect_is(availableQuantities(GUESS.Europe.test.Source, names = FALSE), "list")
+  
+  expect_is(availableQuantities(GUESS.Africa.test.Source, names = TRUE), "character")
+  expect_is(availableQuantities(GUESS.Africa.test.Source, names = FALSE), "list")
+  
+  expect_is(availableQuantities(DGVMData.SaatchiBiomass.test.Source, names = TRUE), "character")
+  expect_is(availableQuantities(DGVMData.SaatchiBiomass.test.Source, names = FALSE), "list")
+  
+  expect_is(availableQuantities(DGVMData.PNVBiomes.test.Source, names = TRUE), "character")
+  expect_is(availableQuantities(DGVMData.PNVBiomes.test.Source, names = FALSE), "list")
+  
+  
+  
   
 })
 

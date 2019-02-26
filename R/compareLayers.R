@@ -5,10 +5,10 @@
 #' Compare two layers (each from a Field or DataObject) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object. 
 #'
 #' 
-#' @param field1 A Field or DataObject from which to get the first layer for comparison
-#' @param field2 A Field or DataObject from which to get the second layer for comparison
-#' @param layers1 The name of the first layer (character string)
-#' @param layers2 The name of the first layer (character string).  If not defined taken to the be the same as layers1
+#' @param field1 A Field or DataObject from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.
+#' @param field2 A Field or DataObject from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.
+#' @param layers1 The name of the layers to be compared from field1 (character string)
+#' @param layers2 The name of the layers to be compared from field2 (character string).  If not defined taken to the be the same as layers1
 #' @param keepall1 Boolean, keep all data points in layers1 even if there is not corresponding data in layers2 
 #' @param keepall2 Boolean, keep all data points in layers2 even if there is not corresponding data in layers2 
 #' @param override.quantity Boolean, if TRUE ignore situation where field1 and field2 have non-identical Quantities and use the Quantity from field1 for the returned Comparison

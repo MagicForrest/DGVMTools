@@ -10,13 +10,13 @@ compareLayers(field1, field2, layers1, layers2 = layers1,
   custom.metrics = list(), dec.places = NULL)
 }
 \arguments{
-\item{field1}{A Field or DataObject from which to get the first layer for comparison}
+\item{field1}{A Field or DataObject from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.}
 
-\item{field2}{A Field or DataObject from which to get the second layer for comparison}
+\item{field2}{A Field or DataObject from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.}
 
-\item{layers1}{The name of the first layer (character string)}
+\item{layers1}{The name of the layers to be compared from field1 (character string)}
 
-\item{layers2}{The name of the first layer (character string).  If not defined taken to the be the same as layers1}
+\item{layers2}{The name of the layers to be compared from field2 (character string).  If not defined taken to the be the same as layers1}
 
 \item{keepall1}{Boolean, keep all data points in layers1 even if there is not corresponding data in layers2}
 
