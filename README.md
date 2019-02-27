@@ -17,11 +17,39 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 * Export data as R rasters or data.frames, also save data to disk in portable format with convenient netCDF writing functionality.
 * Thorough tracking of metadata.
 
-==== 
+--- 
 
-### News
+### News and Releases
 
-**2018-10-29** - Release v0.6.2 Removed dependmcy om external gzip on windows machines for better portability.
+**2019-02-27** - Release v0.7.0 Changes are mostly bug fixes and behind the scenes improvements. However there have been a couple of user-facing changes which could break stuff (hence the minor version number increment from 0.6 to 0.7):
+
+Potential breaks:
+
+* Statistics class has been removed in favour of a simpler and more flexible list
+* determineQuantities() and determinePFTs() are not availableQuantities() and availablePFTs()
+* The 'sources' argument in plotSpatial() is not more accurately called 'fields'
+
+Feature improvements:
+
+* Shapefiles can be now used to select gridcells by using them as an an argument to selectGridcells(), this can also be done in getField() which allows lower memory footprint when selecting regions from large files.    
+* aDGVM support improved (thanks Simon!)
+* New benchmarking metrics included, also enhanced flexibility allowing custem metrics
+* plotSpatial() can call geom_tile() instead of geom_raster() which allows reprojections (ie polar views)
+
+Bug fixes:
+
+* Many! (see commits, but none of them resulted in wrong results, but rather failing code)
+    
+Behind the scenes:     
+
+* Unit tests!
+* Plotting code refactorised for constistency and efficient re-use within the package.
+* Benchmarking code re-worked
+* Day/Month/Year are now generally stored as integers (not numerics) to save a little memory
+    
+Also, from now on the master branch will be consider stable and usable.  Bug fixes and small feature improvements will be pulled directly into master.  For developers, there will be a dev-v0.8 branch to collect larger features and potentially breaking changes.
+
+**2018-10-29** - Release v0.6.2 Removed dependncy on external gzip on windows machines for better portability.
 
 **2018-10-26** - Release v0.6.1 featuring aggregation and time series plotting of daily data, use of gzip for compressed DGVMData (also on windows systems), extended vignette and bug fixes.
 
@@ -31,19 +59,29 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 
 **2018-10-01** - DGVMTools is now publicly available!  Whilst package is pretty much fully featured, there may be bugs, so it should be considered in the late-beta phase.  New v0.6 release to come this month.
 
-====
+---
 
 ### Installation
 
 First release for CRAN is in preparation.
 
-To install the latest development version, first install **[devtools](https://cran.r-project.org/package=devtools)** and subsequently run
+We now recommend that you use the current master branch, small bug fixes and small non-breaking feature improvements will be pulled directly into master. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package is currently undergoing reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
+
+If you have devtools version 1.x.y (ie < 2.0.0) then run:
 
 ```S
-devtools::install_github("MagicForrest/DGVMTools", ref = "dev", dependencies = TRUE, build_vignettes = TRUE)
+devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_vignettes = TRUE)
 ```
 
-====
+If you have devtools >= 2.0.0 then run:
+
+```S
+devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_opts = c("--no-resave-data", "--no-manual"), force=T)
+```
+
+(thanks to Peter Anthoni for reporting)
+
+---
 
 ### Contact
 
