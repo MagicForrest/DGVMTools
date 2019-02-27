@@ -26,8 +26,8 @@ See \code{\link{aggregateYears}}}
 
 \item{spatial.extent.id}{A character string to give an identifier for the spatial extent this ModelField covers.}
 
-\item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
-"weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+\item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
+"weighted.sum"/"w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 See \code{\link{aggregateSpatial}}}
 
 \item{subannual.resolution}{A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".}
@@ -48,7 +48,11 @@ If specified the following 9 arguments are ignored (with a warning)}
 
 \item{verbose}{If TRUE give a lot of information for debugging/checking.}
 
-\item{...}{Other arguments that are passed to the getField function for the specific Format.  Currently this is only 'adgvm.scheme' (for the aDGVM Format) which can be 1 or 2.}
+\item{...}{Other arguments that are passed to the getField function for the specific Format or for selecting space/time/years.  Currently this can be
+\itemize{
+ \item{adgvm.scheme}  For the aDGVM Format, defines the aDGVM PFT scheme which can be 1 or 2.
+ \item{cover.fraction}  Optional when selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, should be between 0 and 1.
+}}
 }
 \value{
 A \code{Field}.

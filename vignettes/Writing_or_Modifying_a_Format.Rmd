@@ -3,8 +3,7 @@ title: "Writing or Modifying a Format"
 author: "Matthew Forrest"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
-#output: 
-#  pdf_document: default
+#output:   pdf_document
 vignette: >
   %\VignetteIndexEntry{Writing or Modifying a Format}
   %\VignetteEngine{knitr::rmarkdown}
@@ -191,10 +190,10 @@ for(quant in quantities_NewFormat ) {
 This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of PFTs present. The first argument should be `Source` object called `x` (see main documentation), and it can have additional arguments that might be needed
 
 ```{r determine PFTs, echo=TRUE}
-determinePFTs_NewFormat <- function(directory, names = TRUE){
+determinePFTs_NewFormat <- function(x, names = TRUE){
   
   # typical stuff 
-  run.directory <- x@dir
+  run.dir <- x@dir
   
   # all possible PFTs present 
   PFTs.possible <- x@pft.set
@@ -236,37 +235,63 @@ availableQuantities_NewFormat <- function(x, additional.args){
 
 ### 6. The `getField` slot
 
-This is the biggie!  This function (which will be long, but can of course make use of other functions) is responsible for reading data from disk and bashing it into a data.table; and for r.  As arguments it takes:
+This is the biggie!  This function (which will be long, but can of course make use of other functions) is responsible for reading data from disk and bashing it into a data.table; for some cropping to the required spatial-temporal-annual extent (optionally) and for storing the spatial-temporal-annual extent in an STAInfo object.  As arguments it takes:
 
 * a DGVMTools::Source (source)object from which the data is to be read
 * a DGVMTools::Quantity (quant) object specifying what vairbale is be returned
 * a DGVMTools::STAInfo (sta.info) object specifying the spatial-temporal-annual dimensions of the field 
 * a logical (verbose), if TRUE then function should give more output
-* ... other flexible arguments which can be 
+* ... other flexible arguments that might be needed.
 
-It should return a two-element list comprising:
+It should return a DGVMTools::Field object.  For more details of the Field class see the classes.R file and the main package documentatation ("Field-class)".
 
-* "dt" : a data.table containign the data, properly formatted
-* "sta.info" : an STAInfo describing the spatial-temporal-annual dimensions of the data being returned as the "dt"
-
-Note that the input and output "sta.info" don't need to match, the rest of the the cropping/aggregating is done automatically by the package, but it maybe more efficient to read only a subset of the data (eg. for netCDF files), rather than read the whole files and then crop it. 
+Note that the input "sta.info" argument and the sta.info slot of the returned Field don't need to match, the rest of the the cropping/aggregating is done automatically by the package, but it maybe more efficient to read only a subset of the data from disk (eg. for netCDF files where you can easily cut out exactly the 'hyperslab' of data that you need), rather than read the whole file and then crop it. 
 
 
 ```{r get Field, echo=TRUE}
 getField_NewFormat <- function(source, quant, sta.info, verbose, ...){ 
   
-  # code needs to get the data as a data.table
+  # open the file and read the data with ncvar_get() or read.table() or whatever
+  
+  # code needs to get the data as a data.table so reformat it
+  # data.tables should be melted down to one column for Lat, Lon, Year, Month and Day (as appropriate).
+  # days run from 1-365, and if data is daily no Month column should be used
+  
+  # dummy code
   dt <- data.table()
+ 
   
   # also an STAInfo object
-  return.sta.info <- new("STAInfo")
+  # define this properly based on the actual data in the data.table
+  return.sta.info <- new("STAInfo",
+                         first.year = 1901, # let's say
+                         last.year = 2018, # let's say
+                         year.aggregate.method = "none", # see NOTE 1 below
+                         spatial.extent = extent(dt), # raster::extent function has been define for data.tables, might be useful
+                         spatial.extent.id = character(0), # see NOTE 2 below
+                         spatial.aggregate.method = "none", # see NOTE 1 below
+                         subannual.resolution = "monthly", # let's say
+                         subannual.aggregate.method = "none", # see NOTE 1 below
+                         subannual.original = "monthly" # let's say
+                         )
+  
+   # NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)
+   # NOTE 2: if no spatial cropping at this stage set this to be the empty character string "character(0)", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
+  
+  
+  # make the Field ID based on the STAInfo and 
+  field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
     
-  # dummy code
-  return.list <- list()
-  return.list[["dt"]] <- dt
-  return.list[["sta.info"]] <- return.sta.info
+  # build a new Field
+  return.Field <- new("Field",
+                      id = field.id,
+                      quant = quant,
+                      data = dt,
+                      sta.info = return.sta.info,
+                      source = source)
+
    
-  return(return.list)
+  return(return.field)
   
 } 
 ```

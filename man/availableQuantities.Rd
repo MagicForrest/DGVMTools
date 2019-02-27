@@ -4,12 +4,14 @@
 \alias{availableQuantities}
 \title{List available quantities}
 \usage{
-availableQuantities(source, names = TRUE)
+availableQuantities(source, names = TRUE, ...)
 }
 \arguments{
 \item{source}{The DGVMTools::Source object for which the avaiable variables are to be determined.}
 
 \item{names}{Logical, if TRUE (default) return the ids of the DGVMTools::Quantity objects, otherwise return the Quantity objects themselves.}
+
+\item{...}{Other arguments that are passed to the getField function for the specific Format.Currently this is only 'adgvm.scheme' (for the aDGVM Format) which can be 1 or 2.}
 }
 \value{
 A list of the available Quantites.

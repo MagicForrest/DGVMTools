@@ -306,7 +306,7 @@ Hickler2012Rules <- function(x){
   
   ###### REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
+    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
     print(x)
     return(as.numeric(NA))
   }
@@ -456,7 +456,7 @@ Forrest2015MegaBiomeRules <- function(x){
   
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['LAI_std_Lat']]), ")" ))
+    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
     return(NA)
   }
   
@@ -587,7 +587,7 @@ MeditBiomeRules <- function(x){
   else if(as.numeric(x[['LAI_std_Woody']]) > 1 && (x[['LAI_std_MaxWoody']] == "TeBE" || x[['LAI_std_MaxWoody']] == "MeES" || x[['LAI_std_MaxWoody']] == "MeRS")) {return("Mediterranean Sclerophyllous Woodlands/Forest")} # 1.5
   # BIOME 7 - Remainder, Unclassified
   else {
-    #print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['LAI_std_Lat']]), ")" ))
+    #print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
     #print(x)
     return("Unclassifiable/Other")
   }
@@ -713,7 +713,7 @@ MegaBiomeRules_dev <- function(x){
   
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(x[['LAI_std_Lon']]), ",", as.numeric(x[['LAI_std_Lat']]), ")" ))
+    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
     return(NA)
   }
   

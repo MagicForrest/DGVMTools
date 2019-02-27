@@ -13,7 +13,7 @@
 #' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
 #'
-#' @param sources The data to plot. Can be a Field, a DataObject, or a list of including both
+#' @param fields The data to plot. Can be a Field, a DataObject, or a list of including both
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
@@ -41,10 +41,14 @@
 #' Default is TRUE.  Ignored if 'cuts' argument is not used.
 #' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
 #' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
+#' @param grid.switch Boolean, if TRUE reverse the default panel layout of plots, such plots arranged horizontally are arranged vertically and vice-versa.  Ignored 
+#' if the 'grid' option is FALSE. 
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
 #' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
+#' @param tile Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
+#' for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
 #' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
@@ -60,7 +64,7 @@
 #' @export 
 #' @seealso \code{plotTemporal}
 #' 
-plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
+plotSpatial <- function(fields, # can be a Field or a list of Fields
                         layers = NULL,
                         title = character(0),
                         subtitle = character(0),
@@ -82,8 +86,10 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
                         drop.cuts = TRUE,
                         map.overlay = NULL,
                         grid = FALSE,
+                        grid.switch = FALSE,
                         plot = TRUE,
-                        interior.lines = TRUE){
+                        interior.lines = TRUE,
+                        tile = FALSE){
   
   J = Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = NULL
@@ -94,130 +100,34 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   drop.from.scale <- waiver() # only set to FALSE when discretising a scale 
   
   
-  ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
+  ### SANITISE FIELDS, LAYERS AND STINFO
   
-  ### 1. SOURCES - check the sources
-  if(is.Field(sources)) {
-    sources <- list(sources)
-  }
-  else if(class(sources)[1] == "list") {
-    for(object in sources){ 
-      if(!is.Field(object)) {
-        warning("You have passed me a list of items to plot but the items are not exclusively Fields.  Returning NULL")
-        return(NULL)
-      }
-    }
-  }
-  else{
-    stop(paste("plotSpatial can only handle single a DataObject or Field, or a list of Data/Fields can't plot an object of type", class(sources)[1], sep = " "))
-  }
+  ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
+  
+  fields <- santiseFieldsForPlotting(fields)
+  if(is.null(fields)) return(NULL)
   
   ### 2. LAYERS - check the number of layers
   
-  layers.superset <- c()
-  num.layers.x.sources <- 0
-  
-  # if no layers argument supplied make a list of all layers present (in any object)
-  if(is.null(layers) || missing(layers)){
-    
-    for(object in sources){
-      temp.layers <- names(object)
-      num.layers.x.sources <- num.layers.x.sources + length(temp.layers)
-      layers.superset <- append(layers.superset, temp.layers)
-    } 
-    layers <- unique(layers.superset)
-    
-  }
-  
-  # else if layers have been specified check that we have some of the requested layers present
-  else{
-    
-    for(object in sources){
-      
-      layers.present <- intersect(names(object), layers)
-      num.layers.x.sources <- num.layers.x.sources + length(layers.present)
-      
-      if(length(layers.present) == 0) {warning("Some Data/Fields to plot don't have all the layers that were requested to plot")}
-      layers.superset <- append(layers.superset, layers.present)
-      
-    } 
-    
-    # Return empty plot if not layers found
-    if(num.layers.x.sources == 0){
-      warning("None of the specified layers found in the objects provided to plot.  Returning NULL.")
-      return(NULL)
-    }
-    
-    # Also check for missing layers and given a warning
-    missing.layers <- layers[!(layers %in% unique(layers.superset))]
-    if(length(missing.layers) != 0) { warning(paste("The following layers were requested to plot but not present in any of the supplied objects:", paste(missing.layers, collapse = " "), sep = " ")) }
-    
-    # finally make a unique list of layers to be carried in to the actual plotting
-    layers <- unique(layers.superset)
-    
-  }
+  layers <- santiseLayersForPlotting(fields, layers)
+  if(is.null(layers)) return(NULL)
   
   
-  ### 3. SPATIOTEMPORAL - check the dimensions etc.
+  ### 3. DIMENSIONS - check the dimensions (require that all fields the same dimensions and that they include 'Lon' and 'Lat' )
   
-  ### Check if all the sources have the same ST dimensions and that Lon and Lat are present.  If not, warn and return NULL
-  stinfo.names <- getDimInfo(sources[[1]], info = "names")
-  
-  # check Lon and Lat present
-  if(!"Lon" %in% stinfo.names || !"Lat" %in% stinfo.names) {
-    warning("Lon (longitude) and/or Lat (latitude) missing from a Model/DataObject for which a map is tried to be plotted.  Obviously this won't work, returning NULL.")
-    return(NULL)
-  }
-  
-  # check all the same dimensions
-  if(length(sources) > 1)
-    for(counter in 2:length(sources)){
-      if(!identical(stinfo.names, getDimInfo(sources[[counter]], info = "names"))) {
-        warning(paste0("Trying to plot two Fields with different Spatial-Temporal dimensions.  One has \"", paste(stinfo.names, collapse = ","), "\" and the other has \"",  paste(getDimInfo(sources[[counter]], info = "names"), collapse = ","), "\".  So not plotting and returning NULL."))
-        return(NULL)
-      }
-    }
+  dim.names <- santiseDimensionsForPlotting(fields, require = c("Lon", "Lat"))
+  if(is.null(dim.names)) return(NULL)
   
   
-  ###  Build lists of what to plot
-  # this functions either issues a warning if a year/season/month/day is requested to be plotted but is not present
-  # or, if they have not explicitly been requested, it makes a list of possible years/seasons/months/days
-  checkValues <- function(sources, input.values = NULL,  string) {
-    
-    all.values <- c()
-    for(object in sources){
-      
-      # check if year/season/month/day is actually present in the source
-      if(!string %in% getDimInfo(object)) {
-        warning(paste("In plotSpatial you requested plotting of maps per", string, "but not all the fields have", string, "data.\n I am therefore returning NULL for this plot, but your script should continue.  Check that your input Fields have the time dimensions that you think they have.", sep = " "))
-        return(NULL)     
-       }
-      
-      # get a list of all unique days present
-      values.present <- unique(object@data[[string]])
-      
-      # 'input.list specified so check that they are present
-      if(!is.null(input.values)) {
-        for(counter in input.values) { if(!counter %in% values.present) warning(paste0(string, " ", counter, " not present in Field ", object@id)) }
-      }
-      # else 'days' not specified so make a list of unique days across all Fields
-      else { all.values <- append(all.values, values.present) }
-      
-    }
-    
-    # make a unique and sorted list of values
-    if(is.null(input.values)) input.values <- sort(unique(all.values))
-    
-    # return
-    return(input.values)
-    
-  }
   
-  # For each possible temporal 'facet axis' check the values   
-  if("Day" %in% stinfo.names) days <- checkValues(sources, days, "Day")
-  if("Month" %in% stinfo.names) months <- checkValues(sources, months, "Month") 
-  if("Season" %in% stinfo.names) seasons <- checkValues(sources, seasons, "Season") 
-  if("Year" %in% stinfo.names) years <- checkValues(sources, years, "Year")
+  
+  
+  ##### CHECK POTENTIAL TEMPORAL FACET AXES AND GET A LIST OF VALUES PRESENT FOR PLOTTING
+  
+  if("Day" %in% dim.names) days <- checkDimensionValues(fields, days, "Day")
+  if("Month" %in% dim.names) months <- checkDimensionValues(fields, months, "Month") 
+  if("Season" %in% dim.names) seasons <- checkDimensionValues(fields, seasons, "Season") 
+  if("Year" %in% dim.names) years <- checkDimensionValues(fields, years, "Year")
   
   
   
@@ -233,7 +143,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   first <- TRUE
   final.fields <- list()
   PFTs <- list()
-  for(object in sources){
+  for(object in fields){
     
     # check that at least one layer is present in this object and make a list of those which are
     all.layers <- names(object)
@@ -246,8 +156,8 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     
     # if at least one layer present subset it
     if(something.present) {
-    
-       
+      
+      
       # select the layers and time periods required and mash the data into shape
       these.layers <- selectLayers(object, layers.present)
       if(!is.null(years)) {
@@ -338,11 +248,12 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   }
   
   # prepare overlay
+  all.lons <- sort(unique(data.toplot[["Lon"]]))
   if(!is.null(map.overlay)) map.overlay.df <- makeMapOverlay(map.overlay, all.lons, interior.lines, xlim, ylim) 
   
   
   ### DO CUTS IF DEFINED
-  #  variable  is continuous but should be discretised
+  #  variable is continuous but should be discretised
   has.been.discretized <- FALSE
   if(continuous & !is.null(cuts)) {
     
@@ -414,9 +325,12 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     if(values.are.logical) {
       
       # and set the break and cols to what we just figured out
-      breaks <- c(TRUE,FALSE)
+      breaks <- c("Matches", "Different")
       cols <- c("red", "blue")
       
+      # also set the values to be factors
+      data.toplot[, Value := sapply(X = Value, FUN = function(x){ if(x) return("Matches"); return("Different")})]
+
     }
     else if(quant.is.categorical) {
       
@@ -512,12 +426,12 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   if(!is.null(months)) multiple.months <- length(months) > 1
   if(!is.null(seasons)) multiple.seasons <- length(seasons) > 1
   
-  multiple.sources <- length(sources) > 1
+  multiple.fields <- length(fields) > 1
   multiple.layers <- length(layers) > 1
   
   
   
-  num.panel.dimensions <- sum(multiple.sources, multiple.layers, multiple.years, multiple.days, multiple.months, multiple.seasons)
+  num.panel.dimensions <- sum(multiple.fields, multiple.layers, multiple.years, multiple.days, multiple.months, multiple.seasons)
   
   
   # if got a single source, layer and year facetting is impossible/unnecessary 
@@ -533,7 +447,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     if(!grid) wrap <- TRUE
     else wrap <- FALSE
   }
-  # else if got more that two of multiple sources, layers or years then gridding is impossible, must use facet_wrap()
+  # else if got more that two of multiple fields, layers or years then gridding is impossible, must use facet_wrap()
   else if(num.panel.dimensions > 2){
     facet <- TRUE
     wrap <- TRUE
@@ -550,7 +464,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       data.toplot[, Facet := paste(Facet, Layer)] 
       factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Layer"]]), paste))
     }
-    if(multiple.sources) {
+    if(multiple.fields) {
       data.toplot[, Facet := paste(Facet, Source)] 
       factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Source"]]), paste))
     }
@@ -567,8 +481,16 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Month"]]), paste))
     }
     if(multiple.seasons) { 
+      
       data.toplot[, Facet := paste(Facet, Season)] 
-      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Season"]]), paste))
+      #  special case for the seasons (since they have an 'inherent' ordering not reflected in their alphabetical ordering)
+      #  -> re-order the "unique(data.toplot[["Season"]])" part to orders the panels correctly
+      final.ordered <- c()
+      for(season in all.seasons){
+        if(season@id %in% unique(data.toplot[["Season"]])) final.ordered <- append(final.ordered, season@id)
+      }
+      factor.levels <- as.vector(outer(factor.levels, final.ordered, paste))
+      
     }
     data.toplot[, Facet := factor(trimws(Facet), levels = trimws(factor.levels))]
     
@@ -593,7 +515,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
       grid.columns <- append(grid.columns, "Layer")
       data.toplot[, Layer := factor(Layer, levels = unique(data.toplot[["Layer"]]))]
     }
-    if(multiple.sources) {
+    if(multiple.fields) {
       grid.columns <- append(grid.columns, "Source")
       data.toplot[, Source := factor(Source, levels = unique(data.toplot[["Source"]]))]
     }
@@ -611,9 +533,14 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     }
     if(multiple.seasons) {
       grid.columns <- append(grid.columns, "Season")
-      data.toplot[, Season := factor(Season, levels = unique(data.toplot[["Season"]]))]
+      final.ordered <- c()
+      for(season in all.seasons){
+        if(season@id %in% unique(data.toplot[["Season"]])) final.ordered <- append(final.ordered, season@id)
+      }
+      data.toplot[, Season := factor(Season, levels = final.ordered)]
     }
-    grid.string <- paste(grid.columns, collapse = "~")
+    if(!grid.switch) grid.string <- paste(grid.columns, collapse = "~")
+    else grid.string <- paste(rev(grid.columns), collapse = "~")
   }
   
   
@@ -631,6 +558,13 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     else if(is.null(subtitle)) subtitle <- waiver()
   }
   
+  
+  ### IF A 'limits' ARGUMENT HAS BEEN SET THEN LIMITS THE PLOTTED VALUES ACCORDINGLY
+  if(!missing(limits) && !is.null(limits) && !is.character(data.toplot[["Value"]])){
+    data.toplot[, Value := pmax(Value, limits[1])]
+    data.toplot[, Value := pmin(Value, limits[2])]
+  }
+  
   ### BUILD THE PLOT
   
   # basic plot building
@@ -642,14 +576,16 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     # note that we add each facet as an individual layer to support multiple resolutions
     if(wrap){
       for(facet in levels(data.toplot[["Facet"]])){
-        mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+        if(!tile) mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+        else mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
       }
       mp <- mp + facet_wrap(~Facet)      
     }
     if(grid){
       for(col1 in unique(data.toplot[[grid.columns[1]]])){ 
         for(col2 in unique(data.toplot[[grid.columns[2]]])){ 
-          mp <- mp + geom_raster(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+          if(!tile) mp <- mp + geom_raster(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+          else mp <- mp + geom_tile(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
         }
       }
       mp <- mp + facet_grid(stats::as.formula(paste(grid.string)), switch = "y")    
@@ -658,12 +594,13 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   }
   # else simple case with no facetting
   else {
-    mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+    if(!tile) mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+    else mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value")) 
   }
   
   # colour bar
   if(continuous)  {
-    
+
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
                                     colors = cols,
@@ -691,7 +628,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   
   if(!is.null(ylim)) mp <- mp + scale_y_continuous(limits = ylim, expand = c(0, 0))
   else   mp <- mp + scale_y_continuous(expand = c(0, 0))
-  
+
   mp <- mp + coord_fixed()
   
   # labels and positioning
@@ -701,7 +638,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
   else { mp <- mp + theme(legend.title = element_blank()) }
   mp <- mp + theme(plot.title = element_text(hjust = 0.5),
                    plot.subtitle = element_text(hjust = 0.5))
-  
+
   # overall text multiplier
   if(!missing(text.multiplier)) mp <- mp + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
@@ -716,7 +653,7 @@ plotSpatial <- function(sources, # can be a data.table, a SpatialPixelsDataFrame
     panel.border = element_rect(colour = "black", fill=NA),
     strip.background  = element_rect(fill=NA)
   )
-  
+
   
   # list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
   #            panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),

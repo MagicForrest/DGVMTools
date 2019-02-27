@@ -5,10 +5,10 @@
 #' Compare two layers (each from a Field or DataObject) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object. 
 #'
 #' 
-#' @param field1 A Field or DataObject from which to get the first layer for comparison
-#' @param field2 A Field or DataObject from which to get the second layer for comparison
-#' @param layers1 The name of the first layer (character string)
-#' @param layers2 The name of the first layer (character string).  If not defined taken to the be the same as layers1
+#' @param field1 A Field or DataObject from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.
+#' @param field2 A Field or DataObject from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.
+#' @param layers1 The name of the layers to be compared from field1 (character string)
+#' @param layers2 The name of the layers to be compared from field2 (character string).  If not defined taken to the be the same as layers1
 #' @param keepall1 Boolean, keep all data points in layers1 even if there is not corresponding data in layers2 
 #' @param keepall2 Boolean, keep all data points in layers2 even if there is not corresponding data in layers2 
 #' @param override.quantity Boolean, if TRUE ignore situation where field1 and field2 have non-identical Quantities and use the Quantity from field1 for the returned Comparison
@@ -16,6 +16,9 @@
 #' that the both have 'no data' (typically grey areas) plotted on both maps.
 #' @param dec.places Numeric, passed to copyLayers. Defines to how many decimal places to round the coordinates in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.  
 #' @param show.stats Boolean, if TRUE print the summary statistics
+#' @param custom.metrics A named list of functions (defined by the user) to calculate additional custom metrics.  The functions must take a data.table and 
+#' two character vectors of layer names to be compared (in order in the case of multi-layer comparisons).  Spatial-temporal-annual column names of Lon, Lat, Year, Month and Day
+#' can be assumed in the data.table.  The name of the item in the list is used as the metric name.  
 #' @param verbose Boolean, if TRUE print some informative output
 #' 
 #' The returned Comparison object can be plotted using \code{plotSpatail} (to give the absolute difference, original values side-by-side and percentage difference, also the NME spatial - to be implemented)
@@ -36,6 +39,7 @@ compareLayers <- function(field1,
                           verbose = FALSE, 
                           match.NAs = FALSE,
                           show.stats = TRUE,
+                          custom.metrics = list(),
                           dec.places = NULL){
   
   ### Check that the object have the same dimensions and that we have the same number of layers, if not fail immediately
@@ -105,15 +109,13 @@ compareLayers <- function(field1,
   ### Easy-life case, both objects are on exactly the same domain
   if(identical(getDimInfo(field1, "full"), getDimInfo(field2, "full"))) {
     if(verbose) message("Easy life! Both fields have the same dimensions, can do a data.table join operation.")
-    print(key(layer.field1@data))
-    print(key(layer.field2@data))
     new.data <- layer.field1@data[layer.field2@data] 
   }
   
   ### Else, not-so-easy-life is having to check the domains and keeping points or not
   else {
     if(verbose) message("Not so easy life! Fields don't have the same dimensions, doing a copyLayers() operation.")
-  
+    
     new.data <- copyLayers(from = layer.field2, 
                            to = layer.field1, 
                            layer.names = new.ids.2, 
@@ -121,7 +123,7 @@ compareLayers <- function(field1,
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
                            dec.places = dec.places)@data
-
+    
   }
   
   # match NAs if necessary
@@ -136,7 +138,7 @@ compareLayers <- function(field1,
   if(verbose){
     message("Merged dataset")
     print(new.data)
-   }
+  }
   
   # make meta-data for the Comparison
   id <- paste0(new.ids.1, "-", new.ids.2)
@@ -150,38 +152,29 @@ compareLayers <- function(field1,
   else if(relative.abundance) { new.name <- paste("Relative abundance", source1@name, "vs.",  source2@name) }
   
   ### Calculate the approriate statistical comparisons
-  # make vectors of values
   
-  if(single || categorical) {
-    vector1 <- new.data[[new.ids.1]]
-    vector2 <- new.data[[new.ids.2]]
+  
+  
+  if(single) {
     
-    # check the classes of the data and perform the appropriate comparison
-    if(single) {
-      # Statistics
-      stats <- continuousComparison(vector1 = vector1, vector2 = vector2, name1 = source1@name, name2 = source2@name, verbose = show.stats)
-      # Make the difference layer
-      new.data[, "Difference" := get(new.ids.1) - get(new.ids.2)]
-    }
-    else if(categorical) {
-      if(verbose) print("Doing stats comparison")
-      stats <- categoricalComparison(vector1 = vector1, vector2 = vector2, name1 = source1@name, name2 = source2@name, verbose = show.stats)
-      new.data[, "Difference" := as.character(get(new.ids.1)) == as.character(get(new.ids.2))]
-     
-    }
+    stats <- continuousComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
+    new.data[, "Difference" := get(new.ids.1) - get(new.ids.2)]
+    
+  }
+  else if(categorical) {
+    
+    stats <- categoricalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
+    new.data[, "Difference" := as.character(get(new.ids.1)) == as.character(get(new.ids.2))]
+    
   }
   else if(relative.abundance) {
-    ### Calculate the approriate statistical comparisons
-    # make data.table of values
-    dt1 <- new.data[,new.ids.1,with=FALSE]
-    dt2 <- new.data[,new.ids.2,with=FALSE]
-    
+  
     # Calculate Manhattan Metric and Squared Chord Distance
-    stats <- proportionsComparison(dt1 =dt1, dt2 = dt2, name1 = source1@name, name2 = source2@name, verbose = show.stats)
+    stats <- proportionsComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
     
   }
-
-  # Build a common sta.info 
+  
+  # Build a common sta.info -- not done, should do?
   
   
   

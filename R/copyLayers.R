@@ -28,7 +28,7 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
   # first some pre-amble and checks
   common.layers <- c()
   from.dt <- from@data
-  for(dim in c("Lon", "Lat", "Year")) {
+  for(dim in c("Lon", "Lat", "Year", "Month", "Day", "Season")) {
     
     if(dim %in% names(from@data) && dim %in% names(to@data)) { common.layers <- append(common.layers, dim)}         
     else if(!(dim %in% names(from@data)) && (dim %in% names(to@data))) {
@@ -37,6 +37,7 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
     else if(dim %in% names(from@data) && !(dim %in% names(to@data))) {
       stop(paste0("In copyLayers: Can't copy layers because \""), dim ,"\" is present in the \"from\" argument but not the \"to\" argument") 
     }
+    
   }
   
   

@@ -10,8 +10,8 @@
 #' 
 #' An internal function that reads data from an DGVMData .nc file.  
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
-#' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param source A \code{Source} containing the meta-data about the DGVMData source
+#' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param last.year The last year (as a numeric) of the data to be returned
 #' @param verbose A logical, set to true to give progress/debug information
@@ -148,7 +148,7 @@ getField_DGVMData <- function(source,
   for(this.var in this.nc$var) {
     
     # Get the actual data and set the dimension names    
-    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose)
+    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
     dimnames(this.slice) <- dimension.names
     
     # prepare data.table from the slice (array)
@@ -211,7 +211,7 @@ getField_DGVMData <- function(source,
             month.vector <-append(month.vector, rep.int(month, temp.nentries.per.year/12))
           }
         }
-        this.slice.dt[, Month := month.vector]
+        this.slice.dt[, Month := as.integer(month.vector)]
         rm(month.vector)
         
         # Remove the Time columns
@@ -328,10 +328,6 @@ getField_DGVMData <- function(source,
     if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
   }
   
-  
-  # set some attributes about the file - works!
-  attr(dt, "shadeToleranceCombined") <- FALSE
-  
   # set keys
   setKeyDGVM(dt)
   
@@ -344,8 +340,20 @@ getField_DGVMData <- function(source,
     R.utils::gzip(file.name.nc)
   }
   
-  return(list(dt = dt, 
-              sta.info = sta.info))
+  # make the ID and then make and return Field
+  field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
+  
+  return(
+    
+    new("Field",
+        id = field.id,
+        data = dt,
+        quant = quant,
+        source = source,
+        sta.info 
+    )
+    
+  )
   
 }
 
@@ -359,19 +367,21 @@ getField_DGVMData <- function(source,
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
-#' @param source A path to a directory on the file system containing some .out files
+#' @param source A \code{Source} containing the meta-data about the DGVMData source
+#' @param names A boolean, if TRUE return a character vector of names of available quantities, if FALSE return a list of the actual Quantities.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-availableQuantities_DGVMData <- function(source){
+availableQuantities_DGVMData <- function(source, names){
   
   # First get the list of *.out files present
   files.present <- list.files(source@dir, "*.nc")
   
-  quantities.present <- list()
+  if(!names) quantities.present <- list()
+  else quantities.present <- c()
   for(file in files.present) {
     
     # check if file contains paste(".", source@id, ".nc")
@@ -381,7 +391,6 @@ availableQuantities_DGVMData <- function(source){
     
     
   }
-  
   
   return(quantities.present)
   

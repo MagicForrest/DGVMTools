@@ -4,17 +4,18 @@
 \alias{plotSpatial}
 \title{Plot maps from a \code{Field} and a lists of \code{Field}.}
 \usage{
-plotSpatial(sources, layers = NULL, title = character(0),
+plotSpatial(fields, layers = NULL, title = character(0),
   subtitle = character(0), facet.labels = NULL, facet.order = NULL,
   plot.bg.col = "white", panel.bg.col = "white",
   useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
   ylim = NULL, years = NULL, days = NULL, months = NULL,
   seasons = NULL, limits = NULL, cols = NULL, cuts = NULL,
-  drop.cuts = TRUE, map.overlay = NULL, grid = FALSE, plot = TRUE,
-  interior.lines = TRUE)
+  drop.cuts = TRUE, map.overlay = NULL, grid = FALSE,
+  grid.switch = FALSE, plot = TRUE, interior.lines = TRUE,
+  tile = FALSE)
 }
 \arguments{
-\item{sources}{The data to plot. Can be a Field, a DataObject, or a list of including both}
+\item{fields}{The data to plot. Can be a Field, a DataObject, or a list of including both}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
@@ -65,10 +66,16 @@ Default is TRUE.  Ignored if 'cuts' argument is not used.}
 \item{grid}{Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().
 Useful when not all combinations of Sources x Layers exist which would leave blank panels.}
 
+\item{grid.switch}{Boolean, if TRUE reverse the default panel layout of plots, such plots arranged horizontally are arranged vertically and vice-versa.  Ignored 
+if the 'grid' option is FALSE.}
+
 \item{plot}{Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
 
 \item{interior.lines}{Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 Other things can be overlain on the resulting plot with further ggplot2 commands.}
+
+\item{tile}{Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
+for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.}
 }
 \value{
 Returns a ggplot object

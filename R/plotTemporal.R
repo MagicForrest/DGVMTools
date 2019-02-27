@@ -72,13 +72,16 @@ plotTemporal <- function(input.data,
     
     # check temporal dimensions
     stinfo.names <- getDimInfo(input.data)
+    stinfo.full <- getDimInfo(input.data, info = "full")
     if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names && !"Day" %in% stinfo.names) {
       warning("Neither Year nor Month nor Day found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
       return(NULL)
     }
     if("Lon" %in% stinfo.names || "Lat" %in% stinfo.names) {
-      warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
-      return(NULL)
+      if(length(unique(stinfo.full[["Lon"]])) > 1 || length(unique(stinfo.full[["Lat"]])) > 1) {
+        warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
+        return(NULL)
+      }
     }
     
     
@@ -93,6 +96,7 @@ plotTemporal <- function(input.data,
     for(x.object in input.data){
       
       if(!(is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a Field") }
+      if(!is.null(layers)) x.object <- selectLayers(x.object, layers)
       temp.dt <- copy(x.object@data)
       temp.dt[,"Source" := x.object@source@name]
       plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
@@ -103,13 +107,16 @@ plotTemporal <- function(input.data,
       
       # check temporal dimensions
       stinfo.names <- getDimInfo(x.object)
+      stinfo.full <- getDimInfo(x.object, info = "full")
       if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names && !"Day" %in% stinfo.names) {
         warning("Neither Year nor Month nor Day found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
         return(NULL)
       }
       if("Lon" %in% stinfo.names || "Lat" %in% stinfo.names) {
-        warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
-        return(NULL)
+        if(length(unique(stinfo.full[["Lon"]])) > 1 || length(unique(stinfo.full[["Lat"]])) > 1) {
+          warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
+          return(NULL)
+        }
       }
       
     }
@@ -155,8 +162,7 @@ plotTemporal <- function(input.data,
   if(length(dim) == 0) warning("plotTemporal: No suitable time axis found, aborting")  
   if("Source" %in% names(plotting.data.dt)) id.vars <- append(id.vars, "Source")
   plotting.data.dt.melted <- melt(plotting.data.dt, id.vars = id.vars)
-  setnames(plotting.data.dt.melted, "variable", "Layer")
-  setnames(plotting.data.dt.melted, "value", "Value")
+  setnames(plotting.data.dt.melted, old = c("variable", "value"), new = c("Layer", "Value"))
   
   # helpful check here
   if(nrow(plotting.data.dt.melted) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are selecting a site that isn't there?")

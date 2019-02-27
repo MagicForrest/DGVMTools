@@ -8,10 +8,9 @@
 #' 
 #' An internal function that reads data from an LPJ-GUESS run.  It actually call one of three other functions depending on the type of quantity specified.   
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
-#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
-#' @param first.year The first year (as a numeric) of the data to be return
-#' @param last.year The last year (as a numeric) of the data to be return
+#' @param source A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param target.STAInfo The spatial-temporal target domain
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -25,17 +24,19 @@ getField_GUESS <- function(source,
   
   # First check if quantity is for FireMIP, if so call a special function with the extra processing required
   if("FireMIP" %in% quant@format) {
-    data.list <- openLPJOutputFile_FireMIP(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose, ...)
+    return(openLPJOutputFile_FireMIP(source, quant, target.sta = target.STAInfo, verbose = verbose, ...))
   }
   else if("GUESS" %in% quant@format | "LPJ-GUESS-SPITFIRE" %in% quant@format) {
-    data.list <- openLPJOutputFile(source, quant@id, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+    return(openLPJOutputFile(source, quant, target.sta = target.STAInfo, verbose = verbose, ...))
   }
   else if("Standard" %in% quant@format) {
-    data.list <- getStandardQuantity_LPJ(source, quant, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, verbose = verbose)
+    return(getStandardQuantity_LPJ(source, quant, target.sta = target.STAInfo, verbose = verbose, ...))
+  }
+  else{
+    stop("Unrecognised Quantity in 'quant' argument to getField_GUESS()")
   }
   
   
-  return(data.list)
   
 }
 
@@ -49,23 +50,34 @@ getField_GUESS <- function(source,
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
-#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param quant A Quant to define what output file from the LPJ-GUESS run to open, 
+#' can also be a simple string defining the LPJ-GUESS output file if the \code{return.data.table} argument is TRUE
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
+#' @param data.table.only A logical, if TRUE return a data.table and not a Field
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
 #' @keywords internal
 openLPJOutputFile <- function(run,
-                              variable,
-                              first.year,
-                              last.year,
+                              quant,
+                              target.sta,
                               verbose = FALSE,
-                              data.table.only = FALSE){
+                              data.table.only = FALSE,
+                              ...){
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = Day = NULL
+  
+  # extract from the target.sta
+  first.year = target.sta@first.year
+  last.year = target.sta@last.year
+
+  if(!data.table.only && class(quant)[1] != "Quantity") stop("Please supply a formal Quantity object as the quant argument since you are not requesting at data.table")
+  
+  if(class(quant)[1] == "Quantity") variable <- quant@id
+  else variable <- quant
   
   #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
   compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
@@ -97,6 +109,8 @@ openLPJOutputFile <- function(run,
   }
   
   
+  gc()
+  
   #  Print messages
   if(verbose) {
     message("Read table. It has header:")
@@ -119,6 +133,10 @@ openLPJOutputFile <- function(run,
     dt <- selectYears(dt, first.year, last.year)
   }
   
+  # also correct days to be 1-365 instead of 0-364, if necessary
+  if("Day" %in% names(dt)) {
+    if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]
+  }
   
   # Correct lon and lats
   if(length(run@lonlat.offset) == 2 ){
@@ -132,11 +150,6 @@ openLPJOutputFile <- function(run,
     if(run@lonlat.offset[1] != 0) dt[, Lat := Lat + run@lonlat.offset[1]]
   }
   
-  # also correct days to be 1-365 instead of 0-364, if necessary
-  if("Day" %in% names(dt)) {
-    if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]
-  }
-  
   if(verbose) {
     message("Offsets applied. Head of full .out file (after offsets):")
     print(utils::head(dt))
@@ -144,6 +157,28 @@ openLPJOutputFile <- function(run,
   
   # if london.centre is requested, make sure all negative longitudes are shifted to positive
   if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  
+  # if spatial extent specified, crop to it
+  new.extent <- NULL
+  if(!is.null(target.sta@spatial.extent)) {
+    
+    spatial.extent.class <- class(target.sta@spatial.extent)[1]
+    
+    if(spatial.extent.class == "SpatialPolygonsDataFrame" || spatial.extent.class == "numeric" || is.data.frame(target.sta@spatial.extent) || is.data.table(target.sta@spatial.extent)) {
+      dt <- selectGridcells(x = dt, gridcells = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id, ...)
+      new.extent <- target.sta@spatial.extent
+    }
+    
+    else {
+      dt <- crop(x = dt, y = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id)
+      new.extent <- extent(dt)
+    } 
+    
+  }
+  
+  gc()
+  
+  
   
   # If data is has monthly or daily columns, melt to long/tidy data where "Month" becomes a column
   
@@ -154,27 +189,32 @@ openLPJOutputFile <- function(run,
   
   # if monthly then melt
   standard.monthly.ljp.col.names <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  
   if(identical(nonst.cols, standard.monthly.ljp.col.names)){
     
     # replace column names with 1,2,3.. etc before melting, and then melt
     setnames(dt, old = standard.monthly.ljp.col.names, new = paste(1:12))
     dt <- melt(dt, id.vars = st.cols, measure.vars = paste(1:12), variable.name = "Month", value.name = variable)
-    dt <- dt[, Month := as.numeric(Month)]
+    dt[, Month := as.integer(Month)]
     
   }
+  
   
   # if daily then melt
   # TODO - implement daily melting, follow above for implementation
   
   
-  # set some attributes about the data - works!
-  setattr(dt, "shadeToleranceCombined", FALSE)
   
-  # set keys
-  setKeyDGVM(dt)
+  
+  # set some attributes about the data - works!
+  # currently screws up unit tests and isn't used.  Consider using if updating metadata system.
+  # setattr(dt, "shadeToleranceCombined", FALSE)
   
   # remove any NAs
   dt <- stats::na.omit(dt)
+  
+  # set the keys (very important!)
+  setKeyDGVM(dt)
   
   # if re-zip
   if(re.zip) R.utils::gzip(file.string)
@@ -191,12 +231,35 @@ openLPJOutputFile <- function(run,
                  first.year = min(all.years),
                  last.year = max(all.years),
                  subannual.resolution = subannual,
-                 subannual.original = subannual,
-                 spatial.extent = extent(dt))
+                 subannual.original = subannual)
+  
+  if(!is.null(new.extent))  {
+    sta.info@spatial.extent = extent(dt)
+    sta.info@spatial.extent.id <- target.sta@spatial.extent.id
+  }
+  
+  gc()
   
   if(data.table.only) return(dt)
-  else return(list(dt = dt,
-                   sta.info = sta.info))
+  else {
+    
+    # make the ID and then make and return Field
+    field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
+   
+    return(
+      
+      new("Field",
+          id = field.id,
+          data = dt,
+          quant = quant,
+          source = run,
+          sta.info 
+      )
+      
+    )
+    
+  }
+  
   
 }
 
@@ -210,7 +273,7 @@ openLPJOutputFile <- function(run,
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
-#' @param variable A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param quant A Quantity to define what output file from the LPJ-GUESS run to open.
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
@@ -219,15 +282,17 @@ openLPJOutputFile <- function(run,
 #' @keywords internal
 #' @import data.table
 openLPJOutputFile_FireMIP <- function(run,
-                                      variable,
-                                      first.year,
-                                      last.year,
+                                      quant,
+                                      target.sta,
                                       verbose = FALSE,
-                                      soil_water_capacities = "none"){
+                                      soil_water_capacities = "none",
+                                      ...){
   
   Lon = Lat = Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = mrso = mrsos = Capacity = Code = NULL
   target.cols = SoilfC = SoilsC = NULL
   
+  
+  variable = quant@id
   
   # seconds in month
   seconds.in.month <- c()
@@ -240,13 +305,13 @@ openLPJOutputFile_FireMIP <- function(run,
   ############# PER PFT VARIABLES
   
   if(variable == "lai") {
-    return(openLPJOutputFile(run, "lai", first.year, last.year,  verbose))
+    dt <- openLPJOutputFile(run, "lai", data.table.only = TRUE, target.sta = target.sta,  verbose = verbose)
   }
   if(variable == "landCoverFrac") {
-    return(openLPJOutputFile(run, "fpc", first.year, last.year,  verbose))
+    dt <- openLPJOutputFile(run, "fpc", data.table.only = TRUE, target.sta = target.sta,  verbose = verbose)
   }
   if(variable == "theightpft") {
-    return(openLPJOutputFile(run, "speciesheights", first.year, last.year,  verbose))
+    dt <- openLPJOutputFile(run, "speciesheights", data.table.only = TRUE, target.sta = target.sta,  verbose = verbose)
   }
   
   
@@ -390,7 +455,7 @@ openLPJOutputFile_FireMIP <- function(run,
   # Now calculate these bad boys
   if(monthly.to.second || monthly.to.percent || monthly){
     
-    dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose, data.table.only = TRUE)
+    dt <- openLPJOutputFile(run, guess.var, target.sta,  verbose, data.table.only = TRUE)
     setnames(dt, guess.var, variable)
     if(monthly.to.second){
       #suppressWarnings(dt[, Seconds := seconds.in.month[Month]])
@@ -413,7 +478,7 @@ openLPJOutputFile_FireMIP <- function(run,
   ### Special monthly variables
   if(variable == "meanFire") {
     guess.var <- "real_fire_size"
-    dt <- openLPJOutputFile(run, guess.var, first.year, last.year,  verbose, data.table.only = TRUE)
+    dt <- openLPJOutputFile(run, guess.var, target.sta,  verbose, data.table.only = TRUE)
     setnames(dt, guess.var, variable)
     dt[, (variable) := get(variable) * 10000]
   }
@@ -436,14 +501,13 @@ openLPJOutputFile_FireMIP <- function(run,
     dt_cap[, Capacity := wcap[Code]]
     dt_cap[, Code := NULL]
     
-    dt_upper <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt_upper <- openLPJOutputFile(run, "mwcont_upper", target.sta,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_upper)
-    print(dt_upper)
-    
-    dt_lower <- openLPJOutputFile(run, "mwcont_lower", first.year, last.year,  verbose, data.table.only = TRUE)
+
+    dt_lower <- openLPJOutputFile(run, "mwcont_lower", target.sta,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_lower)
     dt <- dt_upper[dt_lower]
-    print(dt_lower)
+
     dt <- dt[dt_cap]
     dt <- stats::na.omit(dt)
     dt[, mrso := (mwcont_lower * thickness_lower_layer_mm * Capacity) + (mwcont_upper * thickness_upper_layer_mm * Capacity)]
@@ -472,10 +536,9 @@ openLPJOutputFile_FireMIP <- function(run,
     dt_cap[, Capacity := wcap[Code]]
     dt_cap[, Code := NULL]
     
-    dt <- openLPJOutputFile(run, "mwcont_upper", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt <- openLPJOutputFile(run, "mwcont_upper", target.sta,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt)
     
-    print(dt)
     dt <- dt[dt_cap]
     dt <- stats::na.omit(dt)
     dt[, mrsos := mwcont_upper * thickness_upper_layer_mm * Capacity]
@@ -491,8 +554,8 @@ openLPJOutputFile_FireMIP <- function(run,
   if(variable == "evapotrans") {
     
     # firstly combine transpiration and evaporation
-    dt_trans <- openLPJOutputFile(run, "maet", first.year, last.year,  verbose, data.table.only = TRUE)
-    dt_evap <- openLPJOutputFile(run, "mevap", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt_trans <- openLPJOutputFile(run, "maet", target.sta,  verbose, data.table.only = TRUE)
+    dt_evap <- openLPJOutputFile(run, "mevap", target.sta,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_trans)
     setKeyDGVM(dt_evap)
     dt_trans <- dt_evap[dt_trans]
@@ -500,7 +563,7 @@ openLPJOutputFile_FireMIP <- function(run,
     gc()
     
     # now add interception
-    dt_intercep <- openLPJOutputFile(run, "mintercep", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt_intercep <- openLPJOutputFile(run, "mintercep", target.sta,  verbose, data.table.only = TRUE)
     setKeyDGVM(dt_intercep)
     dt_trans <- dt_trans[dt_intercep]
     rm(dt_intercep)
@@ -520,19 +583,19 @@ openLPJOutputFile_FireMIP <- function(run,
   ### ANNUAL C POOLS FROM cpool.out FILE
   
   if(variable == "cVeg") {
-    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt <- openLPJOutputFile(run, "cpool", target.sta,  verbose, data.table.only = TRUE)
     target.cols <- append(getDimInfo(dt), "VegC")
     dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "VegC", "cVeg")
   }
   if(variable == "cLitter") {
-    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt <- openLPJOutputFile(run, "cpool", target.sta,  verbose, data.table.only = TRUE)
     target.cols <- append(getDimInfo(dt), "LittC")
     dt <- dt[,target.cols,with=FALSE]
     setnames(dt, "LittC", "cLitter")
   }
   if(variable == "cSoil") {
-    dt <- openLPJOutputFile(run, "cpool", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt <- openLPJOutputFile(run, "cpool", target.sta,  verbose, data.table.only = TRUE)
     target.cols <- append(unlist(getDimInfo(dt)), c("SoilfC", "SoilsC"))
     dt <- dt[,target.cols,with=FALSE]
     dt[, "cSoil" := SoilfC + SoilsC]
@@ -543,7 +606,7 @@ openLPJOutputFile_FireMIP <- function(run,
   ### LAND USE FLUX AND STORE FROM luflux.out FILE
   
   if(variable == "cProduct") {
-    dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt <- openLPJOutputFile(run, "luflux", target.sta,  verbose, data.table.only = TRUE)
     target.cols <- append(getDimInfo(dt), "Products_Pool")
     dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Products_Pool", "cProduct")
@@ -551,7 +614,7 @@ openLPJOutputFile_FireMIP <- function(run,
   
   if(variable == "fLuc") {
     
-    dt <- openLPJOutputFile(run, "luflux", first.year, last.year,  verbose, data.table.only = TRUE)
+    dt <- openLPJOutputFile(run, "luflux", target.sta,  verbose, data.table.only = TRUE)
     target.cols <- append(getDimInfo(dt), "Deforest_Flux")
     dt <- dt[,target.cols, with = FALSE]
     setnames(dt, "Deforest_Flux", "fLuc")
@@ -572,8 +635,22 @@ openLPJOutputFile_FireMIP <- function(run,
                  subannual.original = subannual,
                  spatial.extent = extent(dt))
   
-  return(list(dt = dt,
-              sta.info = sta.info))
+  
+  # make the ID and then make and return Field
+  field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
+  
+  
+  return(
+    
+    new("Field",
+        id = field.id,
+        data = dt,
+        quant = quant,
+        source = run,
+        sta.info 
+    )
+    
+  )
   
   
 }
@@ -592,7 +669,7 @@ openLPJOutputFile_FireMIP <- function(run,
 #' \code{Source} object, it will return that to save time.
 #' 
 #' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
-#' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param quant A Quantity to define what output file from the LPJ-GUESS run to open
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
@@ -604,8 +681,7 @@ openLPJOutputFile_FireMIP <- function(run,
 
 getStandardQuantity_LPJ <- function(run, 
                                     quant, 
-                                    first.year,
-                                    last.year,
+                                    target.sta,
                                     verbose = FALSE) {
   
   Total = Year = FireRT = NULL
@@ -626,7 +702,7 @@ getStandardQuantity_LPJ <- function(run,
   if(quant@id == "vegcover_std") {
     
     # vegcover.out provides the right quantity here (note this is not standard LPJ-GUESS)
-    data.list <- openLPJOutputFile(run, "vegcover", first.year, last.year, verbose = TRUE)
+    data.list <- openLPJOutputFile(run, lookupQuantity("vegcover", GUESS), target.sta, verbose = verbose)
     
     # But we need to scale it to %
     if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
@@ -642,8 +718,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "vegC_std") {
     
     # cmass provides the right quantity here - so done
-    data.list <- openLPJOutputFile(run, "cmass", first.year, last.year, verbose = TRUE)
-    return(data.list)
+    this.Field <- openLPJOutputFile(run, lookupQuantity("cmass", GUESS), target.sta, verbose = verbose)
     
   }
   
@@ -651,9 +726,7 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "LAI_std") {
     
     # lai provides the right quantity here - so done
-    data.list <- openLPJOutputFile(run, "lai", first.year, last.year, verbose = TRUE)
-    return(data.list)
-    
+    this.Field <- openLPJOutputFile(run, lookupQuantity("lai", GUESS), target.sta, verbose = verbose)
     
   }
   
@@ -661,61 +734,55 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "FPAR_std") {
     
     # lai provides the right quantity here - so done
-    data.list <- openLPJOutputFile(run, "fpc", first.year, last.year, verbose = TRUE)
-    
-    data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year", "Total")]
-    data.list[["dt"]][, Total := pmin(Total, 1) * 100 * 0.83]
-    return(data.list)
+    this.Field <- openLPJOutputFile(run, lookupQuantity("fpc", GUESS), target.sta, verbose = verbose)
+    all.layers <- layers(this.Field)
+    drop.layers <- all.layers [! all.layers %in% c("Total")]
+    this.Field@data[, (drop.layers) := NULL]
+    this.Field@data[, Total := pmin(Total, 1) * 100 * 0.83]
     
   }
   
-  # mGPP_std 
+  # aGPP_std 
   else if(quant@id == "aGPP_std") {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     if(file.exists(file.path(run@dir, "agpp.out")) || file.exists(file.path(run@dir, "agpp.out.gz"))){
-      data.list <-  openLPJOutputFile(run, "agpp", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year","Total"), with = FALSE]
+      this.Field <- openLPJOutputFile(run, lookupQuantity("agpp", GUESS), target.sta, verbose = verbose)
     }
     else {
-      data.list <- openLPJOutputFile(run, "mgpp", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum", target = "Year")
+      this.Field <- openLPJOutputFile(run, lookupQuantity("mgpp", GUESS), target.sta, verbose = verbose)
+      this.Field <- aggregateSubannual(this.Field, method = "sum", target = "Year")
     }
-    return(data.list)
     
   }
   
   
-  # mNPP_std 
+  # aNPP_std 
   else if(quant@id == "aNPP_std") {
     
     # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
     # newer versions have the agpp output variable which has the per PFT version
     
-    if(file.exists(file.path(run@dir, "anpp.out") || file.path(run@dir, "anpp.out.gz"))){
-      data.list <- openLPJOutputFile(run, "anpp", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]] <-  data.list[["dt"]][, c("Lon", "Lat", "Year","Total"), with = FALSE]
+    if(file.exists(file.path(run@dir, "anpp.out")) || file.exists(file.path(run@dir, "anpp.out.gz"))){
+      this.Field <- openLPJOutputFile(run, lookupQuantity("anpp", GUESS), target.sta, verbose = verbose)
     }
     else{
-      data.list <- openLPJOutputFile(run, "mnpp", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]]  <- aggregateSubannual(data.list[["dt"]] , method = "sum", target = "Year")
+      this.Field <-  openLPJOutputFile(run, lookupQuantity("mnpp", GUESS), target.sta, verbose = verbose)
+      this.Field <- aggregateSubannual(this.Field , method = "sum", target = "Year")
     }
-    return(data.list)
     
   }
   
   # mNPP_std 
   else if(quant@id == "aNEE_std") {
     
-    # in older version of LPJ-GUESS, the mgpp file must be aggregated to annual
-    # newer versions have the agpp output variable which has the per PFT version
-    data.list <- openLPJOutputFile(run, "cflux", first.year, last.year, verbose = TRUE)
+    this.Field <- openLPJOutputFile(run, lookupQuantity("cflux", GUESS), target.sta, verbose = verbose)
     
     # take NEE and  ditch the rest
-    data.list[["dt"]] <- data.list[["dt"]][, c("Lon", "Lat", "Year","NEE"), with = FALSE]
-    
-    return(data.list)
+    all.layers <- layers(this.Field)
+    drop.layers <- all.layers [! all.layers %in% c("NEE")]
+    this.Field@data[, (drop.layers) := NULL]
     
   }
   
@@ -723,10 +790,8 @@ getStandardQuantity_LPJ <- function(run,
   else if(quant@id == "canopyheight_std") {
     
     # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
-    data.list <- openLPJOutputFile(run, "canopyheight", first.year, last.year, verbose = TRUE)
-    setnames(data.list[["dt"]], "CanHght", "CanopyHeight")
-    
-    return(data.list)
+    this.Field <- openLPJOutputFile(run, lookupQuantity("canopyheight", GUESS), target.sta, verbose = verbose)
+    renameLayers(this.Field, "CanHght", "CanopyHeight")
     
   }
   
@@ -735,19 +800,18 @@ getStandardQuantity_LPJ <- function(run,
     
     # if mfirefrac is present the open it and use it
     if("mfirefrac" %in% availableQuantities_GUESS(run, names=TRUE)){
-      data.list <- openLPJOutputFile(run, "mfirefrac", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]] <- aggregateSubannual(data.list[["dt"]], method = "sum")
+      this.Field <- openLPJOutputFile(run, lookupQuantity("mfirefrac", GUESS), target.sta, verbose = verbose)
+      this.Field <- aggregateSubannual(this.Field, method = "sum")
+      renameLayers(this.Field, "mfirefrac", quant@id)
       
     }
     
     # otherwise open firert to get GlobFIRM fire return interval and invert it
     else {
-      data.list <- openLPJOutputFile(run, "firert", first.year, last.year, verbose = TRUE)
-      data.list[["dt"]][, "burntfraction_std" :=  1 / FireRT]
-      data.list[["dt"]][, FireRT :=  NULL]
+      this.Field <- openLPJOutputFile(run, lookupQuantity("firert", GUESS), target.sta, verbose = verbose)
+      this.Field@data[, "burntfraction_std" :=  1 / FireRT]
+      this.Field@data[, FireRT :=  NULL]
     }
-    
-    return(data.list)
     
   }
   
@@ -758,7 +822,9 @@ getStandardQuantity_LPJ <- function(run,
     
   }
   
-  
+  # Update the Field with the 'standard' Quantity and return
+  this.Field@quant <- quant
+  return(this.Field)
   
 }
 
@@ -776,7 +842,7 @@ getStandardQuantity_LPJ <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-availableQuantities_GUESS <- function(source, names = TRUE){
+availableQuantities_GUESS <- function(source, names = TRUE, verbose = FALSE){
   
   directory <- source@dir
   
@@ -812,7 +878,7 @@ availableQuantities_GUESS <- function(source, names = TRUE){
         else good.list <- append(good.list, result)
       }
       else {
-        warning("Although I have found file with an appropriate extension that looks like an LPJ-GUESS output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
+        if(verbose) warning("Although I have found file with an appropriate extension that looks like an LPJ-GUESS output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
       }
       
     }

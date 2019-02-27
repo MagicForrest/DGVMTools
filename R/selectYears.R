@@ -15,11 +15,13 @@ selectYears <- function(x, first, last){
   # To stop compiler NOTES
   Year = NULL
   
+  
+  
   # check input class
   if(is.Field(x)) input.dt <- x@data 
   else if(is.data.table(x))  input.dt <- x
   else stop("Called for an object which is not a Field or a data.table.  Exiting...")
-  
+
   # 
   if(first > last) stop("Error, first year must be smaller or equal to the last year!")
   
@@ -42,8 +44,9 @@ selectYears <- function(x, first, last){
   # and return
   if(is.Field(x)) {
     x@data <- output.dt
-    x@first.year <- first
-    x@last.year <- last
+    years.range <- getDimInfo(x, info = "range")[["Year"]]
+    x@first.year <- years.range[1]
+    x@last.year <- years.range[2]
     x@id <- makeFieldID(source = x@source,
                         var.string = x@quant@id, 
                         sta.info = as(x, "STAInfo"))

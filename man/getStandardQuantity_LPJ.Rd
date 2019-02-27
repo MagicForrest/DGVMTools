@@ -4,19 +4,18 @@
 \alias{getStandardQuantity_LPJ}
 \title{Returns the data from one LPJ-GUESS output variable as a \code{data.table}.}
 \usage{
-getStandardQuantity_LPJ(run, quant, first.year, last.year,
-  verbose = FALSE)
+getStandardQuantity_LPJ(run, quant, target.sta, verbose = FALSE)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.}
 
-\item{quant}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
+\item{quant}{A Quantity to define what output file from the LPJ-GUESS run to open}
+
+\item{verbose}{A logical, set to true to give progress/debug information}
 
 \item{first.year}{The first year (as a numeric) of the data to be return}
 
 \item{last.year}{The last year (as a numeric) of the data to be return}
-
-\item{verbose}{A logical, set to true to give progress/debug information}
 }
 \value{
 a data.table (with the correct tear offset and lon-lat offsets applied)

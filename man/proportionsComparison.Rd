@@ -4,27 +4,25 @@
 \alias{proportionsComparison}
 \title{Compare relative proportions data}
 \usage{
-proportionsComparison(dt1, dt2, name1, name2, verbose = TRUE)
+proportionsComparison(x, layers1, layers2, additional, verbose = TRUE)
 }
 \arguments{
-\item{dt1}{The first of the datasets to be compared to each other, as a data.table with a column for the  elative proportion of each class (sum of classes must equal one for metric to be meaningful)}
+\item{x}{A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared}
 
-\item{dt2}{The second of the datasets to be compared to each other, as a data.table with a column for the  elative proportion of each class (sum of classes must equal one for metric to be meaningful)}
+\item{layers1}{A vector of character strings giving the layers from the first dataset to compare (should be columns in x and sum to 1 or 100)}
 
-\item{name1}{A character string giving the name of the first dataset (for making a useful id)}
+\item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
 
-\item{name2}{A character string giving the name of the second dataset (for making a useful id)}
+\item{verbose}{A logical, if TRUE print out all the metric scores}
 
-\item{verbose}{A logical, if TRUE print out all the Kappa scores
-
-Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are not for relative proportions data.}
+\item{layers1}{A vector of character strings giving the layers from the second dataset to compare (should be columns in x and sum to 1 or 100)}
 }
 \value{
-A spatial comparison object
+A named list of metric statistics
 }
 \description{
 Compares two datasets of relative proportions of multiple classes (sum of classes equals one at each point) where the total for each  data where the totally value for each. 
-Specifically calculates and returns a Statistics object (which contains many metrics) with the relevants slots are Manhattan Metric (MM) and Square Chord Distance (SCD).
+Specifically calculates and returns a list with the Manhattan Metric (MM) and Square Chord Distance (SCD).
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

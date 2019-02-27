@@ -7,11 +7,11 @@
 getField_DGVMData(source, quant, target.STAInfo, verbose = FALSE)
 }
 \arguments{
-\item{quant}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
+\item{source}{A \code{Source} containing the meta-data about the DGVMData source}
+
+\item{quant}{A Quantity object to specify what quantity should be opened.}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
-
-\item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
 
 \item{target.sta.info}{An STAInfo object defining the spatial-temporal-annual extent over which we want the data}
 

@@ -8,7 +8,9 @@ getField_aDGVM(source, quant, target.STAInfo, verbose, adgvm.scheme,
   adgvm.daily)
 }
 \arguments{
-\item{quant}{A string the define what quantity from the aDGVM2 run to extract}
+\item{quant}{A Quantity object to define what quantity from the aDGVM2 run to extract}
+
+\item{target.STAInfo}{STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
 
@@ -17,8 +19,6 @@ getField_aDGVM(source, quant, target.STAInfo, verbose, adgvm.scheme,
 \item{adgvm.daily}{A logical, set to true to read daily data (only for \code{adgvm.scheme=1} and if daily data are provided in pop file)}
 
 \item{run}{A \code{source} containing the meta-data about the aDGVM2 run}
-
-\item{first.year}{The first year (as a numeric) of the data to be return}
 
 \item{last.year}{The last year (as a numeric) of the data to be return}
 }

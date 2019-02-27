@@ -7,16 +7,16 @@
 compareLayers(field1, field2, layers1, layers2 = layers1,
   keepall1 = FALSE, keepall2 = FALSE, override.quantity = FALSE,
   verbose = FALSE, match.NAs = FALSE, show.stats = TRUE,
-  dec.places = NULL)
+  custom.metrics = list(), dec.places = NULL)
 }
 \arguments{
-\item{field1}{A Field or DataObject from which to get the first layer for comparison}
+\item{field1}{A Field or DataObject from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.}
 
-\item{field2}{A Field or DataObject from which to get the second layer for comparison}
+\item{field2}{A Field or DataObject from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.}
 
-\item{layers1}{The name of the first layer (character string)}
+\item{layers1}{The name of the layers to be compared from field1 (character string)}
 
-\item{layers2}{The name of the first layer (character string).  If not defined taken to the be the same as layers1}
+\item{layers2}{The name of the layers to be compared from field2 (character string).  If not defined taken to the be the same as layers1}
 
 \item{keepall1}{Boolean, keep all data points in layers1 even if there is not corresponding data in layers2}
 
@@ -34,6 +34,10 @@ In the case of comparing categorical data (ie layers of factors) it contains Coh
 that the both have 'no data' (typically grey areas) plotted on both maps.}
 
 \item{show.stats}{Boolean, if TRUE print the summary statistics}
+
+\item{custom.metrics}{A named list of functions (defined by the user) to calculate additional custom metrics.  The functions must take a data.table and 
+two character vectors of layer names to be compared (in order in the case of multi-layer comparisons).  Spatial-temporal-annual column names of Lon, Lat, Year, Month and Day
+can be assumed in the data.table.  The name of the item in the list is used as the metric name.}
 
 \item{dec.places}{Numeric, passed to copyLayers. Defines to how many decimal places to round the coordinates in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.}
 }

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Matthew Forrest" />
 
-<meta name="date" content="2018-10-22" />
+<meta name="date" content="2019-02-25" />
 
 <title>Writing or Modifying a Format</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Writing or Modifying a Format</h1>
 <h4 class="author"><em>Matthew Forrest</em></h4>
-<h4 class="date"><em>2018-10-22</em></h4>
+<h4 class="date"><em>2019-02-25</em></h4>
 
 
 
@@ -446,10 +446,10 @@ for(quant in quantities_NewFormat ) {
 <div id="the-determinepfts-slot" class="section level3">
 <h3>4. The <code>determinePFTs</code> slot</h3>
 <p>This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of PFTs present. The first argument should be <code>Source</code> object called <code>x</code> (see main documentation), and it can have additional arguments that might be needed</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">determinePFTs_NewFormat &lt;-<span class="st"> </span>function(directory, <span class="dt">names =</span> <span class="ot">TRUE</span>){
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">determinePFTs_NewFormat &lt;-<span class="st"> </span>function(x, <span class="dt">names =</span> <span class="ot">TRUE</span>){
   
   <span class="co"># typical stuff </span>
-  run.directory &lt;-<span class="st"> </span>x@dir
+  run.dir &lt;-<span class="st"> </span>x@dir
   
   <span class="co"># all possible PFTs present </span>
   PFTs.possible &lt;-<span class="st"> </span>x@pft.set
@@ -484,34 +484,59 @@ for(quant in quantities_NewFormat ) {
 </div>
 <div id="the-getfield-slot" class="section level3">
 <h3>6. The <code>getField</code> slot</h3>
-<p>This is the biggie! This function (which will be long, but can of course make use of other functions) is responsible for reading data from disk and bashing it into a data.table; and for r. As arguments it takes:</p>
+<p>This is the biggie! This function (which will be long, but can of course make use of other functions) is responsible for reading data from disk and bashing it into a data.table; for some cropping to the required spatial-temporal-annual extent (optionally) and for storing the spatial-temporal-annual extent in an STAInfo object. As arguments it takes:</p>
 <ul>
 <li>a DGVMTools::Source (source)object from which the data is to be read</li>
 <li>a DGVMTools::Quantity (quant) object specifying what vairbale is be returned</li>
 <li>a DGVMTools::STAInfo (sta.info) object specifying the spatial-temporal-annual dimensions of the field</li>
 <li>a logical (verbose), if TRUE then function should give more output</li>
-<li>… other flexible arguments which can be</li>
+<li>… other flexible arguments that might be needed.</li>
 </ul>
-<p>It should return a two-element list comprising:</p>
-<ul>
-<li>“dt” : a data.table containign the data, properly formatted</li>
-<li>“sta.info” : an STAInfo describing the spatial-temporal-annual dimensions of the data being returned as the “dt”</li>
-</ul>
-<p>Note that the input and output “sta.info” don’t need to match, the rest of the the cropping/aggregating is done automatically by the package, but it maybe more efficient to read only a subset of the data (eg. for netCDF files), rather than read the whole files and then crop it.</p>
+<p>It should return a DGVMTools::Field object. For more details of the Field class see the classes.R file and the main package documentatation (“Field-class)”.</p>
+<p>Note that the input “sta.info” argument and the sta.info slot of the returned Field don’t need to match, the rest of the the cropping/aggregating is done automatically by the package, but it maybe more efficient to read only a subset of the data from disk (eg. for netCDF files where you can easily cut out exactly the ‘hyperslab’ of data that you need), rather than read the whole file and then crop it.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">getField_NewFormat &lt;-<span class="st"> </span>function(source, quant, sta.info, verbose, ...){ 
   
-  <span class="co"># code needs to get the data as a data.table</span>
+  <span class="co"># open the file and read the data with ncvar_get() or read.table() or whatever</span>
+  
+  <span class="co"># code needs to get the data as a data.table so reformat it</span>
+  <span class="co"># data.tables should be melted down to one column for Lat, Lon, Year, Month and Day (as appropriate).</span>
+  <span class="co"># days run from 1-365, and if data is daily no Month column should be used</span>
+  
+  <span class="co"># dummy code</span>
   dt &lt;-<span class="st"> </span><span class="kw">data.table</span>()
+ 
   
   <span class="co"># also an STAInfo object</span>
-  return.sta.info &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;STAInfo&quot;</span>)
+  <span class="co"># define this properly based on the actual data in the data.table</span>
+  return.sta.info &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;STAInfo&quot;</span>,
+                         <span class="dt">first.year =</span> <span class="dv">1901</span>, <span class="co"># let's say</span>
+                         <span class="dt">last.year =</span> <span class="dv">2018</span>, <span class="co"># let's say</span>
+                         <span class="dt">year.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see NOTE 1 below</span>
+                         <span class="dt">spatial.extent =</span> <span class="kw">extent</span>(dt), <span class="co"># raster::extent function has been define for data.tables, might be useful</span>
+                         <span class="dt">spatial.extent.id =</span> <span class="kw">character</span>(<span class="dv">0</span>), <span class="co"># see NOTE 2 below</span>
+                         <span class="dt">spatial.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see NOTE 1 below</span>
+                         <span class="dt">subannual.resolution =</span> <span class="st">&quot;monthly&quot;</span>, <span class="co"># let's say</span>
+                         <span class="dt">subannual.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see NOTE 1 below</span>
+                         <span class="dt">subannual.original =</span> <span class="st">&quot;monthly&quot;</span> <span class="co"># let's say</span>
+                         )
+  
+   <span class="co"># NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)</span>
+   <span class="co"># NOTE 2: if no spatial cropping at this stage set this to be the empty character string &quot;character(0)&quot;, if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object</span>
+  
+  
+  <span class="co"># make the Field ID based on the STAInfo and </span>
+  field.id &lt;-<span class="st"> </span><span class="kw">makeFieldID</span>(<span class="dt">source =</span> source, <span class="dt">var.string =</span> quant@id, <span class="dt">sta.info =</span> sta.info)
     
-  <span class="co"># dummy code</span>
-  return.list &lt;-<span class="st"> </span><span class="kw">list</span>()
-  return.list[[<span class="st">&quot;dt&quot;</span>]] &lt;-<span class="st"> </span>dt
-  return.list[[<span class="st">&quot;sta.info&quot;</span>]] &lt;-<span class="st"> </span>return.sta.info
+  <span class="co"># build a new Field</span>
+  return.Field &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;Field&quot;</span>,
+                      <span class="dt">id =</span> field.id,
+                      <span class="dt">quant =</span> quant,
+                      <span class="dt">data =</span> dt,
+                      <span class="dt">sta.info =</span> return.sta.info,
+                      <span class="dt">source =</span> source)
+
    
-  <span class="kw">return</span>(return.list)
+  <span class="kw">return</span>(return.field)
   
 } </code></pre></div>
 </div>

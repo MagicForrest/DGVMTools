@@ -9,8 +9,8 @@
 #' An internal function that reads data from an aDGVM2 run. It actually calls one of two other functions depending on the type of quantity specified.   
 #' 
 #' @param run A \code{source} containing the meta-data about the aDGVM2 run
-#' @param quant A string the define what quantity from the aDGVM2 run to extract
-#' @param first.year The first year (as a numeric) of the data to be return
+#' @param quant A Quantity object to define what quantity from the aDGVM2 run to extract
+#' @param target.STAInfo STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
@@ -33,20 +33,16 @@ getField_aDGVM <- function(source,
   if(missing(adgvm.daily)) adgvm.daily <- FALSE
   
   if("aDGVM" %in% quant@format | "Standard" %in% quant@format) {
-    if(adgvm.scheme == 1) data.list <- getQuantity_aDGVM_Scheme1(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant, adgvm.daily)
-    if(adgvm.scheme == 2) data.list <-(getQuantity_aDGVM_Scheme2(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
-#    if(adgvm.scheme == 2) this.dt <- data.table(getQuantity_aDGVM_Scheme2(source, first.year = target.STAInfo@first.year, last.year = target.STAInfo@last.year, quant))
+    
+    if(adgvm.scheme == 1) return(getQuantity_aDGVM_Scheme1(run = source, target.sta = target.STAInfo, variable = quant, adgvm.daily))
+    if(adgvm.scheme == 2) return(getQuantity_aDGVM_Scheme2(run = source, target.sta = target.STAInfo, variable = quant))
+
   }
-  #else if(quant@format == "Standard") {
-  #  stop("Standard quantities nor currently defined for aDGVM")
-  #}
   else {
     stop(paste("Quantity", quant@id, "doesn't seem to be defined for aDGVM"))
   }
   
-  actual.sta.info = new("STAInfo")
-  
-  return(data.list)
+
   
 }
 
@@ -61,17 +57,20 @@ getField_aDGVM <- function(source,
 #' An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened
 #' 
 #' @param run A \code{source} containing the meta-data about the aDGVM2 run
-#' @param first.year First year of data to read
-#' @param last.year Last year of data to read
+#' @param target.sta STAInfo object containing the space-time-annual extent required.
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, meanheight“, "nind“, "pind“, "vegC_std“, "vegcover_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @seealso \code{\link{getQuantity_aDGVM_Scheme2}}
-getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgvm.daily)
+getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, adgvm.daily)
 {
   # To stop NOTES
   Day = Lat = Lon = Month = Time = Year = NULL
+  
+  # extract first and last year from STAInfo
+  first.year = target.sta@first.year
+  last.year =target.sta@last.year
   
   fname <- file.path(run@dir, paste("pop_", run@id,".nc", sep=""))
   
@@ -278,13 +277,13 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   # sort out the time dimension
   # NOTE: something special is happening here. The ':=' operator is changing the data.table in place.
   # this means that you don't need to do a re-assignment using '<-' 
-  out.all[, Year := floor((Time-1)/time.steps.per.year) + run@year.offset ] # - 1]
+  out.all[, Year := as.integer(floor((Time-1)/time.steps.per.year) + run@year.offset) ] # - 1]
 
   if(adgvm.daily) {
-    out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
+    out.all[, Day := as.integer(((Time-1) %% time.steps.per.year) + 1)]
   }
   else {
-    out.all[, Month := ((Time-1) %% time.steps.per.year) + 1]
+    out.all[, Month := as.integer(((Time-1) %% time.steps.per.year) + 1)]
   }
   out.all[, Time := NULL]
   
@@ -295,8 +294,20 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
   actual.sta.info@spatial.extent <- extent(out.all)
   
   
-  return(list(dt = out.all, 
-              sta.info = actual.sta.info))
+  # make the ID and then make and return Field
+  field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)
+  
+  return(
+    
+    new("Field",
+        id = field.id,
+        data = out.all,
+        quant = variable,
+        source = run,
+        actual.sta.info
+    )
+    
+  )
 }
 
 
@@ -307,18 +318,21 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, first.year, last.year, adgv
 #' An internal function to read quantities from aDGVM2 trait files. Quantities are currently provided for raingreen trees, evergreen trees, raingreen shrubs, evergreen shrubs, C4 grasses and C3 grasses. Pop files are not opened.
 #' 
 #' @param run A \code{source} containing the meta-data about the aDGVM2 run
-#' @param first.year First year of data to read
-#' @param last.year Last year of data to read
+#' @param target.sta STAInfo object containing the space-time-annual extent required.
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, "nind“, "meanheight“, "pind“, "vegC_std“, "vegcover_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @seealso \code{\link{getQuantity_aDGVM_Scheme1}}
-getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
+getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta)
 {
   # To stop NOTES
   Day = Lat = Lon = Month = Time = Year = NULL
-
+  
+  # extract first and last year from STAInfo
+  first.year = target.sta@first.year
+  last.year = target.sta@last.year
+  
   fname <- file.path(run@dir, paste("trait_", run@id,".nc", sep=""))
 
   # STAInfo object to summarise the spatial-temporal-annual dimensions of the data
@@ -496,24 +510,31 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
         if(variable@id == "meanheight"){
           if (length(ind.alive)>0) {
             tmp.all  <- ncdf4::ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            tmp.te[x,y,z-start.point+1]   <- mean(tmp.all[ind.te])
-            tmp.td[x,y,z-start.point+1]   <- mean(tmp.all[ind.td])
-            tmp.se[x,y,z-start.point+1]   <- mean(tmp.all[ind.se])
-            tmp.sd[x,y,z-start.point+1]   <- mean(tmp.all[ind.sd])
-            tmp.g4[x,y,z-start.point+1]   <- mean(tmp.all[ind.g4])
-            tmp.g3[x,y,z-start.point+1]   <- mean(tmp.all[ind.g3])
+
+            tmp.te[x,y,z-start.point+1]   <- ifelse( length(ind.te)>0, mean(tmp.all[ind.te]), 0 )
+            tmp.td[x,y,z-start.point+1]   <- ifelse( length(ind.td)>0, mean(tmp.all[ind.td]), 0 )
+            tmp.se[x,y,z-start.point+1]   <- ifelse( length(ind.se)>0, mean(tmp.all[ind.se]), 0 )
+            tmp.sd[x,y,z-start.point+1]   <- ifelse( length(ind.sd)>0, mean(tmp.all[ind.sd]), 0 )
+            tmp.g4[x,y,z-start.point+1]   <- ifelse( length(ind.g4)>0, mean(tmp.all[ind.g4]), 0 )
+            tmp.g3[x,y,z-start.point+1]   <- ifelse( length(ind.g3)>0, mean(tmp.all[ind.g3]), 0 )
+            #tmp.te[x,y,z-start.point+1]   <- sum(tmp.all[ind.te])/length(ind.te)
+            #tmp.td[x,y,z-start.point+1]   <- sum(tmp.all[ind.td])/length(ind.td)
+            #tmp.se[x,y,z-start.point+1]   <- sum(tmp.all[ind.se])/length(ind.se)
+            #tmp.sd[x,y,z-start.point+1]   <- sum(tmp.all[ind.sd])/length(ind.sd)
+            #tmp.g4[x,y,z-start.point+1]   <- sum(tmp.all[ind.g4])/length(ind.g4)
+            #tmp.g3[x,y,z-start.point+1]   <- sum(tmp.all[ind.g3])/length(ind.g3)
           }
         }
         
         if(variable@id == "canopyheight_std"){
           if (length(ind.alive)>0) {
             tmp.all  <- ncdf4::ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-            tmp.te[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.te],0.95)
-            tmp.td[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.td],0.95)
-            tmp.se[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.se],0.95)
-            tmp.sd[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.sd],0.95)
-            tmp.g4[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.g4],0.95)
-            tmp.g3[x,y,z-start.point+1]   <- stats::quantile(tmp.all[ind.g3],0.95)
+            tmp.te[x,y,z-start.point+1]   <- ifelse( length(ind.te)>0, stats::quantile(tmp.all[ind.te],0.95), 0 )
+            tmp.td[x,y,z-start.point+1]   <- ifelse( length(ind.td)>0, stats::quantile(tmp.all[ind.td],0.95), 0 )
+            tmp.se[x,y,z-start.point+1]   <- ifelse( length(ind.se)>0, stats::quantile(tmp.all[ind.se],0.95), 0 )
+            tmp.sd[x,y,z-start.point+1]   <- ifelse( length(ind.sd)>0, stats::quantile(tmp.all[ind.sd],0.95), 0 )
+            tmp.g4[x,y,z-start.point+1]   <- ifelse( length(ind.g4)>0, stats::quantile(tmp.all[ind.g4],0.95), 0 )
+            tmp.g3[x,y,z-start.point+1]   <- ifelse( length(ind.g3)>0, stats::quantile(tmp.all[ind.g3],0.95), 0 )
           }
         }
         
@@ -625,13 +646,13 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   # sort out the time dimension
   # NOTE: something special is happening here. The ':=' operator is changing the data.table in place.
   # this means that you don't need to do a re-assignment using '<-' 
-  out.all[, Year := Time*timestep + run@year.offset - timestep ]
+  out.all[, Year := as.integer(Time*timestep + run@year.offset - timestep) ]
   
 #  if(adgvm.daily) {
 #    out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
 #  }
 #  else {
-  out.all[, Month := 1]
+  out.all[, Month := 1L]
 #  }
   out.all[, Time := NULL]
   out.all[, Day := NULL]
@@ -642,22 +663,56 @@ getQuantity_aDGVM_Scheme2 <- function(run,variable, first.year, last.year)
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
   
-  return(list(dt = out.all, 
-              sta.info = actual.sta.info))
+  # make the ID and then make and return Field
+  field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)
+  
+  return(
+    
+    new("Field",
+        id = field.id,
+        data = out.all,
+        quant = variable,
+        source = run,
+        actual.sta.info
+    )
+    
+  )
+  
 }
 
-#' Detemine PFTs present in an aDGVM2; currently only returns a warning.
+#' Determine PFTs present in an aDGVM2; currently only returns a warning.
 #' 
-#' @param x  A Source objects describing a DGVMData source
+#' @param x  A Source objects describing an aDGVMData run
 #' @param variables Some variable to look for to detremine the PFTs present in the run.  Not the function automatically searches:
 #'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.  Currently ignored.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-determinePFTs_aDGVM <- function(x, variables) {
+determinePFTs_aDGVM <- function(x) {
   
-  warning("Need aDGVMers to write this function! For now I am returning the source@format@default.set argument directly.")
-  return(x@format@default.pfts)
+  #if (scheme==1....) 
+  #warning("Need aDGVMers to write this function! For now I am returning the source@format@default.set argument directly.")
+
+  PFT.list.s1 <- c("Tr", "C4G", "C3G")
+  PFT.list.s2 <- c("TrBE", "TrBR", "TrBES", "TrBRS", "C4G", "C3G")
+
+  cat(paste("PFTs for adgvm.scheme==1: Tr, C4G, C3G \n"))
+  cat(paste("PFTs for adgvm.scheme==2: TrBE, TrBR, TrBES, TrBRS, C4G, C3G \n"))
+  cat(paste("determinePFTs returns list with all available aDGVM2 PFTs.\n"))
+  
+#  PFTs.present <- list()
+#  for ( PFTname in PFT.list) {
+#    for(PFT in aDGVM.PFTs){
+#      if(PFT@id == PFTname) {
+#        PFTs.present <- append(PFTs.present, PFT)
+#      }
+#    }
+#  }
+  
+  return(aDGVM.PFTs)
+  
+  
+  #return(x@format@default.pfts)
   
 }
 
@@ -666,22 +721,75 @@ determinePFTs_aDGVM <- function(x, variables) {
 #'
 #' Simply lists all quantitied aDGVM  output variables 
 #' 
-#' @param source A path to a directory on the file system containing some .out files
+#' @param source A Source object defining the aDGVM model run
+#' @param id An id of the model run
+#' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
-#' Needs to be implemented by an aDGVMer
 #' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
+availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
+  
+  run.dir <- source@dir
+  
+  if ( adgvm.scheme==1 ) {
+    fname <- file.path(run.dir, paste("pop_", id,".nc", sep=""))
+    message(paste("Check quantities in adgvm.scheme=1,", fname, "\n"))
+    d <- ncdf4::nc_open(fname)
+    quantities.ncfile <- names(d[['var']])
 
-availableQuantities_aDGVM <- function(source){
+    quantities.present <- NULL
+    if(all(c("SumCanopyArea0") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegcover_std" )
+    if(all(c("SumBasalArea") %in% quantities.ncfile)==TRUE)   quantities.present <- c( quantities.present, "basalarea" )
+    if(all(c("MeanHeight") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "canopyheight_std" )
+    if(all(c("MeanCGain", "nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "aGPP_std" )
+    if(all(c("SumBLeaf", "meanSla") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "LAI_std" )
+    if(all(c("MeanHeight") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "meanheight" )
+    if(all(c("nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "pind" )
+    if(all(c("nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "nind" )
+    if(all(c("SumBBark", "SumBWood", "SumBLeaf") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "abg" )
+    if(all(c("SumBRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
+    if(all(c("SumBBark", "SumBWood", "SumBLeaf", "SumBStor", "SumBRoot", "SumBRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
   
-  warning("Needs to be implemented by an aDGVMer.")
-  
-  quantities.present <- list()
-  return(quantities.present)
-  
+    #message("Quantities available for adgvm.scheme=1: ")
+    #print( quantities.present )
+  }
+  else if (adgvm.scheme==2) {
+    fname <- file.path(run.dir, paste("trait_", id,".nc", sep=""))
+    message(paste("Check quantities in adgvm.scheme=2,", fname, "\n"))
+    d <- ncdf4::nc_open(fname)
+    quantities.ncfile <- names(d[['var']])
+
+    quantities.present <- NULL
+
+    if(all(c("alive", "VegType", "Evergreen", "StemCount") %in% quantities.ncfile)==TRUE) { 
+      if(all(c("CrownArea") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegcover_std" )
+      if(all(c("StemDiamTot") %in% quantities.ncfile)==TRUE)   quantities.present <- c( quantities.present, "basalarea" )
+      if(all(c("Height") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "canopyheight_std" )
+      #if(all(c("MeanCGain", "nind_alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "aGPP_std" )
+      if(all(c("BLeaf", "Sla") %in% quantities.ncfile)==TRUE)     quantities.present <- c( quantities.present, "LAI_std" )
+      if(all(c("Height") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "meanheight" )
+      if(all(c("alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "pind" )
+      if(all(c("alive") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "nind" )
+      if(all(c("BBark", "BWood", "BLeaf") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "abg" )
+      if(all(c("BRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
+      if(all(c("BBark", "BWood", "BLeaf", "BStor", "BRoot", "BRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
+    
+      #message("Quantities available for adgvm.scheme=2: ")
+      #print( quantities.present )
+    }
+    else {
+      message("alive, VegType, Evergreen or StemCount missing in trait file, can't extract quantities for adgvm.scheme=2.")
+    }
+  }
+  else {
+    message("Invalid value for adgvm.scheme.")
+    quantities.present <- NULL
+  }
+
+  return(quantities.present)  
 }
 
 

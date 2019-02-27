@@ -4,7 +4,7 @@
 \alias{availableQuantities_GUESS}
 \title{List all LPJ-GUESS *.out files in a run directory}
 \usage{
-availableQuantities_GUESS(source, names = TRUE)
+availableQuantities_GUESS(source, names = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{source}{A GUESS source object}

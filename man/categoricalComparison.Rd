@@ -4,26 +4,26 @@
 \alias{categoricalComparison}
 \title{Comparison between two datasets of categorical variables}
 \usage{
-categoricalComparison(vector1, vector2, name1, name2, verbose = TRUE)
+categoricalComparison(x, layers1, layers2, additional, verbose = TRUE)
 }
 \arguments{
-\item{vector1}{The first of the datasets to be compared to each other, as a vector of factors (categorical data)}
+\item{x}{A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared}
 
-\item{vector2}{The second of the datasets to be compared to each other, as a vector of factors (categorical data)}
+\item{layers1}{A character string giving the first layer to compare (should be a column in x)}
 
-\item{name1}{A character string giving the name of the first dataset (for making a useful id)}
+\item{layers2}{A character string giving the second layer to compare (should be a column in x)}
 
-\item{name2}{A character string giving the name of the second dataset (for making a useful id)}
+\item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
 
 \item{verbose}{A logical, if TRUE print out all the Kappa scores
 
 Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are for continuous as opposed to categorical data}
 }
 \value{
-A spatial comparison object
+A named list of metric statistics
 }
 \description{
-Calculates a Statistics object (which contains the Cohen's Kappa scores) given a stack containing two maps of categorical data (eg. biomes, land cover classes).
+Calculates a Statistics object (which contains the Cohen's Kappa scores) given data.table of with two layers of categorical data (eg. biomes, land cover classes).
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
