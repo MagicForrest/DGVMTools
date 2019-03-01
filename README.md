@@ -17,11 +17,39 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 * Export data as R rasters or data.frames, also save data to disk in portable format with convenient netCDF writing functionality.
 * Thorough tracking of metadata.
 
+---
+
+### Installation
+
+First release for CRAN is in preparation.
+
+We now recommend that you use the current master branch, small bug fixes and small non-breaking feature improvements will be pulled directly into master. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package is currently undergoing reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
+
+If you have devtools version 1.x.y (ie < 2.0.0) then run:
+
+```S
+devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_vignettes = TRUE)
+```
+
+If you have devtools >= 2.0.0 then run:
+
+```S
+devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_opts = c("--no-resave-data", "--no-manual"), force=T)
+```
+
+(thanks to Peter Anthoni for reporting)
+
 --- 
 
 ### News and Releases
 
-**2019-02-27** - Release v0.7.0 Changes are mostly bug fixes and behind the scenes improvements. However there have been a couple of user-facing changes which could break stuff (hence the minor version number increment from 0.6 to 0.7):
+**2019-02-27 Patch Release v0.7.1 **
+
+Bugfix due to a small regression in listPFTs().  Also took the opportunity to include examples for listPFTs, unit tests for listPFTs, and changed the 'print' functions to 'show' functions as is appropriate for S4 methods (but this does not effect users).
+
+**2019-02-27 Release v0.7.0 **
+
+Changes are mostly bug fixes and behind the scenes improvements. However there have been a couple of user-facing changes which could break stuff (hence the minor version number increment from 0.6 to 0.7):
 
 Potential breaks:
 
@@ -49,37 +77,25 @@ Behind the scenes:
     
 Also, from now on the master branch will be consider stable and usable.  Bug fixes and small feature improvements will be pulled directly into master.  For developers, there will be a dev-v0.8 branch to collect larger features and potentially breaking changes.
 
-**2018-10-29** - Release v0.6.2 Removed dependncy on external gzip on windows machines for better portability.
+**2018-10-29 Minor Release v0.6.2 **
 
-**2018-10-26** - Release v0.6.1 featuring aggregation and time series plotting of daily data, use of gzip for compressed DGVMData (also on windows systems), extended vignette and bug fixes.
+Removed dependncy on external gzip on windows machines for better portability.
 
-**2018-10-23** - Release v0.6.0 for FireMIP workshop.
+**2018-10-26 Release v0.6.1 **
 
-**2018-10-12** - Release v0.5.2 for visiting collaborators.  Release v0.6 still planned in the next two weeks.
+Featuring aggregation and time series plotting of daily data, use of gzip for compressed DGVMData (also on windows systems), extended vignette and bug fixes.
 
-**2018-10-01** - DGVMTools is now publicly available!  Whilst package is pretty much fully featured, there may be bugs, so it should be considered in the late-beta phase.  New v0.6 release to come this month.
+**2018-10-23 Release v0.6.0 **
 
----
+For FireMIP workshop.
 
-### Installation
+**2018-10-12 Release v0.5.2 **
 
-First release for CRAN is in preparation.
+For visiting collaborators.  Release v0.6 still planned in the next two weeks.
 
-We now recommend that you use the current master branch, small bug fixes and small non-breaking feature improvements will be pulled directly into master. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package is currently undergoing reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
+**2018-10-01 First Release v0.5.0 ** 
 
-If you have devtools version 1.x.y (ie < 2.0.0) then run:
-
-```S
-devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_vignettes = TRUE)
-```
-
-If you have devtools >= 2.0.0 then run:
-
-```S
-devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_opts = c("--no-resave-data", "--no-manual"), force=T)
-```
-
-(thanks to Peter Anthoni for reporting)
+DGVMTools is now publicly available!  Whilst package is pretty much fully featured, there may be bugs, so it should be considered in the late-beta phase.  New v0.6 release to come this month.
 
 ---
 

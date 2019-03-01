@@ -1001,7 +1001,7 @@ GUESS.PFTs <- list(
   ),
   
   # BNS
-  BNS = new("PFT",
+  new("PFT",
             id = "BNS",
             name = "Boreal Needleleaved Summergreen Tree",
             growth.form = "Tree",

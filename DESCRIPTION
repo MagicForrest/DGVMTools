@@ -1,6 +1,6 @@
 Package: DGVMTools
 Type: Package
-Version: 0.7.0
+Version: 0.7.1
 Title: DGVM Processing, Analysis and Plotting Tools
 Date: 2019-02-27
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
@@ -91,7 +91,6 @@ Collate:
     'plotSpatialComparison.R'
     'plotTemporal.R'
     'plotting-framework-functions.R'
-    'print-methods.R'
     'renameLayers.R'
     'selectDays.R'
     'selectGridcells.R'
@@ -99,6 +98,7 @@ Collate:
     'selectMonths.R'
     'selectSeasons.R'
     'selectYears.R'
+    'show-methods.R'
     'small-utility-functions.R'
     'summary-methods.R'
     'writeField-methods.R'

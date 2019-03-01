@@ -10,26 +10,26 @@ library(compiler)
 context("Source")
 
 GUESS.Europe.test.Source <- defineSource(id = "LPJ-GUESS_Example",
-                            dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), 
-                            format = GUESS,
-                            name = "LPJ-GUESS Europe Example Run")
+                                         dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), 
+                                         format = GUESS,
+                                         name = "LPJ-GUESS Europe Example Run")
 
 GUESS.Africa.test.Source <- defineSource(id = "LPJ-GUESS_Example",
-                                     dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools"), 
-                                     format = GUESS,
-                                     name = "LPJ-GUESS Africa Example Run")
+                                         dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools"), 
+                                         format = GUESS,
+                                         name = "LPJ-GUESS Africa Example Run")
 
 
 DGVMData.PNVBiomes.test.Source <- defineSource(id = "HandP_PNV",
-                                     dir = system.file("extdata", "DGVMData", "HandP_PNV", "HD", package = "DGVMTools"), 
-                                     format = DGVMData,
-                                     name = "Haxeltine & Prentice 1996 PNV Biomes")
+                                               dir = system.file("extdata", "DGVMData", "HandP_PNV", "HD", package = "DGVMTools"), 
+                                               format = DGVMData,
+                                               name = "Haxeltine & Prentice 1996 PNV Biomes")
 
 
 DGVMData.SaatchiBiomass.test.Source <- defineSource(id = "Saatchi2011",
-                                             dir = system.file("extdata", "DGVMData", "Saatchi2011", "HD", package = "DGVMTools"), 
-                                             format = DGVMData,
-                                             name = "Saatchi et al. 2011 Vegetation Carbon")
+                                                    dir = system.file("extdata", "DGVMData", "Saatchi2011", "HD", package = "DGVMTools"), 
+                                                    format = DGVMData,
+                                                    name = "Saatchi et al. 2011 Vegetation Carbon")
 
 # test Source
 test_that("Sources",{
@@ -50,7 +50,7 @@ LAI_FireMIP.Quantity <- lookupQuantity("lai", context = FireMIP.quantities)
 
 
 test_that("Quantity",{
-
+  
   expect_is(vegC_std.Quantity , "Quantity")
   expect_is(LAI_FireMIP.Quantity  , "Quantity")
   
@@ -85,7 +85,7 @@ Saatchi.Field.full <- getField(DGVMData.SaatchiBiomass.test.Source, vegC_std.Qua
 Biomes.Field.full <- getField(DGVMData.PNVBiomes.test.Source, "Smith2014")
 
 
-# test Source and Field
+# test Fields
 test_that("Field",{
   
   # Normal LPJ-GUESS variable
@@ -113,6 +113,51 @@ test_that("Field",{
   
   
 })
+
+# PFTs
+context("PFTs")
+
+# test PFTs
+test_that("PFTs",{
+  
+  
+  # Test return PFT objects from a Field with different criteria (and also NULL - ie no criteria)
+  all.criteria = list(NULL, "Grass", "Tree", "Evergreen", "Summergreen", "Raingreen", "Boreal", "Temperate", "Tropical", "Needleleaved", "Broadleaved")
+  
+  for(criteria in all.criteria) {
+    
+    # get list of PFTs from a Field
+    list.PFTs <- listPFTs(x = GUESS.lai.Field.full, criteria = criteria, return.ids = FALSE)
+    expect_is(list.PFTs, "list")
+    for(PFT in list.PFTs) {
+      expect_is(PFT, "PFT")
+    }
+    
+    # get vector of PFT ids (character strings) from a Field
+    list.PFTs <- listPFTs(x = GUESS.lai.Field.full, criteria = criteria, return.ids = TRUE)
+    expect_is(list.PFTs, "character")
+    for(PFT in list.PFTs) {
+      expect_is(PFT, "character")
+    }
+    
+    # get list of PFTs from a list of PFTs
+    list.PFTs <- listPFTs(x = GUESS@default.pfts, criteria = criteria, return.ids = FALSE)
+    expect_is(list.PFTs, "list")
+    for(PFT in list.PFTs) {
+      expect_is(PFT, "PFT")
+    }
+    
+    # get vector of PFT ids from a list of PFTs
+    list.PFTs <- listPFTs(x = GUESS@default.pfts, criteria = criteria, return.ids = TRUE)
+    expect_is(list.PFTs, "character")
+    for(PFT in list.PFTs) {
+      expect_is(PFT, "character")
+    }
+    
+  }
+  
+})
+
 
 
 # AGGREGATIONS
@@ -150,7 +195,7 @@ test_that("Aggregation",{
   expect_identical(GUESS.Field.yearly.mean.1 ,  GUESS.Field.yearly.mean.2)
   expect_identical(GUESS.Field.spatial.mean.1 ,  GUESS.Field.spatial.mean.2)
   expect_identical(GUESS.Field.seasonal.mean.1 ,  GUESS.Field.seasonal.mean.2)
- 
+  
   
   
 })
@@ -229,9 +274,9 @@ test_that("Aggregation",{
   expect_is(GUESS.Field.selected.Field.1, "Field")
   expect_is(GUESS.Field.selected.Field.2, "Field")
   
- 
+  
   # check the results are the same by two different routes
- 
+  
   expect_identical(GUESS.Field.selected.years.1,  GUESS.Field.selected.years.2)
   expect_identical(GUESS.Field.selected.months.1 ,  GUESS.Field.selected.months.2)
   expect_identical(GUESS.Field.selected.gridcell.1 ,  GUESS.Field.selected.gridcell.2)
@@ -242,7 +287,7 @@ test_that("Aggregation",{
   expect_identical(GUESS.Field.selected.Field.1,  GUESS.Field.selected.Field.2)
   expect_identical(GUESS.Field.selected.extent.1,  GUESS.Field.selected.Field.1)
   expect_identical(GUESS.Field.selected.raster.1,  GUESS.Field.selected.Field.1)
-
+  
 })
 
 
@@ -261,14 +306,14 @@ test_that("Plotting", {
   expect_is(plotSpatial(Saatchi.Field.full), "ggplot")
   
   # test plot options?
-
+  
   # temporal plotting
   expect_is(plotTemporal(GUESS.Field.spatial.mean.1), "ggplot")
   
   # seaconal cycle plotting -- update after plotSeasonal rebuilt
   #expect_is(plotSeasonal(GUESS.Field.spatial.mean.1), "ggplot")
   
- 
+  
 })
 
 
@@ -300,7 +345,7 @@ test_that("Numeric Comparisons and Benchmarks", {
   expect_is(Saatchi.comparison.with.dummy.benchmark, "Comparison")
   
   # can possible place extra tests on metrics here
-
+  
   
 })
 
@@ -348,7 +393,7 @@ test_that("Categorical Comparisons and Benchmarks", {
   dummy.benchmark <- function(x, layer1, layer2) { return(1)}
   Biomes.comparison.with.dummy.benchmark <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
   expect_is(Biomes.comparison.with.dummy.benchmark, "Comparison")
-
+  
 })
 
 
