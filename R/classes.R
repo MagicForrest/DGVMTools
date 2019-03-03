@@ -412,7 +412,7 @@ setClass("BiomeScheme",
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A Quantity object to define what output this.Field contains
+#' @slot quant A Quantity object to define what output this Field contains
 #' @slot first.year The first year of data
 #' @slot last.year The last year of data
 #' @slot year.aggregate.method A charecter string describing the method by which the years have been aggregated.  Will be the zero character ("character(0)") if data it not 

@@ -366,7 +366,32 @@ test_that("Categorical Quantities", {
   expect_is(GUESS.Smith2014.Biomes, "Field")
   expect_is(GUESS.Field.lai.annual, "Field")
   
+  ### Test averaging feature of get biomes
+  
+  # copy of Source for doing average biomes
+  GUESS.Europe.test.Source.2 <- defineSource(id = "LPJ-GUESS_Example_2",
+                                           dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), 
+                                           format = GUESS,
+                                           name = "LPJ-GUESS Europe Example Run 2 (copy)")
+  
+  # Dummy Source for averaged biomes, expect  a Warning because no data from which to determe PFTs
+  expect_warning(GUESS.Europe.test.Source.Averaged <- defineSource(id = "LPJ-GUESS_Example_Averaged",
+                                             dir = getwd(), 
+                                             format = GUESS,
+                                             name = "LPJ-GUESS Europe Example Run Averaged"))
+  
+  GUESS.Smith2014.Biomes.averaged <- suppressWarnings(getBiomes(source = list(GUESS.Europe.test.Source, GUESS.Europe.test.Source), 
+                                                                scheme = Smith2014BiomeScheme, 
+                                                                year.aggregate.method = "mean",
+                                                                averaged.source = GUESS.Europe.test.Source.Averaged)
+                                                      )
+  
+  expect_is(GUESS.Smith2014.Biomes.averaged, "Field")
+  
   expect_is(plotSpatial(GUESS.Smith2014.Biomes), "ggplot")
+  expect_is(plotSpatial(GUESS.Smith2014.Biomes.averaged), "ggplot")
+  expect_is(plotSpatial(list(GUESS.Smith2014.Biomes, GUESS.Smith2014.Biomes.averaged)), "ggplot")
+  expect_identical(GUESS.Smith2014.Biomes@data, GUESS.Smith2014.Biomes.averaged@data)
   expect_is(plotSpatial(GUESS.Field.lai.annual, layer = "MaxPFT"), "ggplot")
   
 })
@@ -386,9 +411,7 @@ test_that("Categorical Comparisons and Benchmarks", {
   expect_is(plotSpatialComparison(Biomes.comparison, type = "difference"), "ggplot")
   expect_warning(plotSpatialComparison(Biomes.comparison, type = "percentage.difference"))
   expect_is(plotSpatialComparison(Biomes.comparison, type = "values"), "ggplot")
-  # expect_is(plotSpatialComparison(Saatchi.comparison, type = "nme"), "ggplot")
-  
-  
+
   # test with a dummy benchmark
   dummy.benchmark <- function(x, layer1, layer2) { return(1)}
   Biomes.comparison.with.dummy.benchmark <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)

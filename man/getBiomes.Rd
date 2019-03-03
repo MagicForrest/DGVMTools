@@ -2,19 +2,22 @@
 % Please edit documentation in R/getBiomes.R
 \name{getBiomes}
 \alias{getBiomes}
-\title{Get a \code{Field} from a \code{Source}}
+\title{Get a biome \code{Field} from a \code{Source}}
 \usage{
 getBiomes(source, scheme, first.year, last.year, year.aggregate.method,
   spatial.extent, spatial.extent.id, spatial.aggregate.method,
   subannual.resolution, subannual.original, subannual.aggregate.method,
   sta.info, write = FALSE, write.components = FALSE,
-  read.full = TRUE, read.full.components = TRUE, verbose = FALSE,
-  ...)
+  read.full = TRUE, read.full.components = TRUE, averaged.source,
+  verbose = FALSE, ...)
 }
 \arguments{
-\item{source}{The \code{Source} object for which the spatially-averaged \code{ModelField} should be built (eg. "lai")}
+\item{source}{The \code{Source} object for which the biome \code{Field} should be built. A list of \code{Source} objects can also be provided, in which case 
+the required \code{Field} object derived from each \code{Source} in the list (for example LAI or fractional cover) are first averaged, and then do the biome 
+classification. In the case of a list of \code{Source} objects, the \code{averaged.source} arguments (see below) must also be supplied so that the averaged 
+data can be written to/read from disk.}
 
-\item{scheme}{The quantity (either a \code{Quantity} or a string containing its \code{id})}
+\item{scheme}{The biome scheme to be used as \code{BiomeScheme} object, or the id of a \code{BiomeScheme} defined in the package, as a character string.}
 
 \item{first.year}{The first year (as a numeric) of the data to be return}
 
@@ -42,7 +45,7 @@ See \code{\link{aggregateSubannual}}}
 
 \item{sta.info}{Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.
 Can also be a Field object from which the STA info will de derived.
-If specified the following 9 arguments are ignored (with a warning)}
+If specified the following 9 arguments are ignored (with a warning).}
 
 \item{write}{If TRUE, write the data of the \code{Field} to disk as text file.}
 
@@ -50,25 +53,31 @@ If specified the following 9 arguments are ignored (with a warning)}
 
 \item{read.full}{If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)}
 
-\item{read.full.components}{If TRUE ignore any pre-averaged file for the *component* variables on disk, if FALSE use thjm if it is there (can save a lot of time if averaged file is already saved on disk)}
+\item{read.full.components}{If TRUE ignore any pre-averaged file for the *component* variables on disk, if FALSE use them if they are there (can save a lot of time if averaged file is already saved on disk)}
+
+\item{averaged.source}{If a list of \code{Source} objects have been supplied to be averaged before the classification, you must supply another \code{Source} object to store the averaged results.}
 
 \item{verbose}{If TRUE give a lot of information for debugging/checking.}
 
-\item{...}{Other arguments that are passed to the getField function for the specific Format.  Currently this is only 'adgvm.scheme' (for the aDGVM Format) which can be 1 or 2.}
+\item{...}{Other arguments that are passed to the getField function for the specific Format or for selecting space/time/years.  Currently this can be
+\itemize{
+ \item{adgvm.scheme}  For the aDGVM Format, defines the aDGVM PFT scheme which can be 1 or 2.
+ \item{cover.fraction}  Optional when selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, should be between 0 and 1.
+}}
 }
 \value{
 A \code{Field}.
 }
 \description{
-Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object. optionally including
-spatial, temporal and annual cropping.
+Given a \code{Source} object and a \code{BiomeScheme} object, return an appropriate spatially/temporal/annually-aggregated biome \code{Field} object using the 
+classification contained in the \code{BiomeScheme} optionally including spatial, temporal and annual cropping.
 }
 \details{
 Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
 To check what dimensions you have you can use \code{\link{getDimInfo}}
 }
 \seealso{
-\code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}}
+\code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}},  \code{\link{getField}}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
