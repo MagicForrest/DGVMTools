@@ -3,13 +3,13 @@
 #
 #' Get a \code{Field} from a \code{Source}
 #' 
-#' Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object. optionally including
+#' Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object, optionally including
 #' spatial, temporal and annual cropping.
 #' 
 #' Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
-#' @param source The \code{Source} object for which the spatially-averaged \code{ModelField} should be built (eg. "lai")
+#' @param source The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.

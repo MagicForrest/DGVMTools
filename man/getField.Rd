@@ -10,7 +10,7 @@ getField(source, var, first.year, last.year, year.aggregate.method,
   sta.info, write = FALSE, read.full = TRUE, verbose = FALSE, ...)
 }
 \arguments{
-\item{source}{The \code{Source} object for which the spatially-averaged \code{ModelField} should be built (eg. "lai")}
+\item{source}{The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.}
 
 \item{var}{The quantity (either a \code{Quantity} or a string containing its \code{id})}
 
@@ -58,7 +58,7 @@ If specified the following 9 arguments are ignored (with a warning)}
 A \code{Field}.
 }
 \description{
-Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object. optionally including
+Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object, optionally including
 spatial, temporal and annual cropping.
 }
 \details{

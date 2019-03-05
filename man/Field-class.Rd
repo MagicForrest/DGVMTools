@@ -19,7 +19,7 @@ Generally these are not created directly by the user, but rather by functions li
 
 \item{\code{data}}{A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.}
 
-\item{\code{quant}}{A Quantity object to define what output this.Field contains}
+\item{\code{quant}}{A Quantity object to define what output this Field contains}
 
 \item{\code{first.year}}{The first year of data}
 
