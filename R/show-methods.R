@@ -24,7 +24,7 @@ if(!isGeneric("show")) setGeneric("show", function(object, ...) standardGeneric(
 #' @rdname show
 #' @export
 setMethod('show', signature(object="PFT"), function(object) {
-
+  
   cat(paste0("PFT: ", object@id," (", object@name, "): ", "Growth form=",  object@growth.form, ", Leaf form=", object@leaf.form, ", Phenology=", object@phenology, ", Climate zone=", object@climate.zone, ", Shade tolerance=", object@shade.tolerance, ", Preferred colour=", object@colour, "\n"))
   
   
@@ -35,10 +35,10 @@ setMethod('show', signature(object="PFT"), function(object) {
 #' @rdname show
 #' @export
 setMethod("show", signature(object="Quantity"), function(object) {
-
+  
   cat(paste0("Quantity:\n"))
   cat(paste0("\t\t", object@id," (", object@name, "): ",  "Units=", object@units, ", Defined for format: ", paste0(unlist(object@format), collapse = ', '), "\n"))
-
+  
 })
 
 
@@ -48,7 +48,7 @@ setMethod("show", signature(object="Quantity"), function(object) {
 #' @rdname show
 #' @export
 setMethod("show", signature(object="Period"), function(object) {
-
+  
   cat(paste0("Sub-annual time period:\n"))
   cat(paste0("id = ", "\"", object@id, "\"", "\n"))
   cat(paste0("name = ", "\"", object@name, "\"", "\n"))
@@ -58,7 +58,7 @@ setMethod("show", signature(object="Period"), function(object) {
   cat(paste0("contains = ", object@contains, "\n"))
   cat(paste0("days = ", object@days, "\n"))
   cat(paste0("days.leap = ", object@days.leap, "\n"))
-
+  
 })
 
 
@@ -67,7 +67,7 @@ setMethod("show", signature(object="Period"), function(object) {
 #' @rdname show
 #' @export
 setMethod("show", signature(object="Source"), function(object) {
-
+  
   cat(paste0("Source:\n"))
   cat(paste0("\tid = ", "\"", object@id, "\"", "\n"))
   cat(paste0("\tname = ", "\"", object@name, "\"", "\n"))
@@ -86,15 +86,15 @@ setMethod("show", signature(object="Source"), function(object) {
     all.PFTs <- append(all.PFTs, PFT@id)
   }
   cat(paste0(all.PFTs))
-
-
+  
+  
 })
 
 
 #' @rdname show
 #' @export
 setMethod("show", signature(object="STAInfo"), function(object) {
-
+  
   cat(paste0("Spatial Info:\n"))
   cat(paste0("\t\tSpatial aggregation = ",  object@spatial.aggregate.method, "\n"))
   cat(paste0("\t\tSpatial extent id = ",  object@spatial.extent.id, "\n"))
@@ -111,14 +111,14 @@ setMethod("show", signature(object="STAInfo"), function(object) {
   cat(paste0("\t\tSubannual original = ",  object@subannual.original, "\n"))
   cat(paste0("\t\tSubannual aggregation = ",  object@subannual.aggregate.method, "\n"))
   cat(paste0("\t\tSubannual resolution = ",  object@subannual.resolution, "\n"))
-
+  
 })
 
 
 #' @rdname show
 #' @export
 setMethod("show", signature(object="Field"), function(object) {
-
+  
   cat(paste0("A Field object\n"))
   print(object@quant)
   cat(paste0("Id:\n"))
@@ -134,7 +134,7 @@ setMethod("show", signature(object="Field"), function(object) {
   cat(paste0("Source name:\n"))
   cat(paste0("\t\t ", "\"", object@source@name, "\"", "\n"))
   cat("(For full Source metadata type \"print(object@source)\", where X is this Field)\n")
-
+  
 })
 
 
@@ -142,16 +142,26 @@ setMethod("show", signature(object="Field"), function(object) {
 #' @rdname show
 #' @export
 setMethod("show", signature(object="Comparison"), function(object) {
-
+  
   cat(paste0("Comparison Layer:\n"))
   cat(paste0("id = ", "\"", object@id, "\"", "\n"))
   cat(paste0("name = ", object@name, "\"", "\n"))
-  for(stat in object@stats) {
-    cat(paste0("   ", names(stat), ": ", stat))
+  cat(paste0("type = ", object@type, "\"", "\n"))
+  cat(paste0("statistical metrics: \n"))
+  for(counter in 1:length(object@stats)) {
+    stat <- object@stats[[counter]]
+    if(length(stat) == 1){
+      cat(paste0("  ", names(object@stats)[counter], ": ", round(stat, 5), "\n"))
+    }
+    else {
+      print(paste0(names(stat)[counter], ":\n"))
+      for(counter2 in 1:length(stat)) {
+        cat(paste0("    ", names(stat)[counter2], ": ", round(stat[[counter2]], 5), "\n"))
+      }
+    }
   }
   cat(paste0("First layers: \n"))
   print(object@layers1)
-  cat(paste0("Second layers: \n"))
   print(object@layers2)
   cat(paste0("Quantity for first layer: \n"))
   print(object@quant1)
@@ -167,7 +177,7 @@ setMethod("show", signature(object="Comparison"), function(object) {
   print(object@source1)
   cat(paste0("Source for second layer: \n"))
   print(object@source2)
-
+  
 })
 
 
@@ -175,7 +185,7 @@ setMethod("show", signature(object="Comparison"), function(object) {
 #' @rdname show
 #' @export
 setMethod("show", signature(object="BiomeScheme"), function(object) {
-
+  
   cat(paste0("Biome Scheme:\n"))
   cat(paste0("id = ", "\"", object@id, "\"", "\n"))
   cat(paste0("name = ", object@name, "\"", "\n"))
@@ -186,13 +196,13 @@ setMethod("show", signature(object="BiomeScheme"), function(object) {
   for(type in object@units) {
     cat(paste0("     ", type,"\n"))
   }
-
+  
 })
 
 #' @rdname show
 #' @export
 setMethod("show", signature(object="Format"), function(object) {
-
+  
   cat(paste0("Format:\n"))
   cat(paste0("id = \"", object@id, "\"", "\n"))
   cat(paste0("Default PFTs:\n"))
@@ -203,8 +213,8 @@ setMethod("show", signature(object="Format"), function(object) {
   for(quant in object@quantities){
     print(quant)
   }
-
-
+  
+  
 })
 
 

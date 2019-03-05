@@ -377,11 +377,11 @@ context("Categorical Comparisons and Benchmarks")
 
 test_that("Categorical Comparisons and Benchmarks", {
   
-  # build and test a categroal Comparison
+  # build and test a categorical Comparison
   Biomes.comparison <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, show.stats = FALSE)
   expect_is(Biomes.comparison, "Comparison")
   
-  # plot said numeric Comparison
+  # plot said categorical Comparison
   expect_is(plotSpatialComparison(Biomes.comparison), "ggplot")
   expect_is(plotSpatialComparison(Biomes.comparison, type = "difference"), "ggplot")
   expect_warning(plotSpatialComparison(Biomes.comparison, type = "percentage.difference"))
@@ -393,6 +393,34 @@ test_that("Categorical Comparisons and Benchmarks", {
   dummy.benchmark <- function(x, layer1, layer2) { return(1)}
   Biomes.comparison.with.dummy.benchmark <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
   expect_is(Biomes.comparison.with.dummy.benchmark, "Comparison")
+  
+})
+
+
+### SEASONAL COMPARISONS AND BENCHMARKING
+context("Seasonal Comparisons and Benchmarks")
+
+test_that("Seasonal Comparisons and Benchmarks", {
+  
+  test.Field.2000_2005 <-  getField(source = GUESS.Europe.test.Source, var = "mlai", year.aggregate.method = "mean", first.year = 2000, last.year = 2005)
+  test.Field.2006_2010 <-  getField(source = GUESS.Europe.test.Source, var = "mlai", year.aggregate.method = "mean", first.year = 2006, last.year = 2010)
+  
+  # build and test a seasonal Comparison
+  Seasonal.comparison <- compareLayers(test.Field.2000_2005, test.Field.2006_2010, layers1 = "mlai", do.seasonality = TRUE, verbose = FALSE, show.stats = FALSE)
+  expect_is(Seasonal.comparison, "Comparison")
+  
+  # plot said seasonal Comparison
+  #expect_is(plotSpatialComparison(Biomes.comparison), "ggplot")
+  #expect_is(plotSpatialComparison(Biomes.comparison, type = "difference"), "ggplot")
+  #expect_warning(plotSpatialComparison(Biomes.comparison, type = "percentage.difference"))
+  #expect_is(plotSpatialComparison(Biomes.comparison, type = "values"), "ggplot")
+  # expect_is(plotSpatialComparison(Saatchi.comparison, type = "nme"), "ggplot")
+  
+  
+  # test with a dummy benchmark
+  dummy.benchmark <- function(x, layer1, layer2) { return(1) }
+  Seasonal.comparison.with.dummy.benchmark <- compareLayers(test.Field.2000_2005, test.Field.2006_2010, layers1 = "mlai", do.seasonality = TRUE, verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
+  expect_is(Seasonal.comparison.with.dummy.benchmark, "Comparison")
   
 })
 

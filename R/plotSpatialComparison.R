@@ -58,21 +58,28 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   if(is.Comparison(sources)) {
     sources<- list(sources)
   }
-  else if(class(sources)[1] == "list") {
+  else if(is.list(sources)) {
+    this.type <- sources[[1]]@type
     for(object in sources){ 
       if(!is.Comparison(object)) {
         warning("You have passed me a list of items to plot but the items are not exclusively of Comparisons.  Returning NULL")
         return(NULL)
       }
+      else{
+        if(object@type != this.type) {
+          warning("You have passed me a list of Comparison objects to plot but they have different types.  Returning NULL")
+          return(NULL)
+        }
+      }
     }
   }
   else{
-    stop(paste("plotStatistics can only handle single a Comparison, or a list of Comparisons can't plot an object of type", class(sources)[1], sep = " "))
+    stop(paste("plotSpatialComparison() can only handle single a Comparison, or a list of Comparisons, can't plot an object of type", class(sources)[1], sep = " "))
   }
   
   
   ### 2. LAYERS - the layers to plot are defined by the plot type
-  
+ 
   
   #### DIFFERENCE OR PERCENTAGE DIFFERENCE
   if(type == "difference" || type == "percentage.difference") {
@@ -83,16 +90,28 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     final.layers.to.plot <- c()
     for(object in sources){ 
       
+      # first make a list of the layers that we expect to be present in the data.table, based on the meta-data in the Comparison object
+      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, var.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
+      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, var.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
+      
+      print(expected.layers.1)
+      print(expected.layers.2)
+      print(names(object))
+      
+      # calculate the difference layers
+      temp.dt <- object@data
+      layers.names <- names(object)
+      if(object@type == "categorical")  temp.dt[, "Difference" := as.character(get(layers.names[1])) == as.character(get(layers.names[2]))]
+      else temp.dt[, "Difference" :=  get(layers.names[1]) - get(layers.names[2])]
+      
       if(type == "difference") {
         layer.to.plot <- "Difference"
       }
       else {
-        layer.to.plot <- "Percentage.Difference"
-        temp.dt <- object@data
-        layers.names <- names(object)
+        layer.to.plot <- "Percentage.Difference"       
         temp.dt[ , Percentage.Difference := Difference %/0% get(layers.names[2]) * 100 ]
-        object@data <- temp.dt
       }
+      object@data <- temp.dt
       new.object <- selectLayers(object, layer.to.plot)
       
       new.field <- new("Field",
@@ -155,7 +174,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   ### VALUES 
   else if(type == "values") {
     
-    # convert the Comparisons into a Fields  for plotting 
+    # convert the Comparisons into Fields for plotting 
     objects.to.plot <- list()
     layers.to.plot <- c()
     for(object in sources){ 

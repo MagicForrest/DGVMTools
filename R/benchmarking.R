@@ -37,6 +37,7 @@ lm_eqn <- function(linear.model) {
 calcNME <- function(mod, obs) {
   
    return( sum(abs(mod - obs), na.rm=TRUE) / sum(abs(obs - mean(obs)), na.rm=TRUE)) 
+  
 }
 
 
@@ -466,8 +467,161 @@ categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE
     }
   }
   
-  
   return(stats)
   
+}
+#' Compare seasonal data
+#' 
+#' Compares two datasets of monthly continuous data. Specifically calculates and returns a Statistics object (which contains many metrics) given numeric two vectors of equal size 
+#' 
+#' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
+#' @param layers1 A character string giving the first layer to compare (should be a column in x).  For the normalised metrics, this is the *modelled* values.
+#' @param layers2 A character string giving the second layer to compare (should be a column in x).  For the normalised metrics, this is the *observed* values.
+#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
+#' @param verbose A logical, if TRUE print out all the metric scores
+#' 
+#' @return A named list of metric statistics
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @export    
+seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
+
+  C_1 = C_2 = L_x_1 = L_x_2 = L_y_1 = L_y_2 = Lat = Lon = Month = P_1 = P_2 = Sigma_x_1 = Sigma_x_2 = Theta_t = NULL
   
+  # get the non-monthy dimensions
+  all.dims <- getDimInfo(x)
+  if(!"Month" %in% all.dims) stop ("Something went wrong, seasonalComparison() was called with data  with no 'Month' dimension")
+  non.month.dims <- all.dims[which(!all.dims == "Month")]
+
+  #### FIRST CALCULATE THE SEASONAL CONCENTRATION AND PHASE
+  ##   Equations numbers refer to Kelley et al 2013 Biogeosciences
+  
+  #  calculate the theta_t, L_x and L_y
+  theta_t <- 2 * pi * (1:12 -1) /12  # equation (5)
+  x[, Theta_t := theta_t[Month]] # apply equation (5)
+  x[, L_x_1 := get(layers1) * cos(Theta_t) ] # equation (6) without summation
+  x[, L_y_1 := get(layers1) * sin(Theta_t) ] # equation (6) without summation
+  x[, L_x_2 := get(layers2) * cos(Theta_t) ] # equation (6) without summation
+  x[, L_y_2 := get(layers2) * sin(Theta_t) ] # equation (6) without summation
+  
+  # now sum over all months - the summations from equation (6), but also make the denominator from equation(7)
+  x.summed <-  x[, j=list(L_x_1 = sum(L_x_1), L_y_1 = sum(L_y_1), L_x_2 = sum(L_x_2), L_y_2 = sum(L_y_2), Sigma_x_1 = sum(get(layers1)), Sigma_x_2 = sum(get(layers2))), by=non.month.dims]
+  
+  # remove where either Sigma == 0
+  x.summed <- x.summed[ Sigma_x_1 != 0 & Sigma_x_2 != 0]
+  
+  # concentration and phase equations (7) and (8)
+  x.summed[, C_1 := (L_x_1^2 + L_y_1^2) ^0.5 / Sigma_x_1]
+  x.summed[, C_2 := (L_x_2^2 + L_y_2^2) ^0.5 / Sigma_x_2]
+  x.summed[, P_1 := atan(L_x_1/L_y_1)]
+  x.summed[, P_2 := atan(L_x_2/L_y_2)]
+  
+  
+  #### KELLEY ET AL 2013 METRICS
+  
+  #### CONCENTRATION
+  # code essentially ripped from continuousComparison above
+  
+  # Preamble - extract vectors and remove NAs from both vectors 
+  vector1 <- x.summed[["C_1"]]
+  vector2 <- x.summed[["C_2"]]
+  
+  # first remove where there are NAs in vector1
+  vector2 <- vector2[!is.na(vector1)]
+  vector1 <- vector1[!is.na(vector1)]
+  # now for vector2
+  vector1 <- vector1[!is.na(vector2)]
+  vector2 <- vector2[!is.na(vector2)]
+  
+  # Normalised metrics: NME and NMSE (step 1)
+  NME <- calcNME(mod = vector1, obs = vector2)
+  NMSE <- calcNMSE(mod = vector1, obs = vector2)
+  
+  # and step 2 for NME and NMSE
+  vector1_step2 <- vector1 - mean(vector1)
+  vector2_step2 <- vector2 - mean(vector2)
+  NME_2 <- calcNME(mod = vector1_step2, obs = vector2_step2)
+  NMSE_2 <- calcNMSE(mod = vector1_step2, obs = vector2_step2)
+  
+  # and step 3 for NME and NMSE
+  vector1_step3_NME <- vector1_step2 / sum(abs(vector1_step2 - mean(vector1_step2)))/ length(vector1_step2)
+  vector2_step3_NME <- vector2_step2 / sum(abs(vector2_step2 - mean(vector2_step2)))/ length(vector2_step2)
+  NME_3 <- calcNME(mod = vector1_step3_NME, obs = vector2_step3_NME)
+  
+  vector1_step3_NMSE <- vector1_step2 / stats::var(vector1_step2)
+  vector2_step3_NMSE <- vector2_step2 / stats::var(vector2_step2)
+  NMSE_3 <- calcNMSE(mod = vector1_step3_NMSE, obs = vector2_step3_NMSE)
+  
+  #### PHASE
+  # Preamble - extract vectors and remove NAs from both vectors 
+  phase1 <- x.summed[["P_1"]]
+  phase2 <- x.summed[["P_2"]]
+  
+  # first remove where there are NAs in phase1
+  phase2 <- phase2[!is.na(phase1)]
+  phase1 <- phase1[!is.na(phase1)]
+  # now for phase2
+  phase1 <- phase1[!is.na(phase2)]
+  phase2 <- phase2[!is.na(phase2)]
+  
+  MPD <- (1/pi) * acos( sum(cos(phase1 - phase2)/length(phase1)))
+  
+  
+  #### COMPILE STATS
+  stats <- list("NME_conc" = NME,
+                "NMSE_conc" = NMSE,
+                "NME_conc_2" = NME_2,
+                "NMSE_conc_2" = NMSE_2,
+                "NME_conc_3" = NME_3,
+                "NMSE_conc_3" = NMSE_3,
+                "MPD" = MPD
+  )
+  
+  ##### HERE DO CUSTOM METRICS
+  if(length(additional) > 0) {
+    for(counter in 1:length(additional)) {
+      stats[[names(additional)[counter]]] <- additional[[counter]](x, layers1, layers2) 
+    }
+  }
+  
+  
+  #### PRINT METRICS
+  if(verbose) {
+    
+    print(paste("+++ Stats for", paste(layers1, sep = ","), "vs",  paste(layers2, sep = ","),  "+++", sep = " "))
+    for(counter in 1:length(stats)) {
+      
+      stat.val <- stats[[counter]]
+      stat.name <- names(stats)[counter]
+      
+      if(length(stat.val) == 1) {
+        
+        # also give a little more info for the standard metrics (ie their full name) before printing
+        if(stat.name == "NME_conc") stat.name <- "NME (Normalised Mean Error) of seasonal concentration"
+        else if(stat.name == "NMSE_conc") stat.name <- "NMSE (Normalised Mean Square Error) of seasonal concentration"
+        else if(stat.name == "NME_conc_2") stat.name <- "NME_2 (NME with mean removed) of seasonal concentration"
+        else if(stat.name == "NMSE_conc_2") stat.name <- "NMSE_2 (NMSE with mean removed) of seasonal concentration"
+        else if(stat.name == "NME_conc_3") stat.name <- "NME_3 (NME with mean and variance removed) of seasonal concentration"
+        else if(stat.name == "NMSE_conc_3") stat.name <- "NMSE_3 (NMSE with mean and variance removed) of seasonal concentration"
+        else if(stat.name == "MPD") stat.name <- "MPD (Mean Phase Difference)"
+        print(paste(stat.name,  "=", round(stat.val, 4), sep = " "))
+        
+      }
+      else {
+        
+        # here print each sub value of the metric
+        print(paste0(stat.name, ":"))
+        for(counter2 in 1:length(stat.val)) {
+          sub.stat.val <- stat.val[[counter2]]
+          sub.stat.name <- names(stat.val)[[counter2]]
+          print(paste("  ", sub.stat.name,  "=", round(sub.stat.val, 4), sep = " "))
+        }
+        
+      }
+      
+    }
+  }
+  
+  return(list(dt = x.summed[, c("L_x_1", "L_y_1", "L_x_2", "L_y_2", "Sigma_x_1", "Sigma_x_2") := NULL], stats = stats))
+         
 }
