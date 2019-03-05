@@ -252,7 +252,7 @@ getBiomes <- function(source,
   
   ### BUILD THE FINAL Field
   biome.field <- new("Field",
-                     id = target.field.id,
+                     id = makeFieldID(source = final.source, var.string = scheme@id, sta.info = final.stainfo),
                      data = this.dt,
                      quant = as(object = scheme, Class = "Quantity"),
                      source = final.source,
