@@ -433,11 +433,10 @@ test_that("Seasonal Comparisons and Benchmarks", {
   expect_is(Seasonal.comparison, "Comparison")
   
   # plot said seasonal Comparison
-  #expect_is(plotSpatialComparison(Biomes.comparison), "ggplot")
-  #expect_is(plotSpatialComparison(Biomes.comparison, type = "difference"), "ggplot")
-  #expect_warning(plotSpatialComparison(Biomes.comparison, type = "percentage.difference"))
-  #expect_is(plotSpatialComparison(Biomes.comparison, type = "values"), "ggplot")
-  # expect_is(plotSpatialComparison(Saatchi.comparison, type = "nme"), "ggplot")
+  expect_is(plotSpatialComparison(Seasonal.comparison), "ggplot")
+  expect_is(plotSpatialComparison(Seasonal.comparison, type = "values"), "ggplot")
+  expect_is(plotSpatialComparison(Seasonal.comparison, do.phase = TRUE), "ggplot")
+  expect_is(plotSpatialComparison(Seasonal.comparison, type = "values", do.phase = TRUE), "ggplot")
   
   
   # test with a dummy benchmark

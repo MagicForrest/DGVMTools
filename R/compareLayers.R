@@ -262,10 +262,10 @@ compareLayers <- function(field1,
 
     setnames(new.data, 
              c("C_1", "C_2", "P_1", "P_2"), 
-             c(paste("SeasonalConcentration", field1@id, sep = "."), 
-               paste("SeasonalConcentration", field2@id, sep = "."),
-               paste("SeasonalPhase", field1@id, sep = "."), 
-               paste("SeasonalPhase", field2@id, sep = "."))
+             c(paste("Seasonal Concentration", field1@id, sep = "."), 
+               paste("Seasonal Concentration", field2@id, sep = "."),
+               paste("Seasonal Phase", field1@id, sep = "."), 
+               paste("Seasonal Phase", field2@id, sep = "."))
     )
    
   }

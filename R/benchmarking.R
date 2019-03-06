@@ -513,8 +513,8 @@ seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
   # concentration and phase equations (7) and (8)
   x.summed[, C_1 := (L_x_1^2 + L_y_1^2) ^0.5 / Sigma_x_1]
   x.summed[, C_2 := (L_x_2^2 + L_y_2^2) ^0.5 / Sigma_x_2]
-  x.summed[, P_1 := atan(L_x_1/L_y_1)]
-  x.summed[, P_2 := atan(L_x_2/L_y_2)]
+  x.summed[, P_1 := atan2(L_x_1,L_y_1)]
+  x.summed[, P_2 := atan2(L_x_2,L_y_2)]
   
   
   #### KELLEY ET AL 2013 METRICS
@@ -622,6 +622,18 @@ seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
     }
   }
   
-  return(list(dt = x.summed[, c("L_x_1", "L_y_1", "L_x_2", "L_y_2", "Sigma_x_1", "Sigma_x_2") := NULL], stats = stats))
+  # remove intermediate columns before returning
+  x.summed[, c("L_x_1", "L_y_1", "L_x_2", "L_y_2", "Sigma_x_1", "Sigma_x_2") := NULL]
+  
+  # transfer the angular phases back to months for nice plotting ie. map 0 -> January and +/-pi to July
+  
+  correctPhase<- function(phase) {
+    return(ifelse(phase < 0, phase + 12, phase))
+  }
+  x.summed[, P_1 :=  correctPhase(12 * P_1 / (2 * pi)), ]
+  x.summed[, P_2 :=  correctPhase(12 * P_2 / (2 * pi)), ]
+
+  
+  return(list(dt = x.summed, stats = stats))
          
 }

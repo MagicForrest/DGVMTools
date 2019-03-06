@@ -149,7 +149,7 @@ makePlotTitle <- function(fields){
       title.string <- paste(title.string, layers.vec)
   }
   if(length(quants.vec) == 1) title.string <- paste(title.string, quants.vec)
-  if(length(sources.vec) == 1) title.string <- paste(title.string, sources.vec)
+  if(length(sources.vec) == 1) title.string <- paste0(title.string, ": ", sources.vec)
   
   
   
