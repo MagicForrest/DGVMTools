@@ -245,15 +245,22 @@ getBiomes <- function(source,
     }
   }
   
+  # remove the individual fields
+  rm(all.fields)
+  
   if(verbose) print("Starting classification")
   suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
-  this.dt <- dt[,append(getDimInfo(dt), scheme@id), with = FALSE]
-  setKeyDGVM(this.dt)
+  
+  # remove all layers which are not the biome layers and set key
+  all.layers <- layers(dt)
+  all.non.biome.layers <- all.layers[which(all.layers != scheme@id)]
+  dt[, (all.non.biome.layers) := NULL]
+  setKeyDGVM(dt)
   
   ### BUILD THE FINAL Field
   biome.field <- new("Field",
                      id = makeFieldID(source = final.source, var.string = scheme@id, sta.info = final.stainfo),
-                     data = this.dt,
+                     data = dt,
                      quant = as(object = scheme, Class = "Quantity"),
                      source = final.source,
                      final.stainfo)
@@ -267,8 +274,7 @@ getBiomes <- function(source,
   }
   
   ### TIDY UP AND RETURN
-  rm(dt, this.dt)
-  rm(all.fields)
+  rm(dt)
   gc()
   
   return(biome.field)
