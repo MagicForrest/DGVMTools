@@ -199,7 +199,7 @@ getField <- function(source,
   }
   else if(is.null(sta.info@spatial.extent)){
     
-    actual.sta.info@spatial.extent.id <- "Full"
+    this.Field@spatial.extent.id <- "Full"
     if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
     
   }
@@ -253,8 +253,6 @@ getField <- function(source,
       
       this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose)
       
-      # update meta-data and report  
-      actual.sta.info@spatial.aggregate.method <- sta.info@spatial.aggregate.method
       if(verbose) {
         message("Head of spatially aggregated data.table:")
         print(utils::head(this.Field@data))
@@ -267,9 +265,7 @@ getField <- function(source,
     if("Year" %in% getDimInfo(this.Field, "names")){
       
       this.Field <- aggregateYears(this.Field, method = sta.info@year.aggregate.method, verbose = verbose)
-      
-      # update meta-data and report  
-      actual.sta.info@year.aggregate.method <- sta.info@year.aggregate.method
+     
       if(verbose) {
         message("Head of year aggregated data:")
         print(utils::head(this.Field@data))
@@ -294,9 +290,6 @@ getField <- function(source,
       
       this.Field <- aggregateSubannual(this.Field, method = sta.info@subannual.aggregate.method, target = sta.info@subannual.resolution, verbose = verbose)
       
-      # update meta-data and report  
-      actual.sta.info@subannual.aggregate.method <- sta.info@subannual.aggregate.method
-      actual.sta.info@subannual.resolution <- sta.info@subannual.resolution
       if(verbose) {
         message("Head of year aggregated data:")
         print(utils::head(this.Field@data))
