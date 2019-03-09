@@ -115,7 +115,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
         
       }
       
-      if(is.data.frame(gridcells)) gridcells <- as.data.table(gridcells)
+      if(!is.data.table(gridcells)) { gridcells <- as.data.table(copy(gridcells))   }
       selection.dt  <- gridcells[,c(1,2)]
       setnames(selection.dt, c("Lon","Lat"))
       
@@ -164,7 +164,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
   else{
     x@data <- final.dt
     x@spatial.extent.id <- spatial.extent.id
-    x@spatial.extent <- extent(final.dt)
+    x@spatial.extent <- gridcells
     x@id <- makeFieldID(source = x@source,
                         var.string = x@quant@id, 
                         sta.info = as(x, "STAInfo"))

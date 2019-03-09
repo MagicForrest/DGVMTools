@@ -276,7 +276,6 @@ test_that("Aggregation",{
   
   
   # check the results are the same by two different routes
-  
   expect_identical(GUESS.Field.selected.years.1,  GUESS.Field.selected.years.2)
   expect_identical(GUESS.Field.selected.months.1 ,  GUESS.Field.selected.months.2)
   expect_identical(GUESS.Field.selected.gridcell.1 ,  GUESS.Field.selected.gridcell.2)

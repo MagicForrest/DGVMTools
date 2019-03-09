@@ -15,17 +15,15 @@
 
 selectLayers <- function(x, layers) {
   
-  all.layers <- names(x)
-  st.layers <- getDimInfo(x)
-  
   # check if layer is present
   for(layer in layers) {
-    if(!(layer %in% all.layers)) stop(paste("Can't subset layer", layer, "from object with id =", x@id, "since it is not present", sep = " "))
+    if(!(layer %in% names(x))) stop(paste("Can't subset layer", layer, "from object with id =", x@id, "since it is not present", sep = " "))
   }
   
+  # copy the field and replace the data.table with a subsetted one
   x.new <- copy(x)
   dt.new <- x.new@data
-  dt.new <- dt.new[, append(st.layers, layers), with = FALSE]
+  dt.new <- dt.new[, append(getDimInfo(x), layers), with = FALSE]
   x.new@data <- dt.new
   
   return(x.new)

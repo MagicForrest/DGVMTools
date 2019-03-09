@@ -22,7 +22,7 @@ santiseFieldsForPlotting <- function(fields) {
     }
   }
   else{
-    warning(paste("plotSpatial can only handle single a Field, or a list of Fields, it can't plot an object of type", class(fields)[1], sep = " "))
+    warning(paste("This plot function can only handle single a Field, or a list of Fields, it can't plot an object of type", class(fields)[1], sep = " "))
     return(NULL)
   }
   
@@ -135,7 +135,7 @@ santiseDimensionsForPlotting <- function(fields, require = NULL) {
 #' Check values of a particular dimension 
 #' 
 #' This is an internal helper function which either stops if a dimension is requested to be plotted but is not present
-#  or, if they have not explicitly been requested, it makes a list of possible values of that dimension.  If a value has been reuqested but is not present for the 
+#  or, if they have not explicitly been requested, it makes a list of possible values of that dimension.  If a value has been requested but is not present for the 
 #' dimension, it gives a warning
 #' 
 #' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
@@ -175,6 +175,82 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
   return(input.values)
   
 }
+
+#' Eubsets data from Field for plotting 
+#' 
+#' This is an internal helper function which pulls out the data needed to make a plot from a bunch of Fields,
+#' and combines them and melts them into a big data.table for plotting with ggplot2.  It also determines an appropriate title 
+#' and subtitle
+#' 
+#' 
+#' 
+#' 
+#' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
+#' @param layers A character vector of the layers to be plotted
+#' @param years The years to be extracted (as a numeric vector), if NULL all years are used
+#' @param days The days to be extracted (as a numeric vector), if NULL all days are used
+#' @param months The months to be extracted (as a numeric vector), if NULL all months are used
+#' @param seasons The months to be extracted (as a character vector), if NULL all seasons are used
+#' @return Returns a list of Fields
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
+trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL) {
+
+  J = Year = Source = NULL
+  
+  discrete <- FALSE
+  continuous <- FALSE
+  
+  # Loop through the objects and select the layers and dimensions that we want for plotting
+ 
+  final.fields <- list()
+  
+  for(object in fields){
+    
+    # check that at least one layer is present in this object and make a list of those which are
+    all.layers <- names(object)
+    layers.present <- c()
+    for(this.layer in layers) {
+      if(this.layer %in% all.layers)  layers.present <- append(layers.present, this.layer)
+    }
+    
+    # if at least one layer present subset it
+    if(length(layers.present) > 0) {
+      
+      # select the layers and time periods required and mash the data into shape
+      these.layers <- selectLayers(object, layers.present)
+      if(!is.null(years)) {
+        # set key to Year, subset by years, the set keys back
+        # note we are not doing selectYears() because we may want to select non-contiguous years
+        setkey(these.layers@data, Year)
+        these.layers@data <- these.layers@data[J(years)]
+        setKeyDGVM(these.layers@data)
+      }
+      if(!is.null(days)) these.layers <- selectDays(these.layers, days)
+      if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
+      if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
+      
+      # check if layers are all continuous or discrete
+      for(layer in layers.present) {
+        if(class(object@data[[layer]]) == "factor" || class(object@data[[layer]]) == "logical" || class(object@data[[layer]]) == "ordered") discrete <- TRUE
+        if(class(object@data[[layer]]) == "numeric" || class(object@data[[layer]]) == "integer" ) continuous <- TRUE
+      }
+      if(discrete & continuous) stop("Cannot simultaneously plot discrete and continuous layers, check your layers") 
+      if(!discrete & !continuous) stop("Can only plot 'numeric', 'integer', 'factor', 'ordered' or 'logical' layers, check your layers")   
+      
+      
+      final.fields <- append(final.fields, these.layers)
+  
+    } # end if length(layers.present) > 0
+    
+  }
+  
+  return(final.fields)
+  
+}
+
 
 #####################################################################################################################
 ################ CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED ########################

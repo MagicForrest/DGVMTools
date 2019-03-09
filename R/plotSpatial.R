@@ -6,18 +6,18 @@
 #########################################################################################################################################
 
 
-#' Plot maps from a \code{Field} and a lists of \code{Field}.
+#' Plot maps from a \code{Field} or a lists of \code{Field}.
 #' 
-#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and Comparisons (and lists of those things) with flexibility, but also with a high degree of automation. 
-#' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
-#' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
+#' This is a heavy lifting function for plotting maps from Fields with flexibility, but also with a high degree of automation. 
+#' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  
+#' In principle you can supply only the Fields and it will plot something sensible. It extracts the relevent data from the Fields, bashes it into
+#' a data.table then calls ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
 #'
-#' @param fields The data to plot. Can be a Field, a DataObject, or a list of including both
+#' @param fields The data to plot. Can be a Field or a list of Fields.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
-#' Note that using these, especially "worldHires", can add quite a bit of time. 
 #' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
 #' Sensible titles will be constructed if this is not specified.
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
@@ -45,6 +45,7 @@
 #' if the 'grid' option is FALSE. 
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
+#' Note that using these, especially "worldHires", can add quite a bit of time. 
 #' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
 #' @param tile Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
@@ -119,10 +120,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   if(is.null(dim.names)) return(NULL)
   
   
-  
-  
-  
-  ##### CHECK POTENTIAL TEMPORAL FACET AXES AND GET A LIST OF VALUES PRESENT FOR PLOTTING
+  ### 4. CHECK POTENTIAL TEMPORAL FACET AXES AND GET A LIST OF VALUES PRESENT FOR PLOTTING
   
   if("Day" %in% dim.names) days <- checkDimensionValues(fields, days, "Day")
   if("Month" %in% dim.names) months <- checkDimensionValues(fields, months, "Month") 
@@ -131,96 +129,71 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   
   
-  ### PREPARE DATA FOR PLOTTING
-  # Here we extract the data.table from the object to be plotted and melt it as appropriate
-  # we also make a list of PFTs in case we need them for colour matching later
-  data.toplot.list <- list()
+  ### PREPARE AND CHECK DATA FOR PLOTTING
   
-  # Loop through the objects and pull layers from each one into a large data.table for plotting
+  final.fields <- trimFieldsForPlotting(fields, layers, years = years, days = days, months = months)
+ 
   
+  # check if layers are all continuous or discrete
   discrete <- FALSE
   continuous <- FALSE
-  first <- TRUE
-  final.fields <- list()
-  PFTs <- list()
-  for(object in fields){
-    
-    # check that at least one layer is present in this object and make a list of those which are
-    all.layers <- names(object)
-    something.present <- FALSE
-    layers.present <- c()
-    for(this.layer in layers) {
-      if(this.layer %in% all.layers)  layers.present <- append(layers.present, this.layer)
+  for(this.field in final.fields) {
+    for(layer in layers(this.field)) {
+      if(class(this.field@data[[layer]]) == "factor" || class(this.field@data[[layer]]) == "logical" || class(this.field@data[[layer]]) == "ordered") discrete <- TRUE
+      if(class(this.field@data[[layer]]) == "numeric" || class(this.field@data[[layer]]) == "integer" ) continuous <- TRUE
     }
-    if(length(layers.present) > 0) something.present <- TRUE
-    
-    # if at least one layer present subset it
-    if(something.present) {
-      
-      
-      # select the layers and time periods required and mash the data into shape
-      these.layers <- selectLayers(object, layers.present)
-      if(!is.null(years)) {
-        # set key to Year, subset by years, the set keys back
-        # not were are not doing selectYears() because we may want to select non-contiguous years
-        setkey(these.layers@data, Year)
-        these.layers@data <- these.layers@data[J(years)]
-        setKeyDGVM(these.layers@data)
-      }
-      if(!is.null(days)) these.layers <- selectDays(these.layers, days)
-      if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
-      if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
-      
-      final.fields <- append(final.fields, these.layers)
-      
-      these.layers.melted <- melt(these.layers@data, measure.vars = layers.present)
-      these.layers.melted[, Source := object@source@name]
-      data.toplot.list[[length(data.toplot.list)+1]] <- these.layers.melted
-      
-      # check if layers are all continuous or discrete
-      for(layer in layers.present) {
-        if(class(object@data[[layer]]) == "factor" || class(object@data[[layer]]) == "logical" || class(object@data[[layer]]) == "ordered") discrete <- TRUE
-        if(class(object@data[[layer]]) == "numeric" || class(object@data[[layer]]) == "integer" ) continuous <- TRUE
-      }
-      if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers") 
-      if(!discrete & !continuous) stop("plotSpatial can only plot 'numeric', 'integer', 'factor' or 'logical' layers, check your layers")   
-      
-      # check for meta-data to automagic the plots a little bit if possble
-      if(first) {
-        
-        quant <- object@quant
-        if(length(quant@units) > 1) quant.is.categorical <-  TRUE
-        else quant.is.categorical <-  FALSE
-        if(continuous & !quant.is.categorical) {
-          if(is.null(cols)) cols <- object@quant@colours(20)
-          legend.title <- object@quant@units
-        }
-        
-      }
-      else {
-        
-        # check for consistent Quantity
-        if(!identical(quant, object@quant, ignore.environment = TRUE)) warning("Not all of the Fields supplied in the list have the same Quantity, I am using the Quantity from the first one")
-      }
-      
-      first <- FALSE
-      PFTs <- append(PFTs, object@source@pft.set)
-      
-    } # end if something.present
-    
+    if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers") 
+    if(!discrete & !continuous) stop("plotSpatial can only plot 'numeric', 'integer', 'factor' or 'logical' layers, check your layers")  
   }
-  
-  # finally mash them all togther to make the final data.table to plot
+
+  # melt and combine the final.fields 
+  data.toplot.list <- list()
+  for(this.field in final.fields) {
+    this.field.melted <- melt(this.field@data, id.vars = getDimInfo(this.field))
+    this.field.melted[, Source := this.field@source@name]
+    data.toplot.list[[length(data.toplot.list)+1]] <- this.field.melted
+  }
   data.toplot <- rbindlist(data.toplot.list)
+  rm(data.toplot.list)
   
-  # check the PFTs present and make a unique list
-  PFTs <- unique(PFTs)
   
   ### Rename "variable" to "Layer" which makes more conceptual sense
   setnames(data.toplot, "variable", "Layer")
   setnames(data.toplot, "value", "Value")
   
   
+  ### Check for meta-data to automagic the plots a little bit if possble
+  first <- TRUE
+  for(this.field in final.fields) {
+    if(first) {
+      
+      quant <- this.field@quant
+      if(length(quant@units) > 1) quant.is.categorical <-  TRUE
+      else quant.is.categorical <-  FALSE
+      if(continuous & !quant.is.categorical) {
+        if(is.null(cols)) cols <- this.field@quant@colours(20)
+        legend.title <- this.field@quant@units
+      }
+      
+    }
+    else {
+      
+      # check for consistent Quantity
+      if(!identical(quant, this.field@quant, ignore.environment = TRUE)) warning("Not all of the Fields supplied in the list have the same Quantity, I am using the Quantity from the first one")
+    }
+    
+    first <- FALSE
+    
+  }
+ 
+  
+  # check the PFTs present in the Fields and make a unique list
+  # maybe also here check which one are actually in the layers to plot, since we have that information
+  PFTs <- list()
+  for(object in fields){
+    PFTs <- append(PFTs, object@source@pft.set)
+  }
+  PFTs <- unique(PFTs)
   
   
   ### DETERMINE X- AND Y-LIMITS, CROP AND MAKE OVERLAY
@@ -330,7 +303,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
       
       # also set the values to be factors
       data.toplot[, Value := sapply(X = Value, FUN = function(x){ if(x) return("Matches"); return("Different")})]
-
+      
     }
     else if(quant.is.categorical) {
       
@@ -600,7 +573,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   # colour bar
   if(continuous)  {
-
+    
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
                                     colors = cols,
@@ -628,7 +601,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   if(!is.null(ylim)) mp <- mp + scale_y_continuous(limits = ylim, expand = c(0, 0))
   else   mp <- mp + scale_y_continuous(expand = c(0, 0))
-
+  
   mp <- mp + coord_fixed()
   
   # labels and positioning
@@ -638,7 +611,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   else { mp <- mp + theme(legend.title = element_blank()) }
   mp <- mp + theme(plot.title = element_text(hjust = 0.5),
                    plot.subtitle = element_text(hjust = 0.5))
-
+  
   # overall text multiplier
   if(!missing(text.multiplier)) mp <- mp + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
@@ -653,7 +626,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     panel.border = element_rect(colour = "black", fill=NA),
     strip.background  = element_rect(fill=NA)
   )
-
+  
   
   # list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
   #            panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),

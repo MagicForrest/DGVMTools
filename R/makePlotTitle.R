@@ -5,7 +5,7 @@
 
 #' Make a plot titles
 #' 
-#' Build an appropriate plot title (and subtitle) from the meta-data from the fields (whihc will be plotted)
+#' Build an appropriate plot title (and subtitle) from the meta-data from the Fields (which are to be plotted)
 #' 
 #' @param fields A list of fields which will be plotted and the so the plot title should describe
 #' @return A list of two character strings.  The first (called "title") is the main title.  The second (called "subtitle" is the subtitle) 

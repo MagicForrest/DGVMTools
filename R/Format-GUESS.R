@@ -167,12 +167,16 @@ openLPJOutputFile <- function(run,
     if(spatial.extent.class == "SpatialPolygonsDataFrame" || spatial.extent.class == "numeric" || is.data.frame(target.sta@spatial.extent) || is.data.table(target.sta@spatial.extent)) {
       dt <- selectGridcells(x = dt, gridcells = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id, ...)
       new.extent <- target.sta@spatial.extent
+      # if new.extent is a data.frame, convery it to a data.table for consistency
+      if(is.data.frame(new.extent) & !is.data.table(new.extent)) new.extent <- as.data.table(new.extent)
     }
     
     else {
       dt <- crop(x = dt, y = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id)
       new.extent <- extent(dt)
     } 
+    
+   
     
   }
   
@@ -233,9 +237,15 @@ openLPJOutputFile <- function(run,
                  subannual.resolution = subannual,
                  subannual.original = subannual)
   
+  # if cropping has been done, set the new spatial.extent and spatial.extent.id
   if(!is.null(new.extent))  {
-    sta.info@spatial.extent = extent(dt)
+    sta.info@spatial.extent = new.extent
     sta.info@spatial.extent.id <- target.sta@spatial.extent.id
+  }
+  # otherwise set
+  else {
+    sta.info@spatial.extent = extent(dt)
+    sta.info@spatial.extent.id <- "Full"
   }
   
   gc()

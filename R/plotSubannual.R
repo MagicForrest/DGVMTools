@@ -5,6 +5,8 @@
 #' so might not be too efficient unless the arguments which are passes through to getField() via the "..." argument are optimised.  
 #' For example, by using "store.full = TRUE" and the combination "write = TRUE" and "read.full = FALSE".
 #' 
+#' @param fields The data to plot. Can be a Field or a list of Fields.
+#' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param runs A Source or a list of Sources to plot
 #' @param quants A list of Quantity objects to plot
 #' @param title A character string to override the default title.
@@ -29,7 +31,11 @@
 
 
 
-plotSeasonal <- function(runs, 
+plotSubannual <- function(fields, # can be a Field or a list of Fields
+                         layers = NULL,
+                         
+                         #### 
+                         runs, 
                          quants, 
                          title = NULL,
                          subtitle = NULL,
@@ -44,8 +50,6 @@ plotSeasonal <- function(runs,
                          alpha = 0.2,
                          ...) {
   
-  
-  warning("plotSeasonal() now deprecated, please use plotSubannual() for a more consistent plotting experience.")
   
   Quantity = Month = Source = Value = Year = NULL
   
@@ -66,11 +70,38 @@ plotSeasonal <- function(runs,
       year.col.gradient <- NULL
     }
     
-    else if(is.logical(year.col.gradient) && year.col.gradient) year.col.gradient <- viridis::viridis
-    
-    else if(is.logical(year.col.gradient) && !year.col.gradient) year.col.gradient <- NULL
+    else if(is.logical(year.col.gradient)){
+      
+      if(year.col.gradient) year.col.gradient <- viridis::viridis
+      else  year.col.gradient <- NULL
+      
+    }
     
   }
+  
+  
+  ### SANITISE FIELDS, LAYERS AND DIMENSIONS
+  
+  ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
+  print(fields)
+  fields <- santiseFieldsForPlotting(fields)
+  if(is.null(fields)) return(NULL)
+  print(fields)
+  ### 2. LAYERS - check the number of layers
+  print(layers)
+  layers <- santiseLayersForPlotting(fields, layers)
+  if(is.null(layers)) return(NULL)
+  print(layers)
+  
+  ### 3. DIMENSIONS - check the dimensions (require that all fields the same dimensions and that they include 'Lon' and 'Lat' )
+  
+  dim.names <- santiseDimensionsForPlotting(fields, require = c("Lon", "Lat"))
+  if(is.null(dim.names)) return(NULL)
+  print(dim.names)
+  
+  
+  
+  
   
   
   ### SOURCES - check the sources
@@ -211,7 +242,7 @@ plotSeasonal <- function(runs,
   }
   
   # add average line if chosen
- 
+  
   
   
   

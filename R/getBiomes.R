@@ -215,7 +215,7 @@ getBiomes <- function(source,
       this.field <- averageFields(one.field.per.source, run = averaged.source)
       
     }
-    
+      
     # calculate the layers required
     for(this.layer in scheme@layers.needed){
       

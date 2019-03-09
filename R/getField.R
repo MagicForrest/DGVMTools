@@ -182,14 +182,15 @@ getField <- function(source,
     
     # if the provided spatial yields a valid extent, use the crop function
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
-    if (class(possible.error) != "try-error") {
+    # note that data.tables *do* return a valid extent, but we don't want to crop with that here (hence the second condition)
+    if (class(possible.error) != "try-error" && !is.data.table(spatial.extent)) {
       this.Field <- crop(x = this.Field, y = sta.info@spatial.extent)  
     }
     
     # else check if some gridcells to be selected with getGridcells
     else if(is.data.frame(sta.info@spatial.extent) || is.data.table(sta.info@spatial.extent) || is.numeric(sta.info@spatial.extent) || class(sta.info@spatial.extent)[1] == "SpatialPolygonsDataFrame"){
-      this.Field <- selectGridcells(this.Field, sta.info@spatial.extent, ...)
-     }
+      this.Field <- selectGridcells(x = this.Field, gridcells = sta.info@spatial.extent, spatial.extent.id = sta.info@spatial.extent.id, ...)
+    }
     
     # else fail with error message
     else {
@@ -197,10 +198,9 @@ getField <- function(source,
     }
     
   }
-  else if(is.null(sta.info@spatial.extent)){
+  else if(is.null(sta.info@spatial.extent)) {
     
-    this.Field@spatial.extent.id <- "Full"
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
+    if(verbose) message(paste("No spatial extent specified, using full spatial extent of simulation: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
     
   }
   

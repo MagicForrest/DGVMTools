@@ -89,6 +89,7 @@ Collate:
     'plotSeasonal.R'
     'plotSpatial.R'
     'plotSpatialComparison.R'
+    'plotSubannual.R'
     'plotTemporal.R'
     'plotting-framework-functions.R'
     'renameLayers.R'
