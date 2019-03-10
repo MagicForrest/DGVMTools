@@ -270,22 +270,22 @@ print(plotScatterComparison(vegC.comparison))
 
 ```
 
-#### Selecting gridcells and plotting the seasonal cycle
+#### Selecting gridcells and plotting the subannual cycle
 
-It is also possible to select gridcells useing `selectGridcells()`.  To select rectangular spatial extents, the `raster::crop()` method has been extended. Here we use the `plotSeasonal()` function to simulataneously reads a Field, extract a gridcell and plot the seasonal cycle.  Note that to get the monthly of LAI we are using the `"mlai"` quantity instead of the `"lai"` quantity.
+It is also possible to select gridcells using `selectGridcells()` or the `spatial.extent` argument to getField().  The `spatial.extent` can be a single gridcell (as a numeric two-vector of Lon and Lat),a data.frame or a datat.table with columns Lon and Lat or shapefile (as a SpatialPolygonDataFrame) and anything which can be coerced to a `raster:Extent`.  To select rectangular spatial extents, the `raster::crop()` method has been extended. Here we use first make a Field with only one gridcell and then use the `plotSubannual()` function to plot the seasonal cycle.  Note that to get the monthly of LAI we are using the `"mlai"` quantity instead of the `"lai"` quantity.
 
 ``` {r select, fig.asp = 1, echo=TRUE}
 
-# London gridcell
+# define a gridecll and the get a Field of the monthly LAI for the gridcell
 gridcell <- data.frame(Lon = c(0.25), Lat = c(51.25))
+London.mlai <- getField(source = GUESS.run, 
+                     var = "mlai",
+                     spatial.extent = gridcell,
+                     spatial.extent.id = "London baby")
+
 
 # plot LAI
-print(plotSeasonal(runs = GUESS.run, 
-                   quants = "mlai", 
-                   spatial.extent = gridcell, 
-                   spatial.extent.id = "London",
-                   write = FALSE,
-                   read.full = FALSE,
+print(plotSubannual(field = London.mlai,
                    year.col.gradient = TRUE,
                    alpha = 0.5))
 

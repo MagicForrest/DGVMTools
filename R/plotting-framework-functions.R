@@ -198,7 +198,7 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
 #' 
 trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL) {
 
-  J = Year = Source = NULL
+  J = Year = NULL
   
   discrete <- FALSE
   continuous <- FALSE

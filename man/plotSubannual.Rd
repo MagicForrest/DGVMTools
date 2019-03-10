@@ -4,9 +4,7 @@
 \alias{plotSubannual}
 \title{Plots sub-annual cycles}
 \usage{
-plotSubannual(fields, layers = NULL, runs, quants, title = NULL,
-  subtitle = NULL, spatial.extent = NULL,
-  spatial.aggregate.method = "mean", spatial.extent.id,
+plotSubannual(fields, layers = NULL, title = NULL, subtitle = NULL,
   plotAverage = TRUE, text.multiplier = NULL, plot = TRUE,
   facet.scales = "fixed", year.col.gradient = NULL, alpha = 0.2, ...)
 }
@@ -15,20 +13,9 @@ plotSubannual(fields, layers = NULL, runs, quants, title = NULL,
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
-\item{runs}{A Source or a list of Sources to plot}
-
-\item{quants}{A list of Quantity objects to plot}
-
 \item{title}{A character string to override the default title.}
 
 \item{subtitle}{A character string to override the default subtitle.}
-
-\item{spatial.extent}{For which spatial extent to plot the seasonal cycle.  For details of how to make this selection see the documnetation for getField().}
-
-\item{spatial.aggregate.method}{Charatacer string specifying how to spatially aggregate if more than one gridcell are included in the spatial.extent.  Again, see documentation getField for  details.
-The default is "mean", simply straight averaging.}
-
-\item{spatial.extent.id}{A character string describing the spatial extent over which the data should be aggregated}
 
 \item{plotAverage}{Boolean, if TRUE plot the mean of all years}
 

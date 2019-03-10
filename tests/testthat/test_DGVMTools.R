@@ -309,10 +309,9 @@ test_that("Plotting", {
   # temporal plotting
   expect_is(plotTemporal(GUESS.Field.spatial.mean.1), "ggplot")
   
-  # seaconal cycle plotting -- update after plotSeasonal rebuilt
-  #expect_is(plotSeasonal(GUESS.Field.spatial.mean.1), "ggplot")
-  
-  
+  # subannual cycle plotting
+  expect_is(plotSubannual(GUESS.Field.spatial.mean.1), "ggplot")
+
 })
 
 
