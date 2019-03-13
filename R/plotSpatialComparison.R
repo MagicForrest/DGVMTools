@@ -175,9 +175,10 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                        source = object@source1,
                        commonSTAInfo(list(object@sta.info1, object@sta.info2)))
       
-      new.field@source@name <- paste0(object@source1@name, " vs ", object@source2@name)
-      new.field@source@id <- paste(object@source1@id, object@source2@id, sep ="-")
-    
+      new.field@source@name <- object@name
+      if(object@type == "continuous") new.field@source@id <- paste(object@source1@id, object@source2@id, sep ="-")
+      
+      
       objects.to.plot[[length(objects.to.plot)+1]] <- new.field
       
       # get max value for making the scale symmetric

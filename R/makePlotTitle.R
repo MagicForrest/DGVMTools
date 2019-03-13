@@ -52,7 +52,7 @@ makePlotTitle <- function(fields){
   
   # convert Month -> Monthly, Year -> Annual etc for nicer formatting
   original.subannual <- sta.info@subannual.original
-
+  
   if(length(original.subannual) > 0) {
     if(original.subannual == "Year") original.subannual <- "Annual"
     if(original.subannual == "Month") original.subannual <- "Monthly"
@@ -139,6 +139,11 @@ makePlotTitle <- function(fields){
   quants.vec <- unique(quants.vec)
   quants.id.vec <- unique(quants.id.vec)
   layers.vec <- unique(layers.vec)
+  
+  #print(sources.vec)
+  #print(quants.vec)
+  #print(quants.id.vec)
+  #print(layers.vec)
   
   
   # put them all together - note that sometimes layers are the same as quant@id, we have a special cause to stop them being included in this case

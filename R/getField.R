@@ -116,7 +116,7 @@ getField <- function(source,
                                  var.string = var.string, 
                                  sta.info = sta.info)
   
-  file.name <- file.path(source@dir, paste(target.field.id, "DGVMField", sep = "."))
+  file.name <- file.path(source@dir, paste(target.field.id, "RData", sep = "."))
   if(verbose) message(paste("Seeking ModelField with id = ", target.field.id, sep = ""))
   
   
