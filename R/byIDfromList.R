@@ -12,7 +12,7 @@
 #' 
 #' @return The matching object from the list or NULL.  If NULL it will give a message and a warning, the following code will probably fail. 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @export
+#' @keywords internal
 #' 
 byIDfromList <- function(id, list) {
   

@@ -1,19 +1,22 @@
 #!/usr/bin/Rscript
 
 #
-#' Get a \code{Field} from a \code{Source}
+#' Get a biome \code{Field} from a \code{Source}
 #' 
-#' Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object. optionally including
-#' spatial, temporal and annual cropping.
+#' Given a \code{Source} object and a \code{BiomeScheme} object, return an appropriate spatially/temporal/annually-aggregated biome \code{Field} object using the 
+#' classification contained in the \code{BiomeScheme} optionally including spatial, temporal and annual cropping.
 #' 
 #' Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
-#' @param source The \code{Source} object for which the spatially-averaged \code{ModelField} should be built (eg. "lai")
-#' @param scheme The quantity (either a \code{Quantity} or a string containing its \code{id}) 
+#' @param source The \code{Source} object for which the biome \code{Field} should be built. A list of \code{Source} objects can also be provided, in which case 
+#' the required \code{Field} object derived from each \code{Source} in the list (for example LAI or fractional cover) are first averaged, and then do the biome 
+#' classification. In the case of a list of \code{Source} objects, the \code{averaged.source} arguments (see below) must also be supplied so that the averaged 
+#' data can be written to/read from disk.
+#' @param scheme The biome scheme to be used as \code{BiomeScheme} object, or the id of a \code{BiomeScheme} defined in the package, as a character string.
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
-#' If specified the following 9 arguments are ignored (with a warning)
+#' If specified the following 9 arguments are ignored (with a warning).
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
@@ -30,14 +33,18 @@
 #' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 #' Can be "Year", "Month" or "Day".  Currently ignored.
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
-#' @param read.full.components If TRUE ignore any pre-averaged file for the *component* variables on disk, if FALSE use thjm if it is there (can save a lot of time if averaged file is already saved on disk)
+#' @param read.full.components If TRUE ignore any pre-averaged file for the *component* variables on disk, if FALSE use them if they are there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
 #' @param write.components If TRUE, write the data of the *component* \code{Field}s to disk as text file.
-#' @param ...  Other arguments that are passed to the getField function for the specific Format.  Currently this is only 'adgvm.scheme' (for the aDGVM Format) which can be 1 or 2.
-#' 
+#' @param averaged.source If a list of \code{Source} objects have been supplied to be averaged before the classification, you must supply another \code{Source} object to store the averaged results.
+#' @param ...  Other arguments that are passed to the getField function for the specific Format or for selecting space/time/years.  Currently this can be
+#' \itemize{
+#'  \item{adgvm.scheme}  For the aDGVM Format, defines the aDGVM PFT scheme which can be 1 or 2.
+#'  \item{cover.fraction}  Optional when selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, should be between 0 and 1.
+#' } 
 #' @return A \code{Field}. 
-#' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}}   
+#' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}},  \code{\link{getField}}    
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -57,6 +64,7 @@ getBiomes <- function(source,
                       write.components = FALSE,
                       read.full = TRUE, 
                       read.full.components = TRUE, 
+                      averaged.source, 
                       verbose = FALSE, 
                       ...){
   
@@ -65,6 +73,15 @@ getBiomes <- function(source,
   
   ### CHECK ARGUEMENTS
   
+  
+  ### IF A LIST OF SOURCES PROVIDED, CHECK FOR THE averaged.source SOURCE AND SET THE final.source APPROPRIATELY
+  if(is.list(source)) {
+    if(missing(averaged.source)) stop("If you want to average over some Sources in getBiomes(), then you need to supply the 'averaged.source' argument for saving the results")
+    else final.source <- averaged.source
+  }
+  else {
+    final.source <- source
+  }
   
   ### CONVERT SCHEME ID STRING TO A BIOME SCHEME
   if(class(scheme) == "character") {
@@ -111,11 +128,11 @@ getBiomes <- function(source,
   
   
   ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
-  target.field.id <- makeFieldID(source = source, 
+  target.field.id <- makeFieldID(source = final.source, 
                                  var.string = scheme.string, 
                                  sta.info = sta.info)
   
-  file.name <- file.path(source@dir, paste(target.field.id, "DGVMField", sep = "."))
+  file.name <- file.path(final.source@dir, paste(target.field.id, "DGVMField", sep = "."))
   if(verbose) message(paste("Seeking ModelField with id = ", target.field.id, sep = ""))
   
   
@@ -125,12 +142,12 @@ getBiomes <- function(source,
   if(file.exists(paste(file.name)) & !read.full){
     
     # get the object from disk
-    if(verbose) {message(paste("File",  file.name, "found in",  source@dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
-    model.field <- readRDS(file.name)
+    if(verbose) {message(paste("File",  file.name, "found in",  final.source@dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
+    biome.field <- readRDS(file.name)
     
-    # Update the source object, that might have (legitimately) changed compared to the id that was used when this model.field was created
+    # Update the source object, that might have (legitimately) changed compared to the id that was used when this biome.field was created
     # for example it might be assigned a new id.
-    model.field@source <- source
+    biome.field@source <- final.source
     
     
     # Check that the spatial extent matches before returning
@@ -138,26 +155,26 @@ getBiomes <- function(source,
     
     
     full.domain.matched <- FALSE
-    if(length(sta.info@spatial.extent) == 0 && model.field@spatial.extent.id == "Full") {
+    if(length(sta.info@spatial.extent) == 0 && biome.field@spatial.extent.id == "Full") {
       full.domain.matched <- TRUE
       if(verbose) message("Full domain matched.")
     }
     
     cropped.domain.matched <- FALSE
-    if(length(sta.info@spatial.extent) > 0 && length(model.field@spatial.extent)  > 0 ) {
-      if(identical(sta.info@spatial.extent, model.field@spatial.extent)){
+    if(length(sta.info@spatial.extent) > 0 && length(biome.field@spatial.extent)  > 0 ) {
+      if(identical(sta.info@spatial.extent, biome.field@spatial.extent)){
         cropped.domain.matched <- TRUE
         if(verbose) message("Cropped domain matched.")
       }
     }
     
     if(full.domain.matched || cropped.domain.matched){
-      return(model.field)
+      return(biome.field)
     }  
     
     # Otherwise we must discard this Field and we need to re-average (and maybe also re-read) using the cases below 
     message(paste("Details of the spatial extent",  sta.info@spatial.extent.id, "didn't match.  So file on disk ignored and the original data is being re-read"))
-    rm(model.field)
+    rm(biome.field)
     gc()
     
   }
@@ -183,12 +200,24 @@ getBiomes <- function(source,
   all.fields <- list()
   for(this.quantity in all.quantities){
     
-    # get the raw field
-    this.field <- getField(source = source, var = this.quantity, sta.info = sta.info, read.full = read.full.components, write = write.components, ...)
-    
+    # if source is a single Source the easy life
+    if(is.Source(source)) {
+      this.field <- getField(source = source, var = this.quantity, sta.info = sta.info, read.full = read.full.components, write = write.components, ...)
+    }
+    # else get a Field for each Source average
+    else{
+      
+      one.field.per.source <- list()
+      for(this.source in source){
+        one.field.per.source[[length(one.field.per.source) +1]] <- getField(source = this.source, var = this.quantity, sta.info = sta.info, read.full = read.full.components, write = write.components, ...)
+      }
+      
+      this.field <- averageFields(one.field.per.source, run = averaged.source)
+      
+    }
+      
     # calculate the layers required
     for(this.layer in scheme@layers.needed){
-      
       
       these.arguments <- list(x=this.field, 
                               operator = this.layer$operator, 
@@ -197,204 +226,57 @@ getBiomes <- function(source,
         these.arguments[["new.layer"]] = this.layer$new.layer
       }
       
-      
       if(this.layer$quantity == this.quantity) this.field <- do.call(layerOp, args = these.arguments)
     } 
     
+    # rename and store
     renameLayers(this.field, names(this.field), paste(this.quantity, names(this.field), sep = "_"))
-    
-    # save to the list
-    all.fields[[this.quantity]] <- this.field
+    all.fields[[length(all.fields) + 1 ]] <- this.field
     
   }
   
-  dt <- all.fields[[1]]@data
+  # roll together all the data and extract the STAInfo (from the first one)
+  final.stainfo <- as(Class = "STAInfo", object = all.fields[[1]])
   
+  dt <- all.fields[[1]]@data
   if(length(all.fields) > 1){
     for(counter in 1:length(all.fields)){
       dt <- dt[all.fields[[counter]]@data]
     }
   }
   
+  # remove the individual fields
+  rm(all.fields)
   
   if(verbose) print("Starting classification")
   suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
-  this.dt <- dt[,append(getDimInfo(dt), scheme@id), with = FALSE]
-  setKeyDGVM(this.dt)
-  actual.sta.info <- as(object = all.fields[[1]], Class = "STAInfo")
   
-  # tidy up
-  rm(dt)
-  rm(all.fields)
-  gc()
+  # remove all layers which are not the biome layers and set key
+  all.layers <- layers(dt)
+  all.non.biome.layers <- all.layers[which(all.layers != scheme@id)]
+  dt[, (all.non.biome.layers) := NULL]
+  setKeyDGVM(dt)
   
-  
-  
-  ### MF: I the rest is carried over from getField(), so I think that only the return statements is actually needed (because the STA info 
-  ### should have been sorted out by the previous getField() calls in this function)
-  
-  
-  ### CROP THE SPATIAL EXTENT IF REQUESTED
-  if(!is.null(sta.info@spatial.extent))  {
-    
-    # if the provided spatial yields a valid extent, use the crop function
-    possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
-    if (class(possible.error) != "try-error") {
-      this.dt <- crop(this.dt, sta.info@spatial.extent, sta.info@spatial.extent.id)  
-      actual.sta.info@spatial.extent <- extent(sta.info@spatial.extent)
-      actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
-      
-    }
-    
-    # else check if some gridcells to be selected with getGridcells
-    else if(is.data.frame(sta.info@spatial.extent) || is.data.table(sta.info@spatial.extent) || is.numeric(sta.info@spatial.extent) || is.list(sta.info@spatial.extent)){
-      this.dt <- selectGridcells(this.dt, sta.info@spatial.extent)
-      actual.sta.info@spatial.extent <- sta.info@spatial.extent
-      actual.sta.info@spatial.extent.id <- sta.info@spatial.extent.id
-    }
-    
-    # else fail with error message
-    else {
-      stop(paste("Trying to select a spatial extent using an object of class", class(sta.info@spatial.extent)[1], "which isn't really working for me right now.  If this a Spatial* class, contact the authors and they might implement it"))
-    }
-    
-  }
-  else {
-    
-    actual.sta.info@spatial.extent.id <- "Full"
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
-    
-  }
-  
-  
-  ### SELECT THE YEARS IF REQUESTED
-  if("Year" %in% getDimInfo(this.dt)) {
-    
-    crop.first <- FALSE
-    if(length(sta.info@first.year) == 1) {
-      if(sta.info@first.year != actual.sta.info@first.year) {
-        first.year <- sta.info@first.year
-        crop.first <- TRUE
-      }
-      else {
-        first.year <- actual.sta.info@first.year
-        crop.first <- FALSE
-      }
-    }
-    
-    crop.last <- FALSE
-    if(length(sta.info@last.year) == 1) {
-      if(sta.info@last.year != actual.sta.info@last.year) {
-        last.year <- sta.info@last.year
-        crop.last <- TRUE
-      }
-      else {
-        last.year <- actual.sta.info@last.year
-        crop.last <- FALSE
-      }
-    }
-    
-    if(crop.first || crop.last) {
-      
-      if(verbose) message(paste("Selecting years from", first.year, "to", last.year, sep = " "))
-      this.dt <- selectYears(this.dt, first = first.year, last = last.year) 
-      
-      # update meta-data
-      years.present <- sort(unique(this.dt[["Year"]]))
-      actual.sta.info@first.year <- min(years.present)
-      actual.sta.info@last.year <- max(years.present)
-      
-    }
-    else {
-      if(verbose) message("No year selection being applied")
-    }
-    
-  }
-  
-  
-  ### CHECK THAT WE HAVE A VALID DATA.TABLE
-  if(nrow(this.dt) == 0) stop("getField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
-  
-  
-  ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
-  if(sta.info@spatial.aggregate.method != "none") {
-    
-    if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
-      
-      this.dt <- aggregateSpatial(this.dt, method = sta.info@spatial.aggregate.method, verbose = verbose)
-      
-      # update meta-data and report  
-      actual.sta.info@spatial.aggregate.method <- sta.info@spatial.aggregate.method
-      if(verbose) {
-        message("Head of spatially aggregated data.table:")
-        print(utils::head(this.dt))
-      }
-    }
-  }
-  
-  
-  ###  DO YEAR AGGREGATATION
-  if(sta.info@year.aggregate.method != "none"){
-    if("Year" %in% getDimInfo(this.dt, "names")){
-      
-      this.dt <- aggregateYears(this.dt, method = sta.info@year.aggregate.method, verbose = verbose)
-      
-      # update meta-data and report  
-      actual.sta.info@year.aggregate.method <- sta.info@year.aggregate.method
-      if(verbose) {
-        message("Head of year aggregated data.table:")
-        print(utils::head(this.dt))
-      }
-    }
-  }
-  
-  
-  ###  DO SUBANNUAL AGGREGATION
-  if(length(sta.info@subannual.resolution) > 0 ){
-    
-    # get the original subannual resolution
-    these.dims <- getDimInfo(this.dt, info = "names")
-    if("Day" %in% these.dims) actual.sta.info@subannual.original <- "Day"
-    if("Month" %in% these.dims) actual.sta.info@subannual.original <- "Month"
-    else actual.sta.info@subannual.original <- "Year"
-    
-    if(sta.info@subannual.resolution != actual.sta.info@subannual.resolution){
-      
-      if(sta.info@subannual.aggregate.method == "none") {
-        stop(paste0("Please provide a subannual.aggregate.method if you want to aggregate the data from ", actual.sta.info@subannual.original, " to ", sta.info@subannual.resolution))
-      }
-      
-      this.dt <- aggregateSubannual(this.dt, method = sta.info@subannual.aggregate.method, target = sta.info@subannual.resolution, verbose = verbose)
-      
-      # update meta-data and report  
-      actual.sta.info@subannual.aggregate.method <- sta.info@subannual.aggregate.method
-      actual.sta.info@subannual.resolution <- sta.info@subannual.resolution
-      if(verbose) {
-        message("Head of year aggregated data.table:")
-        print(utils::head(this.dt))
-      }
-      
-    }
-  }
-  
-  
-  
-  ### BUILD THE FINAL Field, STORE IT IF REQUESTED AND RETURN IT
-  model.field <- new("Field",
-                     id = target.field.id,
-                     data = this.dt,
+  ### BUILD THE FINAL Field
+  biome.field <- new("Field",
+                     id = makeFieldID(source = final.source, var.string = scheme@id, sta.info = final.stainfo),
+                     data = dt,
                      quant = as(object = scheme, Class = "Quantity"),
-                     actual.sta.info,
-                     source = source)
+                     source = final.source,
+                     final.stainfo)
   
   
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMField object...")}
-    saveRDS(model.field, file = file.name)
+    saveRDS(biome.field, file = file.name)
     if(verbose) {message("...done.")}
   }
   
-  return(model.field)
+  ### TIDY UP AND RETURN
+  rm(dt)
+  gc()
+  
+  return(biome.field)
   
 }

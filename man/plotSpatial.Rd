@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotSpatial.R
 \name{plotSpatial}
 \alias{plotSpatial}
-\title{Plot maps from a \code{Field} and a lists of \code{Field}.}
+\title{Plot maps from a \code{Field} or a lists of \code{Field}.}
 \usage{
 plotSpatial(fields, layers = NULL, title = character(0),
   subtitle = character(0), facet.labels = NULL, facet.order = NULL,
@@ -15,14 +15,13 @@ plotSpatial(fields, layers = NULL, title = character(0),
   tile = FALSE)
 }
 \arguments{
-\item{fields}{The data to plot. Can be a Field, a DataObject, or a list of including both}
+\item{fields}{The data to plot. Can be a Field or a list of Fields.}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
 \item{title}{A character string to override the default title.  Set to NULL for no title.}
 
-\item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.
-Note that using these, especially "worldHires", can add quite a bit of time.}
+\item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.}
 
 \item{facet.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
 Sensible titles will be constructed if this is not specified.}
@@ -61,7 +60,8 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 \item{drop.cuts}{Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.
 Default is TRUE.  Ignored if 'cuts' argument is not used.}
 
-\item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.}
+\item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.
+Note that using these, especially "worldHires", can add quite a bit of time.}
 
 \item{grid}{Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().
 Useful when not all combinations of Sources x Layers exist which would leave blank panels.}
@@ -81,9 +81,10 @@ for example, be plotted on ploar coordinates.  However \code{geom_tile} is much 
 Returns a ggplot object
 }
 \description{
-This is a heavy lifting function for plotting maps from Fields, DataObjects, and Comparisons (and lists of those things) with flexibility, but also with a high degree of automation. 
-As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
-It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
+This is a heavy lifting function for plotting maps from Fields with flexibility, but also with a high degree of automation. 
+As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  
+In principle you can supply only the Fields and it will plot something sensible. It extracts the relevent data from the Fields, bashes it into
+a data.table then calls ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 using further ggplot2 commands.
 }
 \details{

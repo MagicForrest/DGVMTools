@@ -69,8 +69,8 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   
   # ignore parameters and give warnings
   if(!is.null(layer.names)) warning("Argument layer.names is ignored when calling writeNetCDF() for a Field. Layer names are taken from the layer names in the Field.")
-  if(!is.null(monthly)) warning("Argument monthly is ignored when calling writeNetCDF() for a Field. Time resolution is determined from the data in the Field.")
-  if(!is.null(annual)) warning("Argument annual is ignored when calling writeNetCDF() for a Field. Time resolution is determined from the data in the Field.")
+  if(!missing(monthly)) warning("Argument monthly is ignored when calling writeNetCDF() for a Field. Time resolution is determined from the data in the Field.")
+  if(!missing(annual)) warning("Argument annual is ignored when calling writeNetCDF() for a Field. Time resolution is determined from the data in the Field.")
   
   monthly <- FALSE
   st.names <- getDimInfo(x)

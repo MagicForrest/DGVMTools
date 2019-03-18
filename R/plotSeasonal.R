@@ -45,6 +45,8 @@ plotSeasonal <- function(runs,
                          ...) {
   
   
+  warning("plotSeasonal() now deprecated, please use plotSubannual() for a more consistent plotting experience.")
+  
   Quantity = Month = Source = Value = Year = NULL
   
   ###### 

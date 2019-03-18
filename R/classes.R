@@ -318,15 +318,22 @@ setClass("Quantity",
 #' 
 #' This object is produced as the result of a call to the functions \code{compareLayers()} and shouldn't be directly created by a user.
 #'  
-#' It contains a data slot with each of the compared layers and the difference between them (layer 1 - layer 2), a Comparisons object with the calculated values of 
-#' various statistical metric, meta-data about the source of the two compared layers and spatio-temporal meta-data describing where the comparison is valid.
+#' It contains a data slot with each of the compared layers, a lsit containing  various statistical metric, 
+#' meta-data about the source of the two compared layers and spatio-temporal meta-data describing where the comparison is valid.
 #' 
 #' It can be plotted by functions like   
 #'    
-#' Generally these are not created directly by the user, but rather by functions like \code{getField}.
+#' Generally these are not created directly by the user, but rather by the function \code{compareLayers()}.
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot name A character string describing this comaprison layer, is automatically generated
+#' @slot name A character string describing this comparison layer, is automatically generated
+#' @slot type A character string describing what type of comparisos this is (auromatically determined).  Can be
+#' \itemize{
+#'  \item{"continuous"}{A comparison of two continous, numerical layers.}
+#'  \item{"categorical"}{A comparison of two categorical layers.}
+#'  \item{"relative.abundance"} {A comparison of multiple numerical layers whose sum equals unity.}
+#'  \item{"seasonal"} {A comparison of the seasonal concentration and phase calculated from two numerical layers which have monthly data.}
+#' }
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant1 A Quantity object to define what quantity the data from first field represents
 #' @slot quant2 A Quantity object to define what quantity the data from second field represents
@@ -344,6 +351,7 @@ setClass("Quantity",
 setClass("Comparison", 
          slots = c(id = "character",
                    name = "character",
+                   type = "character",
                    data = "data.table",
                    quant1 = "Quantity",
                    quant2 = "Quantity",
@@ -412,7 +420,7 @@ setClass("BiomeScheme",
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant A Quantity object to define what output this.Field contains
+#' @slot quant A Quantity object to define what output this Field contains
 #' @slot first.year The first year of data
 #' @slot last.year The last year of data
 #' @slot year.aggregate.method A charecter string describing the method by which the years have been aggregated.  Will be the zero character ("character(0)") if data it not 

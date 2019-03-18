@@ -5,7 +5,6 @@
 #'
 #' \describe{
 #' \item{veg.palette}{A nice white-green-brown color scheme.  Good for vegetation cover}
-#' \item{lai.palette}{Default colour scheme for LAI}
 #' \item{cmass.palette}{Default colour scheme for biomass}
 #' \item{difference.palette}{Colour scheme for differences. Symmetrical, centred on white}
 #' \item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from more-to-less fire)}
@@ -20,10 +19,6 @@ NULL
 #' @rdname veg.palettes
 #' @export
 veg.palette <- grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black"))
-
-#' @rdname veg.palettes
-#' @export
-lai.palette <- grDevices::colorRampPalette(c("blue", "lightskyblue1", "palevioletred", "khaki1", "yellowgreen", "forestgreen", "saddlebrown","black" )) #this is a function which returns a list of colours
 
 #' @rdname veg.palettes
 #' @export

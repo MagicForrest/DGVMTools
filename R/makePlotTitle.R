@@ -5,7 +5,7 @@
 
 #' Make a plot titles
 #' 
-#' Build an appropriate plot title (and subtitle) from the meta-data from the fields (whihc will be plotted)
+#' Build an appropriate plot title (and subtitle) from the meta-data from the Fields (which are to be plotted)
 #' 
 #' @param fields A list of fields which will be plotted and the so the plot title should describe
 #' @return A list of two character strings.  The first (called "title") is the main title.  The second (called "subtitle" is the subtitle) 
@@ -52,7 +52,7 @@ makePlotTitle <- function(fields){
   
   # convert Month -> Monthly, Year -> Annual etc for nicer formatting
   original.subannual <- sta.info@subannual.original
-
+  
   if(length(original.subannual) > 0) {
     if(original.subannual == "Year") original.subannual <- "Annual"
     if(original.subannual == "Month") original.subannual <- "Monthly"
@@ -140,6 +140,11 @@ makePlotTitle <- function(fields){
   quants.id.vec <- unique(quants.id.vec)
   layers.vec <- unique(layers.vec)
   
+  #print(sources.vec)
+  #print(quants.vec)
+  #print(quants.id.vec)
+  #print(layers.vec)
+  
   
   # put them all together - note that sometimes layers are the same as quant@id, we have a special cause to stop them being included in this case
   title.string <- character(0)
@@ -149,7 +154,7 @@ makePlotTitle <- function(fields){
       title.string <- paste(title.string, layers.vec)
   }
   if(length(quants.vec) == 1) title.string <- paste(title.string, quants.vec)
-  if(length(sources.vec) == 1) title.string <- paste(title.string, sources.vec)
+  if(length(sources.vec) == 1) title.string <- paste0(title.string, ": ", sources.vec)
   
   
   

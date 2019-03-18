@@ -33,17 +33,10 @@ averageFields <- function(list.of.fields, run = NULL, method = mean) {
     if(!identical(names(this.dt), names(list.of.dts[[1]]))) stop("You are trying to average model.objects with different layers, this won't work!")
   }
   
-  
-  # check if Lon, Lat and Year are present and so should be averaged over
-  by.list <- c()
-  if("Lat" %in% names(list.of.dts[[1]])) by.list <- append(by.list, "Lat")
-  if("Lon" %in% names(list.of.dts[[1]])) by.list <- append(by.list, "Lon")
-  if("Year" %in% names(list.of.dts[[1]])) by.list <- append(by.list, "Year")
-  
-  
   # do the averaging to make the new data.table and tidy up
   full.dt <- rbindlist(l=list.of.dts)
   setKeyDGVM(full.dt)
+  by.list <- getDimInfo(list.of.dts[[1]])
   output.dt <- full.dt[,lapply(.SD, method), keyby=by.list]
   rm(full.dt, list.of.dts)
   gc()

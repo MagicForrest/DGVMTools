@@ -297,9 +297,11 @@ getField_DGVMData <- function(source,
   
   # simple ones
   spatial.extent.id  <- getGlobalAttribute("spatial.extent.id", global.attributes)
+  if(!is.null(spatial.extent.id)) { sta.info@spatial.extent.id <- spatial.extent.id  }
+  else { sta.info@spatial.extent.id <- "Full"  }
   spatial.aggregate.method  <- getGlobalAttribute("spatial.aggregate.method", global.attributes)
-  if(!is.null(spatial.extent.id)) sta.info@spatial.extent.id <- spatial.extent.id
   if(!is.null(spatial.aggregate.method)) sta.info@spatial.aggregate.method <- spatial.aggregate.method
+  else { sta.info@spatial.aggregate.method <- "none"  }
   
   # first attempt to use the attributes from the NetCDF file
   xmin  <- getGlobalAttribute("xmin", global.attributes)

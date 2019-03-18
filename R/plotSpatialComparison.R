@@ -21,6 +21,8 @@
 #' @param override.cols A colour palette function to override the defaults.
 #' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)
 #' @param percentage.difference.limit If precentage difference to be plotted, what to limit the scale to.
+#' @param do.phase Logical, only applies to plotting Comparison objects of type "seasonal".
+#' If TRUE plot the the seasonal phase, of FALSE (the default), plot the seasonal concentration.
 #' @param ... Parameters passed to \code{plotSpatial()}
 #' 
 #' @details  A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  
@@ -31,7 +33,7 @@
 #' @import ggplot2 data.table
 #' 
 #' @export 
-#' @seealso \code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
+#' @seealso \code{plotSpatial},  \code{compareLayers}
 
 plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
                                   type = c("difference", "percentage.difference", "values", "nme"),
@@ -40,6 +42,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                   override.cols = NULL,
                                   symmetric.scale = TRUE,
                                   percentage.difference.limit = 300,
+                                  do.phase = FALSE,
                                   ...){
   
   Source = Value = Lat = Lon = Layer = long = lat = group = NULL
@@ -49,25 +52,31 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   # sort type argument
   type <- match.arg(type)
   
-  
   if(!missing(limits)) symmetric.scale <- FALSE
-
+  
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
   ### 1. SOURCES - check the sources
   if(is.Comparison(sources)) {
     sources<- list(sources)
   }
-  else if(class(sources)[1] == "list") {
+  else if(is.list(sources)) {
+    this.type <- sources[[1]]@type
     for(object in sources){ 
       if(!is.Comparison(object)) {
         warning("You have passed me a list of items to plot but the items are not exclusively of Comparisons.  Returning NULL")
         return(NULL)
       }
+      else{
+        if(object@type != this.type) {
+          warning("You have passed me a list of Comparison objects to plot but they have different types.  Returning NULL")
+          return(NULL)
+        }
+      }
     }
   }
   else{
-    stop(paste("plotStatistics can only handle single a Comparison, or a list of Comparisons can't plot an object of type", class(sources)[1], sep = " "))
+    stop(paste("plotSpatialComparison() can only handle single a Comparison, or a list of Comparisons, can't plot an object of type", class(sources)[1], sep = " "))
   }
   
   
@@ -83,17 +92,81 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     final.layers.to.plot <- c()
     for(object in sources){ 
       
+      # special case for seasonal comparisons, the layers are actually called "SeasonalConcentration" and "SeasonalPhase"
+      if(object@type == "seasonal") {
+        if(do.phase){
+          object@layers1 <- c("Seasonal Phase")
+          object@layers2 <- c("Seasonal Phase")
+          object@quant1@units <- "\u0394month"
+          object@quant2@units <- "\u0394month"
+        }
+        else {
+          object@layers1 <- c("Seasonal Concentration")
+          object@layers2 <- c("Seasonal Concentration")
+          object@quant1@units <- "\u0394concentration"
+          object@quant2@units <- "\u0394concentration"
+        }
+      }
+      
+      # first make a list of the layers that we expect to be present in the data.table, based on the meta-data in the Comparison object
+      layers.names <- names(object)
+      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, var.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
+      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, var.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
+    
+      # check the layers
+      for(this.layer in expected.layers.1) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))
+      for(this.layer in expected.layers.2) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))
+      
+      
+      # adjust the source ids if they are identical 
+      if(object@source1@id == object@source2@id) {
+        
+        # include the first and last years if they are not the same
+        if((object@sta.info1@first.year != object@sta.info2@first.year) && (object@sta.info1@last.year != object@sta.info2@last.year)){
+          object@source1@name <- paste0(object@source1@name, " (", object@sta.info1@first.year, "-", object@sta.info1@last.year, ")")
+          object@source2@name <- paste0(object@source2@name, " (", object@sta.info2@first.year, "-", object@sta.info2@last.year, ")")
+        }
+        
+      }
+      
+      # calculate the difference layers
+      temp.dt <- object@data
+      layers.to.plot <- c()
+      for(layer.counter in 1:length(expected.layers.1)) {
+        
+        difference.column.name <- paste()
+        
+        if(object@type == "categorical")  {
+          difference.column.name <- paste("Difference", object@layers1[layer.counter])
+          layers.to.plot <- append(layers.to.plot, difference.column.name)
+          temp.dt[, c(difference.column.name) := as.character(get(expected.layers.1[layer.counter])) == as.character(get(expected.layers.2[layer.counter]))]
+        }
+        else {
+          difference.column.name <- paste("Difference", object@layers1[layer.counter])
+          layers.to.plot <- append(layers.to.plot, difference.column.name)
+          if(object@type == "seasonal" & do.phase) {
+            temp.dt[,c(difference.column.name) := get(expected.layers.1[layer.counter]) - get(expected.layers.2[layer.counter])]
+            temp.dt[,c(difference.column.name) := ifelse(get(difference.column.name) < 6, get(difference.column.name) + 12, get(difference.column.name))]
+            temp.dt[,c(difference.column.name) := ifelse(get(difference.column.name) > 6, get(difference.column.name) - 12, get(difference.column.name))]
+            
+          }
+          else {
+            temp.dt[,c(difference.column.name) := get(expected.layers.1[layer.counter]) - get(expected.layers.2[layer.counter])]
+          }
+        }
+        
+      }  
+      
       if(type == "difference") {
         layer.to.plot <- "Difference"
       }
       else {
-        layer.to.plot <- "Percentage.Difference"
-        temp.dt <- object@data
-        layers.names <- names(object)
+        layer.to.plot <- "Percentage.Difference"       
         temp.dt[ , Percentage.Difference := Difference %/0% get(layers.names[2]) * 100 ]
-        object@data <- temp.dt
       }
-      new.object <- selectLayers(object, layer.to.plot)
+      object@data <- temp.dt
+      
+      new.object <- selectLayers(object, layers.to.plot)
       
       new.field <- new("Field",
                        id = object@id,
@@ -102,32 +175,21 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                        source = object@source1,
                        commonSTAInfo(list(object@sta.info1, object@sta.info2)))
       
-      #new.field@source@name <- paste0("\u0394(", object@source1@name, " - ", object@source2@name, ")")
       new.field@source@name <- object@name
-      new.field@source@id <- paste(object@source1@id, object@source2@id, sep ="-")
+      if(object@type == "continuous") new.field@source@id <- paste(object@source1@id, object@source2@id, sep ="-")
       
-      # if comparing only one layer with the same name in both sources then append the layer to the 'difference' layer name to make a more descriptive layer name and hence plot title
-      # eg if comparing two different between two layers original called totally, then call the new layer "Difference Total" 
-      if(length(object@layers1) == 1 && length(object@layers2) == 1 && object@layers1 == object@layers2) {
-        new.name <- paste(layer.to.plot, object@layers1, sep = " ")
-        setnames(new.field@data, layer.to.plot, new.name)
-        final.layers.to.plot <- append(final.layers.to.plot, new.name)
-      }
-      else{
-        final.layers.to.plot <- append(final.layers.to.plot, layer.to.plot)
-      }
       
       objects.to.plot[[length(objects.to.plot)+1]] <- new.field
       
       # get max value for making the scale symmetric
       if(symmetric.scale && missing(limits)) {
-        max.for.scale <- max(max.for.scale, max(abs(object@data[[layer.to.plot]])))
+        for(this.layer in layers.to.plot)  max.for.scale <- max(max.for.scale, max(abs(object@data[[this.layer]])))
       }
       
     }
     
     # get the unique layer names (since their might be duplicates)
-    final.layers.to.plot <- unique(final.layers.to.plot)
+    layers.to.plot <- unique(final.layers.to.plot)
     
     # set the colours
     if(missing(override.cols)) override.cols <-  rev(RColorBrewer::brewer.pal(11, "RdBu"))
@@ -137,9 +199,9 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     
     # if no panel background panel colour specified, use a non-white one
     if(missing(panel.bg.col)) panel.bg.col = "#809DB8"
-     
+    
     the.plot <- plotSpatial(objects.to.plot,
-                            layers = final.layers.to.plot,
+                            layers = layers.to.plot,
                             cols = override.cols,
                             limits = limits,
                             panel.bg.col = panel.bg.col,
@@ -147,7 +209,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     
     
     
-    if(is.logical(objects.to.plot[[1]]@data[[layer.to.plot]])) the.plot <- the.plot + scale_fill_discrete(name = "Agreement")
+    if(object@type[[1]] == "categorical") the.plot <- the.plot + scale_fill_discrete(name = "Agreement")
     return(the.plot)
     
   }
@@ -155,15 +217,56 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   ### VALUES 
   else if(type == "values") {
     
-    # convert the Comparisons into a Fields  for plotting 
+    
+    # convert the Comparisons into Fields for plotting 
     objects.to.plot <- list()
     layers.to.plot <- c()
     for(object in sources){ 
       
+      # special case for seasonal comparisons, the layers are actually called "SeasonalConcentration" and "SeasonalPhase"
+      if(object@type == "seasonal") {
+        if(do.phase){
+          object@layers1 <- c("Seasonal Phase")
+          object@layers2 <- c("Seasonal Phase")
+          object@quant1@units <- "month"
+          object@quant2@units <- "month"
+          if(missing(limits)) limits <- c(1,12)
+        }
+        else {
+          object@layers1 <- c("Seasonal Concentration")
+          object@layers2 <- c("Seasonal Concentration")
+          object@quant1@units <- "concentration"
+          object@quant2@units <- "concentration"
+          if(missing(limits)) limits <- c(0,1)
+        }
+      }
+      
+      # first make a list of the layers that we expect to be present in the data.table, based on the meta-data in the Comparison object
+      layers.names <- names(object)
+      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, var.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
+      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, var.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
+      
+      # check the layers
+      for(this.layer in expected.layers.1) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))
+      for(this.layer in expected.layers.2) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))
+      
+      # adjust the source ids if they are identical 
+      if(object@source1@id == object@source2@id) {
+        
+        # include the first and last years if they are not the same
+        if((object@sta.info1@first.year != object@sta.info2@first.year) && (object@sta.info1@last.year != object@sta.info2@last.year)){
+          object@source1@name <- paste0(object@source1@name, " (", object@sta.info1@first.year, "-", object@sta.info1@last.year, ")")
+          object@source2@name <- paste0(object@source2@name, " (", object@sta.info2@first.year, "-", object@sta.info2@last.year, ")")
+        }
+        
+      }
+      
+      
+      
       # SECOND INFO - putting this first because this is the 'base' dataset ("one minus two" convention)
-      new.dt <- object@data[, append(getDimInfo(object), names(object)[2]), with=FALSE]
+      new.dt <- object@data[, append(getDimInfo(object), expected.layers.2), with=FALSE]
       #setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant2@id )
-      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@layers2)
+      setnames(new.dt, expected.layers.2, object@layers2)
       layers.to.plot <- append(layers.to.plot, object@layers2)
       objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
                                                           id = object@id,
@@ -173,10 +276,10 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
                                                           object@sta.info2)
       
       # FIRST INFO
-      new.dt <- object@data[, append(getDimInfo(object), names(object)[1]), with=FALSE]
+      new.dt <- object@data[, append(getDimInfo(object), expected.layers.1), with=FALSE]
       #setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant1@id )
-      setnames(new.dt, names(new.dt)[length(names(new.dt))], object@layers2 )
-      layers.to.plot <- append(layers.to.plot, object@layers2)
+      setnames(new.dt, expected.layers.1, object@layers1 )
+      layers.to.plot <- append(layers.to.plot, object@layers1)
       objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
                                                           id = object@id,
                                                           data = new.dt,

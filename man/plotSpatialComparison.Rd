@@ -7,7 +7,8 @@
 plotSpatialComparison(sources, type = c("difference",
   "percentage.difference", "values", "nme"), limits = NULL,
   panel.bg.col = "white", override.cols = NULL,
-  symmetric.scale = TRUE, percentage.difference.limit = 300, ...)
+  symmetric.scale = TRUE, percentage.difference.limit = 300,
+  do.phase = FALSE, ...)
 }
 \arguments{
 \item{sources}{The data to plot, must be a Comparison or a list of Comparisons}
@@ -25,6 +26,9 @@ plotSpatialComparison(sources, type = c("difference",
 
 \item{percentage.difference.limit}{If precentage difference to be plotted, what to limit the scale to.}
 
+\item{do.phase}{Logical, only applies to plotting Comparison objects of type "seasonal".
+If TRUE plot the the seasonal phase, of FALSE (the default), plot the seasonal concentration.}
+
 \item{...}{Parameters passed to \code{plotSpatial()}}
 }
 \value{
@@ -40,7 +44,7 @@ using further ggplot2 commands.
 A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.
 }
 \seealso{
-\code{plotGGSpatial}, \code{expandLayers}, \code{sp::spplot}, \code{latice::levelplot}
+\code{plotSpatial},  \code{compareLayers}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
