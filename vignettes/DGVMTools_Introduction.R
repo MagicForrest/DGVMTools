@@ -157,16 +157,16 @@ print(plotScatterComparison(vegC.comparison))
 
 ## ----select, fig.asp = 1, echo=TRUE--------------------------------------
 
-# London gridcell
+# define a gridecll and the get a Field of the monthly LAI for the gridcell
 gridcell <- data.frame(Lon = c(0.25), Lat = c(51.25))
+London.mlai <- getField(source = GUESS.run, 
+                     var = "mlai",
+                     spatial.extent = gridcell,
+                     spatial.extent.id = "London baby")
+
 
 # plot LAI
-print(plotSeasonal(runs = GUESS.run, 
-                   quants = "mlai", 
-                   spatial.extent = gridcell, 
-                   spatial.extent.id = "London",
-                   write = FALSE,
-                   read.full = FALSE,
+print(plotSubannual(field = London.mlai,
                    year.col.gradient = TRUE,
                    alpha = 0.5))
 

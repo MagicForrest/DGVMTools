@@ -27,7 +27,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
                                         ...){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
-  Year = Lat = Lon = area = NULL
+  Year = Lat = Lon = Area = NULL
   
   ### SET UP THE AGGREGATE METHOD 
   
@@ -71,19 +71,18 @@ aggregateSpatial.uncompiled <- function(input.obj,
   
   # Do the aggregating
   if (method == "w.mean") {
-    if (!any(colnames(input.dt)=="area")) {
+    if (!any(colnames(input.dt)=="Area")) {
       if (verbose) message("Add column area.")
       input.dt <- addArea(input.dt, verbose=verbose, ...)
     }
     if(verbose) message(paste("Spatially averaging (with area weighting) ...", sep = ""))
     
-    
-    output.dt <- input.dt[,lapply(.SD, method.function, w=area), by=by.dims]
-    output.dt[,area:=NULL]
+    output.dt <- input.dt[,lapply(.SD, method.function, w=Area), by=by.dims]
+    output.dt[,Area:=NULL]
     
   } 
   else if (method == "w.sum") {
-    if (!any(colnames(input.dt)=="area")) {
+    if (!any(colnames(input.dt)=="Area")) {
       if (verbose) message("Add column area.")
       input.dt <- addArea(input.dt, verbose=verbose)
     }
@@ -97,10 +96,10 @@ aggregateSpatial.uncompiled <- function(input.obj,
     col.names <- col.names[!col.names %in% remove]
     
     # check to see if Year is still a column name (it might have been averaged away)
-    input.dt[, (col.names) := lapply(.SD, function(x) x * input.dt[['area']] ), .SDcols = col.names]
+    input.dt[, (col.names) := lapply(.SD, function(x) x * input.dt[['Area']] ), .SDcols = col.names]
     
     output.dt <- input.dt[, lapply(.SD, method.function), by=by.dims]
-    output.dt[,area:=NULL]
+    output.dt[,Area:=NULL]
     
   } 
   

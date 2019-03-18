@@ -276,7 +276,6 @@ test_that("Aggregation",{
   
   
   # check the results are the same by two different routes
-  
   expect_identical(GUESS.Field.selected.years.1,  GUESS.Field.selected.years.2)
   expect_identical(GUESS.Field.selected.months.1 ,  GUESS.Field.selected.months.2)
   expect_identical(GUESS.Field.selected.gridcell.1 ,  GUESS.Field.selected.gridcell.2)
@@ -310,10 +309,9 @@ test_that("Plotting", {
   # temporal plotting
   expect_is(plotTemporal(GUESS.Field.spatial.mean.1), "ggplot")
   
-  # seaconal cycle plotting -- update after plotSeasonal rebuilt
-  #expect_is(plotSeasonal(GUESS.Field.spatial.mean.1), "ggplot")
-  
-  
+  # subannual cycle plotting
+  expect_is(plotSubannual(GUESS.Field.spatial.mean.1), "ggplot")
+
 })
 
 
@@ -366,7 +364,32 @@ test_that("Categorical Quantities", {
   expect_is(GUESS.Smith2014.Biomes, "Field")
   expect_is(GUESS.Field.lai.annual, "Field")
   
+  ### Test averaging feature of get biomes
+  
+  # copy of Source for doing average biomes
+  GUESS.Europe.test.Source.2 <- defineSource(id = "LPJ-GUESS_Example_2",
+                                           dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), 
+                                           format = GUESS,
+                                           name = "LPJ-GUESS Europe Example Run 2 (copy)")
+  
+  # Dummy Source for averaged biomes, expect  a Warning because no data from which to determe PFTs
+  expect_warning(GUESS.Europe.test.Source.Averaged <- defineSource(id = "LPJ-GUESS_Example_Averaged",
+                                             dir = getwd(), 
+                                             format = GUESS,
+                                             name = "LPJ-GUESS Europe Example Run Averaged"))
+  
+  GUESS.Smith2014.Biomes.averaged <- suppressWarnings(getBiomes(source = list(GUESS.Europe.test.Source, GUESS.Europe.test.Source), 
+                                                                scheme = Smith2014BiomeScheme, 
+                                                                year.aggregate.method = "mean",
+                                                                averaged.source = GUESS.Europe.test.Source.Averaged)
+                                                      )
+  
+  expect_is(GUESS.Smith2014.Biomes.averaged, "Field")
+  
   expect_is(plotSpatial(GUESS.Smith2014.Biomes), "ggplot")
+  expect_is(plotSpatial(GUESS.Smith2014.Biomes.averaged), "ggplot")
+  expect_is(plotSpatial(list(GUESS.Smith2014.Biomes, GUESS.Smith2014.Biomes.averaged)), "ggplot")
+  expect_identical(GUESS.Smith2014.Biomes@data, GUESS.Smith2014.Biomes.averaged@data)
   expect_is(plotSpatial(GUESS.Field.lai.annual, layer = "MaxPFT"), "ggplot")
   
 })
@@ -377,18 +400,16 @@ context("Categorical Comparisons and Benchmarks")
 
 test_that("Categorical Comparisons and Benchmarks", {
   
-  # build and test a categroal Comparison
+  # build and test a categorical Comparison
   Biomes.comparison <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, show.stats = FALSE)
   expect_is(Biomes.comparison, "Comparison")
   
-  # plot said numeric Comparison
+  # plot said categorical Comparison
   expect_is(plotSpatialComparison(Biomes.comparison), "ggplot")
   expect_is(plotSpatialComparison(Biomes.comparison, type = "difference"), "ggplot")
   expect_warning(plotSpatialComparison(Biomes.comparison, type = "percentage.difference"))
   expect_is(plotSpatialComparison(Biomes.comparison, type = "values"), "ggplot")
-  # expect_is(plotSpatialComparison(Saatchi.comparison, type = "nme"), "ggplot")
-  
-  
+
   # test with a dummy benchmark
   dummy.benchmark <- function(x, layer1, layer2) { return(1)}
   Biomes.comparison.with.dummy.benchmark <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
@@ -396,6 +417,60 @@ test_that("Categorical Comparisons and Benchmarks", {
   
 })
 
+
+### SEASONAL COMPARISONS AND BENCHMARKING
+context("Seasonal Comparisons and Benchmarks")
+
+test_that("Seasonal Comparisons and Benchmarks", {
+  
+  test.Field.2000_2005 <-  getField(source = GUESS.Europe.test.Source, var = "mlai", year.aggregate.method = "mean", first.year = 2000, last.year = 2005)
+  test.Field.2006_2010 <-  getField(source = GUESS.Europe.test.Source, var = "mlai", year.aggregate.method = "mean", first.year = 2006, last.year = 2010)
+  
+  # build and test a seasonal Comparison
+  Seasonal.comparison <- compareLayers(test.Field.2000_2005, test.Field.2006_2010, layers1 = "mlai", do.seasonality = TRUE, verbose = FALSE, show.stats = FALSE)
+  expect_is(Seasonal.comparison, "Comparison")
+  
+  # plot said seasonal Comparison
+  expect_is(plotSpatialComparison(Seasonal.comparison), "ggplot")
+  expect_is(plotSpatialComparison(Seasonal.comparison, type = "values"), "ggplot")
+  expect_is(plotSpatialComparison(Seasonal.comparison, do.phase = TRUE), "ggplot")
+  expect_is(plotSpatialComparison(Seasonal.comparison, type = "values", do.phase = TRUE), "ggplot")
+  
+  
+  # test with a dummy benchmark
+  dummy.benchmark <- function(x, layer1, layer2) { return(1) }
+  Seasonal.comparison.with.dummy.benchmark <- compareLayers(test.Field.2000_2005, test.Field.2006_2010, layers1 = "mlai", do.seasonality = TRUE, verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
+  expect_is(Seasonal.comparison.with.dummy.benchmark, "Comparison")
+  
+})
+
+
+### ADD AREA FUNCTIO
+context("Add Area")
+
+test_that("Add Area", {
+  
+  # simple m^2 case
+  area.m2 <- addArea(GUESS.Field.lai.annual)
+  expect_is(area.m2 , "Field")
+  
+  # km^2 case
+  area.km2 <- addArea(GUESS.Field.lai.annual, unit = "km^2")
+  expect_is(area.km2 , "Field")
+  
+  # ha case
+  area.ha <- addArea(GUESS.Field.lai.annual, unit = "ha")
+  expect_is(area.ha , "Field")
+  
+  # case with ellipse instead of circle
+  area.m2.ellipse <- addArea(GUESS.Field.lai.annual, ellipse = TRUE)
+  expect_is(area.m2.ellipse  , "Field")
+  
+  # check the sums 
+  expect_identical(sum(area.m2@data[["Area"]]), sum(area.km2@data[["Area"]]) * 10^6)
+  expect_identical(sum(area.m2@data[["Area"]]), sum(area.ha@data[["Area"]]) * 10^4)
+  
+})
 
 
 ###  EXPORTING

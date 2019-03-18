@@ -3,13 +3,13 @@
 #
 #' Get a \code{Field} from a \code{Source}
 #' 
-#' Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object. optionally including
+#' Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object, optionally including
 #' spatial, temporal and annual cropping.
 #' 
 #' Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
-#' @param source The \code{Source} object for which the spatially-averaged \code{ModelField} should be built (eg. "lai")
+#' @param source The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
@@ -116,7 +116,7 @@ getField <- function(source,
                                  var.string = var.string, 
                                  sta.info = sta.info)
   
-  file.name <- file.path(source@dir, paste(target.field.id, "DGVMField", sep = "."))
+  file.name <- file.path(source@dir, paste(target.field.id, "RData", sep = "."))
   if(verbose) message(paste("Seeking ModelField with id = ", target.field.id, sep = ""))
   
   
@@ -182,14 +182,15 @@ getField <- function(source,
     
     # if the provided spatial yields a valid extent, use the crop function
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
-    if (class(possible.error) != "try-error") {
+    # note that data.tables *do* return a valid extent, but we don't want to crop with that here (hence the second condition)
+    if (class(possible.error) != "try-error" && !is.data.table(spatial.extent)) {
       this.Field <- crop(x = this.Field, y = sta.info@spatial.extent)  
     }
     
     # else check if some gridcells to be selected with getGridcells
     else if(is.data.frame(sta.info@spatial.extent) || is.data.table(sta.info@spatial.extent) || is.numeric(sta.info@spatial.extent) || class(sta.info@spatial.extent)[1] == "SpatialPolygonsDataFrame"){
-      this.Field <- selectGridcells(this.Field, sta.info@spatial.extent, ...)
-     }
+      this.Field <- selectGridcells(x = this.Field, gridcells = sta.info@spatial.extent, spatial.extent.id = sta.info@spatial.extent.id, ...)
+    }
     
     # else fail with error message
     else {
@@ -197,10 +198,9 @@ getField <- function(source,
     }
     
   }
-  else if(is.null(sta.info@spatial.extent)){
+  else if(is.null(sta.info@spatial.extent)) {
     
-    actual.sta.info@spatial.extent.id <- "Full"
-    if(verbose) message(paste("No spatial extent specified, setting spatial extent to full simulation domain: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
+    if(verbose) message(paste("No spatial extent specified, using full spatial extent of simulation: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
     
   }
   
@@ -253,8 +253,6 @@ getField <- function(source,
       
       this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose)
       
-      # update meta-data and report  
-      actual.sta.info@spatial.aggregate.method <- sta.info@spatial.aggregate.method
       if(verbose) {
         message("Head of spatially aggregated data.table:")
         print(utils::head(this.Field@data))
@@ -267,9 +265,7 @@ getField <- function(source,
     if("Year" %in% getDimInfo(this.Field, "names")){
       
       this.Field <- aggregateYears(this.Field, method = sta.info@year.aggregate.method, verbose = verbose)
-      
-      # update meta-data and report  
-      actual.sta.info@year.aggregate.method <- sta.info@year.aggregate.method
+     
       if(verbose) {
         message("Head of year aggregated data:")
         print(utils::head(this.Field@data))
@@ -294,9 +290,6 @@ getField <- function(source,
       
       this.Field <- aggregateSubannual(this.Field, method = sta.info@subannual.aggregate.method, target = sta.info@subannual.resolution, verbose = verbose)
       
-      # update meta-data and report  
-      actual.sta.info@subannual.aggregate.method <- sta.info@subannual.aggregate.method
-      actual.sta.info@subannual.resolution <- sta.info@subannual.resolution
       if(verbose) {
         message("Head of year aggregated data:")
         print(utils::head(this.Field@data))

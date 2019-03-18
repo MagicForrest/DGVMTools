@@ -1,6 +1,6 @@
 Package: DGVMTools
 Type: Package
-Version: 0.7.1
+Version: 0.8.0
 Title: DGVM Processing, Analysis and Plotting Tools
 Date: 2019-02-27
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
@@ -35,7 +35,6 @@ Suggests:
     rmarkdown,
     ncdf4,
     rgeos,
-    udunits2,
     testthat
 License: GPL | file LICENSE
 URL: https://www.bik-f.de
@@ -65,7 +64,6 @@ Collate:
     'commonSTAInfo.R'
     'compareLayers.R'
     'copyLayers.R'
-    'countCategoricalData.R'
     'crop-methods.R'
     'defineSource.R'
     'determinePFTs.R'
@@ -89,6 +87,7 @@ Collate:
     'plotSeasonal.R'
     'plotSpatial.R'
     'plotSpatialComparison.R'
+    'plotSubannual.R'
     'plotTemporal.R'
     'plotting-framework-functions.R'
     'renameLayers.R'

@@ -10,11 +10,14 @@ addArea(input, unit = "m^2", ellipse = FALSE, verbose = TRUE,
 \arguments{
 \item{input}{a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.}
 
-\item{unit}{area unit. Default m^2, if something else is spefified udunits2 must be installed. If udunits2 is not installed this option is ignored.}
+\item{unit}{area unit. Default "m^2", can also be "km^2" and "ha"}
 
 \item{ellipse}{If the eath should be assumed to be a ellipsoid instead of a sphere.}
 
-\item{verbose}{print some information.}
+\item{verbose}{print some information.
+
+The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{aggregateSpatial} but it can
+be utilised by the user for any other purpose.}
 
 \item{digits}{Numeric, number of digits to which to truncate the coordinates when merging the area data.table with the input. This is a technical detail,
 you only need to use it if you have troubles because of coordinates with a few decimal places.}
@@ -23,8 +26,44 @@ you only need to use it if you have troubles because of coordinates with a few d
 same class as input
 }
 \description{
-Adds the gridcell area to a spatial Field or data.table/data.frame.
-For unit conversion it makes use of \code{\link[udunits2]{ud.convert}}, if installed. If udunits2 is not installed the option is ignored and the returned unit is m^2.
+Adds the gridcell area to a spatial Field or data.table/data.frame.  Makes a new layer/column called "area".  
+Unit conversion from "m^2" (default) to "km^2" and "ha" is supported.
+}
+\examples{
+
+\donttest{
+ 
+# Get an example Field
+africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools")
+africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
+field <- getField(source = africa.Source, var = "cmass", year.aggregate.method="mean")
+
+# add area in m^2 - note "Area" column follows immediately after Lon and Lat
+field.m2 <- addArea(input = field, unit = "m^2")
+print(field.m2@data)
+
+# add area in km^2
+field.km2 <- addArea(input = field, unit = "km^2")
+print(field.km2@data)
+
+# plot area (also modify plot and legend title to be more meaningful)
+p <- plotSpatial(field.km2, "Area", title = "Gridcell Area (km^2)", subtitle = NULL)
+p <- p + guides(fill = guide_colourbar(title = "km^2"))
+print(p)
+
+# add area in km^2 using an ellipse
+field.km2.ellipse <- addArea(input = field, unit = "km^2", ellipse = TRUE)
+field.km2.ellipse <- renameLayers(field.km2.ellipse, "Area", "Area_ellipse")
+
+# compare areas just for fun
+comp.layer <- compareLayers(field1=field.km2, field2=field.km2.ellipse, 
+                            layers1="Area", layers2="Area_ellipse")
+plot.title <- "Difference in gridcell area for spherical vs ellipsoid Earth"
+p <- plotSpatialComparison(comp.layer, title= plot.title, subtitle = NULL)
+p <- p + guides(fill = guide_colourbar(title = "km^2"))
+print(p)
+
+}
 }
 \author{
 Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}

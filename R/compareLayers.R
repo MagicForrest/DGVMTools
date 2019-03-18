@@ -9,22 +9,105 @@
 #' @param field2 A Field or DataObject from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.
 #' @param layers1 The name of the layers to be compared from field1 (character string)
 #' @param layers2 The name of the layers to be compared from field2 (character string).  If not defined taken to the be the same as layers1
-#' @param keepall1 Boolean, keep all data points in layers1 even if there is not corresponding data in layers2 
-#' @param keepall2 Boolean, keep all data points in layers2 even if there is not corresponding data in layers2 
-#' @param override.quantity Boolean, if TRUE ignore situation where field1 and field2 have non-identical Quantities and use the Quantity from field1 for the returned Comparison
-#' @param match.NAs Boolean, if TRUE copy NAs from one layer to the other.  This is mostly to make sure that when you later plot the data in the final Comparison side-by-side,
+#' @param do.seasonality Logical, if TRUE use monthly values to calculate the seasonal concentration and phase, and then return NME/NSME of the concentration and MPD 
+#' (mean phase difference) on the phase.
+#' @param keepall1 Logical, if TRUE keep all data points in layers1 even if there is not corresponding data in layers2 
+#' @param keepall2 Logical, if TRUE keep all data points in layers2 even if there is not corresponding data in layers2 
+#' @param override.quantity Logical, if TRUE ignore situation where field1 and field2 have non-identical Quantities and use the Quantity from field1 for the returned Comparison
+#' @param match.NAs Logical, if TRUE copy NAs from one layer to the other.  This is mostly to make sure that when you later plot the data in the final Comparison side-by-side,
 #' that the both have 'no data' (typically grey areas) plotted on both maps.
 #' @param dec.places Numeric, passed to copyLayers. Defines to how many decimal places to round the coordinates in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.  
-#' @param show.stats Boolean, if TRUE print the summary statistics
+#' @param show.stats Logical, if TRUE print the summary statistics
 #' @param custom.metrics A named list of functions (defined by the user) to calculate additional custom metrics.  The functions must take a data.table and 
 #' two character vectors of layer names to be compared (in order in the case of multi-layer comparisons).  Spatial-temporal-annual column names of Lon, Lat, Year, Month and Day
 #' can be assumed in the data.table.  The name of the item in the list is used as the metric name.  
-#' @param verbose Boolean, if TRUE print some informative output
+#' @param verbose Logical, if TRUE print some informative output
 #' 
-#' The returned Comparison object can be plotted using \code{plotSpatail} (to give the absolute difference, original values side-by-side and percentage difference, also the NME spatial - to be implemented)
-#' The stats slot (which contains a Statistics object) holds information such as RSME, NME, Nash-Sutcliffe Model Efficiency, etc. between the datasets in the case of a continous data.
+#' The returned Comparison object can be plotted using \code{plotSpatialComparison} (to give the absolute difference, original values side-by-side and percentage difference, also the NME spatially - to be implemented)
+#' The stats slot (which contains list) holds information such as RSME, NME, Nash-Sutcliffe Model Efficiency, etc. between the datasets in the case of a continous data.
 #' In the case of comparing categorical data (ie layers of factors) it contains Cohen's Kappa.
 #' 
+#' @examples 
+#' 
+#' \donttest{
+#'  
+#' ##### Continuous (single-layer) comparison
+#' 
+#' # Load Saatchi data and LPJ-GUESS data over Africa
+#' 
+#' africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools")
+#' africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
+#' model.cmass <- getField(source = africa.Source, var = "cmass", year.aggregate.method="mean")
+#' 
+#' Saatchi.dir <- system.file("extdata", "DGVMData", "Saatchi2011", "HD", package = "DGVMTools")
+#' Saatchi.Source <- defineSource(name = "Saatchi Biomass", dir = Saatchi.dir,  format = DGVMData)
+#' Saatchi.cmass <- getField(source = Saatchi.Source , var = "vegC_std") #' 
+#'
+#' ## Calculate veg C of trees in model, compare layers, and print the statistics 
+#' model.cmass <- layerOp(model.cmass, "+", ".Tree", "Tree")
+#' vegC.comparison <- compareLayers(field1 = model.cmass, field2 = Saatchi.cmass, layers1 = "Tree")
+#' print(vegC.comparison@stats)
+#'
+#' # plot maps with plotSpatialComparison
+#' print(plotSpatialComparison(vegC.comparison)) 
+#' print(plotSpatialComparison(vegC.comparison, type = "values"))
+#' 
+#' ##### Categorical (single-layer) comparison
+#' # classification is by Smith et al 2014
+#' # Load Haveltine and Prentice PNV biomes data and LPJ-GUESS biomes over Europe
+#' 
+#' europe.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+#' europe.Source <- defineSource(name = "LPJ-GUESS", dir = europe.dir,  format = GUESS)
+#' model.biomes <- getBiomes(source = europe.Source, 
+#'                           scheme = Smith2014BiomeScheme, 
+#'                           year.aggregate.method="mean")
+#' 
+#' PNV.dir <- system.file("extdata", "DGVMData", "HandP_PNV", "HD", package = "DGVMTools")
+#' PNV.Source <- defineSource(name = "H and P PNV", dir = PNV.dir,  format = DGVMData)
+#' PNV.biomes <- getField(source = PNV.Source , var = "Smith2014")
+#'
+#' ## Compare biomes, print the statistics
+#' biomes.comparison <- compareLayers(field1 = model.biomes, 
+#'                                    field2 = PNV.biomes, 
+#'                                    layers1 = "Smith2014")
+#' print(biomes.comparison@stats)
+#' 
+#' # plotSpatialComparisons
+#' print(plotSpatialComparison(biomes.comparison))
+#' print(plotSpatialComparison(biomes.comparison, type = "values"))
+#' 
+#' 
+#' ##### Seasonal comparison
+#' 
+#' # Load monthly LPJ-GUESS LAI data over Europe for two periods
+#' 
+#' mlai.2000_2005 <-  getField(source = europe.Source, 
+#'                             var = "mlai", 
+#'                             year.aggregate.method = "mean", 
+#'                             first.year = 2000, last.year = 2005)
+#'                             
+#' mlai.2006_2010 <-  getField(source = europe.Source, 
+#'                             var = "mlai", 
+#'                             year.aggregate.method = "mean", 
+#'                             first.year = 2006, last.year = 2010)
+#' 
+#' # make comparison and show stats
+#' seasonal.comparison <- compareLayers(field1 = mlai.2000_2005, 
+#'                                      field2 = mlai.2006_2010, 
+#'                                      layers1 = "mlai", 
+#'                                      do.seasonality = TRUE, 
+#'                                      verbose = TRUE, 
+#'                                      show.stats = TRUE)
+#' print(seasonal.comparison@stats)
+#' 
+#' 
+#' # plotSpatialComparisons
+#' print(plotSpatialComparison(seasonal.comparison))
+#' print(plotSpatialComparison(seasonal.comparison, type = "values")) 
+#' 
+#' 
+#' 
+#' }
 #' 
 #' @return A Comparison object
 #' @export
@@ -33,6 +116,7 @@ compareLayers <- function(field1,
                           field2, 
                           layers1, 
                           layers2=layers1,
+                          do.seasonality = FALSE,
                           keepall1 = FALSE, 
                           keepall2 = FALSE, 
                           override.quantity = FALSE, 
@@ -48,18 +132,29 @@ compareLayers <- function(field1,
   
   
   ### Find what nature of comparison we are doing
-  single = categorical = relative.abundance = FALSE
+  type <- NULL
   # comparing one layer from each
   if(length(layers1) == 1){
     type1 <- class(field1@data[[layers1]])
     type2 <- class(field2@data[[layers2]])
     if(type1 == type2){
       if(type1 == "numeric") {
-        single <- TRUE
-        if(verbose) message("Comparing two single numeric layers.")
+        if(do.seasonality) {
+          if("Month" %in% getDimInfo(field1)) {
+            type <- "seasonal"
+            if(verbose) message("Comparing seasonailty of two single numeric layers with monthly data.")
+          }
+          else {
+            stop("Argument 'do.seasonality' = TRUE but no monthly dimension found in input datasets.")
+          }
+        }
+        else {
+          type <- "continuous"
+          if(verbose) message("Comparing two single numeric layers.")
+        }
       }
       if(type1 == "factor") {
-        categorical <- TRUE
+        type <- "categorical"
         if(verbose) message("Comparing two single categorical layers.")
       }
     }
@@ -68,7 +163,7 @@ compareLayers <- function(field1,
     }
   }
   else {
-    relative.abundance <- TRUE
+    type <- "relative.abundance"
     if(verbose) warning("Doing categorical comparison, note to checks done on layer types...")
   }
   
@@ -147,28 +242,46 @@ compareLayers <- function(field1,
     if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity", field1@quant@id))
     else stop("Comparing different Quantity")
   }
-  if(single){ new.name <- paste(source1@name, "-",  source2@name) }
-  else if(categorical) { new.name <- paste(source1@name, "vs.",  source2@name) }
-  else if(relative.abundance) { new.name <- paste("Relative abundance", source1@name, "vs.",  source2@name) }
-  
+
   ### Calculate the approriate statistical comparisons
   
-  
-  
-  if(single) {
+  if(type == "continuous") {
     
+    new.name <- paste(source1@name, "-",  source2@name)
     stats <- continuousComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
-    new.data[, "Difference" := get(new.ids.1) - get(new.ids.2)]
     
   }
-  else if(categorical) {
+  else if(type == "seasonal") {
     
-    stats <- categoricalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
-    new.data[, "Difference" := as.character(get(new.ids.1)) == as.character(get(new.ids.2))]
+    new.name <- paste("Seasonal comparison", source1@name, "vs.",  source2@name)
     
+    # special case to return a list with both the stats and the data/table with the seasonal concentration and phase
+    temp.list <- seasonalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
+    new.data <- temp.list[["dt"]]
+    stats<- temp.list[["stats"]]
+
+    setnames(new.data, 
+             c("C_1", "C_2", "P_1", "P_2"), 
+             c(paste("Seasonal Concentration", field1@id, sep = "."), 
+               paste("Seasonal Concentration", field2@id, sep = "."),
+               paste("Seasonal Phase", field1@id, sep = "."), 
+               paste("Seasonal Phase", field2@id, sep = "."))
+    )
+   
   }
-  else if(relative.abundance) {
   
+  else if(type == "categorical") {
+    
+    new.name <- paste(source1@name, "vs.",  source2@name)
+    stats <- categoricalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
+    # new.data[, "Difference" := as.character(get(new.ids.1)) == as.character(get(new.ids.2))]
+    
+  }
+  else if(type == "relative.abundance") {
+    
+    
+    new.name <- paste("Relative abundance", source1@name, "vs.",  source2@name)
+    
     # Calculate Manhattan Metric and Squared Chord Distance
     stats <- proportionsComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
     
@@ -182,6 +295,7 @@ compareLayers <- function(field1,
   comparison.layer <- new("Comparison",
                           id = id,
                           name = new.name,
+                          type = type,
                           data = new.data,
                           quant1 = field1@quant,
                           quant2 = field2@quant,

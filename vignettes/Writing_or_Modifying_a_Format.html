@@ -12,14 +12,14 @@
 
 <meta name="author" content="Matthew Forrest" />
 
-<meta name="date" content="2019-02-25" />
+<meta name="date" content="2019-03-09" />
 
 <title>Writing or Modifying a Format</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
+<style type="text/css" data-origin="pandoc">
 div.sourceCode { overflow-x: auto; }
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
@@ -55,7 +55,29 @@ code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
 code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
 code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -70,7 +92,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Writing or Modifying a Format</h1>
 <h4 class="author"><em>Matthew Forrest</em></h4>
-<h4 class="date"><em>2019-02-25</em></h4>
+<h4 class="date"><em>2019-03-09</em></h4>
 
 
 
@@ -89,7 +111,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <span class="kw">str</span>(original.PFTs)</code></pre></div>
 <pre><code>## List of 12
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;BNE&quot;
 ##   .. ..@ name           : chr &quot;Boreal Needleleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -98,7 +120,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;darkblue&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;BINE&quot;
 ##   .. ..@ name           : chr &quot;Boreal Shade-Intolerant Needleleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -107,7 +129,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
 ##   .. ..@ shade.tolerance: chr &quot;BNE&quot;
 ##   .. ..@ colour         : chr &quot;dodgerblue3&quot;
-##  $ BNS:Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;BNS&quot;
 ##   .. ..@ name           : chr &quot;Boreal Needleleaved Summergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -116,7 +138,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;cadetblue2&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;IBS&quot;
 ##   .. ..@ name           : chr &quot;Shade-intolerant B/leaved Summergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -125,7 +147,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;chartreuse&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TeBE&quot;
 ##   .. ..@ name           : chr &quot;Temperate Broadleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -134,7 +156,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;darkgreen&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TeNE&quot;
 ##   .. ..@ name           : chr &quot;Temperate Needleleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -143,7 +165,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;lightseagreen&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TeBS&quot;
 ##   .. ..@ name           : chr &quot;Temperate Broadleaved Summergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -152,7 +174,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;darkolivegreen3&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TrBE&quot;
 ##   .. ..@ name           : chr &quot;Tropical Broadleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -161,7 +183,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;orchid4&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TrIBE&quot;
 ##   .. ..@ name           : chr &quot;Tropical Shade-intolerant Broadleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -170,7 +192,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
 ##   .. ..@ shade.tolerance: chr &quot;TrBE&quot;
 ##   .. ..@ colour         : chr &quot;orchid&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TrBR&quot;
 ##   .. ..@ name           : chr &quot;Tropical Broadleaved Raingreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -179,7 +201,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;palevioletred&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;C3G&quot;
 ##   .. ..@ name           : chr &quot;Boreal/Temperate Grass&quot;
 ##   .. ..@ growth.form    : chr &quot;Grass&quot;
@@ -188,7 +210,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##   .. ..@ climate.zone   : chr &quot;NA&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;lightgoldenrod1&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;C4G&quot;
 ##   .. ..@ name           : chr &quot;Tropical Grass&quot;
 ##   .. ..@ growth.form    : chr &quot;Grass&quot;
@@ -213,7 +235,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 
 <span class="kw">print</span>(<span class="kw">str</span>(new.PFT.list))</code></pre></div>
 <pre><code>## List of 13
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;BNE&quot;
 ##   .. ..@ name           : chr &quot;Boreal Needleleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -222,7 +244,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;darkblue&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;BINE&quot;
 ##   .. ..@ name           : chr &quot;Boreal Shade-Intolerant Needleleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -231,7 +253,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
 ##   .. ..@ shade.tolerance: chr &quot;BNE&quot;
 ##   .. ..@ colour         : chr &quot;dodgerblue3&quot;
-##  $ BNS:Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;BNS&quot;
 ##   .. ..@ name           : chr &quot;Boreal Needleleaved Summergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -240,7 +262,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;cadetblue2&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;IBS&quot;
 ##   .. ..@ name           : chr &quot;Shade-intolerant B/leaved Summergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -249,7 +271,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;chartreuse&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TeBE&quot;
 ##   .. ..@ name           : chr &quot;Temperate Broadleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -258,7 +280,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;darkgreen&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TeNE&quot;
 ##   .. ..@ name           : chr &quot;Temperate Needleleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -267,7 +289,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;lightseagreen&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TeBS&quot;
 ##   .. ..@ name           : chr &quot;Temperate Broadleaved Summergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -276,7 +298,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;darkolivegreen3&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TrBE&quot;
 ##   .. ..@ name           : chr &quot;Tropical Broadleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -285,7 +307,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;orchid4&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TrIBE&quot;
 ##   .. ..@ name           : chr &quot;Tropical Shade-intolerant Broadleaved Evergreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -294,7 +316,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
 ##   .. ..@ shade.tolerance: chr &quot;TrBE&quot;
 ##   .. ..@ colour         : chr &quot;orchid&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;TrBR&quot;
 ##   .. ..@ name           : chr &quot;Tropical Broadleaved Raingreen Tree&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -303,7 +325,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;palevioletred&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;C3G&quot;
 ##   .. ..@ name           : chr &quot;Boreal/Temperate Grass&quot;
 ##   .. ..@ growth.form    : chr &quot;Grass&quot;
@@ -312,7 +334,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;NA&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;lightgoldenrod1&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;C4G&quot;
 ##   .. ..@ name           : chr &quot;Tropical Grass&quot;
 ##   .. ..@ growth.form    : chr &quot;Grass&quot;
@@ -321,7 +343,7 @@ new.PFT.list &lt;-<span class="st"> </span><span class="kw">append</span>(origin
 ##   .. ..@ climate.zone   : chr &quot;NA&quot;
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;sienna2&quot;
-##  $    :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
+##  $ :Formal class 'PFT' [package &quot;DGVMTools&quot;] with 8 slots
 ##   .. ..@ id             : chr &quot;NewPFT&quot;
 ##   .. ..@ name           : chr &quot;Some New Tree PFT&quot;
 ##   .. ..@ growth.form    : chr &quot;Tree&quot;
@@ -513,7 +535,7 @@ for(quant in quantities_NewFormat ) {
                          <span class="dt">last.year =</span> <span class="dv">2018</span>, <span class="co"># let's say</span>
                          <span class="dt">year.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see NOTE 1 below</span>
                          <span class="dt">spatial.extent =</span> <span class="kw">extent</span>(dt), <span class="co"># raster::extent function has been define for data.tables, might be useful</span>
-                         <span class="dt">spatial.extent.id =</span> <span class="kw">character</span>(<span class="dv">0</span>), <span class="co"># see NOTE 2 below</span>
+                         <span class="dt">spatial.extent.id =</span> <span class="st">&quot;Full&quot;</span>, <span class="co"># see NOTE 2 below</span>
                          <span class="dt">spatial.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see NOTE 1 below</span>
                          <span class="dt">subannual.resolution =</span> <span class="st">&quot;monthly&quot;</span>, <span class="co"># let's say</span>
                          <span class="dt">subannual.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see NOTE 1 below</span>
@@ -521,7 +543,7 @@ for(quant in quantities_NewFormat ) {
                          )
   
    <span class="co"># NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)</span>
-   <span class="co"># NOTE 2: if no spatial cropping at this stage set this to be the empty character string &quot;character(0)&quot;, if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object</span>
+   <span class="co"># NOTE 2: if no spatial cropping at this stage set this to be the character string &quot;Full&quot;, if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object</span>
   
   
   <span class="co"># make the Field ID based on the STAInfo and </span>

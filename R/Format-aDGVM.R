@@ -293,6 +293,13 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, adgvm.daily)
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
   
+  # Set the spatial extent to "Full" if one not provided
+  if(length(target.sta@spatial.extent.id) == 0) {
+    actual.sta.info@spatial.extent.id <- "Full"
+  }
+  else {
+    actual.sta.info@spatial.extent.id <- target.sta@spatial.extent.id
+  }
   
   # make the ID and then make and return Field
   field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)
@@ -662,6 +669,14 @@ getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta)
   
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
+  
+  # Set the spatial extent to "Full" if one not provided
+  if(length(target.sta@spatial.extent.id) == 0) {
+    actual.sta.info@spatial.extent.id <- "Full"
+  }
+  else {
+    actual.sta.info@spatial.extent.id <- target.sta@spatial.extent.id
+  }
   
   # make the ID and then make and return Field
   field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)

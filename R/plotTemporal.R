@@ -60,7 +60,7 @@ plotTemporal <- function(input.data,
   if(is.Field(input.data)){
     
     if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
-    plotting.data.dt <- input.data@data
+    plotting.data.dt <- copy(input.data@data)
     plotting.data.dt[,"Source" := input.data@source@name]
     if(is.Field(input.data)) PFTs <- input.data@source@pft.set
     if(is.null(quant)) quant <- input.data@quant

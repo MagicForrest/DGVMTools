@@ -3,7 +3,6 @@
 \name{veg.palettes}
 \alias{veg.palettes}
 \alias{veg.palette}
-\alias{lai.palette}
 \alias{cmass.palette}
 \alias{difference.palette}
 \alias{fire.palette}
@@ -16,8 +15,6 @@
 \title{Helpful palettes for vegetation maps}
 \usage{
 veg.palette(n)
-
-lai.palette(n)
 
 cmass.palette(n)
 
@@ -43,7 +40,6 @@ reversed.plasma(n)
 \description{
 \describe{
 \item{veg.palette}{A nice white-green-brown color scheme.  Good for vegetation cover}
-\item{lai.palette}{Default colour scheme for LAI}
 \item{cmass.palette}{Default colour scheme for biomass}
 \item{difference.palette}{Colour scheme for differences. Symmetrical, centred on white}
 \item{fire.palette}{Colour scheme for measures of fire activity like fire return time and area burned (from more-to-less fire)}

@@ -18,7 +18,7 @@ if (!isGeneric("writeField")) {
 #' @rdname writeField-methods
 setMethod("writeField", signature(x="Field"), function(x) {
   
- file.name <- file.path(x@source@dir, paste(x@id, "DGVMField", sep = "."))
+ file.name <- file.path(x@source@dir, paste(x@id, "RData", sep = "."))
  saveRDS(x, file = file.name) 
  invisible(file.name)
   

@@ -181,7 +181,7 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
                          last.year = 2018, # let's say
                          year.aggregate.method = "none", # see NOTE 1 below
                          spatial.extent = extent(dt), # raster::extent function has been define for data.tables, might be useful
-                         spatial.extent.id = character(0), # see NOTE 2 below
+                         spatial.extent.id = "Full", # see NOTE 2 below
                          spatial.aggregate.method = "none", # see NOTE 1 below
                          subannual.resolution = "monthly", # let's say
                          subannual.aggregate.method = "none", # see NOTE 1 below
@@ -189,7 +189,7 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
                          )
   
    # NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)
-   # NOTE 2: if no spatial cropping at this stage set this to be the empty character string "character(0)", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
+   # NOTE 2: if no spatial cropping at this stage set this to be the character string "Full", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
   
   
   # make the Field ID based on the STAInfo and 
