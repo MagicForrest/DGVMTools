@@ -564,7 +564,7 @@ seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
   phase1 <- phase1[!is.na(phase2)]
   phase2 <- phase2[!is.na(phase2)]
   
-  MPD <- (1/pi) * acos( sum(cos(phase1 - phase2)/length(phase1)))
+  MPD <- (1/pi) * sum(acos (cos(phase1 - phase2))) / length(phase1)
   
   
   #### COMPILE STATS
