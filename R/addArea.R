@@ -78,7 +78,7 @@ gridarea2d <- function(lon, lat, scale=1.0, ellipse=FALSE) {
   area2d <- array(rep(area1d, each=length(lon)), c(length(lon), length(lat)))
   area   <- data.frame(Lon=as.vector(lon2d),
                        Lat=as.vector(lat2d),
-                       area=as.vector(area2d))
+                       Area=as.vector(area2d))
   area <- data.table(area, key=c("Lon", "Lat"))
   return(area)
 }
@@ -115,21 +115,62 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 
 #' Adds the gridcell area to a spatial Field or data.table/data.frame
 #' 
-#' Adds the gridcell area to a spatial Field or data.table/data.frame.
-#' For unit conversion it makes use of \code{\link[udunits2]{ud.convert}}, if installed. If udunits2 is not installed the option is ignored and the returned unit is m^2.
+#' Adds the gridcell area to a spatial Field or data.table/data.frame.  Makes a new layer/column called "area".  
+#' Unit conversion from "m^2" (default) to "km^2" and "ha" is supported. 
 #' 
 #' @param input a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.
-#' @param unit area unit. Default m^2, if something else is spefified udunits2 must be installed. If udunits2 is not installed this option is ignored.
+#' @param unit area unit. Default "m^2", can also be "km^2" and "ha"
 #' @param ellipse If the eath should be assumed to be a ellipsoid instead of a sphere.
 #' @param digits Numeric, number of digits to which to truncate the coordinates when merging the area data.table with the input. This is a technical detail,
 #' you only need to use it if you have troubles because of coordinates with a few decimal places.   
 #' @param verbose print some information.
+#' 
+#' The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{aggregateSpatial} but it can
+#' be utilised by the user for any other purpose.
+#' 
+#' 
 #' @export
 #' @return same class as input
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' 
+#' @examples 
+#' 
+#' \donttest{
+#'  
+#' # Get an example Field
+#' africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools")
+#' africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
+#' field <- getField(source = africa.Source, var = "cmass", year.aggregate.method="mean")
+#' 
+#' # add area in m^2 - note "Area" column follows immediately after Lon and Lat
+#' field.m2 <- addArea(input = field, unit = "m^2")
+#' print(field.m2@data)
+#' 
+#' # add area in km^2
+#' field.km2 <- addArea(input = field, unit = "km^2")
+#' print(field.km2@data)
+#' 
+#' # plot area (also modify plot and legend title to be more meaningful)
+#' p <- plotSpatial(field.km2, "Area", title = "Gridcell Area (km^2)", subtitle = NULL)
+#' p <- p + guides(fill = guide_colourbar(title = "km^2"))
+#' print(p)
+#' 
+#' # add area in km^2 using an ellipse
+#' field.km2.ellipse <- addArea(input = field, unit = "km^2", ellipse = TRUE)
+#' field.km2.ellipse <- renameLayers(field.km2.ellipse, "Area", "Area_ellipse")
+#' 
+#' # compare areas just for fun
+#' comp.layer <- compareLayers(field1=field.km2, field2=field.km2.ellipse, 
+#'                             layers1="Area", layers2="Area_ellipse")
+#' plot.title <- "Difference in gridcell area for spherical vs ellipsoid Earth"
+#' p <- plotSpatialComparison(comp.layer, title= plot.title, subtitle = NULL)
+#' p <- p + guides(fill = guide_colourbar(title = "km^2"))
+#' print(p)
+#' 
+#' }
 addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10) {
   ## to avoid "no visible binding for global variable" during check
-  Lat = Lon = NULL
+  Lat = Lon = Area = NULL
   if (is.na(unit))
     unit="m^2"
 
@@ -164,22 +205,11 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
   }
 
   if (unit!="m^2") {
-    if (requireNamespace("udunits2", quietly=TRUE)) {
-      if (udunits2::ud.is.parseable(unit)) {
-        if (udunits2::ud.are.convertible("m^2", unit)) {
-          area$area = udunits2::ud.convert(area$area, "m^2", unit)
-        } else {
-          warning(paste("m^2 not convertible to '", unit, "'. Using m^2 instead.", sep=""))
-          unit="m^2"
-        }
-      } else {
-        warning(paste("Unit '", unit, "' not parseable! Using m^2 instead.", sep=""))
-        unit="m^2"
-      }
-    } else {
-      message("Package 'udunits2' not installed! Using m^2 instead.")
-      warning("Package 'udunits2' not installed! Using m^2 instead.")
-    }  
+    
+    if(unit == "km^2") area[, Area := Area / 10^6]
+    else if(unit == "ha") area[, Area := Area / 10^4]
+    else stop(paste("Unsupported unit string in addArea", unit))
+    
   }
   
 

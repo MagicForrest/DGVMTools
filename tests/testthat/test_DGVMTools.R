@@ -445,6 +445,33 @@ test_that("Seasonal Comparisons and Benchmarks", {
 })
 
 
+### ADD AREA FUNCTIO
+context("Add Area")
+
+test_that("Add Area", {
+  
+  # simple m^2 case
+  area.m2 <- addArea(GUESS.Field.lai.annual)
+  expect_is(area.m2 , "Field")
+  
+  # km^2 case
+  area.km2 <- addArea(GUESS.Field.lai.annual, unit = "km^2")
+  expect_is(area.km2 , "Field")
+  
+  # ha case
+  area.ha <- addArea(GUESS.Field.lai.annual, unit = "ha")
+  expect_is(area.ha , "Field")
+  
+  # case with ellipse instead of circle
+  area.m2.ellipse <- addArea(GUESS.Field.lai.annual, ellipse = TRUE)
+  expect_is(area.m2.ellipse  , "Field")
+  
+  # check the sums 
+  expect_identical(sum(area.m2@data[["Area"]]), sum(area.km2@data[["Area"]]) * 10^6)
+  expect_identical(sum(area.m2@data[["Area"]]), sum(area.ha@data[["Area"]]) * 10^4)
+  
+})
+
 
 ###  EXPORTING
 

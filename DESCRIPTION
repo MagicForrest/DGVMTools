@@ -35,7 +35,6 @@ Suggests:
     rmarkdown,
     ncdf4,
     rgeos,
-    udunits2,
     testthat
 License: GPL | file LICENSE
 URL: https://www.bik-f.de
@@ -65,7 +64,6 @@ Collate:
     'commonSTAInfo.R'
     'compareLayers.R'
     'copyLayers.R'
-    'countCategoricalData.R'
     'crop-methods.R'
     'defineSource.R'
     'determinePFTs.R'
