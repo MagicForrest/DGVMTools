@@ -2,13 +2,13 @@
 % Please edit documentation in R/aggregateSpatial.R
 \name{aggregateSpatial.uncompiled}
 \alias{aggregateSpatial.uncompiled}
-\title{Spatially average a Field, DataObject or data.table}
+\title{Spatially aggregate a Field}
 \usage{
 aggregateSpatial.uncompiled(input.obj, method = "mean",
   verbose = FALSE, ...)
 }
 \arguments{
-\item{input.obj}{Field, DataObject or data.table to be averaged}
+\item{input.obj}{Field (or data.table) to be averaged}
 
 \item{method}{The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".}
@@ -18,11 +18,11 @@ aggregateSpatial.uncompiled(input.obj, method = "mean",
 \item{...}{Extra arguments passed to addArea function if a weighted method is being used.}
 }
 \value{
-A Field, DataObject or data.table depending on the input object
+A Field or data.table depending on the input object
 }
 \description{
-Spatially average all gridcells of a Field, DataObject or data.table (assuming the data.table has columns "Lon" and "Lat"). 
-Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon,Lat)
+Spatially aggragte all gridcells of a Field (or a data.table assuming it has columns "Lon" and "Lat"). 
+Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon, Lat)
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

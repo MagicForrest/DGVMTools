@@ -6,7 +6,15 @@
 #' @param nc.file The netcdf object to which the attributes should be added
 #' @return A netcdf object
 #' @export
-
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' @details This function is mostly for internal use (by writeNetCDF), but is also useful for the DGVMData R package so it exported.
+#' 
+#' It expects the longitude dimension to be named one of lon/Lon/longitude/Longitude and latitude one of lat/Lat/latitude/Latitude.  If the fucntion doesn't 
+#' find one of these it will fail.
+#' 
+#' 
 addStandardSpatialAttributes <- function(nc.file) { 
   
   # first check that ncdf4 netCDF package is installed

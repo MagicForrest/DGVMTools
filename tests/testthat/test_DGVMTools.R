@@ -175,7 +175,9 @@ GUESS.Field.yearly.mean.2 <- aggregateYears(GUESS.mlai.Field.full, "mean")
 # spatial
 GUESS.Field.spatial.mean.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.aggregate.method = "mean")
 GUESS.Field.spatial.mean.2 <- aggregateSpatial(GUESS.mlai.Field.full, "mean")
-
+# spatial weighted sum
+GUESS.Field.spatial.wmean.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.aggregate.method = "w.mean")
+GUESS.Field.spatial.wmean.2 <- aggregateSpatial(GUESS.mlai.Field.full, "w.mean")
 
 # test aggregations
 test_that("Aggregation",{
@@ -189,12 +191,15 @@ test_that("Aggregation",{
   expect_is(GUESS.Field.yearly.mean.2, "Field")
   expect_is(GUESS.Field.spatial.mean.1, "Field")
   expect_is(GUESS.Field.spatial.mean.2, "Field")
+  expect_is(GUESS.Field.spatial.wmean.1, "Field")
+  expect_is(GUESS.Field.spatial.wmean.2, "Field")
   
   # check the results are the same
   expect_identical(GUESS.Field.monthly.mean.1 ,  GUESS.Field.monthly.mean.2)
   expect_identical(GUESS.Field.yearly.mean.1 ,  GUESS.Field.yearly.mean.2)
-  expect_identical(GUESS.Field.spatial.mean.1 ,  GUESS.Field.spatial.mean.2)
   expect_identical(GUESS.Field.seasonal.mean.1 ,  GUESS.Field.seasonal.mean.2)
+  expect_identical(GUESS.Field.spatial.mean.1 ,  GUESS.Field.spatial.mean.2)
+  expect_identical(GUESS.Field.spatial.wmean.1 ,  GUESS.Field.spatial.wmean.2)
   
   
   
@@ -253,7 +258,7 @@ GUESS.Field.selected.Field.2 <- crop(x = GUESS.mlai.Field.full, y = GUESS.Field.
 
 
 # test aggregations
-test_that("Aggregation",{
+test_that("Selections and Cropping",{
   
   # check they give Fields
   expect_is(GUESS.Field.selected.years.1, "Field")

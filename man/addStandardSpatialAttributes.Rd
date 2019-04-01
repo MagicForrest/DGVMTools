@@ -15,3 +15,13 @@ A netcdf object
 \description{
 A very simple convenience function for filling the the standard Lon/Lat info when preparing a netCDF file
 }
+\details{
+This function is mostly for internal use (by writeNetCDF), but is also useful for the DGVMData R package so it exported.
+
+It expects the longitude dimension to be named one of lon/Lon/longitude/Longitude and latitude one of lat/Lat/latitude/Latitude.  If the fucntion doesn't 
+find one of these it will fail.
+}
+\author{
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+}
+\keyword{internal}
