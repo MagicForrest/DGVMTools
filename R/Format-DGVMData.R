@@ -146,11 +146,11 @@ getField_DGVMData <- function(source,
     # look at the time steps
     mean.timestep.differences <- mean(diff(all.times))
     # if the mean is exactly unity then the data is daily 
-    if(mean.timestep.differences == 1 ) time.res <- "daily"
+    if(mean.timestep.differences == 1 ) time.res <- "Day"
     # if the mean is between 28 and 31 (inclusive) assume monthly   
-    else if(mean.timestep.differences >= 28 & mean.timestep.differences <= 31 ) time.res <- "monthly"
+    else if(mean.timestep.differences >= 28 & mean.timestep.differences <= 31 ) time.res <- "Month"
     # if the mean is between 359 and 367 (inclusive) assume yearly  
-    else if(mean.timestep.differences >= 360 & mean.timestep.differences <= 367 ) time.res <- "yearly"       
+    else if(mean.timestep.differences >= 360 & mean.timestep.differences <= 367 ) time.res <- "Year"       
     else stop("Data doesn't appear to be daily, monthly, or yearly.  Other options are not currently supported by the DGVMData Format, but could potentially be.  So if you need this please contact the author.")
     
     # calculate the time labels and the start and count values for the time axis
@@ -159,7 +159,7 @@ getField_DGVMData <- function(source,
     time.start <- 1
     time.count <- -1
     
-    if(time.res == "yearly") {
+    if(time.res == "Year") {
       
       # convert the netcdf time increments into years
       all.years <- start.date.year:(start.date.year+length(all.times)-1)
@@ -181,7 +181,7 @@ getField_DGVMData <- function(source,
       all.times <- all.years
     }
     
-    else if(time.res == "monthly") {
+    else if(time.res == "Month") {
       
       # convert the netcdf time increments into years and months
       
@@ -302,90 +302,34 @@ getField_DGVMData <- function(source,
       # ###  HANDLE TIME AXIS 
       if(length(all.times) > 0) {
         
-        if(time.res == "yearly") {
+        if(time.res == "Year") {
           this.slice.dt[, Year := as.numeric(Time)]
           this.slice.dt[, Time := NULL]
-          sta.info@subannual.resolution <- "Year"
-          sta.info@subannual.original <- "Year"
         }
-        else if(time.res == "monthly") {
+        else if(time.res == "Month") {
           toYearandMonth <- function(x) {
             return(list("Year" = as.integer(trunc(x)), "Month" = as.integer(((x%%1)*100)+1)))
           }
           this.slice.dt[, c("Year", "Month") := toYearandMonth(as.numeric(Time))]
           this.slice.dt[, Time := NULL]
-          sta.info@subannual.resolution <- "Month"
-          sta.info@subannual.original <- "Month"
+          
         }
-        #   
-        #   # some tricks to determine exactly what the 'Time' axis represent 
-        #   
-        #   # don't need to be so fancy here!
-        #   # time.axis.string <- this.nc$dim$Time$units
-        #   
-        #   
-        #   # actually, lets do some shortcuts
-        #   length.time.axis <- length(all.times)
-        #   
-        #   # lets see if we have annual data
-        #   if(length.time.axis == (last.year - first.year + 1)) {
-        #     if(verbose) message("Got annual data.")
-        #     
-        #     
-        #     # subsitute using first.year and last.year   
-        #     this.slice.dt[, Year := plyr::mapvalues(this.slice.dt[["Time"]], from = all.times, to = first.year:last.year)]
-        #     this.slice.dt[, Time := NULL]
-        #     
-        #     sta.info@subannual.resolution <- "Year"
-        #     sta.info@subannual.original <- "Year"
-        #   }
-        #   # else check for monthly
-        #   if(length.time.axis == (last.year - first.year + 1) *12) {
-        #     if(verbose) message("Got monthly data.")
-        #     
-        #     all.years <- first.year:last.year
-        #     
-        #     ### MF: This might be slow, consider optimising
-        #     
-        #     # sort data.table by Time axis
-        #     this.slice.dt[order(Time)] 
-        #     
-        #     # make Year vector and add it do the data.table
-        #     temp.nentries.per.year <- nrow(this.slice.dt)/length(all.years)
-        #     year.vector <- c()
-        #     
-        #     for(year in all.years) {
-        #       year.vector <- append(year.vector, rep.int(year, temp.nentries.per.year))
-        #     }
-        #     this.slice.dt[, Year := year.vector]
-        #     rm(year.vector)
-        #     
-        #     # Make Month vector
-        #     month.vector <- c()
-        #     for(year in all.years) {
-        #       for(month in 1:12) {
-        #         month.vector <-append(month.vector, rep.int(month, temp.nentries.per.year/12))
-        #       }
-        #     }
-        #     this.slice.dt[, Month := as.integer(month.vector)]
-        #     rm(month.vector)
-        #     
-        #     # Remove the Time columns
-        #     this.slice.dt[, Time := NULL]
-        #     
-        #   
-        #     sta.info@subannual.resolution <- "Month"
-        #     sta.info@subannual.original <- "Month"
-        #   }
-        #   
-        #   
-        # }
-        # else {
-        #   sta.info@subannual.resolution <- "Year"
-        #   sta.info@subannual.original <- "Year"
+        else if(time.res == "Day") {
+          toYearandDat <- function(x) {
+            return(list("Year" = as.integer(trunc(x)), "Day" = as.integer(((x%%1)*1000)+1)))
+          }
+          this.slice.dt[, c("Year", "Day") := toYearandDay(as.numeric(Time))]
+          this.slice.dt[, Time := NULL]
+          
+        }
+        
+        # set subannual meta-data
+        sta.info@subannual.resolution <- time.res
+        sta.info@subannual.original <- time.res
+     
         
         
-        # make new colum order so that the quant is last
+        # make new column order so that the quant is last
         all.names <- names(this.slice.dt)
         all.names <- all.names[-which(all.names == this.var$name)]
         all.names <- append(all.names, this.var$name)
