@@ -163,7 +163,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
 #' # plot the weight and unweighted sums as a time series
 #' # (also modify ylab to be more meaningful)
 #' p <- plotTemporal(list(spatial.wsum))
-#' p <- p + ylab("Vegetation Carbon Mass (kgC))
+#' p <- p + ylab("Vegetation Carbon Mass (kgC)")
 #' print(p)
 #' 
 #' }

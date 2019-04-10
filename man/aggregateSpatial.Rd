@@ -44,8 +44,10 @@ print(spatial.mean@data)
 spatial.wsum <- aggregateSpatial(input.obj = field, method = "w.sum", verbose = TRUE)
 print(spatial.wsum@data) 
 
-# plot the weight and unweighted sums as a time series (also modify plot and legend title to be more meaningful)
+# plot the weight and unweighted sums as a time series
+# (also modify ylab to be more meaningful)
 p <- plotTemporal(list(spatial.wsum))
+p <- p + ylab("Vegetation Carbon Mass (kgC)")
 print(p)
 
 }
