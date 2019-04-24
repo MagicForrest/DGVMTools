@@ -333,18 +333,30 @@ FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
     is.temporal <- TRUE
   }
   
-  ## check for monthly data
-  is.monthly <- FALSE
+  ## check for monthly or daily data
   if("Month" %in% st.names) {
     cname <- FALSE
+    
+    # function to match the month to the 
+    
     
     # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
     if (is.temporal) {  d[, Year:= Year * 100 + as.numeric(Month)]  }
     time <- sort(unique(d$Year))
     
     d[, Month := NULL]
-    is.monthly <- TRUE
     is.temporal <- TRUE
+  }
+  else if("Day" %in% st.names) {
+    cname <- FALSE
+    
+    # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
+    if (is.temporal) {  d[, Year:= Year * 1000 + as.numeric(Day)]  }
+    time <- sort(unique(d$Year))
+    
+    d[, Day := NULL]
+    is.temporal <- TRUE
+    
   }
   
   #print(d)

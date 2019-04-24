@@ -24,7 +24,7 @@ renameLayers <- function(x, old, new) {
     dims <- getDimInfo(x)
     if(!missing(new)) setnames(x@data, old = append(dims, old), new = append(dims, new))
     else setnames(x@data, old = append(dims, old))
-    return(x)
+    invisible(x)
   }
   
   

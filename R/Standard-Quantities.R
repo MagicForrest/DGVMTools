@@ -25,6 +25,16 @@ Standard.quantities <- list(
       format = c("Standard"),
       cf.name = "area_fraction_percent"), 
   
+  
+  new("Quantity",
+      id = "landcover_std",
+      name = "Area Fraction",
+      units = "%",
+      colours = veg.palette, 
+      format = c("Standard"),
+      cf.name = "area_fraction_percent"), 
+  
+  
   new("Quantity",
       id = "vegC_std",
       name = "Vegetation Carbon Mass",

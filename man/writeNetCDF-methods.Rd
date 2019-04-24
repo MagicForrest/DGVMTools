@@ -10,25 +10,22 @@
 \title{writeNetCDF methods}
 \usage{
 \S4method{writeNetCDF}{Field,character}(x, filename, start.date = NULL,
-  monthly = FALSE, annual = FALSE, verbose = FALSE,
-  quantity = NULL, source = NULL, layer.names = NULL,
-  layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
-  time.dim.name = "Time", precision = "float", time.values = NULL,
-  ...)
+  verbose = FALSE, quantity = NULL, source = NULL,
+  layer.names = NULL, layer.dim.name = NULL, lat.dim.name = "Lat",
+  lon.dim.name = "Lon", time.dim.name = "Time", precision = "float",
+  time.values = NULL, ...)
 
 \S4method{writeNetCDF}{Raster,character}(x, filename, start.date = NULL,
-  monthly = FALSE, annual = FALSE, verbose = FALSE,
-  quantity = NULL, source = NULL, layer.names = NULL,
-  layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
-  time.dim.name = "Time", precision = "float", time.values = NULL,
-  ...)
+  verbose = FALSE, quantity = NULL, source = NULL,
+  layer.names = NULL, layer.dim.name = NULL, lat.dim.name = "Lat",
+  lon.dim.name = "Lon", time.dim.name = "Time", precision = "float",
+  time.values = NULL, ...)
 
 \S4method{writeNetCDF}{list,character}(x, filename, start.date = NULL,
-  monthly = FALSE, annual = FALSE, verbose = FALSE,
-  quantity = NULL, source = NULL, layer.names = NULL,
-  layer.dim.name = NULL, lat.dim.name = "Lat", lon.dim.name = "Lon",
-  time.dim.name = "Time", precision = "float", time.values = NULL,
-  ...)
+  verbose = FALSE, quantity = NULL, source = NULL,
+  layer.names = NULL, layer.dim.name = NULL, lat.dim.name = "Lat",
+  lon.dim.name = "Lon", time.dim.name = "Time", precision = "float",
+  time.values = NULL, ...)
 }
 \arguments{
 \item{x}{A Field or Raster* object to be written as a netCDF file.  The method can also handle a list of arrays (each array in the list represents one layer)
@@ -38,12 +35,6 @@ but this is more of a technical, internal use of this method.}
 
 \item{start.date}{A data (as a POSIX data) for the start of the time dimension.  Can be omitted for a Field (), \emph{must} be included if you want to write 
 a RasterStack or RasterBrick with a time dimension.}
-
-\item{monthly}{Logical specifying if the data has has a monthly time resolution. Is ignored for a Field, but it is necessary to set it to TRUE if you want to make a netCDF file out
-of a RasterStack or RasterBrick where each layer represents a month.}
-
-\item{annual}{Logical specifying if the data has has a annual time resolution. Is ignored for a Field, but it is necessary to set it to TRUE if you want to make a netCDF file out
-of a RasterStack or RasterBrick where each layer represents a year.}
 
 \item{verbose}{Logical, if TRUE print a bunch of progress and debug output}
 
@@ -65,9 +56,10 @@ is created and each layer gets its own variable in the netCDF.  If it is specifi
 
 \item{time.dim.name}{Character, the time dimension name. Defaults to "Time".}
 
-\item{precision}{Character, the output precision (alternatively type, confusingly) to use in the netCDF file.  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
+\item{precision}{Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
 
-\item{time.values}{The time dimension information (in the case of Raster*, is ignored for a Field).  Format is 'days since' the 'start.date' argument.  NOT CURRENTLY IMPLEMENT, CAN MAYBE REPLACE 'monthly'?}
+\item{time.values}{The values along the time dimension (in the case of Raster*, is ignored for a Field) defined as 'days since' the 'start.date' argument.
+If not supplied, data is assumed not to have a time axis. In such case if the raster has multiple layers they will be interpreted}
 
 \item{...}{Other arguments, not currently used
 
@@ -75,7 +67,9 @@ is created and each layer gets its own variable in the netCDF.  If it is specifi
 
 These methods offers two very convienent things.  Firsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
 convenient way to write Raster* objects as netCDF objects than writeRaster (at least in the eye's of the author).  This because is allows specifying of meta data and a time axis, 
-allows some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes.}
+allows some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes. 
+
+Note that to maintain some parsimony and flexibility, the methods can write *either* a netCDF file with a time dimension *or* one with multiple variables(layers).}
 }
 \value{
 Nothing
