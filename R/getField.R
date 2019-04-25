@@ -69,7 +69,25 @@ getField <- function(source,
   
   ### CONVERT STRING TO QUANTITY
   if(class(var) == "character") {
-    quant <- lookupQuantity(var, source@format)
+    
+    # if no quantity it found, make a dummy quantity based on the input var
+    quant <- tryCatch(
+      {
+        lookupQuantity(var, source@format)
+      },
+      error= function(cond){
+        new("Quantity",
+            id = var,
+            name = var,
+            units = "undefined unit",
+            colours = viridis::viridis,
+            format = c(source@format@id),
+            cf.name = var)
+      },
+      warning=function(cond) {
+      },
+      finally={}
+    )    
     var.string <- var
   }
   else {
