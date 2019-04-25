@@ -311,7 +311,7 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
 #' @keywords internal
 FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   
-  Lon=Lat=Year=Month=variable=NULL
+  Lon=Lat=Year=Month=Day=variable=NULL
   
   ## get the full spatial extent
   lon <- extract.seq(d$Lon)

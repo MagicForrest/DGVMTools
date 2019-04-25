@@ -4,7 +4,8 @@
 \alias{getQuantity_aDGVM_Scheme1}
 \title{Read aDGVM2 quantities from pop file}
 \usage{
-getQuantity_aDGVM_Scheme1(run, variable, target.sta, adgvm.daily)
+getQuantity_aDGVM_Scheme1(run, variable, target.sta,
+  file.name = file.name, adgvm.daily)
 }
 \arguments{
 \item{run}{A \code{source} containing the meta-data about the aDGVM2 run}
@@ -12,6 +13,8 @@ getQuantity_aDGVM_Scheme1(run, variable, target.sta, adgvm.daily)
 \item{variable}{A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, meanheight“, "nind“, "pind“, "vegC_std“, "vegcover_std"}
 
 \item{target.sta}{STAInfo object containing the space-time-annual extent required.}
+
+\item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated}
 }
 \description{
 An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened

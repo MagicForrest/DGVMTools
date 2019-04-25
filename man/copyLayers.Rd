@@ -18,12 +18,15 @@ copyLayers(from, to, layer.names, new.layer.names = NULL,
 \item{new.layer.names}{The new names that the layers should have in the 'to' object. Use this to avoid naming conflict whereby, for 
 example, if a layer "Total" is copied to an object which already has a "Total" layer then they layers will be names "Total.x" and "Total.y".}
 
-\item{keep.all.to}{Boolean, if set to FALSE, all points in the 'to' object which don't have corresponding points in the 'from' object are removed.}
+\item{keep.all.to}{Logical, if set to FALSE, all points in the 'to' object which don't have corresponding points in the 'from' object are removed.}
 
-\item{keep.all.from}{Boolean, if set to FALSE, all points in the 'from' object which don't have corresponding points in the 'to' object are removed.}
+\item{keep.all.from}{Logical, if set to FALSE, all points in the 'from' object which don't have corresponding points in the 'to' object are removed.}
 
 \item{dec.places}{Numeric, how many decimal places to rounds the coordinates (Lon anf Lat dimensions) to in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.
 But setting this can be useful to force matching of coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
+
+\item{fill.dims}{Logical, if TRUE (the default) and if the 'from' Field/data.table has less dimensions than the 'to' Field/data.table, then just fill in all the values
+of that dimension with the same data.  Ie if if the 'from' table has no months but the to table does, just fill the same value into all months.}
 }
 \value{
 A Field (or data.table) comprising the 'to' object with the new layers added

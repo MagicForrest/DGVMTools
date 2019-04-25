@@ -9,10 +9,12 @@
 #' @param layer.names The layers to be copied from the "from" argument
 #' @param new.layer.names The new names that the layers should have in the 'to' object. Use this to avoid naming conflict whereby, for 
 #' example, if a layer "Total" is copied to an object which already has a "Total" layer then they layers will be names "Total.x" and "Total.y".  
-#' @param keep.all.to Boolean, if set to FALSE, all points in the 'to' object which don't have corresponding points in the 'from' object are removed.
-#' @param keep.all.from Boolean, if set to FALSE, all points in the 'from' object which don't have corresponding points in the 'to' object are removed.
+#' @param keep.all.to Logical, if set to FALSE, all points in the 'to' object which don't have corresponding points in the 'from' object are removed.
+#' @param keep.all.from Logical, if set to FALSE, all points in the 'from' object which don't have corresponding points in the 'to' object are removed.
 #' @param dec.places Numeric, how many decimal places to rounds the coordinates (Lon anf Lat dimensions) to in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.  
 #' But setting this can be useful to force matching of coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.
+#' @param fill.dims Logical, if TRUE (the default) and if the 'from' Field/data.table has less dimensions than the 'to' Field/data.table, then just fill in all the values
+#' of that dimension with the same data.  Ie if if the 'from' table has no months but the to table does, just fill the same value into all months.   
 #' 
 #' @description This function does not check the dimensions columns are identical.  Any points in the 'from' object which are not in the 'to' object are ignored, 
 #' and any points in the 'to' object which don't have corresponding points in the 'from' object are assigned NA, unless keep.all.to is set to FALSE .

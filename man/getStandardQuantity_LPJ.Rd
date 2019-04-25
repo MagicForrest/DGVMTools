@@ -4,12 +4,16 @@
 \alias{getStandardQuantity_LPJ}
 \title{Returns the data from one LPJ-GUESS output variable as a \code{data.table}.}
 \usage{
-getStandardQuantity_LPJ(run, quant, target.sta, verbose = FALSE)
+getStandardQuantity_LPJ(run, quant, target.sta, file.name = file.name,
+  verbose = FALSE)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.}
 
 \item{quant}{A Quantity to define what output file from the LPJ-GUESS run to open}
+
+\item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
+"<quant@id>.out" (also "<quant@id>.out.gz")}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
 

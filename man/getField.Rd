@@ -7,7 +7,8 @@
 getField(source, var, first.year, last.year, year.aggregate.method,
   spatial.extent, spatial.extent.id, spatial.aggregate.method,
   subannual.resolution, subannual.original, subannual.aggregate.method,
-  sta.info, write = FALSE, read.full = TRUE, verbose = FALSE, ...)
+  sta.info, file.name = NULL, write = FALSE, read.full = TRUE,
+  verbose = FALSE, ...)
 }
 \arguments{
 \item{source}{The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.}
@@ -41,6 +42,11 @@ See \code{\link{aggregateSubannual}}}
 \item{sta.info}{Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.
 Can also be a Field object from which the STA info will de derived.
 If specified the following 9 arguments are ignored (with a warning)}
+
+\item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
+(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{DGVMData} and \code{aDGVM} Formats since the file names are normally 
+standardised. However, in the case that they have been renamed, or if other future Formats require a file name, this is available. 
+Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
 
 \item{write}{If TRUE, write the data of the \code{Field} to disk as text file.}
 

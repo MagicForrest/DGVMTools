@@ -11,6 +11,8 @@
 #' @param source A \code{Source} containing the meta-data about the LPJ-GUESS run
 #' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param target.STAInfo The spatial-temporal target domain
+#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
+#' "<quant@id>.out" (also "<quant@id>.out.gz")
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -18,19 +20,22 @@
 getField_GUESS <- function(source,
                            quant,
                            target.STAInfo,
+                           file.name,
                            verbose,
                            ...) {
   
+  # Give warning if file.name is used because it is currently being ignored
+  if(!is.null(file.name)) warning(paste0("Argument file.name (currently set to ", file.name, ") is being ignored.")) 
   
   # First check if quantity is for FireMIP, if so call a special function with the extra processing required
   if("FireMIP" %in% quant@format) {
-    return(openLPJOutputFile_FireMIP(source, quant, target.sta = target.STAInfo, verbose = verbose, ...))
+    return(openLPJOutputFile_FireMIP(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
   }
   else if("GUESS" %in% quant@format | "LPJ-GUESS-SPITFIRE" %in% quant@format) {
-    return(openLPJOutputFile(source, quant, target.sta = target.STAInfo, verbose = verbose, ...))
+    return(openLPJOutputFile(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
   }
   else if("Standard" %in% quant@format) {
-    return(getStandardQuantity_LPJ(source, quant, target.sta = target.STAInfo, verbose = verbose, ...))
+    return(getStandardQuantity_LPJ(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
   }
   else{
     stop("Unrecognised Quantity in 'quant' argument to getField_GUESS()")
@@ -55,6 +60,8 @@ getField_GUESS <- function(source,
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
+#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
+#' "<quant@id>.out" (also "<quant@id>.out.gz")
 #' @param data.table.only A logical, if TRUE return a data.table and not a Field
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -63,6 +70,7 @@ getField_GUESS <- function(source,
 openLPJOutputFile <- function(run,
                               quant,
                               target.sta,
+                              file.name = file.name,
                               verbose = FALSE,
                               data.table.only = FALSE,
                               ...){
@@ -286,6 +294,8 @@ openLPJOutputFile <- function(run,
 #' @param quant A Quantity to define what output file from the LPJ-GUESS run to open.
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
+#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
+#' "<quant@id>.out" (also "<quant@id>.out.gz")
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -294,6 +304,7 @@ openLPJOutputFile <- function(run,
 openLPJOutputFile_FireMIP <- function(run,
                                       quant,
                                       target.sta,
+                                      file.name = file.name,
                                       verbose = FALSE,
                                       soil_water_capacities = "none",
                                       ...){
@@ -682,6 +693,8 @@ openLPJOutputFile_FireMIP <- function(run,
 #' @param quant A Quantity to define what output file from the LPJ-GUESS run to open
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
+#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
+#' "<quant@id>.out" (also "<quant@id>.out.gz")
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -692,6 +705,7 @@ openLPJOutputFile_FireMIP <- function(run,
 getStandardQuantity_LPJ <- function(run, 
                                     quant, 
                                     target.sta,
+                                    file.name = file.name,
                                     verbose = FALSE) {
   
   Total = Year = FireRT = NULL

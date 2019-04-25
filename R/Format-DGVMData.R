@@ -13,7 +13,7 @@
 #' @param source A \code{Source} containing the meta-data about the DGVMData source
 #' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
-#' @param last.year The last year (as a numeric) of the data to be returned
+#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return A list containing firstly the data.tablle containing the data, and secondly the STAInfo for the data that we have
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -21,6 +21,7 @@
 getField_DGVMData <- function(source,
                               quant,
                               target.STAInfo,
+                              file.name,
                               verbose = FALSE) {
   
   # first check that ncdf4 netCDF package is installed
@@ -51,8 +52,9 @@ getField_DGVMData <- function(source,
   sta.info = new("STAInfo")
   
   
-  # Make the filename and check for the file, gunzip if necessary, fail if not present
-  file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
+  # Make the filename (if necessary) and check for the file, gunzip if necessary, fail if not present
+  if(!is.null(file.name)) file.path(source@dir, file.name)
+  else file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
   file.name.nc.gz <- paste(file.name.nc, "gz", sep = ".")
   zipped <- FALSE
   if(file.exists(file.name.nc)){ 

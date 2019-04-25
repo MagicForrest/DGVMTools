@@ -4,13 +4,15 @@
 \alias{getField_aDGVM}
 \title{Get a Field for aDGVM}
 \usage{
-getField_aDGVM(source, quant, target.STAInfo, verbose, adgvm.scheme,
-  adgvm.daily)
+getField_aDGVM(source, quant, target.STAInfo, file.name, verbose,
+  adgvm.scheme, adgvm.daily)
 }
 \arguments{
 \item{quant}{A Quantity object to define what quantity from the aDGVM2 run to extract}
 
 \item{target.STAInfo}{STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/}
+
+\item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
 

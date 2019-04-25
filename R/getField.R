@@ -31,6 +31,10 @@
 #' Can be "Year", "Month" or "Day".  Currently ignored.
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
+#' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
+#' (usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{DGVMData} and \code{aDGVM} Formats since the file names are normally 
+#' standardised. However, in the case that they have been renamed, or if other future Formats require a file name, this is available. 
+#' Leave missing or set to \code{NULL} to use the standard file name for the particular Format.
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
 #' @param ...  Other arguments that are passed to the getField function for the specific Format or for selecting space/time/years.  Currently this can be
 #' \itemize{
@@ -56,6 +60,7 @@ getField <- function(source,
                      subannual.original,
                      subannual.aggregate.method,
                      sta.info,
+                     file.name = NULL,
                      write = FALSE, 
                      read.full = TRUE, 
                      verbose = FALSE, 
@@ -65,7 +70,7 @@ getField <- function(source,
   Lon = Lat = Year = NULL  
   
   ### CHECK ARGUEMENTS
-  
+  if(missing(file.name)) file.name <- NULL
   
   ### CONVERT STRING TO QUANTITY
   if(class(var) == "character") {
@@ -134,18 +139,18 @@ getField <- function(source,
                                  var.string = var.string, 
                                  sta.info = sta.info)
   
-  file.name <- file.path(source@dir, paste(target.field.id, "RData", sep = "."))
+  preprocessed.file.name <- file.path(source@dir, paste(target.field.id, "RData", sep = "."))
   if(verbose) message(paste("Seeking ModelField with id = ", target.field.id, sep = ""))
   
   
   
   
   ### CASE 1 - USE THE PREAVERAGED/CROPPED FIELD FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
-  if(file.exists(paste(file.name)) & !read.full){
+  if(file.exists(paste(preprocessed.file.name)) & !read.full){
     
     # get the object from disk
-    if(verbose) {message(paste("File",  file.name, "found in",  source@dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
-    model.field <- readRDS(file.name)
+    if(verbose) {message(paste("File",  preprocessed.file.name, "found in",  source@dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
+    model.field <- readRDS(preprocessed.file.name)
     
     # Update the source object, that might have (legitimately) changed compared to the id that was used when this model.field was created
     # for example it might be assigned a new id.
@@ -191,7 +196,7 @@ getField <- function(source,
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   if(verbose) message(paste("Field ", target.field.id, " not already saved (or 'read.full' argument set to TRUE), so reading full data file to create the field now.", sep = ""))
   
-  this.Field <- source@format@getField(source, quant, sta.info, verbose, ...)
+  this.Field <- source@format@getField(source, quant, sta.info, file.name, verbose, ...)
   actual.sta.info <- as(this.Field, "STAInfo")
  
   
@@ -320,7 +325,7 @@ getField <- function(source,
   ### WRITE THE FIELD TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMField object...")}
-    saveRDS(this.Field, file = file.name)
+    saveRDS(this.Field, file = preprocessed.file.name)
     if(verbose) {message("...done.")}
   }
   

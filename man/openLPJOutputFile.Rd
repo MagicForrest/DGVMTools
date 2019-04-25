@@ -4,14 +4,17 @@
 \alias{openLPJOutputFile}
 \title{Open an LPJ-GUESS .out file}
 \usage{
-openLPJOutputFile(run, quant, target.sta, verbose = FALSE,
-  data.table.only = FALSE, ...)
+openLPJOutputFile(run, quant, target.sta, file.name = file.name,
+  verbose = FALSE, data.table.only = FALSE, ...)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
 
 \item{quant}{A Quant to define what output file from the LPJ-GUESS run to open, 
 can also be a simple string defining the LPJ-GUESS output file if the \code{return.data.table} argument is TRUE}
+
+\item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
+"<quant@id>.out" (also "<quant@id>.out.gz")}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
 
