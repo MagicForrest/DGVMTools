@@ -1,3 +1,31 @@
+#  DGVMTools v0.8.1 (2019-04-30) 
+
+A few new features in this release.  
+
+## Feature improvements:
+
+* When a call to getField() is made to read data, if an appropriate Quantity object is not found then it will be automatically created.  This is particularly useful for LPJ-GUESS users who want to open their own custom non-standard 'xxxxx.out' files.  It is no longer necessary to define metadata for such a file before reading it.  The only drawback is that it won't have the units defined or a nicely descriptive name. 
+* Writing daily data to netCDF with function writeNetCDF now implemented (time axis is always "days since ..."). A "365_day" calendar is assumed.
+* Reading daily data from netCDF using DGVMData now implemented (time axis is always "days since ...").  In principle all common calendars are supported, but aggregateSubannual() assumes a 365 day year, so only "365_day" is fully supported by the package and is therefore preferred. 
+* The function getField() now takes a 'file.name' argument for files which do not have their standard name, or for Formats which don't have a guaranteed unique or easily comstructable file name.  
+* Function copyLayers() will fill data across dimensions in the 'to' argument which don't exist in the 'from' argument, provide that new argument 'fill.dims' is set to TRUE.
+
+## Potential breaks:
+
+* The new 'file.name' argument to getField() may cause problems with the argument ordering in pre-existing scripts.
+* Some DGVMData files may no longer be readable due to changes in reading the time axis.
+* Arguments to writeNetCDF() changed.  Function now only takes 'time.intervals' and 'start.date', the 'monthly' and 'annual' arguments have been removed as it is now redundant since the time axis is defined purely in terms of 'time.intervals' since 'start.date'.
+
+## Bug fixes:
+
+* crop() methods now called setKeyDGVM().
+
+## Behind the scenes:
+
+* getField_DGVMData() substantially re-worked and is now much more robust.
+* writeNetCDF() and FieldToArray re-worked somewhat to define time dimension labels in terms of days only.
+
+
 #  DGVMTools v0.8.0 (2019-03-18) 
 
 This release has a couple of new features, few minor bug fixes and some tidying and cleaning.  See also new repository for example scripts at https://github.com/MagicForrest/DGVMTools_Scripts
