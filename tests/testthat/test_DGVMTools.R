@@ -1,6 +1,5 @@
 library(testthat)
 library(DGVMTools)
-library(FireMIPTools)
 library(stats)
 library(compiler)
 
@@ -46,14 +45,12 @@ test_that("Sources",{
 context("Quantity")
 
 vegC_std.Quantity <- lookupQuantity("vegC_std")
-LAI_FireMIP.Quantity <- lookupQuantity("lai", context = FireMIP.quantities)
 
 
 test_that("Quantity",{
   
   expect_is(vegC_std.Quantity , "Quantity")
-  expect_is(LAI_FireMIP.Quantity  , "Quantity")
-  
+
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = FALSE), "list")
   
@@ -97,16 +94,13 @@ test_that("Field",{
   expect_is(Biomes.Field.full, "Field")
   
   
-  # Also check "Standard" and FireMIP variables
+  # Also check "Standard" variables
   Standard.Field <- getField(GUESS.Europe.test.Source, "LAI_std")
-  FireMIP.Field <- getField(GUESS.Europe.test.Source, LAI_FireMIP.Quantity)
   expect_is(Standard.Field, "Field")
-  expect_is(FireMIP.Field, "Field")
-  
+
   # Check the data are the same
   expect_identical(Standard.Field@data, GUESS.lai.Field.full@data)
-  expect_identical(FireMIP.Field@data, GUESS.lai.Field.full@data)
-  
+
   # check the DGVMData
   expect_is(Saatchi.Field.full, "Field")
   expect_is(Biomes.Field.full, "Field")
