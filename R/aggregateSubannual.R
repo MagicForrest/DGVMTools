@@ -2,18 +2,22 @@
 
 
 #############################################################################
-######################### SUBANNUAL AGGREGATION ##############################
+######################### SUBANNUAL AGGREGATION #############################
 #############################################################################
 
 #' Sub-annual aggregation
 #' 
-#' Aggregates data with sub-annual time resultion to a coarser time resolution.  For example, going from monthly to annual. 
+#' Aggregates data with sub-annual time resolution to a coarser time resolution.  For example, going from monthly to annual. 
 #'
 #' @param input.obj data.table or Field 
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
-#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (also "Annual" is valid)  (default)  
+#' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (also "Annual" is valid). 
+#' Default is year.  
 #' @param verbose If TRUE give some progress update about the averaging.
+#' 
+#' Input data can be a Field or data.table with appropriate columns.
+#' 
 #' @return A Field or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
@@ -281,11 +285,39 @@ aggregateSubannual.uncompiled <- function(input.obj,
 
 #' Sub-annual aggregation
 #' 
-#' Aggregates data with sub-annual time resultion to a coarser time resolution.  For example, going from monthly to annual. 
+#' Aggregates data with sub-annual time resolution to a coarser time resolution.  For example, going from monthly to annual. 
 #'
 #' @inheritParams aggregateSubannual.uncompiled
 #' @return A Field or data.table depending on the input object
+#' 
+#' @details Input data can be a Field or data.table with appropriate columns.
+#' 
 #' @import data.table
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' 
+#' @examples 
+#' \donttest{
+#'  
+#' # Get an example Field
+#' test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+#' test.Source <- defineSource(name = "LPJ-GUESS", dir = test.dir,  format = GUESS)
+#' field <- getField(source = test.Source, var = "mlai", year.aggregate.method = "mean")
+#' 
+#' # calculate of meteorological seasons (DJF, MAM, JJA, SON)
+#' seasonal.mean <- aggregateSubannual(input.obj = field, method = "mean", target = "Season", verbose = TRUE)
+#' print(seasonal.mean@data)
+#' print(plotSpatial(seasonal.mean))
+#' 
+#' #  calculate annual mean
+#' annual.mean <- aggregateSubannual(input.obj = field, method = "mean", verbose = TRUE)
+#' print(annual.mean@data) 
+#' print(plotSpatial(annual.mean))
+#' 
+#' #  calculate annual standard deviation
+#' annual.sd <- aggregateSubannual(input.obj = field, method = "sd", verbose = TRUE)
+#' print(annual.sd@data) 
+#' print(plotSpatial(annual.sd))
+#' 
+#' }
 aggregateSubannual <- compiler::cmpfun(aggregateSubannual.uncompiled)
