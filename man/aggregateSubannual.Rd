@@ -38,7 +38,8 @@ test.Source <- defineSource(name = "LPJ-GUESS", dir = test.dir,  format = GUESS)
 field <- getField(source = test.Source, var = "mlai", year.aggregate.method = "mean")
 
 # calculate of meteorological seasons (DJF, MAM, JJA, SON)
-seasonal.mean <- aggregateSubannual(input.obj = field, method = "mean", target = "Season", verbose = TRUE)
+seasonal.mean <- aggregateSubannual(input.obj = field, method = "mean", 
+                                    target = "Season", verbose = TRUE)
 print(seasonal.mean@data)
 print(plotSpatial(seasonal.mean))
 

@@ -7,7 +7,7 @@
 #' Fails with an error message if the supplied Fields don't have the same layers.
 #' 
 #' @param list.of.fields The Fields that you want to average, stored in a list.
-#' @param SourceEither a Source object which provides the metadata about the newly created data (representing, say, the ensemble mean) or \code{NULL}/missing, 
+#' @param source Either a Source object which provides the metadata about the newly created data (representing, say, the ensemble mean) or \code{NULL}/missing, 
 #' in which case a Source will be created using the metadata from the input Fields.
 #' @param method The function which you want to use.  Is \code{mean} by default, but it can be anything that operates on a vector of numbers.  
 #' Useful options might be \code{max},  \code{min} and \code{sd}.  

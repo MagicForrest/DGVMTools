@@ -12,7 +12,7 @@ averageFields(list.of.fields, method = mean, source = NULL)
 \item{method}{The function which you want to use.  Is \code{mean} by default, but it can be anything that operates on a vector of numbers.
 Useful options might be \code{max},  \code{min} and \code{sd}.}
 
-\item{SourceEither}{a Source object which provides the metadata about the newly created data (representing, say, the ensemble mean) or \code{NULL}/missing, 
+\item{source}{Either a Source object which provides the metadata about the newly created data (representing, say, the ensemble mean) or \code{NULL}/missing, 
 in which case a Source will be created using the metadata from the input Fields.}
 }
 \value{

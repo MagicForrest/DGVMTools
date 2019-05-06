@@ -38,7 +38,8 @@ test.Field <- getField(source = test.Source, var = "lai", year.aggregate.method 
 test.Source.2 <- defineSource(name = "Run 2", dir = test.dir,  format = GUESS)
 test.Field.2 <- getField(source = test.Source.2, var = "lai", year.aggregate.method = "mean")
 
-# division, result should be 1 or NA everywhere since Fields are the same (NAs come wherever the Field is zero)
+# division, result should be 1 or NA everywhere since Fields are the same 
+# (NAs come wherever the Field is zero)
 test.division <- calcNewField(x=test.Field, y = test.Field.2, op = "/")
 print(plotSpatial(test.division))
 
@@ -47,11 +48,13 @@ test.subtraction <- calcNewField(x=test.Field, y = test.Field.2, op = "-", verbo
 print(plotSpatial(test.subtraction))
 
 # addition, select Total only and compare to original
-test.addition <- calcNewField(x=test.Field, y = test.Field.2, x.col = "Total", y.col = "Total", op = "+")
+test.addition <- calcNewField(x=test.Field, y = test.Field.2,
+                              x.col = "Total", y.col = "Total", op = "+")
 print(plotSpatial(list(test.addition, test.Field), layers = "Total"))
 
 # multiplication, select a couple of PFTs only and compare to original
-test.multiplication <- calcNewField(x=test.Field, y = test.Field.2, x.col = c("C3G", "TeBS"), y.col = c("C3G", "TeBS"), op = "*", verbose = FALSE)
+test.multiplication <- calcNewField(x=test.Field, y = test.Field.2, x.col = c("C3G", "TeBS"), 
+                                    y.col = c("C3G", "TeBS"), op = "*", verbose = FALSE)
 print(plotSpatial(list(test.multiplication, test.Field), layers =  c("C3G", "TeBS")))
 
 }
