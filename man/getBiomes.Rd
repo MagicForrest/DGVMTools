@@ -76,6 +76,25 @@ classification contained in the \code{BiomeScheme} optionally including spatial,
 Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
 To check what dimensions you have you can use \code{\link{getDimInfo}}
 }
+\examples{
+\donttest{
+ 
+# In this example we derive and plot the Smith et al 2014 and the Forrest et al 2015 biome classifications    
+ 
+# First define a Source
+test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+test.Source <- defineSource(name = "LPJ-GUESS run", dir = test.dir,  format = GUESS)
+
+# Smith et al. 2014
+Smith2014.biomes <- getBiomes(source = test.Source, scheme = Smith2014BiomeScheme, year.aggregate.method = "mean")
+print(plotSpatial(Smith2014.biomes))
+
+# Forrest et al. 2014
+Forrest2015.biomes <- getBiomes(source = test.Source, scheme = Forrest2015BiomeScheme, year.aggregate.method = "mean")
+print(plotSpatial(Forrest2015.biomes))
+
+}
+}
 \seealso{
 \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}},  \code{\link{getField}}
 }

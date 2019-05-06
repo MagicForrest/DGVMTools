@@ -386,6 +386,7 @@ context("Categorical Quantities")
 # biomes
 # Note: Known and deliberate warning when calculating biomes, suppress for clarity in results
 GUESS.Smith2014.Biomes <- suppressWarnings(getBiomes(source = GUESS.Europe.test.Source, scheme = Smith2014BiomeScheme, year.aggregate.method = "mean"))
+GUESS.Forrest2015.Biomes <- suppressWarnings(getBiomes(source = GUESS.Europe.test.Source, scheme = Forrest2015BiomeScheme, year.aggregate.method = "mean"))
 
 # max PFT
 GUESS.Field.lai.annual <- aggregateYears(GUESS.lai.Field.full, "mean")
@@ -395,6 +396,7 @@ GUESS.Field.lai.annual <- layerOp(GUESS.Field.lai.annual, operator = "max.layer"
 test_that("Categorical Quantities", {
   
   expect_is(GUESS.Smith2014.Biomes, "Field")
+  expect_is(GUESS.Forrest2015.Biomes, "Field")
   expect_is(GUESS.Field.lai.annual, "Field")
   
   ### Test averaging feature of get biomes

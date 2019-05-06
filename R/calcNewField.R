@@ -1,5 +1,5 @@
 ######################################################################
-### simple arithmetics with Source data slots ######################
+### Simple arithmetics with Field data slots ######################
 ######################################################################
 #' Simple calculation of new Fields
 #' 
@@ -7,15 +7,43 @@
 #' 
 #' @param x The first \code{\linkS4class{Field}}
 #' @param y The second \code{\linkS4class{Field}}
-#' @param x.col the column of the first ModelObect. If empty or NULL all columns are used.
-#' @param y.col the column of the second ModelObect. If empty or NULL all columns are used.
+#' @param x.col the column of the first Field. If empty or NULL all columns are used.
+#' @param y.col the column of the second Field. If empty or NULL all columns are used.
 #' @param op which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/').
 #' @param quant new Quantity definition to use, if NULL it will be guessed.
 #' @param verbose print some messages.
-#' @return hopefully a new Field.
+#' @return A new Field.
 #' @export
 #' @import data.table
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' 
+#' @examples 
+#' \donttest{
+#'  
+#' # First define a Source and read a Field
+#' test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+#' test.Source <- defineSource(name = "Run 1", dir = test.dir,  format = GUESS)
+#' test.Field <- getField(source = test.Source, var = "lai", year.aggregate.method = "mean")
+#' test.Source.2 <- defineSource(name = "Run 2", dir = test.dir,  format = GUESS)
+#' test.Field.2 <- getField(source = test.Source.2, var = "lai", year.aggregate.method = "mean")
+#' 
+#' # division, result should be 1 or NA everywhere since Fields are the same (NAs come wherever the Field is zero)
+#' test.division <- calcNewField(x=test.Field, y = test.Field.2, op = "/")
+#' print(plotSpatial(test.division))
+#' 
+#' # subtraction, result should be 0 everywhere since Fields are the same
+#' test.subtraction <- calcNewField(x=test.Field, y = test.Field.2, op = "-", verbose = FALSE)
+#' print(plotSpatial(test.subtraction))
+#' 
+#' # addition, select Total only and compare to original
+#' test.addition <- calcNewField(x=test.Field, y = test.Field.2, x.col = "Total", y.col = "Total", op = "+")
+#' print(plotSpatial(list(test.addition, test.Field), layers = "Total"))
+#' 
+#' # multiplication, select a couple of PFTs only and compare to original
+#' test.multiplication <- calcNewField(x=test.Field, y = test.Field.2, x.col = c("C3G", "TeBS"), y.col = c("C3G", "TeBS"), op = "*", verbose = FALSE)
+#' print(plotSpatial(list(test.multiplication, test.Field), layers =  c("C3G", "TeBS")))
+#' 
+#' }
 calcNewField <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbose=TRUE) {
   ## check if valid arguments are given
   if (missing(x) || missing(y) || missing(op))
@@ -171,7 +199,7 @@ calcNewField <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbose=T
     val.names <- names(y.dt)
     val.names <- val.names[sapply(val.names, function(x) {!any(x == key.names)})]
     setnames(y.dt, val.names, paste0("y.", val.names))
-
+    
     if (x.col == y.col) {
       list.str <- paste0(x.col,"=x.",x.col, op, "y.", y.col)
     } else {
