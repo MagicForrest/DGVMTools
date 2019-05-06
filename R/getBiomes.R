@@ -212,7 +212,7 @@ getBiomes <- function(source,
         one.field.per.source[[length(one.field.per.source) +1]] <- getField(source = this.source, var = this.quantity, sta.info = sta.info, read.full = read.full.components, write = write.components, ...)
       }
       
-      this.field <- averageFields(one.field.per.source, run = averaged.source)
+      this.field <- averageFields(one.field.per.source, source = averaged.source)
       
     }
       

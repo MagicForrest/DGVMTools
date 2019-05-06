@@ -17,8 +17,8 @@ availableQuantities(source, names = TRUE, ...)
 A list of the available Quantites.
 }
 \description{
-This function looks at the files on disk associated with a Source object and determines what Quantities are available.  
-The data for these Quanties can be read by \code{getField()}
+This function looks at the files on disk associated with a Source object (reminder, a Source representrsis a particular dataset or model run)
+and determines what Quantities are available.  The data for these Quanties can be read by \code{getField()}
 }
 \details{
 This exact behaviour of this function will depend on the Format of the Source object.  Different Format objects have different

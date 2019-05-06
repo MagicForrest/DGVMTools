@@ -108,6 +108,40 @@ test_that("Field",{
   
 })
 
+# AVERAGING FIELDS
+
+context("Averaging Fields")
+
+
+# test Fields
+test_that("Field",{
+  
+  # open a another (actually duplicate) Field for averaging
+  GUESS.Europe.test.Source.2 <- defineSource(id = "LPJ-GUESS_Example_2",
+                                           dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), 
+                                           format = GUESS,
+                                           name = "LPJ-GUESS Europe Example Run Duplicate")
+  GUESS.lai.Field.full.2 <- getField(GUESS.Europe.test.Source.2, "lai")
+  
+  # do average (and also standard deviation)
+  GUESS.lai.Field.full.mean <- averageFields(list(GUESS.lai.Field.full, GUESS.lai.Field.full.2))
+  GUESS.lai.Field.full.sd <- averageFields(list(GUESS.lai.Field.full, GUESS.lai.Field.full.2), method = sd)
+
+  # and checks
+  expect_is(GUESS.lai.Field.full.mean, "Field")
+  expect_is(GUESS.lai.Field.full.sd, "Field")
+  expect_identical(GUESS.lai.Field.full.mean@data, GUESS.lai.Field.full@data)
+  
+  # expect standard deviation to be zero everywhere (since the files were the same)
+  for(this.layer in layers(GUESS.lai.Field.full.sd)) {
+      expect_identical(sum(GUESS.lai.Field.full.sd@data[[this.layer]]), 0)
+  }
+  
+  
+  
+})
+
+
 # PFTs
 context("PFTs")
 
@@ -444,7 +478,7 @@ test_that("Seasonal Comparisons and Benchmarks", {
 })
 
 
-### ADD AREA FUNCTIO
+### ADD AREA FUNCTION
 context("Add Area")
 
 test_that("Add Area", {
