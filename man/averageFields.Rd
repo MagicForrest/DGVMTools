@@ -16,10 +16,10 @@ Useful options might be \code{max},  \code{min} and \code{sd}.}
 in which case a Source will be created using the metadata from the input Fields.}
 }
 \value{
-Either a Field (if a Source has been supplied to provide the necessary meta-data), or a data.table (if no meta-data has been supplies in the form of a Source)
+A Field
 }
 \description{
-Average Fields provided as a list; useful for averaging model ensembles, replicate simulations etc.  
+Average Fields provided to the function as a list; useful for averaging model ensembles, replicate simulations etc.  
 Note that since you can supply the function, you don't actually need to average, you can also do, for example, \code{max}, \code{min}, \code{sd}, etc.  
 Fails with an error message if the supplied Fields don't have the same layers.
 }
@@ -50,10 +50,17 @@ print(field.mean@source)
 # Plot them all together (they should be the same)
 print(plotSpatial(list(field1, field2, field.mean)))
 
-# Plot just the Total layer for clarity and set out panels vertically
+# Plot just the Total layer for clarity and set out panels vertically in three rows
 p <- plotSpatial(list(field1, field2, field.mean), layers = "Total")
 p <- p + facet_wrap(~ Facet, nrow = 3)
 print(p)
+
+# Repeat the procedure, but this time define a nicer Source to make nicer metadata
+
+test.Source.averaged <- defineSource(name = "Ensemble Mean", dir = test.dir,  format = GUESS)
+field.mean.2 <- averageFields(list(field1, field2), source = test.Source.averaged)
+print(field.mean.2)
+print(plotSpatial(list(field.mean.2)))
 
 # also make the standard deviation (should be zero since the runs are identical)
 field.sd <- averageFields(list(field1, field2), method = sd)

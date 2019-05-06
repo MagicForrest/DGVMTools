@@ -48,6 +48,13 @@
 #' p <- p + facet_wrap(~ Facet, nrow = 3)
 #' print(p)
 #' 
+#' # Repeat the procedure, but this time define a nicer Source to make nicer metadata
+#' 
+#' test.Source.averaged <- defineSource(name = "Ensemble Mean", dir = test.dir,  format = GUESS)
+#' field.mean.2 <- averageFields(list(field1, field2), source = test.Source.averaged)
+#' print(field.mean.2)
+#' print(plotSpatial(list(field.mean.2)))
+#' 
 #' # also make the standard deviation (should be zero since the runs are identical)
 #' field.sd <- averageFields(list(field1, field2), method = sd)
 #' print(plotSpatial(field.sd))
@@ -82,12 +89,13 @@ averageFields <- function(list.of.fields, method = mean, source = NULL) {
   if(is.null(source) | missing(source)) {
     source <- list.of.fields[[1]]@source
     source@id <- method.str
-    source@name <- paste0(method.str, ":")
+    source@name <- paste0(method.str, "(")
     for(this.field in list.of.fields) {
       source@id <- paste(source@id, this.field@source@id, sep = "_")
-      source@name <- paste0(source@name, " ", this.field@source@name, ",")
+      source@name <- paste0(source@name, this.field@source@name, ", ")
     }
-    source@name <- substr(source@name, 1, nchar(source@name)-1) 
+    source@name <- substr(source@name, 1, nchar(source@name)-2) 
+    source@name <- paste0(source@name, ")")
   }
   
   # make and return a new Field 
