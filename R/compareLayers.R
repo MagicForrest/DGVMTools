@@ -210,7 +210,7 @@ compareLayers <- function(field1,
   ### Else, not-so-easy-life is having to check the domains and keeping points or not
   else {
     if(verbose) message("Not so easy life! Fields don't have the same dimensions, doing a copyLayers() operation.")
-    
+   
     new.data <- copyLayers(from = layer.field2, 
                            to = layer.field1, 
                            layer.names = new.ids.2, 

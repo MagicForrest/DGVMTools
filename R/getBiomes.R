@@ -51,7 +51,8 @@
 #' @examples 
 #' \donttest{
 #'  
-#' # In this example we derive and plot the Smith et al 2014 and the Forrest et al 2015 biome classifications    
+#' # In this example we derive and plot the Smith et al 2014 and the 
+#' # Forrest et al 2015 biome classifications    
 #'  
 #' # First define a Source
 #' test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
