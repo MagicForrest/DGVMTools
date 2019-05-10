@@ -43,6 +43,8 @@ plotTemporal <- function(fields,
                          x.label = NULL,
                          x.lim = NULL,
                          facet = TRUE,
+                         same.panel = c(),
+                         sep.panel = c(),
                          facet.scales = "fixed",
                          legend.position = "bottom",
                          text.multiplier = NULL,
@@ -205,6 +207,47 @@ plotTemporal <- function(fields,
   
   ### MAJOR TODO - tweak the facetting!
   
+  ### FACETTING
+  
+  # TODO - add other facet columns: Lon-Lat, spatial.extent.id, Quantity
+  
+  # a first assume facetting by everything except for...
+  dontFacet <-c("Value", "Layer", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat")
+  vars.facet <- names(data.toplot)[!names(data.toplot) %in% dontFacet]
+  
+  # then remove facets with only one unique Quantity
+  for(this.facet in vars.facet) {
+    if(length(unique(data.toplot[[this.facet]])) == 1) vars.facet <- vars.facet[!vars.facet == this.facet]
+  }
+  
+  # then explicitly add and remove facets as specified by the sep.panel and same.panel arguments respectively
+  vars.facet <- append(vars.facet, sep.panel)
+  vars.facet <- vars.facet[!vars.facet %in% same.panel]
+  
+  # now determine what we need to distinguish with line styles or widths (which is basically everything that is not facetted)
+  # but note: we never need to distinguish or fact by "Time", "Year" or "Value"since they define the x-axis and y-axis
+  to.distinguish <- names(data.toplot)[!names(data.toplot) %in% append(vars.facet, c("Time", "Year" ,"Value"))]
+  
+  # if a column has only one unique value then it doesn't need to be distinguished
+  for(this.to.distinguish in to.distinguish) {
+    if(length(unique(data.toplot[[this.to.distinguish]])) == 1) to.distinguish <- to.distinguish[!to.distinguish == this.to.distinguish]
+  }
+  
+  # check that there are not more than three things to distinguish
+  if(length(to.distinguish) > 3) stop(paste0("You have asked me to plot more than three different distinguishable classes of lines (", paste(to.distinguish, sep = ","), ") \n   
+                                             but I can only distinguish at most three (colour, type and width), so failing."))
+  
+  # assume that if present "Layer" means colours
+  if("Layers" %in% to.distinguish) {
+    
+    
+    
+  }
+  
+  print(to.distinguish)
+  print(vars.facet)
+  
+  
   ### If requested, just return the data
   if(!plot) return(data.toplot)
   
@@ -234,9 +277,9 @@ plotTemporal <- function(fields,
   if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
   p <- p + labs(y = y.label)
   
-  # if facet
-  if(facet){
-    p <- p + facet_wrap(stats::as.formula(paste("~Source")), ncol = 1, scales = facet.scales)
+  # facetting
+  if(length(vars.facet > 0)){
+    p <- p + facet_wrap(vars.facet, scales = facet.scales)
   }
   
   

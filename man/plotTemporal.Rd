@@ -8,8 +8,8 @@ plotTemporal(fields, layers = NULL, gridcells = NULL,
   title = character(0), subtitle = character(0), quant = NULL,
   cols = NULL, types = NULL, labels = NULL, y.label = NULL,
   y.lim = NULL, x.label = NULL, x.lim = NULL, facet = TRUE,
-  facet.scales = "fixed", legend.position = "bottom",
-  text.multiplier = NULL, plot = TRUE)
+  same.panel = c(), sep.panel = c(), facet.scales = "fixed",
+  legend.position = "bottom", text.multiplier = NULL, plot = TRUE)
 }
 \arguments{
 \item{fields}{The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.}
