@@ -210,14 +210,10 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
   
 }
 
-#' Eubsets data from Field for plotting 
+#' Subsets data from Field for plotting 
 #' 
-#' This is an internal helper function which pulls out the data needed to make a plot from a bunch of Fields,
-#' and combines them and melts them into a big data.table for plotting with ggplot2.  It also determines an appropriate title 
-#' and subtitle
-#' 
-#' 
-#' 
+#' This is an internal helper function which pulls out the data needed to make a plot from a bunch of Fields, and returns 
+#' a list of the Field with only the required layers and points in space and time included  
 #' 
 #' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
 #' @param layers A character vector of the layers to be plotted
@@ -225,6 +221,8 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
 #' @param days The days to be extracted (as a numeric vector), if NULL all days are used
 #' @param months The months to be extracted (as a numeric vector), if NULL all months are used
 #' @param seasons The months to be extracted (as a character vector), if NULL all seasons are used
+#' @param gridcells The months to be extracted (as a character vector), if NULL all seasons are used
+#' 
 #' @return Returns a list of Fields
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
@@ -265,6 +263,7 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
       if(!is.null(days)) these.layers <- selectDays(these.layers, days)
       if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
       if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
+      if(!is.null(gridcells)) these.layers <- selectGridcells(these.layers, gridcells, spatial.extent.id = "Subset_For_Plotting")
       
       # check if layers are all continuous or discrete
       for(layer in layers.present) {

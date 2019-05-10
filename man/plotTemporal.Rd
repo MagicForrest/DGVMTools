@@ -4,7 +4,7 @@
 \alias{plotTemporal}
 \title{Plot temporal data}
 \usage{
-plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
+plotTemporal(fields, layers = NULL, gridcells = NULL,
   title = character(0), subtitle = character(0), quant = NULL,
   cols = NULL, types = NULL, labels = NULL, y.label = NULL,
   y.lim = NULL, x.label = NULL, x.lim = NULL, facet = TRUE,
@@ -12,11 +12,12 @@ plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
   text.multiplier = NULL, plot = TRUE)
 }
 \arguments{
-\item{input.data}{The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.}
+\item{fields}{The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
-\item{expand.layers}{A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.}
+\item{gridcells}{A list of gridcells to be plotted in different panels, for formatting of this argument see \code{selectGridcells}.
+Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop)}
 
 \item{title}{A character string to override the default title.  Set to NULL for no title.}
 

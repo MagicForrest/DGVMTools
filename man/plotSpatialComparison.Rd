@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotSpatialComparison.R
 \name{plotSpatialComparison}
 \alias{plotSpatialComparison}
-\title{Plot a comparion between two layers}
+\title{Plot a comparison between two spatial layers}
 \usage{
 plotSpatialComparison(comparisons, type = c("difference",
   "percentage.difference", "values", "nme"), limits = NULL,

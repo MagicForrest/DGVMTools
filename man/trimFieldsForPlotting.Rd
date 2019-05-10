@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting-framework-functions.R
 \name{trimFieldsForPlotting}
 \alias{trimFieldsForPlotting}
-\title{Eubsets data from Field for plotting}
+\title{Subsets data from Field for plotting}
 \usage{
 trimFieldsForPlotting(fields, layers, years = NULL, days = NULL,
   months = NULL, seasons = NULL, gridcells = NULL)
@@ -19,14 +19,15 @@ trimFieldsForPlotting(fields, layers, years = NULL, days = NULL,
 \item{months}{The months to be extracted (as a numeric vector), if NULL all months are used}
 
 \item{seasons}{The months to be extracted (as a character vector), if NULL all seasons are used}
+
+\item{gridcells}{The months to be extracted (as a character vector), if NULL all seasons are used}
 }
 \value{
 Returns a list of Fields
 }
 \description{
-This is an internal helper function which pulls out the data needed to make a plot from a bunch of Fields,
-and combines them and melts them into a big data.table for plotting with ggplot2.  It also determines an appropriate title 
-and subtitle
+This is an internal helper function which pulls out the data needed to make a plot from a bunch of Fields, and returns 
+a list of the Field with only the required layers and points in space and time included
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

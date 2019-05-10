@@ -6,7 +6,7 @@
 #################################################################################################################################################
 
 
-#' Plot a comparion between two layers
+#' Plot a comparison between two spatial layers
 #' 
 #' This function is for plotting maps from Comparison objects (or a list of those Comparisons).  Three types of comparisons plots are supported: 'difference' - 
 #' a difference map; "values" - the absolute values plotted in panels and "percentage.difference" - the percentage differences.  
@@ -67,7 +67,7 @@ plotSpatialComparison <- function(comparisons,
   # dim names not used later
   
   
-  ### 3. LAYERS - the layers to plot are defined by the plot type
+  ### 3. LAYERS AND FIELDS - the layers to plot are defined by the plot type, here build appropriate Field objects
   
   #### DIFFERENCE OR PERCENTAGE DIFFERENCE
   if(type == "difference" || type == "percentage.difference") {

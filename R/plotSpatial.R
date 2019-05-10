@@ -131,6 +131,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   ### PREPARE AND CHECK DATA FOR PLOTTING
   
+  # first select the layers and points in space-time that we want to plot
   final.fields <- trimFieldsForPlotting(fields, layers, years = years, days = days, months = months)
  
   

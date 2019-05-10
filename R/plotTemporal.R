@@ -2,12 +2,12 @@
 #' 
 #' Makes a line plot graphing the temporal evolution of data (using ggplot2).  Full functionality not implemented, or even defined...  
 #'
-#' @param input.data The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.  
+#' @param fields The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.  
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
-#' @param expand.layers A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.
+#' @param gridcells A list of gridcells to be plotted in different panels, for formatting of this argument see \code{selectGridcells}.  
+#' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
-#' 
 #' @param quant A Quantity object to provide meta-data about how to make this plot
 #' @param cols,types Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
 #' the same length as the labels arguments
@@ -29,9 +29,9 @@
 #' @export
 #' @return A ggplot
 #'
-plotTemporal <- function(input.data, 
+plotTemporal <- function(fields, 
                          layers = NULL,
-                         expand.layers = TRUE,
+                         gridcells = NULL,
                          title = character(0),
                          subtitle = character(0),
                          quant = NULL,
@@ -52,94 +52,71 @@ plotTemporal <- function(input.data,
   
   Time = Year = Month = Day = Source = value = variable = Lat = Lon = NULL
   
-  # whether to to use the a grouping (ie plot many objects on one plot)
-  single.object <- FALSE
   
-  # Deal with class action and organise into a data.table for further manipulations and plotting
-  # if it is a single Field, pull out the data (and PFTs if present)
-  if(is.Field(input.data)){
-    
-    if(!is.null(layers)) input.data <- selectLayers(input.data, layers)
-    plotting.data.dt <- copy(input.data@data)
-    plotting.data.dt[,"Source" := input.data@source@name]
-    if(is.Field(input.data)) PFTs <- input.data@source@pft.set
-    if(is.null(quant)) quant <- input.data@quant
-    single.object <- TRUE
-    if(!missing(facet) & facet) {
-      warning("Only got one Source object so ignoring your facet = TRUE argument")
-    }
-    facet <- FALSE
-    
-    # check temporal dimensions
-    stinfo.names <- getDimInfo(input.data)
-    stinfo.full <- getDimInfo(input.data, info = "full")
-    if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names && !"Day" %in% stinfo.names) {
-      warning("Neither Year nor Month nor Day found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
-      return(NULL)
-    }
-    if("Lon" %in% stinfo.names || "Lat" %in% stinfo.names) {
-      if(length(unique(stinfo.full[["Lon"]])) > 1 || length(unique(stinfo.full[["Lat"]])) > 1) {
-        warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
-        return(NULL)
+  ### SANITISE FIELDS, LAYERS AND STINFO
+  
+  ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
+  
+  fields <- santiseFieldsForPlotting(fields)
+  if(is.null(fields)) return(NULL)
+  
+  ### 2. LAYERS - check the number of layers
+  
+  layers <- santiseLayersForPlotting(fields, layers)
+  if(is.null(layers)) return(NULL)
+  
+  
+  ### 3. DIMENSIONS - check the dimensions (require that all fields the same dimensions and that they include 'Year' )
+  
+  dim.names <- santiseDimensionsForPlotting(fields, require = c("Year"))
+  if(is.null(dim.names)) return(NULL)
+  
+  
+  ### PREPARE AND CHECK DATA FOR PLOTTING
+  
+  # first select the layers and points in space-time that we want to plot
+  final.fields <- trimFieldsForPlotting(fields, layers, gridcells = gridcells)
+  
+  
+  # check if layers are all continuous, and if not fail
+  for(this.field in final.fields) {
+    for(layer in layers(this.field)) {
+      if(!(class(this.field@data[[layer]]) == "numeric" || class(this.field@data[[layer]]) == "integer" )) {
+        stop("plotTemoral can only plot continuous layers")
       }
     }
-    
-    
   }
   
-  
-  # If we get a list it should be a list of Fields.  Here we check that, and mangle it in to a data.table
-  else if(class(input.data) == "list") {
-    
-    plotting.data.dt <- data.table()
-    PFTs <- list()
-    for(x.object in input.data){
-      
-      if(!(is.Field(x.object))) { stop("One of the elements in the list for the input.data arguments is not a Field") }
-      if(!is.null(layers)) x.object <- selectLayers(x.object, layers)
-      temp.dt <- copy(x.object@data)
-      temp.dt[,"Source" := x.object@source@name]
-      plotting.data.dt <- rbind(plotting.data.dt, copy(temp.dt), fill = TRUE)
-      rm(temp.dt)
-      
-      # also make a superset of all the PFTs
-      if(is.Field(x.object)) PFTs <- append(PFTs, x.object@source@pft.set)
-      
-      # check temporal dimensions
-      stinfo.names <- getDimInfo(x.object)
-      stinfo.full <- getDimInfo(x.object, info = "full")
-      if(!"Year" %in% stinfo.names && !"Month" %in% stinfo.names && !"Day" %in% stinfo.names) {
-        warning("Neither Year nor Month nor Day found in input Field for which a time serie is to be plotted.  Obviously this won't work, returning NULL.")
-        return(NULL)
-      }
-      if("Lon" %in% stinfo.names || "Lat" %in% stinfo.names) {
-        if(length(unique(stinfo.full[["Lon"]])) > 1 || length(unique(stinfo.full[["Lat"]])) > 1) {
-          warning("Either Lon or Lat found in input Field for which a time series is to be plotted, indicating that this is not only time series data. Therefore returning NULL.")
-          return(NULL)
-        }
-      }
-      
-    }
-    
-    # assume Quantity is the same for each facet
-    if(is.null(quant)) quant <- input.data[[1]]@quant
-    
+  # melt and combine the final.fields 
+  data.toplot.list <- list()
+  for(this.field in final.fields) {
+    this.field.melted <- melt(this.field@data, id.vars = getDimInfo(this.field))
+    this.field.melted[, Source := this.field@source@name]
+    data.toplot.list[[length(data.toplot.list)+1]] <- this.field.melted
   }
+  data.toplot <- rbindlist(data.toplot.list)
+  rm(data.toplot.list)
   
-  # else fail
-  else{
-    stop(paste("Don't know how to make temporal plot for object of class", class(input.data), sep = " "))
-  }
+  # TODO quick n dirty
+  quant <- fields[[1]]@quant
+  PFTs <- fields[[1]]@source@pft.set
   
+  ### Rename "variable" to "Layer" which makes more conceptual sense
+  setnames(data.toplot, "variable", "Layer")
+  setnames(data.toplot, "value", "Value")
+  
+  
+  
+ 
   
   # Check for Lon and Lat (and remove 'em)
-  if("Lon" %in% names(plotting.data.dt)) { plotting.data.dt[, Lon := NULL] }
-  if("Lat" %in% names(plotting.data.dt)) { plotting.data.dt[, Lat := NULL] }
+  #if("Lon" %in% names(data.toplot)) { data.toplot[, Lon := NULL] }
+  #if("Lat" %in% names(data.toplot)) { data.toplot[, Lat := NULL] }
   
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(missing(title) || missing(subtitle)) {
-    titles <- makePlotTitle(input.data)  
+    titles <- makePlotTitle(fields)  
     if(missing(title)) title <- titles[["title"]]
     else if(is.null(title)) title <- waiver()
     if(missing(subtitle)) subtitle <- titles[["subtitle"]]
@@ -153,23 +130,13 @@ plotTemporal <- function(input.data,
     y.label <- element_blank()
     if(!is.null(quant)) y.label  <- paste0(quant@name, " (", quant@units, ")")
   }
-  
-  # melt the data table so that all remaining layers become entries in a column (instead of column names)
-  id.vars <- c()
-  for(dim in c("Year", "Season", "Month", "Day")) {
-    if(dim %in% names(plotting.data.dt)) id.vars <- append(id.vars, dim)
-  }
-  if(length(dim) == 0) warning("plotTemporal: No suitable time axis found, aborting")  
-  if("Source" %in% names(plotting.data.dt)) id.vars <- append(id.vars, "Source")
-  plotting.data.dt.melted <- melt(plotting.data.dt, id.vars = id.vars)
-  setnames(plotting.data.dt.melted, old = c("variable", "value"), new = c("Layer", "Value"))
-  
+ 
   # helpful check here
-  if(nrow(plotting.data.dt.melted) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are selecting a site that isn't there?")
+  if(nrow(data.toplot) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are selecting a site that isn't there?")
   
   
   # Now that the data is melted into the final form, set the colours if not already specified and if enough meta-data is available
-  all.layers <- unique(as.character(plotting.data.dt.melted[["Layer"]]))
+  all.layers <- unique(as.character(data.toplot[["Layer"]]))
   labels <- all.layers
   names(labels) <- all.layers
   
@@ -196,31 +163,31 @@ plotTemporal <- function(input.data,
   
   
   ### Make a 'Time' column of data objects for the x-axis 
-  earliest.year <- min(plotting.data.dt.melted[["Year"]])
+  earliest.year <- min(data.toplot[["Year"]])
   if(earliest.year >= 0) {
     # convert years and months to dates 
-    if("Year" %in% names(plotting.data.dt.melted) && "Month" %in% names(plotting.data.dt.melted)) {
+    if("Year" %in% names(data.toplot) && "Month" %in% names(data.toplot)) {
       pad <- function(x) { ifelse(x < 10, paste0(0,x), paste0(x)) }
-      plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-", pad(Month), "-01"), format = "%Y-%m-%d")]
-      plotting.data.dt.melted[, Year := NULL]
-      plotting.data.dt.melted[, Month := NULL]
+      data.toplot[, Time := as.Date(paste0(Year, "-", pad(Month), "-01"), format = "%Y-%m-%d")]
+      data.toplot[, Year := NULL]
+      data.toplot[, Month := NULL]
     }
     # convert years and days to dates 
-    else if("Year" %in% names(plotting.data.dt.melted) && "Day" %in% names(plotting.data.dt.melted)) {
+    else if("Year" %in% names(data.toplot) && "Day" %in% names(data.toplot)) {
       pad <- function(x) { ifelse(x < 10, paste0(0,x), paste0(x)) }
-      plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-", Day), format = "%Y-%j")]
-      plotting.data.dt.melted[, Year := NULL]
-      plotting.data.dt.melted[, Day := NULL]
+      data.toplot[, Time := as.Date(paste0(Year, "-", Day), format = "%Y-%j")]
+      data.toplot[, Year := NULL]
+      data.toplot[, Day := NULL]
     }
     # convert years to dates 
-    else if("Year" %in% names(plotting.data.dt.melted)) {
-      plotting.data.dt.melted[, Time := as.Date(paste0(Year, "-01-01"), format = "%Y-%m-%d")]
-      plotting.data.dt.melted[, Year := NULL]
+    else if("Year" %in% names(data.toplot)) {
+      data.toplot[, Time := as.Date(paste0(Year, "-01-01"), format = "%Y-%m-%d")]
+      data.toplot[, Year := NULL]
     }
   }
   else {
-    if("Year" %in% names(plotting.data.dt.melted) && "Month" %in% names(plotting.data.dt.melted)) {
-      latest.year <- max(plotting.data.dt.melted[["Year"]])
+    if("Year" %in% names(data.toplot) && "Month" %in% names(data.toplot)) {
+      latest.year <- max(data.toplot[["Year"]])
       print(latest.year)
       print(earliest.year)
       earliest.year.days <- as.numeric(earliest.year, as.Date(("0001-01-01")))
@@ -229,22 +196,23 @@ plotTemporal <- function(input.data,
       print(latest.year.days)
       stop("Hmm... not yet sure how to plot months with negative years")
     }
-    else if("Year" %in% names(plotting.data.dt.melted)) {
-      plotting.data.dt.melted[, Time := Year]
-      plotting.data.dt.melted[, Year := NULL]
+    else if("Year" %in% names(data.toplot)) {
+      data.toplot[, Time := Year]
+      data.toplot[, Year := NULL]
     }
     #
   }
   
+  ### MAJOR TODO - tweak the facetting!
   
   ### If requested, just return the data
-  if(!plot) return(plotting.data.dt.melted)
+  if(!plot) return(data.toplot)
   
   # now make the plot
-  p <- ggplot(as.data.frame(plotting.data.dt.melted), aes_string(x = "Time", y = "Value", colour = "Layer"))
-  for(this.source in unique(plotting.data.dt.melted[["Source"]])) {
-    p <- p + geom_line(data = plotting.data.dt.melted[Source == this.source,], size = 1)
-    #p <- p + geom_line(data = plotting.data.dt.melted[Source == this.source,], size = 1)
+  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = "Layer"))
+  for(this.source in unique(data.toplot[["Source"]])) {
+    p <- p + geom_line(data = data.toplot[Source == this.source,], size = 1)
+    #p <- p + geom_line(data = data.toplot[Source == this.source,], size = 1)
   }
   
   # line formatting

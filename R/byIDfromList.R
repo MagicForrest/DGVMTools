@@ -5,7 +5,7 @@
 #' Retrieves an object from a list based on it's \code{id} slot
 #' 
 #' Looks through a list of arbitary object until it finds one which has a slot called "id" whose value matches the imput argument.
-#' The idea is that you can use this fucntion to pull a particular PFT from a list of PFT objects, or a a particular run from a list of Source objects etc.
+#' The idea is that you can use this function to pull a particular PFT from a list of PFT objects, or a particular run from a list of Source objects etc.
 #' 
 #' @param id The id sought (must be string)
 #' @param list The list to be scanned (must be a list)
