@@ -282,10 +282,12 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   quantity.units <- "Not_defined"
   quantity.id <- "Not_defined"
   standard.name <- "Not_defined"
+  long.name <- "Not_defined"
   if(!is.null(quantity)) {
     quantity.units <- quantity@units
     quantity.id <- quantity@id
     standard.name <- quantity@cf.name
+    long.name <- quantity@name
   }
   
   ### CHECK INPUT LIST AND GET LAYER NAMES
@@ -389,13 +391,13 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # individual layers
   if(is.null(layer.dim.name)) {  
     for(layer in layers) {
-      all.vars[[layer]] <- ncdf4::ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = standard.name, prec = precision, missing.fill.value)  # standard
+      all.vars[[layer]] <- ncdf4::ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = long.name, prec = precision, missing.fill.value)  # standard
     }
   }
   # else turn layers into a dimension
   else {
     
-    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = standard.name, prec = precision, missing.fill.value)  # standard
+    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long.name, prec = precision, missing.fill.value)  # standard
     old.layers <- layers # for storing the key from dimension values to layer
     
   } 

@@ -1,4 +1,4 @@
-#' Sanitise input fields for plotting
+#' Sanitise input Fields for plotting
 #' 
 #' This is an internal helper function which checks the inputs to a plotXXXX function (which should be a single Field or a list of Fields) and returns a list of Fields
 #' 
@@ -27,6 +27,40 @@ santiseFieldsForPlotting <- function(fields) {
   }
   
   return(fields)
+  
+}
+
+
+#' Sanitise input Comparisons for plotting
+#' 
+#' This is an internal helper function which checks the inputs to a plotXXXXComparison() function (which should be a single Comparison or a list of Comparisons) 
+#' and returns a list of Comparisons
+#' 
+#' @param comparisons The input to a plotXXXXComparison() functions to be checked
+#' @return Returns a list of DGVMTools::Comparison objects or NULL if a problem was found
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
+santiseComparisonsForPlotting <- function(comparisons) {
+  
+  if(is.Comparison(comparisons)) {
+    comparisons <- list(comparisons)
+  }
+  else if(class(comparisons)[1] == "list") {
+    for(object in comparisons){ 
+      if(!is.Comparison(object)) {
+        warning("You have passed me a list of items to plot but the items are not exclusively Comparisons.  Returning NULL")
+        return(NULL)
+      }
+    }
+  }
+  else{
+    warning(paste("This plot function can only handle single a Comparison, or a list of Comparison, it can't plot an object of type", class(comparisons)[1], sep = " "))
+    return(NULL)
+  }
+  
+  return(comparisons)
   
 }
 
