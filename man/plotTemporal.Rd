@@ -6,10 +6,11 @@
 \usage{
 plotTemporal(fields, layers = NULL, gridcells = NULL,
   title = character(0), subtitle = character(0), quant = NULL,
-  cols = NULL, types = NULL, labels = NULL, y.label = NULL,
+  by.col = "Layer", cols = NULL, by.type = NULL, types = NULL,
+  by.size = NULL, sizes = NULL, labels = waiver(), y.label = NULL,
   y.lim = NULL, x.label = NULL, x.lim = NULL, facet = TRUE,
-  same.panel = c(), sep.panel = c(), facet.scales = "fixed",
-  legend.position = "bottom", text.multiplier = NULL, plot = TRUE)
+  facet.scales = "fixed", legend.position = "bottom",
+  text.multiplier = NULL, plot = TRUE)
 }
 \arguments{
 \item{fields}{The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.}

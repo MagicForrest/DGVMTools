@@ -35,16 +35,18 @@ plotTemporal <- function(fields,
                          title = character(0),
                          subtitle = character(0),
                          quant = NULL,
+                         by.col = "Layer",
                          cols = NULL,
+                         by.type = NULL,
                          types = NULL,
-                         labels = NULL,
+                         by.size = NULL,
+                         sizes = NULL,
+                         labels = waiver(),
                          y.label = NULL,
                          y.lim = NULL,
                          x.label = NULL,
                          x.lim = NULL,
                          facet = TRUE,
-                         same.panel = c(),
-                         sep.panel = c(),
                          facet.scales = "fixed",
                          legend.position = "bottom",
                          text.multiplier = NULL,
@@ -137,32 +139,6 @@ plotTemporal <- function(fields,
   if(nrow(data.toplot) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are selecting a site that isn't there?")
   
   
-  # Now that the data is melted into the final form, set the colours if not already specified and if enough meta-data is available
-  all.layers <- unique(as.character(data.toplot[["Layer"]]))
-  labels <- all.layers
-  names(labels) <- all.layers
-  
-  if(is.null(cols)){
-    new.cols <- matchPFTCols(all.layers, PFTs)
-    if(length(new.cols) == length(all.layers))  cols <- new.cols 
-  }
-  
-  if(is.null(types)) {
-    new.types <- list()
-    for(layer in all.layers) {
-      for(PFT in PFTs){
-        if(layer == PFT@id) { 
-          if(PFT@shade.tolerance != "no" &&  tolower(PFT@shade.tolerance) != "none") new.types[[layer]] <- 2
-          else new.types[[layer]] <- 1
-        }
-      }
-    }
-    if(length(new.types) == length(all.layers)) {
-      types <- unlist(new.types)
-    }
-  }
-  
-  
   
   ### Make a 'Time' column of data objects for the x-axis 
   earliest.year <- min(data.toplot[["Year"]])
@@ -209,59 +185,58 @@ plotTemporal <- function(fields,
   
   ### FACETTING
   
-  # TODO - add other facet columns: Lon-Lat, spatial.extent.id, Quantity
+  # MAJOR TODO - add other facet columns: Lon-Lat, spatial.extent.id, Quantity
+  
+  # all column names, used a lot below 
+  all.columns <- names(data.toplot)
+  
+  # First check arguments
+  if(!missing(by.col) && !is.null(by.col) && !by.col %in% all.columns) stop(paste("Colouring lines by", by.col, "requested, but that is not available, so failing."))
+  if(!missing(by.type) && !is.null(by.type) && !by.type %in% all.columns) stop(paste("Setting line types by", by.type, "requested, but that is not available, so failing."))
+  if(!missing(by.size) && !is.null(by.size) && !by.size %in% all.columns) stop(paste("Setting line sizes by", by.size, "requested, but that is not available, so failing."))
   
   # a first assume facetting by everything except for...
-  dontFacet <-c("Value", "Layer", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat")
-  vars.facet <- names(data.toplot)[!names(data.toplot) %in% dontFacet]
+  dontFacet <-c ("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", by.col, by.type, by.size)
+  vars.facet <- all.columns[!all.columns %in% dontFacet]
   
   # then remove facets with only one unique Quantity
   for(this.facet in vars.facet) {
     if(length(unique(data.toplot[[this.facet]])) == 1) vars.facet <- vars.facet[!vars.facet == this.facet]
   }
   
-  # then explicitly add and remove facets as specified by the sep.panel and same.panel arguments respectively
-  vars.facet <- append(vars.facet, sep.panel)
-  vars.facet <- vars.facet[!vars.facet %in% same.panel]
+  ### LINE COLOURS
   
-  # now determine what we need to distinguish with line styles or widths (which is basically everything that is not facetted)
-  # but note: we never need to distinguish or fact by "Time", "Year" or "Value"since they define the x-axis and y-axis
-  to.distinguish <- names(data.toplot)[!names(data.toplot) %in% append(vars.facet, c("Time", "Year" ,"Value"))]
-  
-  # if a column has only one unique value then it doesn't need to be distinguished
-  for(this.to.distinguish in to.distinguish) {
-    if(length(unique(data.toplot[[this.to.distinguish]])) == 1) to.distinguish <- to.distinguish[!to.distinguish == this.to.distinguish]
+  # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer meta-data
+  if(missing(cols) & by.col == "Layer"){
+    all.layers <- unique(as.character(data.toplot[["Layer"]]))
+    cols <- matchPFTCols(all.layers, PFTs)
   }
+  # else colours will be determined by ggplot (or cols argument)
   
-  # check that there are not more than three things to distinguish
-  if(length(to.distinguish) > 3) stop(paste0("You have asked me to plot more than three different distinguishable classes of lines (", paste(to.distinguish, sep = ","), ") \n   
-                                             but I can only distinguish at most three (colour, type and width), so failing."))
+  ### LINE TYPES & LINES SIZES
+  # Thus far plotted either ignored or specified by the user
   
-  # assume that if present "Layer" means colours
-  if("Layers" %in% to.distinguish) {
-    
-    
-    
-  }
+  ### LABELS
+  # MAJOR TODO HERE, but defaults acceptable
   
-  print(to.distinguish)
-  print(vars.facet)
   
+  
+  
+ 
   
   ### If requested, just return the data
   if(!plot) return(data.toplot)
   
-  # now make the plot
-  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = "Layer"))
-  for(this.source in unique(data.toplot[["Source"]])) {
-    p <- p + geom_line(data = data.toplot[Source == this.source,], size = 1)
-    #p <- p + geom_line(data = data.toplot[Source == this.source,], size = 1)
-  }
+  ### PLOT! - now make the plot
+  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = by.col, linetype = by.type, size = by.size))
+  p <- p + geom_line(data = data.toplot)
+
   
   # line formatting
-  if(!is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
-  if(!is.null(types)) p <- p + scale_linetype_manual(values=types, labels=labels)
-  
+  if(!is.null(by.col) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
+  if(!is.null(by.type) & !is.null(types)) p <- p + scale_linetype_manual(values=types)
+  if(!is.null(by.size) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes)
+
   # labels and positioning
   p <- p + labs(title = title, subtitle = subtitle, y = y.label)
   p <- p + theme(legend.title=element_blank())
