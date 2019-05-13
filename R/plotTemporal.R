@@ -35,11 +35,11 @@ plotTemporal <- function(fields,
                          title = character(0),
                          subtitle = character(0),
                          quant = NULL,
-                         by.col = "Layer",
+                         col.by = "Layer",
                          cols = NULL,
-                         by.type = NULL,
+                         type.by = NULL,
                          types = NULL,
-                         by.size = NULL,
+                         size.by = NULL,
                          sizes = NULL,
                          labels = waiver(),
                          y.label = NULL,
@@ -191,15 +191,15 @@ plotTemporal <- function(fields,
   all.columns <- names(data.toplot)
   
   # First check arguments
-  if(!missing(by.col) && !is.null(by.col) && !by.col %in% all.columns) stop(paste("Colouring lines by", by.col, "requested, but that is not available, so failing."))
-  if(!missing(by.type) && !is.null(by.type) && !by.type %in% all.columns) stop(paste("Setting line types by", by.type, "requested, but that is not available, so failing."))
-  if(!missing(by.size) && !is.null(by.size) && !by.size %in% all.columns) stop(paste("Setting line sizes by", by.size, "requested, but that is not available, so failing."))
+  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
+  if(!missing(type.by) && !is.null(type.by) && !type.by %in% all.columns) stop(paste("Setting line types by", type.by, "requested, but that is not available, so failing."))
+  if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting line sizes by", size.by, "requested, but that is not available, so failing."))
   
   # a first assume facetting by everything except for...
-  dontFacet <-c ("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", by.col, by.type, by.size)
+  dontFacet <-c ("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, type.by, size.by)
   vars.facet <- all.columns[!all.columns %in% dontFacet]
   
-  # then remove facets with only one unique Quantity
+  # then remove facets with only one unique value
   for(this.facet in vars.facet) {
     if(length(unique(data.toplot[[this.facet]])) == 1) vars.facet <- vars.facet[!vars.facet == this.facet]
   }
@@ -207,7 +207,7 @@ plotTemporal <- function(fields,
   ### LINE COLOURS
   
   # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer meta-data
-  if(missing(cols) & by.col == "Layer"){
+  if(missing(cols) & col.by == "Layer"){
     all.layers <- unique(as.character(data.toplot[["Layer"]]))
     cols <- matchPFTCols(all.layers, PFTs)
   }
@@ -228,14 +228,14 @@ plotTemporal <- function(fields,
   if(!plot) return(data.toplot)
   
   ### PLOT! - now make the plot
-  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = by.col, linetype = by.type, size = by.size))
+  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = type.by, size = size.by))
   p <- p + geom_line(data = data.toplot)
 
   
   # line formatting
-  if(!is.null(by.col) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
-  if(!is.null(by.type) & !is.null(types)) p <- p + scale_linetype_manual(values=types)
-  if(!is.null(by.size) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes)
+  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
+  if(!is.null(type.by) & !is.null(types)) p <- p + scale_linetype_manual(values=types)
+  if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes)
 
   # labels and positioning
   p <- p + labs(title = title, subtitle = subtitle, y = y.label)
