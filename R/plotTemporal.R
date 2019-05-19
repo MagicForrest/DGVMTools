@@ -8,7 +8,6 @@
 #' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
-#' @param quant A Quantity object to provide meta-data about how to make this plot
 #' @param cols,types Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
 #' the same length as the labels arguments
 #' @param labels A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)
@@ -34,7 +33,6 @@ plotTemporal <- function(fields,
                          gridcells = NULL,
                          title = character(0),
                          subtitle = character(0),
-                         quant = NULL,
                          col.by = "Layer",
                          cols = NULL,
                          type.by = NULL,
@@ -54,68 +52,84 @@ plotTemporal <- function(fields,
 ){
   
   
+  # Just to avoid WARNINGS when checking
   Time = Year = Month = Day = Source = value = variable = Lat = Lon = NULL
   
-  
-  ### SANITISE FIELDS, LAYERS AND STINFO
   
   ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
   
   fields <- santiseFieldsForPlotting(fields)
   if(is.null(fields)) return(NULL)
   
-  ### 2. LAYERS - check the number of layers
+  
+  ### 2. LAYERS - check the layers
   
   layers <- santiseLayersForPlotting(fields, layers)
   if(is.null(layers)) return(NULL)
   
   
-  ### 3. DIMENSIONS - check the dimensions (require that all fields the same dimensions and that they include 'Year' )
+  ### 3. DIMENSIONS - check the dimensions (require that all fields have the same dimensions and that they include 'Year' )
   
   dim.names <- santiseDimensionsForPlotting(fields, require = c("Year"))
   if(is.null(dim.names)) return(NULL)
   
   
-  ### PREPARE AND CHECK DATA FOR PLOTTING
+  ### 4. PREPARE AND CHECK DATA FOR PLOTTING
   
   # first select the layers and points in space-time that we want to plot
   final.fields <- trimFieldsForPlotting(fields, layers, gridcells = gridcells)
   
   
-  # check if layers are all continuous, and if not fail
+  ### 5. CHECK IF ALL LAYES ARE CONTINOUS - if not fail
   for(this.field in final.fields) {
     for(layer in layers(this.field)) {
       if(!(class(this.field@data[[layer]]) == "numeric" || class(this.field@data[[layer]]) == "integer" )) {
-        stop("plotTemoral can only plot continuous layers")
+        stop("plotTemoral can only plot continuous layers ie. 'integer' or 'numeric' types, not 'logical' or 'factor' data.")
       }
     }
   }
   
-  # melt and combine the final.fields 
-  data.toplot.list <- list()
-  for(this.field in final.fields) {
-    this.field.melted <- melt(this.field@data, id.vars = getDimInfo(this.field))
-    this.field.melted[, Source := this.field@source@name]
-    data.toplot.list[[length(data.toplot.list)+1]] <- this.field.melted
-  }
-  data.toplot <- rbindlist(data.toplot.list)
-  rm(data.toplot.list)
   
+  ###  6. MERGE THE FINAL FIELDS FOR PLOTTING - INCLUDING METADATA COLUMNS FOR FACETTING AND AESTHEICS
+  
+  # MF TODO maybe make some clever checks on these switches
+  add.Quantity <- TRUE
+  if("Lon" %in% dim.names & "Lat" %in% dim.names) add.Site <- TRUE
+  else add.Site <- FALSE
+  add.Region <- TRUE
+  
+  # Final data.table for plotting.  Actual values are in a column called "Value"
+  data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = add.Quantity, add.Site = add.Site, add.Region = add.Region)
+  
+  
+  ### 6. MAKE THE Y-AXIS LABEL
+  
+  if(is.null(y.label)) {
+    
+    # first extract the names and units and store them in a tuples (two element vector) for the Quantity from each Field
+    all.quant.tuples <- list()
+    for(field in final.fields) {
+      all.quant.tuples[[length(all.quant.tuples)+1]] <- c(field@quant@name, field@quant@units)
+    } 
+    
+    # select the unique ones
+    all.quant.tuples <- unique(all.quant.tuples)
+
+    # form the label string
+    y.axis.label <- character(0)
+    for(this.tuple in all.quant.tuples) {
+      y.axis.label <- paste0(y.axis.label, paste0(this.tuple[1], " (", this.tuple[2], "),\n") )
+    }
+    print(y.axis.label)
+    y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
+    print(y.axis.label)
+  }
+ 
   # TODO quick n dirty
-  quant <- fields[[1]]@quant
   PFTs <- fields[[1]]@source@pft.set
   
-  ### Rename "variable" to "Layer" which makes more conceptual sense
-  setnames(data.toplot, "variable", "Layer")
-  setnames(data.toplot, "value", "Value")
   
   
-  
- 
-  
-  # Check for Lon and Lat (and remove 'em)
-  #if("Lon" %in% names(data.toplot)) { data.toplot[, Lon := NULL] }
-  #if("Lat" %in% names(data.toplot)) { data.toplot[, Lat := NULL] }
   
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
@@ -128,13 +142,6 @@ plotTemporal <- function(fields,
   }
   
   
-  
-  # make y label
-  if(is.null(y.label)) {
-    y.label <- element_blank()
-    if(!is.null(quant)) y.label  <- paste0(quant@name, " (", quant@units, ")")
-  }
- 
   # helpful check here
   if(nrow(data.toplot) == 0) stop("Trying to plot an empty data.table in plotTemporal, something has gone wrong.  Perhaps you are selecting a site that isn't there?")
   
@@ -180,13 +187,9 @@ plotTemporal <- function(fields,
     }
     #
   }
-  
-  ### MAJOR TODO - tweak the facetting!
-  
+
   ### FACETTING
-  
-  # MAJOR TODO - add other facet columns: Lon-Lat, spatial.extent.id, Quantity
-  
+ 
   # all column names, used a lot below 
   all.columns <- names(data.toplot)
   
@@ -222,7 +225,7 @@ plotTemporal <- function(fields,
   
   
   
- 
+  
   
   ### If requested, just return the data
   if(!plot) return(data.toplot)
@@ -230,13 +233,13 @@ plotTemporal <- function(fields,
   ### PLOT! - now make the plot
   p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = type.by, size = size.by))
   p <- p + geom_line(data = data.toplot)
-
+  
   
   # line formatting
   if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
   if(!is.null(type.by) & !is.null(types)) p <- p + scale_linetype_manual(values=types)
   if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes)
-
+  
   # labels and positioning
   p <- p + labs(title = title, subtitle = subtitle, y = y.label)
   p <- p + theme(legend.title=element_blank())
@@ -250,7 +253,7 @@ plotTemporal <- function(fields,
   # set limits
   if(!is.null(x.lim)) p <- p + xlim(x.lim)
   if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
-  p <- p + labs(y = y.label)
+  p <- p + labs(y = y.axis.label)
   
   # facetting
   if(length(vars.facet > 0)){
