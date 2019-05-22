@@ -5,13 +5,13 @@
 \title{Plot temporal data}
 \usage{
 plotTemporal(fields, layers = NULL, gridcells = NULL,
-  title = character(0), subtitle = character(0), quant = NULL,
-  cols = NULL, col.by = "Layer", col.labels = waiver(),
-  types = NULL, type.by = NULL, type.labels = waiver(),
-  sizes = NULL, size.by = NULL, size.labels = waiver(),
-  alphas = NULL, alpha.by = NULL, alpha.labels = waiver(),
-  y.label = NULL, y.lim = NULL, x.label = NULL, x.lim = NULL,
-  facet = TRUE, facet.scales = "fixed", legend.position = "bottom",
+  title = character(0), subtitle = character(0), cols = NULL,
+  col.by = "Layer", col.labels = waiver(), types = NULL,
+  type.by = NULL, type.labels = waiver(), sizes = NULL,
+  size.by = NULL, size.labels = waiver(), alphas = NULL,
+  alpha.by = NULL, alpha.labels = waiver(), y.label = NULL,
+  y.lim = NULL, x.label = NULL, x.lim = NULL, facet = TRUE,
+  facet.scales = "fixed", legend.position = "bottom",
   text.multiplier = NULL, plot = TRUE)
 }
 \arguments{
@@ -25,8 +25,6 @@ Leave empty or NULL to plot all gridcells (but note that if this involves too ma
 \item{title}{A character string to override the default title.  Set to NULL for no title.}
 
 \item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.}
-
-\item{quant}{A Quantity object to provide meta-data about how to make this plot}
 
 \item{cols, types}{Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
 the same length as the labels arguments}
