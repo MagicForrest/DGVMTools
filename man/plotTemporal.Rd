@@ -6,10 +6,12 @@
 \usage{
 plotTemporal(fields, layers = NULL, gridcells = NULL,
   title = character(0), subtitle = character(0), quant = NULL,
-  by.col = "Layer", cols = NULL, by.type = NULL, types = NULL,
-  by.size = NULL, sizes = NULL, labels = waiver(), y.label = NULL,
-  y.lim = NULL, x.label = NULL, x.lim = NULL, facet = TRUE,
-  facet.scales = "fixed", legend.position = "bottom",
+  cols = NULL, col.by = "Layer", col.labels = waiver(),
+  types = NULL, type.by = NULL, type.labels = waiver(),
+  sizes = NULL, size.by = NULL, size.labels = waiver(),
+  alphas = NULL, alpha.by = NULL, alpha.labels = waiver(),
+  y.label = NULL, y.lim = NULL, x.label = NULL, x.lim = NULL,
+  facet = TRUE, facet.scales = "fixed", legend.position = "bottom",
   text.multiplier = NULL, plot = TRUE)
 }
 \arguments{
@@ -29,8 +31,6 @@ Leave empty or NULL to plot all gridcells (but note that if this involves too ma
 \item{cols, types}{Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
 the same length as the labels arguments}
 
-\item{labels}{A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)}
-
 \item{x.label, y.label}{Character strings for the x and y axes (optional)}
 
 \item{x.lim, y.lim}{Limits for the x and y axes (each a two-element numeric, optional)}
@@ -45,6 +45,8 @@ the same length as the labels arguments}
 
 \item{plot}{Logical, if FALSE return the data.table of data instead of the plot
 Make it bigger if the text is too small on large plots and vice-versa.}
+
+\item{labels}{A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)}
 }
 \value{
 A ggplot

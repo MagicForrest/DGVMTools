@@ -35,13 +35,18 @@ plotTemporal <- function(fields,
                          title = character(0),
                          subtitle = character(0),
                          quant = NULL,
-                         col.by = "Layer",
                          cols = NULL,
-                         type.by = NULL,
+                         col.by = "Layer",
+                         col.labels = waiver(),
                          types = NULL,
-                         size.by = NULL,
+                         type.by = NULL,
+                         type.labels = waiver(),
                          sizes = NULL,
-                         labels = waiver(),
+                         size.by = NULL,
+                         size.labels = waiver(),
+                         alphas = NULL,
+                         alpha.by = NULL,
+                         alpha.labels = waiver(),
                          y.label = NULL,
                          y.lim = NULL,
                          x.label = NULL,
@@ -206,21 +211,18 @@ plotTemporal <- function(fields,
   
   ### LINE COLOURS
   
-  # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer meta-data
+  # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer (currently still 'PFT') meta-data
   if(missing(cols) & col.by == "Layer"){
     all.layers <- unique(as.character(data.toplot[["Layer"]]))
     cols <- matchPFTCols(all.layers, PFTs)
   }
   # else colours will be determined by ggplot (or cols argument)
   
-  ### LINE TYPES & LINES SIZES
-  # Thus far plotted either ignored or specified by the user
+  ### LINE TYPES, SIZES & ALPHAS
+  # Thus far either ignored or specified by the user
   
   ### LABELS
-  # MAJOR TODO HERE, but defaults acceptable
-  
-  
-  
+  # Can be specified by the user, otherwise sensibe defaults
   
  
   
@@ -228,14 +230,15 @@ plotTemporal <- function(fields,
   if(!plot) return(data.toplot)
   
   ### PLOT! - now make the plot
-  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = type.by, size = size.by))
+  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = type.by, size = size.by, alpha = alpha.by))
   p <- p + geom_line(data = data.toplot)
 
   
   # line formatting
-  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=labels) 
-  if(!is.null(type.by) & !is.null(types)) p <- p + scale_linetype_manual(values=types)
-  if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes)
+  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
+  if(!is.null(type.by) & !is.null(types)) p <- p + scale_linetype_manual(values=types, labels=type.labels)
+  if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
+  if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
 
   # labels and positioning
   p <- p + labs(title = title, subtitle = subtitle, y = y.label)

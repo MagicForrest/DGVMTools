@@ -160,13 +160,15 @@ getField <- function(source,
     # Check that the spatial extent matches before returning
     # Note that there are two cases to check here (specifically defined extents or just the same ids)
     
-    
+    # If no spatial extent was specified (ie length of spatial.extent arguement was 0) and the spatial.extent.id of the Field that was read in is either 
+    # "Full" or "Global" (which comes some DGVMData files) then we are sure we have got the full, original spatial extent of the dataset and can use it
     full.domain.matched <- FALSE
-    if(length(sta.info@spatial.extent) == 0 && model.field@spatial.extent.id == "Full") {
+    if(length(sta.info@spatial.extent) == 0 && (model.field@spatial.extent.id == "Full" | model.field@spatial.extent.id == "Global")) {
       full.domain.matched <- TRUE
       if(verbose) message("Full domain matched.")
     }
     
+    # else, if they both have spatial extents specified, check that the actual spatial extents are the same
     cropped.domain.matched <- FALSE
     if(length(sta.info@spatial.extent) > 0 && length(model.field@spatial.extent)  > 0 ) {
       if(identical(sta.info@spatial.extent, model.field@spatial.extent)){
