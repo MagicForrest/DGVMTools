@@ -26,8 +26,9 @@ Leave empty or NULL to plot all gridcells (but note that if this involves too ma
 
 \item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.}
 
-\item{cols, types}{Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
-the same length as the labels arguments}
+\item{col.by, type.by, size.by, alpha.by}{Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
+Can meaningfully take the values "Layer", "Source" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
+distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.}
 
 \item{x.label, y.label}{Character strings for the x and y axes (optional)}
 

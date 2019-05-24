@@ -8,8 +8,9 @@
 #' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
-#' @param cols,types Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
-#' the same length as the labels arguments
+#' @param col.by,type.by,size.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
+#' Can meaningfully take the values "Layer", "Source" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
+#' distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.
 #' @param labels A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
@@ -125,16 +126,11 @@ plotTemporal <- function(fields,
     for(this.tuple in all.quant.tuples) {
       y.axis.label <- paste0(y.axis.label, paste0(this.tuple[1], " (", this.tuple[2], "),\n") )
     }
-    print(y.axis.label)
     y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
-    print(y.axis.label)
   }
  
   # TODO quick n dirty
   PFTs <- fields[[1]]@source@pft.set
-  
-  
-  
   
   
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
@@ -202,9 +198,11 @@ plotTemporal <- function(fields,
   if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
   if(!missing(type.by) && !is.null(type.by) && !type.by %in% all.columns) stop(paste("Setting line types by", type.by, "requested, but that is not available, so failing."))
   if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting line sizes by", size.by, "requested, but that is not available, so failing."))
+  if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting line alphas by", alpha.by, "requested, but that is not available, so failing."))
+  
   
   # a first assume facetting by everything except for...
-  dontFacet <-c ("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, type.by, size.by)
+  dontFacet <-c ("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, type.by, size.by, alpha.by)
   vars.facet <- all.columns[!all.columns %in% dontFacet]
   
   # then remove facets with only one unique value
@@ -225,7 +223,7 @@ plotTemporal <- function(fields,
   # Thus far either ignored or specified by the user
   
   ### LABELS
-  # Can be specified by the user, otherwise sensibe defaults
+  # Can be specified by the user, otherwise sensible defaults
   
   
   

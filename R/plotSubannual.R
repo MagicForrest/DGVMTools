@@ -71,24 +71,10 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   ### PREPARE AND CHECK DATA FOR PLOTTING
   final.fields <- trimFieldsForPlotting(fields, layers)
   
-  # melt and combine the final.fields, adding Source and Quantity columns for facetting 
-  data.toplot.list <- list()
-  for(this.field in final.fields) {
- 
-    this.field.melted <- melt(this.field@data, id.vars = getDimInfo(this.field), variable.factor = FALSE)
-    this.field.melted[, Source := this.field@source@name]
-    this.field.melted[, Quantity := this.field@quant@name]
-
-    data.toplot.list[[length(data.toplot.list)+1]] <- this.field.melted
-    rm(this.field.melted)
-  }
-  data.toplot <- rbindlist(data.toplot.list)
-  rm(data.toplot.list)
+  ### MERGE DATA FOR PLOTTING INTO ONE BIG DATA.TABLE
+  # MF TODO: Consider adding add.TimePeriod?
+  data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = TRUE, add.Site = FALSE, add.Region = FALSE)
   
-  setnames(data.toplot, "variable", "Layer")
-  setnames(data.toplot, "value", "Value")
-
-  #  
   
   
   #### MAKE LIST OF QUANTITIES AND UNITS FOR Y LABEL
