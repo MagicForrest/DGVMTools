@@ -10,9 +10,9 @@ plotTemporal(fields, layers = NULL, gridcells = NULL,
   type.by = NULL, type.labels = waiver(), sizes = NULL,
   size.by = NULL, size.labels = waiver(), alphas = NULL,
   alpha.by = NULL, alpha.labels = waiver(), y.label = NULL,
-  y.lim = NULL, x.label = NULL, x.lim = NULL, facet = TRUE,
-  facet.scales = "fixed", legend.position = "bottom",
-  text.multiplier = NULL, plot = TRUE)
+  y.lim = NULL, x.label = NULL, x.lim = NULL,
+  legend.position = "bottom", text.multiplier = NULL, plot = TRUE,
+  ...)
 }
 \arguments{
 \item{fields}{The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.}
@@ -34,16 +34,20 @@ distinguished by different facet panels.  Thus the standard behaviour the that d
 
 \item{x.lim, y.lim}{Limits for the x and y axes (each a two-element numeric, optional)}
 
-\item{facet}{Logical, if TRUE split the plot into panels by source.  If false, plots all data in a single panel.}
-
-\item{facet.scales}{Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales}
-
 \item{legend.position}{Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.}
 
-\item{plot}{Logical, if FALSE return the data.table of data instead of the plot
-Make it bigger if the text is too small on large plots and vice-versa.}
+\item{plot}{Logical, if FALSE return the data.table of data instead of the plot}
+
+\item{...}{Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+\itemize{
+ \item{"nrow"}{The number of rows of facets}
+ \item{"ncol"}{The number of columns of facets}
+ \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
+ "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
+ \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation} 
+}}
 
 \item{labels}{A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)}
 }
@@ -55,6 +59,10 @@ Makes a line plot graphing the temporal evolution of data (using ggplot2).  Full
 }
 \details{
 This function is WORK IN PROGRESS!!  For questions about functionality or feature requests contact the author
+
+Note that like all \code{DGVMTools} plotting functions, \code{plotTemporal} splits the data into separate panels using the \code{ggplot2::facet_wrap()}.  If you want to 'grid' the facets
+using \code{ggplot2::facet_grid()} you can do so afterwards. 'gridding the facets' implies the each column and row of facets vary by one specific aspect.
+For example you might have one column for each Source, and one row for each "Quantity".
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

@@ -14,15 +14,24 @@
 #' @param labels A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
-#' @param facet Logical, if TRUE split the plot into panels by source.  If false, plots all data in a single panel. 
-#' @param facet.scales Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' @param plot Logical, if FALSE return the data.table of data instead of the plot
-#' Make it bigger if the text is too small on large plots and vice-versa.
-#'  
+#' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+#' \itemize{
+#'  \item{"nrow"}{The number of rows of facets}
+#'  \item{"ncol"}{The number of columns of facets}
+#'  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
+#'  "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
+#'  \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation} 
+#' }
+#'   
 #' @details
 #' This function is WORK IN PROGRESS!!  For questions about functionality or feature requests contact the author
+#' 
+#' Note that like all \code{DGVMTools} plotting functions, \code{plotTemporal} splits the data into separate panels using the \code{ggplot2::facet_wrap()}.  If you want to 'grid' the facets
+#' using \code{ggplot2::facet_grid()} you can do so afterwards. 'gridding the facets' implies the each column and row of facets vary by one specific aspect.
+#' For example you might have one column for each Source, and one row for each "Quantity".
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ggplot2
@@ -50,16 +59,23 @@ plotTemporal <- function(fields,
                          y.lim = NULL,
                          x.label = NULL,
                          x.lim = NULL,
-                         facet = TRUE,
-                         facet.scales = "fixed",
                          legend.position = "bottom",
                          text.multiplier = NULL,
-                         plot = TRUE
+                         plot = TRUE,
+                         ...
 ){
   
   
   # Just to avoid WARNINGS when checking
   Time = Year = Month = Day = Source = value = variable = Lat = Lon = NULL
+  
+  
+  
+  ### 0. FIRST CHECK SOME ARGUMENTS
+  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
+  if(!missing(type.by) && !is.null(type.by) && !type.by %in% all.columns) stop(paste("Setting line types by", type.by, "requested, but that is not available, so failing."))
+  if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting line sizes by", size.by, "requested, but that is not available, so failing."))
+  if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting line alphas by", alpha.by, "requested, but that is not available, so failing."))
   
   
   ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
@@ -86,7 +102,7 @@ plotTemporal <- function(fields,
   final.fields <- trimFieldsForPlotting(fields, layers, gridcells = gridcells)
   
   
-  ### 5. CHECK IF ALL LAYES ARE CONTINOUS - if not fail
+  ### 5. CHECK IF ALL LAYERS ARE CONTINOUS - if not fail
   for(this.field in final.fields) {
     for(layer in layers(this.field)) {
       if(!(class(this.field@data[[layer]]) == "numeric" || class(this.field@data[[layer]]) == "integer" )) {
@@ -108,7 +124,7 @@ plotTemporal <- function(fields,
   data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = add.Quantity, add.Site = add.Site, add.Region = add.Region)
   
   
-  ### 6. MAKE THE Y-AXIS LABEL
+  ### 7. MAKE THE Y-AXIS LABEL
   
   if(is.null(y.label)) {
     
@@ -133,7 +149,7 @@ plotTemporal <- function(fields,
   PFTs <- fields[[1]]@source@pft.set
   
   
-  ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
+  ### 8. MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(missing(title) || missing(subtitle)) {
     titles <- makePlotTitle(fields)  
     if(missing(title)) title <- titles[["title"]]
@@ -148,7 +164,7 @@ plotTemporal <- function(fields,
   
   
   
-  ### Make a 'Time' column of data objects for the x-axis 
+  ### 9. MAKE A 'Time' COLUMN FOR THE X-AXIS
   earliest.year <- min(data.toplot[["Year"]])
   if(earliest.year >= 0) {
     # convert years and months to dates 
@@ -189,20 +205,13 @@ plotTemporal <- function(fields,
     #
   }
 
-  ### FACETTING
+  ### 10. FACETTING
  
   # all column names, used a lot below 
   all.columns <- names(data.toplot)
   
-  # First check arguments
-  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
-  if(!missing(type.by) && !is.null(type.by) && !type.by %in% all.columns) stop(paste("Setting line types by", type.by, "requested, but that is not available, so failing."))
-  if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting line sizes by", size.by, "requested, but that is not available, so failing."))
-  if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting line alphas by", alpha.by, "requested, but that is not available, so failing."))
-  
-  
   # a first assume facetting by everything except for...
-  dontFacet <-c ("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, type.by, size.by, alpha.by)
+  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, type.by, size.by, alpha.by)
   vars.facet <- all.columns[!all.columns %in% dontFacet]
   
   # then remove facets with only one unique value
@@ -258,10 +267,8 @@ plotTemporal <- function(fields,
   
   # facetting
   if(length(vars.facet > 0)){
-    p <- p + facet_wrap(vars.facet, scales = facet.scales)
+    p <- p + facet_wrap(vars.facet, ...)
   }
-  
-  
   
   return(p)
   

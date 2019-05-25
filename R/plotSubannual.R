@@ -1,9 +1,7 @@
 
 #' Plots sub-annual cycles
 #' 
-#' For a list of Runs and a list of Quantities, plots the sub-annual cycles.  Note this function actually reads the data, 
-#' so might not be too efficient unless the arguments which are passes through to getField() via the "..." argument are optimised.  
-#' For example, by using "store.full = TRUE" and the combination "write = TRUE" and "read.full = FALSE".
+#' For a list of Fields, plots the sub-annual cycles of the selected layers on on top of each other.
 #' 
 #' @param fields The data to plot. Can be a Field or a list of Fields.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
@@ -12,12 +10,25 @@
 #' @param plotAverage Boolean, if TRUE plot the mean of all years
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
-#' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
-#' @param facet.scales Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales
 #' @param alpha A numeric (range 0-1), to give the transparency (alpha) of the annual lines
 #' @param year.col.gradient A colour palette as a function to use to colour the annual lines according to their Year.  Only works for a single Quantity and a single Source.
-#' @param ... Arguments passed to getField().  Of particular relevance are \code{spatial.extent} and \code{spatial.aggregate.method} (to determine over 
-#' which spatial extent to plot the seasonal cycle and, if that extent includes more that one gridcell, how to aggregate across that extent)
+#' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
+#' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+#' \itemize{
+#'  \item{"nrow"}{The number of rows of facets}
+#'  \item{"ncol"}{The number of columns of facets}
+#'  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
+#'  "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
+#'  \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation} 
+#' }
+#' 
+#' @details 
+#' 
+#' Note that like all \code{DGVMTools} plotting functions, \code{plotSubannual} splits the data into separate panels using the \code{ggplot2::facet_wrap()}.  If you want to 'grid' the facets
+#' using \code{ggplot2::facet_grid()} you can do so afterwards. 'gridding the facets' implies the each column and row of facets vary by one specific aspect.
+#' For example you might have one column for each Source, and one row for each "Quantity".
+#' 
+#' 
 #' 
 #' @return Returns either a ggplot2 object or a data.table (depending on the 'plot' argument)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -26,34 +37,33 @@
 
 
 plotSubannual <- function(fields, # can be a Field or a list of Fields
-                         layers = NULL,
-                         title = NULL,
-                         subtitle = NULL,
-                         plotAverage = TRUE,
-                         text.multiplier = NULL,
-                         plot = TRUE,
-                         facet.scales = "fixed",
-                         year.col.gradient = NULL,
-                         alpha = 0.2,
-                         ...) {
+                          layers = NULL,
+                          title = NULL,
+                          subtitle = NULL,
+                          plotAverage = TRUE,
+                          text.multiplier = NULL,
+                          plot = TRUE,
+                          year.col.gradient = NULL,
+                          alpha = 0.2,
+                          ...) {
   
   
   Quantity = Month = Source = Value = Year = NULL
   
   
-
+  
   ### SANITISE FIELDS, LAYERS AND DIMENSIONS
   
   ## 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
-
+  
   fields <- santiseFieldsForPlotting(fields)
   if(is.null(fields)) return(NULL)
-
+  
   ## 2. LAYERS - check the number of layers
-
+  
   layers <- santiseLayersForPlotting(fields, layers)
   if(is.null(layers)) return(NULL)
-
+  
   
   ## 3. DIMENSIONS - check the dimensions (require that all fields the same dimensions) and then that one and only subannual dimension is present )
   
@@ -65,7 +75,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   subannual.dimension <- dim.names[which(dim.names %in% c("Day", "Month", "Season")) ]
   if(length(subannual.dimension) == 0) stop("No subannual dims found for plotSubannual ")
   else if((length(subannual.dimension) > 1) ) stop(paste0("Multiple subannual dimensions found in plotSubannual: ", paste(subannual.dimension)))
- 
+  
   
   
   ### PREPARE AND CHECK DATA FOR PLOTTING
@@ -78,12 +88,12 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   
   #### MAKE LIST OF QUANTITIES AND UNITS FOR Y LABEL
- 
+  
   unit.str <- list()
   quant.str <- list()
   id.str <- list()
   for(this.field in final.fields) {
-
+    
     # pull out the unit string, id and full name string
     quant <- this.field@quant
     unit.str <- append(unit.str, quant@units)
@@ -91,7 +101,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
     id.str <- append(id.str, quant@id)
     
   }
-
+  
   # check the units
   if(length(unique(unit.str)) == 1){
     unit.str <- unique(unit.str)
@@ -100,12 +110,12 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
     unit.str <- paste(unique(unit.str), collapse = ", ")
     warning("Quants to be plotted have non-identical units in plotSeasonal().")
   }
-
+  
   # check the strings
   if(length(unique(quant.str)) == 1){ quant.str <- unique(quant.str) }
   else{ quant.str <- paste(id.str, sep = ", ", collapse = ", ") }
   
- 
+  
   ##### YEAR COLOUR GRADIENT
   if(!missing(year.col.gradient) && !is.null(year.col.gradient)) {
     
@@ -134,7 +144,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   # return the data if plot = FALSE
   if(!plot) return(data.toplot)
-
+  
   
   ###### MAKE THE PLOT ######
   
@@ -170,8 +180,8 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   p <- p + theme(legend.position = "right", legend.key.size = unit(2, 'lines'))
   
   # wrap to split by source
-  p <- p + facet_wrap(~Source, ncol = 1, scales = facet.scales)
-  
+  p <- p + facet_wrap(~Source, ...)
+
   # overall text multiplier
   if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
