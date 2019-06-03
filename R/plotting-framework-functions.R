@@ -427,7 +427,8 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
     
   } # for each value
   
-  return(unlist(these.cols))
+  if(length(these.cols) == length(values))  return(unlist(these.cols))
+  else return(NULL)
   
 }
 
