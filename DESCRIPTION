@@ -34,6 +34,7 @@ Suggests:
     knitr,
     rmarkdown,
     ncdf4,
+    lubridate,
     rgeos,
     testthat
 License: GPL | file LICENSE
@@ -48,6 +49,7 @@ Collate:
     'colour-palettes.R'
     'Format-DGVMData.R'
     'Format-GUESS.R'
+    'Format-PEcAn.R'
     'Format-aDGVM.R'
     'Standard-Quantities.R'
     'addArea.R'
