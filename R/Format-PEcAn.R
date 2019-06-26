@@ -15,18 +15,27 @@
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param verbose A logical, set to true to give progress/debug information
-#' @return A list containing firstly the data.tablle containing the data, and secondly the STAInfo for the data that we have
+#' @param runid The PEcAn run id (as a string) to choose the relevant run from the ensemble.
+#' From the original PEcAn documentation:
+#' "Custom character vector of full paths to NetCDF
+#'   files. If `NULL` (default), this list is constructed
+#'   automatically by looking for `YYYY.nc` files in
+#'   `file.path(outdir, runid)`."
+#' 
+#' 
+#' @return A Field with correct STAInfo idefined.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 getField_PEcAn <- function(source,
                               quant,
                               target.STAInfo,
                               file.name,
+                              runid,
                               verbose = FALSE) {
   
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read PEcAn files.")
-  if (! requireNamespace("lubridate", quietly = TRUE))  stop("Please install lubridate R package and, if necessary the netCDF libraries, on your system to read PEcAn files.")
+  if (! requireNamespace("lubridate", quietly = TRUE))  stop("Please install lubridate R package on your system to read PEcAn files.")
   
   
   # To avoid annoying NOTES when R CMD check-ing
@@ -36,36 +45,88 @@ getField_PEcAn <- function(source,
   first.year = target.STAInfo@first.year
   last.year = target.STAInfo@last.year
   
-  # function read attributes and warn if they are not present.
-  getGlobalAttribute <- function(attr.name, global.attributes) {
-    dgvm.attr.name <- paste("PEcAn", attr.name, sep = "_")
-    if(dgvm.attr.name %in% names(global.attributes)) {
-      return(global.attributes[[dgvm.attr.name]]) 
-    }
-    else {
-      warning(paste0("No ", attr.name,  " attribute (", dgvm.attr.name, " ) found in file ", file.name.nc, ".  This is not PEcAn compliant.  Right now setting attribute to NULL, but this might cause problems later"))
-      return(NULL)
-    }
-  }
-  
-  
   # STAInfo object describing the data
   sta.info = new("STAInfo")
   
   
-  # Make the filename (if necessary) and check for the file, gunzip if necessary, fail if not present
-  if(!is.null(file.name)) file.path(source@dir, file.name)
-  else file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
-  file.name.nc.gz <- paste(file.name.nc, "gz", sep = ".")
-  zipped <- FALSE
-  if(file.exists(file.name.nc)){ 
-    if(verbose) message(paste("Found and opening file", file.name.nc, sep = " "))
+  # Handle PEcAn specific arguments and transfer incoming arguments to PEcAn equivalents but with a different name
+  outdir <- source@dir
+  if(missing(file.name)) file.name <- NULL
+ 
+  if(length(first.year) == 1) { 
+    start.year <- first.year 
+    }
+  else {
+    # lookup the first XXXX.nc output file
   }
-  else if(file.exists(file.name.nc.gz)){
-    zipped <- TRUE
-    R.utils::gunzip(file.name.nc.gz)
-    if(verbose) message(paste("Found, gunzipping and opening file", file.name.nc.gz, sep = " "))
+  if(length(last.year) == 1) { 
+    end.year <- last.year 
   }
+  else {
+    # lookup the last XXXX.nc output file
+  }
+  
+  ### Following code is ripped from PEcAn's read.output function
+  # Transcribing notes:  
+  #   * compared to the original PEcAn code the 'ncfiles' variables has been changed to 'file.name' to fit the standard
+  #     DGVMTools::getField argument
+  #   * all PEcAn.logger::logger.xxxx commands have been changed to warning()
+  #   * the 'outdir' has already been set to source@dir above 
+  #   * PEcAn variable start.year and end.year have been set to the values 
+  
+  
+  
+  
+  if ((!exists("runid") || !exists("outdir")) && is.null(file.name)) {
+    warning(
+      "`runid` or `outdir` is missing, and `file.name` is NULL.",
+      "Either provide both `runid` and `outdir`, or explicitly specify all `file.name`."
+    )
+  }
+  
+  # Needed to allow runid and outdir to be missing
+  if (!is.null(file.name)) {
+    if (missing(runid)) runid <- NULL
+    if (missing(outdir)) outdir <- NULL
+  }
+  
+  # create list of *.nc years - look only for files formatted as
+  # YYYY.nc, the default pecan output file name standard
+  if (is.null(file.name)) {
+    file.name_sub <- list.files(path = outdir, pattern = "^-?[[:digit:]]{4}\\.nc$", full.names = FALSE)
+    file.name <- file.path(outdir, file.name_sub)
+  } else {
+    # Assume the NetCDF files follow the PEcAn standard format
+    # (`YYYY.nc`). If they do not, pass `start.year` and `end.year`
+    # explicitly.
+    file.name_sub <- basename(file.name)
+  }
+  
+  print(file.name)
+  print(file.name_sub)
+  
+  if (!is.na(start.year)) {
+    if (lubridate::is.instant(start.year)) { # true if a Date, POSIXct, or POSIXlt
+      start.year <- lubridate::year(start.year)
+    } else if (is.character(start.year)) {
+      start.year <- as.numeric(start.year)
+    } else if (is.numeric(start.year)) {
+      if (start.year %% 1 != 0) {
+        warning(
+          "Start year `", start.year, "` is numeric, but not an integer."
+        )
+      }
+    } else {
+      warning(
+        "`start.year` must be of type numeric, character, Date, or POSIXt",
+        "but given `", start.year, "` which is type `", typeof(start.year), "`."
+      )
+    }
+  }
+  
+  
+  
+
   
   # Open file and get global attributes
   if(verbose) message(paste0("Opening file ", file.name.nc))     

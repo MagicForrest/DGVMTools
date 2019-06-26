@@ -4,7 +4,8 @@
 \alias{getField_PEcAn}
 \title{Get a Field for PEcAn}
 \usage{
-getField_PEcAn(source, quant, target.STAInfo, file.name, verbose = FALSE)
+getField_PEcAn(source, quant, target.STAInfo, file.name, runid,
+  verbose = FALSE)
 }
 \arguments{
 \item{source}{A \code{Source} containing the meta-data about the PEcAn source}
@@ -13,12 +14,19 @@ getField_PEcAn(source, quant, target.STAInfo, file.name, verbose = FALSE)
 
 \item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated}
 
+\item{runid}{The PEcAn run id (as a string) to choose the relevant run from the ensemble.
+From the original PEcAn documentation:
+"Custom character vector of full paths to NetCDF
+  files. If `NULL` (default), this list is constructed
+  automatically by looking for `YYYY.nc` files in
+  `file.path(outdir, runid)`."}
+
 \item{verbose}{A logical, set to true to give progress/debug information}
 
 \item{target.sta.info}{An STAInfo object defining the spatial-temporal-annual extent over which we want the data}
 }
 \value{
-A list containing firstly the data.tablle containing the data, and secondly the STAInfo for the data that we have
+A Field with correct STAInfo idefined.
 }
 \description{
 An internal function that reads data from an PEcAn .nc file.
