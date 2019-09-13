@@ -1235,7 +1235,7 @@ GUESS.quantities <- list(
   
   new("Quantity",
       id = "cpool",
-      name = "Carbon",
+      name = "Carbon Pools",
       units = "kgC/m^2",
       colours = fields::tim.colors,
       format = c("GUESS")),

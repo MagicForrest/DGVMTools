@@ -1,17 +1,22 @@
 #' Plot temporal data
 #' 
-#' Makes a line plot graphing the temporal evolution of data (using ggplot2).  Full functionality not implemented, or even defined...  
+#' Makes a line plot graphing the temporal evolution of data (using ggplot2).  Allows control of panel layout and line aesthetics whilst simultaneously plotting
+#' multiple Sources, Layers, Gridcells (Sites) and Quantities.
 #'
-#' @param fields The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.  
+#' @param fields The data to be plotted, either as a Field or list of Fields.  
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
-#' @param gridcells A list of gridcells to be plotted in different panels, for formatting of this argument see \code{selectGridcells}.  
+#' @param gridcells A list of gridcells to be plotted (either in different panels or the same panel). For formatting of this argument see \code{selectGridcells}.  
 #' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
 #' @param col.by,type.by,size.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
-#' Can meaningfully take the values "Layer", "Source" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
+#' Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
 #' distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.
-#' @param labels A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)
+#' @param cols,types,sizes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
+#' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/type/alpha values
+#' to particular Layers/Sources/Quantities.    
+#' @param col.labels,type.labels,size.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
+#' number of Sources/Layers/Quantities in the plot.  The vectors can/should be named to match particular col/size/type/alpha values to particular Layers/Sources/Sites/Quantities.    
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
@@ -27,11 +32,10 @@
 #' }
 #'   
 #' @details
-#' This function is WORK IN PROGRESS!!  For questions about functionality or feature requests contact the author
 #' 
-#' Note that like all \code{DGVMTools} plotting functions, \code{plotTemporal} splits the data into separate panels using the \code{ggplot2::facet_wrap()}.  If you want to 'grid' the facets
-#' using \code{ggplot2::facet_grid()} you can do so afterwards. 'gridding the facets' implies the each column and row of facets vary by one specific aspect.
-#' For example you might have one column for each Source, and one row for each "Quantity".
+#' It allows fairly fine-grained control with respect to labelling lines  corresponding to different Sources, Layers, Sites and Quantities with different colours, sizes, types, alpha (transparency) values, and text labels.  It also
+#' allows one to decide if you want different Sources/Layers/Quantities on the same panel or on different panels.  The default is to put different Sources
+#' (ie. runs and datasets) and Quantities (ie different output variables) on different panels, and Layers on the same panel distinguished by colour.  
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ggplot2
@@ -69,13 +73,6 @@ plotTemporal <- function(fields,
   # Just to avoid WARNINGS when checking
   Time = Year = Month = Day = Source = value = variable = Lat = Lon = NULL
   
-  
-  
-  ### 0. FIRST CHECK SOME ARGUMENTS
-  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
-  if(!missing(type.by) && !is.null(type.by) && !type.by %in% all.columns) stop(paste("Setting line types by", type.by, "requested, but that is not available, so failing."))
-  if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting line sizes by", size.by, "requested, but that is not available, so failing."))
-  if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting line alphas by", alpha.by, "requested, but that is not available, so failing."))
   
   
   ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
@@ -210,7 +207,13 @@ plotTemporal <- function(fields,
   # all column names, used a lot below 
   all.columns <- names(data.toplot)
   
-  # a first assume facetting by everything except for...
+  # check the "xxx.by" arguments 
+  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
+  if(!missing(type.by) && !is.null(type.by) && !type.by %in% all.columns) stop(paste("Setting line types by", type.by, "requested, but that is not available, so failing."))
+  if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting line sizes by", size.by, "requested, but that is not available, so failing."))
+  if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting line alphas by", alpha.by, "requested, but that is not available, so failing."))
+  
+  # ar first assume facetting by everything except for...
   dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, type.by, size.by, alpha.by)
   vars.facet <- all.columns[!all.columns %in% dontFacet]
   

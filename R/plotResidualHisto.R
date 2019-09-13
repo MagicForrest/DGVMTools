@@ -69,7 +69,7 @@ plotResidualsHisto <- function(input.CLayers,
         temp.dt <- copy(thing@data)
         temp.dt[, "Residuals" := get(layers(thing[1])) - get(layers(thing)[2]), with=FALSE]
         temp.dt <- stats::na.omit(temp.dt[, c("Residuals"), with=FALSE])
-        setnames(really.temp.dt, thing@name) 
+        setnames(temp.dt, thing@name) 
         diff.layers <- append(diff.layers, thing@name)
         if(is.null(labels)) new.labels <- append(new.labels, thing@source1@name)
         
