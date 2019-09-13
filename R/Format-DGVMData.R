@@ -692,7 +692,7 @@ DGVMData.quantities <- list(
       id = "aGPP_std",
       name = "Annual GPP",
       units = "kgC m-2 year-1",
-      colours = fields::tim.colors,
+      colours = viridis::inferno,
       format = c("DGVMData"),
       cf.name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
   
