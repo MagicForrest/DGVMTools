@@ -165,7 +165,7 @@ setMethod("as.array", signature("Field"), function(x, ...) {
 #' This is generally called in the \code{plotSpatial} function (or potentially before any use of the raster::spplot and raster::plot functions),
 #' but can be useful in and of itself.
 #'   
-#' @param input.data data.table, Field or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
+#' @param input.data Field or data.table
 #' @param layers The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.
 #' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats,  when converting gridded table to a raster, in the case the the gridded data is not commatters for uneven
 #' @param grid.topology A character string defining the grid topology when going from a table to raster, used in a call to SpatialPixels 
@@ -326,28 +326,34 @@ FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   
   ## check for annual data
   is.temporal <- FALSE
-  if("Year" %in% st.names) {
+  if("Year" %in% st.names && !("Month" %in% st.names) && !("Day" %in% st.names)  ) {
     if (verbose)
       message("'Year' column present.")
-    time <- sort(unique(d$Year))
+    time <- (sort(unique(d$Year)) * 1000) + 1
     is.temporal <- TRUE
   }
-  
-  ## check for monthly or daily data
-  if("Month" %in% st.names) {
+  ## check for monthly data
+  else if("Year" %in% st.names && "Month" %in% st.names) {
     cname <- FALSE
     
-    # function to match the month to the 
-    
+    # lookup vector to match month to day of year (ignore leap years and use th centr of the month)
+    # this could be more sophisticated 
+    lookup.DoY.vector <- c() 
+    counter <- 0
+    for(month in all.months) {
+      lookup.DoY.vector <- append(lookup.DoY.vector, counter + floor(month@days/2))
+      counter <- counter + month@days
+    }
     
     # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
-    if (is.temporal) {  d[, Year:= Year * 100 + as.numeric(Month)]  }
+    if (is.temporal) {  d[, Year:= Year * 1000 + lookup.DoY.vector[Month]]  }
     time <- sort(unique(d$Year))
     
     d[, Month := NULL]
     is.temporal <- TRUE
   }
-  else if("Day" %in% st.names) {
+  # check if daily
+  else if("Year" %in% st.names && "Day" %in% st.names) {
     cname <- FALSE
     
     # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
