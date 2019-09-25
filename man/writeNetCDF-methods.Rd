@@ -33,7 +33,7 @@ but this is more of a technical, internal use of this method.}
 
 \item{filename}{A character specifying the name of the netCDF file to be written.}
 
-\item{start.date}{A data (as a POSIX data) for the start of the time dimension.  Can be omitted for a Field (), \emph{must} be included if you want to write 
+\item{start.date}{A date (as a POSIX date) for the start of the time dimension.  Can be omitted for a Field (), \emph{must} be included if you want to write 
 a RasterStack or RasterBrick with a time dimension.}
 
 \item{verbose}{Logical, if TRUE print a bunch of progress and debug output}

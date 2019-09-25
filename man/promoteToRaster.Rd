@@ -8,7 +8,7 @@ promoteToRaster(input.data, layers = "all", tolerance = 0.01,
   grid.topology = NULL)
 }
 \arguments{
-\item{input.data}{data.table, Field or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he}
+\item{input.data}{Field or data.table}
 
 \item{layers}{The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.}
 
