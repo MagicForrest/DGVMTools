@@ -724,15 +724,18 @@ getStandardQuantity_LPJ <- function(run,
   if(quant@id == "vegcover_std") {
     
     # vegcover.out provides the right quantity here (note this is not standard LPJ-GUESS)
-    data.list <- openLPJOutputFile(run, lookupQuantity("vegcover", GUESS), target.sta, file.name = file.name, verbose = verbose)
+    this.Field <- openLPJOutputFile(run, lookupQuantity("vegcover", GUESS), target.sta, file.name = file.name, verbose = verbose)
     
     # But we need to scale it to %
     if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
-    mod.cols <- names(data.list[["dt"]])
+    this.dt <- this.Field@data
+    mod.cols <- names(this.dt)
     mod.cols <- mod.cols[!mod.cols %in% unmod.cols]
-    data.list[["dt"]][, (mod.cols) := lapply(.SD, function(x) x * 100 ), .SDcols = mod.cols]
-    if("Grass" %in% names(data.list[["dt"]])) { setnames(data.list[["dt"]], old = "Grass", new = "NonTree") }
-    return(data.list)
+    this.dt[, (mod.cols) := lapply(.SD, function(x) x * 100 ), .SDcols = mod.cols]
+    if("Grass" %in% names(this.dt)) { setnames(this.dt, old = "Grass", new = "NonTree") }
+    this.Field@data <- this.dt
+    
+    return(this.Field)
     
   }
   
@@ -1206,7 +1209,7 @@ GUESS.quantities <- list(
       id = "agpp",
       name = "Annual GPP",
       units = "kgC/m2/year",
-      colours = fields::tim.colors,
+      colours = viridis::inferno,
       format = c("GUESS")),
   
   new("Quantity",
@@ -1232,7 +1235,7 @@ GUESS.quantities <- list(
   
   new("Quantity",
       id = "cpool",
-      name = "Carbon",
+      name = "Carbon Pools",
       units = "kgC/m^2",
       colours = fields::tim.colors,
       format = c("GUESS")),

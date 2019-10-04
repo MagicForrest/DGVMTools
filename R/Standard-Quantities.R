@@ -62,7 +62,7 @@ Standard.quantities <- list(
       id = "aGPP_std",
       name = "Annual GPP",
       units = "kgC m-2 year-1",
-      colours = fields::tim.colors,
+      colours = viridis::inferno,
       format = c("Standard"),
       cf.name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
   
@@ -145,7 +145,7 @@ Standard.quantities <- list(
       units = "ign/month",
       colours = viridis::viridis,
       format = c("Standard")),
-  
+ 
   new("Quantity",
       id = "mfire_size_std",
       name = "Average fire size",

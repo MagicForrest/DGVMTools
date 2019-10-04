@@ -129,12 +129,13 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   
   
-  ### PREPARE AND CHECK DATA FOR PLOTTING
+  ### 5. PREPARE AND CHECK DATA FOR PLOTTING
   
   # first select the layers and points in space-time that we want to plot
   final.fields <- trimFieldsForPlotting(fields, layers, years = years, days = days, months = months)
  
   
+  ### 6. LAYER TYPE CHECKS
   # check if layers are all continuous or discrete
   discrete <- FALSE
   continuous <- FALSE
@@ -147,22 +148,11 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     if(!discrete & !continuous) stop("plotSpatial can only plot 'numeric', 'integer', 'factor' or 'logical' layers, check your layers")  
   }
 
-  # melt and combine the final.fields 
-  data.toplot.list <- list()
-  for(this.field in final.fields) {
-    this.field.melted <- melt(this.field@data, id.vars = getDimInfo(this.field))
-    this.field.melted[, Source := this.field@source@name]
-    data.toplot.list[[length(data.toplot.list)+1]] <- this.field.melted
-  }
-  data.toplot <- rbindlist(data.toplot.list)
-  rm(data.toplot.list)
+  ### 7. MELT AND COMBINE THE FINAL FIELDS 
+  # MF TODO: Consider adding add.Site and add.Region like for plotTemporal?
+  data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = FALSE, add.Site = FALSE, add.Region = FALSE)
   
-  
-  ### Rename "variable" to "Layer" which makes more conceptual sense
-  setnames(data.toplot, "variable", "Layer")
-  setnames(data.toplot, "value", "Value")
-  
-  
+ 
   ### Check for meta-data to automagic the plots a little bit if possble
   first <- TRUE
   for(this.field in final.fields) {

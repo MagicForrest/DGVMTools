@@ -22,8 +22,10 @@ example, if a layer "Total" is copied to an object which already has a "Total" l
 
 \item{keep.all.from}{Logical, if set to FALSE, all points in the 'from' object which don't have corresponding points in the 'to' object are removed.}
 
-\item{dec.places}{Numeric, how many decimal places to rounds the coordinates (Lon anf Lat dimensions) to in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.
-But setting this can be useful to force matching of coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
+\item{dec.places}{Numeric with either 1 or 2 elements to specify how many decimal places to which the coordinates (Lon and Lat dimensions) should be rounded
+in order to get a match between the two Fields/data.tables.   If one number is supplied it is applied to both Lon and Lat. If two numbers are supplied, the first is applied to Lon and the second to Lat.
+Default is no rounding (value is NULL) and is fine for most regularly spaced grids.   Hoewever, setting this can be useful to force matching of 
+coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
 
 \item{fill.dims}{Logical, if TRUE (the default) and if the 'from' Field/data.table has less dimensions than the 'to' Field/data.table, then just fill in all the values
 of that dimension with the same data.  Ie if if the 'from' table has no months but the to table does, just fill the same value into all months.}

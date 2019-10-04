@@ -70,7 +70,7 @@ setAs("Field", "Raster", function(from) {
   },  warning = function(w) {
     #warning(w)
   }, error = function(e) {
-    stop("Can't convert the Field to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the defailt tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+    stop("Can't convert the Field to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
   }, finally = {
   })
   
@@ -86,7 +86,7 @@ setAs("Comparison", "Raster", function(from) {
   },  warning = function(w) {
     #warning(w)
   }, error = function(e) {
-    stop("Can't convert the Comparison to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the defailt tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+    stop("Can't convert the Comparison to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
   }, finally = {
   })
   
@@ -112,7 +112,7 @@ setMethod("as.Raster", signature("Field"),   function(x) {
   },  warning = function(w) {
     #warning(w)
   }, error = function(e) {
-    stop("Can't convert the Field to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the defailt tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+    stop("Can't convert the Field to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
   }, finally = {
   })
   
@@ -129,7 +129,7 @@ setMethod("as.Raster", signature("Comparison"),   function(x){
   },  warning = function(w) {
     #warning(w)
   }, error = function(e) {
-    stop("Can't convert the Comparison to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the defailt tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+    stop("Can't convert the Comparison to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
   }, finally = {
   })
   
@@ -160,14 +160,13 @@ setMethod("as.array", signature("Field"), function(x, ...) {
 #
 #' Prepares data as a raster object for plotting.
 #' 
-#' Converts a data.table, Field or an Spatial*-object to Raster object, also subsetting the requested layers.  
-#' It can also handle a RasterLayber/Stack/Brick, in which case the only processing done is the subsetting since the data is already in Raster form.
-#' This is generally called in the \code{plotSpatial} function (or potentially before any use of the raster::spplot and raster::plot functions),
-#' but can be useful in and of itself.
+#' Converts a Field, Comparison or data.table to Raster object, also subsetting the requested layers.  
+#' This is generally called in the as.Raster and the setAs functions but can be useful in and of itself.
 #'   
-#' @param input.data data.table, Field or Spatial*-object to be converted into a raster. Also takes a Raster*-object, in which case he 
+#' @param input.data Field, Comparison or data.table
 #' @param layers The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.
-#' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats,  when converting gridded table to a raster, in the case the the gridded data is not commatters for uneven
+#' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced Lon and Lats, 
+#' when converting gridded table to a raster.
 #' @param grid.topology A character string defining the grid topology when going from a table to raster, used in a call to SpatialPixels 
 #' @return A RasterLayer (or RasterBrick)
 #' @export
@@ -177,42 +176,24 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.01, grid.t
   ###  Get class of the object we are dealing with
   this.class = class(input.data)[1]
   
-  ###  Define the layers we are pulling out
-  # for Field - note could define a methods "names" do cover this exception
-  if((is.Field(input.data) || is.Comparison(input.data) ) & (is.null(layers) | layers[1] == "all")) {layers <- names(input.data@data)} 
-  # for data.table or rasters
-  else if(is.null(layers) | layers[1] == "all") {
-    layers = names(input.data)
-    
-    # remove things we don't want to plot like "Lon" and "Lat"
-    remove.list <- c("Lon", "Lat", "Year")
-    for(remove in remove.list){
-      if(remove %in% layers) {layers <- layers[-which(layers == remove)]}     
-    }
-    
+  ###  Define the layers we are pulling out if not defined
+  if(is.null(layers) | layers[1] == "all") {
+    layers = layers(input.data)
   }
   
-  
-  ###  If SpatialPixelsDataFrame rasterise it directly
-  if(this.class == "SpatialPixelsDataFrame"){ 
-    print("If error check here: promoteToRaster in veg-runtools.R")
-    data.raster <- raster::brick(input.data, layers)
-  }
   ### If data.table or Field (which contains a data.table) 
-  # could make this a little bit more efficient maybe...
-  else if(this.class == "data.table" | is.Field(input.data) | is.Comparison(input.data)) {
+  if(this.class == "data.table" | is.Field(input.data) | is.Comparison(input.data)) {
+    
     # first make a SpatialPointsDataFrame
     if(this.class == "data.table") {
       data.spdf <- makeSPDFfromDT(input.data, layers, tolerance, grid.topology = grid.topology)
     }
-    
-    if(is.Field(input.data) | is.Comparison(input.data)) {
+    else if(is.Field(input.data) | is.Comparison(input.data)) {
       data.spdf <- makeSPDFfromDT(input.data@data, layers, tolerance, grid.topology = grid.topology)
     }
     
-    
-    # now convert to raster
-    if(length(layers) == 1){
+    # now convert to Raster Layer/Brick
+    if(ncol(data.spdf@data) == 1){
       data.raster <- raster::raster(data.spdf)
       rm(data.spdf)
     }
@@ -222,15 +203,6 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.01, grid.t
     }
     
   } 
-  ###  If a single raster layer then we are done
-  else if(this.class == "RasterLayer"){
-    data.raster <- input.data    
-  }
-  ### If a stack or a brick, then subset 
-  else if(this.class == "RasterBrick" | this.class == "RasterStack"){
-    data.raster <- subset(input.data, layers)
-    names(data.raster) <- layers
-  }
   ### else error 
   else{
     # catch -proper exceptions later?
@@ -250,7 +222,7 @@ promoteToRaster <- function(input.data, layers = "all", tolerance = 0.01, grid.t
 #' Converts a data.table (or data.frame) to a SpatialPixelsDataFrame, using the columns "Lon and "Lat" to provide the spatial information.  
 #' Mostly is called by \code{promoteToRaster}, but can be useful in and of itself.
 #'
-#' @param input.data data.table or data.frame, with columsn "Lon" and "Lat" which specify the spatial data 
+#' @param input.data data.table or data.frame, with columns "Lon" and "Lat" which specify the spatial data 
 #' @param layers The columns to be selected included in the final SpatialPixelsDataFrame object.  Use NULL or "all" if all layers are required.
 #' @param tolerance Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats
 #' @param grid.topology A GridTopology defining the grid topology for the SpatialPixelsDataFrame object
@@ -265,36 +237,32 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
   Lon = Lat = NULL
   
   # sort the layers
-  if(is.null(layers) | layers[1] == "all") {layers = names(input.data)}
+  if(is.null(layers) | layers[1] == "all") {
+     layers = layers(input.data)
+   }
   
-  # remove things we don't want to plot like "Lon" and "Lat"
-  remove.list <- c("Lon", "Lat", "Year")
-  for(remove in remove.list){
-    if(remove %in% layers) {layers <- layers[-which(layers == remove)]}     
+  # dcast if time dimensions are present
+  if("Year" %in% names(input.data) || "Month" %in% names(input.data) || "Day" %in% names(input.data))  {
+    input.data <- dcast(input.data, Lon+Lat~..., value.var = layers)
+    # also update the layers
+    layers = layers(input.data)
   }
-  
-  # alternate all columns
-  if(FALSE) {
-    all.cols <- unlist(list("Lon", "Lat", unlist(layers)))
-    data.spdf <- data.frame(input.data[,all.cols,with=FALSE])
-    coordinates(data.spdf) <- ~Lon+Lat
-    gridded(data.spdf) <- TRUE
-  }
-  
+ 
   # convert to SPDF
   #sp.points <- sp::SpatialPoints(data.frame(data[,list(Lon, Lat)]), proj4string = CRS("+proj=longlat +datum=WGS84"))
   sp.points <- sp::SpatialPoints(data.frame(input.data[,list(Lon, Lat)]))
+  
   suppressWarnings( # suppress the "grid has empty column/rows in dimension 1" warning
     sp.pixels <- sp::SpatialPixels(sp.points, tolerance = tolerance, grid = grid.topology)
   )
+
   suppressWarnings( # suppress the "grid has empty column/rows in dimension 1" warning
     data.spdf <- sp::SpatialPixelsDataFrame(sp.pixels, input.data[,layers,with=FALSE], tolerance = tolerance)
   )
+
   # clean up
   rm(sp.points, sp.pixels)
-  
-  
-  
+ 
   return(data.spdf)  
   
 }
@@ -326,28 +294,34 @@ FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   
   ## check for annual data
   is.temporal <- FALSE
-  if("Year" %in% st.names) {
+  if("Year" %in% st.names && !("Month" %in% st.names) && !("Day" %in% st.names)  ) {
     if (verbose)
       message("'Year' column present.")
-    time <- sort(unique(d$Year))
+    time <- (sort(unique(d$Year)) * 1000) + 1
     is.temporal <- TRUE
   }
-  
-  ## check for monthly or daily data
-  if("Month" %in% st.names) {
+  ## check for monthly data
+  else if("Year" %in% st.names && "Month" %in% st.names) {
     cname <- FALSE
     
-    # function to match the month to the 
-    
+    # lookup vector to match month to day of year (ignore leap years and use th centr of the month)
+    # this could be more sophisticated 
+    lookup.DoY.vector <- c() 
+    counter <- 0
+    for(month in all.months) {
+      lookup.DoY.vector <- append(lookup.DoY.vector, counter + floor(month@days/2))
+      counter <- counter + month@days
+    }
     
     # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
-    if (is.temporal) {  d[, Year:= Year * 100 + as.numeric(Month)]  }
+    if (is.temporal) {  d[, Year:= Year * 1000 + lookup.DoY.vector[Month]]  }
     time <- sort(unique(d$Year))
     
     d[, Month := NULL]
     is.temporal <- TRUE
   }
-  else if("Day" %in% st.names) {
+  # check if daily
+  else if("Year" %in% st.names && "Day" %in% st.names) {
     cname <- FALSE
     
     # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here

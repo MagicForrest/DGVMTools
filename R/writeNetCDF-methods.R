@@ -6,7 +6,7 @@
 #' @param x A Field or Raster* object to be written as a netCDF file.  The method can also handle a list of arrays (each array in the list represents one layer)
 #' but this is more of a technical, internal use of this method.
 #' @param filename A character specifying the name of the netCDF file to be written.
-#' @param start.date A data (as a POSIX data) for the start of the time dimension.  Can be omitted for a Field (), \emph{must} be included if you want to write 
+#' @param start.date A date (as a POSIX date) for the start of the time dimension.  Can be omitted for a Field (), \emph{must} be included if you want to write 
 #' a RasterStack or RasterBrick with a time dimension. 
 #' @param verbose Logical, if TRUE print a bunch of progress and debug output
 #' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
@@ -77,6 +77,36 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
     array.list <- list(array.list)
     names(array.list) <- layers
   }
+  
+  
+  
+  
+  # determine start date from the Field if it contains a Year dimension
+  if("Year" %in% st.names) {
+    
+    # easy to get first year
+    first.year <- sort(unique(getDimInfo(x, "values")[["Year"]]))[1]
+    
+    # now check for either a Month or Day dimension
+    if("Month" %in% st.names) {
+      # for first month, we first need to subset the first year
+      first.year.Field <- selectYears(x, first.year, first.year)
+      first.month <- sort(unique(getDimInfo(first.year.Field, "values")[["Month"]]))[1]
+      start.date <- as.POSIXct(as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d'))
+    }
+    else if("Day" %in% st.names) {
+      # for first month, we first need to subset the first year
+      first.year.Field <- selectYears(x, first.year, first.year)
+      first.day <- sort(unique(getDimInfo(first.year.Field, "values")[["Day"]]))[1]
+      start.date <- as.POSIXct(as.Date(first.day-1, origin = paste0(first.year, "-01-01")))
+      
+    }
+    else {
+      start.date <- as.POSIXct(as.Date(paste(first.year, "1", "1", sep = "-"), format='%Y-%m-%d'))
+    }
+    
+  }
+ 
   
   this.quant <- x@quant
   this.source <- x@source
@@ -312,7 +342,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   all.dims[["Lon"]] <- ncdf4::ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdf4::ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
   
-  # Time - only is start.date has been provided (and it not NULL)
+  # Time - only if start.date has been provided (and it not NULL)
   if(!is.null(start.date)) {
     
     # make start date and calendar
