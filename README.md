@@ -39,6 +39,10 @@ devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies 
 
 (thanks to Peter Anthoni for reporting)
 
+#### Installation troubleshooting
+
+* If your installation fails when building the vignettes, try updating your version of devtools.
+
 --- 
 
 ### News and Releases
