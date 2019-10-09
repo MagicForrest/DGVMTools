@@ -2,11 +2,11 @@
 
 #' Compare single layers to each other
 #' 
-#' Compare two layers (each from a Field or DataObject) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object. 
+#' Compare two layers (each from a Field) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object. 
 #'
 #' 
-#' @param field1 A Field or DataObject from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.
-#' @param field2 A Field or DataObject from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.
+#' @param field1 A Field from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.
+#' @param field2 A Field from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.
 #' @param layers1 The name of the layers to be compared from field1 (character string)
 #' @param layers2 The name of the layers to be compared from field2 (character string).  If not defined taken to the be the same as layers1
 #' @param do.seasonality Logical, if TRUE use monthly values to calculate the seasonal concentration and phase, and then return NME/NSME of the concentration and MPD 

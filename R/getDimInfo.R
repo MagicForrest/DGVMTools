@@ -1,8 +1,8 @@
 #' Returns the spatio-temporal information 
 #' 
-#' This function returns information about the spacio-temporal dimensions of a DataObject, Field, Comparison or data.table
+#' This function returns information about the spacio-temporal dimensions of a Field, Comparison or data.table
 #' 
-#' @param x A DataObject, Field, Comparison or data.tables
+#' @param x A Field, Comparison or data.table
 #' @param info A character string to define what spatio-temporal info you want.  Can be:
 #' 
 #' \describe{

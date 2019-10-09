@@ -15,8 +15,7 @@
 #' @param xlim Numeric, if provided should be a vector of two values defining the range on the x-axis 
 #' 
 #' @details
-#' This function should be called after a call to \code{benckmarkSpatial} for a DataObject.  It plots the residuals for each model run to which it was compared.  
-#' It is called automatically by \code{benckmarkSpatial}, but can be called again for better flexibility.
+#' This function should be called on the Comparison objects produced by a call to function compareLayers().  It plots the residuals for each Comparison.  
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import ggplot2
@@ -87,7 +86,6 @@ plotResidualsHisto <- function(input.CLayers,
     
     rm(list.of.dts)
     
-    # get the data.table, select the residual layers (all the ones with names ending "_Error") from the incoming DataObject and remove NAs
   }
   else {
     warning("plotResidualsHisto(): Not received either a Comparison oor a list of comparison layers, returning a NULL plot")

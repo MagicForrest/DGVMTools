@@ -1,14 +1,12 @@
-# Methods to coerce Fields and DataObjects to other R objects
-
-#' Coerce from Fields and DataObjects
+#' Coerce from Fields and Comparisons
 #' 
-#' Functions to coerce Fields and DataObjects into other objects (data.frame, data.table, RasterBrick, SpatialPixelsDataFrame)
+#' Functions to coerce Fields and Comparisons into other objects (data.frame, data.table, Raster* objects)
 #' 
 #' Note that for coercing to a Raster* object (RasterLayer or RasterBrick) the function is called "as.Raster" (capital "R") to avoid conflict with  
 #' another function in the raster package called "as.raster"
 #'
 #'
-#' @param x A Field or a DataObject
+#' @param x A Field or a Comparison object
 #' @param keep.rownames	If ... is a matrix or data.frame, TRUE will retain the rownames of that object in a column named rn.
 #' @param row.names NULL or a character vector giving the row names for the data frame. Missing values are not allowed.
 #' @param optional logical. If TRUE, setting row names and converting column names (to syntactic names: see make.names) is optional. 
@@ -42,6 +40,7 @@ setAs("Comparison", "data.frame", function(from) as.data.frame(from@data))
 #' @rdname export-methods
 #' @export
 as.data.frame.Comparison = function(x, row.names, optional, ...) as(x, "data.frame") 
+
 
 #############  data.table
 
