@@ -3,7 +3,7 @@
 #' Function will overlay histograms if more than one Comparison is provided.  
 #' Line colours, line types and fill colours can all be specified but have sensible defaults. 
 #' 
-#' @param input.CLayers The Comparison or Comparisons for which to plot the residuals
+#' @param comparisons The Comparison or Comparisons for which to plot the residuals
 #' @param cols,types,fills Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.
 #' @param labels Vector of character for label the histos. Can be left empty (defaults to the run id) but if defined it must have one entry for each set of residuals you are plotting.
 #' @param title Character for plot title (optional)
@@ -22,7 +22,7 @@
 #' @export
 #' @return A ggplot2 plot.
 
-plotResidualsHisto <- function(input.CLayers, 
+plotResidualsHisto <- function(comparisons, 
                                cols = NULL, 
                                fills = NULL, 
                                types = NULL,
@@ -39,15 +39,15 @@ plotResidualsHisto <- function(input.CLayers,
   
   # checks
   # for a single Comparison
-  if(is.Comparison(input.CLayers)) {
+  if(is.Comparison(comparisons)) {
     
     
-    temp.dt <- copy(input.CLayers@data)
-    temp.dt[, "Residuals" := get(layers(input.CLayers)[1]) - get(layers(input.CLayers)[2]), with=FALSE]
+    temp.dt <- copy(comparisons@data)
+    temp.dt[, "Residuals" := get(layers(comparisons)[1]) - get(layers(comparisons)[2]), with=FALSE]
     temp.dt <- stats::na.omit(temp.dt[, c("Residuals"), with=FALSE])
-    setnames(temp.dt, input.CLayers@name) 
-    diff.layers <- input.CLayers@name
-    if(is.null(labels)) labels <- input.CLayers@source1@name
+    setnames(temp.dt, comparisons@name) 
+    diff.layers <- comparisons@name
+    if(is.null(labels)) labels <- comparisons@source1@name
     
     # melt the data.table and set new names
     temp.dt <- melt.data.table(temp.dt, measure.vars = names(temp.dt))
@@ -55,12 +55,12 @@ plotResidualsHisto <- function(input.CLayers,
     
   }
   # for list of comparison layers 
-  else if(class(input.CLayers)[1] == "list") {
+  else if(class(comparisons)[1] == "list") {
     
     list.of.dts <- list()
     new.labels <- c()
     diff.layers <- c()
-    for(thing in input.CLayers){
+    for(thing in comparisons){
       
       if(!is.Comparison(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
       else {
@@ -106,9 +106,9 @@ plotResidualsHisto <- function(input.CLayers,
   if(is.null(types)) { types <- rep(1, length(diff.layers)) }
   
   # also set sensible default axis and main titles
-  #if(is.null(title)) title <- paste("Residuals vs", input.CLayers@name, input.CLayers@quant@name, sep = " ")
+  #if(is.null(title)) title <- paste("Residuals vs", comparisons@name, comparisons@quant@name, sep = " ")
   if(is.null(ylab)) ylab <-"# gridcells"
-  #if(is.null(xlab)) xlab<- paste("Residuals vs", input.CLayers@name, input.CLayers@quant@name, paste0("(",input.CLayers@quant@units,")"), sep = " ")
+  #if(is.null(xlab)) xlab<- paste("Residuals vs", comparisons@name, comparisons@quant@name, paste0("(",comparisons@quant@units,")"), sep = " ")
   
   
   

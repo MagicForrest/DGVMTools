@@ -4,14 +4,14 @@
 \alias{plotScatterComparison}
 \title{Plot scatter of model vs data}
 \usage{
-plotScatterComparison(input.CLayers, run.ids = NULL, run.labels = NULL,
+plotScatterComparison(comparisons, run.ids = NULL, run.labels = NULL,
   wrap = TRUE, facet.labels = NULL, xlim = NULL, ylim = NULL,
   xlab = NULL, ylab = NULL, text.multiplier = NULL,
   showFitLine = TRUE, showStats = TRUE, alpha = 0.05,
   text.size = 6)
 }
 \arguments{
-\item{input.CLayers}{The Comparison object, or list of Comparision objects, for which to make the scatter plot.}
+\item{comparisons}{The Comparison object, or list of Comparision objects, for which to make the scatter plot.}
 
 \item{run.ids}{The character vector of run ids of the runs to scatter against the data (must be a vector, not a list).  Leave blank to compare all runs that have been previouslty compared to this dataset.}
 

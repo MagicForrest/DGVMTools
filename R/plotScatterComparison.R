@@ -2,7 +2,7 @@
 #' 
 #' Function will makes multiple scatter plots on one page if more than Comparison have been provided.  
 #' 
-#' @param input.CLayers The Comparison object, or list of Comparision objects, for which to make the scatter plot.
+#' @param comparisons The Comparison object, or list of Comparision objects, for which to make the scatter plot.
 #' @param run.ids The character vector of run ids of the runs to scatter against the data (must be a vector, not a list).  Leave blank to compare all runs that have been previouslty compared to this dataset.
 #' @param run.labels A vector of more descriptive strings from each run (each the run@names)
 #' @param wrap An optional string identifying an additional column by which to subdivide (facet) that data
@@ -30,7 +30,7 @@
 #' @return A ggplot2 plot.
 
 
-plotScatterComparison <- function(input.CLayers, 
+plotScatterComparison <- function(comparisons, 
                                    run.ids = NULL,
                                    run.labels = NULL,
                                    wrap = TRUE,
@@ -49,21 +49,21 @@ plotScatterComparison <- function(input.CLayers,
   
   # checks
   # for a single Comparison
-  if(is.Comparison(input.CLayers)) {
+  if(is.Comparison(comparisons)) {
     
-    temp.dt <- stats::na.omit(input.CLayers@data[, names(input.CLayers)[1:2], with=FALSE])
+    temp.dt <- stats::na.omit(comparisons@data[, names(comparisons)[1:2], with=FALSE])
     setnames(temp.dt, c("ValueX", "ValueY")) 
-    if(is.null(labels)) labels <- input.CLayers@source1@name
+    if(is.null(labels)) labels <- comparisons@source1@name
 
     wrap <- FALSE
     
   }
   # for list of comparison layers 
-  else if(class(input.CLayers)[1] == "list") {
+  else if(class(comparisons)[1] == "list") {
     
     list.of.dts <- list()
     new.labels <- c()
-    for(thing in input.CLayers){
+    for(thing in comparisons){
       
       if(!is.Comparison(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
       else {
@@ -105,7 +105,7 @@ plotScatterComparison <- function(input.CLayers,
   #   
   #   # Make labeller
   #   if(is.null(facet.labels)) {
-  #     unique.facets <- sort(unique(input.CLayers@data[[facet]]))
+  #     unique.facets <- sort(unique(comparisons@data[[facet]]))
   #     facet.labels <- unique.facets
   #     names(facet.labels) <- unique.facets
   #   }
@@ -147,18 +147,18 @@ plotScatterComparison <- function(input.CLayers,
   
   if(!missing(text.multiplier)) scatter.plot <-  scatter.plot + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
-  if(!wrap) scatter.plot <- scatter.plot + ggtitle(paste(input.CLayers@source1@name, "vs.", input.CLayers@source2@name)) + theme(plot.title = element_text(lineheight=.8, face="bold", hjust = 0.5))
+  if(!wrap) scatter.plot <- scatter.plot + ggtitle(paste(comparisons@source1@name, "vs.", comparisons@source2@name)) + theme(plot.title = element_text(lineheight=.8, face="bold", hjust = 0.5))
 
   # x and y labels
   if(!wrap) {
-    scatter.plot <- scatter.plot +  xlab(paste(input.CLayers@layers1, input.CLayers@quant1@name, input.CLayers@source1@name, sep = " ")) + ylab(paste(input.CLayers@layers2, input.CLayers@quant2@name, input.CLayers@source2@name, sep = " "))  
+    scatter.plot <- scatter.plot +  xlab(paste(comparisons@layers1, comparisons@quant1@name, comparisons@source1@name, sep = " ")) + ylab(paste(comparisons@layers2, comparisons@quant2@name, comparisons@source2@name, sep = " "))  
   }
   else{
     if(!is.null(xlab)) scatter.plot <- scatter.plot +  xlab(xlab)
     if(!is.null(ylab)) scatter.plot <- scatter.plot +  ylab(ylab)
   }
   
-  #else  scatter.plot <- scatter.plot +  xlab(input.CLayers@source1@name) + ylab(input.CLayers@source2@name)     
+  #else  scatter.plot <- scatter.plot +  xlab(comparisons@source1@name) + ylab(comparisons@source2@name)     
   
   
   # crop to xlim and ylim as appropriate and fix the aspect ratio 
@@ -210,7 +210,7 @@ plotScatterComparison <- function(input.CLayers,
       
       else {
         
-        for(sub.facet in sort(unique(input.CLayers@data[[facet]]))) {
+        for(sub.facet in sort(unique(comparisons@data[[facet]]))) {
           
           temp.temp.dt <- temp.dt
           setkey(temp.temp.dt,Run)
@@ -253,7 +253,7 @@ plotScatterComparison <- function(input.CLayers,
     
     for(run.id in run.ids){
       
-      comparison.obj <- byIDfromList(paste(run.id, input.CLayers@id, sep = "."), input.CLayers@comparisons)
+      comparison.obj <- byIDfromList(paste(run.id, comparisons@id, sep = "."), comparisons@comparisons)
       
       text.vector  <- append(text.vector,
                              paste("NME = ", signif(comparison.obj@NME, 3), 

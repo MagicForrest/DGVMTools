@@ -4,13 +4,13 @@
 \alias{plotResidualsHisto}
 \title{Plot the residuals from a Comparison or list of Comparisons as histogram}
 \usage{
-plotResidualsHisto(input.CLayers, cols = NULL, fills = NULL,
+plotResidualsHisto(comparisons, cols = NULL, fills = NULL,
   types = NULL, labels = NULL, title = NULL, xlab = NULL,
   ylab = NULL, alpha = NULL, reverse = FALSE, bin.width = NULL,
   xlim = NULL)
 }
 \arguments{
-\item{input.CLayers}{The Comparison or Comparisons for which to plot the residuals}
+\item{comparisons}{The Comparison or Comparisons for which to plot the residuals}
 
 \item{cols, types, fills}{Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.}
 
