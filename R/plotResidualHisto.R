@@ -42,7 +42,10 @@ plotResidualsHisto <- function(input.CLayers,
   # for a single Comparison
   if(is.Comparison(input.CLayers)) {
     
-    temp.dt <- stats::na.omit(input.CLayers@data[, c("Difference"), with=FALSE])
+    
+    temp.dt <- copy(input.CLayers@data)
+    temp.dt[, "Residuals" := get(layers(input.CLayers)[1]) - get(layers(input.CLayers)[2]), with=FALSE]
+    temp.dt <- stats::na.omit(temp.dt[, c("Residuals"), with=FALSE])
     setnames(temp.dt, input.CLayers@name) 
     diff.layers <- input.CLayers@name
     if(is.null(labels)) labels <- input.CLayers@source1@name
@@ -63,16 +66,18 @@ plotResidualsHisto <- function(input.CLayers,
       if(!is.Comparison(thing)) warning("plotResidualsHisto(): One of the items in the list is not a comparison layer, so ingoring it!")
       else {
         
-        really.temp.dt <- stats::na.omit(thing@data[, c("Difference"), with=FALSE])
-        setnames(really.temp.dt, thing@name) 
+        temp.dt <- copy(thing@data)
+        temp.dt[, "Residuals" := get(layers(thing[1])) - get(layers(thing)[2]), with=FALSE]
+        temp.dt <- stats::na.omit(temp.dt[, c("Residuals"), with=FALSE])
+        setnames(temp.dt, thing@name) 
         diff.layers <- append(diff.layers, thing@name)
         if(is.null(labels)) new.labels <- append(new.labels, thing@source1@name)
         
         # melt the data.table and set new names
-        really.temp.dt <- melt.data.table(really.temp.dt, measure.vars = names(really.temp.dt))
-        setnames(really.temp.dt, c("value", "variable"), c("Value", "Source"))
+        temp.dt <- melt.data.table(temp.dt, measure.vars = names(temp.dt))
+        setnames(temp.dt, c("value", "variable"), c("Value", "Source"))
         
-        list.of.dts[[thing@id]] <- really.temp.dt
+        list.of.dts[[thing@id]] <- temp.dt
         
       }
     }

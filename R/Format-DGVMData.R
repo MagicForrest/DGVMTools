@@ -13,7 +13,7 @@
 #' @param source A \code{Source} containing the meta-data about the DGVMData source
 #' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
-#' @param last.year The last year (as a numeric) of the data to be returned
+#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return A list containing firstly the data.tablle containing the data, and secondly the STAInfo for the data that we have
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -21,15 +21,17 @@
 getField_DGVMData <- function(source,
                               quant,
                               target.STAInfo,
+                              file.name,
                               verbose = FALSE) {
   
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read DGVMData files.")
   
+  
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Year = Month = Time = NULL
   
-  # get fist and last year for use later on
+  # get first and last year for use later on
   first.year = target.STAInfo@first.year
   last.year = target.STAInfo@last.year
   
@@ -50,8 +52,9 @@ getField_DGVMData <- function(source,
   sta.info = new("STAInfo")
   
   
-  # Make the filename and check for the file, gunzip if necessary, fail if not present
-  file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
+  # Make the filename (if necessary) and check for the file, gunzip if necessary, fail if not present
+  if(!is.null(file.name)) file.path(source@dir, file.name)
+  else file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
   file.name.nc.gz <- paste(file.name.nc, "gz", sep = ".")
   zipped <- FALSE
   if(file.exists(file.name.nc)){ 
@@ -69,187 +72,396 @@ getField_DGVMData <- function(source,
   else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
   global.attributes <- ncdf4::ncatt_get(this.nc, 0, attname=NA, verbose=FALSE)
   
-  # Check out dimensions
+  # Check out dimensions and ignore bnds dimension if present
   dims.present <- names(this.nc$dim)
   if(verbose) message(paste("File has dimensions", paste(dims.present, collapse = ","), sep = " "))
-  
+  dims.present <- dims.present[which(dims.present != "bnds")]
   
   all.lats <- numeric(0)
   all.lons <- numeric(0)
-  all.times <- numeric(0)
+  all.time.intervals <- numeric(0)
+  lat.string <- ""
+  lon.string <- ""
+  time.string <- ""
   for(this.dimension in dims.present) {
     
+    matched <- FALSE
+    
     # pick up Lat
-    if(this.dimension == "lat") { all.lats <- this.nc$dim$lat$vals  }
-    else if(this.dimension == "Lat") { all.lats <- this.nc$dim$Lat$vals }
-    else if(this.dimension == "latitude") { all.lats <- this.nc$dim$latitude$vals }
-    else if(this.dimension == "Latitude") { all.lats <- this.nc$dim$Latitude$vals }
+    for(possible.dim.name in c("lat", "Lat", "latitude", "Latitude")) {
+      if(this.dimension == possible.dim.name) {
+        lat.string <- possible.dim.name
+        all.lats <- ncdf4::ncvar_get(this.nc, lat.string) 
+        matched <- TRUE
+      }
+    }
     
     # pick up Lon
-    else if(this.dimension == "lon") { all.lons <- this.nc$dim$lon$vals }
-    else if(this.dimension == "Lon") { all.lons <- this.nc$dim$Lon$vals }
-    else if(this.dimension == "longitude") { all.lons <- this.nc$dim$longitude$vals }
-    else if(this.dimension == "Longitude") { all.lons <- this.nc$dim$Longitude$vals }
+    for(possible.dim.name in c("lon", "Lon", "longitude", "Longitude")) {
+      if(this.dimension == possible.dim.name) {
+        lon.string <- possible.dim.name
+        all.lons <-  ncdf4::ncvar_get(this.nc, lon.string) 
+        matched <- TRUE
+      }
+    }
     
-    # pick up Time/time
-    else if(this.dimension == "time") { all.times <- this.nc$dim$time$vals }
-    else if(this.dimension == "Time") { all.times <- this.nc$dim$Time$vals }
+    # pick up Time
+    for(possible.dim.name in c("time", "Time")) {
+      if(this.dimension == possible.dim.name) {
+        time.string <- possible.dim.name
+        all.time.intervals <- ncdf4::ncvar_get(this.nc, time.string)
+        matched <- TRUE
+      }
+    }                   
     
     # Catch the rest
-    else {
-      stop(paste("Unknown dimension found", this.dimension, " which I don't know what to do with."))
+    if(!matched) {
+      stop(paste("Unknown dimension found", this.dimension, "which I don't know what to do with."))
     }
     
   }
   
-  # check the number of dimensions and pull time if present
-  start <- rep(1, length(dims.present))
-  count <- rep(-1, length(dims.present))
   
+  #### LON AXIS AND LAT AXIS
+  
+  # default values if no longitude or latitude selection is required
+  start.lon <- 1
+  count.lon <- -1
+  start.lat <- 1
+  count.lat <- -1
+  
+  # TODO potential lon/lat cropping here
+  
+  
+  #### TIME AXIS - calculate the time labels and the start and count values for the time axis
+  
+  # first look up year-related attributes
+  first.year.present  <- getGlobalAttribute("first.year", global.attributes)
+  last.year.present  <- getGlobalAttribute("last.year", global.attributes)
+  year.aggregate.method <- getGlobalAttribute("year.aggregate.method", global.attributes)
+  
+  # next let's determine some details about the time axis
+  if(length(all.time.intervals) > 0) { 
+    
+    # extract the start data from the time units string
+    time.units.attr <- ncdf4::ncatt_get(this.nc, time.string, "units")
+    time.units.string.list <- strsplit(time.units.attr$value, " ")
+    tmp.unit <- unlist(time.units.string.list[1]) # Isolate the unit .i.e. seconds, hours, days etc.
+    timestep.unit <- tmp.unit[which(tmp.unit %in% c("seconds","hours","days"))[1]] # Check unit
+    if(timestep.unit != "days") stop('Currently DGVMData only accepts data with a units of time axis = "days"')
+    
+    # extract the start day, month and year
+    start.date <- as.POSIXct(gsub(paste(timestep.unit,'since '),'',time.units.attr$value),format="%Y-%m-%d %H:%M:%S") ## Extract the start / origin date
+    start.date.year <- as.numeric(format(start.date,"%Y"))
+    start.date.month <- as.numeric(format(start.date,"%m"))
+    start.date.day <- as.numeric(format(start.date,"%d"))
+    
+    # look at the time steps
+    mean.timestep.differences <- mean(diff(all.time.intervals))
+    # if the mean is exactly unity then the data is daily 
+    if(mean.timestep.differences == 1 ) time.res <- "Day"
+    # if the mean is between 28 and 31 (inclusive) assume monthly   
+    else if(mean.timestep.differences >= 28 & mean.timestep.differences <= 31 ) time.res <- "Month"
+    # if the mean is between 359 and 367 (inclusive) assume yearly  
+    else if(mean.timestep.differences >= 360 & mean.timestep.differences <= 367 ) time.res <- "Year"       
+    else stop("Data doesn't appear to be daily, monthly, or yearly.  Other options are not currently supported by the DGVMData Format, but could potentially be.  So if you need this please contact the author.")
+    
+    
+    # default values if no time selection is required
+    start.time <- 1
+    count.time <- -1
+    
+    if(time.res == "Year") {
+      
+      # convert the netcdf time increments into years
+      end.date.year <- start.date.year+length(all.time.intervals)-1
+      years.vector <- start.date.year:end.date.year
+      
+      # check for cropping at this stage
+      if(length(target.STAInfo@first.year) > 0 & length(target.STAInfo@last.year) > 0) {
+        target.first.year <- target.STAInfo@first.year
+        target.last.year <-  target.STAInfo@last.year
+        if(target.first.year != start.date.year | target.first.year != end.date.year) {
+          
+          if(target.first.year < start.date.year) stop(paste("In DGVMData requested first.year = ", target.first.year, ", but first year in data is",  start.date.year, sep = " "))
+          if(target.last.year > end.date.year) stop(paste("In DGVMData requested last.year = ", target.last.year, ", but last year in data is", end.date.year, sep = " "))
+          
+          start.time <- target.first.year - start.date.year + 1
+          count.time <- target.last.year - target.first.year + 1
+          
+          # find the first occurence of the target first.year and the last occurance of the target year in the year.vector
+          first.index <- match(target.first.year, years.vector)
+          last.index <-  match(target.last.year, rev(years.vector))
+          last.index <- length(years.vector) - last.index +1
+          
+          # crop the vectors to match and make labels
+          years.vector <- years.vector[first.index:last.index]
+          
+        }
+      }
+      
+      # make a numeric code of Year
+      all.times <- paste(years.vector)
+      
+    }
+    
+    else if(time.res == "Month") {
+      
+      # convert the netcdf time increments into years and months
+      
+      # first make a vector of the years and months
+      nyears.to.cover <- ceiling(length(all.time.intervals) / 12)
+      years.to.cover <- 0:(nyears.to.cover-1) + start.date.year
+      years.vector <- rep(years.to.cover, each = 12)
+      months.vector <- rep(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"), times = nyears.to.cover)
+      years.vector <- years.vector[start.date.month:length(all.time.intervals)]
+      months.vector <- months.vector[start.date.month:length(all.time.intervals)]
+      
+      # check for cropping at this stage
+      if(length(target.STAInfo@first.year) > 0 & length(target.STAInfo@last.year) > 0) {
+        target.first.year <- target.STAInfo@first.year
+        target.last.year <-  target.STAInfo@last.year
+        if(target.first.year != years.vector[1] | target.first.year != years.vector[length(years.vector)]) {
+          
+          if(target.first.year < years.vector[1]) stop(paste("In DGVMData requested first.year = ", target.first.year, ", but first year in data is", years.vector[1], sep = " "))
+          if(target.last.year > years.vector[length(years.vector)]) stop(paste("In DGVMData requested last.year = ", target.last.year, ", but last year in data is", years.vector[length(years.vector)], sep = " "))
+          
+          
+          # find the first occurence of the target first.year and the last occurance of the target year in the year.vector
+          first.index <- match(target.first.year, years.vector)
+          last.index <-  match(target.last.year, rev(years.vector))
+          last.index <- length(years.vector) - last.index +1
+          
+          # make the indices
+          start.time <- first.index
+          count.time <- last.index - first.index + 1
+          
+          # crop the vectors to match and make labels
+          years.vector <- years.vector[first.index:last.index]
+          months.vector <- months.vector[first.index:last.index]
+          
+        }
+        
+      }
+      
+      # make a numeric code of Year.Month
+      all.times  <- paste(years.vector, months.vector, sep = ".")
+      
+    }
+    
+    else if(time.res == "Day") {
+      
+      
+      # lookup the calandar attribute and determine if it is proleptic
+      calendar <- ncdf4::ncatt_get(this.nc, time.string, "calendar")
+      if(calendar$hasatt) calendar <- calendar$value
+      else stop("DGVMData format requires a 'calendar' attribute on the time axis for daily data")
+      proleptic <- FALSE
+      if(calendar == "proleptic_gregorian")  proleptic <- TRUE
+      
+      # make some strings vectors for the days in years of different lengths 
+      # (these are converted to codes "Year.Day" codes later on, hence the use of zero-padded strings)
+      days.365 <- c(paste0("00", 1:9), paste0("0", 10:99), paste0(100:365)) 
+      days.366 <- c(paste0("00", 1:9), paste0("0", 10:99), paste0(100:366)) 
+      days.360 <- c(paste0("00", 1:9), paste0("0", 10:99), paste0(100:360)) 
+      
+      # take truncof the times to give integer values 
+      # (the fraction, if present, is assumed to be the time of day of the measurement, ie a fraction of a day but this can be removed
+      # since a few hours into a day is still the same day
+      all.time.intervals <- trunc(all.time.intervals)
+
+      # make a big vector of the years and days from the start date (defined by the netCDF time axis) to the beyond the end of the data
+      years.vector <- c()
+      days.vector<- c()
+      day.counter <- start.date.day
+      year <- start.date.year
+      while(day.counter < all.time.intervals[length(all.time.intervals)]) {
+        
+        # select year length based on the calendar
+        # 365 day
+        if(calendar == "365_day" | (calendar == "standard" & !is.leapyear(year)) | (calendar == "proleptic_gregorian" & !is.leapyear(year, proleptic = TRUE))) {
+          this.year.days <- days.365
+        }
+        # 366 day
+        else if(calendar == "366_day" | (calendar == "standard" & is.leapyear(year)) | (calendar == "proleptic_gregorian" & is.leapyear(year, proleptic = TRUE))) {
+          this.year.days <- days.366
+        }
+        # 360 day
+        else if(calendar == "360_day") {
+          this.year.days <- days.360
+        }
+        else{
+          stop(paste0("Calendar", calendar, "not supported by DGVMData format in DGVMTools package"))
+        }
+        
+        # append to the vectors
+        years.vector <- append(years.vector, rep(year, times = length(this.year.days)))
+        days.vector <- append(days.vector, this.year.days)
+        
+        # add to the counters
+        day.counter <- day.counter + length(this.year.days)
+        year <- year + 1
+        
+      }
+      
+      # to undo the last "year + 1" at the end of the loop
+      final.date.year <- year - 1
+      
+      # now select values from the massive vector using the all.time.intervals as the indices
+      #  -note that we need to add one to all the time intervals since first time step (from start date) will have an interval of zero 
+      #   but for that time step we need to have an array index of 1
+      years.vector <- years.vector[all.time.intervals+1]
+      days.vector <- days.vector[all.time.intervals+1]
+      
+      # check for cropping at this stage
+      if(length(target.STAInfo@first.year) > 0 & length(target.STAInfo@last.year) > 0) {
+        target.first.year <- target.STAInfo@first.year
+        target.last.year <-  target.STAInfo@last.year
+        if(target.first.year != years.vector[1] | target.first.year != years.vector[length(years.vector)]) {
+          
+          if(target.first.year < years.vector[1]) stop(paste("In DGVMData requested first.year = ", target.first.year, ", but first year in data is", years.vector[1], sep = " "))
+          if(target.last.year > years.vector[length(years.vector)]) stop(paste("In DGVMData requested last.year = ", target.last.year, ", but last year in data is", years.vector[length(years.vector)], sep = " "))
+          
+          # find the first occurence of the target first.year and the last occurance of the target year in the year.vector
+          first.index <- match(target.first.year, years.vector)
+          last.index <-  match(target.last.year, rev(years.vector))
+          last.index <- length(years.vector) - last.index +1
+          
+          # crop the vectors to match and make labels
+          years.vector <- years.vector[first.index:last.index]
+          days.vector <- days.vector[first.index:last.index]
+          
+          # make the indices
+          start.time <- first.index
+          count.time <- last.index - first.index + 1
+          
+        }
+      } 
+      
+      # make a numeric code of Year.Day
+      all.times  <- paste(years.vector, days.vector, sep = ".")
+      
+    }  # end if-else statement for different time resolutions
+    
+    
+    
+    
+    # set year and subannual meta-data - note that years.vector (ie. the final years of data that will be selected) must be defined above
+    sta.info@first.year <- years.vector[1]
+    sta.info@last.year <- years.vector[length(years.vector)]
+    sta.info@subannual.resolution <- time.res
+    subannual.original.attr <- ncdf4::ncatt_get(nc = this.nc, varid = 0, attname = "DGVMData_subannual.original")
+    if(subannual.original.attr$hasatt)  sta.info@subannual.original <- subannual.original.attr$value
+    else sta.info@subannual.original <- time.res
+    
+    
+  }
+  
+  
+  
+  
+  
+  #### RETRIEVE THE DATA
+  
+  # list of data.tables, one for each netCDF var (or 'layer' in DGVMTools terms)
+  dt.list <- list()
+  
+  # set up the dimension list for naming the dimensions
   dimension.names <- list()
   if(length(all.lons) > 0) dimension.names[["Lon"]] <- all.lons
   if(length(all.lats) > 0) dimension.names[["Lat"]] <- all.lats
-  if(length(all.times) > 0) dimension.names[["Time"]] <- all.times
-  
-  # look up year-related attributes
-  first.year  <- getGlobalAttribute("first.year", global.attributes)
-  last.year  <- getGlobalAttribute("last.year", global.attributes)
-  year.aggregate.method <- getGlobalAttribute("year.aggregate.method", global.attributes)
-  if(!is.null(first.year)) sta.info@first.year <- first.year
-  if(!is.null(last.year)) sta.info@last.year <- last.year
-  if(!is.null(year.aggregate.method)) sta.info@year.aggregate.method <- year.aggregate.method
-  
-  
-  ###  HACK!! - for some reason this ncdf4 package is reading time value dimensions as NA
-  ###  These values seem to be perfectly valid according to ncview and ncdump, so I don't know what is going on.
-  ###  In the mean time, if any NA's detected, make up a time axis (this will be over-written below anyways, they just need to be no NAs)
-  if(length(all.times) > 0){
-    time.NAs.present  <- FALSE
-    for(check.thing in all.times){
-      if(is.na(check.thing)) time.NAs.present <- TRUE
-    }
-    if(time.NAs.present) {
-      # quick check if yearly data
-      if(length(first.year:last.year) == length(all.times)) {
-        dimension.names[["Time"]] <- first.year:last.year
-        all.times <- first.year:last.year
-      }
-      # else assume monthly data
-      else {
-        dimension.names[["Time"]] <- 1:length(all.times)
-        all.times <- 1:length(all.times)
-      }
-    }
-  }
-  
-  
-  dt.list <- list()
+  if(length(all.time.intervals) > 0) dimension.names[["Time"]] <- all.times
   
   for(this.var in this.nc$var) {
     
-    # Get the actual data and set the dimension names    
-    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
-    dimnames(this.slice) <- dimension.names
-    
-    # prepare data.table from the slice (array)
-    this.slice.dt <- as.data.table(melt(this.slice))
-    rm(this.slice)
-    gc()
-    this.slice.dt <- stats::na.omit(this.slice.dt)
-    setnames(this.slice.dt, "value", this.var$name)
-    
-    
-    ###  HANDLE TIME AXIS 
-    if(length(all.times) > 0) {
+    # ignore the "time_bnds" variable that CDO creates with time aggregation
+    if(this.var$name != "time_bnds") {
       
-      # some tricks to determine exactly what the 'Time' axis represent 
+      # set start and count appropriately
+      start <- numeric()
+      count <- numeric()
       
-      # don't need to be so fancy here!
-      # time.axis.string <- this.nc$dim$Time$units
-      
-      
-      # actually, lets do some shortcuts
-      length.time.axis <- length(all.times)
-      
-      # lets see if we have annual data
-      if(length.time.axis == (last.year - first.year + 1)) {
-        if(verbose) message("Got annual data.")
+      for(this.dim in this.var$dim) {
         
+        if(this.dim$name == lat.string) {
+          start <- append(start, start.lat)
+          count <- append(count, count.lat)
+        }
+        else if(this.dim$name  == lon.string) {
+          start <- append(start, start.lon)
+          count <- append(count, count.lon)
+        }
+        else if(this.dim$name  == time.string) {
+          start <- append(start, start.time)
+          count <- append(count, count.time)
+        }
         
-        # subsitute using first.year and last.year   
-        this.slice.dt[, Year := plyr::mapvalues(this.slice.dt[["Time"]], from = all.times, to = first.year:last.year)]
-        this.slice.dt[, Time := NULL]
-        
-        sta.info@subannual.resolution <- "Year"
-        sta.info@subannual.original <- "Year"
       }
-      # else check for monthly
-      if(length.time.axis == (last.year - first.year + 1) *12) {
-        if(verbose) message("Got monthly data.")
+      
+      # Get the actual data and set the dimension names    
+      this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
+      dimnames(this.slice) <- dimension.names
+      
+      # prepare data.table from the slice (array)
+      this.slice.dt <- as.data.table(melt(this.slice))
+      rm(this.slice)
+      gc()
+      this.slice.dt <- stats::na.omit(this.slice.dt)
+      setnames(this.slice.dt, "value", this.var$name)
+      
+      
+      
+      # ###  HANDLE TIME AXIS 
+      if(length(all.time.intervals) > 0) {
         
-        all.years <- first.year:last.year
-        
-        ### MF: This might be slow, consider optimising
-        
-        # sort data.table by Time axis
-        this.slice.dt[order(Time)] 
-        
-        # make Year vector and add it do the data.table
-        temp.nentries.per.year <- nrow(this.slice.dt)/length(all.years)
-        year.vector <- c()
-        
-        for(year in all.years) {
-          year.vector <- append(year.vector, rep.int(year, temp.nentries.per.year))
+        if(time.res == "Year") {
+          this.slice.dt[, Year := as.numeric(Time)]
+          this.slice.dt[, Time := NULL]
         }
-        this.slice.dt[, Year := year.vector]
-        rm(year.vector)
-        
-        # Make Month vector
-        month.vector <- c()
-        for(year in all.years) {
-          for(month in 1:12) {
-            month.vector <-append(month.vector, rep.int(month, temp.nentries.per.year/12))
+        else if(time.res == "Month") {
+          toYearandMonth <- function(x) {
+            Year <- as.integer(trunc(x))
+            return(list("Year" = Year, "Month" = as.integer(round((x-Year)*100))) )
           }
+          this.slice.dt[, c("Year", "Month") := toYearandMonth(as.numeric(Time))]
+          this.slice.dt[, Time := NULL]
+          
         }
-        this.slice.dt[, Month := as.integer(month.vector)]
-        rm(month.vector)
+        else if(time.res == "Day") {
+          toYearandDay <- function(x) {
+            Year <- as.integer(trunc(x))
+            return(list("Year" = Year, "Day" = as.integer(round((x-Year)*1000))) )
+          }
+          this.slice.dt[, c("Year", "Day") := toYearandDay(as.numeric(Time))]
+          this.slice.dt[, Time := NULL]
+          
+        }
         
-        # Remove the Time columns
-        this.slice.dt[, Time := NULL]
-        
-        # make new colum order so that the quant is last
+        # make new column order so that the quant is last
         all.names <- names(this.slice.dt)
         all.names <- all.names[-which(all.names == this.var$name)]
         all.names <- append(all.names, this.var$name)
         setcolorder(this.slice.dt, all.names)
         
-        sta.info@subannual.resolution <- "Month"
-        sta.info@subannual.original <- "Month"
       }
       
+      setKeyDGVM(this.slice.dt)
       
-    }
-    else {
-      sta.info@subannual.resolution <- "Year"
-      sta.info@subannual.original <- "Year"
-    }
-    
-    setKeyDGVM(this.slice.dt)
-    
-    
-    if(length(quant@units) > 1) {
       
-      # # remove categories which aren't present
-      categories.present <- unique(this.slice.dt[[this.var$name]])
-      all.categories <- quant@units
+      if(length(quant@units) > 1) {
+        
+        # # remove categories which aren't present
+        categories.present <- unique(this.slice.dt[[this.var$name]])
+        all.categories <- quant@units
+        
+        this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = all.categories[sort(categories.present)])]
+      }
       
-      this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = all.categories[sort(categories.present)])]
-    }
-    
-    # now join this to all.dt
-    dt.list[[length(dt.list)+1]] <- this.slice.dt
-    
-    
+      # now join this to all.dt
+      dt.list[[length(dt.list)+1]] <- this.slice.dt
+      
+      
+    } # end if statement for ignoring "time_bnds" variable
     
   }
   
@@ -446,6 +658,14 @@ DGVMData.quantities <- list(
       cf.name = "area_fraction_percent"), 
   
   new("Quantity",
+      id = "landcover_std",
+      name = "Area Fraction",
+      units = "%",
+      colours = veg.palette, 
+      format = c("DGVMData"),
+      cf.name = "area_fraction_percent"), 
+  
+  new("Quantity",
       id = "vegC_std",
       name = "Vegetation Carbon Mass",
       units = "kg m-2",
@@ -472,7 +692,7 @@ DGVMData.quantities <- list(
       id = "aGPP_std",
       name = "Annual GPP",
       units = "kgC m-2 year-1",
-      colours = fields::tim.colors,
+      colours = viridis::inferno,
       format = c("DGVMData"),
       cf.name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
   

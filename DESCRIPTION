@@ -1,12 +1,12 @@
 Package: DGVMTools
 Type: Package
-Version: 0.8.0
+Version: 0.8.2
 Title: DGVM Processing, Analysis and Plotting Tools
 Date: 2019-02-27
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
              person("Simon", "Scheiter", role=c("aut"), email="simon.scheiter@senckenberg.de"),
              person("Joerg", "Steinkamp", role=c("aut"), email="joerg.steinkamp@senckenberg.de"))
-Author: Matthew Forrest [aut, cre], Joerg Steinkamp [aut]
+Author: Matthew Forrest [aut, cre], Simon Scheiter [aut], Joerg Steinkamp [aut]
 Maintainer: Matthew Forrest <matthew.forrest@senckenberg.de>
 Description: Read, process, benchmark, analyse and plot output data produced by dynamic global vegetation
     models (DGVMs) LPJ-GUESS(-SPITFIRE) and aDGVM2 and potentially soon others, for use in R. 

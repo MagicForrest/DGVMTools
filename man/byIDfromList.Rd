@@ -16,7 +16,7 @@ The matching object from the list or NULL.  If NULL it will give a message and a
 }
 \description{
 Looks through a list of arbitary object until it finds one which has a slot called "id" whose value matches the imput argument.
-The idea is that you can use this fucntion to pull a particular PFT from a list of PFT objects, or a a particular run from a list of Source objects etc.
+The idea is that you can use this function to pull a particular PFT from a list of PFT objects, or a particular run from a list of Source objects etc.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

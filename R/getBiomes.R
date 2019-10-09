@@ -47,7 +47,28 @@
 #' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}},  \code{\link{getField}}    
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-
+#' 
+#' @examples 
+#' \donttest{
+#'  
+#' # In this example we derive and plot the Smith et al 2014 and the 
+#' # Forrest et al 2015 biome classifications    
+#'  
+#' # First define a Source
+#' test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+#' test.Source <- defineSource(name = "LPJ-GUESS run", dir = test.dir,  format = GUESS)
+#' 
+#' # Smith et al. 2014
+#' Smith2014.biomes <- getBiomes(source = test.Source, scheme = Smith2014BiomeScheme, 
+#'                               year.aggregate.method = "mean")
+#' print(plotSpatial(Smith2014.biomes))
+#' 
+#' # Forrest et al. 2014
+#' Forrest2015.biomes <- getBiomes(source = test.Source, scheme = Forrest2015BiomeScheme, 
+#'                                 year.aggregate.method = "mean")
+#' print(plotSpatial(Forrest2015.biomes))
+#' 
+#' }
 getBiomes <- function(source, 
                       scheme, 
                       first.year,
@@ -212,7 +233,7 @@ getBiomes <- function(source,
         one.field.per.source[[length(one.field.per.source) +1]] <- getField(source = this.source, var = this.quantity, sta.info = sta.info, read.full = read.full.components, write = write.components, ...)
       }
       
-      this.field <- averageFields(one.field.per.source, run = averaged.source)
+      this.field <- averageFields(one.field.per.source, source = averaged.source)
       
     }
       

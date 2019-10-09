@@ -2,37 +2,43 @@
 % Please edit documentation in R/copyLayers.R
 \name{copyLayers}
 \alias{copyLayers}
-\title{Copy layers from one VegObject or Field to another}
+\title{Copy layers from one Field to another}
 \usage{
 copyLayers(from, to, layer.names, new.layer.names = NULL,
-  keep.all.to = TRUE, keep.all.from = TRUE, dec.places = NULL)
+  keep.all.to = TRUE, keep.all.from = TRUE, dec.places = NULL,
+  fill.dims = TRUE)
 }
 \arguments{
-\item{from}{The Field/DataObject that the layers are to be copied from.}
+\item{from}{The Field/data.table that the layers are to be copied from.}
 
-\item{to}{The Field/DataObject that the layers are to be copied to.}
+\item{to}{The Field/data.table that the layers are to be copied to.}
 
 \item{layer.names}{The layers to be copied from the "from" argument}
 
 \item{new.layer.names}{The new names that the layers should have in the 'to' object. Use this to avoid naming conflict whereby, for 
 example, if a layer "Total" is copied to an object which already has a "Total" layer then they layers will be names "Total.x" and "Total.y".}
 
-\item{keep.all.to}{Boolean, if set to FALSE, all points in the 'to' object which don't have corresponding points in the 'from' object are removed.}
+\item{keep.all.to}{Logical, if set to FALSE, all points in the 'to' object which don't have corresponding points in the 'from' object are removed.}
 
-\item{keep.all.from}{Boolean, if set to FALSE, all points in the 'from' object which don't have corresponding points in the 'to' object are removed.}
+\item{keep.all.from}{Logical, if set to FALSE, all points in the 'from' object which don't have corresponding points in the 'to' object are removed.}
 
-\item{dec.places}{Numeric, how many decimal places to rounds the coordinates to inorder to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.
-But setting this can be useful to force matching of coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
+\item{dec.places}{Numeric with either 1 or 2 elements to specify how many decimal places to which the coordinates (Lon and Lat dimensions) should be rounded
+in order to get a match between the two Fields/data.tables.   If one number is supplied it is applied to both Lon and Lat. If two numbers are supplied, the first is applied to Lon and the second to Lat.
+Default is no rounding (value is NULL) and is fine for most regularly spaced grids.   Hoewever, setting this can be useful to force matching of 
+coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
+
+\item{fill.dims}{Logical, if TRUE (the default) and if the 'from' Field/data.table has less dimensions than the 'to' Field/data.table, then just fill in all the values
+of that dimension with the same data.  Ie if if the 'from' table has no months but the to table does, just fill the same value into all months.}
 }
 \value{
 A Field (or data.table) comprising the 'to' object with the new layers added
 }
 \description{
-This function does not check the Lon, Lat and Year columns are identical.  Any points in the 'from' object which are not in the 'to' object are ignored, 
+This function does not check the dimensions columns are identical.  Any points in the 'from' object which are not in the 'to' object are ignored, 
 and any points in the 'to' object which don't have corresponding points in the 'from' object are assigned NA, unless keep.all.to is set to FALSE .
 }
 \details{
-This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one Field/DataObject to another.  
+This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one Field (or data.table)t to another.  
 This is particularly useful for colouring or facetting a plot of one variable by another one say.  To give a more concrete example, one could use a biome classification 
 to split (facet) a data-vs-model scatter plot.
 }

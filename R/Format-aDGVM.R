@@ -12,6 +12,7 @@
 #' @param quant A Quantity object to define what quantity from the aDGVM2 run to extract
 #' @param target.STAInfo STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/
 #' @param last.year The last year (as a numeric) of the data to be return
+#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
 #' @param adgvm.daily A logical, set to true to read daily data (only for \code{adgvm.scheme=1} and if daily data are provided in pop file)
@@ -22,6 +23,7 @@
 getField_aDGVM <- function(source,
                            quant,
                            target.STAInfo,
+                           file.name,
                            verbose,
                            adgvm.scheme,
                            adgvm.daily) {
@@ -34,8 +36,8 @@ getField_aDGVM <- function(source,
   
   if("aDGVM" %in% quant@format | "Standard" %in% quant@format) {
     
-    if(adgvm.scheme == 1) return(getQuantity_aDGVM_Scheme1(run = source, target.sta = target.STAInfo, variable = quant, adgvm.daily))
-    if(adgvm.scheme == 2) return(getQuantity_aDGVM_Scheme2(run = source, target.sta = target.STAInfo, variable = quant))
+    if(adgvm.scheme == 1) return(getQuantity_aDGVM_Scheme1(run = source, target.sta = target.STAInfo, file.name = file.name, variable = quant, adgvm.daily))
+    if(adgvm.scheme == 2) return(getQuantity_aDGVM_Scheme2(run = source, target.sta = target.STAInfo, file.name = file.name, variable = quant))
 
   }
   else {
@@ -58,15 +60,19 @@ getField_aDGVM <- function(source,
 #' 
 #' @param run A \code{source} containing the meta-data about the aDGVM2 run
 #' @param target.sta STAInfo object containing the space-time-annual extent required.
+#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, meanheight“, "nind“, "pind“, "vegC_std“, "vegcover_std"
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @seealso \code{\link{getQuantity_aDGVM_Scheme2}}
-getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, adgvm.daily)
+getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, file.name = file.name, adgvm.daily)
 {
   # To stop NOTES
   Day = Lat = Lon = Month = Time = Year = NULL
+  
+  # Give warning if file.name is used because it is currently being ignored
+  if(!is.null(file.name)) warning(paste0("Argument file.name (currently set to ", file.name, ") is being ignored.")) 
   
   # extract first and last year from STAInfo
   first.year = target.sta@first.year
@@ -327,11 +333,11 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, adgvm.daily)
 #' @param run A \code{source} containing the meta-data about the aDGVM2 run
 #' @param target.sta STAInfo object containing the space-time-annual extent required.
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, "nind“, "meanheight“, "pind“, "vegC_std“, "vegcover_std"
-#'
+#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @seealso \code{\link{getQuantity_aDGVM_Scheme1}}
-getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta)
+getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta, file.name = file.name)
 {
   # To stop NOTES
   Day = Lat = Lon = Month = Time = Year = NULL

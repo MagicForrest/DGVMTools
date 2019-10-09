@@ -1297,6 +1297,29 @@ PhenologyAdgvm2BiomeScheme <- new("BiomeScheme",
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
+#' 
+#' 
+#' @examples 
+#' \donttest{
+#'  
+#' # In this example we derive and plot the Smith et al 2014 and the 
+#' # Forrest et al 2015 biome classifications    
+#'  
+#' # First define a Source
+#' test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+#' test.Source <- defineSource(name = "LPJ-GUESS run", dir = test.dir,  format = GUESS)
+#' 
+#' # Smith et al. 2014
+#' Smith2014.biomes <- getBiomes(source = test.Source, scheme = Smith2014BiomeScheme, 
+#'                               year.aggregate.method = "mean")
+#' print(plotSpatial(Smith2014.biomes))
+#' 
+#' # Forrest et al. 2014
+#' Forrest2015.biomes <- getBiomes(source = test.Source, scheme = Forrest2015BiomeScheme, 
+#'                                 year.aggregate.method = "mean")
+#' print(plotSpatial(Forrest2015.biomes))
+#' 
+#' }
 supported.biome.schemes <- c("Smith2014" = Smith2014BiomeScheme,
                              "Hickler2012" = Hickler2012BiomeScheme,
                              "Forrest2015" = Forrest2015BiomeScheme,

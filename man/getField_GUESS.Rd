@@ -4,7 +4,7 @@
 \alias{getField_GUESS}
 \title{Get a Field for LPJ-GUESS}
 \usage{
-getField_GUESS(source, quant, target.STAInfo, verbose, ...)
+getField_GUESS(source, quant, target.STAInfo, file.name, verbose, ...)
 }
 \arguments{
 \item{source}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
@@ -12,6 +12,9 @@ getField_GUESS(source, quant, target.STAInfo, verbose, ...)
 \item{quant}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
 
 \item{target.STAInfo}{The spatial-temporal target domain}
+
+\item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
+"<quant@id>.out" (also "<quant@id>.out.gz")}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
 }

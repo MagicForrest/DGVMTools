@@ -1,4 +1,4 @@
-#' Sanitise input fields for plotting
+#' Sanitise input Fields for plotting
 #' 
 #' This is an internal helper function which checks the inputs to a plotXXXX function (which should be a single Field or a list of Fields) and returns a list of Fields
 #' 
@@ -27,6 +27,40 @@ santiseFieldsForPlotting <- function(fields) {
   }
   
   return(fields)
+  
+}
+
+
+#' Sanitise input Comparisons for plotting
+#' 
+#' This is an internal helper function which checks the inputs to a plotXXXXComparison() function (which should be a single Comparison or a list of Comparisons) 
+#' and returns a list of Comparisons
+#' 
+#' @param comparisons The input to a plotXXXXComparison() functions to be checked
+#' @return Returns a list of DGVMTools::Comparison objects or NULL if a problem was found
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
+santiseComparisonsForPlotting <- function(comparisons) {
+  
+  if(is.Comparison(comparisons)) {
+    comparisons <- list(comparisons)
+  }
+  else if(class(comparisons)[1] == "list") {
+    for(object in comparisons){ 
+      if(!is.Comparison(object)) {
+        warning("You have passed me a list of items to plot but the items are not exclusively Comparisons.  Returning NULL")
+        return(NULL)
+      }
+    }
+  }
+  else{
+    warning(paste("This plot function can only handle single a Comparison, or a list of Comparison, it can't plot an object of type", class(comparisons)[1], sep = " "))
+    return(NULL)
+  }
+  
+  return(comparisons)
   
 }
 
@@ -176,14 +210,10 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
   
 }
 
-#' Eubsets data from Field for plotting 
+#' Subsets data from Field for plotting 
 #' 
-#' This is an internal helper function which pulls out the data needed to make a plot from a bunch of Fields,
-#' and combines them and melts them into a big data.table for plotting with ggplot2.  It also determines an appropriate title 
-#' and subtitle
-#' 
-#' 
-#' 
+#' This is an internal helper function which pulls out the data needed to make a plot from a bunch of Fields, and returns 
+#' a list of the Field with only the required layers and points in space and time included  
 #' 
 #' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
 #' @param layers A character vector of the layers to be plotted
@@ -191,6 +221,8 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
 #' @param days The days to be extracted (as a numeric vector), if NULL all days are used
 #' @param months The months to be extracted (as a numeric vector), if NULL all months are used
 #' @param seasons The months to be extracted (as a character vector), if NULL all seasons are used
+#' @param gridcells The months to be extracted (as a character vector), if NULL all seasons are used
+#' 
 #' @return Returns a list of Fields
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
@@ -231,6 +263,7 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
       if(!is.null(days)) these.layers <- selectDays(these.layers, days)
       if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
       if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
+      if(!is.null(gridcells)) these.layers <- selectGridcells(these.layers, gridcells, spatial.extent.id = "Subset_For_Plotting")
       
       # check if layers are all continuous or discrete
       for(layer in layers.present) {
@@ -250,6 +283,67 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
   return(final.fields)
   
 }
+
+
+#' Merge data from Field for plotting 
+#' 
+#' This is an internal helper function which pulls out the data from a bunch of Fields to be plotted, adds columns to describe the characteristics 
+#' of each Field (ie Quantity, Site code etc) and returns it all in one big melted data.table.
+#' 
+#' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
+#' @param add.Quantity Logical, if TRUE add a column with the Quantity name of each Field
+#' @param add.Site Logical, if TRUE add a column with the with a string containing the Lon and Lat of each site (gridcell).
+#' @param add.Region Logical, if TRUE add a column with the with a string containing the Region (as defined by the spatial.extent.id) of each Field.
+#' @param add.TimePeriod Logical, if TRUE add a column (with name "Time Period") with a string containing the time period of each Field
+#'  (as defined by first.year and last.year).
+#' 
+#' @return Returns a data.table
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
+mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FALSE, add.Region = FALSE, add.TimePeriod = FALSE) {
+  
+  Source = Quantity = Site = Lon = Lat = Region = NULL
+  
+  data.toplot.list <- list()
+  for(this.field in fields) {
+    this.dim.info <- getDimInfo(this.field)
+    this.field.melted <- melt(this.field@data, id.vars = this.dim.info)
+    
+    # Source column add in evergy case
+    this.field.melted[, Source := this.field@source@name]
+    # Quantity column - only if required
+    if(add.Quantity) this.field.melted[, Quantity := this.field@quant@name]
+    # Site column - only if required
+    if(add.Site) {
+      if("Lon" %in% this.dim.info  && "Lat" %in% this.dim.info){
+        this.field.melted[, Site := paste0("(", Lon, ",",  Lat, ")")]
+      }
+      else {
+        stop("Don't have Lons and Lats so can't make site strings")
+      }
+    }
+    # Region column - only if required
+    if(add.Region) {
+      this.field.melted[, Region:= this.field@spatial.extent.id]
+    }  
+    # add to the list of data.tables
+    data.toplot.list[[length(data.toplot.list)+1]] <- this.field.melted
+  }
+  
+  data.toplot <- rbindlist(data.toplot.list)
+  rm(data.toplot.list)
+  
+  # Rename
+  setnames(data.toplot, "variable", "Layer")
+  setnames(data.toplot, "value", "Value")
+  
+  
+  return(data.toplot)
+  
+}
+
 
 
 #####################################################################################################################
@@ -333,7 +427,8 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
     
   } # for each value
   
-  return(unlist(these.cols))
+  if(length(these.cols) == length(values))  return(unlist(these.cols))
+  else return(NULL)
   
 }
 

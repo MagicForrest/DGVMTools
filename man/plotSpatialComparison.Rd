@@ -2,16 +2,16 @@
 % Please edit documentation in R/plotSpatialComparison.R
 \name{plotSpatialComparison}
 \alias{plotSpatialComparison}
-\title{Plot a comparion between two layers}
+\title{Plot a comparison between two spatial layers}
 \usage{
-plotSpatialComparison(sources, type = c("difference",
+plotSpatialComparison(comparisons, type = c("difference",
   "percentage.difference", "values", "nme"), limits = NULL,
   panel.bg.col = "white", override.cols = NULL,
   symmetric.scale = TRUE, percentage.difference.limit = 300,
   do.phase = FALSE, ...)
 }
 \arguments{
-\item{sources}{The data to plot, must be a Comparison or a list of Comparisons}
+\item{comparisons}{The data to plot, must be a Comparison or a list of Comparisons}
 
 \item{type}{A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
 (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)}
@@ -24,10 +24,10 @@ plotSpatialComparison(sources, type = c("difference",
 
 \item{symmetric.scale}{If plotting a differences, make the scale symmetric around zero (default is TRUE)}
 
-\item{percentage.difference.limit}{If precentage difference to be plotted, what to limit the scale to.}
+\item{percentage.difference.limit}{If percentage difference to be plotted, what to limit the scale to.  Default is 300.}
 
 \item{do.phase}{Logical, only applies to plotting Comparison objects of type "seasonal".
-If TRUE plot the the seasonal phase, of FALSE (the default), plot the seasonal concentration.}
+If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.}
 
 \item{...}{Parameters passed to \code{plotSpatial()}}
 }
@@ -35,13 +35,11 @@ If TRUE plot the the seasonal phase, of FALSE (the default), plot the seasonal c
 Returns a ggplot object
 }
 \description{
-This is a heavy lifting function for plotting maps from Fields, DataObjects, and Comparisons (and lists of those things) with flexibility, but also with a high degree of automation. 
-As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
-It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
-using further ggplot2 commands.
+This function is for plotting maps from Comparison objects (or a list of those Comparisons).  Three types of comparisons plots are supported: 'difference' - 
+a difference map; "values" - the absolute values plotted in panels and "percentage.difference" - the percentage differences.
 }
 \details{
-A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.
+A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  Extra arguments to \code{plotSpatial} can also be specified.
 }
 \seealso{
 \code{plotSpatial},  \code{compareLayers}

@@ -4,54 +4,69 @@
 \alias{plotTemporal}
 \title{Plot temporal data}
 \usage{
-plotTemporal(input.data, layers = NULL, expand.layers = TRUE,
-  title = character(0), subtitle = character(0), quant = NULL,
-  cols = NULL, types = NULL, labels = NULL, y.label = NULL,
-  y.lim = NULL, x.label = NULL, x.lim = NULL, facet = TRUE,
-  facet.scales = "fixed", legend.position = "bottom",
-  text.multiplier = NULL, plot = TRUE)
+plotTemporal(fields, layers = NULL, gridcells = NULL,
+  title = character(0), subtitle = character(0), cols = NULL,
+  col.by = "Layer", col.labels = waiver(), types = NULL,
+  type.by = NULL, type.labels = waiver(), sizes = NULL,
+  size.by = NULL, size.labels = waiver(), alphas = NULL,
+  alpha.by = NULL, alpha.labels = waiver(), y.label = NULL,
+  y.lim = NULL, x.label = NULL, x.lim = NULL,
+  legend.position = "bottom", text.multiplier = NULL, plot = TRUE,
+  ...)
 }
 \arguments{
-\item{input.data}{The data to be plotted, either as a Field, DataObject or a list of Model/DataObjects.}
+\item{fields}{The data to be plotted, either as a Field or list of Fields.}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
-\item{expand.layers}{A boolean, determines wether to expand the layers arguement.  See documentation for \code{expandLayers} for details.}
+\item{gridcells}{A list of gridcells to be plotted (either in different panels or the same panel). For formatting of this argument see \code{selectGridcells}.
+Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop)}
 
 \item{title}{A character string to override the default title.  Set to NULL for no title.}
 
 \item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.}
 
-\item{quant}{A Quantity object to provide meta-data about how to make this plot}
+\item{cols, types, sizes, alphas}{A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.
+Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/type/alpha values
+to particular Layers/Sources/Quantities.}
 
-\item{cols, types}{Colour and types for the lines.  They do not each necessarily need to be specified, but if they are then the they need to be 
-the same length as the labels arguments}
+\item{col.by, type.by, size.by, alpha.by}{Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
+Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
+distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.}
 
-\item{labels}{A list of character strings which are used as the labels for the lines.  Must have the same length as the layers argument (after expansion if necessary)}
+\item{col.labels, type.labels, size.labels, alpha.labels}{A vector of character strings which are used as the labels for the lines. Must have the same length as the
+number of Sources/Layers/Quantities in the plot.  The vectors can/should be named to match particular col/size/type/alpha values to particular Layers/Sources/Sites/Quantities.}
 
 \item{x.label, y.label}{Character strings for the x and y axes (optional)}
 
 \item{x.lim, y.lim}{Limits for the x and y axes (each a two-element numeric, optional)}
 
-\item{facet}{Logical, if TRUE split the plot into panels by source.  If false, plots all data in a single panel.}
-
-\item{facet.scales}{Character string.  If faceting (see above) use "fixed" to specify same scales on each ribbon (default), or "free"/"free_x"/"free_y" for tailored scales}
-
 \item{legend.position}{Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.}
 
-\item{plot}{Logical, if FALSE return the data.table of data instead of the plot
-Make it bigger if the text is too small on large plots and vice-versa.}
+\item{plot}{Logical, if FALSE return the data.table of data instead of the plot}
+
+\item{...}{Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+\itemize{
+ \item{"nrow"}{The number of rows of facets}
+ \item{"ncol"}{The number of columns of facets}
+ \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
+ "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
+ \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation} 
+}}
 }
 \value{
 A ggplot
 }
 \description{
-Makes a line plot graphing the temporal evolution of data (using ggplot2).  Full functionality not implemented, or even defined...
+Makes a line plot graphing the temporal evolution of data (using ggplot2).  Allows control of panel layout and line aesthetics whilst simultaneously plotting
+multiple Sources, Layers, Gridcells (Sites) and Quantities.
 }
 \details{
-This function is WORK IN PROGRESS!!  For questions about functionality or feature requests contact the author
+It allows fairly fine-grained control with respect to labelling lines  corresponding to different Sources, Layers, Sites and Quantities with different colours, sizes, types, alpha (transparency) values, and text labels.  It also
+allows one to decide if you want different Sources/Layers/Quantities on the same panel or on different panels.  The default is to put different Sources
+(ie. runs and datasets) and Quantities (ie different output variables) on different panels, and Layers on the same panel distinguished by colour.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

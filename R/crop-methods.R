@@ -45,9 +45,9 @@ setMethod("crop", signature(x="Field", y = "ANY"), function(x, y, spatial.extent
   }
   methods::validObject(y)
  
-  # crop the data
+  # crop the data and set the key 
   dt <- x@data
-  x@data <- dt[Lat < y@ymax & Lat > y@ymin & Lon < y@xmax & Lon > y@xmin,]
+  x@data <- setKeyDGVM(dt[Lat < y@ymax & Lat > y@ymin & Lon < y@xmax & Lon > y@xmin,])
 
 
   # adjust the meta-data to reflext the new cropped extent
@@ -76,9 +76,9 @@ setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y, spatial.e
   }
   methods::validObject(y)
   
-  # crop the data
+  # crop the data and set the key
   dt <- x@data
-  x@data <- dt[Lat < y@ymax & Lat > y@ymin & Lon < y@xmax & Lon > y@xmin,]
+  x@data <- setKeyDGVM(dt[Lat < y@ymax & Lat > y@ymin & Lon < y@xmax & Lon > y@xmin,])
  
  
   # adjust the meta-data to reflext the new cropped extent
@@ -102,7 +102,7 @@ setMethod("crop", signature(x="data.table", y = "ANY"), function(x, y, spatial.e
   
   Lon = Lat = NULL
 
-  x <- x[Lat < y@ymax & Lat > y@ymin & Lon < y@xmax & Lon > y@xmin,]
+  x <- setKeyDGVM(x[Lat < y@ymax & Lat > y@ymin & Lon < y@xmax & Lon > y@xmin,])
 
   return(x)
   

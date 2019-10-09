@@ -6,26 +6,24 @@
 #################################################################################################################################################
 
 
-#' Plot a comparion between two layers
+#' Plot a comparison between two spatial layers
 #' 
-#' This is a heavy lifting function for plotting maps from Fields, DataObjects, and Comparisons (and lists of those things) with flexibility, but also with a high degree of automation. 
-#' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  In principle you can supply only the objext and it will plot.
-#' It is basically a complex wrapper for the ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
-#' using further ggplot2 commands. 
-#'
-#' @param sources The data to plot, must be a Comparison or a list of Comparisons
+#' This function is for plotting maps from Comparison objects (or a list of those Comparisons).  Three types of comparisons plots are supported: 'difference' - 
+#' a difference map; "values" - the absolute values plotted in panels and "percentage.difference" - the percentage differences.  
+#' 
+#' @param comparisons The data to plot, must be a Comparison or a list of Comparisons
 #' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
 #' (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
 #' @param panel.bg.col Colour string for the panel background, default to "white" for absolute values plots, and a sort of blue grey for difference plots.
 #' @param override.cols A colour palette function to override the defaults.
 #' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)
-#' @param percentage.difference.limit If precentage difference to be plotted, what to limit the scale to.
+#' @param percentage.difference.limit If percentage difference to be plotted, what to limit the scale to.  Default is 300.
 #' @param do.phase Logical, only applies to plotting Comparison objects of type "seasonal".
-#' If TRUE plot the the seasonal phase, of FALSE (the default), plot the seasonal concentration.
+#' If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.
 #' @param ... Parameters passed to \code{plotSpatial()}
 #' 
-#' @details  A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  
+#' @details  A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  Extra arguments to \code{plotSpatial} can also be specified. 
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -35,7 +33,7 @@
 #' @export 
 #' @seealso \code{plotSpatial},  \code{compareLayers}
 
-plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixelsDataFrame, or a raster, or a Field
+plotSpatialComparison <- function(comparisons,
                                   type = c("difference", "percentage.difference", "values", "nme"),
                                   limits = NULL,
                                   panel.bg.col = "white",
@@ -56,32 +54,20 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
   
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
-  ### 1. SOURCES - check the sources
-  if(is.Comparison(sources)) {
-    sources<- list(sources)
-  }
-  else if(is.list(sources)) {
-    this.type <- sources[[1]]@type
-    for(object in sources){ 
-      if(!is.Comparison(object)) {
-        warning("You have passed me a list of items to plot but the items are not exclusively of Comparisons.  Returning NULL")
-        return(NULL)
-      }
-      else{
-        if(object@type != this.type) {
-          warning("You have passed me a list of Comparison objects to plot but they have different types.  Returning NULL")
-          return(NULL)
-        }
-      }
-    }
-  }
-  else{
-    stop(paste("plotSpatialComparison() can only handle single a Comparison, or a list of Comparisons, can't plot an object of type", class(sources)[1], sep = " "))
-  }
+  ### 1. COMPARISONS - check the input Comparison objects (and if it is a single Comparison put it into a one-item list)
+  
+  comparisons <- santiseComparisonsForPlotting(comparisons)
+  if(is.null(comparisons)) return(NULL)
   
   
-  ### 2. LAYERS - the layers to plot are defined by the plot type
+  ### 2. DIMENSIONS - check the dimensions (require that all fields the same dimensions and that they include 'Lon' and 'Lat' )
   
+  dim.names <- santiseDimensionsForPlotting(comparisons, require = c("Lon", "Lat"))
+  if(is.null(dim.names)) return(NULL)
+  # dim names not used later
+  
+  
+  ### 3. LAYERS AND FIELDS - the layers to plot are defined by the plot type, here build appropriate Field objects
   
   #### DIFFERENCE OR PERCENTAGE DIFFERENCE
   if(type == "difference" || type == "percentage.difference") {
@@ -90,7 +76,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     objects.to.plot <- list()
     max.for.scale <- 0
     final.layers.to.plot <- c()
-    for(object in sources){ 
+    for(object in comparisons){ 
       
       # special case for seasonal comparisons, the layers are actually called "SeasonalConcentration" and "SeasonalPhase"
       if(object@type == "seasonal") {
@@ -198,7 +184,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     if(symmetric.scale) limits <- c(-max.for.scale, max.for.scale)
     
     # if no panel background panel colour specified, use a non-white one
-    if(missing(panel.bg.col)) panel.bg.col = "#809DB8"
+    if(missing(panel.bg.col)) panel.bg.col = "#999999"
     
     the.plot <- plotSpatial(objects.to.plot,
                             layers = layers.to.plot,
@@ -221,7 +207,7 @@ plotSpatialComparison <- function(sources, # can be a data.table, a SpatialPixel
     # convert the Comparisons into Fields for plotting 
     objects.to.plot <- list()
     layers.to.plot <- c()
-    for(object in sources){ 
+    for(object in comparisons){ 
       
       # special case for seasonal comparisons, the layers are actually called "SeasonalConcentration" and "SeasonalPhase"
       if(object@type == "seasonal") {

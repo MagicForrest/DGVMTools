@@ -118,4 +118,24 @@ aggregateYears.uncompiled <- function(input.obj,
 #' @export
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @examples 
+#' \donttest{
+#'  
+#' # Get an example Field
+#' test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+#' test.Source <- defineSource(name = "LPJ-GUESS", dir = test.dir,  format = GUESS)
+#' field <- getField(source = test.Source, var = "lai")
+#' 
+#' # calculate of mean of all years
+#' mean.allyears <- aggregateYears(input.obj = field, method = "mean", verbose = TRUE)
+#' print(mean.allyears@data)
+#' print(plotSpatial(mean.allyears))
+#' 
+#' #  calculate standard deviation of all years
+#' sd.allyears <- aggregateYears(input.obj = field, method = "sd", verbose = FALSE)
+#' print(sd.allyears@data)
+#' print(plotSpatial(sd.allyears))
+#' 
+#' 
+#' }
 aggregateYears <- compiler::cmpfun(aggregateYears.uncompiled)

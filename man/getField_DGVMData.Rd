@@ -4,18 +4,19 @@
 \alias{getField_DGVMData}
 \title{Get a Field for DGVMData}
 \usage{
-getField_DGVMData(source, quant, target.STAInfo, verbose = FALSE)
+getField_DGVMData(source, quant, target.STAInfo, file.name,
+  verbose = FALSE)
 }
 \arguments{
 \item{source}{A \code{Source} containing the meta-data about the DGVMData source}
 
 \item{quant}{A Quantity object to specify what quantity should be opened.}
 
+\item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated}
+
 \item{verbose}{A logical, set to true to give progress/debug information}
 
 \item{target.sta.info}{An STAInfo object defining the spatial-temporal-annual extent over which we want the data}
-
-\item{last.year}{The last year (as a numeric) of the data to be returned}
 }
 \value{
 A list containing firstly the data.tablle containing the data, and secondly the STAInfo for the data that we have

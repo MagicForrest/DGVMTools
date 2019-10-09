@@ -1,6 +1,5 @@
 library(testthat)
 library(DGVMTools)
-library(FireMIPTools)
 library(stats)
 library(compiler)
 
@@ -46,14 +45,12 @@ test_that("Sources",{
 context("Quantity")
 
 vegC_std.Quantity <- lookupQuantity("vegC_std")
-LAI_FireMIP.Quantity <- lookupQuantity("lai", context = FireMIP.quantities)
 
 
 test_that("Quantity",{
   
   expect_is(vegC_std.Quantity , "Quantity")
-  expect_is(LAI_FireMIP.Quantity  , "Quantity")
-  
+
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = FALSE), "list")
   
@@ -97,22 +94,53 @@ test_that("Field",{
   expect_is(Biomes.Field.full, "Field")
   
   
-  # Also check "Standard" and FireMIP variables
+  # Also check "Standard" variables
   Standard.Field <- getField(GUESS.Europe.test.Source, "LAI_std")
-  FireMIP.Field <- getField(GUESS.Europe.test.Source, LAI_FireMIP.Quantity)
   expect_is(Standard.Field, "Field")
-  expect_is(FireMIP.Field, "Field")
-  
+
   # Check the data are the same
   expect_identical(Standard.Field@data, GUESS.lai.Field.full@data)
-  expect_identical(FireMIP.Field@data, GUESS.lai.Field.full@data)
-  
+
   # check the DGVMData
   expect_is(Saatchi.Field.full, "Field")
   expect_is(Biomes.Field.full, "Field")
   
   
 })
+
+# AVERAGING FIELDS
+
+context("Averaging Fields")
+
+
+# test Fields
+test_that("Field",{
+  
+  # open a another (actually duplicate) Field for averaging
+  GUESS.Europe.test.Source.2 <- defineSource(id = "LPJ-GUESS_Example_2",
+                                           dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools"), 
+                                           format = GUESS,
+                                           name = "LPJ-GUESS Europe Example Run Duplicate")
+  GUESS.lai.Field.full.2 <- getField(GUESS.Europe.test.Source.2, "lai")
+  
+  # do average (and also standard deviation)
+  GUESS.lai.Field.full.mean <- averageFields(list(GUESS.lai.Field.full, GUESS.lai.Field.full.2))
+  GUESS.lai.Field.full.sd <- averageFields(list(GUESS.lai.Field.full, GUESS.lai.Field.full.2), method = sd)
+
+  # and checks
+  expect_is(GUESS.lai.Field.full.mean, "Field")
+  expect_is(GUESS.lai.Field.full.sd, "Field")
+  expect_identical(GUESS.lai.Field.full.mean@data, GUESS.lai.Field.full@data)
+  
+  # expect standard deviation to be zero everywhere (since the files were the same)
+  for(this.layer in layers(GUESS.lai.Field.full.sd)) {
+      expect_identical(sum(GUESS.lai.Field.full.sd@data[[this.layer]]), 0)
+  }
+  
+  
+  
+})
+
 
 # PFTs
 context("PFTs")
@@ -175,7 +203,9 @@ GUESS.Field.yearly.mean.2 <- aggregateYears(GUESS.mlai.Field.full, "mean")
 # spatial
 GUESS.Field.spatial.mean.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.aggregate.method = "mean")
 GUESS.Field.spatial.mean.2 <- aggregateSpatial(GUESS.mlai.Field.full, "mean")
-
+# spatial weighted sum
+GUESS.Field.spatial.wmean.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.aggregate.method = "w.mean")
+GUESS.Field.spatial.wmean.2 <- aggregateSpatial(GUESS.mlai.Field.full, "w.mean")
 
 # test aggregations
 test_that("Aggregation",{
@@ -189,12 +219,15 @@ test_that("Aggregation",{
   expect_is(GUESS.Field.yearly.mean.2, "Field")
   expect_is(GUESS.Field.spatial.mean.1, "Field")
   expect_is(GUESS.Field.spatial.mean.2, "Field")
+  expect_is(GUESS.Field.spatial.wmean.1, "Field")
+  expect_is(GUESS.Field.spatial.wmean.2, "Field")
   
   # check the results are the same
   expect_identical(GUESS.Field.monthly.mean.1 ,  GUESS.Field.monthly.mean.2)
   expect_identical(GUESS.Field.yearly.mean.1 ,  GUESS.Field.yearly.mean.2)
-  expect_identical(GUESS.Field.spatial.mean.1 ,  GUESS.Field.spatial.mean.2)
   expect_identical(GUESS.Field.seasonal.mean.1 ,  GUESS.Field.seasonal.mean.2)
+  expect_identical(GUESS.Field.spatial.mean.1 ,  GUESS.Field.spatial.mean.2)
+  expect_identical(GUESS.Field.spatial.wmean.1 ,  GUESS.Field.spatial.wmean.2)
   
   
   
@@ -253,7 +286,7 @@ GUESS.Field.selected.Field.2 <- crop(x = GUESS.mlai.Field.full, y = GUESS.Field.
 
 
 # test aggregations
-test_that("Aggregation",{
+test_that("Selections and Cropping",{
   
   # check they give Fields
   expect_is(GUESS.Field.selected.years.1, "Field")
@@ -353,6 +386,7 @@ context("Categorical Quantities")
 # biomes
 # Note: Known and deliberate warning when calculating biomes, suppress for clarity in results
 GUESS.Smith2014.Biomes <- suppressWarnings(getBiomes(source = GUESS.Europe.test.Source, scheme = Smith2014BiomeScheme, year.aggregate.method = "mean"))
+GUESS.Forrest2015.Biomes <- suppressWarnings(getBiomes(source = GUESS.Europe.test.Source, scheme = Forrest2015BiomeScheme, year.aggregate.method = "mean"))
 
 # max PFT
 GUESS.Field.lai.annual <- aggregateYears(GUESS.lai.Field.full, "mean")
@@ -362,6 +396,7 @@ GUESS.Field.lai.annual <- layerOp(GUESS.Field.lai.annual, operator = "max.layer"
 test_that("Categorical Quantities", {
   
   expect_is(GUESS.Smith2014.Biomes, "Field")
+  expect_is(GUESS.Forrest2015.Biomes, "Field")
   expect_is(GUESS.Field.lai.annual, "Field")
   
   ### Test averaging feature of get biomes
@@ -445,7 +480,7 @@ test_that("Seasonal Comparisons and Benchmarks", {
 })
 
 
-### ADD AREA FUNCTIO
+### ADD AREA FUNCTION
 context("Add Area")
 
 test_that("Add Area", {
