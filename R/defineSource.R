@@ -8,8 +8,8 @@
 #'
 #' @param id A unique character string to identify this particular data.  Recommended to be alphanumeric because it is used to construct file names and to use underscores and full stops (periods) 
 #' for separating characters where need be.   For example, "Standard_v4.0" or "Saatchi2011.HD"  (can be derived from \code{name} if a \code{name} is supplied, otherwise mandatory)
-#' @param format A character string to identify the format of the files of this data sorce. This can be anything, but should be in order for "getField()" to work corrected 
-#' it needs be a \code{supported.format} which is either a supported model that produced this (e.g. "LPJ-GUESS") or "DGVMData" for data files produced by the DGVMData package (Mandatory)
+#' @param format A Format object to describe the type of source.  Can be GUESS, aDGVM and DGVMData (note no quotes since these are actual R objects not strings).  (Mandatory) DEPRECATED: alternatively a character string to identify the format of the files of this data sorce. This can be anything, but should be in order for "getField()" to work corrected 
+#' it needs be a \code{supported.format} which is either a supported model that produced this (e.g. "LPJ-GUESS") or "DGVMData" for data files produced by the DGVMData package 
 #' @param pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @param name A character string describing this run, ie. "LPJ-GUESS v3.1" (can be derived from \code{id} if an \code{id} is supplied, otherwise mandatory)
 #' @param dir The location of this source on the file system (Mandatory)
@@ -61,14 +61,17 @@ defineSource <- function(id,
   if(is.character(format)) {
     if(format == "LPJ-GUESS" || format == "GUESS" || format == "LPJ-GUESS-SPITFIRE") {
       format <- GUESS
+      warning(paste0('Use for character string to specify the "format" argument in defineSource() is deprecated and will soon be removed. Please replace "', format,'" with GUESS (unquoted)'))
     }
     else if(format == "DGVMData") {
       format <- DGVMData
+      warning(paste0('Use for character string to specify the "format" argument in defineSource() is deprecated and will soon be removed. Please replace "', format,'" with DGVMData (unquoted)'))
     }
     else if(format == "aDGVM") {
       format <- aDGVM
+      warning(paste0('Use for character string to specify the "format" argument in defineSource() is deprecated and will soon be removed. Please replace "', format,'" with aDGVM (unquoted)'))
+      
     }
-    
   }
   
   # 
