@@ -38,8 +38,7 @@ Function will overlay histograms if more than one Comparison is provided.
 Line colours, line types and fill colours can all be specified but have sensible defaults.
 }
 \details{
-This function should be called after a call to \code{benckmarkSpatial} for a DataObject.  It plots the residuals for each model run to which it was compared.  
-It is called automatically by \code{benckmarkSpatial}, but can be called again for better flexibility.
+This function should be called on the Comparison objects produced by a call to function compareLayers().  It plots the residuals for each Comparison.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

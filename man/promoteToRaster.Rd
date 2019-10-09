@@ -2,7 +2,7 @@
 % Please edit documentation in R/export-methods.R
 \name{promoteToRaster}
 \alias{promoteToRaster}
-\title{Prepares data as a raster object for plotting.}
+\title{Convert to Raster}
 \usage{
 promoteToRaster(input.data, layers = "all", tolerance = 0.01,
   grid.topology = NULL)
@@ -21,7 +21,7 @@ when converting gridded table to a raster.}
 A RasterLayer (or RasterBrick)
 }
 \description{
-Converts a Field, Comparison or data.table to Raster object, also subsetting the requested layers.  
+Converts a Field, Comparison or data.table to a Raster object, also subsetting the requested layers.  
 This is generally called in the as.Raster and the setAs functions but can be useful in and of itself.
 }
 \author{

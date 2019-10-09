@@ -12,7 +12,7 @@
 \alias{as.Raster,Comparison-method}
 \alias{as.array}
 \alias{as.array,Field-method}
-\title{Coerce from Fields and DataObjects}
+\title{Coerce from Fields and Comparisons}
 \usage{
 \method{as.data.frame}{Field}(x, row.names, optional, ...)
 
@@ -33,7 +33,7 @@ as.array(x, ...)
 \S4method{as.array}{Field}(x, ...)
 }
 \arguments{
-\item{x}{A Field or a DataObject}
+\item{x}{A Field or a Comparison object}
 
 \item{row.names}{NULL or a character vector giving the row names for the data frame. Missing values are not allowed.}
 
@@ -46,7 +46,7 @@ basically with the meaning of data.frame(*, check.names = !optional).}
 \item{keep.rownames}{If ... is a matrix or data.frame, TRUE will retain the rownames of that object in a column named rn.}
 }
 \description{
-Functions to coerce Fields and DataObjects into other objects (data.frame, data.table, RasterBrick, SpatialPixelsDataFrame)
+Functions to coerce Fields and Comparisons into other objects (data.frame, data.table, Raster* objects)
 }
 \details{
 Note that for coercing to a Raster* object (RasterLayer or RasterBrick) the function is called "as.Raster" (capital "R") to avoid conflict with  

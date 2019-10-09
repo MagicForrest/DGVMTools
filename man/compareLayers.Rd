@@ -10,9 +10,9 @@ compareLayers(field1, field2, layers1, layers2 = layers1,
   show.stats = TRUE, custom.metrics = list(), dec.places = NULL)
 }
 \arguments{
-\item{field1}{A Field or DataObject from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.}
+\item{field1}{A Field from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.}
 
-\item{field2}{A Field or DataObject from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.}
+\item{field2}{A Field from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.}
 
 \item{layers1}{The name of the layers to be compared from field1 (character string)}
 
@@ -48,7 +48,7 @@ can be assumed in the data.table.  The name of the item in the list is used as t
 A Comparison object
 }
 \description{
-Compare two layers (each from a Field or DataObject) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object.
+Compare two layers (each from a Field) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object.
 }
 \examples{
 

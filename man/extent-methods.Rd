@@ -16,7 +16,7 @@
 \S4method{extent}{Comparison}(x)
 }
 \arguments{
-\item{x}{A Field, DataObject or a data.table.}
+\item{x}{A Field, Comaprison or a data.table.}
 
 \item{...}{Other arguments, not currently used}
 }
@@ -24,7 +24,7 @@
 A raster::extent
 }
 \description{
-Methods for returning a raster::extent object from a Field, DataObject or a data.table.  The data.table, or the data.table in the "data" slot of the Field and DataObject, 
+Methods for returning a raster::extent object from a Field, Comparison or a data.table.  The data.table, or the data.table in the "data" slot of the Field and Comparison, 
 must have columns named "Lon" and "Lat" otherwise these methods fail.
 }
 \author{
