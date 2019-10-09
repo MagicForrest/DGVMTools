@@ -1201,7 +1201,7 @@ GUESS.quantities <- list(
   new("Quantity",
       id = "vegcover",
       name = "Vegetation Cover",
-      units = "m^2/m^2",
+      units = "%",
       colours = veg.palette,
       format = c("GUESS")),
   
@@ -1326,6 +1326,13 @@ GUESS.quantities <- list(
   
   new("Quantity",
       id = "speciesheights",
+      name = "PFT Average Heights",
+      units = "m",
+      colours = fields::tim.colors,
+      format = c("GUESS")),
+  
+  new("Quantity",
+      id = "height",
       name = "PFT Average Heights",
       units = "m",
       colours = fields::tim.colors,

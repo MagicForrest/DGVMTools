@@ -158,9 +158,9 @@ setMethod("as.array", signature("Field"), function(x, ...) {
 
 ################################# PROMOTE TO RASTER
 #
-#' Prepares data as a raster object for plotting.
+#' Convert to Raster
 #' 
-#' Converts a Field, Comparison or data.table to Raster object, also subsetting the requested layers.  
+#' Converts a Field, Comparison or data.table to a Raster object, also subsetting the requested layers.  
 #' This is generally called in the as.Raster and the setAs functions but can be useful in and of itself.
 #'   
 #' @param input.data Field, Comparison or data.table
