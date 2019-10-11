@@ -536,10 +536,11 @@ getField_DGVMData <- function(source,
   }
   
   
-  
-  # if london.centre is requested, shift to -180 to +180
-  if(length(all.lons) > 0) {
-    if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  # if london.centre is requested, make sure all longitudes greater than 180 are shifted to negative
+  if(source@london.centre){
+    if(max(all.lons) > 180) {
+      dt[, Lon := LondonCentre(Lon)]
+    }
   }
   
   # set keys

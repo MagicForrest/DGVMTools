@@ -161,9 +161,14 @@ openLPJOutputFile <- function(run,
     print(utils::head(dt))
   }
   
-  # if london.centre is requested, make sure all negative longitudes are shifted to positive
-  if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  # if london.centre is requested, make sure all longitudes greater than 180 are shifted to negative
+  if(run@london.centre){
+    if(max(dt[["Lon"]]) > 180) {
+      dt[, Lon := LondonCentre(Lon)]
+    }
+  }
   
+
   # if spatial extent specified, crop to it
   new.extent <- NULL
   if(!is.null(target.sta@spatial.extent)) {
