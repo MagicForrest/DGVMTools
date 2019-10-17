@@ -4,17 +4,21 @@
 \alias{plotScatter}
 \title{Make A scatter plot}
 \usage{
-plotScatter(field1, field2 = field1, layer1, layer2 = layer1)
+plotScatter(x, y = x, layer.x, layer.y = layer.x, alpha = 1,
+  text.multiplier)
 }
 \arguments{
-\item{field1}{The first DGVMTools::Field object from which the data to be plotted should be taken.}
+\item{x}{The first Field, Comparison or data., object from which the data to be plotted should be taken.}
 
-\item{field2}{The second DGVMTools::Field object from which the data to be plotted should be taken.
-Default value is field1.}
+\item{y}{The second DGVMTools::Field object from which the data to be plotted should be taken.
+Default value is x.}
 
-\item{layer1}{The first layer to be plotted (taken from field1)}
+\item{layer.x}{The first layer to be plotted (taken from x)}
 
-\item{layer2}{The second layer to be plotted (taken from field2).  Defaults to layer1.}
+\item{layer.y}{The second layer to be plotted (taken from y).  Defaults to layer.x.}
+
+\item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
+Make it bigger if the text is too small on large plots and vice-versa.}
 }
 \value{
 A ggplot2 object

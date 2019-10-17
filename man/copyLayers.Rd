@@ -9,9 +9,9 @@ copyLayers(from, to, layer.names, new.layer.names = NULL,
   fill.dims = TRUE)
 }
 \arguments{
-\item{from}{The Field/data.table that the layers are to be copied from.}
+\item{from}{The Field/Comparison/data.table that the layers are to be copied from.}
 
-\item{to}{The Field/data.table that the layers are to be copied to.}
+\item{to}{The Field/Comparison/data.table that the layers are to be copied to.}
 
 \item{layer.names}{The layers to be copied from the "from" argument}
 
@@ -31,15 +31,15 @@ coordinates with many decimal places which may have lost a small amount of preci
 of that dimension with the same data.  Ie if if the 'from' table has no months but the to table does, just fill the same value into all months.}
 }
 \value{
-A Field (or data.table) comprising the 'to' object with the new layers added
+A Field, Comparison or data.table comprising the 'to' object with the new layers added
 }
 \description{
 This function does not check the dimensions columns are identical.  Any points in the 'from' object which are not in the 'to' object are ignored, 
 and any points in the 'to' object which don't have corresponding points in the 'from' object are assigned NA, unless keep.all.to is set to FALSE .
 }
 \details{
-This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one Field (or data.table)t to another.  
-This is particularly useful for colouring or facetting a plot of one variable by another one say.  To give a more concrete example, one could use a biome classification 
+This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one Field, Comaprison or data.table to another.  
+This function is used extensively internally but can also be useful for user doing more advanced analysis and plotting.  is particularly useful for colouring or facetting a plot of one variable by another one.  To give a more concrete example, one could use a biome classification 
 to split (facet) a data-vs-model scatter plot.
 }
 \author{
