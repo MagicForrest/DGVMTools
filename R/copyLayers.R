@@ -1,11 +1,11 @@
 #' Copy layers from one Field to another
 #' 
-#' This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one Field (or data.table)t to another.  
-#' This is particularly useful for colouring or facetting a plot of one variable by another one say.  To give a more concrete example, one could use a biome classification 
+#' This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one Field, Comaprison or data.table to another.  
+#' This function is used extensively internally but can also be useful for user doing more advanced analysis and plotting.  is particularly useful for colouring or facetting a plot of one variable by another one.  To give a more concrete example, one could use a biome classification 
 #' to split (facet) a data-vs-model scatter plot.
 #' 
-#' @param from The Field/data.table that the layers are to be copied from.
-#' @param to The Field/data.table that the layers are to be copied to.
+#' @param from The Field/Comparison/data.table that the layers are to be copied from.
+#' @param to The Field/Comparison/data.table that the layers are to be copied to.
 #' @param layer.names The layers to be copied from the "from" argument
 #' @param new.layer.names The new names that the layers should have in the 'to' object. Use this to avoid naming conflict whereby, for 
 #' example, if a layer "Total" is copied to an object which already has a "Total" layer then they layers will be names "Total.x" and "Total.y".  
@@ -21,7 +21,7 @@
 #' @description This function does not check the dimensions columns are identical.  Any points in the 'from' object which are not in the 'to' object are ignored, 
 #' and any points in the 'to' object which don't have corresponding points in the 'from' object are assigned NA, unless keep.all.to is set to FALSE .
 #'
-#' @return A Field (or data.table) comprising the 'to' object with the new layers added
+#' @return A Field, Comparison or data.table comprising the 'to' object with the new layers added
 #' @import data.table
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -46,10 +46,14 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
   }
   
   # extract the data.tables
-  if(is.Field(to)) to.dt <- copy(to@data)
-  else to.dt <- copy(to)
-  if(is.Field(from)) layers.to.add.dt <- copy(from@data)
-  else layers.to.add.dt <- copy(from)
+  if(is.Field(to) || is.Comparison(to)) { to.dt <- copy(to@data) }
+  else if(is.data.table(to)) to.dt <- copy(to)
+  else stop(paste("Cannot copy layers from object of type:", paste(class(to), collapse = " ")))
+  if(is.Field(from) || is.Comparison(from)) layers.to.add.dt <- copy(from@data)
+  else if(is.data.table(from)) layers.to.add.dt <- copy(from)
+  else stop(paste("Cannot copy layers from object of type:", paste(class(from), collapse = " ")))
+ 
+  # subset the layers to add
   layers.to.add.dt <- layers.to.add.dt[, append(common.dims, layer.names), with=FALSE]
   
   # if requested, fill missing dimensions in the data to be added - doesn't seem to be necessary
@@ -84,7 +88,17 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
     Temp.dt <- merge(x = to.dt, y = layers.to.add.dt, all.y = keep.all.from, all.x = keep.all.to)
     
   }
-  to@data <- setKeyDGVM(Temp.dt)
-  return(to)
+  
+  # set keys
+  setKeyDGVM(Temp.dt)
+  
+  # return of the relevant starting type
+  if(is.data.table(to)) {
+    return(setKeyDGVM(Temp.dt))
+  }
+  else {
+    to@data <- setKeyDGVM(Temp.dt)
+    return(to)
+  }
   
 }

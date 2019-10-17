@@ -177,7 +177,7 @@ setMethod("show", signature(object="Comparison"), function(object) {
   print(object@source1)
   cat(paste0("Source for second layer: \n"))
   print(object@source2)
-  
+  cat(paste0("\n"))
 })
 
 

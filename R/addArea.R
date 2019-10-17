@@ -193,7 +193,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
     stop(paste("addArea: Don't know what to to with class", class(input)))
   }
 
-  area <- gridarea2d(lon, lat, ellipse=ellipse)
+ area <- gridarea2d(lon, lat, ellipse=ellipse)
  
   if (is.data.table(input) || is.Field(input)) {
     area <- as.data.table(area)
@@ -205,14 +205,15 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
   }
 
   if (unit!="m^2") {
-    
+   
     if(unit == "km^2") area[, Area := Area / 10^6]
     else if(unit == "ha") area[, Area := Area / 10^4]
     else stop(paste("Unsupported unit string in addArea", unit))
-    
+   
   }
   
-
+  
+  
   #input <- na.omit(input)
 
   if (is.data.table(input)) {
@@ -238,14 +239,31 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
   } else if (is.data.frame(input)) {
     input <- merge.data.frame(area, input, by=getDimInfo(input))
     if (verbose)
-      message(paste("Added column 'area' in unit '", unit, "' to data.frame.", sep=""))
+      message(paste("Added column 'Area' in unit '", unit, "' to data.frame.", sep=""))
     return(input)
   } else {
-    dt <- input@data
-    dt <- area[dt]
-    input@data <- dt
+    
+    setKeyDGVM(area)
+   
+    
+    if(missing(digits)) input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE)
+    else  input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE, dec.places = digits)
+   
+    # dt <- input@data
+    # 
+    # 
+    # 
+    # setKeyDGVM(area)
+    # setkeyv(dt, key(area))
+    # 
+    # print(dt)
+    # print(area)
+    # dt <- area[dt]
+    # print(dt)
+    #     input@data <- dt
+        
     if (verbose)
-      message(paste("Added column 'area' in unit '", unit, "'' to data.table in slot 'data'.", sep=""))
+      message(paste("Added column 'Area' in unit '", unit, "'' to data.table in slot 'data'.", sep=""))
     return(input)
   }
 }
