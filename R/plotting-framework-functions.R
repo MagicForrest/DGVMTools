@@ -294,7 +294,7 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
 #' @param add.Quantity Logical, if TRUE add a column with the Quantity name of each Field
 #' @param add.Site Logical, if TRUE add a column with the with a string containing the Lon and Lat of each site (gridcell).
 #' @param add.Region Logical, if TRUE add a column with the with a string containing the Region (as defined by the spatial.extent.id) of each Field.
-#' @param add.TimePeriod Logical, if TRUE add a column (with name "Time Period") with a string containing the time period of each Field
+#' @param add.Years Logical, if TRUE add a column (with name "Years") with a string containing the first and last years of each Field
 #'  (as defined by first.year and last.year).
 #' 
 #' @return Returns a data.table
@@ -302,7 +302,7 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
 #' @keywords internal
 #' 
 #' 
-mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FALSE, add.Region = FALSE, add.TimePeriod = FALSE) {
+mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FALSE, add.Region = FALSE, add.Years = FALSE) {
   
   Source = Quantity = Site = Lon = Lat = Region = NULL
   
@@ -327,7 +327,11 @@ mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FA
     # Region column - only if required
     if(add.Region) {
       this.field.melted[, Region:= this.field@spatial.extent.id]
-    }  
+    }
+    # Years column - only if required
+    if(add.Years) {
+      this.field.melted[, Years := paste(this.field@first.year, this.field@last.year, sep = "-")]
+    }
     # add to the list of data.tables
     data.toplot.list[[length(data.toplot.list)+1]] <- this.field.melted
   }
