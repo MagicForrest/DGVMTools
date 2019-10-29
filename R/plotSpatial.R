@@ -150,7 +150,22 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
 
   ### 7. MELT AND COMBINE THE FINAL FIELDS 
   # MF TODO: Consider adding add.Site and add.Region like for plotTemporal?
-  data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = FALSE, add.Site = FALSE, add.Region = FALSE)
+  
+  # first determine if there are different time periods (ie years) in the Fields to be plotted
+  add.Years= FALSE
+  if(length(final.fields) > 1){
+    for(field.index.1 in 1:(length(final.fields)-1)){
+      for(field.index.2 in (field.index.1+1):length(final.fields)){
+        if(final.fields[[field.index.1]]@source@name == final.fields[[field.index.2]]@source@name
+           && (final.fields[[field.index.1]]@first.year != final.fields[[field.index.2]]@first.year
+               || final.fields[[field.index.1]]@last.year != final.fields[[field.index.2]]@last.year)){
+          add.Years= TRUE
+        }
+      }
+    }
+  }
+  
+  data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = FALSE, add.Site = FALSE, add.Region = FALSE, add.Years = add.Years)
   
  
   ### Check for meta-data to automagic the plots a little bit if possble
@@ -390,12 +405,25 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   if(!is.null(months)) multiple.months <- length(months) > 1
   if(!is.null(seasons)) multiple.seasons <- length(seasons) > 1
   
-  multiple.fields <- length(fields) > 1
+  # check for multiple layers (because each layer will need a panel)
   multiple.layers <- length(layers) > 1
   
+  # and for multiple Sources
+  multiple.sources <- FALSE
+  this.source.name <- final.fields[[1]]@source@name
+  for(this.field in final.fields) {
+    if(this.field@source@name != this.source.name) {
+      multiple.sources <- TRUE
+      break()
+    }
+  }
+  
+  # and for multiple year periods
+  multiple.yearperiods <- FALSE
+  if("Years" %in% names(data.toplot))  multiple.yearperiods <- TRUE
   
   
-  num.panel.dimensions <- sum(multiple.fields, multiple.layers, multiple.years, multiple.days, multiple.months, multiple.seasons)
+  num.panel.dimensions <- sum(multiple.sources, multiple.layers, multiple.years, multiple.days, multiple.months, multiple.seasons, multiple.yearperiods)
   
   
   # if got a single source, layer and year facetting is impossible/unnecessary 
@@ -428,7 +456,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
       data.toplot[, Facet := paste(Facet, Layer)] 
       factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Layer"]]), paste))
     }
-    if(multiple.fields) {
+    if(multiple.sources) {
       data.toplot[, Facet := paste(Facet, Source)] 
       factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Source"]]), paste))
     }
@@ -456,6 +484,10 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
       factor.levels <- as.vector(outer(factor.levels, final.ordered, paste))
       
     }
+    if(multiple.yearperiods) {
+      data.toplot[, Facet := paste(Facet, Years)]
+      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Years"]]), paste))
+    }
     data.toplot[, Facet := factor(trimws(Facet), levels = trimws(factor.levels))]
     
     # if facet order specified, re-order the facets
@@ -479,7 +511,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
       grid.columns <- append(grid.columns, "Layer")
       data.toplot[, Layer := factor(Layer, levels = unique(data.toplot[["Layer"]]))]
     }
-    if(multiple.fields) {
+    if(multiple.sources) {
       grid.columns <- append(grid.columns, "Source")
       data.toplot[, Source := factor(Source, levels = unique(data.toplot[["Source"]]))]
     }
@@ -502,6 +534,10 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
         if(season@id %in% unique(data.toplot[["Season"]])) final.ordered <- append(final.ordered, season@id)
       }
       data.toplot[, Season := factor(Season, levels = final.ordered)]
+    }
+    if(multiple.yearperiods) {
+      grid.columns <- append(grid.columns, "Years")
+      data.toplot[, Years := factor(Years, levels = unique(data.toplot[["Years"]]))]
     }
     if(!grid.switch) grid.string <- paste(grid.columns, collapse = "~")
     else grid.string <- paste(rev(grid.columns), collapse = "~")
