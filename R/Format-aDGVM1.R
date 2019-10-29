@@ -143,6 +143,46 @@ getYearlyField_aDGVM1 <- function(run,
     print(dt)
     
   }
+  
+  if(variable == "LeafBiomass") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year", "C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass")]
+    setnames(dt, c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass"), c("C4G", "C3G", "Tree"))
+    print(dt)
+    
+  }
+  
+  if(variable == "RootBiomass") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year", "C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass")]
+    setnames(dt, c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass"), c("C4G", "C3G", "Tree"))
+    print(dt)
+    
+  }
+  
+  if(variable == "StemBiomass") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year","Tree_StemBiomass")]
+    setnames(dt, c("Tree_StemBiomass"), c("Tree"))
+    print(dt)
+    
+  }
+  
+  if(variable == "DeadGrassBiomass") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year","DeadGrass_LeafBiomass")]
+    setnames(dt, c("DeadGrass_LeafBiomass"), c("Grass"))
+    print(dt)
+    
+  }
+  
+  if(variable == "PopSize") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year", "ForTr_Popsize","SavTr_Popsize")]
+    setnames(dt, c("ForTr_Popsize","SavTr_Popsize"), c("ForTr", "SavTr"))
+    print(dt)
+    
+  }
    
   #  Print messages
   if(verbose) {
@@ -1104,23 +1144,42 @@ aDGVM1.quantities <- list(
       units = "%",
       colours = reversed.viridis,
       format = c("aDGVM1"),
-      cf.name = "area_fraction"),
+      cf.name = "land_area_fraction"),
   
   new("Quantity",
-      id = "lai",
-      name = "LAI",
-      units = "m^2/m^2",
+      id = "LeafBiomass",
+      name = "Leaf biomass",
+      units = "tonnes/hectare",
       colours = reversed.viridis,
-      format = c("aDGVM1"),
-      cf.name = "leaf_area_index"),
+      format = c("aDGVM1")),
   
   new("Quantity",
-      id = "mlai",
-      name = "Monthly LAI",
-      units = "m^2/m^2",
-      colours = viridis::viridis,
-      format = c("aDGVM1"),
-      cf.name = "leaf_area_index"),
+      id = "RootBiomass",
+      name = "Root biomass",
+      units = "tonnes/hectare",
+      colours = reversed.viridis,
+      format = c("aDGVM1")),
+  
+  new("Quantity",
+      id = "StemBiomass",
+      name = "Stem biomass",
+      units = "tonnes/hectare",
+      colours = reversed.viridis,
+      format = c("aDGVM1")),
+  
+  new("Quantity",
+      id = "DeadGrassBiomass",
+      name = "Dead grass biomass",
+      units = "tonnes/hectare",
+      colours = reversed.viridis,
+      format = c("aDGVM1")),
+  
+  new("Quantity",
+      id = "PopSize",
+      name = "Tree population size",
+      units = "number of individuals",
+      colours = reversed.viridis,
+      format = c("aDGVM1")),
   
   new("Quantity",
       id = "fpc",
