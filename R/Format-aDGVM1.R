@@ -336,10 +336,20 @@ getDailyField_aDGVM1 <- function(run,
                                  data.table.only = FALSE,
                                  adgvm.fire = 1,
                                  adgvm.climate = 0,
+                                 adgvm.sys.header,
+                                 adgvm.fire.header,
+                                 adgvm.soil.header,
+                                 adgvm.size.header,
                                  ...){
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = Day = NULL
+  
+  if(missing(adgvm.sys.header)) adgvm.sys.header <- c("Year","Day","Grass_LeafBiomassLive","Grass_RootBiomassLive","Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying","Grass_RootBiomassDead","Grass_GPP","Grass_RMA","Grass_RGR","SavTree_Cancov","ForTree_Cancov","Tree_LeafBiomassLive","Tree_StemBiomassLive","Tree_RootBiomassLive","Tree_LeafBiomassDeadStanding","Tree_LeafBiomassDeadLying","Tree_StemBiomassDeadStanding","Tree_StemBiomassDeadLying","Tree_RootBiomassDead","Tree_GPP","Tree_RMA","Tree_RGR","Tree_LAI","Tree_Popsize","Tree_MeanHeight","Grass_Ratio","Tmp_Mean","Tree_TallNum","Tree_BA","CO2ppm","Rain_day","EvapoTot","SoilCarbonRelease","Combustion","MeanRain")
+  if(missing(adgvm.fire.header)) adgvm.fire.header <- c("FireNum","Year","Day","DeadFuel","LiveFuel","DeadFuelMoisture","LiveFuelMoisture","TotalFuel","MeanFuelMoisture","FireIntensity","Patchiness","Scorch","CombustFine","CombustCoarse","CombustHeavy","CombustHelper","Grass_LeafLiveCombustion","Grass_LeafDeadStandingCombustion","Grass_LeafDeadLyingCombustion","Tree_LeafLiveCombustion","Tree_LeafDeadLyingCombustion","Tree_LeafDeadLyingCombustion","Tree_StemLiveCombustion","Tree_StemDeadStandingCoarseCombustion","Tree_StemDeadLyingCoarseCombustion","Tree_StemDeadStandingHeavyCombustion","Tree_StemDeadLyingHeavyCombustion","Tree_StemDeadStandingFineCombustion","Tree_StemDeadLyingFineCombustion","Grass_LeafN20","Tree_LeafN20","Tree_StemCoarseN20","Tree_StemHeavyN20","Tree_StemFineN20","Grass_LeafCH4","Tree_LeafCH4","Tree_StemCoarseCH4","Tree_StemHeavyCH4","Tree_StemFineCH4","CO2ppm")
+  if(missing(adgvm.size.header)) adgvm.size.header <-  c("50","100","150","200","250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000","1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")
+  if(missing(adgvm.soil.header)) adgvm.soil.header <- c("Soil_FineWoody","Soil_CoarseWoody","Soil_Extractives","Soil_Cellulose","Soil_Lignin","Soil_Humus1","Soil_Humus2","Soil_NonWoodyLitterInput","Soil_FineWoodyLitterInput","Soil_CoarseWoodyLitterInput","Soil_CO2Extractives","Soil_CO2Cellulose","Soil_CO2Lignin","Soil_CO2Humus1","Soil_CO2Humus2")
+  
   
   # extract from the target.sta
   first.year = target.sta@first.year
@@ -391,7 +401,7 @@ getDailyField_aDGVM1 <- function(run,
     
     # Make the filename and call the function to read the file, and handle the results
     file.string <- file.path(run@dir, this.file)
-    dt <- readRegularASCII(file.string, verbose)
+    dt <- suppressWarnings(readRegularASCII(file.string, verbose))
     
     # if file not empty (to catch empty fire files)
     if(nrow(dt) != 0) {
@@ -420,32 +430,39 @@ getDailyField_aDGVM1 <- function(run,
   dt <- rbindlist(all.dts)
   rm(all.dts)
   gc()
-  print(dt)
-  
+ 
   # set names depending on file type
   if(file.substring == "Sys") {
-    Sys.names <- c("Year","Day","Grass_LeafBiomassLive","Grass_RootBiomassLive","Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying","Grass_RootBiomassDead","Grass_GPP","Grass_RMA","Grass_RGR","SavTree_Cancov","ForTree_Cancov","Tree_LeafBiomassLive","Tree_StemBiomassLive","Tree_RootBiomassLive","Tree_LeafBiomassDeadStanding","Tree_LeafBiomassDeadLying","Tree_StemBiomassDeadStanding","Tree_StemBiomassDeadLying","Tree_RootBiomassDead","Tree_GPP","Tree_RMA","Tree_RGR","Tree_LAI","Tree_Popsize","Tree_MeanHeight","Grass_Ratio","Tmp_Mean","Tree_TallNum","Tree_BA","CO2ppm","Rain_day","EvapoTot","SoilCarbonRelease","Combustion","MeanRain")
     original.length <- length(names(dt)) - 2 # subtract 2 because we have added Lon and Lat
-    setnames(dt, names(dt)[1:original.length], Sys.names[1:original.length])
+    setnames(dt, names(dt)[1:original.length], adgvm.sys.header[1:original.length])
+    dt[, Day := Day+1]
   }
   else if(file.substring == "Soil") {
-    Soil.names <- c("Soil_FineWoody","Soil_CoarseWoody","Soil_Extractives","Soil_Cellulose","Soil_Lignin","Soil_Humus1","Soil_Humus2","Soil_NonWoodyLitterInput","Soil_FineWoodyLitterInput","Soil_CoarseWoodyLitterInput","Soil_CO2Extractives","Soil_CO2Cellulose","Soil_CO2Lignin","Soil_CO2Humus1","Soil_CO2Humus2")
-    setnames(dt, names(dt)[1:length(Soil.names)], Soil.names)
+    setnames(dt, names(dt)[1:length(adgvm.soil.header)], adgvm.soil.header)
+    dt[, Day := Day+1]
   }
   else if(file.substring == "Fire") {
-    Fire.names <- c("FireNum","Year","Day","DeadFuel","LiveFuel","DeadFuelMoisture","LiveFuelMoisture","TotalFuel","MeanFuelMoisture","FireIntensity","Patchiness","Scorch","CombustFine","CombustCoarse","CombustHeavy","CombustHelper","Grass_LeafLiveCombustion","Grass_LeafDeadStandingCombustion","Grass_LeafDeadLyingCombustion","Tree_LeafLiveCombustion","Tree_LeafDeadLyingCombustion","Tree_LeafDeadLyingCombustion","Tree_StemLiveCombustion","Tree_StemDeadStandingCoarseCombustion","Tree_StemDeadLyingCoarseCombustion","Tree_StemDeadStandingHeavyCombustion","Tree_StemDeadLyingHeavyCombustion","Tree_StemDeadStandingFineCombustion","Tree_StemDeadLyingFineCombustion","Grass_LeafN20","Tree_LeafN20","Tree_StemCoarseN20","Tree_StemHeavyN20","Tree_StemFineN20","Grass_LeafCH4","Tree_LeafCH4","Tree_StemCoarseCH4","Tree_StemHeavyCH4","Tree_StemFineCH4","CO2ppm")
     original.length <- length(names(dt)) - 2 # subtract 2 because we have added Lon and Lat 
-    setnames(dt, names(dt)[1:original.length], Fire.names[1:original.length])
+    setnames(dt, names(dt)[1:original.length], adgvm.fire.header[1:original.length])
+    dt[, Day := Day+1]
   }
   else if(file.substring == "Size") {
-    Size.names <- c("50","100","150","200","250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000","1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")
     original.length <- length(names(dt)) - 3 # subtract 3 because we have added Lon, Lat and Year
-    setnames(dt, names(dt)[1:original.length], Size.names[1:original.length])
+    setnames(dt, names(dt)[1:original.length], adgvm.size.header[1:original.length])
   }
   
   
-  
-  print(dt) 
+ 
+  # 
+  final.subannual <- "Day"
+  if(file.substring == "Fire") {
+    print(target.sta@subannual.resolution)
+    dt <- aggregateSubannual(input.obj = dt, method = target.sta@subannual.aggregate.method, target = target.sta@subannual.resolution)
+    final.subannual <- target.sta@subannual.resolution
+  }
+  else if(file.substring == "Size"){
+    final.subannual <- "Year"
+  }
   
   
   if(variable == "Cancov") {
@@ -587,16 +604,18 @@ getDailyField_aDGVM1 <- function(run,
   # Build as STAInfo object describing the data
   all.years <- sort(unique(dt[["Year"]]))
   dimensions <- getDimInfo(dt)
-  subannual <- "Year"
-  if("Month" %in% dimensions) subannual <- "Month"
-  else if("Day" %in% dimensions) subannual <- "Day"
+  if(file.substring == "Soil") initial.subannual <- "Year"
+  else initial.subannual <- "Day"
   
   
   sta.info = new("STAInfo",
                  first.year = min(all.years),
                  last.year = max(all.years),
-                 subannual.resolution = subannual,
-                 subannual.original = subannual)
+                 subannual.resolution = final.subannual,
+                 subannual.original = initial.subannual)
+  
+  # if Fire it will have had subannual aggregation
+  sta.info@subannual.aggregate.method <- target.sta@subannual.aggregate.method
   
   # if cropping has been done, set the new spatial.extent and spatial.extent.id
   if(!is.null(new.extent))  {
