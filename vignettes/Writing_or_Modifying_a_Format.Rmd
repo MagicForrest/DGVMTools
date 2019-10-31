@@ -26,7 +26,7 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 
 # Introduction
 
-This vignette describes how to manipulate and create `Format` objects in DGVMTools.   A `Format` is an S4-class (like all objects in DGVMTools), and it has 6 slots (the slots are described below).  `Format` objects are pretty important because the contain a lot of metadata about a model output or data set files, so without it DGVMTools won't be able to read the data from disk.  One simple modification to a `Format` object is to add a new PFT.  This is a fairly common for a DGVM development task, so this will be described seperately in a short, first section.    
+This vignette describes how to manipulate and create `Format` objects in DGVMTools.   A `Format` is an S4-class (like all objects in DGVMTools), and it has 5 slots (the slots are described below).  `Format` objects are pretty important because the contain a lot of metadata about a model output or data set files, so without it DGVMTools won't be able to read the data from disk.  One simple modification to a `Format` object is to add a new PFT.  This is a fairly common for a DGVM development task, so this will be described seperately in a short, first section.    
 
 Writing code to describe a new `Format` object is essential for reading a new DGVM or other data source.  So the second (and much longer) part of this vignette describes how to do that.  It is also a reference for making more complicated modifications to an existing `Format` (for example reading new model variables) 
 
@@ -185,33 +185,9 @@ for(quant in quantities_NewFormat ) {
 }
 ```
 
-### 4. The `determinePFTs` slot
 
-This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of PFTs present. The first argument should be `Source` object called `x` (see main documentation), and it can have additional arguments that might be needed
 
-```{r determine PFTs, echo=TRUE}
-determinePFTs_NewFormat <- function(x, names = TRUE){
-  
-  # typical stuff 
-  run.dir <- x@dir
-  
-  # all possible PFTs present 
-  PFTs.possible <- x@pft.set
-  
-  # code to look for and open a commen per-PFT output file (for example LAI) 
-  # typical files to check could be specified in 'additional.args' argument for example
-  # ...
-  
-  # code check the ASCII header or netCDF meta info to see what PFTs are present
-  # ...
-  PFTs.present <- list() # dummy code
-  
-  return(PFTs.present)
-  
-} 
-```
-
-### 5. The `determineQuantities` slot
+### 4. The `determineQuantities` slot
 
 This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of PFTs present. The first argument should be characters with the path to the files on disk, the second argument is a ogical called names.  If TRUE, the function should return a list of the ids of the quantities, otherwise it returns the list of DGVMTools::Quantity objects.
 
@@ -233,7 +209,7 @@ availableQuantities_NewFormat <- function(x, additional.args){
 
 
 
-### 6. The `getField` slot
+### 5. The `getField` slot
 
 This is the biggie!  This function (which will be long, but can of course make use of other functions) is responsible for reading data from disk and bashing it into a data.table; for some cropping to the required spatial-temporal-annual extent (optionally) and for storing the spatial-temporal-annual extent in an STAInfo object.  As arguments it takes:
 
@@ -305,7 +281,6 @@ NewFormat <- new("Format",
                  id = id_NewFormat,
                  default.pfts = PFTs_NewFormat, 
                  quantities = quantities_NewFormat, 
-                 determinePFTs = determinePFTs_NewFormat, 
                  availableQuantities = availableQuantities_NewFormat, 
                  getField =getField_NewFormat)
 ```

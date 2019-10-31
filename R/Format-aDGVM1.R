@@ -24,29 +24,34 @@ getField_aDGVM1 <- function(source,
                             verbose,
                             ...) {
   
-  # First check if quantity is for FireMIP, if so call a special function with the extra processing required
-  if("FireMIP" %in% quant@format) {
-    return(openaDGVM1OutputFile_FireMIP(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
-  }
-  else if("aDGVM1" %in% quant@format | "aDGVM1-SPITFIRE" %in% quant@format) {
+  # cheeky hard-coded variable lists
+  yearly.aDGVM1.quantities <- list("Cancov", "LeafBiomass", "RootBiomass", "StemBiomass", "DeadGrassBiomass", "PopSize")
+  daily.aDGVM1.quantities <- list("GPP", "SoilC", "FireNum", "Sizes")
+  
+  
+  # aDGVM1 yearly quantities
+  if("aDGVM1" %in% quant@format && quant@id %in% yearly.aDGVM1.quantities) {
     return(getYearlyField_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
   }
+  # aDGVM1 daily quantities
+  else if("aDGVM1" %in% quant@format && quant@id %in% daily.aDGVM1.quantities) {
+    return(getDailyField_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
+  }
+  # Standard quantities 
   else if("Standard" %in% quant@format) {
     return(getStandardQuantity_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
   }
   else{
     stop("Unrecognised Format of Quantity in 'quant' argument to getField_aDGVM1()")
   }
-  
-  
-  
 }
+
 
 
 ######################### OPEN AN aDGVM1 *.out FILE  #####################################################################
 #' Open an aDGVM1 .out file
 #'
-#' \code{openaDGVM1OutputFile} returns a data.table object given a string defining a vegetation quantity 
+#' \code{getYearlyField_aDGVM1} returns a data.table object given a string defining a vegetation quantity 
 #' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
@@ -107,26 +112,7 @@ getYearlyField_aDGVM1 <- function(run,
     
     # Make the filename and check for the file, gunzip if necessary, fail if not present
     file.string <- file.path(run@dir, this.file)
-    re.zip <- FALSE
-    if(file.exists(file.string)){ 
-      if(verbose) message(paste("Found and opening file", file.string, sep = " "))
-      all.dts[[length(all.dts)+1]] <- fread(file.string)
-    }
-    else if(file.exists(paste(file.string, "gz", sep = "."))){
-      if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
-      if(.Platform$OS.type == "unix") {
-        if(new.data.table.version) all.dts[[length(all.dts)+1]] <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-        else all.dts[[length(all.dts)+1]] <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-      }
-      else {
-        re.zip <- TRUE
-        R.utils::gunzip(paste(file.string, "gz", sep = "."))
-        all.dts[[length(all.dts)+1]] <- fread(file.string)
-      }
-    }
-    else {
-      stop(paste("File (or gzipped file) not found:", file.string))
-    }
+    all.dts[[length(all.dts)+1]] <- readRegularASCII(file.string, verbose)
     
   }
   
@@ -184,18 +170,6 @@ getYearlyField_aDGVM1 <- function(run,
     
   }
   
-  if(variable == "ET") {
-    
-    dt <- dt[, c("Lon", "Lat", "Year", "EvapoTot","EvapoGrass","EvapoSoil")]
-    dt[, EvapoTot := EvapoTot / Year]
-    dt[, EvapoGrass := EvapoGrass / Year]
-    dt[, EvapoSoil := EvapoSoil / Year]
-    dt[, EvapoTree := EvapoTot - (EvapoGrass + EvapoSoil)]
-    setnames(dt, c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree"), c("Total","Grass","Soil","Tree"))
-    print(dt)
-    
-  }
-   
   #  Print messages
   if(verbose) {
     message("Read table. It has header:")
@@ -274,32 +248,6 @@ getYearlyField_aDGVM1 <- function(run,
   
   
   
-  # If data is has monthly or daily columns, melt to long/tidy data where "Month" becomes a column
-  
-  # first get of all the columns which are not spatial-temporal info
-  all.cols <- names(dt)
-  st.cols <- getDimInfo(dt)
-  nonst.cols <- all.cols[!all.cols %in% st.cols]
-  
-  # if monthly then melt
-  standard.monthly.ljp.col.names <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-  
-  if(identical(nonst.cols, standard.monthly.ljp.col.names)){
-    
-    # replace column names with 1,2,3.. etc before melting, and then melt
-    setnames(dt, old = standard.monthly.ljp.col.names, new = paste(1:12))
-    dt <- melt(dt, id.vars = st.cols, measure.vars = paste(1:12), variable.name = "Month", value.name = variable)
-    dt[, Month := as.integer(Month)]
-    
-  }
-  
-  
-  # if daily then melt
-  # TODO - implement daily melting, follow above for implementation
-  
-  
-  
-  
   # set some attributes about the data - works!
   # currently screws up unit tests and isn't used.  Consider using if updating metadata system.
   # setattr(dt, "shadeToleranceCombined", FALSE)
@@ -309,9 +257,6 @@ getYearlyField_aDGVM1 <- function(run,
   
   # set the keys (very important!)
   setKeyDGVM(dt)
-  
-  # if re-zip
-  if(re.zip) R.utils::gzip(file.string)
   
   # Build as STAInfo object describing the data
   all.years <- sort(unique(dt[["Year"]]))
@@ -360,404 +305,352 @@ getYearlyField_aDGVM1 <- function(run,
     
   }
   
-  
 }
-
 
 ######################### OPEN AN aDGVM1 *.out FILE  #####################################################################
 #' Open an aDGVM1 .out file
 #'
-#' \code{openaDGVM1OutputFile} returns a data.table object given a string defining a vegetation quantity 
+#' \code{getYearlyField_aDGVM1} returns a data.table object given a string defining a vegetation quantity 
 #' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
 #' @param run A \code{Source} containing the meta-data about the aDGVM1 run
-#' @param quant A Quantity to define what output file from the aDGVM1 run to open.
+#' @param quant A Quant to define what output file from the aDGVM1 run to open, 
+#' can also be a simple string defining the aDGVM1 output file if the \code{return.data.table} argument is TRUE
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
+#' @param verbose A logical, set to true to give progress/debug information
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
 #' "<quant@id>.out" (also "<quant@id>.out.gz")
-#' @param verbose A logical, set to true to give progress/debug information
+#' @param data.table.only A logical, if TRUE return a data.table and not a Field
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
 #' @import data.table
-openaDGVM1OutputFile_FireMIP <- function(run,
-                                      quant,
-                                      target.sta,
-                                      file.name = file.name,
-                                      verbose = FALSE,
-                                      soil_water_capacities = "none",
-                                      ...){
+#' @keywords internal
+getDailyField_aDGVM1 <- function(run,
+                                 quant,
+                                 target.sta,
+                                 file.name = file.name,
+                                 verbose = FALSE,
+                                 data.table.only = FALSE,
+                                 adgvm.fire = 1,
+                                 adgvm.climate = 0,
+                                 adgvm.sys.header,
+                                 adgvm.fire.header,
+                                 adgvm.soil.header,
+                                 adgvm.size.header,
+                                 ...){
   
-  Lon = Lat = Seconds = Month = Total = mwcont_lower = mwcont_upper = maet= mevap = mintercep = mrso = mrsos = Capacity = Code = NULL
-  target.cols = SoilfC = SoilsC = NULL
+  # To avoid annoying NOTES when R CMD check-ing
+  Lon = Lat = Annual = Year = Month = Day = NULL
   
-  
-  variable = quant@id
-  
-  # seconds in month
-  seconds.in.month <- c()
-  for(month in all.months) {
-    seconds.in.month <- append(seconds.in.month, month@days * 24 * 60 * 60)
-  }
-  
-  
-  ################################################################################################
-  ############# PER PFT VARIABLES
-  
-  if(variable == "lai") {
-    dt <- openaDGVM1OutputFile(run, "lai", data.table.only = TRUE, target.sta = target.sta,  file.name = file.name, verbose = verbose)
-  }
-  if(variable == "landCoverFrac") {
-    dt <- openaDGVM1OutputFile(run, "fpc", data.table.only = TRUE, target.sta = target.sta,  file.name = file.name, verbose = verbose)
-  }
-  if(variable == "theightpft") {
-    dt <- openaDGVM1OutputFile(run, "speciesheights", data.table.only = TRUE, target.sta = target.sta,  file.name = file.name, verbose = verbose)
-  }
+  if(missing(adgvm.sys.header)) adgvm.sys.header <- c("Year","Day","Grass_LeafBiomassLive","Grass_RootBiomassLive","Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying","Grass_RootBiomassDead","Grass_GPP","Grass_RMA","Grass_RGR","SavTree_Cancov","ForTree_Cancov","Tree_LeafBiomassLive","Tree_StemBiomassLive","Tree_RootBiomassLive","Tree_LeafBiomassDeadStanding","Tree_LeafBiomassDeadLying","Tree_StemBiomassDeadStanding","Tree_StemBiomassDeadLying","Tree_RootBiomassDead","Tree_GPP","Tree_RMA","Tree_RGR","Tree_LAI","Tree_Popsize","Tree_MeanHeight","Grass_Ratio","Tmp_Mean","Tree_TallNum","Tree_BA","CO2ppm","Rain_day","EvapoTot","SoilCarbonRelease","Combustion","MeanRain")
+  if(missing(adgvm.fire.header)) adgvm.fire.header <- c("FireNum","Year","Day","DeadFuel","LiveFuel","DeadFuelMoisture","LiveFuelMoisture","TotalFuel","MeanFuelMoisture","FireIntensity","Patchiness","Scorch","CombustFine","CombustCoarse","CombustHeavy","CombustHelper","Grass_LeafLiveCombustion","Grass_LeafDeadStandingCombustion","Grass_LeafDeadLyingCombustion","Tree_LeafLiveCombustion","Tree_LeafDeadLyingCombustion","Tree_LeafDeadLyingCombustion","Tree_StemLiveCombustion","Tree_StemDeadStandingCoarseCombustion","Tree_StemDeadLyingCoarseCombustion","Tree_StemDeadStandingHeavyCombustion","Tree_StemDeadLyingHeavyCombustion","Tree_StemDeadStandingFineCombustion","Tree_StemDeadLyingFineCombustion","Grass_LeafN20","Tree_LeafN20","Tree_StemCoarseN20","Tree_StemHeavyN20","Tree_StemFineN20","Grass_LeafCH4","Tree_LeafCH4","Tree_StemCoarseCH4","Tree_StemHeavyCH4","Tree_StemFineCH4","CO2ppm")
+  if(missing(adgvm.size.header)) adgvm.size.header <-  c("50","100","150","200","250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000","1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")
+  if(missing(adgvm.soil.header)) adgvm.soil.header <- c("Soil_FineWoody","Soil_CoarseWoody","Soil_Extractives","Soil_Cellulose","Soil_Lignin","Soil_Humus1","Soil_Humus2","Soil_NonWoodyLitterInput","Soil_FineWoodyLitterInput","Soil_CoarseWoodyLitterInput","Soil_CO2Extractives","Soil_CO2Cellulose","Soil_CO2Lignin","Soil_CO2Humus1","Soil_CO2Humus2")
   
   
-  ################################################################################################
-  ############ MONTHLY VARIABLES (NOT PER PFT)
+  # extract from the target.sta
+  first.year = target.sta@first.year
+  last.year = target.sta@last.year
   
-  # These will often require some sort of unit conversions
-  monthly.to.second <- FALSE
-  CO2.to.C <- FALSE
-  CO.to.C <- FALSE
-  monthly.to.percent <- FALSE
-  monthly <- FALSE
+  # determine which file to open bases on the Quantity that we want
+  Sys.quantities <- c("GPP")
+  Fire.quantities <- c("FireNum") # Glenn, this is just an example
+  Soil.quantities <- c("SoilC") # Glenn, this is just an example
+  Size.quantities <- c("Sizes") # Glenn, this is just an example
   
-  ## Here look for variables that require per month to per second
-  if(variable == "gpp") {
-    aDGVM1.var <- "mgpp"
-    monthly.to.second <- TRUE
-  }
-  if(variable == "npp") {
-    aDGVM1.var <- "mnpp"
-    monthly.to.second <- TRUE
-  }
-  if(variable == "nbp") {
-    aDGVM1.var <- "mnbp"
-    monthly.to.second <- TRUE
-  }
-  if(variable == "ra") {
-    aDGVM1.var <- "mra"
-    monthly.to.second <- TRUE
-  }
-  if(variable == "rh") {
-    aDGVM1.var <- "mrh"
-    monthly.to.second <- TRUE
-  }
-  if(variable == "mrro") {
-    aDGVM1.var <- "mrunoff"
-    monthly.to.second <- TRUE
-  }
-  if(variable == "tran") {
-    aDGVM1.var <- "maet"
-    monthly.to.second <- TRUE
-  }
-  if(variable == "evspsblveg") {
-    aDGVM1.var <- "mintercep"
-    monthly.to.second <- TRUE
-  }
-  if(variable == "evspsblsoi") {
-    aDGVM1.var <- "mevap"
-    monthly.to.second <- TRUE
-  }
+  if(quant@id %in% Sys.quantities) file.substring <- "Sys"
+  else if(quant@id %in% Fire.quantities) file.substring <- "Fire"
+  else if(quant@id %in% Soil.quantities) file.substring <- "Soil"
+  else if(quant@id %in% Size.quantities) file.substring <- "Size"
+  else stop(paste0("Quantity ", quant@id, " not defined as being in file SysData_, FireData_, SizeData_ or SoilData_ in function getDailyField_aDGVM1()"))
   
-  ## Here look for variables that require conversion to percent
-  if(variable == "BA") {
-    aDGVM1.var <- "mfirefrac"
-    monthly.to.percent <- TRUE
-  }
-  if(variable == "ccFuelLiveGrass") {
-    aDGVM1.var <- "mlivegrass_cc"
-    monthly.to.percent <- TRUE
-  }
-  if(variable == "ccFuel1hr") {
-    aDGVM1.var <- "m1hr_cc"
-    monthly.to.percent <- TRUE
-  }
-  if(variable == "ccFuel10hr") {
-    aDGVM1.var <- "m10hr_cc"
-    monthly.to.percent <- TRUE
-  }
-  if(variable == "ccFuel100hr") {
-    aDGVM1.var <- "m100hr_cc"
-    monthly.to.percent <- TRUE
-  }
-  if(variable == "ccFuel1000hr") {
-    aDGVM1.var <- "m1000hr_cc"
-    monthly.to.percent <- TRUE
-  }
-  
-  ## Here we have simple monthly variables (no conversion)
-  if(variable == "cFuelLiveGrass") {
-    aDGVM1.var <- "mlivegrass_fuel"
-    monthly <- TRUE
-  }
-  if(variable == "cFuel1hr") {
-    aDGVM1.var <- "m1hr_fuel"
-    monthly <- TRUE
-  }
-  if(variable == "cFuel10hr") {
-    aDGVM1.var <- "m10hr_fuel"
-    monthly <- TRUE
-  }
-  if(variable == "cFuel100hr") {
-    aDGVM1.var <- "m100hr_fuel"
-    monthly <- TRUE
-  }
-  if(variable == "cFuel1000hr") {
-    aDGVM1.var <- "m1000hr_fuel"
-    monthly <- TRUE
-  }
-  if(variable == "mFuelDead") {
-    aDGVM1.var <- "mdlm_deadfuel"
-    monthly <- TRUE
-  }
-  if(variable == "mFuelLiveGrass") {
-    aDGVM1.var <- "mdlm_livegrass"
-    monthly <- TRUE
-  } 
-  if(variable == "nrfire") {
-    aDGVM1.var <- "real_num_fires"
-    monthly <- TRUE
-  }
-  if(variable == "cMortality") {
-    aDGVM1.var <- "monthly_nind_killed"
-    monthly <- TRUE
-  }
-  if(variable == "intensFire") {
-    aDGVM1.var <- "real_intensity"
-    monthly <- TRUE
-  }
-  if(variable == "durat") {
-    aDGVM1.var <- "real_duration"
-    monthly <- TRUE
-  }
-  if(variable == "RoS") {
-    aDGVM1.var <- "mRoS"
-    monthly <- TRUE
-  }
-  
-  ## Finally we have a couple of monthly to second variables which also required molar conversion to C
-  if(variable == "fFire") {
-    aDGVM1.var <- "m_co2flux_fire"
-    monthly.to.second <- TRUE
-    CO2.to.C <- TRUE
-  }
-  if(variable == "coFire") {
-    aDGVM1.var <- "m_coflux_fire"
-    monthly.to.second <- TRUE
-    CO.to.C <- TRUE
+  # in the case of Soil Data read one SysData file to get the Days and Years
+  if(file.substring == "Soil") {
+    all.files <- list.files(path = run@dir)
+    all.files <- all.files[grepl(paste0("SysData_.*_", adgvm.fire, ".*", adgvm.climate, ".dat"), all.files)]
+    file.string <- file.path(run@dir, all.files[1])
+    temp.dt <- readRegularASCII(file.string, verbose)
+    YearDay.dt <- temp.dt[,c(1,2)]
+    setnames(YearDay.dt, c("Year", "Day"))
+    rm(temp.dt)
   }
   
   
-  # Now calculate these bad boys
-  if(monthly.to.second || monthly.to.percent || monthly){
+  # get the list of files to be read
+  if(is.null(file.name)) {
+    all.files <- list.files(path = run@dir)
+    all.files <- all.files[grepl(paste0(file.substring , "Data_.*_", adgvm.fire, ".*", adgvm.climate, ".dat"), all.files)]
+  }
+  else {
+    all.files <- file.name
+  }
+  
+  print(all.files)
+  
+  if(!data.table.only && class(quant)[1] != "Quantity") stop("Please supply a formal Quantity object as the quant argument since you are not requesting at data.table")
+  
+  if(class(quant)[1] == "Quantity") variable <- quant@id
+  else variable <- quant
+  
+  # loop for each year
+  all.dts <- list()
+  for(this.file in all.files){
     
-    dt <- openaDGVM1OutputFile(run, aDGVM1.var, target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    setnames(dt, aDGVM1.var, variable)
-    if(monthly.to.second){
-      #suppressWarnings(dt[, Seconds := seconds.in.month[Month]])
-      dt[, Seconds := seconds.in.month[Month]]
-      dt[, (variable) := get(variable)/Seconds]
-      dt[, Seconds := NULL]
-    }
-    if(monthly.to.percent){
-      dt[, (variable) := get(variable) * 100]
-    }
-    if(CO2.to.C){
-      dt[, (variable ):= get(variable) * 12 / 44]
-    }
-    if(CO.to.C){
-      dt[, (variable) := get(variable) * 12 / 28]
+    # Make the filename and call the function to read the file, and handle the results
+    file.string <- file.path(run@dir, this.file)
+    dt <- suppressWarnings(readRegularASCII(file.string, verbose))
+    
+    # if file not empty (to catch empty fire files)
+    if(nrow(dt) != 0) {
+      
+      # also extract Lon and Lat and add to the file
+      str.components <- unlist(strsplit(this.file, split = "_"))
+      dt[, Lon := as.numeric(str.components[2])]
+      dt[, Lat := as.numeric(str.components[3])]
+      if(file.substring == "Soil") {
+        dt[, c("Year", "Day") := YearDay.dt]
+      }
+      # Size are output annually, so hardcode Years 
+      if(file.substring == "Size") {
+        dt[, "Year" := 1:nrow(dt)]
+      }
+      
+      all.dts[[length(all.dts)+1]] <- dt
+      
     }
     
-  }
-  
-  ### Special monthly variables
-  if(variable == "meanFire") {
-    aDGVM1.var <- "real_fire_size"
-    dt <- openaDGVM1OutputFile(run, aDGVM1.var, target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    setnames(dt, aDGVM1.var, variable)
-    dt[, (variable) := get(variable) * 10000]
-  }
-  
-  if(variable == "mrso") {
-    
-    
-    # standard stuf for aDGVM1
-    wcap <- c(0.110, 0.150, 0.120, 0.130, 0.115, 0.135, 0.127, 0.300, 0.100)
-    thickness_upper_layer_mm <- 500
-    thickness_lower_layer_mm <- 1000
-    
-    dt_cap <- fread(soil_water_capacities)
-    
-    setnames(dt_cap, c("Lon", "Lat", "Code"))
-    dt_cap[, Lat := Lat + 0.25]
-    dt_cap[, Lon := Lon + 0.25]
-    dt_cap <- subset(dt_cap, Code>0)
-    setkey(dt_cap, Lon, Lat)
-    dt_cap[, Capacity := wcap[Code]]
-    dt_cap[, Code := NULL]
-    
-    dt_upper <- openaDGVM1OutputFile(run, "mwcont_upper", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    setKeyDGVM(dt_upper)
-    
-    dt_lower <- openaDGVM1OutputFile(run, "mwcont_lower", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    setKeyDGVM(dt_lower)
-    dt <- dt_upper[dt_lower]
-    
-    dt <- dt[dt_cap]
-    dt <- stats::na.omit(dt)
-    dt[, mrso := (mwcont_lower * thickness_lower_layer_mm * Capacity) + (mwcont_upper * thickness_upper_layer_mm * Capacity)]
-    dt[, mwcont_lower := NULL]
-    dt[, mwcont_upper := NULL]
-    dt[, Capacity := NULL]
-    
-    rm(dt_upper,dt_lower)
-    gc()
-    
-  }
-  if(variable == "mrsos") {
-    
-    
-    # standard stuf for aDGVM1
-    wcap <- c(0.110, 0.150, 0.120, 0.130, 0.115, 0.135, 0.127, 0.300, 0.100)
-    thickness_upper_layer_mm <- 500
-    
-    dt_cap <- fread(soil_water_capacities)
-    
-    setnames(dt_cap, c("Lon", "Lat", "Code"))
-    dt_cap[, Lat := Lat + 0.25]
-    dt_cap[, Lon := Lon + 0.25]
-    dt_cap <- subset(dt_cap, Code>0)
-    setkey(dt_cap, Lon, Lat)
-    dt_cap[, Capacity := wcap[Code]]
-    dt_cap[, Code := NULL]
-    
-    dt <- openaDGVM1OutputFile(run, "mwcont_upper", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    setKeyDGVM(dt)
-    
-    dt <- dt[dt_cap]
-    dt <- stats::na.omit(dt)
-    dt[, mrsos := mwcont_upper * thickness_upper_layer_mm * Capacity]
-    
-    dt[, mwcont_upper := NULL]
-    dt[, Capacity := NULL]
-    
-    rm(dt_cap)
-    gc()
+    rm(dt)
     
   }
   
-  if(variable == "evapotrans") {
-    
-    # firstly combine transpiration and evaporation
-    dt_trans <- openaDGVM1OutputFile(run, "maet", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    dt_evap <- openaDGVM1OutputFile(run, "mevap", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    setKeyDGVM(dt_trans)
-    setKeyDGVM(dt_evap)
-    dt_trans <- dt_evap[dt_trans]
-    rm(dt_evap)
-    gc()
-    
-    # now add interception
-    dt_intercep <- openaDGVM1OutputFile(run, "mintercep", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    setKeyDGVM(dt_intercep)
-    dt_trans <- dt_trans[dt_intercep]
-    rm(dt_intercep)
-    
-    
-    # shade.tolerance, convert and clean up
-    dt_trans[, (variable) := maet + mevap + mintercep]
-    dt_trans[, maet := NULL]
-    dt_trans[, mevap := NULL]
-    dt_trans[, mintercep := NULL]
-    dt_trans[, Seconds := seconds.in.month[Month]]
-    dt_trans[, (variable) := get(variable)/Seconds]
-    dt_trans[, Seconds := NULL]
-    dt <- dt_trans
+ 
+  dt <- rbindlist(all.dts)
+  rm(all.dts)
+  gc()
+ 
+  # set names depending on file type
+  if(file.substring == "Sys") {
+    original.length <- length(names(dt)) - 2 # subtract 2 because we have added Lon and Lat
+    setnames(dt, names(dt)[1:original.length], adgvm.sys.header[1:original.length])
+    dt[, Day := Day+1]
+  }
+  else if(file.substring == "Soil") {
+    setnames(dt, names(dt)[1:length(adgvm.soil.header)], adgvm.soil.header)
+    dt[, Day := Day+1]
+  }
+  else if(file.substring == "Fire") {
+    original.length <- length(names(dt)) - 2 # subtract 2 because we have added Lon and Lat 
+    setnames(dt, names(dt)[1:original.length], adgvm.fire.header[1:original.length])
+    dt[, Day := Day+1]
+  }
+  else if(file.substring == "Size") {
+    original.length <- length(names(dt)) - 3 # subtract 3 because we have added Lon, Lat and Year
+    setnames(dt, names(dt)[1:original.length], adgvm.size.header[1:original.length])
   }
   
-  ### ANNUAL C POOLS FROM cpool.out FILE
   
-  if(variable == "cVeg") {
-    dt <- openaDGVM1OutputFile(run, "cpool", target.sta, file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    target.cols <- append(getDimInfo(dt), "VegC")
-    dt <- dt[,target.cols,with=FALSE]
-    setnames(dt, "VegC", "cVeg")
+ 
+  # 
+  final.subannual <- "Day"
+  if(file.substring == "Fire") {
+    print(target.sta@subannual.resolution)
+    dt <- aggregateSubannual(input.obj = dt, method = target.sta@subannual.aggregate.method, target = target.sta@subannual.resolution)
+    final.subannual <- target.sta@subannual.resolution
   }
-  if(variable == "cLitter") {
-    dt <- openaDGVM1OutputFile(run, "cpool", target.sta, file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    target.cols <- append(getDimInfo(dt), "LittC")
-    dt <- dt[,target.cols,with=FALSE]
-    setnames(dt, "LittC", "cLitter")
-  }
-  if(variable == "cSoil") {
-    dt <- openaDGVM1OutputFile(run, "cpool", target.sta, file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    target.cols <- append(unlist(getDimInfo(dt)), c("SoilfC", "SoilsC"))
-    dt <- dt[,target.cols,with=FALSE]
-    dt[, "cSoil" := SoilfC + SoilsC]
-    dt[, SoilfC := NULL]
-    dt[, SoilsC := NULL]
+  else if(file.substring == "Size"){
+    final.subannual <- "Year"
   }
   
-  ### LAND USE FLUX AND STORE FROM luflux.out FILE
   
-  if(variable == "cProduct") {
-    dt <- openaDGVM1OutputFile(run, "luflux", target.sta, file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    target.cols <- append(getDimInfo(dt), "Products_Pool")
-    dt <- dt[,target.cols, with = FALSE]
-    setnames(dt, "Products_Pool", "cProduct")
-  }
-  
-  if(variable == "fLuc") {
+  if(variable == "Cancov") {
     
-    dt <- openaDGVM1OutputFile(run, "luflux", target.sta, file.name = file.name, verbose = verbose, data.table.only = TRUE)
-    target.cols <- append(getDimInfo(dt), "Deforest_Flux")
-    dt <- dt[,target.cols, with = FALSE]
-    setnames(dt, "Deforest_Flux", "fLuc")
+    dt <- dt[, c("Lon", "Lat", "Year", "ForTr_Cancov", "SavTr_Cancov")]
+    setnames(dt, c("ForTr_Cancov", "SavTr_Cancov"), c("ForTr", "SavTr"))
+    print(dt)
+    
   }
+  
+  if(variable == "LeafBiomass") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year", "C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass")]
+    setnames(dt, c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass"), c("C4G", "C3G", "Tree"))
+    print(dt)
+    
+  }
+  
+  if(variable == "RootBiomass") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year", "C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass")]
+    setnames(dt, c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass"), c("C4G", "C3G", "Tree"))
+    print(dt)
+    
+  }
+  
+  if(variable == "StemBiomass") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year","Tree_StemBiomass")]
+    setnames(dt, c("Tree_StemBiomass"), c("Tree"))
+    print(dt)
+    
+  }
+  
+  if(variable == "DeadGrassBiomass") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year","DeadGrass_LeafBiomass")]
+    setnames(dt, c("DeadGrass_LeafBiomass"), c("Grass"))
+    print(dt)
+    
+  }
+  
+  if(variable == "PopSize") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year", "ForTr_Popsize","SavTr_Popsize")]
+    setnames(dt, c("ForTr_Popsize","SavTr_Popsize"), c("ForTr", "SavTr"))
+    print(dt)
+    
+  }
+  
+  #  Print messages
+  if(verbose) {
+    message("Read table. It has header:")
+    print(names(dt))
+    message("It has shape:")
+    print(dim(dt))      
+  }
+  
+  
+  # Correct year
+  if(run@year.offset != 0) {
+    dt[,Year := Year + run@year.offset]
+    if(verbose) message("Correcting year with offset.")
+  }
+  
+  # Select year
+  if(length(first.year) == 0) first.year <- NULL
+  if(length(last.year) == 0) last.year <- NULL
+  if(!missing(first.year) & !missing(last.year) & !is.null(first.year) & !is.null(last.year)) {
+    dt <- selectYears(dt, first.year, last.year)
+  }
+  
+  # also correct days to be 1-365 instead of 0-364, if necessary
+  if("Day" %in% names(dt)) {
+    if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]
+  }
+  
+  # Correct lon and lats
+  if(length(run@lonlat.offset) == 2 ){
+    if(verbose) message("Correcting lons and lats with offset.")
+    if(run@lonlat.offset[1] != 0) dt[, Lon := Lon + run@lonlat.offset[1]]
+    if(run@lonlat.offset[2] != 0) dt[, Lat := Lat + run@lonlat.offset[2]]
+  }
+  else if(length(run@lonlat.offset) == 1 ){
+    if(verbose) message("Correcting lons and lats with offset.")
+    if(run@lonlat.offset[1] != 0) dt[, Lon := Lon + run@lonlat.offset[1]]
+    if(run@lonlat.offset[1] != 0) dt[, Lat := Lat + run@lonlat.offset[1]]
+  }
+  
+  if(verbose) {
+    message("Offsets applied. Head of full .out file (after offsets):")
+    print(utils::head(dt))
+  }
+  
+  # if london.centre is requested, make sure all longitudes greater than 180 are shifted to negative
+  if(run@london.centre){
+    if(max(dt[["Lon"]]) > 180) {
+      dt[, Lon := LondonCentre(Lon)]
+    }
+  }
+  
+  
+  # if spatial extent specified, crop to it
+  new.extent <- NULL
+  if(!is.null(target.sta@spatial.extent)) {
+    
+    spatial.extent.class <- class(target.sta@spatial.extent)[1]
+    
+    if(spatial.extent.class == "SpatialPolygonsDataFrame" || spatial.extent.class == "numeric" || is.data.frame(target.sta@spatial.extent) || is.data.table(target.sta@spatial.extent)) {
+      dt <- selectGridcells(x = dt, gridcells = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id, ...)
+      new.extent <- target.sta@spatial.extent
+      # if new.extent is a data.frame, convery it to a data.table for consistency
+      if(is.data.frame(new.extent) & !is.data.table(new.extent)) new.extent <- as.data.table(new.extent)
+    }
+    
+    else {
+      dt <- crop(x = dt, y = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id)
+      new.extent <- extent(dt)
+    } 
+    
+    
+    
+  }
+  
+  gc()
+  
+  
+  
+  # set some attributes about the data - works!
+  # currently screws up unit tests and isn't used.  Consider using if updating metadata system.
+  # setattr(dt, "shadeToleranceCombined", FALSE)
+  
+  # remove any NAs
+  dt <- stats::na.omit(dt)
+  
+  # set the keys (very important!)
+  setKeyDGVM(dt)
   
   # Build as STAInfo object describing the data
   all.years <- sort(unique(dt[["Year"]]))
   dimensions <- getDimInfo(dt)
-  subannual <- "Year"
-  if("Month" %in% dimensions) subannual <- "Month"
-  else if("Day" %in% dimensions) subannual <- "Day"
+  if(file.substring == "Soil") initial.subannual <- "Year"
+  else initial.subannual <- "Day"
   
   
   sta.info = new("STAInfo",
                  first.year = min(all.years),
                  last.year = max(all.years),
-                 subannual.resolution = subannual,
-                 subannual.original = subannual,
-                 spatial.extent = extent(dt))
+                 subannual.resolution = final.subannual,
+                 subannual.original = initial.subannual)
   
+  # if Fire it will have had subannual aggregation
+  sta.info@subannual.aggregate.method <- target.sta@subannual.aggregate.method
   
-  # make the ID and then make and return Field
-  field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
+  # if cropping has been done, set the new spatial.extent and spatial.extent.id
+  if(!is.null(new.extent))  {
+    sta.info@spatial.extent = new.extent
+    sta.info@spatial.extent.id <- target.sta@spatial.extent.id
+  }
+  # otherwise set
+  else {
+    sta.info@spatial.extent = extent(dt)
+    sta.info@spatial.extent.id <- "Full"
+  }
   
+  gc()
   
-  return(
+  if(data.table.only) return(dt)
+  else {
     
-    new("Field",
-        id = field.id,
-        data = dt,
-        quant = quant,
-        source = run,
-        sta.info 
+    # make the ID and then make and return Field
+    field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
+    
+    return(
+      
+      new("Field",
+          id = field.id,
+          data = dt,
+          quant = quant,
+          source = run,
+          sta.info 
+      )
+      
     )
     
-  )
-  
+  }
   
 }
-
 
 
 #' Returns the data from one aDGVM1 output variable as a \code{data.table}.   
@@ -782,13 +675,12 @@ openaDGVM1OutputFile_FireMIP <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
 #' @keywords internal
-#' @export
 
 getStandardQuantity_aDGVM1 <- function(run, 
-                                    quant, 
-                                    target.sta,
-                                    file.name = file.name,
-                                    verbose = FALSE) {
+                                       quant, 
+                                       target.sta,
+                                       file.name = file.name,
+                                       verbose = FALSE) {
   
   Total = Year = FireRT = NULL
   
@@ -953,124 +845,52 @@ getStandardQuantity_aDGVM1 <- function(run,
 
 availableQuantities_aDGVM1 <- function(source, names = TRUE, verbose = FALSE){
   
-  directory <- source@dir
-  
-  # First get the list of *.out files present
-  files.present <- list.files(directory, ".out$")
-  files.present <- append(files.present, list.files(directory, ".out.gz$"))
-  
-  # Now strip the .out file extension out the get the variable name
-  this.var.list <- unlist(lapply(files.present, FUN = aDGVM1QuantFromFilename))
-  
-  
-  # check that they correspond to actual quantities, if not through a warning and chuck them out
-  good.list <- list()
-  ignore.list <- c("*", "aDGVM1_out", "aDGVM1_err")
-  
-  for(this.file in files.present){
-    
-    variable<- aDGVM1QuantFromFilename(this.file)
-    
-    if(!variable %in% ignore.list) {
-      
-      result = tryCatch({
-        dummy.quant <- suppressWarnings(lookupQuantity(variable, source@format))
-      },  warning = function(w) {
-        #warning(w)
-      }, error = function(e) {
-        #warning(e)
-      }, finally = {
-      })
-      
-      if(is.Quantity(result))  {
-        if(names) good.list <- append(good.list, variable)
-        else good.list <- append(good.list, result)
-      }
-      else {
-        if(verbose) warning("Although I have found file with an appropriate extension that looks like an aDGVM1 output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
-      }
-      
-    }
-    
-  }
-  
-  return(unlist(good.list))
-  
-}
-
-
-
-#' Detemine PFTs present in an aDGVM1 run
-#' 
-#' @param x  A Source objects describing an aDGVM1(-SPITFIRE) run
-#' @param variables Some variable to loom for to detremine the PFTs present in the run.  Not the function automatically searches:
-#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-
-determinePFTs_aDGVM1 <- function(x, variables) {
-  
-  # first get a list of all avaiable variables
-  available.vars <- suppressWarnings(availableQuantities_aDGVM1(x))
-  
-  # check for the presence the following variables (in order)
-  possible.vars <- c("lai", "cmass", "dens", "fpc")
-  
-  for(this.var in possible.vars) {
-    
-    if(this.var %in% available.vars) {
-      
-      file.string = file.path(x@dir, paste(this.var, ".out", sep=""))
-      
-      if(file.exists(file.string)){ 
-        header <- utils::read.table(file.string, header = TRUE, nrow = 1)
-      }
-      else if(file.exists(paste(file.string, "gz", sep = "."))){
-        header <- utils::read.table(gzfile(paste(file.string, "gz", sep = ".")), header = TRUE, nrow = 1)
-      }
-      
-      PFTs.present <- list()
-      for(colname in names(header)){
-        for(PFT in x@pft.set){
-          if(PFT@id == colname) {
-            PFTs.present <- append(PFTs.present, PFT)
-          }
-        }
-      }
-      
-      return(PFTs.present)
-      
-    }
-    
-  }
-  
-  warning(paste("Hmmm, not been able to identify the PFTs in aDGVM1(-SPITFIRE) run", x@name, "because I can't find an appropriate per-PFT file in the run directory. Returning the super-set list.", sep = " ") )
-  return(x@pft.set)
+  # directory <- source@dir
+  # 
+  # # First get the list of *.out files present
+  # files.present <- list.files(directory, ".out$")
+  # files.present <- append(files.present, list.files(directory, ".out.gz$"))
+  # 
+  # # Now strip the .out file extension out the get the variable name
+  # this.var.list <- unlist(lapply(files.present, FUN = aDGVM1QuantFromFilename))
+  # 
+  # 
+  # # check that they correspond to actual quantities, if not through a warning and chuck them out
+  # good.list <- list()
+  # ignore.list <- c("*", "aDGVM1_out", "aDGVM1_err")
+  # 
+  # for(this.file in files.present){
+  #   
+  #   variable <- aDGVM1QuantFromFilename(this.file)
+  #   
+  #   if(!variable %in% ignore.list) {
+  #     
+  #     result = tryCatch({
+  #       dummy.quant <- suppressWarnings(lookupQuantity(variable, source@format))
+  #     },  warning = function(w) {
+  #       #warning(w)
+  #     }, error = function(e) {
+  #       #warning(e)
+  #     }, finally = {
+  #     })
+  #     
+  #     if(is.Quantity(result))  {
+  #       if(names) good.list <- append(good.list, variable)
+  #       else good.list <- append(good.list, result)
+  #     }
+  #     else {
+  #       if(verbose) warning("Although I have found file with an appropriate extension that looks like an aDGVM1 output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
+  #     }
+  #     
+  #   }
+  #   
+  # }
+  # 
+  # return(unlist(good.list))
   
 }
 
 
-######################### TRIM AN aDGVM1 FILENAME  #####################################################################
-#' Helper function to raster::trim the ".out" or the ".out.gz" from an aDGVM1 filename to get the variable in question
-#' 
-#' Returns NULL if the last characters are not ".out" or ".out.gz
-#'
-#' @param var.filename The string of the filename to be raster::trimmed
-#' @return A string less the last fou.
-#' @keywords internal
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-
-
-# handy helper function for raster::trimming file names to get a variable name
-aDGVM1QuantFromFilename <- function(var.filename){
-  
-  for(ending in c(".out", ".out.gz")) {
-    if(substr(var.filename, nchar(var.filename) - nchar(ending) + 1,  nchar(var.filename)) == ending) return(substr(var.filename, 1, nchar(var.filename) - nchar(ending)))
-  }
-  
-  return(NULL)
-  
-}
 
 
 #####################################################################
@@ -1193,6 +1013,7 @@ aDGVM1.quantities <- list(
       colours = reversed.viridis,
       format = c("aDGVM1")),
   
+<<<<<<< HEAD
   new("Quantity",
       id = "ET",
       name = "Evapotranspiration",
@@ -1534,398 +1355,31 @@ aDGVM1.quantities <- list(
       units = "ckgC/kgN",
       colours = fields::tim.colors,
       format = c("aDGVM1")),
+=======
+>>>>>>> 3e36b7fd6621eceedb3b0e3f4e7debd53a001ea8
   
+  #### DUMMY - or maybe useful...
   new("Quantity",
-      id = "nmass",
-      name = "Vegetation Nitrogen Mass",
-      units = "kgN/m^2",
-      colours = viridis::viridis,
+      id = "SoilC",
+      name = "Soil Carbon",
+      units = "kg whatever",
+      colours = reversed.viridis,
       format = c("aDGVM1")),
   
   new("Quantity",
-      id = "ngases",
-      name = "Annual Nitrogren Gases Emissions",
-      units = "kg/ha/year",
-      colours = viridis::viridis,
-      format = c("aDGVM1")),
+      id = "FireNum",
+      name = "Number of fires",
+      units = "m^2",
+      colours = reversed.viridis,
+      format = c("aDGVM1"))
   
-  new("Quantity",
-      id = "npool",
-      name = "Nitrogen",
-      units = "kgN/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "nuptake",
-      name = "Nitrogen Uptake",
-      units = "kgN/ha",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "nsources",
-      name = "Nitrogen Source",
-      units = "gN/ha",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  
-  new("Quantity",
-      id = "nflux",
-      name = "Nitrogen Flux",
-      units = "kgN/ha",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "nlitter",
-      name = "Litter Nitrogen Mass",
-      units = "kgN/ha",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mprec",
-      name = "Monthly Precipitation",
-      units = "mm",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mtemp",
-      name = "Mean Monthly Temperature",
-      units = "deg C",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mwmass_stem",
-      name = "Water Stored in Stem",
-      units = "kgH20/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mwmass_leaf",
-      name = "Water Stored in Leaves",
-      units = "kgH20/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "bioclim_mtemps",
-      name = "Bioclimactic Temperatures",
-      units = "deg C",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  
-  #############################################################################################
-  ############################# aDGVM1-SPITFIRE QUANTITIES #################################
-  #############################################################################################
-  
-  new("Quantity",
-      id = "mfirefrac",
-      name = "Monthly Burned Area Fraction",
-      units = "",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mtau_l",
-      name = "Monthly Residence Time",
-      units = "mins",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "pyro_flux",
-      name = "Pyrogenic Emmisions",
-      units = "kg species/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfireintens",
-      name = "Monthly Fire Intensity",
-      units = "kW/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mlivegrass_fuel",
-      name = "Mean Monthly Live Grass Fuel",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "m1hr_fuel",
-      name = "Mean Monthly 1hr Fuel",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "m10hr_fuel",
-      name = "Mean Monthly 10hr Fuel",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "m100hr_fuel",
-      name = "Mean Monthly 100hr Fuel",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "m1000hr_fuel",
-      name = "Mean Monthly 1000hr Fuel",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mlivegrass_cc",
-      name = "Mean Monthly Live Grass Combustion Completeness",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "m1hr_cc",
-      name = "Mean Monthly 1hr Combustion Completeness",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "m10hr_cc",
-      name = "Mean Monthly 10hr Combustion Completeness",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id ="m100hr_cc",
-      name = "Mean Monthly 100hr Combustion Completeness",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "m1000hr_cc",
-      name = "Mean Monthly 1000hr Combustion Completeness",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "afdays",
-      name = "Fire Days per Year",
-      units = "days",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mavenest",
-      name = "Average Monthly Nesterov",
-      units = "",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mdlm_livegrass",
-      name = "Monthly Litter Moisture of Live Grass",
-      units = "",
-      colours = reversed.tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mdlm_deadfuel",
-      name = "Monthly Litter Moisture of Dead Fuel",
-      units = "",
-      colours = reversed.tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "meff_wind",
-      name = "Monthly Effective Windspeed",
-      units = "m/min",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mnfdi",
-      name = "Monthly Nesterov Fire Danger Index",
-      units = "m/min",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  
-  new("Quantity",
-      id = "mFBD",
-      name = "Monthly Fuel Bulk Density",
-      units = "m^3/m^3",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mSAV",
-      name = "Monthly Surface Area to Volume Ratio",
-      units = "m^2/m^3",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mMoE",
-      name = "Monthly Moisture of Extinction",
-      units = "",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mmcont",
-      name = "Monthly Fuel Moisture Content",
-      units = "",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfire_durat",
-      name = "Monthly Fire Duration",
-      units = "mins",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mscorch_height",
-      name = "Monthly Scorch Height",
-      units = "m",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mRoS",
-      name = "Monthly Rate of Spread",
-      units = "m/min",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfire_size",
-      name = "Monthly Fire Size",
-      units = "ha",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mhuman_ign",
-      name = "Monthly average of human ignition rate",
-      units = "ign/day",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mlightning_ign",
-      name = "Monthly average of lightning ignition rate",
-      units = "ign/day",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfireday_duration",
-      name = "Monthly Fire Duration (Fire Days Only)",
-      units = "mins",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfireday_scorch_height",
-      name = "Monthly Scorch Height (Fire Days Only)",
-      units = "m",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfireday_intensity",
-      name = "Monthly Fire Intensity (Fire Days Only)",
-      units = "kW/m",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfireday_nesterov",
-      name = "Monthly Nesterov (Fire Days Only)",
-      units = "",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfireday_residence_time",
-      name = "Monthly Residence Time (Fire Days Only)",
-      units = "min",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "allocation_fails",
-      name = "Monthly Allocation Fails",
-      units = "days",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "allocation_iters",
-      name = "Monthly Iteration To Allocation Fire",
-      units = "days",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfuel",
-      name = "Monthly Fuel",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfinefuel",
-      name = "Monthly Fine Fuel",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mleaffuel",
-      name = "Monthly Leaf Fuel",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfiredays",
-      name = "Monthly sum of daily fire probabilites",
-      units = "days",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE")),
-  
-  new("Quantity",
-      id = "mfiredaysfine",
-      name = "Monthly sum of daily fire probabilites (based on fine fuel threshold)",
-      units = "days",
-      colours = fields::tim.colors,
-      format = c("aDGVM1-SPITFIRE"))
 )
 
-################################################################
-########### aDGVM1(-SPITFIRE) FORMAT ########################
-################################################################
+##################################################
+########### aDGVM1 FORMAT ########################
+##################################################
 
-#' @description \code{aDGVM1} - a Format for reading standard aDGVM1(-SPITFIRE) model output
+#' @description \code{aDGVM1} - a Format for reading standard aDGVM1 model output
 #' 
 #' @format A \code{Quantity} object is an S4 class.
 #' @aliases Format-class
@@ -1938,10 +1392,7 @@ aDGVM1 <- new("Format",
               
               # UNIQUE ID
               id = "aDGVM1",
-              
-              # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-              determinePFTs = determinePFTs_aDGVM1,
-              
+                  
               # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
               availableQuantities = availableQuantities_aDGVM1,
               

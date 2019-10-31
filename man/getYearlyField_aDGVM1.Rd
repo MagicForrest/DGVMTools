@@ -29,7 +29,7 @@ can also be a simple string defining the aDGVM1 output file if the \code{return.
 a data.table (with the correct tear offset and lon-lat offsets applied)
 }
 \description{
-\code{openaDGVM1OutputFile} returns a data.table object given a string defining a vegetation quantity 
+\code{getYearlyField_aDGVM1} returns a data.table object given a string defining a vegetation quantity 
 from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
 }
 \details{

@@ -1,8 +1,10 @@
+#!/usr/bin/Rscript
+
 ########### HANDY PROCESSING FUNCTIONS ########### 
 
 #' Safe division
 #' 
-#' Function to divide two number but return 0 if the denominator is 0
+#' Function to divide two numbers but return 0 if the denominator is 0
 #' 
 #' @param x numerator
 #' @param y denominator
@@ -13,7 +15,7 @@
 #' 
 "%/0%" <- function(x,y) ifelse(y==0,0,base::"/"(x,y))
 
-#!/usr/bin/Rscript
+
 
 
 ######## SET KEY ON DATA TABLE USED TO STORE VEG INFORMATION
@@ -22,8 +24,8 @@
 #' Sets keys on data.table based in the spatial (Lon, Lat) and temporal (Year, Month, Day), present. 
 #' 
 #' Keys should be set on all data.table object for sorts, joins, DGVMTool-defined operators etc.  
-#'  This function should be called on a data.table stored in a Field after it has been created,
-#'  including if it was created by avergaing another data.table because it seems as keys are not conserved.
+#' This function should be called on a data.table stored in a Field after it has been created,
+#' including if it was created by averaging another data.table because it seems as keys are not conserved.
 #'
 #' @param dt The data.table for which to set the key
 #' @return Returns nothing because changes the original data.table by reference (this is the data.table way)
@@ -97,4 +99,51 @@ is.leapyear <- function(year, proleptic=FALSE, doy=FALSE) {
 equivalentQuantities <- function(quant1, quant2) {
   if (quant1@units==quant2@units)  return(TRUE)
   else return(FALSE)
+}
+
+#' Read ASCII table
+#' 
+#' Reads a regular ASCII table using data.table:fread.  Regular means file must have the same number of
+#' columns on each line.
+#' @param file.string Character string of the full file path.
+#' @param verbose If TRUE give extra output
+#' Also checks for the file on file systems, fails if not present, and gunzips and zips the file if necessary.
+#' Note also some shenangigans for data.table package versions as earlier versions have a security risk.
+#' @return A data.table
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
+readRegularASCII <- function(file.string, verbose) {
+  
+  #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
+  compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
+  new.data.table.version <- FALSE
+  if(compare.string >= 0) new.data.table.version <- TRUE
+  
+  re.zip <- FALSE
+  if(file.exists(file.string)){ 
+    if(verbose) message(paste("Found and opening file", file.string, sep = " "))
+    dt <- fread(file.string)
+  }
+  else if(file.exists(paste(file.string, "gz", sep = "."))){
+    if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
+    if(.Platform$OS.type == "unix") {
+      if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+      else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+    }
+    else {
+      re.zip <- TRUE
+      R.utils::gunzip(paste(file.string, "gz", sep = "."))
+      dt <- fread(file.string)
+    }
+  }
+  else {
+    stop(paste("File (or gzipped file) not found:", file.string))
+  }
+  
+  # if re-zip
+  if(re.zip) R.utils::gzip(file.string)
+  
+  return(dt)
+  
 }

@@ -84,38 +84,11 @@ openLPJOutputFile <- function(run,
   if(class(quant)[1] == "Quantity") variable <- quant@id
   else variable <- quant
   
-  #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
-  compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
-  new.data.table.version <- FALSE
-  if(compare.string >= 0) new.data.table.version <- TRUE
   
-  
-  # Make the filename and check for the file, gunzip if necessary, fail if not present
+  # Make the filename and read the file using the handy utility function
   if(is.null(file.name)) file.string <- file.path(run@dir, paste(variable, ".out", sep=""))
   else file.string <- file.path(run@dir, file.name)
-  re.zip <- FALSE
-  if(file.exists(file.string)){ 
-    if(verbose) message(paste("Found and opening file", file.string, sep = " "))
-    dt <- fread(file.string)
-  }
-  else if(file.exists(paste(file.string, "gz", sep = "."))){
-    if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
-    if(.Platform$OS.type == "unix") {
-      if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-      else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-    }
-    else {
-      re.zip <- TRUE
-      R.utils::gunzip(paste(file.string, "gz", sep = "."))
-      dt <- fread(file.string)
-    }
-  }
-  else {
-    stop(paste("File (or gzipped file) not found:", file.string))
-  }
-  
-  
-  gc()
+  dt <- readRegularASCII(file.string, verbose)
   
   #  Print messages
   if(verbose) {
@@ -124,7 +97,6 @@ openLPJOutputFile <- function(run,
     message("It has shape:")
     print(dim(dt))      
   }
-  
   
   # Correct year
   if(run@year.offset != 0) {
@@ -230,9 +202,6 @@ openLPJOutputFile <- function(run,
   
   # set the keys (very important!)
   setKeyDGVM(dt)
-  
-  # if re-zip
-  if(re.zip) R.utils::gzip(file.string)
   
   # Build as STAInfo object describing the data
   all.years <- sort(unique(dt[["Year"]]))
@@ -703,7 +672,6 @@ openLPJOutputFile_FireMIP <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
 #' @keywords internal
-#' @export
 
 getStandardQuantity_LPJ <- function(run, 
                                     quant, 
@@ -916,57 +884,6 @@ availableQuantities_GUESS <- function(source, names = TRUE, verbose = FALSE){
   }
   
   return(unlist(good.list))
-  
-}
-
-
-
-#' Detemine PFTs present in an LPJ-GUESS run
-#' 
-#' @param x  A Source objects describing an LPJ-GUESS(-SPITFIRE) run
-#' @param variables Some variable to loom for to detremine the PFTs present in the run.  Not the function automatically searches:
-#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-
-determinePFTs_GUESS <- function(x, variables) {
-  
-  # first get a list of all avaiable variables
-  available.vars <- suppressWarnings(availableQuantities_GUESS(x))
-  
-  # check for the presence the following variables (in order)
-  possible.vars <- c("lai", "cmass", "dens", "fpc")
-  
-  for(this.var in possible.vars) {
-    
-    if(this.var %in% available.vars) {
-      
-      file.string = file.path(x@dir, paste(this.var, ".out", sep=""))
-      
-      if(file.exists(file.string)){ 
-        header <- utils::read.table(file.string, header = TRUE, nrow = 1)
-      }
-      else if(file.exists(paste(file.string, "gz", sep = "."))){
-        header <- utils::read.table(gzfile(paste(file.string, "gz", sep = ".")), header = TRUE, nrow = 1)
-      }
-      
-      PFTs.present <- list()
-      for(colname in names(header)){
-        for(PFT in x@pft.set){
-          if(PFT@id == colname) {
-            PFTs.present <- append(PFTs.present, PFT)
-          }
-        }
-      }
-      
-      return(PFTs.present)
-      
-    }
-    
-  }
-  
-  warning(paste("Hmmm, not been able to identify the PFTs in LPJ-GUESS(-SPITFIRE) run", x@name, "because I can't find an appropriate per-PFT file in the run directory. Returning the super-set list.", sep = " ") )
-  return(x@pft.set)
   
 }
 
@@ -1933,10 +1850,7 @@ GUESS <- new("Format",
              
              # UNIQUE ID
              id = "GUESS",
-             
-             # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-             determinePFTs = determinePFTs_GUESS,
-             
+            
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
              availableQuantities = availableQuantities_GUESS,
              

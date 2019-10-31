@@ -33,7 +33,7 @@ Can be produced using the companion DGVMData package.
 
 \code{aDGVM} - a Format for reading aDGVM2 model output
 
-\code{aDGVM1} - a Format for reading standard aDGVM1(-SPITFIRE) model output
+\code{aDGVM1} - a Format for reading standard aDGVM1 model output
 }
 \details{
 Normally a user won't need to deal with this class since it defines model/dataset spcific metadata and functions which should be defined once and then
@@ -49,8 +49,6 @@ This is mostly likely applicable to formats decsribing DGVM output, but also for
 This is just a default PFT set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).}
 
 \item{\code{quantities}}{'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output or dataset.}
-
-\item{\code{determinePFTs}}{A function to determine which PFTs are present in a run or dataset.}
 
 \item{\code{availableQuantities}}{A function to determine which quantities \emph{are actually available} from the model run or dataset.}
 

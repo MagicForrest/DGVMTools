@@ -701,42 +701,6 @@ getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta, file.name = fil
   
 }
 
-#' Determine PFTs present in an aDGVM2; currently only returns a warning.
-#' 
-#' @param x  A Source objects describing an aDGVMData run
-#' @param variables Some variable to look for to detremine the PFTs present in the run.  Not the function automatically searches:
-#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.  Currently ignored.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-
-determinePFTs_aDGVM <- function(x) {
-  
-  #if (scheme==1....) 
-  #warning("Need aDGVMers to write this function! For now I am returning the source@format@default.set argument directly.")
-
-  PFT.list.s1 <- c("Tr", "C4G", "C3G")
-  PFT.list.s2 <- c("TrBE", "TrBR", "TrBES", "TrBRS", "C4G", "C3G")
-
-  cat(paste("PFTs for adgvm.scheme==1: Tr, C4G, C3G \n"))
-  cat(paste("PFTs for adgvm.scheme==2: TrBE, TrBR, TrBES, TrBRS, C4G, C3G \n"))
-  cat(paste("determinePFTs returns list with all available aDGVM2 PFTs.\n"))
-  
-#  PFTs.present <- list()
-#  for ( PFTname in PFT.list) {
-#    for(PFT in aDGVM.PFTs){
-#      if(PFT@id == PFTname) {
-#        PFTs.present <- append(PFTs.present, PFT)
-#      }
-#    }
-#  }
-  
-  return(aDGVM.PFTs)
-  
-  
-  #return(x@format@default.pfts)
-  
-}
-
 
 #' List aDGVM quantities avialable
 #'
@@ -988,10 +952,7 @@ aDGVM <- new("Format",
              
              # UNIQUE ID
              id = "aDGVM",
-             
-             # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-             determinePFTs = determinePFTs_aDGVM,
-             
+                  
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
              availableQuantities = availableQuantities_aDGVM,
              

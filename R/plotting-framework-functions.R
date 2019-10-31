@@ -466,9 +466,9 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
       if(lon > 180) gt.180 <- TRUE
     }
     
-    if(map.overlay=="world" && gt.180) map.overlay <- "world2"
+    if(map.overlay=="world" && gt.180) map.overlay <- "worldLowres2"
     else if(map.overlay=="worldHires" && gt.180) map.overlay <- "worldHires2"
-    else if(map.overlay=="world2" && !gt.180) map.overlay <- "world"
+    else if(map.overlay=="world2" && !gt.180) map.overlay <- "worldLowres"
     else if(map.overlay=="world2Hires" && !gt.180) map.overlay <- "worldHires"
     
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
