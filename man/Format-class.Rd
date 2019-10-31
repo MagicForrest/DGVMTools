@@ -33,7 +33,7 @@ Can be produced using the companion DGVMData package.
 
 \code{aDGVM} - a Format for reading aDGVM2 model output
 
-\code{aDGVM1} - a Format for reading standard aDGVM1(-SPITFIRE) model output
+\code{aDGVM1} - a Format for reading standard aDGVM1 model output
 }
 \details{
 Normally a user won't need to deal with this class since it defines model/dataset spcific metadata and functions which should be defined once and then

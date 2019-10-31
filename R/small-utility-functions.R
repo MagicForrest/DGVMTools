@@ -98,3 +98,50 @@ equivalentQuantities <- function(quant1, quant2) {
   if (quant1@units==quant2@units)  return(TRUE)
   else return(FALSE)
 }
+
+#' Read ASCII table
+#' 
+#' Reads a regular ASCII table using data.table:fread.  Regular means file must have the same number of
+#' columns on each line.
+#' @param file.string Character string of the full file path.
+#' @param verbose If TRUE give extra output
+#' Also checks for the file on file systems, fails if not present, and gunzips and zips the file if necessary.
+#' Note also some shenangigans for data.table package versions as earlier versions have a security risk.
+#' @return A data.table
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+
+readRegularASCII <- function(file.string, verbose) {
+  
+  #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
+  compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
+  new.data.table.version <- FALSE
+  if(compare.string >= 0) new.data.table.version <- TRUE
+  
+  re.zip <- FALSE
+  if(file.exists(file.string)){ 
+    if(verbose) message(paste("Found and opening file", file.string, sep = " "))
+    dt <- fread(file.string)
+  }
+  else if(file.exists(paste(file.string, "gz", sep = "."))){
+    if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
+    if(.Platform$OS.type == "unix") {
+      if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+      else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+    }
+    else {
+      re.zip <- TRUE
+      R.utils::gunzip(paste(file.string, "gz", sep = "."))
+      dt <- fread(file.string)
+    }
+  }
+  else {
+    stop(paste("File (or gzipped file) not found:", file.string))
+  }
+  
+  # if re-zip
+  if(re.zip) R.utils::gzip(file.string)
+  
+  return(dt)
+  
+}
