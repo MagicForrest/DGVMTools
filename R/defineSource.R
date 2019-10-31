@@ -99,12 +99,6 @@ defineSource <- function(id,
               contact = contact,
               institute = institute)
   
-  # look up the PFTs to get the actual PFTs present from the superset
-  if(length(source@pft.set) > 0) {
-    source@pft.set <- determinePFTs(source, ...)
-  }
-
-  
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
   if(length(source@pft.set) == 0) source@pft.set <- list()
   if(length(source@lonlat.offset) == 0)  source@lonlat.offset <- c(0,0)

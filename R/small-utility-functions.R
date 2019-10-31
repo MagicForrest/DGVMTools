@@ -1,8 +1,10 @@
+#!/usr/bin/Rscript
+
 ########### HANDY PROCESSING FUNCTIONS ########### 
 
 #' Safe division
 #' 
-#' Function to divide two number but return 0 if the denominator is 0
+#' Function to divide two numbers but return 0 if the denominator is 0
 #' 
 #' @param x numerator
 #' @param y denominator
@@ -13,7 +15,7 @@
 #' 
 "%/0%" <- function(x,y) ifelse(y==0,0,base::"/"(x,y))
 
-#!/usr/bin/Rscript
+
 
 
 ######## SET KEY ON DATA TABLE USED TO STORE VEG INFORMATION
@@ -22,8 +24,8 @@
 #' Sets keys on data.table based in the spatial (Lon, Lat) and temporal (Year, Month, Day), present. 
 #' 
 #' Keys should be set on all data.table object for sorts, joins, DGVMTool-defined operators etc.  
-#'  This function should be called on a data.table stored in a Field after it has been created,
-#'  including if it was created by avergaing another data.table because it seems as keys are not conserved.
+#' This function should be called on a data.table stored in a Field after it has been created,
+#' including if it was created by averaging another data.table because it seems as keys are not conserved.
 #'
 #' @param dt The data.table for which to set the key
 #' @return Returns nothing because changes the original data.table by reference (this is the data.table way)

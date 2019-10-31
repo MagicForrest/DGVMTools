@@ -873,55 +873,6 @@ availableQuantities_aDGVM1 <- function(source, names = TRUE, verbose = FALSE){
 
 
 
-#' Detemine PFTs present in an aDGVM1 run
-#' 
-#' @param x  A Source objects describing an aDGVM1(-SPITFIRE) run
-#' @param variables Some variable to loom for to detremine the PFTs present in the run.  Not the function automatically searches:
-#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-
-determinePFTs_aDGVM1 <- function(x, variables) {
-  
-  # first get a list of all avaiable variables
-  available.vars <- suppressWarnings(availableQuantities_aDGVM1(x))
-  
-  # check for the presence the following variables (in order)
-  possible.vars <- c("lai", "cmass", "dens", "fpc")
-  
-  for(this.var in possible.vars) {
-    
-    if(this.var %in% available.vars) {
-      
-      file.string = file.path(x@dir, paste(this.var, ".out", sep=""))
-      
-      if(file.exists(file.string)){ 
-        header <- utils::read.table(file.string, header = TRUE, nrow = 1)
-      }
-      else if(file.exists(paste(file.string, "gz", sep = "."))){
-        header <- utils::read.table(gzfile(paste(file.string, "gz", sep = ".")), header = TRUE, nrow = 1)
-      }
-      
-      PFTs.present <- list()
-      for(colname in names(header)){
-        for(PFT in x@pft.set){
-          if(PFT@id == colname) {
-            PFTs.present <- append(PFTs.present, PFT)
-          }
-        }
-      }
-      
-      return(PFTs.present)
-      
-    }
-    
-  }
-  
-  warning(paste("Hmmm, not been able to identify the PFTs in aDGVM1(-SPITFIRE) run", x@name, "because I can't find an appropriate per-PFT file in the run directory. Returning the super-set list.", sep = " ") )
-  return(x@pft.set)
-  
-}
-
 
 #####################################################################
 ########### aDGVM1(-SPITFIRE) GLOBAL PFTS ########################
@@ -1078,10 +1029,7 @@ aDGVM1 <- new("Format",
               
               # UNIQUE ID
               id = "aDGVM1",
-              
-              # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-              determinePFTs = determinePFTs_aDGVM1,
-              
+                  
               # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
               availableQuantities = availableQuantities_aDGVM1,
               
