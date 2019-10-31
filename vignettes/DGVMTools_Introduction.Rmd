@@ -302,7 +302,8 @@ The `getBiomes()` function can be used to classify model output into some pre-de
 
 # read and plot global biomes
 biomes.model <- getBiomes(GUESS.run, Smith2014BiomeScheme, year.aggregate.method = "mean")
-print(plotSpatial(biomes.model, map.overlay = "world"))
+#print(plotSpatial(biomes.model, map.overlay = "world"))
+print(plotSpatial(biomes.model))
 ```
 
 There is also a global map on potential natural vegetation (PNV) biomes available.

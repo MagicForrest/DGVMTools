@@ -14,6 +14,6 @@ x \%/0\% y
 Handy little thing.}
 }
 \description{
-Function to divide two number but return 0 if the denominator is 0
+Function to divide two numbers but return 0 if the denominator is 0
 }
 \keyword{internal}
