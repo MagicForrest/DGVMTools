@@ -4,7 +4,8 @@
 \alias{getField_aDGVM1}
 \title{Get a Field for aDGVM1}
 \usage{
-getField_aDGVM1(source, quant, target.STAInfo, file.name, verbose, ...)
+getField_aDGVM1(source, quant, target.STAInfo, file.name, verbose,
+  adgvm.file.type = "Yearly", ...)
 }
 \arguments{
 \item{source}{A \code{Source} containing the meta-data about the aDGVM1 run}
