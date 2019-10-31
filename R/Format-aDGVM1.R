@@ -22,20 +22,19 @@ getField_aDGVM1 <- function(source,
                             target.STAInfo,
                             file.name,
                             verbose,
+                            adgvm.file.type = "Yearly",
                             ...) {
   
-  # cheeky hard-coded variable lists
-  yearly.aDGVM1.quantities <- list("Cancov", "LeafBiomass", "RootBiomass", "StemBiomass", "DeadGrassBiomass", "PopSize")
-  daily.aDGVM1.quantities <- list("GPP", "SoilC", "FireNum", "Sizes")
-  
-  
   # aDGVM1 yearly quantities
-  if("aDGVM1" %in% quant@format && quant@id %in% yearly.aDGVM1.quantities) {
+  if("aDGVM1" %in% quant@format 
+     && (tolower(adgvm.file.type) == "yearly" 
+         || tolower(adgvm.file.type) == "year" 
+         || tolower(adgvm.file.type) == "annual")) {
     return(getYearlyField_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
   }
   # aDGVM1 daily quantities
-  else if("aDGVM1" %in% quant@format && quant@id %in% daily.aDGVM1.quantities) {
-    return(getDailyField_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
+  else if("aDGVM1" %in% quant@format) {
+    return(getDailyField_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, adgvm.file.type, verbose = verbose, ...))
   }
   # Standard quantities 
   else if("Standard" %in% quant@format) {
@@ -77,6 +76,7 @@ getYearlyField_aDGVM1 <- function(run,
                                   data.table.only = FALSE,
                                   adgvm.fire = 1,
                                   adgvm.climate = 0,
+                                  adgvm.header,
                                   ...){
   
   # To avoid annoying NOTES when R CMD check-ing
@@ -86,6 +86,11 @@ getYearlyField_aDGVM1 <- function(run,
   first.year = target.sta@first.year
   last.year = target.sta@last.year
   
+  # if no custom header defined use the default 
+  if(missing(adgvm.header)) {
+    adgvm.header <- c("Lon", "Lat","Year","Clim","Fire","Seed","Rain","EvapoTot","EvapoGrass","EvapoSoil","C4G_LeafBiomass","C4G_RootBiomass","C3G_LeafBiomass","C3G_RootBiomass","DeadGrass_LeafBiomass","SavTr_Cancov","ForTr_Cancov","Tree_LeafBiomass","Tree_StemBiomass","Tree_RootBiomass","Grass_Ratio","Tree_MeanHeight","Tree_MaxHeight","Tree_Popsize","SavTr_Popsize","ForTr_Popsize","Tree_BasalArea","NPP","NEE","SoilCarbon","PhenologyCount","FireNumber","MeanFireIntensity","SoilN","SoilC","TmpMean","CO2ppm","dp1","dp2","dp3","dp4","dp5","dp6","dp7","dp8","dp9","dp10","dp11","dp12","dp13","dp14","dp15","dp16","dp17","dp18","dp19","dp20","dp21","dp22","dp23","dp24","dp25","dp26","dp27","dp28","dp29","Tree_ActiveDays","Grass_ActiveDays","ETref","A0C3","A0C4")
+  }
+  
   # determine the years that are actually present
   if(is.null(file.name)) {
     all.files <- list.files(path = run@dir, paste("YearlyData", "*", adgvm.climate, adgvm.fire, "dat", sep="."))
@@ -93,8 +98,7 @@ getYearlyField_aDGVM1 <- function(run,
   else {
     all.files <- file.name
   }
-  print(all.files)
-  
+ 
   if(!data.table.only && class(quant)[1] != "Quantity") stop("Please supply a formal Quantity object as the quant argument since you are not requesting at data.table")
   
   if(class(quant)[1] == "Quantity") variable <- quant@id
@@ -117,7 +121,7 @@ getYearlyField_aDGVM1 <- function(run,
   }
   
   dt <- rbindlist(all.dts)
-  setnames(dt, c("Lon", "Lat","Year","Clim","Fire","Seed","Rain","EvapoTot","EvapoGrass","EvapoSoil","C4G_LeafBiomass","C4G_RootBiomass","C3G_LeafBiomass","C3G_RootBiomass","DeadGrass_LeafBiomass","SavTr_Cancov","ForTr_Cancov","Tree_LeafBiomass","Tree_StemBiomass","Tree_RootBiomass","Grass_Ratio","Tree_MeanHeight","Tree_MaxHeight","Tree_Popsize","SavTr_Popsize","ForTr_Popsize","Tree_BasalArea","NPP","NEE","SoilCarbon","PhenologyCount","FireNumber","MeanFireIntensity","SoilN","SoilC","TmpMean","CO2ppm","dp1","dp2","dp3","dp4","dp5","dp6","dp7","dp8","dp9","dp10","dp11","dp12","dp13","dp14","dp15","dp16","dp17","dp18","dp19","dp20","dp21","dp22","dp23","dp24","dp25","dp26","dp27","dp28","dp29","Tree_ActiveDays","Grass_ActiveDays","ETref","A0C3","A0C4"))
+  setnames(dt, adgvm.header)
   rm(all.dts)
   gc()
   
@@ -332,40 +336,35 @@ getDailyField_aDGVM1 <- function(run,
                                  quant,
                                  target.sta,
                                  file.name = file.name,
+                                 adgvm.file.type,
                                  verbose = FALSE,
                                  data.table.only = FALSE,
                                  adgvm.fire = 1,
                                  adgvm.climate = 0,
-                                 adgvm.sys.header,
-                                 adgvm.fire.header,
-                                 adgvm.soil.header,
-                                 adgvm.size.header,
+                                 adgvm.header,
                                  ...){
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = Day = NULL
   
-  if(missing(adgvm.sys.header)) adgvm.sys.header <- c("Year","Day","Grass_LeafBiomassLive","Grass_RootBiomassLive","Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying","Grass_RootBiomassDead","Grass_GPP","Grass_RMA","Grass_RGR","SavTree_Cancov","ForTree_Cancov","Tree_LeafBiomassLive","Tree_StemBiomassLive","Tree_RootBiomassLive","Tree_LeafBiomassDeadStanding","Tree_LeafBiomassDeadLying","Tree_StemBiomassDeadStanding","Tree_StemBiomassDeadLying","Tree_RootBiomassDead","Tree_GPP","Tree_RMA","Tree_RGR","Tree_LAI","Tree_Popsize","Tree_MeanHeight","Grass_Ratio","Tmp_Mean","Tree_TallNum","Tree_BA","CO2ppm","Rain_day","EvapoTot","SoilCarbonRelease","Combustion","MeanRain")
-  if(missing(adgvm.fire.header)) adgvm.fire.header <- c("FireNum","Year","Day","DeadFuel","LiveFuel","DeadFuelMoisture","LiveFuelMoisture","TotalFuel","MeanFuelMoisture","FireIntensity","Patchiness","Scorch","CombustFine","CombustCoarse","CombustHeavy","CombustHelper","Grass_LeafLiveCombustion","Grass_LeafDeadStandingCombustion","Grass_LeafDeadLyingCombustion","Tree_LeafLiveCombustion","Tree_LeafDeadLyingCombustion","Tree_LeafDeadLyingCombustion","Tree_StemLiveCombustion","Tree_StemDeadStandingCoarseCombustion","Tree_StemDeadLyingCoarseCombustion","Tree_StemDeadStandingHeavyCombustion","Tree_StemDeadLyingHeavyCombustion","Tree_StemDeadStandingFineCombustion","Tree_StemDeadLyingFineCombustion","Grass_LeafN20","Tree_LeafN20","Tree_StemCoarseN20","Tree_StemHeavyN20","Tree_StemFineN20","Grass_LeafCH4","Tree_LeafCH4","Tree_StemCoarseCH4","Tree_StemHeavyCH4","Tree_StemFineCH4","CO2ppm")
-  if(missing(adgvm.size.header)) adgvm.size.header <-  c("50","100","150","200","250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000","1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")
-  if(missing(adgvm.soil.header)) adgvm.soil.header <- c("Soil_FineWoody","Soil_CoarseWoody","Soil_Extractives","Soil_Cellulose","Soil_Lignin","Soil_Humus1","Soil_Humus2","Soil_NonWoodyLitterInput","Soil_FineWoodyLitterInput","Soil_CoarseWoodyLitterInput","Soil_CO2Extractives","Soil_CO2Cellulose","Soil_CO2Lignin","Soil_CO2Humus1","Soil_CO2Humus2")
-  
-  
   # extract from the target.sta
   first.year = target.sta@first.year
   last.year = target.sta@last.year
   
-  # determine which file to open bases on the Quantity that we want
-  Sys.quantities <- c("GPP")
-  Fire.quantities <- c("FireNum") # Glenn, this is just an example
-  Soil.quantities <- c("SoilC") # Glenn, this is just an example
-  Size.quantities <- c("Sizes") # Glenn, this is just an example
+  # identify the file to open
+  if(tolower(adgvm.file.type) == "sys") file.substring <- "Sys"
+  else if(tolower(adgvm.file.type) == "fire") file.substring <- "Fire"
+  else if(tolower(adgvm.file.type) == "soil") file.substring <- "Soil"
+  else if(tolower(adgvm.file.type) == "size") file.substring <- "Size"
+  else stop(paste0("Argument adgvm.file.type is set to ", adgvm.file.type, " which is not valid.  Please use one of \"Yearly\"/\"Sys\"/\"Fire\"/\"Soil\"/\"Size\" depending on where the varibale you want to read has been written."))
   
-  if(quant@id %in% Sys.quantities) file.substring <- "Sys"
-  else if(quant@id %in% Fire.quantities) file.substring <- "Fire"
-  else if(quant@id %in% Soil.quantities) file.substring <- "Soil"
-  else if(quant@id %in% Size.quantities) file.substring <- "Size"
-  else stop(paste0("Quantity ", quant@id, " not defined as being in file SysData_, FireData_, SizeData_ or SoilData_ in function getDailyField_aDGVM1()"))
+  # if no custom header defined, use the default appropriate for the file type that is being opened 
+  if(missing(adgvm.header)) {
+    if(file.substring == "Sys") adgvm.header <- c("Year","Day","Grass_LeafBiomassLive","Grass_RootBiomassLive","Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying","Grass_RootBiomassDead","Grass_GPP","Grass_RMA","Grass_RGR","SavTree_Cancov","ForTree_Cancov","Tree_LeafBiomassLive","Tree_StemBiomassLive","Tree_RootBiomassLive","Tree_LeafBiomassDeadStanding","Tree_LeafBiomassDeadLying","Tree_StemBiomassDeadStanding","Tree_StemBiomassDeadLying","Tree_RootBiomassDead","Tree_GPP","Tree_RMA","Tree_RGR","Tree_LAI","Tree_Popsize","Tree_MeanHeight","Grass_Ratio","Tmp_Mean","Tree_TallNum","Tree_BA","CO2ppm","Rain_day","EvapoTot","SoilCarbonRelease","Combustion","MeanRain")
+    if(file.substring == "Fire") adgvm.header <- c("FireNum","Year","Day","DeadFuel","LiveFuel","DeadFuelMoisture","LiveFuelMoisture","TotalFuel","MeanFuelMoisture","FireIntensity","Patchiness","Scorch","CombustFine","CombustCoarse","CombustHeavy","CombustHelper","Grass_LeafLiveCombustion","Grass_LeafDeadStandingCombustion","Grass_LeafDeadLyingCombustion","Tree_LeafLiveCombustion","Tree_LeafDeadLyingCombustion","Tree_LeafDeadLyingCombustion","Tree_StemLiveCombustion","Tree_StemDeadStandingCoarseCombustion","Tree_StemDeadLyingCoarseCombustion","Tree_StemDeadStandingHeavyCombustion","Tree_StemDeadLyingHeavyCombustion","Tree_StemDeadStandingFineCombustion","Tree_StemDeadLyingFineCombustion","Grass_LeafN20","Tree_LeafN20","Tree_StemCoarseN20","Tree_StemHeavyN20","Tree_StemFineN20","Grass_LeafCH4","Tree_LeafCH4","Tree_StemCoarseCH4","Tree_StemHeavyCH4","Tree_StemFineCH4","CO2ppm")
+    if(file.substring == "Size") adgvm.header <-  c("50","100","150","200","250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000","1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")
+    if(file.substring == "Soil") adgvm.header <- c("Soil_FineWoody","Soil_CoarseWoody","Soil_Extractives","Soil_Cellulose","Soil_Lignin","Soil_Humus1","Soil_Humus2","Soil_NonWoodyLitterInput","Soil_FineWoodyLitterInput","Soil_CoarseWoodyLitterInput","Soil_CO2Extractives","Soil_CO2Cellulose","Soil_CO2Lignin","Soil_CO2Humus1","Soil_CO2Humus2")
+  }
   
   # in the case of Soil Data read one SysData file to get the Days and Years
   if(file.substring == "Soil") {
@@ -388,7 +387,6 @@ getDailyField_aDGVM1 <- function(run,
     all.files <- file.name
   }
   
-  print(all.files)
   
   if(!data.table.only && class(quant)[1] != "Quantity") stop("Please supply a formal Quantity object as the quant argument since you are not requesting at data.table")
   
@@ -434,35 +432,43 @@ getDailyField_aDGVM1 <- function(run,
   # set names depending on file type
   if(file.substring == "Sys") {
     original.length <- length(names(dt)) - 2 # subtract 2 because we have added Lon and Lat
-    setnames(dt, names(dt)[1:original.length], adgvm.sys.header[1:original.length])
+    setnames(dt, names(dt)[1:original.length], adgvm.header[1:original.length])
     dt[, Day := Day+1]
   }
   else if(file.substring == "Soil") {
-    setnames(dt, names(dt)[1:length(adgvm.soil.header)], adgvm.soil.header)
+    setnames(dt, names(dt)[1:length(adgvm.header)], adgvm.header)
     dt[, Day := Day+1]
   }
   else if(file.substring == "Fire") {
     original.length <- length(names(dt)) - 2 # subtract 2 because we have added Lon and Lat 
-    setnames(dt, names(dt)[1:original.length], adgvm.fire.header[1:original.length])
+    setnames(dt, names(dt)[1:original.length], adgvm.header[1:original.length])
     dt[, Day := Day+1]
   }
   else if(file.substring == "Size") {
     original.length <- length(names(dt)) - 3 # subtract 3 because we have added Lon, Lat and Year
-    setnames(dt, names(dt)[1:original.length], adgvm.size.header[1:original.length])
+    setnames(dt, names(dt)[1:original.length], adgvm.header[1:original.length])
   }
   
-  
- 
-  # 
+  # handle aggregation for fire and the final subannual resolution label 
   final.subannual <- "Day"
   if(file.substring == "Fire") {
-    print(target.sta@subannual.resolution)
     dt <- aggregateSubannual(input.obj = dt, method = target.sta@subannual.aggregate.method, target = target.sta@subannual.resolution)
     final.subannual <- target.sta@subannual.resolution
   }
   else if(file.substring == "Size"){
     final.subannual <- "Year"
   }
+  
+  # if the Quantity object that we are pulling was automagically defined, extract layers which 
+  # have names that looks something like it
+  if(quant@id == quant@name && quant@units == "undefined unit") {
+    all.potential.cols <- layers(dt) 
+    matched.cols <- all.potential.cols[grepl(pattern = quant@id, all.potential.cols)]
+    if(length(matched.cols) == 0) stop(paste0("You asked for an aDGVM1 quantity called ", quant@name, ". I automagically made that but no columns in the input data file seem to match.  Please try a different Quantity string."))
+    print(append(getDimInfo(dt), matched.cols))
+    dt <- dt[, append(getDimInfo(dt), matched.cols), with = FALSE]
+  }
+  
   
   
   if(variable == "Cancov") {

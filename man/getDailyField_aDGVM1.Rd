@@ -5,8 +5,8 @@
 \title{Open an aDGVM1 .out file}
 \usage{
 getDailyField_aDGVM1(run, quant, target.sta, file.name = file.name,
-  verbose = FALSE, data.table.only = FALSE, adgvm.fire = 1,
-  adgvm.climate = 0, ...)
+  adgvm.file.type, verbose = FALSE, data.table.only = FALSE,
+  adgvm.fire = 1, adgvm.climate = 0, adgvm.header, ...)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the aDGVM1 run}

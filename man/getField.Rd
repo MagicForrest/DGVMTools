@@ -54,10 +54,24 @@ Leave missing or set to \code{NULL} to use the standard file name for the partic
 
 \item{verbose}{If TRUE give a lot of information for debugging/checking.}
 
-\item{...}{Other arguments that are passed to the getField function for the specific Format or for selecting space/time/years.  Currently this can be
+\item{...}{Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.
+For all Formats, the followings arguments apply:
 \itemize{
- \item{adgvm.scheme}  For the aDGVM Format, defines the aDGVM PFT scheme which can be 1 or 2.
- \item{cover.fraction}  Optional when selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, should be between 0 and 1.
+ \item{\code{cover.fraction}}  When selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, this optional arguement determines 
+ how much of the gridcell needs to be in the the polygon for it to be selected. Should be between 0 and 1.
+}
+For the aDGVM(1) Format, the following arguments apply:
+\itemize{
+ \item{\code{adgvm.file.type}}  This character string argument specifies from which file to read the data.
+ This can be one of "Yearly", "Sys", "Fire", "Soil" or "Size".  The default is "Yearly", which is sensible because the yearly file is always written. 
+ \item{\code{adgvm.fire}}  This numeric argument (taking values 0 or 1) specifies to take a run with fire on (1) or off (0). Default is 1.
+ \item{\code{adgvm.climate}}   This numeric argument (taking values 0 or 1) specifies to take a run with constant (0) or transient (1) climate.  Default is 0.
+ \item{\code{adgvm.header}} If your aDGVM run has been has extra columns added to the output tables, use this argument
+ to specify the column names.  For the default column names see the source file \code{aDGVM1-Format}.
+}
+For the aDGVM2 Format, the following arguments apply:
+\itemize{
+ \item{\code{adgvm.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
 }}
 }
 \value{
