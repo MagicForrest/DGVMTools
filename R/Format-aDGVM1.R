@@ -124,7 +124,7 @@ getYearlyField_aDGVM1 <- function(run,
   
   if(variable == "Cancov") {
     
-    dt <- dt[, c("Lon", "Lat", "Year", "ForTr_Cancov", "SavTr_Cancov")]
+    dt <- dt[, append(getDimInfo(dt), c("ForTr_Cancov", "SavTr_Cancov")), with = FALSE]
     setnames(dt, c("ForTr_Cancov", "SavTr_Cancov"), c("ForTr", "SavTr"))
     print(dt)
     
@@ -132,7 +132,7 @@ getYearlyField_aDGVM1 <- function(run,
   
   if(variable == "LeafBiomass") {
     
-    dt <- dt[, c("Lon", "Lat", "Year", "C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass")]
+    dt <- dt[, append(getDimInfo(dt), c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass")), with = FALSE]
     setnames(dt, c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass"), c("C4G", "C3G", "Tree"))
     print(dt)
     
@@ -140,7 +140,7 @@ getYearlyField_aDGVM1 <- function(run,
   
   if(variable == "RootBiomass") {
     
-    dt <- dt[, c("Lon", "Lat", "Year", "C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass")]
+    dt <- dt[, append(getDimInfo(dt), c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass")), with = FALSE]
     setnames(dt, c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass"), c("C4G", "C3G", "Tree"))
     print(dt)
     
@@ -148,7 +148,7 @@ getYearlyField_aDGVM1 <- function(run,
   
   if(variable == "StemBiomass") {
     
-    dt <- dt[, c("Lon", "Lat", "Year","Tree_StemBiomass")]
+    dt <- dt[, append(getDimInfo(dt), c("Tree_StemBiomass")), with = FALSE]
     setnames(dt, c("Tree_StemBiomass"), c("Tree"))
     print(dt)
     
@@ -156,7 +156,7 @@ getYearlyField_aDGVM1 <- function(run,
   
   if(variable == "DeadGrassBiomass") {
     
-    dt <- dt[, c("Lon", "Lat", "Year","DeadGrass_LeafBiomass")]
+    dt <- dt[, append(getDimInfo(dt), c("DeadGrass_LeafBiomass")), with = FALSE]
     setnames(dt, c("DeadGrass_LeafBiomass"), c("Grass"))
     print(dt)
     
@@ -164,7 +164,7 @@ getYearlyField_aDGVM1 <- function(run,
   
   if(variable == "PopSize") {
     
-    dt <- dt[, c("Lon", "Lat", "Year", "ForTr_Popsize","SavTr_Popsize")]
+    dt <- dt[, append(getDimInfo(dt), c("ForTr_Popsize","SavTr_Popsize")), with = FALSE]
     setnames(dt, c("ForTr_Popsize","SavTr_Popsize"), c("ForTr", "SavTr"))
     print(dt)
     
@@ -467,7 +467,7 @@ getDailyField_aDGVM1 <- function(run,
   
   if(variable == "Cancov") {
     
-    dt <- dt[, c("Lon", "Lat", "Year", "ForTr_Cancov", "SavTr_Cancov")]
+    dt <- dt[, append(getDimInfo(dt), c("ForTr_Cancov", "SavTr_Cancov")), with = FALSE]
     setnames(dt, c("ForTr_Cancov", "SavTr_Cancov"), c("ForTr", "SavTr"))
     print(dt)
     
@@ -475,7 +475,7 @@ getDailyField_aDGVM1 <- function(run,
   
   if(variable == "LeafBiomass") {
     
-    dt <- dt[, c("Lon", "Lat", "Year", "C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass")]
+    dt <- dt[, append(getDimInfo(dt), c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass")), with = FALSE]
     setnames(dt, c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass"), c("C4G", "C3G", "Tree"))
     print(dt)
     
@@ -483,7 +483,7 @@ getDailyField_aDGVM1 <- function(run,
   
   if(variable == "RootBiomass") {
     
-    dt <- dt[, c("Lon", "Lat", "Year", "C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass")]
+    dt <- dt[, append(getDimInfo(dt), c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass")), with = FALSE]
     setnames(dt, c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass"), c("C4G", "C3G", "Tree"))
     print(dt)
     
@@ -491,7 +491,7 @@ getDailyField_aDGVM1 <- function(run,
   
   if(variable == "StemBiomass") {
     
-    dt <- dt[, c("Lon", "Lat", "Year","Tree_StemBiomass")]
+    dt <- dt[, append(getDimInfo(dt), c("Tree_StemBiomass")), with = FALSE]
     setnames(dt, c("Tree_StemBiomass"), c("Tree"))
     print(dt)
     
@@ -499,16 +499,36 @@ getDailyField_aDGVM1 <- function(run,
   
   if(variable == "DeadGrassBiomass") {
     
-    dt <- dt[, c("Lon", "Lat", "Year","DeadGrass_LeafBiomass")]
+    dt <- dt[, append(getDimInfo(dt), c("DeadGrass_LeafBiomass")), with = FALSE]
     setnames(dt, c("DeadGrass_LeafBiomass"), c("Grass"))
+    print(dt)
+    
+  }
+  
+  if(variable == "LiveGrassBiomass") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("C4G_LeafBiomass","C3G_LeafBiomass")), with = FALSE]
+    setnames(dt, c("C4G_LeafBiomass","C3G_LeafBiomass"), c("C4G", "C3G"))
     print(dt)
     
   }
   
   if(variable == "PopSize") {
     
-    dt <- dt[, c("Lon", "Lat", "Year", "ForTr_Popsize","SavTr_Popsize")]
+    dt <- dt[, append(getDimInfo(dt), c("ForTr_Popsize","SavTr_Popsize")), with = FALSE]
     setnames(dt, c("ForTr_Popsize","SavTr_Popsize"), c("ForTr", "SavTr"))
+    print(dt)
+    
+  }
+  
+  if(variable == "ET") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree")), with = FALSE]
+    dt[, EvapoTot := EvapoTot / Year]
+    dt[, EvapoGrass := EvapoGrass / Year]
+    dt[, EvapoSoil := EvapoSoil / Year]
+    dt[, EvapoTree := EvapoTot - (EvapoGrass + EvapoSoil)]
+    setnames(dt, c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree"), c("Total","Grass","Soil","Tree"))
     print(dt)
     
   }
@@ -1013,350 +1033,6 @@ aDGVM1.quantities <- list(
       colours = reversed.viridis,
       format = c("aDGVM1")),
   
-<<<<<<< HEAD
-  new("Quantity",
-      id = "ET",
-      name = "Evapotranspiration",
-      units = "mm/year",
-      colours = reversed.viridis,
-      format = c("aDGVM1"),
-      cf.name = "water_evapotranspiration_flux"),
-  
-  new("Quantity",
-      id = "mfpc",
-      name = "Monthly Foliar Projective Cover",
-      units = "m^2/m^2",
-      colours = veg.palette,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "vegcover",
-      name = "Vegetation Cover",
-      units = "%",
-      colours = veg.palette,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "agpp",
-      name = "Annual GPP",
-      units = "kgC/m2/year",
-      colours = viridis::inferno,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "cmass",
-      name = "Vegetation Carbon Mass",
-      units = "kgC/m^2",
-      colours = viridis::viridis,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "clitter",
-      name = "Litter Carbon Mass",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "agb",
-      name = "Above Ground Biomass",
-      units = "tonnes/hectare",
-      colours = viridis::viridis,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "cpool",
-      name = "Carbon Pools",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "litter_wood",
-      name = "Wood Litter",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "litter_leaf",
-      name = "Leaf Litter",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "litter_repr",
-      name = "Reproductive Litter",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "fine_fuel",
-      name = "Fine Fuel",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mnpp",
-      name = "NPP",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mgpp",
-      name = "GPP",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mnee",
-      name = "Monthly NEE",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mrh",
-      name = "Monthly Heterotrophic Respiration",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mra",
-      name = "Monthly Autotrophic Respiration",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "anpp",
-      name = "Annual NPP",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "cflux",
-      name = "Carbon Flux",
-      units = "kgC/m^2/y",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "dens",
-      name = "PFT Density",
-      units = "indiv/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "speciesheights",
-      name = "PFT Average Heights",
-      units = "m",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "height",
-      name = "PFT Average Heights",
-      units = "m",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "canopyheight",
-      name = "Canopy Height",
-      units = "m",
-      colours = reversed.magma,
-      format = c("aDGVM1"),
-      cf.name = "canopy_height"),
-  
-  new("Quantity",
-      id = "doc",
-      name = "Dissolved Organic Carbon (?)",
-      units = "kgC/m^2/year",
-      colours = reversed.magma,
-      format = c("aDGVM1"),
-      cf.name = "canopy_height"),
-  
-  new("Quantity",
-      id = "maet",
-      name = "Monthly Actual Evapotranspiration",
-      units = "mm/month",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mpet",
-      name = "Monthly Potential Evapotranspiration",
-      units = "mm/month",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mevap",
-      name = "Monthly Evaporation",
-      units = "mm/month",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mrunoff",
-      name = "Monthly Runoff",
-      units = "mm/month",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mintercep",
-      name = "Monthly Interception",
-      units = "mm/month",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mwcont_upper",
-      name = "Monthly Upper Soil Layer",
-      units = "fraction",
-      colours = reversed.tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mwcont_lower",
-      name = "Monthly Lower Soil Layer",
-      units = "fraction",
-      colours = reversed.tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "msnowpack",
-      name = "Monthly Snow Pack",
-      units = "mm H20",
-      colours = reversed.tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "aaet",
-      name = "Annual Actual Evapotranspiration",
-      units = "mm/year",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "aiso",
-      name = "Annual Isoprene Emissions",
-      units = "kg/year",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  
-  new("Quantity",
-      id = "miso",
-      name = "Monthly Isoprene Emissions",
-      units = "kg/month",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "amon",
-      name = "Annual Monoterpene Emissions",
-      units = "kg/year",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "mmon",
-      name = "Monthly Monoterpene Emissions",
-      units = "kg/year",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "firert",
-      name = "Fire Return Interval",
-      units = "years",
-      colours = fire.palette,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "fireseason",
-      name = "Fire Season Length",
-      units = "days",
-      colours = fire.palette,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "firesl",
-      name = "Fire Season Length",
-      units = "days",
-      colours = fire.palette,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "burntarea", 
-      name = "Annual Fraction Burned",
-      units = "fraction of gridcell",
-      colours = fire.palette,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "burntfraction",
-      name = "Annual Fraction Burned",
-      units = "fraction of gridcell",
-      colours = reversed.fire.palette,
-      format = c("aDGVM1"),
-      cf.name = "burned_area_fraction"),
-  
-  new("Quantity",
-      id = "tot_runoff",
-      name = "Runoff",
-      units = "mm/year",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "vmaxnlim",
-      name = "Nitrogen Limitation to Vmax",
-      units = "fraction",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "bioclim",
-      name = "Bioclimatic Limit Variables",
-      units = "kgC/m^2",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "gdd5",
-      name = "Growing Degree Days (5deg C base)",
-      units = "degree days",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  
-  new("Quantity",
-      id = "aleafshed",
-      name = "Number times leafs shed per year",
-      units = "",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-  
-  new("Quantity",
-      id = "cton_leaf",
-      name = "C:N leaf",
-      units = "ckgC/kgN",
-      colours = fields::tim.colors,
-      format = c("aDGVM1")),
-=======
->>>>>>> 3e36b7fd6621eceedb3b0e3f4e7debd53a001ea8
   
   #### DUMMY - or maybe useful...
   new("Quantity",
