@@ -183,6 +183,18 @@ getYearlyField_aDGVM1 <- function(run,
     print(dt)
     
   }
+  
+  if(variable == "ET") {
+    
+    dt <- dt[, c("Lon", "Lat", "Year", "EvapoTot","EvapoGrass","EvapoSoil")]
+    dt[, EvapoTot := EvapoTot / Year]
+    dt[, EvapoGrass := EvapoGrass / Year]
+    dt[, EvapoSoil := EvapoSoil / Year]
+    dt[, EvapoTree := EvapoTot - (EvapoGrass + EvapoSoil)]
+    setnames(dt, c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree"), c("Total","Grass","Soil","Tree"))
+    print(dt)
+    
+  }
    
   #  Print messages
   if(verbose) {
@@ -1182,11 +1194,12 @@ aDGVM1.quantities <- list(
       format = c("aDGVM1")),
   
   new("Quantity",
-      id = "fpc",
-      name = "Foliar Projective Cover",
-      units = "m^2/m^2",
-      colours = veg.palette,
-      format = c("aDGVM1")),
+      id = "ET",
+      name = "Evapotranspiration",
+      units = "mm/year",
+      colours = reversed.viridis,
+      format = c("aDGVM1"),
+      cf.name = "water_evapotranspiration_flux"),
   
   new("Quantity",
       id = "mfpc",
