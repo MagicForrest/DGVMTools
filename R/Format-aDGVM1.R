@@ -162,10 +162,38 @@ getYearlyField_aDGVM1 <- function(run,
     
   }
   
+  if(variable == "LiveGrassBiomass") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("C4G_LeafBiomass", "C3G_LeafBiomass")), with = FALSE]
+    setnames(dt, c("C4G_LeafBiomass", "C3G_LeafBiomass"), c("C4G", "C3G"))
+    print(dt)
+    
+  }
+  
   if(variable == "PopSize") {
     
     dt <- dt[, append(getDimInfo(dt), c("ForTr_Popsize","SavTr_Popsize")), with = FALSE]
     setnames(dt, c("ForTr_Popsize","SavTr_Popsize"), c("ForTr", "SavTr"))
+    print(dt)
+    
+  }
+  
+  if(variable == "C3C4_Ratio") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("Grass_Ratio")), with = FALSE]
+    setnames(dt, c("Grass_Ratio"), c("Grass"))
+    print(dt)
+    
+  }
+  
+  if(variable == "ET") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree")), with = FALSE]
+    dt[, EvapoTot := (EvapoTot / Year)/365]
+    dt[, EvapoGrass := (EvapoGrass / Year)/365]
+    dt[, EvapoSoil := (EvapoSoil / Year)/365]
+    dt[, EvapoTree := (EvapoTot - (EvapoGrass + EvapoSoil))/365]
+    setnames(dt, c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree"), c("Total","Grass","Soil","Tree"))
     print(dt)
     
   }
@@ -467,68 +495,80 @@ getDailyField_aDGVM1 <- function(run,
   
   if(variable == "Cancov") {
     
-    dt <- dt[, append(getDimInfo(dt), c("ForTr_Cancov", "SavTr_Cancov")), with = FALSE]
-    setnames(dt, c("ForTr_Cancov", "SavTr_Cancov"), c("ForTr", "SavTr"))
+    dt <- dt[, append(getDimInfo(dt), c("ForTree_Cancov", "SavTree_Cancov")), with = FALSE]
+    setnames(dt, c("ForTree_Cancov", "SavTree_Cancov"), c("ForTr", "SavTr"))
     print(dt)
     
   }
   
   if(variable == "LeafBiomass") {
     
-    dt <- dt[, append(getDimInfo(dt), c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass")), with = FALSE]
-    setnames(dt, c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass"), c("C4G", "C3G", "Tree"))
+    dt <- dt[, append(getDimInfo(dt), c("Grass_LeafBiomassLive","Tree_LeafBiomassLive")), with = FALSE]
+    dt[, Grass_LeafBiomassLive := Grass_LeafBiomassLive*10]
+    dt[, Tree_LeafBiomassLive := Tree_LeafBiomassLive*10]
+    setnames(dt, c("Grass_LeafBiomassLive","Tree_LeafBiomassLive"), c("Grass", "Tree"))
     print(dt)
     
   }
   
   if(variable == "RootBiomass") {
     
-    dt <- dt[, append(getDimInfo(dt), c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass")), with = FALSE]
-    setnames(dt, c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass"), c("C4G", "C3G", "Tree"))
+    dt <- dt[, append(getDimInfo(dt), c("Grass_RootBiomassLive","Tree_RootBiomassLive")), with = FALSE]
+    dt[, Grass_RootBiomassLive := Grass_RootBiomassLive*10]
+    dt[, Tree_RootBiomassLive := Tree_RootBiomassLive*10]
+    setnames(dt, c("Grass_RootBiomassLive","Tree_RootBiomassLive"), c("Grass", "Tree"))
     print(dt)
     
   }
   
   if(variable == "StemBiomass") {
     
-    dt <- dt[, append(getDimInfo(dt), c("Tree_StemBiomass")), with = FALSE]
-    setnames(dt, c("Tree_StemBiomass"), c("Tree"))
+    dt <- dt[, append(getDimInfo(dt), c("Tree_StemBiomassLive")), with = FALSE]
+    dt[, Tree_StemBiomassLive := Tree_StemBiomassLive*10]
+    setnames(dt, c("Tree_StemBiomassLive"), c("Tree"))
     print(dt)
     
   }
   
   if(variable == "DeadGrassBiomass") {
     
-    dt <- dt[, append(getDimInfo(dt), c("DeadGrass_LeafBiomass")), with = FALSE]
-    setnames(dt, c("DeadGrass_LeafBiomass"), c("Grass"))
+    dt <- dt[, append(getDimInfo(dt), c("Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying")), with = FALSE]
+    dt[, Grass_LeafBiomassDeadStanding := Grass_LeafBiomassDeadStanding*10]
+    dt[, Grass_LeafBiomassDeadLying := Grass_LeafBiomassDeadLying*10]
+    setnames(dt, c("Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying"), c("Grass","Grass"))
     print(dt)
     
   }
   
   if(variable == "LiveGrassBiomass") {
     
-    dt <- dt[, append(getDimInfo(dt), c("C4G_LeafBiomass","C3G_LeafBiomass")), with = FALSE]
-    setnames(dt, c("C4G_LeafBiomass","C3G_LeafBiomass"), c("C4G", "C3G"))
+    dt <- dt[, append(getDimInfo(dt), c("Grass_LeafBiomassLive")), with = FALSE]
+    dt[, Grass_LeafBiomassLive := Grass_LeafBiomassLive*10]
+    setnames(dt, c("Grass_LeafBiomassLive"), c("Grass"))
     print(dt)
     
   }
   
   if(variable == "PopSize") {
     
-    dt <- dt[, append(getDimInfo(dt), c("ForTr_Popsize","SavTr_Popsize")), with = FALSE]
-    setnames(dt, c("ForTr_Popsize","SavTr_Popsize"), c("ForTr", "SavTr"))
+    dt <- dt[, append(getDimInfo(dt), c("Tree_Popsize")), with = FALSE]
+    setnames(dt, c("Tree_Popsize"), c("Tree"))
     print(dt)
     
   }
   
   if(variable == "ET") {
     
-    dt <- dt[, append(getDimInfo(dt), c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree")), with = FALSE]
-    dt[, EvapoTot := EvapoTot / Year]
-    dt[, EvapoGrass := EvapoGrass / Year]
-    dt[, EvapoSoil := EvapoSoil / Year]
-    dt[, EvapoTree := EvapoTot - (EvapoGrass + EvapoSoil)]
-    setnames(dt, c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree"), c("Total","Grass","Soil","Tree"))
+    dt <- dt[, append(getDimInfo(dt), c("EvapoTot")), with = FALSE]
+    setnames(dt, c("EvapoTot"), c("Total"))
+    print(dt)
+    
+  }
+  
+  if(variable == "C3C4_Ratio") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("Grass_Ratio")), with = FALSE]
+    setnames(dt, c("Grass_Ratio"), c("Grass"))
     print(dt)
     
   }
@@ -1027,9 +1067,30 @@ aDGVM1.quantities <- list(
       format = c("aDGVM1")),
   
   new("Quantity",
+      id = "LiveGrassBiomass",
+      name = "Live grass biomass",
+      units = "tonnes/hectare",
+      colours = reversed.viridis,
+      format = c("aDGVM1")),
+  
+  new("Quantity",
+      id = "ET",
+      name = "Evapotranspiration",
+      units = "mm/day",
+      colours = reversed.viridis,
+      format = c("aDGVM1")),
+  
+  new("Quantity",
       id = "PopSize",
       name = "Tree population size",
       units = "number of individuals",
+      colours = reversed.viridis,
+      format = c("aDGVM1")),
+  
+  new("Quantity",
+      id = "C3C4_Ratio",
+      name = "Ratio of C3 to C4 grass",
+      units = "proportion",
       colours = reversed.viridis,
       format = c("aDGVM1")),
   
