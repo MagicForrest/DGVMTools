@@ -2,21 +2,21 @@
 % Please edit documentation in R/Format-aDGVM1.R
 \name{availableQuantities_aDGVM1}
 \alias{availableQuantities_aDGVM1}
-\title{List all aDGVM1 *.out files in a run directory}
+\title{List available aDGVM1 Quantities in a run}
 \usage{
 availableQuantities_aDGVM1(source, names = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{source}{A aDGVM1 source object}
 
-\item{names}{Logical, if TRUE return the namse of the quantities, if FLASE return the quanties themseleves}
+\item{names}{Logical, if TRUE (the default) return the names of the quantities, if FALSE return the quanties themseleves}
 }
 \value{
-A list of all the .out files present, with the ".out" removed.
+A list of all the Quantities available for this aDGVM run
 }
 \description{
-Simply lists all aDGVM1 output variables (stored as .out files) available in a directory. 
-Also ignores some common red herrings like "aDGVM1.out" and "*.out"
+Simply lists all aDGVM1 Quantities that *should* be available in the run based on the files that are 
+available in the run directory.  It does NOT check that the required columns are available in the output file.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

@@ -12,8 +12,8 @@ getStandardQuantity_aDGVM1(run, quant, target.sta, file.name = file.name,
 
 \item{quant}{A Quantity to define what output file from the aDGVM1 run to open}
 
-\item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
-"<quant@id>.out" (also "<quant@id>.out.gz")}
+\item{file.name}{An optional character string (or a list of character strings) holding the name of the file(s)
+This can be left blank, in which case the file name is automatically generated.}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
 
@@ -35,5 +35,7 @@ output variable.  Normally it will read the file from disk, but if that has alre
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
+
+Glenn Moncrief \email{glenn@saeon.ac.za}
 }
 \keyword{internal}

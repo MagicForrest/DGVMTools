@@ -11,11 +11,12 @@
 #' @param source A \code{Source} containing the meta-data about the aDGVM1 run
 #' @param quant A string the define what output file from the aDGVM1 run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param target.STAInfo The spatial-temporal target domain
-#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
-#' "<quant@id>.out" (also "<quant@id>.out.gz")
+#' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
+#' This can be left blank, in which case the file name is automatically generated.
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @author Glenn Moncrief \email{glenn@@saeon.ac.za} 
 #' @keywords internal
 getField_aDGVM1 <- function(source,
                             quant,
@@ -61,11 +62,12 @@ getField_aDGVM1 <- function(source,
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
-#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
-#' "<quant@id>.out" (also "<quant@id>.out.gz")
+#' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
+#' This can be left blank, in which case the file name is automatically generated.
 #' @param data.table.only A logical, if TRUE return a data.table and not a Field
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
 #' @import data.table
 #' @keywords internal
 getYearlyField_aDGVM1 <- function(run,
@@ -349,11 +351,12 @@ getYearlyField_aDGVM1 <- function(run,
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
-#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
-#' "<quant@id>.out" (also "<quant@id>.out.gz")
+#' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
+#' This can be left blank, in which case the file name is automatically generated.
 #' @param data.table.only A logical, if TRUE return a data.table and not a Field
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @author Glenn Moncrief \email{glenn@@saeon.ac.za} 
 #' @import data.table
 #' @keywords internal
 getDailyField_aDGVM1 <- function(run,
@@ -751,11 +754,12 @@ getDailyField_aDGVM1 <- function(run,
 #' @param quant A Quantity to define what output file from the aDGVM1 run to open
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
-#' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
-#' "<quant@id>.out" (also "<quant@id>.out.gz")
+#' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
+#' This can be left blank, in which case the file name is automatically generated.
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
 #' @import data.table
 #' @keywords internal
 
@@ -867,62 +871,82 @@ getStandardQuantity_aDGVM1 <- function(run,
 
 
 ######################### LIST ALL aDGVM1 OUTPUT VARIABLES (STORED AS *.out FILES) IN AN RUN DIRECTORY  #####################################################################
-#' List all aDGVM1 *.out files in a run directory
+#' List available aDGVM1 Quantities in a run
 #'
-#' Simply lists all aDGVM1 output variables (stored as .out files) available in a directory. 
-#' Also ignores some common red herrings like "aDGVM1.out" and "*.out" 
+#' Simply lists all aDGVM1 Quantities that *should* be available in the run based on the files that are 
+#' available in the run directory.  It does NOT check that the required columns are available in the output file. 
 #' 
 #' @param source A aDGVM1 source object
-#' @param names Logical, if TRUE return the namse of the quantities, if FLASE return the quanties themseleves
-#' @return A list of all the .out files present, with the ".out" removed. 
+#' @param names Logical, if TRUE (the default) return the names of the quantities, if FALSE return the quanties themseleves
+#' @return A list of all the Quantities available for this aDGVM run 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
 availableQuantities_aDGVM1 <- function(source, names = TRUE, verbose = FALSE){
   
-  # directory <- source@dir
-  # 
-  # # First get the list of *.out files present
-  # files.present <- list.files(directory, ".out$")
-  # files.present <- append(files.present, list.files(directory, ".out.gz$"))
-  # 
-  # # Now strip the .out file extension out the get the variable name
-  # this.var.list <- unlist(lapply(files.present, FUN = aDGVM1QuantFromFilename))
-  # 
-  # 
-  # # check that they correspond to actual quantities, if not through a warning and chuck them out
-  # good.list <- list()
-  # ignore.list <- c("*", "aDGVM1_out", "aDGVM1_err")
-  # 
-  # for(this.file in files.present){
-  #   
-  #   variable <- aDGVM1QuantFromFilename(this.file)
-  #   
-  #   if(!variable %in% ignore.list) {
-  #     
-  #     result = tryCatch({
-  #       dummy.quant <- suppressWarnings(lookupQuantity(variable, source@format))
-  #     },  warning = function(w) {
-  #       #warning(w)
-  #     }, error = function(e) {
-  #       #warning(e)
-  #     }, finally = {
-  #     })
-  #     
-  #     if(is.Quantity(result))  {
-  #       if(names) good.list <- append(good.list, variable)
-  #       else good.list <- append(good.list, result)
-  #     }
-  #     else {
-  #       if(verbose) warning("Although I have found file with an appropriate extension that looks like an aDGVM1 output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
-  #     }
-  #     
-  #   }
-  #   
-  # }
-  # 
-  # return(unlist(good.list))
+  directory <- source@dir
   
+  # check that we have at least yearly data
+  yearly.present <- length(list.files(directory, "YearlyData*")) > 0
+  if(yearly.present & verbose) print("Found Yearly files")
+  
+  # check for the Sys/Fire/Soil/Soil "daily" data
+  sys.present <- length(list.files(directory, "SysData*")) > 0
+  if(sys.present & verbose) print("Found Sys daily files")
+  soil.present <- length(list.files(directory, "SoilData*")) > 0
+  if(soil.present & verbose) print("Found Soil daily files")
+  fire.present <- length(list.files(directory, "FireData*")) > 0
+  if(fire.present & verbose) print("Found Fire files")
+  size.present <- length(list.files(directory, "SizeData*")) > 0
+  if(fire.present & verbose) print("Found Size annual files")
+
+  # check for consistency of 'daily' files
+  daily.output.avail <- FALSE
+  daily.files.avail <- sum(sys.present, soil.present, fire.present, size.present)
+  if(daily.files.avail == 4) {
+    if(verbose) print("Got all 4 files for 'daily' output (Sys/Size/Fire/Soil)")
+    daily.output.avail <- TRUE
+  } 
+  else if(daily.files.avail == 0) {
+    if(verbose) print("Got no daily output files")
+  }
+  else {
+    if(verbose) print("Got some but not all daily output files.  This means you won't be able to read all daily
+                      output and perhaps part of your run output is missing?")
+    daily.output.avail <- TRUE
+  }
+  
+  # if daily output is available then relatively easy life, just return the full list of Quantities
+  if(daily.output.avail) {
+    
+    if(!names) return(aDGVM1.quantities)
+    else {
+      all.names <- c()
+      for(this.quant in aDGVM1.quantities) {
+        all.names <- append(all.names, this.quant@id)
+      }
+      return(all.names)
+    }
+    
+  }
+  
+  # else select only the yearly quantities based on the dirty, hard-coded lsit below
+  else {
+    
+    yearly.quantities <- c("Cancov", "LeafBiomass", "RootBiomass", "StemBiomass", "DeadGrassBiomass", 
+                     "LiveGrassBiomass", "ET", "PopSize", "C3C4_Ratio")
+    if(names) return(yearly.quantities)
+    else {
+      available.quantities <- list()
+      for(this.quant in aDGVM1.quantities) {
+        
+        if(this.quant@id %in% yearly.quantities) available.quantities <- append(available.quantities, this.quant)
+      }
+      return(available.quantities)
+    }
+    
+  }
+
 }
 
 
