@@ -1,15 +1,15 @@
 #!/usr/bin/Rscript
 
 ############################################################################################################################
-############################ FUNCTIONS TO HANDLE aDGVM1 FILES ###########################################################
+############################ FUNCTIONS TO HANDLE aDGVM FILES ###########################################################
 ############################################################################################################################
 
-#' Get a Field for aDGVM1
+#' Get a Field for aDGVM
 #' 
-#' An internal function that reads data from an aDGVM1 run.  It actually call one of three other functions depending on the type of quantity specified.   
+#' An internal function that reads data from an aDGVM run.  It actually call one of three other functions depending on the type of quantity specified.   
 #' 
-#' @param source A \code{Source} containing the meta-data about the aDGVM1 run
-#' @param quant A string the define what output file from the aDGVM1 run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param source A \code{Source} containing the meta-data about the aDGVM run
+#' @param quant A string the define what output file from the aDGVM run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param target.STAInfo The spatial-temporal target domain
 #' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
 #' This can be left blank, in which case the file name is automatically generated.
@@ -18,7 +18,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @author Glenn Moncrief \email{glenn@@saeon.ac.za} 
 #' @keywords internal
-getField_aDGVM1 <- function(source,
+getField_aDGVM <- function(source,
                             quant,
                             target.STAInfo,
                             file.name,
@@ -26,39 +26,38 @@ getField_aDGVM1 <- function(source,
                             adgvm.file.type = "Yearly",
                             ...) {
   
-  # aDGVM1 yearly quantities
-  if("aDGVM1" %in% quant@format 
+  # aDGVM yearly quantities
+  if("aDGVM" %in% quant@format 
      && (tolower(adgvm.file.type) == "yearly" 
          || tolower(adgvm.file.type) == "year" 
          || tolower(adgvm.file.type) == "annual")) {
-    return(getYearlyField_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
+    return(getYearlyField_aDGVM(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
   }
-  # aDGVM1 daily quantities
-  else if("aDGVM1" %in% quant@format) {
-    return(getDailyField_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, adgvm.file.type, verbose = verbose, ...))
+  # aDGVM daily quantities
+  else if("aDGVM" %in% quant@format) {
+    return(getDailyField_aDGVM(source, quant, target.sta = target.STAInfo, file.name = file.name, adgvm.file.type, verbose = verbose, ...))
   }
   # Standard quantities 
   else if("Standard" %in% quant@format) {
-    return(getStandardQuantity_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, adgvm.file.type, verbose = verbose, ...))
+    return(getStandardQuantity_aDGVM(source, quant, target.sta = target.STAInfo, file.name = file.name, adgvm.file.type, verbose = verbose, ...))
   }
   else{
-    stop("Unrecognised Format of Quantity in 'quant' argument to getField_aDGVM1()")
+    stop("Unrecognised Format of Quantity in 'quant' argument to getField_aDGVM()")
   }
 }
 
 
 
-######################### OPEN AN aDGVM1 *.out FILE  #####################################################################
-#' Open an aDGVM1 .out file
+#' Get a yearly aDGVM Field
 #'
-#' \code{getYearlyField_aDGVM1} returns a data.table object given a string defining a vegetation quantity 
+#' \code{getYearlyField_aDGVM} returns a data.table object given a string defining a vegetation quantity 
 #' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \code{Source} containing the meta-data about the aDGVM1 run
-#' @param quant A Quant to define what output file from the aDGVM1 run to open, 
-#' can also be a simple string defining the aDGVM1 output file if the \code{return.data.table} argument is TRUE
+#' @param run A \code{Source} containing the meta-data about the aDGVM run
+#' @param quant A Quant to define what output file from the aDGVM run to open, 
+#' can also be a simple string defining the aDGVM output file if the \code{return.data.table} argument is TRUE
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
@@ -70,7 +69,7 @@ getField_aDGVM1 <- function(source,
 #' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
 #' @import data.table
 #' @keywords internal
-getYearlyField_aDGVM1 <- function(run,
+getYearlyField_aDGVM <- function(run,
                                   quant,
                                   target.sta,
                                   file.name = file.name,
@@ -337,17 +336,16 @@ getYearlyField_aDGVM1 <- function(run,
   
 }
 
-######################### OPEN AN aDGVM1 *.out FILE  #####################################################################
-#' Open an aDGVM1 .out file
+#' Get a 'daily' aDGVM Field
 #'
-#' \code{getYearlyField_aDGVM1} returns a data.table object given a string defining a vegetation quantity 
+#' \code{getYearlyField_aDGVM} returns a data.table object given a string defining a vegetation quantity 
 #' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \code{Source} containing the meta-data about the aDGVM1 run
-#' @param quant A Quant to define what output file from the aDGVM1 run to open, 
-#' can also be a simple string defining the aDGVM1 output file if the \code{return.data.table} argument is TRUE
+#' @param run A \code{Source} containing the meta-data about the aDGVM run
+#' @param quant A Quant to define what output file from the aDGVM run to open, 
+#' can also be a simple string defining the aDGVM output file if the \code{return.data.table} argument is TRUE
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
@@ -359,7 +357,7 @@ getYearlyField_aDGVM1 <- function(run,
 #' @author Glenn Moncrief \email{glenn@@saeon.ac.za} 
 #' @import data.table
 #' @keywords internal
-getDailyField_aDGVM1 <- function(run,
+getDailyField_aDGVM <- function(run,
                                  quant,
                                  target.sta,
                                  file.name = file.name,
@@ -495,7 +493,7 @@ getDailyField_aDGVM1 <- function(run,
   if(quant@id == quant@name && quant@units == "undefined unit") {
     all.potential.cols <- layers(dt) 
     matched.cols <- all.potential.cols[grepl(pattern = quant@id, all.potential.cols)]
-    if(length(matched.cols) == 0) stop(paste0("You asked for an aDGVM1 quantity called ", quant@name, ". I automagically made that but no columns in the input data file seem to match.  Please try a different Quantity string."))
+    if(length(matched.cols) == 0) stop(paste0("You asked for an aDGVM quantity called ", quant@name, ". I automagically made that but no columns in the input data file seem to match.  Please try a different Quantity string."))
     print(append(getDimInfo(dt), matched.cols))
     dt <- dt[, append(getDimInfo(dt), matched.cols), with = FALSE]
   }
@@ -739,7 +737,7 @@ getDailyField_aDGVM1 <- function(run,
 }
 
 
-#' Returns the data from one aDGVM1 output variable as a \code{data.table}.   
+#' Returns the data from one aDGVM output variable as a \code{data.table}.   
 #'
 #' 
 #' This funtion can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
@@ -750,8 +748,8 @@ getDailyField_aDGVM1 <- function(run,
 #' output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
 #' \code{Source} object, it will return that to save time.
 #' 
-#' @param run A \code{Source} containing the meta-data about the aDGVM1 run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
-#' @param quant A Quantity to define what output file from the aDGVM1 run to open
+#' @param run A \code{Source} containing the meta-data about the aDGVM run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
+#' @param quant A Quantity to define what output file from the aDGVM run to open
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
@@ -763,7 +761,7 @@ getDailyField_aDGVM1 <- function(run,
 #' @import data.table
 #' @keywords internal
 
-getStandardQuantity_aDGVM1 <- function(run, 
+getStandardQuantity_aDGVM <- function(run, 
                                        quant, 
                                        target.sta,
                                        file.name = file.name,
@@ -778,18 +776,18 @@ getStandardQuantity_aDGVM1 <- function(run,
   
   # Check that this really is a standard Quantity and therefore should have behaviour defined here
   if(!"Standard" %in% quant@format) {
-    stop((paste("getStandardQuantity_aDGVM1 called for a non-Standard Quantity (", quant@id, ")", sep = "")))
+    stop((paste("getStandardQuantity_aDGVM called for a non-Standard Quantity (", quant@id, ")", sep = "")))
   }
   
-  #### Here is the code to define each and every Standard Quantity for aDGVM1 output
+  #### Here is the code to define each and every Standard Quantity for aDGVM output
   
   # vegC_std 
   if(quant@id == "vegC_std") {
     
   
-    stem <- getField_aDGVM1(run, lookupQuantity("StemBiomass", aDGVM1), target.sta, file.name, verbose, adgvm.file.type, ...)
-    leaf <- getField_aDGVM1(run, lookupQuantity("LeafBiomass", aDGVM1), target.sta, file.name, verbose, adgvm.file.type, ...)
-    root <- getField_aDGVM1(run, lookupQuantity("RootBiomass", aDGVM1), target.sta, file.name, verbose, adgvm.file.type, ...)
+    stem <- getField_aDGVM(run, lookupQuantity("StemBiomass", aDGVM), target.sta, file.name, verbose, adgvm.file.type, ...)
+    leaf <- getField_aDGVM(run, lookupQuantity("LeafBiomass", aDGVM), target.sta, file.name, verbose, adgvm.file.type, ...)
+    root <- getField_aDGVM(run, lookupQuantity("RootBiomass", aDGVM), target.sta, file.name, verbose, adgvm.file.type, ...)
     
     full.dt <- root@data[stem@data[leaf@data]]
     
@@ -828,8 +826,8 @@ getStandardQuantity_aDGVM1 <- function(run,
   # vegcover_std
   else if(quant@id == "vegcover_std") {
     
-    # # vegcover.out provides the right quantity here (note this is not standard aDGVM1)
-    # this.Field <- openaDGVM1OutputFile(run, lookupQuantity("vegcover", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
+    # # vegcover.out provides the right quantity here (note this is not standard aDGVM)
+    # this.Field <- openaDGVMOutputFile(run, lookupQuantity("vegcover", aDGVM), target.sta, file.name = file.name, verbose = verbose)
     # 
     # # But we need to scale it to %
     # if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
@@ -848,7 +846,7 @@ getStandardQuantity_aDGVM1 <- function(run,
   else if(quant@id == "LAI_std") {
     
     # lai provides the right quantity here - so done
-    # this.Field <- openaDGVM1OutputFile(run, lookupQuantity("lai", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
+    # this.Field <- openaDGVMOutputFile(run, lookupQuantity("lai", aDGVM), target.sta, file.name = file.name, verbose = verbose)
     
   }
   
@@ -858,7 +856,7 @@ getStandardQuantity_aDGVM1 <- function(run,
   # else stop
   else {
     
-    stop(paste("Unfortunately standard quantity", quant@id, "does not seem to be available in aDGVM1"))
+    stop(paste("Unfortunately standard quantity", quant@id, "does not seem to be available in aDGVM"))
     
   }
   
@@ -870,19 +868,19 @@ getStandardQuantity_aDGVM1 <- function(run,
 
 
 
-######################### LIST ALL aDGVM1 OUTPUT VARIABLES (STORED AS *.out FILES) IN AN RUN DIRECTORY  #####################################################################
-#' List available aDGVM1 Quantities in a run
+######################### LIST ALL aDGVM OUTPUT VARIABLES (STORED AS *.out FILES) IN AN RUN DIRECTORY  #####################################################################
+#' List available aDGVM Quantities in a run
 #'
-#' Simply lists all aDGVM1 Quantities that *should* be available in the run based on the files that are 
+#' Simply lists all aDGVM Quantities that *should* be available in the run based on the files that are 
 #' available in the run directory.  It does NOT check that the required columns are available in the output file. 
 #' 
-#' @param source A aDGVM1 source object
+#' @param source A aDGVM source object
 #' @param names Logical, if TRUE (the default) return the names of the quantities, if FALSE return the quanties themseleves
 #' @return A list of all the Quantities available for this aDGVM run 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
-availableQuantities_aDGVM1 <- function(source, names = TRUE, verbose = FALSE){
+availableQuantities_aDGVM <- function(source, names = TRUE, verbose = FALSE){
   
   directory <- source@dir
   
@@ -919,10 +917,10 @@ availableQuantities_aDGVM1 <- function(source, names = TRUE, verbose = FALSE){
   # if daily output is available then relatively easy life, just return the full list of Quantities
   if(daily.output.avail) {
     
-    if(!names) return(aDGVM1.quantities)
+    if(!names) return(aDGVM.quantities)
     else {
       all.names <- c()
-      for(this.quant in aDGVM1.quantities) {
+      for(this.quant in aDGVM.quantities) {
         all.names <- append(all.names, this.quant@id)
       }
       return(all.names)
@@ -938,7 +936,7 @@ availableQuantities_aDGVM1 <- function(source, names = TRUE, verbose = FALSE){
     if(names) return(yearly.quantities)
     else {
       available.quantities <- list()
-      for(this.quant in aDGVM1.quantities) {
+      for(this.quant in aDGVM.quantities) {
         
         if(this.quant@id %in% yearly.quantities) available.quantities <- append(available.quantities, this.quant)
       }
@@ -953,14 +951,14 @@ availableQuantities_aDGVM1 <- function(source, names = TRUE, verbose = FALSE){
 
 
 #####################################################################
-########### aDGVM1(-SPITFIRE) GLOBAL PFTS ########################
+############### aDGVM STANDARD PFTS #################################
 #####################################################################
 
 
 #' @format An S4 class object with the slots as defined below.
 #' @rdname PFT-class
 #' @keywords datasets
-aDGVM1.PFTs <- list(
+aDGVM.PFTs <- list(
   
   
   # Forest Tree
@@ -1016,7 +1014,7 @@ aDGVM1.PFTs <- list(
 )
 
 #####################################################################
-########### aDGVM1(-SPITFIRE) QUANTITIES ########################
+################### DEFINED aDGVM QUANTITIES ########################
 #####################################################################
 
 
@@ -1026,7 +1024,7 @@ aDGVM1.PFTs <- list(
 #' @include colour-palettes.R
 #' 
 #' 
-aDGVM1.quantities <- list(
+aDGVM.quantities <- list(
   
   
   new("Quantity",
@@ -1034,7 +1032,7 @@ aDGVM1.quantities <- list(
       name = "Canopy Cover",
       units = "%",
       colours = reversed.viridis,
-      format = c("aDGVM1"),
+      format = c("aDGVM"),
       cf.name = "land_area_fraction"),
   
   new("Quantity",
@@ -1042,63 +1040,63 @@ aDGVM1.quantities <- list(
       name = "Leaf biomass",
       units = "tonnes/hectare",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "RootBiomass",
       name = "Root biomass",
       units = "tonnes/hectare",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "StemBiomass",
       name = "Stem biomass",
       units = "tonnes/hectare",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "DeadGrassBiomass",
       name = "Dead grass biomass",
       units = "tonnes/hectare",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "LiveGrassBiomass",
       name = "Live grass biomass",
       units = "tonnes/hectare",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "ET",
       name = "Evapotranspiration",
       units = "mm/day",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "PopSize",
       name = "Tree population size",
       units = "number of individuals",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "C3C4_Ratio",
       name = "Ratio of C3 to C4 grass",
       units = "proportion",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "Grouped_Size_Classes",
       name = "Tree size classes",
       units = "number of individuals",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   
   #### DUMMY - or maybe useful...
@@ -1107,22 +1105,22 @@ aDGVM1.quantities <- list(
       name = "Soil Carbon",
       units = "kg whatever",
       colours = reversed.viridis,
-      format = c("aDGVM1")),
+      format = c("aDGVM")),
   
   new("Quantity",
       id = "FireIntensity",
       name = "Fire intensity",
       units = "W/m^2",
       colours = reversed.viridis,
-      format = c("aDGVM1"))
+      format = c("aDGVM"))
   
 )
 
 ##################################################
-########### aDGVM1 FORMAT ########################
+########### aDGVM FORMAT ########################
 ##################################################
 
-#' @description \code{aDGVM1} - a Format for reading standard aDGVM1 model output
+#' @description \code{aDGVM} - a Format for reading standard aDGVM model output
 #' 
 #' @format A \code{Quantity} object is an S4 class.
 #' @aliases Format-class
@@ -1131,22 +1129,22 @@ aDGVM1.quantities <- list(
 #' @include colour-palettes.R
 #' @export
 #' 
-aDGVM1 <- new("Format",
+aDGVM <- new("Format",
               
               # UNIQUE ID
-              id = "aDGVM1",
+              id = "aDGVM",
               
               # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-              availableQuantities = availableQuantities_aDGVM1,
+              availableQuantities = availableQuantities_aDGVM,
               
               # FUNCTION TO READ A FIELD 
-              getField = getField_aDGVM1,
+              getField = getField_aDGVM,
               
               # DEFAULT GLOBAL PFTS  
-              default.pfts = aDGVM1.PFTs,
+              default.pfts = aDGVM.PFTs,
               
-              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM aDGVM1 RUNS  
-              quantities = aDGVM1.quantities
+              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM aDGVM RUNS  
+              quantities = aDGVM.quantities
               
 )
 

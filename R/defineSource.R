@@ -66,6 +66,11 @@ defineSource <- function(id,
       format <- DGVMData
       warning(paste0('Use for character string to specify the "format" argument in defineSource() is deprecated and will soon be removed. Please replace "', format,'" with DGVMData (unquoted)'))
     }
+    else if(format == "aDGVM") {
+      format <- aDGVM
+      warning(paste0('Use for character string to specify the "format" argument in defineSource() is deprecated and will soon be removed. Please replace "', format,'" with aDGVM (unquoted)'))
+      
+    }
     else if(format == "aDGVM2") {
       format <- aDGVM2
       warning(paste0('Use for character string to specify the "format" argument in defineSource() is deprecated and will soon be removed. Please replace "', format,'" with aDGVM (unquoted)'))
