@@ -14,8 +14,8 @@ getField_aDGVM1(source, quant, target.STAInfo, file.name, verbose,
 
 \item{target.STAInfo}{The spatial-temporal target domain}
 
-\item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
-"<quant@id>.out" (also "<quant@id>.out.gz")}
+\item{file.name}{An optional character string (or a list of character strings) holding the name of the file(s)
+This can be left blank, in which case the file name is automatically generated.}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
 }
@@ -27,5 +27,7 @@ An internal function that reads data from an aDGVM1 run.  It actually call one o
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
+
+Glenn Moncrief \email{glenn@saeon.ac.za}
 }
 \keyword{internal}
