@@ -1103,7 +1103,7 @@ aDGVMBiomeScheme <- new("BiomeScheme",
                                layers.needed = list( list(quantity = "LeafBiomass", operator = "+", layers = ".Grass", new.layer = "Grass"),
                                                      list(quantity = "Cancov", operator = "+", layers = ".Tree", new.layer = "Tree"),
                                                      list(quantity = "Cancov", operator = "/", layers = c("ForTr", "Tree"), new.layer = "ForTr_Fraction_Of_Tree"),
-                                                     list(quantity = "C3C4_Ratio", operator = NULL, layers = "TempSillyString")),
+                                                     list(quantity = "C3C4_Ratio", operator = NULL, layers = "IgnoreThisWarningMessageHonestlyItsFine")),
                                data.reference = "-",
                                published.reference = "-")
 

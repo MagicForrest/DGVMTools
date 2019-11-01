@@ -261,7 +261,7 @@ getBiomes <- function(source,
   
   dt <- all.fields[[1]]@data
   if(length(all.fields) > 1){
-    for(counter in 1:length(all.fields)){
+    for(counter in 2:length(all.fields)){
       dt <- dt[all.fields[[counter]]@data]
     }
   }
