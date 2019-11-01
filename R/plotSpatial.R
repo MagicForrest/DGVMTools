@@ -93,7 +93,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
                         tile = FALSE){
   
   J = Source = Value = Lat = Lon = Layer = long = lat = group = NULL
-  Day = Month = Year = Season = NULL
+  Day = Month = Year = Season = Years = NULL
   
   ### CHECK FOR MISSING OR INCONSISTENT ARGUMENTS AND INITIALISE STUFF WHERE APPROPRIATE
   categorical.legend.labels <- waiver()

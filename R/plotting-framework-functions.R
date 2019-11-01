@@ -304,7 +304,7 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
 #' 
 mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FALSE, add.Region = FALSE, add.Years = FALSE) {
   
-  Source = Quantity = Site = Lon = Lat = Region = NULL
+  Source = Quantity = Site = Lon = Lat = Region = Years = NULL
   
   data.toplot.list <- list()
   for(this.field in fields) {

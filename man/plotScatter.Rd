@@ -17,6 +17,8 @@ Default value is x.}
 
 \item{layer.y}{The second layer to be plotted (taken from y).  Defaults to layer.x.}
 
+\item{alpha}{Numeric between 0 and 1 specifing the transparency of the points.  Defaults is 1.}
+
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}
 }

@@ -8,6 +8,7 @@
 #' Default value is x.
 #' @param layer.x The first layer to be plotted (taken from x)
 #' @param layer.y The second layer to be plotted (taken from y).  Defaults to layer.x.
+#' @param alpha Numeric between 0 and 1 specifing the transparency of the points.  Default is 1 (= fully opaque).
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' 
