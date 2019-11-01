@@ -869,49 +869,69 @@ getStandardQuantity_aDGVM1 <- function(run,
 
 availableQuantities_aDGVM1 <- function(source, names = TRUE, verbose = FALSE){
   
-  # directory <- source@dir
-  # 
-  # # First get the list of *.out files present
-  # files.present <- list.files(directory, ".out$")
-  # files.present <- append(files.present, list.files(directory, ".out.gz$"))
-  # 
-  # # Now strip the .out file extension out the get the variable name
-  # this.var.list <- unlist(lapply(files.present, FUN = aDGVM1QuantFromFilename))
-  # 
-  # 
-  # # check that they correspond to actual quantities, if not through a warning and chuck them out
-  # good.list <- list()
-  # ignore.list <- c("*", "aDGVM1_out", "aDGVM1_err")
-  # 
-  # for(this.file in files.present){
-  #   
-  #   variable <- aDGVM1QuantFromFilename(this.file)
-  #   
-  #   if(!variable %in% ignore.list) {
-  #     
-  #     result = tryCatch({
-  #       dummy.quant <- suppressWarnings(lookupQuantity(variable, source@format))
-  #     },  warning = function(w) {
-  #       #warning(w)
-  #     }, error = function(e) {
-  #       #warning(e)
-  #     }, finally = {
-  #     })
-  #     
-  #     if(is.Quantity(result))  {
-  #       if(names) good.list <- append(good.list, variable)
-  #       else good.list <- append(good.list, result)
-  #     }
-  #     else {
-  #       if(verbose) warning("Although I have found file with an appropriate extension that looks like an aDGVM1 output variable (", this.file, "), I have no Quantity object corrsponding to \"", variable, "\".  I am therefore ignoring it.  \n However, not to worry! If you want this file included, you can easily add a new Quantity to the dgvm.quantities list (just in your analysis script, doesn't need to be in the package).")
-  #     }
-  #     
-  #   }
-  #   
-  # }
-  # 
-  # return(unlist(good.list))
+  directory <- source@dir
   
+  # check that we have at least yearly data
+  yearly.present <- length(list.files(directory, "YearlyData*")) > 0
+  if(yearly.present & verbose) print("Found Yearly files")
+  
+  # check for the Sys/Fire/Soil/Soil "daily" data
+  sys.present <- length(list.files(directory, "SysData*")) > 0
+  if(sys.present & verbose) print("Found Sys daily files")
+  soil.present <- length(list.files(directory, "SoilData*")) > 0
+  if(soil.present & verbose) print("Found Soil daily files")
+  fire.present <- length(list.files(directory, "FireData*")) > 0
+  if(fire.present & verbose) print("Found Fire files")
+  size.present <- length(list.files(directory, "SizeData*")) > 0
+  if(fire.present & verbose) print("Found Size annual files")
+
+  # check for consistency of 'daily' files
+  daily.output.avail <- FALSE
+  daily.files.avail <- sum(sys.present, soil.present, fire.present, size.present)
+  if(daily.files.avail == 4) {
+    if(verbose) print("Got all 4 files for 'daily' output (Sys/Size/Fire/Soil)")
+    daily.output.avail <- TRUE
+  } 
+  else if(daily.files.avail == 0) {
+    if(verbose) print("Got no daily output files")
+  }
+  else {
+    if(verbose) print("Got some but not all daily output files.  This means you won't be able to read all daily
+                      output and perhaps part of your run output is missing?")
+    daily.output.avail <- TRUE
+  }
+  
+  # if daily output is available then relatively easy life, just return the full list of Quantities
+  if(daily.output.avail) {
+    
+    if(!names) return(aDGVM1.quantities)
+    else {
+      all.names <- c()
+      for(this.quant in aDGVM1.quantities) {
+        all.names <- append(all.names, this.quant@id)
+      }
+      return(all.names)
+    }
+    
+  }
+  
+  # else select only the yearly quantities based on the dirty, hard-coded lsit below
+  else {
+    
+    yearly.quantities <- c("Cancov", "LeafBiomass", "RootBiomass", "StemBiomass", "DeadGrassBiomass", 
+                     "LiveGrassBiomass", "ET", "PopSize", "C3C4_Ratio")
+    if(names) return(yearly.quantities)
+    else {
+      available.quantities <- list()
+      for(this.quant in aDGVM1.quantities) {
+        
+        if(this.quant@id %in% yearly.quantities) available.quantities <- append(available.quantities, this.quant)
+      }
+      return(available.quantities)
+    }
+    
+  }
+
 }
 
 
