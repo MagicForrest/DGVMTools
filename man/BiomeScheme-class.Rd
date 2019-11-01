@@ -10,6 +10,7 @@
 \alias{DevMegaBiomeScheme}
 \alias{FireMIPBiomeScheme}
 \alias{FPCMegaBiomeScheme}
+\alias{aDGVMBiomeScheme}
 \alias{SimpleAdgvm2BiomeScheme}
 \alias{SimpleHeightAdgvm2BiomeScheme}
 \alias{GrowthFormAdgvm2BiomeScheme}
@@ -30,6 +31,8 @@ DevMegaBiomeScheme
 FireMIPBiomeScheme
 
 FPCMegaBiomeScheme
+
+aDGVMBiomeScheme
 
 SimpleAdgvm2BiomeScheme
 
@@ -54,6 +57,8 @@ This class stores the information about a biome scheme.  It describes what how t
 \strong{FireMIPBiomeScheme}  Simple biomes based on a common PFT set for the FireMIP models
 
 \strong{FPCMegaBiome} an unpublished scheme based on fractional cover developed by Joerg Steinkamp
+
+\strong{SimpleAdgvm2BiomeScheme} SS document here
 
 \strong{SimpleAdgvm2BiomeScheme} SS document here
 
@@ -90,6 +95,10 @@ which would make a layer called "Woody" which would be the sum of all LAI trees 
 
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
+
+Matthew Forrest \email{matthew.forrest@senckenberg.de}
+
+Glenn Moncrief \email{glenn@saeon.ac.za}
 
 Simon Scheiter \email{Simon.Scheiter@senckenberg.de}
 }

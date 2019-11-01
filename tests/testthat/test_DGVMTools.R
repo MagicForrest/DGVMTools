@@ -407,11 +407,12 @@ test_that("Categorical Quantities", {
                                            format = GUESS,
                                            name = "LPJ-GUESS Europe Example Run 2 (copy)")
   
-  # Dummy Source for averaged biomes, expect  a Warning because no data from which to determe PFTs
-  expect_warning(GUESS.Europe.test.Source.Averaged <- defineSource(id = "LPJ-GUESS_Example_Averaged",
+  # Dummy Source for averaged biomes
+  expect_is(GUESS.Europe.test.Source.Averaged <- defineSource(id = "LPJ-GUESS_Example_Averaged",
                                              dir = getwd(), 
                                              format = GUESS,
-                                             name = "LPJ-GUESS Europe Example Run Averaged"))
+                                             name = "LPJ-GUESS Europe Example Run Averaged"),
+            "Source")
   
   GUESS.Smith2014.Biomes.averaged <- suppressWarnings(getBiomes(source = list(GUESS.Europe.test.Source, GUESS.Europe.test.Source), 
                                                                 scheme = Smith2014BiomeScheme, 

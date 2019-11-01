@@ -1018,7 +1018,94 @@ FPCMegaBiomeScheme <- new("BiomeScheme",
                             data.reference = "-",
                             published.reference = "-")
 
+#####################################################################
+########### ADGVM(1) BIOME CLASSIFICATION SCHEMES #####################
+#####################################################################
 
+
+
+#####################################################################
+########### SIMPLE BIOME CLASSIFICATION #############################
+#####################################################################
+
+#' Rules to classify tropical biomes from aDGVM1 output
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, woodland, forest)
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
+
+aDGVMBiomeRules <- function(x){
+  
+  # BIOME 1 - Forest
+  if(as.numeric(x[['Cancov_Tree']]) >= 0.8) {return("Forest")}
+  
+  # BIOME 2 - Woodland
+  else if(as.numeric(x[['Cancov_Tree']]) < 0.8 & x[['Cancov_Tree']] > 0.1 & x[['Cancov_ForTr_Fraction_Of_Tree']] > 0.5) {return("Woodland")}
+  
+  # BIOME 3 - C4 Savanna
+  else if(as.numeric(x[['Cancov_Tree']]) < 0.8 & x[['Cancov_Tree']] > 0.1 & x[['Cancov_ForTr_Fraction_Of_Tree']] <= 0.5 & x[['C3C4_Ratio_Grass']] < 0.5) {return("C4 Savanna")}
+
+  # BIOME 4 - C3 Savanna
+  else if(as.numeric(x[['Cancov_Tree']]) < 0.8 & x[['Cancov_Tree']] > 0.1 & x[['Cancov_ForTr_Fraction_Of_Tree']] <= 0.5 & x[['C3C4_Ratio_Grass']] >= 0.5) {return("C3 Savanna")}
+
+  # BIOME 5 - C4 Grassland
+  else if(as.numeric(x[['Cancov_Tree']]) <= 0.1 & x[['LeafBiomass_Grass']] > 0.5 & x[['C3C4_Ratio_Grass']] >= 0.5) {return("C4 Grassland")}
+  
+  # BIOME 6 - C3 Grassland
+  else if(as.numeric(x[['Cancov_Tree']]) <= 0.1 & x[['LeafBiomass_Grass']] > 0.5 & x[['C3C4_Ratio_Grass']] < 0.5) {return("C3 Grassland")}
+ 
+  # BIOME 7 - Desert
+  else if(as.numeric(x[['Cancov_Tree']]) <= 0.1 & x[['LeafBiomass_Grass']] <= 0.5) {return("Desert")}
+
+  # BIOME 8 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' \strong{SimpleAdgvm2BiomeScheme} SS document here
+#' 
+#' @rdname BiomeScheme-class
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
+
+aDGVMBiomeScheme <- new("BiomeScheme",
+                               new("Quantity",
+                                   id = "aDGVMBiomeScheme",
+                                   name = "aDGVM(1) Biomes",
+                                   colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                           "C4 Grassland" = '#fad052',
+                                                                           "C3 Grassland" = '#f0f571',
+                                                                           "C4 Savanna" = '#a7c454',
+                                                                           "C3 Savanna" = '#caf062',
+                                                                           "Woodland" = '#5fde6e',
+                                                                           "Forest" = '#3c8f46',
+                                                                           "Unclassifiable/Other" = "grey75")),
+                                   units = c("Desert",
+                                             "C4 Grassland",
+                                             "C3 Grassland",
+                                             "C4 Savanna",
+                                             "C3 Savanna",
+                                             "Woodland",
+                                             "Forest",
+                                             "Unclassifiable/Other"),
+                                   format = c("aDGVM1")),
+                               rules = aDGVMBiomeRules,
+                               layers.needed = list( list(quantity = "LeafBiomass", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                     list(quantity = "Cancov", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                                     list(quantity = "Cancov", operator = "/", layers = c("ForTr", "Tree"), new.layer = "ForTr_Fraction_Of_Tree"),
+                                                     list(quantity = "C3C4_Ratio", operator = NULL, layers = "TempSillyString")),
+                               data.reference = "-",
+                               published.reference = "-")
 
 
 #####################################################################
@@ -1327,6 +1414,7 @@ supported.biome.schemes <- c("Smith2014" = Smith2014BiomeScheme,
                              "FPCMegaBiomes" = FPCMegaBiomeScheme,
                              "MeditBiomes" = MeditBiomeScheme,
                              "FireMIPBiomes" = FireMIPBiomeScheme,
+                             "aDGVMBiomes" = aDGVMBiomeScheme,
                              "SimpleAdgvm2Biomes" = SimpleAdgvm2BiomeScheme,
                              "SimpleHeightAdgvm2Biomes" = SimpleHeightAdgvm2BiomeScheme,
                              "GrowthFormAdgvm2Biomes" = GrowthFormAdgvm2BiomeScheme,
