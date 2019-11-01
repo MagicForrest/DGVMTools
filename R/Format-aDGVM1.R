@@ -547,7 +547,7 @@ getDailyField_aDGVM1 <- function(run,
     dt <- dt[, append(getDimInfo(dt), c("Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying")), with = FALSE]
     dt[, Grass_LeafBiomassDeadStanding := Grass_LeafBiomassDeadStanding*10]
     dt[, Grass_LeafBiomassDeadLying := Grass_LeafBiomassDeadLying*10]
-    setnames(dt, c("Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying"), c("Grass","Grass"))
+    setnames(dt, c("Grass_LeafBiomassDeadStanding","Grass_LeafBiomassDeadLying"), c("Standing","Lying"))
     print(dt)
     
   }
@@ -585,6 +585,34 @@ getDailyField_aDGVM1 <- function(run,
     
   }
   
+  if(variable == "All_Size_Classes") {
+    
+    dt <- dt[, append(getDimInfo(dt), c( "50","100","150","200","250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000","1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")), with = FALSE]
+    print(dt)
+    
+  }
+  
+  if(variable == "Grouped_Size_Classes") {
+    
+    dt <- dt[, append(getDimInfo(dt), c( "50","100","150","200","250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000","1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")), with = FALSE]
+    dt[, Seedlings := rowSums(.SD), .SDcols = c("50")]
+    dt[, Saplings := rowSums(.SD), .SDcols = c("100","150","200")]
+    dt[, SmallTrees := rowSums(.SD), .SDcols = c("250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000")]
+    dt[, LargeTrees := rowSums(.SD), .SDcols = c("1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")]
+    dt[, Large := rowSums(.SD), .SDcols = c("100","150","200")]
+    dt <- dt[, append(getDimInfo(dt), c("Seedlings","Saplings","SmallTrees","LargeTrees")), with = FALSE]
+    setnames(dt, c("Seedlings","Saplings","SmallTrees","LargeTrees"), c("Seedlings < 0.5m","Saplings < 2m","Small Trees < 10m","LargeTrees > 10m"))
+    print(dt)
+    
+  }
+  
+  if(variable == "FireIntensity") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("FireIntensity")), with = FALSE]
+    print(dt)
+    
+  }
+
   #  Print messages
   if(verbose) {
     message("Read table. It has header:")
@@ -1058,6 +1086,13 @@ aDGVM1.quantities <- list(
       colours = reversed.viridis,
       format = c("aDGVM1")),
   
+  new("Quantity",
+      id = "Grouped_Size_Classes",
+      name = "Tree size classes",
+      units = "number of individuals",
+      colours = reversed.viridis,
+      format = c("aDGVM1")),
+  
   
   #### DUMMY - or maybe useful...
   new("Quantity",
@@ -1068,9 +1103,9 @@ aDGVM1.quantities <- list(
       format = c("aDGVM1")),
   
   new("Quantity",
-      id = "FireNum",
-      name = "Number of fires",
-      units = "m^2",
+      id = "FireIntensity",
+      name = "Fire intensity",
+      units = "W/m^2",
       colours = reversed.viridis,
       format = c("aDGVM1"))
   
