@@ -38,7 +38,7 @@ getField_aDGVM1 <- function(source,
   }
   # Standard quantities 
   else if("Standard" %in% quant@format) {
-    return(getStandardQuantity_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, verbose = verbose, ...))
+    return(getStandardQuantity_aDGVM1(source, quant, target.sta = target.STAInfo, file.name = file.name, adgvm.file.type, verbose = verbose, ...))
   }
   else{
     stop("Unrecognised Format of Quantity in 'quant' argument to getField_aDGVM1()")
@@ -81,6 +81,9 @@ getYearlyField_aDGVM1 <- function(run,
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = Day = NULL
+  EvapoGrass = EvapoSoil = EvapoTot = EvapoTree = Grass_LeafBiomassDeadLying =  NULL
+  Grass_LeafBiomassDeadStanding = Grass_LeafBiomassLive = Grass_RootBiomassLive = NULL
+  Tree_LeafBiomassLive = Tree_RootBiomassLive = Tree_StemBiomassLive = NULL
   
   # extract from the target.sta
   first.year = target.sta@first.year
@@ -98,7 +101,7 @@ getYearlyField_aDGVM1 <- function(run,
   else {
     all.files <- file.name
   }
- 
+  
   if(!data.table.only && class(quant)[1] != "Quantity") stop("Please supply a formal Quantity object as the quant argument since you are not requesting at data.table")
   
   if(class(quant)[1] == "Quantity") variable <- quant@id
@@ -374,6 +377,9 @@ getDailyField_aDGVM1 <- function(run,
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = Day = NULL
+  EvapoGrass = EvapoSoil = EvapoTot = EvapoTree = Grass_LeafBiomassDeadLying =  NULL
+  Grass_LeafBiomassDeadStanding = Grass_LeafBiomassLive = Grass_RootBiomassLive = NULL
+  Tree_LeafBiomassLive = Tree_RootBiomassLive = Tree_StemBiomassLive = NULL
   
   # extract from the target.sta
   first.year = target.sta@first.year
@@ -452,11 +458,11 @@ getDailyField_aDGVM1 <- function(run,
     
   }
   
- 
+  
   dt <- rbindlist(all.dts)
   rm(all.dts)
   gc()
- 
+  
   # set names depending on file type
   if(file.substring == "Sys") {
     original.length <- length(names(dt)) - 2 # subtract 2 because we have added Lon and Lat
@@ -746,7 +752,9 @@ getStandardQuantity_aDGVM1 <- function(run,
                                        quant, 
                                        target.sta,
                                        file.name = file.name,
-                                       verbose = FALSE) {
+                                       adgvm.file.type,
+                                       verbose = FALSE,
+                                       ...) {
   
   Total = Year = FireRT = NULL
   
@@ -758,129 +766,79 @@ getStandardQuantity_aDGVM1 <- function(run,
     stop((paste("getStandardQuantity_aDGVM1 called for a non-Standard Quantity (", quant@id, ")", sep = "")))
   }
   
-  
-  
   #### Here is the code to define each and every Standard Quantity for aDGVM1 output
   
-  # vegcover_std
-  if(quant@id == "vegcover_std") {
+  # vegC_std 
+  if(quant@id == "vegC_std") {
     
-    # vegcover.out provides the right quantity here (note this is not standard aDGVM1)
-    this.Field <- openaDGVM1OutputFile(run, lookupQuantity("vegcover", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
+  
+    stem <- getField_aDGVM1(run, lookupQuantity("StemBiomass", aDGVM1), target.sta, file.name, verbose, adgvm.file.type, ...)
+    leaf <- getField_aDGVM1(run, lookupQuantity("LeafBiomass", aDGVM1), target.sta, file.name, verbose, adgvm.file.type, ...)
+    root <- getField_aDGVM1(run, lookupQuantity("RootBiomass", aDGVM1), target.sta, file.name, verbose, adgvm.file.type, ...)
     
-    # But we need to scale it to %
-    if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
-    this.dt <- this.Field@data
-    mod.cols <- names(this.dt)
-    mod.cols <- mod.cols[!mod.cols %in% unmod.cols]
-    this.dt[, (mod.cols) := lapply(.SD, function(x) x * 100 ), .SDcols = mod.cols]
-    if("Grass" %in% names(this.dt)) { setnames(this.dt, old = "Grass", new = "NonTree") }
-    this.Field@data <- this.dt
+    full.dt <- root@data[stem@data[leaf@data]]
     
-    return(this.Field)
+    possible.layers <- c("C3G", "C4G", "Tree", "Grass", "SavTr", "ForTr") 
+    
+    for(this.layer in possible.layers) {
+      
+      these.cols <- names(full.dt)[grepl(pattern = this.layer, names(full.dt))]
+      if(length(these.cols) > 0) {
+        full.dt[, (this.layer) := rowSums(.SD), .SDcols = these.cols]
+        full.dt[, (this.layer) := lapply(.SD, function(x) x * 0.1 ), .SDcols = this.layer]
+        for(temp.col in these.cols) {
+          if(temp.col != this.layer) full.dt[, (temp.col) := NULL]
+        }
+      }
+    }
+    
+    # make the ID and then make and return Field
+    sta.info <- as(object = stem, Class = "STAInfo")
+    field.id <- makeFieldID(source = run, var.string = quant@id, sta.info = sta.info)
+    
+    return(
+      
+      new("Field",
+          id = field.id,
+          data = full.dt,
+          quant = quant,
+          source = run,
+          sta.info  
+      )
+      
+    )
     
   }
   
-  # vegC_std 
-  else if(quant@id == "vegC_std") {
+  # vegcover_std
+  else if(quant@id == "vegcover_std") {
     
-    # cmass provides the right quantity here - so done
-    this.Field <- openaDGVM1OutputFile(run, lookupQuantity("cmass", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-    
+    # # vegcover.out provides the right quantity here (note this is not standard aDGVM1)
+    # this.Field <- openaDGVM1OutputFile(run, lookupQuantity("vegcover", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
+    # 
+    # # But we need to scale it to %
+    # if(verbose) message("Multiplying fractional areal vegetation cover by 100 to get percentage areal cover")
+    # this.dt <- this.Field@data
+    # mod.cols <- names(this.dt)
+    # mod.cols <- mod.cols[!mod.cols %in% unmod.cols]
+    # this.dt[, (mod.cols) := lapply(.SD, function(x) x * 100 ), .SDcols = mod.cols]
+    # if("Grass" %in% names(this.dt)) { setnames(this.dt, old = "Grass", new = "NonTree") }
+    # this.Field@data <- this.dt
+    # 
+    # return(this.Field)
+    # 
   }
   
   # LAI_std 
   else if(quant@id == "LAI_std") {
     
     # lai provides the right quantity here - so done
-    this.Field <- openaDGVM1OutputFile(run, lookupQuantity("lai", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
+    # this.Field <- openaDGVM1OutputFile(run, lookupQuantity("lai", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
     
   }
   
-  # FPAR_std 
-  else if(quant@id == "FPAR_std") {
-    
-    # lai provides the right quantity here - so done
-    this.Field <- openaDGVM1OutputFile(run, lookupQuantity("fpc", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-    all.layers <- layers(this.Field)
-    drop.layers <- all.layers [! all.layers %in% c("Total")]
-    this.Field@data[, (drop.layers) := NULL]
-    this.Field@data[, Total := pmin(Total, 1) * 100 * 0.83]
-    
-  }
+
   
-  # aGPP_std 
-  else if(quant@id == "aGPP_std") {
-    
-    # in older version of aDGVM1, the mgpp file must be aggregated to annual
-    # newer versions have the agpp output variable which has the per PFT version
-    if(file.exists(file.path(run@dir, "agpp.out")) || file.exists(file.path(run@dir, "agpp.out.gz"))){
-      this.Field <- openaDGVM1OutputFile(run, lookupQuantity("agpp", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-    }
-    else {
-      this.Field <- openaDGVM1OutputFile(run, lookupQuantity("mgpp", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-      this.Field <- aggregateSubannual(this.Field, method = "sum", target = "Year")
-    }
-    
-  }
-  
-  
-  # aNPP_std 
-  else if(quant@id == "aNPP_std") {
-    
-    # in older version of aDGVM1, the mgpp file must be aggregated to annual
-    # newer versions have the agpp output variable which has the per PFT version
-    
-    if(file.exists(file.path(run@dir, "anpp.out")) || file.exists(file.path(run@dir, "anpp.out.gz"))){
-      this.Field <- openaDGVM1OutputFile(run, lookupQuantity("anpp", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-    }
-    else{
-      this.Field <-  openaDGVM1OutputFile(run, lookupQuantity("mnpp", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-      this.Field <- aggregateSubannual(this.Field , method = "sum", target = "Year")
-    }
-    
-  }
-  
-  # mNPP_std 
-  else if(quant@id == "aNEE_std") {
-    
-    this.Field <- openaDGVM1OutputFile(run, lookupQuantity("cflux", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-    
-    # take NEE and  ditch the rest
-    all.layers <- layers(this.Field)
-    drop.layers <- all.layers [! all.layers %in% c("NEE")]
-    this.Field@data[, (drop.layers) := NULL]
-    
-  }
-  
-  # canopyheight_std 
-  else if(quant@id == "canopyheight_std") {
-    
-    # The canopyheight output fromth e benchmarkoutput output module is designed to be exactly this quantity
-    this.Field <- openaDGVM1OutputFile(run, lookupQuantity("canopyheight", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-    renameLayers(this.Field, "CanHght", "CanopyHeight")
-    
-  }
-  
-  # burntfraction_std 
-  else if(quant@id == "burntfraction_std") {
-    
-    # if mfirefrac is present the open it and use it
-    if("mfirefrac" %in% availableQuantities_aDGVM1(run, names=TRUE)){
-      this.Field <- openaDGVM1OutputFile(run, lookupQuantity("mfirefrac", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-      this.Field <- aggregateSubannual(this.Field, method = "sum")
-      renameLayers(this.Field, "mfirefrac", quant@id)
-      
-    }
-    
-    # otherwise open firert to get GlobFIRM fire return interval and invert it
-    else {
-      this.Field <- openaDGVM1OutputFile(run, lookupQuantity("firert", aDGVM1), target.sta, file.name = file.name, verbose = verbose)
-      this.Field@data[, "burntfraction_std" :=  1 / FireRT]
-      this.Field@data[, FireRT :=  NULL]
-    }
-    
-  }
   
   # else stop
   else {
@@ -1135,7 +1093,7 @@ aDGVM1 <- new("Format",
               
               # UNIQUE ID
               id = "aDGVM1",
-                  
+              
               # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
               availableQuantities = availableQuantities_aDGVM1,
               
