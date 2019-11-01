@@ -134,14 +134,12 @@ getYearlyField_aDGVM1 <- function(run,
     dt <- dt[, append(getDimInfo(dt), c("ForTr_Cancov", "SavTr_Cancov")), with = FALSE]
     setnames(dt, c("ForTr_Cancov", "SavTr_Cancov"), c("ForTr", "SavTr"))
     
-    
   }
   
   if(variable == "LeafBiomass") {
     
     dt <- dt[, append(getDimInfo(dt), c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass")), with = FALSE]
     setnames(dt, c("C4G_LeafBiomass", "C3G_LeafBiomass","Tree_LeafBiomass"), c("C4G", "C3G", "Tree"))
-    
     
   }
   
@@ -150,7 +148,6 @@ getYearlyField_aDGVM1 <- function(run,
     dt <- dt[, append(getDimInfo(dt), c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass")), with = FALSE]
     setnames(dt, c("C4G_RootBiomass", "C3G_RootBiomass","Tree_RootBiomass"), c("C4G", "C3G", "Tree"))
     
-    
   }
   
   if(variable == "StemBiomass") {
@@ -158,14 +155,12 @@ getYearlyField_aDGVM1 <- function(run,
     dt <- dt[, append(getDimInfo(dt), c("Tree_StemBiomass")), with = FALSE]
     setnames(dt, c("Tree_StemBiomass"), c("Tree"))
     
-    
   }
   
   if(variable == "DeadGrassBiomass") {
     
     dt <- dt[, append(getDimInfo(dt), c("DeadGrass_LeafBiomass")), with = FALSE]
     setnames(dt, c("DeadGrass_LeafBiomass"), c("Grass"))
-    
     
   }
   
@@ -190,7 +185,6 @@ getYearlyField_aDGVM1 <- function(run,
     dt <- dt[, append(getDimInfo(dt), c("Grass_Ratio")), with = FALSE]
     setnames(dt, c("Grass_Ratio"), c("Grass"))
     
-    
   }
   
   if(variable == "ET") {
@@ -201,7 +195,6 @@ getYearlyField_aDGVM1 <- function(run,
     dt[, EvapoSoil := (EvapoSoil / Year)/365]
     dt[, EvapoTree := (EvapoTot - (EvapoGrass + EvapoSoil))/365]
     setnames(dt, c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree"), c("Total","Grass","Soil","Tree"))
-    
     
   }
   
@@ -528,7 +521,6 @@ getDailyField_aDGVM1 <- function(run,
     dt[, Tree_RootBiomassLive := Tree_RootBiomassLive*10]
     setnames(dt, c("Grass_RootBiomassLive","Tree_RootBiomassLive"), c("Grass", "Tree"))
     
-    
   }
   
   if(variable == "StemBiomass") {
@@ -536,7 +528,6 @@ getDailyField_aDGVM1 <- function(run,
     dt <- dt[, append(getDimInfo(dt), c("Tree_StemBiomassLive")), with = FALSE]
     dt[, Tree_StemBiomassLive := Tree_StemBiomassLive*10]
     setnames(dt, c("Tree_StemBiomassLive"), c("Tree"))
-    
     
   }
   
@@ -555,14 +546,12 @@ getDailyField_aDGVM1 <- function(run,
     dt[, Grass_LeafBiomassLive := Grass_LeafBiomassLive*10]
     setnames(dt, c("Grass_LeafBiomassLive"), c("Grass"))
     
-    
   }
   
   if(variable == "PopSize") {
     
     dt <- dt[, append(getDimInfo(dt), c("Tree_Popsize")), with = FALSE]
     setnames(dt, c("Tree_Popsize"), c("Tree"))
-    
     
   }
   
@@ -571,14 +560,12 @@ getDailyField_aDGVM1 <- function(run,
     dt <- dt[, append(getDimInfo(dt), c("EvapoTot")), with = FALSE]
     setnames(dt, c("EvapoTot"), c("Total"))
     
-    
   }
   
   if(variable == "C3C4_Ratio") {
     
     dt <- dt[, append(getDimInfo(dt), c("Grass_Ratio")), with = FALSE]
     setnames(dt, c("Grass_Ratio"), c("Grass"))
-    
     
   }
   
@@ -599,7 +586,6 @@ getDailyField_aDGVM1 <- function(run,
     dt[, Large := rowSums(.SD), .SDcols = c("100","150","200")]
     dt <- dt[, append(getDimInfo(dt), c("Seedlings","Saplings","SmallTrees","LargeTrees")), with = FALSE]
     setnames(dt, c("Seedlings","Saplings","SmallTrees","LargeTrees"), c("Seedlings < 0.5m","Saplings < 2m","Small Trees < 10m","LargeTrees > 10m"))
-    
     
   }
   
