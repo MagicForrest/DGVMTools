@@ -376,6 +376,7 @@ getDailyField_aDGVM1 <- function(run,
   EvapoGrass = EvapoSoil = EvapoTot = EvapoTree = Grass_LeafBiomassDeadLying =  NULL
   Grass_LeafBiomassDeadStanding = Grass_LeafBiomassLive = Grass_RootBiomassLive = NULL
   Tree_LeafBiomassLive = Tree_RootBiomassLive = Tree_StemBiomassLive = NULL
+  Seedlings = Saplings = SmallTrees = LargeTrees = NULL
   
   # extract from the target.sta
   first.year = target.sta@first.year
@@ -586,7 +587,6 @@ getDailyField_aDGVM1 <- function(run,
     dt[, Saplings := rowSums(.SD), .SDcols = c("100","150","200")]
     dt[, SmallTrees := rowSums(.SD), .SDcols = c("250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000")]
     dt[, LargeTrees := rowSums(.SD), .SDcols = c("1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")]
-    dt[, Large := rowSums(.SD), .SDcols = c("100","150","200")]
     dt <- dt[, append(getDimInfo(dt), c("Seedlings","Saplings","SmallTrees","LargeTrees")), with = FALSE]
     setnames(dt, c("Seedlings","Saplings","SmallTrees","LargeTrees"), c("Seedlings < 0.5m","Saplings < 2m","Small Trees < 10m","LargeTrees > 10m"))
     

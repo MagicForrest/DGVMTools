@@ -71,7 +71,8 @@ For the aDGVM(1) Format, the following arguments apply:
 }
 For the aDGVM2 Format, the following arguments apply:
 \itemize{
- \item{\code{adgvm.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
+ \item{\code{adgvm2.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
+ \item{\code{adgvm2.daily}}  A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)
 }}
 }
 \value{

@@ -4,7 +4,7 @@
 ############################ FUNCTIONS TO HANDLE aDGVM2 FILES ##############################################################
 ############################################################################################################################
 
-#' Get a Field for aDGVM
+#' Get a Field for aDGVM2
 #' 
 #' An internal function that reads data from an aDGVM2 run. It actually calls one of two other functions depending on the type of quantity specified.   
 #' 
@@ -14,34 +14,34 @@
 #' @param last.year The last year (as a numeric) of the data to be return
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param verbose A logical, set to true to give progress/debug information
-#' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
-#' @param adgvm.daily A logical, set to true to read daily data (only for \code{adgvm.scheme=1} and if daily data are provided in pop file)
+#' @param adgvm2.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
+#' @param adgvm2.daily A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)
 #' @return A list containing firstly the data.table containing the data, and secondly the STA.info 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
-#' @seealso \code{\link{getQuantity_aDGVM_Scheme1}, \link{getQuantity_aDGVM_Scheme2}}
-getField_aDGVM <- function(source,
+#' @seealso \code{\link{getQuantity_aDGVM2_Scheme1}, \link{getQuantity_aDGVM2_Scheme2}}
+getField_aDGVM2 <- function(source,
                            quant,
                            target.STAInfo,
                            file.name,
                            verbose,
-                           adgvm.scheme,
-                           adgvm.daily) {
+                           adgvm2.scheme,
+                           adgvm2.daily) {
   
   # first check that ncdf4 netCDF package is installed
-  if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read aDGVM data.")
+  if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read aDGVM2 data.")
 
-  if(missing(adgvm.scheme)) adgvm.scheme <- 1
-  if(missing(adgvm.daily)) adgvm.daily <- FALSE
+  if(missing(adgvm2.scheme)) adgvm2.scheme <- 1
+  if(missing(adgvm2.daily)) adgvm2.daily <- FALSE
   
-  if("aDGVM" %in% quant@format | "Standard" %in% quant@format) {
+  if("aDGVM2" %in% quant@format | "Standard" %in% quant@format) {
     
-    if(adgvm.scheme == 1) return(getQuantity_aDGVM_Scheme1(run = source, target.sta = target.STAInfo, file.name = file.name, variable = quant, adgvm.daily))
-    if(adgvm.scheme == 2) return(getQuantity_aDGVM_Scheme2(run = source, target.sta = target.STAInfo, file.name = file.name, variable = quant))
+    if(adgvm2.scheme == 1) return(getQuantity_aDGVM2_Scheme1(run = source, target.sta = target.STAInfo, file.name = file.name, variable = quant, adgvm2.daily))
+    if(adgvm2.scheme == 2) return(getQuantity_aDGVM2_Scheme2(run = source, target.sta = target.STAInfo, file.name = file.name, variable = quant))
 
   }
   else {
-    stop(paste("Quantity", quant@id, "doesn't seem to be defined for aDGVM"))
+    stop(paste("Quantity", quant@id, "doesn't seem to be defined for aDGVM2"))
   }
   
 
@@ -65,8 +65,8 @@ getField_aDGVM <- function(source,
 #'
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
-#' @seealso \code{\link{getQuantity_aDGVM_Scheme2}}
-getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, file.name = file.name, adgvm.daily)
+#' @seealso \code{\link{getQuantity_aDGVM2_Scheme2}}
+getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = file.name, adgvm2.daily)
 {
   # To stop NOTES
   Day = Lat = Lon = Month = Time = Year = NULL
@@ -94,7 +94,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, file.name = fil
   # select the years we want
   # note that here we are assuming monthing data, so set meta-data to monthly
   # also assume that all years are in the days
-  if(adgvm.daily) {
+  if(adgvm2.daily) {
     actual.sta.info@subannual.resolution <- "Day"
     actual.sta.info@subannual.original <- "Day"
     time.steps.per.year <- 365
@@ -285,7 +285,7 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, file.name = fil
   # this means that you don't need to do a re-assignment using '<-' 
   out.all[, Year := as.integer(floor((Time-1)/time.steps.per.year) + run@year.offset) ] # - 1]
 
-  if(adgvm.daily) {
+  if(adgvm2.daily) {
     out.all[, Day := as.integer(((Time-1) %% time.steps.per.year) + 1)]
   }
   else {
@@ -336,8 +336,8 @@ getQuantity_aDGVM_Scheme1 <- function(run, variable, target.sta, file.name = fil
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @author Simon Scheiter \email{simon.scheiter@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
-#' @seealso \code{\link{getQuantity_aDGVM_Scheme1}}
-getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta, file.name = file.name)
+#' @seealso \code{\link{getQuantity_aDGVM2_Scheme1}}
+getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = file.name)
 {
   # To stop NOTES
   Day = Lat = Lon = Month = Time = Year = NULL
@@ -661,7 +661,7 @@ getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta, file.name = fil
   # this means that you don't need to do a re-assignment using '<-' 
   out.all[, Year := as.integer(Time*timestep + run@year.offset - timestep) ]
   
-#  if(adgvm.daily) {
+#  if(adgvm2.daily) {
 #    out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
 #  }
 #  else {
@@ -702,26 +702,26 @@ getQuantity_aDGVM_Scheme2 <- function(run, variable, target.sta, file.name = fil
 }
 
 
-#' List aDGVM quantities avialable
+#' List aDGVM2 quantities avialable
 #'
-#' Simply lists all quantitied aDGVM  output variables 
+#' Simply lists all quantitied aDGVM2  output variables 
 #' 
-#' @param source A Source object defining the aDGVM model run
+#' @param source A Source object defining the aDGVM2 model run
 #' @param id An id of the model run
-#' @param adgvm.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
+#' @param adgvm2.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
 #' 
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
+availableQuantities_aDGVM2 <- function(source, names, id, adgvm2.scheme ){
   
   run.dir <- source@dir
   
-  if ( adgvm.scheme==1 ) {
+  if ( adgvm2.scheme==1 ) {
     fname <- file.path(run.dir, paste("pop_", id,".nc", sep=""))
-    message(paste("Check quantities in adgvm.scheme=1,", fname, "\n"))
+    message(paste("Check quantities in adgvm2.scheme=1,", fname, "\n"))
     d <- ncdf4::nc_open(fname)
     quantities.ncfile <- names(d[['var']])
 
@@ -738,12 +738,12 @@ availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
     if(all(c("SumBRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
     if(all(c("SumBBark", "SumBWood", "SumBLeaf", "SumBStor", "SumBRoot", "SumBRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
   
-    #message("Quantities available for adgvm.scheme=1: ")
+    #message("Quantities available for adgvm2.scheme=1: ")
     #print( quantities.present )
   }
-  else if (adgvm.scheme==2) {
+  else if (adgvm2.scheme==2) {
     fname <- file.path(run.dir, paste("trait_", id,".nc", sep=""))
-    message(paste("Check quantities in adgvm.scheme=2,", fname, "\n"))
+    message(paste("Check quantities in adgvm2.scheme=2,", fname, "\n"))
     d <- ncdf4::nc_open(fname)
     quantities.ncfile <- names(d[['var']])
 
@@ -762,15 +762,15 @@ availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
       if(all(c("BRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
       if(all(c("BBark", "BWood", "BLeaf", "BStor", "BRoot", "BRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
     
-      #message("Quantities available for adgvm.scheme=2: ")
+      #message("Quantities available for adgvm2.scheme=2: ")
       #print( quantities.present )
     }
     else {
-      message("alive, VegType, Evergreen or StemCount missing in trait file, can't extract quantities for adgvm.scheme=2.")
+      message("alive, VegType, Evergreen or StemCount missing in trait file, can't extract quantities for adgvm2.scheme=2.")
     }
   }
   else {
-    message("Invalid value for adgvm.scheme.")
+    message("Invalid value for adgvm2.scheme.")
     quantities.present <- NULL
   }
 
@@ -779,7 +779,7 @@ availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
 
 
 ###############################################
-########### aDGVM PFTS ########################
+########### aDGVM2 PFTS ########################
 ###############################################
 
 
@@ -787,7 +787,7 @@ availableQuantities_aDGVM <- function(source, names, id, adgvm.scheme ){
 #' @format An S4 class object with the slots as defined below.
 #' @rdname PFT-class
 #' @keywords datasets
-aDGVM.PFTs <- list(
+aDGVM2.PFTs <- list(
   
   new("PFT",
             id = "C3G",
@@ -872,7 +872,7 @@ aDGVM.PFTs <- list(
 
 
 #####################################################
-########### aDGVM QUANTITIES ########################
+########### aDGVM2 QUANTITIES ########################
 #####################################################
 
 
@@ -881,65 +881,65 @@ aDGVM.PFTs <- list(
 #' @keywords datasets
 #' @include colour-palettes.R
 #' 
-aDGVM.quantities <- list(
+aDGVM2.quantities <- list(
   new("Quantity",
       id = "agb",
       name = "Above Ground Biomass",
       units = "kgC/m^2",
       colours = viridis::viridis,
-      format = c("aDGVM")),
+      format = c("aDGVM2")),
   
   new("Quantity",
       id = "bgb",
       name = "Below Ground Biomass",
       units = "kgC/m^2",
       colours = viridis::viridis,
-      format = c("aDGVM")),
+      format = c("aDGVM2")),
   
   new("Quantity",
       id = "meanheight",
       name = "Mean Canopy Height",
       units = "m",
       colours = fields::tim.colors,
-      format = c("aDGVM")),
+      format = c("aDGVM2")),
   
   new("Quantity",
       id = "basalarea",
       name = "Basal Area",
       units = "m^2/ha",
       colours = fields::tim.colors,
-      format = c("aDGVM")),
+      format = c("aDGVM2")),
   
   new("Quantity",
       id = "nind",
       name = "Number of individuals",
       units = "plants",
       colours = veg.palette,
-      format = c("aDGVM")),
+      format = c("aDGVM2")),
   
   new("Quantity",
       id = "pind",
       name = "Fraction of individuals",
       units = "",
       colours = veg.palette,
-      format = c("aDGVM"))
+      format = c("aDGVM2"))
   
   #new("Quantity",
   #    id = "firefreq",
   #    name = "Fire Frequency",
   #    units = "",
   #    colours = reversed.fire.palette,
-  #    format = c("aDGVM"))
+  #    format = c("aDGVM2"))
   
   
 )
 
 
 ################################################################
-########### aDGVM FORMAT ########################
+########### aDGVM2 FORMAT ########################
 ################################################################
 
-#' @description \code{aDGVM} - a Format for reading aDGVM2 model output
+#' @description \code{aDGVM2} - a Format for reading aDGVM2 model output
 #' 
 #' @format A \code{Quantity} object is an S4 class.
 #' @aliases Format-class
@@ -948,21 +948,21 @@ aDGVM.quantities <- list(
 #' @include colour-palettes.R
 #' @export
 #' 
-aDGVM <- new("Format",
+aDGVM2 <- new("Format",
              
              # UNIQUE ID
-             id = "aDGVM",
+             id = "aDGVM2",
                   
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-             availableQuantities = availableQuantities_aDGVM,
+             availableQuantities = availableQuantities_aDGVM2,
              
              # FUNCTION TO READ A FIELD 
-             getField = getField_aDGVM,
+             getField = getField_aDGVM2,
              
              # DEFAULT GLOBAL PFTS  
-             default.pfts = aDGVM.PFTs,
+             default.pfts = aDGVM2.PFTs,
              
              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
-             quantities = aDGVM.quantities
+             quantities = aDGVM2.quantities
              
 )
