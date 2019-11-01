@@ -192,7 +192,7 @@ getYearlyField_aDGVM1 <- function(run,
   
   if(variable == "ET") {
     
-    dt <- dt[, append(getDimInfo(dt), c("EvapoTot","EvapoGrass","EvapoSoil","EvapoTree")), with = FALSE]
+    dt <- dt[, append(getDimInfo(dt), c("EvapoTot","EvapoGrass","EvapoSoil")), with = FALSE]
     dt[, EvapoTot := (EvapoTot / Year)/365]
     dt[, EvapoGrass := (EvapoGrass / Year)/365]
     dt[, EvapoSoil := (EvapoSoil / Year)/365]
