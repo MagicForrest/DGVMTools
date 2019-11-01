@@ -5,7 +5,7 @@
 \title{Returns the data from one aDGVM1 output variable as a \code{data.table}.}
 \usage{
 getStandardQuantity_aDGVM1(run, quant, target.sta, file.name = file.name,
-  verbose = FALSE)
+  adgvm.file.type, verbose = FALSE, ...)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the aDGVM1 run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.}
