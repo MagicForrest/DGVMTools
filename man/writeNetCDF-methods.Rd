@@ -75,7 +75,8 @@ Note that to maintain some parsimony and flexibility, the methods can write *eit
 Nothing
 }
 \description{
-Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes.
+Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes.  NOTE: when using the function on a raster::Raster object,
+you cannot provide both multiple variables and multiple time period, you must do one or the other.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
