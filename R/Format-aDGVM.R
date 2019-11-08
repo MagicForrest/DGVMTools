@@ -129,6 +129,8 @@ getYearlyField_aDGVM <- function(run,
   rm(all.dts)
   gc()
   
+  # take mean of gridcells with multiple entries
+  dt <- dt[, lapply(.SD, mean), by=eval(unlist(getDimInfo(dt)))]
   
   if(variable == "Cancov") {
     
@@ -498,6 +500,8 @@ getDailyField_aDGVM <- function(run,
     dt <- dt[, append(getDimInfo(dt), matched.cols), with = FALSE]
   }
   
+  # take mean of gridcells with multiple entries
+  dt <- dt[, lapply(.SD, mean), by=eval(unlist(getDimInfo(dt)))]
   
   
   if(variable == "Cancov") {
