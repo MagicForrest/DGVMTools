@@ -16,7 +16,7 @@
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @author Glenn Moncrief \email{glenn@@saeon.ac.za} 
+#' @author Glenn Moncrieff \email{glenn@@saeon.ac.za} 
 #' @keywords internal
 getField_aDGVM <- function(source,
                             quant,
@@ -66,7 +66,7 @@ getField_aDGVM <- function(source,
 #' @param data.table.only A logical, if TRUE return a data.table and not a Field
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
+#' @author Glenn Moncrieff \email{glenn@@saeon.ac.za}
 #' @import data.table
 #' @keywords internal
 getYearlyField_aDGVM <- function(run,
@@ -129,6 +129,16 @@ getYearlyField_aDGVM <- function(run,
   rm(all.dts)
   gc()
   
+  # if the Quantity object that we are pulling was automagically defined, extract layers which 
+  # have names that looks something like it
+  if(quant@id == quant@name && quant@units == "undefined unit") {
+    all.potential.cols <- layers(dt) 
+    matched.cols <- all.potential.cols[grepl(pattern = quant@id, all.potential.cols)]
+    if(length(matched.cols) == 0) stop(paste0("You asked for an aDGVM quantity called ", quant@name, ". I automagically made that but no columns in the input data file seem to match.  Please try a different Quantity string."))
+    print(append(getDimInfo(dt), matched.cols))
+    dt <- dt[, append(getDimInfo(dt), matched.cols), with = FALSE]
+  }
+  
   # take mean of gridcells with multiple entries
   dt <- dt[, lapply(.SD, mean), by=eval(unlist(getDimInfo(dt)))]
   
@@ -187,6 +197,27 @@ getYearlyField_aDGVM <- function(run,
     
     dt <- dt[, append(getDimInfo(dt), c("Grass_Ratio")), with = FALSE]
     setnames(dt, c("Grass_Ratio"), c("Grass"))
+    
+  }
+  
+  if(variable == "NPP") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("NPP")), with = FALSE]
+    setnames(dt, c("NPP"), c("Total"))
+    
+  }
+  
+  if(variable == "NEE") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("NEE")), with = FALSE]
+    setnames(dt, c("NEE"), c("Total"))
+    
+  }
+  
+  if(variable == "BasalArea") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("Tree_BasalArea")), with = FALSE]
+    setnames(dt, c("Tree_BasalArea"), c("Tree"))
     
   }
   
@@ -356,7 +387,7 @@ getYearlyField_aDGVM <- function(run,
 #' @param data.table.only A logical, if TRUE return a data.table and not a Field
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @author Glenn Moncrief \email{glenn@@saeon.ac.za} 
+#' @author Glenn Moncrieff \email{glenn@@saeon.ac.za} 
 #' @import data.table
 #' @keywords internal
 getDailyField_aDGVM <- function(run,
@@ -575,10 +606,24 @@ getDailyField_aDGVM <- function(run,
     
   }
   
+  if(variable == "BasalArea") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("Tree_BA")), with = FALSE]
+    setnames(dt, c("Tree_BA"), c("Tree"))
+    
+  }
+  
+  if(variable == "GPP") {
+    
+    dt <- dt[, append(getDimInfo(dt), c("Tree_GPP","Grass_GPP")), with = FALSE]
+    dt[, Total_GPP := Tree_GPP + Grass_GPP]
+    setnames(dt, c("Tree_GPP","Grass_GPP","Total_GPP"), c("Tree","Grass","Total"))
+    
+  }
+  
   if(variable == "All_Size_Classes") {
     
     dt <- dt[, append(getDimInfo(dt), c( "50","100","150","200","250","300","350","400","450","500","550","600","650","700","750","800","850","900","950","1000","1050","1100","1150","1200","1250","1300","1350","1400","1450","1500","1550","1600","1650","1700","1750","1800","1850","1900","1950","2000","2050","2100","2150","2200","2250","2300","2350","2400","2450","2500","2550","2600","2650","2700","2750","2800","2850","2900","2950","3000","3050","3100","3150","3200","3250","3300","3350","3400","3450","3500")), with = FALSE]
-    
     
   }
   
@@ -761,7 +806,7 @@ getDailyField_aDGVM <- function(run,
 #' @param verbose A logical, set to true to give progress/debug information
 #' @return a data.table (with the correct tear offset and lon-lat offsets applied)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
+#' @author Glenn Moncrieff \email{glenn@@saeon.ac.za}
 #' @import data.table
 #' @keywords internal
 
@@ -1075,6 +1120,34 @@ aDGVM.quantities <- list(
       format = c("aDGVM")),
   
   new("Quantity",
+      id = "GPP",
+      name = "GPP",
+      units = "kgC/m2",
+      colours = reversed.viridis,
+      format = c("aDGVM")),
+  
+  new("Quantity",
+      id = "NEE",
+      name = "NEE",
+      units = "tonnes/hectare",
+      colours = reversed.viridis,
+      format = c("aDGVM")),
+  
+  new("Quantity",
+      id = "NPP",
+      name = "NPP",
+      units = "tonnes/hectare",
+      colours = reversed.viridis,
+      format = c("aDGVM")),
+  
+  new("Quantity",
+      id = "BasalArea",
+      name = "Basal Area",
+      units = "m2 per hectare",
+      colours = reversed.viridis,
+      format = c("aDGVM")),
+  
+  new("Quantity",
       id = "ET",
       name = "Evapotranspiration",
       units = "mm/day",
@@ -1102,22 +1175,12 @@ aDGVM.quantities <- list(
       colours = reversed.viridis,
       format = c("aDGVM")),
   
-  
-  #### DUMMY - or maybe useful...
-  new("Quantity",
-      id = "SoilC",
-      name = "Soil Carbon",
-      units = "kg whatever",
-      colours = reversed.viridis,
-      format = c("aDGVM")),
-  
   new("Quantity",
       id = "FireIntensity",
       name = "Fire intensity",
       units = "W/m^2",
       colours = reversed.viridis,
       format = c("aDGVM"))
-  
 )
 
 ##################################################
