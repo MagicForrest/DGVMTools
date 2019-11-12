@@ -38,11 +38,26 @@
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
 #' @param write.components If TRUE, write the data of the *component* \code{Field}s to disk as text file.
 #' @param averaged.source If a list of \code{Source} objects have been supplied to be averaged before the classification, you must supply another \code{Source} object to store the averaged results.
-#' @param ...  Other arguments that are passed to the getField function for the specific Format or for selecting space/time/years.  Currently this can be
+#' @param ...  Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.  
+#' For all Formats, the followings arguments apply:
 #' \itemize{
-#'  \item{adgvm.scheme}  For the aDGVM Format, defines the aDGVM PFT scheme which can be 1 or 2.
-#'  \item{cover.fraction}  Optional when selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, should be between 0 and 1.
-#' } 
+#'  \item{\code{cover.fraction}}  When selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, this optional arguement determines 
+#'  how much of the gridcell needs to be in the the polygon for it to be selected. Should be between 0 and 1.
+#' }
+#' For the aDGVM(1) Format, the following arguments apply:
+#' \itemize{
+#'  \item{\code{adgvm.file.type}}  This character string argument specifies from which file to read the data.
+#'  This can be one of "Yearly", "Sys", "Fire", "Soil" or "Size".  The default is "Yearly", which is sensible because the yearly file is always written. 
+#'  \item{\code{adgvm.fire}}  This numeric argument (taking values 0 or 1) specifies to take a run with fire on (1) or off (0). Default is 1.
+#'  \item{\code{adgvm.climate}}   This numeric argument (taking values 0 or 1) specifies to take a run with constant (0) or transient (1) climate.  Default is 0.
+#'  \item{\code{adgvm.header}} If your aDGVM run has been has extra columns added to the output tables, use this argument
+#'  to specify the column names.  For the default column names see the source file \code{aDGVM1-Format}.
+#' }
+#' For the aDGVM2 Format, the following arguments apply:
+#' \itemize{
+#'  \item{\code{adgvm2.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
+#'  \item{\code{adgvm2.daily}}  A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)
+#' }
 #' @return A \code{Field}. 
 #' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}},  \code{\link{getField}}    
 #' @export
@@ -261,7 +276,7 @@ getBiomes <- function(source,
   
   dt <- all.fields[[1]]@data
   if(length(all.fields) > 1){
-    for(counter in 1:length(all.fields)){
+    for(counter in 2:length(all.fields)){
       dt <- dt[all.fields[[counter]]@data]
     }
   }

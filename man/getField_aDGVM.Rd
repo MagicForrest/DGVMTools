@@ -5,35 +5,29 @@
 \title{Get a Field for aDGVM}
 \usage{
 getField_aDGVM(source, quant, target.STAInfo, file.name, verbose,
-  adgvm.scheme, adgvm.daily)
+  adgvm.file.type = "Yearly", ...)
 }
 \arguments{
-\item{quant}{A Quantity object to define what quantity from the aDGVM2 run to extract}
+\item{source}{A \code{Source} containing the meta-data about the aDGVM run}
 
-\item{target.STAInfo}{STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/}
+\item{quant}{A string the define what output file from the aDGVM run to open, for example "anpp" opens and read the "anpp.out" file}
 
-\item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated}
+\item{target.STAInfo}{The spatial-temporal target domain}
+
+\item{file.name}{An optional character string (or a list of character strings) holding the name of the file(s)
+This can be left blank, in which case the file name is automatically generated.}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
-
-\item{adgvm.scheme}{A number that defines if pop-files (=1) or trait-files (=2) are used.}
-
-\item{adgvm.daily}{A logical, set to true to read daily data (only for \code{adgvm.scheme=1} and if daily data are provided in pop file)}
-
-\item{run}{A \code{source} containing the meta-data about the aDGVM2 run}
-
-\item{last.year}{The last year (as a numeric) of the data to be return}
 }
 \value{
-A list containing firstly the data.table containing the data, and secondly the STA.info
+A list containing firstly the data.tabel containing the data, and secondly the STA.info
 }
 \description{
-An internal function that reads data from an aDGVM2 run. It actually calls one of two other functions depending on the type of quantity specified.
-}
-\seealso{
-\code{\link{getQuantity_aDGVM_Scheme1}, \link{getQuantity_aDGVM_Scheme2}}
+An internal function that reads data from an aDGVM run.  It actually call one of three other functions depending on the type of quantity specified.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
+
+Glenn Moncrief \email{glenn@saeon.ac.za}
 }
 \keyword{internal}

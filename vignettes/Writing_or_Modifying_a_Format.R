@@ -126,27 +126,6 @@ for(quant in quantities_NewFormat ) {
   print(quant)
 }
 
-## ----determine PFTs, echo=TRUE-------------------------------------------
-determinePFTs_NewFormat <- function(x, names = TRUE){
-  
-  # typical stuff 
-  run.dir <- x@dir
-  
-  # all possible PFTs present 
-  PFTs.possible <- x@pft.set
-  
-  # code to look for and open a commen per-PFT output file (for example LAI) 
-  # typical files to check could be specified in 'additional.args' argument for example
-  # ...
-  
-  # code check the ASCII header or netCDF meta info to see what PFTs are present
-  # ...
-  PFTs.present <- list() # dummy code
-  
-  return(PFTs.present)
-  
-} 
-
 ## ----available Quantities, echo=TRUE-------------------------------------
 availableQuantities_NewFormat <- function(x, additional.args){ 
   
@@ -213,7 +192,6 @@ NewFormat <- new("Format",
                  id = id_NewFormat,
                  default.pfts = PFTs_NewFormat, 
                  quantities = quantities_NewFormat, 
-                 determinePFTs = determinePFTs_NewFormat, 
                  availableQuantities = availableQuantities_NewFormat, 
                  getField =getField_NewFormat)
 

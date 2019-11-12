@@ -25,7 +25,7 @@ getDimInfo(x, info = "names")
 See above
 }
 \description{
-This function returns information about the spacio-temporal dimensions of a Field, Comparison or data.table
+This function returns information about the spatio-temporal dimensions of a Field, Comparison or data.table
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

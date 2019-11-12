@@ -2,22 +2,21 @@
 % Please edit documentation in R/Format-aDGVM.R
 \name{availableQuantities_aDGVM}
 \alias{availableQuantities_aDGVM}
-\title{List aDGVM quantities avialable}
+\title{List available aDGVM Quantities in a run}
 \usage{
-availableQuantities_aDGVM(source, names, id, adgvm.scheme)
+availableQuantities_aDGVM(source, names = TRUE, verbose = FALSE)
 }
 \arguments{
-\item{source}{A Source object defining the aDGVM model run}
+\item{source}{A aDGVM source object}
 
-\item{id}{An id of the model run}
-
-\item{adgvm.scheme}{A number that defines if pop-files (=1) or trait-files (=2) are used.}
+\item{names}{Logical, if TRUE (the default) return the names of the quantities, if FALSE return the quanties themseleves}
 }
 \value{
-A list of all the .out files present, with the ".out" removed.
+A list of all the Quantities available for this aDGVM run
 }
 \description{
-Simply lists all quantitied aDGVM  output variables
+Simply lists all aDGVM Quantities that *should* be available in the run based on the files that are 
+available in the run directory.  It does NOT check that the required columns are available in the output file.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

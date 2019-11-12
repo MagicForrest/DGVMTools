@@ -612,21 +612,6 @@ availableQuantities_DGVMData <- function(source, names){
 }
 
 
-#' Detemine PFTs present in an DGVMData source 
-#' 
-#' @param x  A Source objects describing a DGVMData source
-#' @param variables Some variable to look for to detremine the PFTs present in the run.  Not the function automatically searches:
-#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.  Currently ignored.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-
-determinePFTs_DGVMData <- function(x, variables) {
-  
-  warning("Datasets don't normally have PFTs (or they are not likely to be defined consistently) so I am not looking for them.  Instead I am returning the source@format@pft.set argument directly (in case you defined some yourself, which would be the way to go in this case)")
-  return(x@format@pft.set)
-  
-}
-
 
 ########################################################
 ########### DGVMData QUANTITIES ########################
@@ -756,9 +741,6 @@ DGVMData <- new("Format",
                 
                 # UNIQUE ID
                 id = "DGVMData",
-                
-                # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-                determinePFTs = determinePFTs_DGVMData,
                 
                 # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
                 availableQuantities = availableQuantities_DGVMData,

@@ -2,12 +2,12 @@
 % Please edit documentation in R/export-methods.R
 \name{FieldToArray}
 \alias{FieldToArray}
-\title{Convert a Field to a multi-dimensional array}
+\title{Convert a Field to Arrays}
 \usage{
-FieldToArray(d, cname = FALSE, invertlat = FALSE, verbose = FALSE)
+FieldToArray(x, cname = FALSE, invertlat = FALSE, verbose = FALSE)
 }
 \arguments{
-\item{d}{the data.table of a \code{\linkS4class{Field}}}
+\item{x}{the data.table of a \code{\linkS4class{Field}}}
 
 \item{cname}{the column name to convert, if not set a list is returned}
 
@@ -19,9 +19,10 @@ FieldToArray(d, cname = FALSE, invertlat = FALSE, verbose = FALSE)
 a array or a list or arrays
 }
 \description{
-Convert a Field to a multi-dimensional array
+Convert a Field (or the data.table from a Field) into a list of multi-deminsional arrays (indexed Lon, Lat and Time),
+with one array in the list per Layer in the input Field.
 }
 \author{
-Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}
+Joerg Steinkamp \email{joerg.steinkamp@senckenberg.de}, Matthew Forrest \email{matthew.forrest@senckenberg.de}
 }
 \keyword{internal}
