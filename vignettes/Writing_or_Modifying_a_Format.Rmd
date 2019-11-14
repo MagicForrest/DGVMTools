@@ -26,30 +26,30 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 
 # Introduction
 
-This vignette describes how to manipulate and create `Format` objects in DGVMTools.   A `Format` is an S4-class (like all objects in DGVMTools), and it has 5 slots (the slots are described below).  `Format` objects are pretty important because the contain a lot of metadata about a model output or data set files, so without it DGVMTools won't be able to read the data from disk.  One simple modification to a `Format` object is to add a new PFT.  This is a fairly common for a DGVM development task, so this will be described seperately in a short, first section.    
+This vignette describes how to manipulate and create `Format` objects in DGVMTools.   A `Format` is an S4-class (like all objects in DGVMTools), and it has 5 slots (the slots are described below).  `Format` objects are pretty important because the contain a lot of metadata about a model output or data set files, so without it DGVMTools won't be able to read the data from disk.  One simple modification to a `Format` object is to define a ne Layer.  This is a fairly common for a DGVM development task, so this will be described seperately in a short, first section.    
 
 Writing code to describe a new `Format` object is essential for reading a new DGVM or other data source.  So the second (and much longer) part of this vignette describes how to do that.  It is also a reference for making more complicated modifications to an existing `Format` (for example reading new model variables) 
 
 Note: It doesn't really make sense to write a new Format for one dataset (that is probably overkill and it would probably rather make sense to bash the data in a DGVMData `Format`, rather than define a new `Format`), but it might make sense for many datatsets with a standard file format, for example MODIS or Fluxnet. 
 
 
-## Simple case: Adding a new PFT to a `Format` object
+## Simple case: Adding a new Layer to a `Format` object
 
 A `Format` is an S4-class, and like all S4 classes the slots are accessed using the @ symbol.  So, for example, to access the id slot of the pre-defined `GUESS` format:
 ```{r accessing a slot, echo=TRUE}
 GUESS@id
 ```
-The @default.pfts slot is just a list of DGVMTools::PFT objects.
-```{r get PFTs, echo=TRUE}
-original.PFTs <- GUESS@default.pfts
+The @default.pfts slot is just a list of DGVMTools::Layer objects.
+```{r get Layers, echo=TRUE}
+original.Layers <- GUESS@default.pfts
 
-str(original.PFTs)
+str(original.Layers)
 ```
 To add a new PFT we can simple take our copy of the list, add a new PFT, and copy it back into the `Format` object.
 ```{r modify PFTs, echo=TRUE}
-new.PFT =  new("PFT",
-               id = "NewPFT",
-               name = "Some New Tree PFT",
+new.Layer =  new("Layer",
+               id = "NewTree",
+               name = "Some New Tree PFT Layer",
                growth.form = "Tree",
                leaf.form = "Broadleaved",
                phenology = "Summergreen",
@@ -58,11 +58,11 @@ new.PFT =  new("PFT",
                shade.tolerance = "None"
 )
 
-new.PFT.list <- append(original.PFTs, new.PFT)
+new.Layer.list <- append(original.Layers, new.Layer)
 
-print(str(new.PFT.list))
+print(str(new.Layer.list))
 
-GUESS@default.pfts <- new.PFT.list
+GUESS@default.pfts <- new.Layer.list
 
 ```
 And done!
@@ -89,15 +89,15 @@ id_NewFormat <- "Example_Format"
 
 ### 2. The `default.pfts` slot
 
-This is a list of DGVMTools::PFT objects.  If the format is for a DGVM, these PFTs should correspond to the standard default PFTs in the DGVM.  If the format is for a data set, PFTs might not make sense so this can just be an empty list.  Alternatively the PFT or vegetation type concept might be useful for data, so they could be defined if they exist in the data.
+This is a list of DGVMTools::Layer objects.  If the Format is for a DGVM, these Layers should correspond to the standard default PFTs, soil C or N pools or fluxes etc. in the DGVM.  It is possible that if the Format is for a data set, the concept of Layers might not make sense so this can just be an empty list. 
 
 
 ```{r default.pfts slot, echo=TRUE}
-PFTs_NewFormat <- list(
+Layers_NewFormat <- list(
   
   # A couple of tree PFTs
   
-  TeBE = new("PFT",
+  TeBE = new("Layer",
              id = "TeBE",
              name = "Temperate Broadleaved Evergreen Tree",
              growth.form = "Tree",
@@ -109,7 +109,7 @@ PFTs_NewFormat <- list(
   ),
   
   
-  TeBS = new("PFT",
+  TeBS = new("Layer",
              id = "TeBS",
              name = "Temperate Broadleaved Summergreen Tree",
              growth.form = "Tree",
@@ -123,7 +123,7 @@ PFTs_NewFormat <- list(
   
   # And a couple of grasses
   
-  C3G = new("PFT",
+  C3G = new("Layer",
             id = "C3G",
             name = "Boreal/Temperate Grass",
             growth.form = "Grass",
@@ -134,7 +134,7 @@ PFTs_NewFormat <- list(
             shade.tolerance = "None"
   ),
   
-  C4G = new("PFT",
+  C4G = new("Layer",
             id = "C4G",
             name = "Tropical Grass",
             growth.form = "Grass",
@@ -148,8 +148,8 @@ PFTs_NewFormat <- list(
 )
 
 # Now take a look at them
-for(PFT in PFTs_NewFormat) {
-  print(PFT)
+for(Layer in Layers_NewFormat) {
+  print(Layer)
 }
 
 ```
@@ -189,11 +189,11 @@ for(quant in quantities_NewFormat ) {
 
 ### 4. The `determineQuantities` slot
 
-This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of PFTs present. The first argument should be characters with the path to the files on disk, the second argument is a ogical called names.  If TRUE, the function should return a list of the ids of the quantities, otherwise it returns the list of DGVMTools::Quantity objects.
+This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of Quantities available to read. The first argument should be the Source object.  The second argument "names", is logical and ff TRUE, the function should return a list of the ids of the quantities, otherwise it returns the list of DGVMTools::Quantity objects.  Additionaly arguments for Format-specific details can also be added.
 
 
 ```{r available Quantities, echo=TRUE}
-availableQuantities_NewFormat <- function(x, additional.args){ 
+availableQuantities_NewFormat <- function(x, names = TRUE, additional.args){ 
   
   # typical stuff 
   # * get a list of files in the directory
@@ -279,7 +279,7 @@ Finally we can combine the six parts that we just made to make the new `Format` 
 ```{r Builing the Format, echo=TRUE}
 NewFormat <- new("Format", 
                  id = id_NewFormat,
-                 default.pfts = PFTs_NewFormat, 
+                 default.pfts = Layers_NewFormat, 
                  quantities = quantities_NewFormat, 
                  availableQuantities = availableQuantities_NewFormat, 
                  getField =getField_NewFormat)

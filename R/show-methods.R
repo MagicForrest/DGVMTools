@@ -23,9 +23,9 @@ if(!isGeneric("show")) setGeneric("show", function(object, ...) standardGeneric(
 
 #' @rdname show
 #' @export
-setMethod('show', signature(object="PFT"), function(object) {
+setMethod('show', signature(object="Layer"), function(object) {
   
-  cat(paste0("PFT: ", object@id," (", object@name, "): ", "Growth form=",  object@growth.form, ", Leaf form=", object@leaf.form, ", Phenology=", object@phenology, ", Climate zone=", object@climate.zone, ", Shade tolerance=", object@shade.tolerance, ", Preferred colour=", object@colour, "\n"))
+  cat(paste0("Layer: ", object@id," (", object@name, "): ", "Growth form=",  object@growth.form, ", Leaf form=", object@leaf.form, ", Phenology=", object@phenology, ", Climate zone=", object@climate.zone, ", Shade tolerance=", object@shade.tolerance, ", Preferred colour=", object@colour, "\n"))
   
   
 })

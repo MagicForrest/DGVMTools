@@ -31,7 +31,7 @@ layerOp <- function(x, operator, layers, new.layer){
   t1 <- Sys.time()
   
   
-  ### PREAMBLE - find layers which start with a '.' and expand them to PFT ids
+  ### PREAMBLE - find layers which start with a '.' and expand them to Layer ids
   final.layers <- c()
   for(layer in layers) {
     
@@ -39,8 +39,8 @@ layerOp <- function(x, operator, layers, new.layer){
     if(substring(layer, 1, 1) == '.') {
       
       criteria <- substring(layer, 2)
-      if(tolower(criteria) == "pfts" || tolower(criteria) == "pft") expanded.layers <- listPFTs(x)
-      else expanded.layers <- listPFTs(x, criteria)
+      if(tolower(criteria) == "pfts" || tolower(criteria) == "pft") expanded.layers <- whichLayers(x)
+      else expanded.layers <- whichLayers(x, criteria)
       final.layers <- append(final.layers, unlist(expanded.layers))
       
     }

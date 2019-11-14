@@ -12,15 +12,15 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 ## ----accessing a slot, echo=TRUE-----------------------------------------
 GUESS@id
 
-## ----get PFTs, echo=TRUE-------------------------------------------------
-original.PFTs <- GUESS@default.pfts
+## ----get Layers, echo=TRUE-----------------------------------------------
+original.Layers <- GUESS@default.pfts
 
-str(original.PFTs)
+str(original.Layers)
 
 ## ----modify PFTs, echo=TRUE----------------------------------------------
-new.PFT =  new("PFT",
-               id = "NewPFT",
-               name = "Some New Tree PFT",
+new.Layer =  new("Layer",
+               id = "NewTree",
+               name = "Some New Tree PFT Layer",
                growth.form = "Tree",
                leaf.form = "Broadleaved",
                phenology = "Summergreen",
@@ -29,22 +29,22 @@ new.PFT =  new("PFT",
                shade.tolerance = "None"
 )
 
-new.PFT.list <- append(original.PFTs, new.PFT)
+new.Layer.list <- append(original.Layers, new.Layer)
 
-print(str(new.PFT.list))
+print(str(new.Layer.list))
 
-GUESS@default.pfts <- new.PFT.list
+GUESS@default.pfts <- new.Layer.list
 
 
 ## ----id slot, echo=TRUE--------------------------------------------------
 id_NewFormat <- "Example_Format"
 
 ## ----default.pfts slot, echo=TRUE----------------------------------------
-PFTs_NewFormat <- list(
+Layers_NewFormat <- list(
   
   # A couple of tree PFTs
   
-  TeBE = new("PFT",
+  TeBE = new("Layer",
              id = "TeBE",
              name = "Temperate Broadleaved Evergreen Tree",
              growth.form = "Tree",
@@ -56,7 +56,7 @@ PFTs_NewFormat <- list(
   ),
   
   
-  TeBS = new("PFT",
+  TeBS = new("Layer",
              id = "TeBS",
              name = "Temperate Broadleaved Summergreen Tree",
              growth.form = "Tree",
@@ -70,7 +70,7 @@ PFTs_NewFormat <- list(
   
   # And a couple of grasses
   
-  C3G = new("PFT",
+  C3G = new("Layer",
             id = "C3G",
             name = "Boreal/Temperate Grass",
             growth.form = "Grass",
@@ -81,7 +81,7 @@ PFTs_NewFormat <- list(
             shade.tolerance = "None"
   ),
   
-  C4G = new("PFT",
+  C4G = new("Layer",
             id = "C4G",
             name = "Tropical Grass",
             growth.form = "Grass",
@@ -95,8 +95,8 @@ PFTs_NewFormat <- list(
 )
 
 # Now take a look at them
-for(PFT in PFTs_NewFormat) {
-  print(PFT)
+for(Layer in Layers_NewFormat) {
+  print(Layer)
 }
 
 
@@ -127,7 +127,7 @@ for(quant in quantities_NewFormat ) {
 }
 
 ## ----available Quantities, echo=TRUE-------------------------------------
-availableQuantities_NewFormat <- function(x, additional.args){ 
+availableQuantities_NewFormat <- function(x, names = TRUE, additional.args){ 
   
   # typical stuff 
   # * get a list of files in the directory
@@ -190,7 +190,7 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
 ## ----Builing the Format, echo=TRUE---------------------------------------
 NewFormat <- new("Format", 
                  id = id_NewFormat,
-                 default.pfts = PFTs_NewFormat, 
+                 default.pfts = Layers_NewFormat, 
                  quantities = quantities_NewFormat, 
                  availableQuantities = availableQuantities_NewFormat, 
                  getField =getField_NewFormat)

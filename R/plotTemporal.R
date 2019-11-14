@@ -143,7 +143,7 @@ plotTemporal <- function(fields,
   }
  
   # TODO quick n dirty
-  PFTs <- fields[[1]]@source@pft.set
+  defined.layers <- fields[[1]]@source@pft.set
   
   
   ### 8. MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
@@ -224,10 +224,10 @@ plotTemporal <- function(fields,
   
   ### LINE COLOURS
   
-  # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer (currently still 'PFT') meta-data
+  # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer meta-data
   if(missing(cols) & col.by == "Layer"){
     all.layers <- unique(as.character(data.toplot[["Layer"]]))
-    cols <- matchPFTCols(all.layers, PFTs)
+    cols <- matchLayerCols(all.layers, defined.layers)
   }
   # else colours will be determined by ggplot (or cols argument)
   

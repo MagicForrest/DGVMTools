@@ -20,19 +20,19 @@
 #' print(PFT.list)
 #' 
 #' # return with no criteria (trivial)
-#' listPFTs(PFT.list)
+#' whichLayers(PFT.list)
 #' 
 #' # return as the full PFT objects
-#' listPFTs(PFT.list, return.ids = FALSE)
+#' whichLayers(PFT.list, return.ids = FALSE)
 #' 
 #' # return Tree, Grass, Evergreen and Tropical PFTs
-#' listPFTs(PFT.list, criteria = "Tree")
-#' listPFTs(PFT.list, criteria = "Grass")
-#' listPFTs(PFT.list, criteria = "Evergreen")
-#' listPFTs(PFT.list, criteria = "Tropical")
+#' whichLayers(PFT.list, criteria = "Tree")
+#' whichLayers(PFT.list, criteria = "Grass")
+#' whichLayers(PFT.list, criteria = "Evergreen")
+#' whichLayers(PFT.list, criteria = "Tropical")
 #' 
 #' # return Tropical PFTs as a list of PFTs objects (not just the ids)
-#' listPFTs(PFT.list, criteria = "Tropical", return.ids = FALSE)
+#' whichLayers(PFT.list, criteria = "Tropical", return.ids = FALSE)
 #' 
 #' \donttest{
 #'  
@@ -46,25 +46,25 @@
 #' # Perform the same examples as above but with the Field instead of a list of PFTs objects
 #' 
 #' # return with no criteria (trivial)#' 
-#' listPFTs(test.Field.perPFT )
+#' whichLayers(test.Field.perPFT )
 #' 
 #' # return as the full PFT objects
-#' listPFTs(test.Field.perPFT, return.ids = FALSE)
+#' whichLayers(test.Field.perPFT, return.ids = FALSE)
 #' 
 #' # return Tree, Grass, Evergreen and Tropical PFTs
-#' listPFTs(test.Field.perPFT, criteria = "Tree")
-#' listPFTs(test.Field.perPFT, criteria = "Grass")
-#' listPFTs(test.Field.perPFT, criteria = "Evergreen")
-#' listPFTs(test.Field.perPFT, criteria = "Tropical")
+#' whichLayers(test.Field.perPFT, criteria = "Tree")
+#' whichLayers(test.Field.perPFT, criteria = "Grass")
+#' whichLayers(test.Field.perPFT, criteria = "Evergreen")
+#' whichLayers(test.Field.perPFT, criteria = "Tropical")
 #' 
 #' # return Tropical PFTs as a list of PFTs objects (not just the ids)
-#' listPFTs(test.Field.perPFT, criteria = "Tropical", return.ids = FALSE)
+#' whichLayers(test.Field.perPFT, criteria = "Tropical", return.ids = FALSE)
 #' 
 #' }
 #' 
 #' @export
 
-listPFTs <- function(x, criteria = NULL, return.ids = TRUE) {
+whichLayers <- function(x, criteria = NULL, return.ids = TRUE) {
   
   
   # first prepare a list of all PFTs present
@@ -80,14 +80,14 @@ listPFTs <- function(x, criteria = NULL, return.ids = TRUE) {
   # else if list, check that all elements are a PFT
   else if(is.list(x)){
     for(this in x) {
-      if(!is.PFT(this)) stop("At least one item in the input list is not an object PFT class")
+      if(!is.Layer(this)) stop("At least one item in the input list is not an object PFT class")
     }
     pft.list <- x
   }  
   
   # else fail
   else {
-    stop("Unexpected input for argument 'x' in listPFTs().")
+    stop("Unexpected input for argument 'x' in whichLayers().")
   }
   
   

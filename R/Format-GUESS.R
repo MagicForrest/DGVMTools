@@ -912,19 +912,19 @@ LPJQuantFromFilename <- function(var.filename){
 
 
 #####################################################################
-########### LPJ-GUESS(-SPITFIRE) GLOBAL PFTS ########################
+########### LPJ-GUESS(-SPITFIRE) GLOBAL LAYERS ########################
 #####################################################################
 
 
 #' @format An S4 class object with the slots as defined below.
-#' @rdname PFT-class
+#' @rdname Layer-class
 #' @keywords datasets
-GUESS.PFTs <- list(
+GUESS.Layers <- list(
   
   # BOREAL TREES
   
   # BNE
-  new("PFT",
+  new("Layer",
       id = "BNE",
       name = "Boreal Needleleaved Evergreen Tree",
       growth.form = "Tree",
@@ -936,7 +936,7 @@ GUESS.PFTs <- list(
   ),
   
   # BINE
-  new("PFT",
+  new("Layer",
       id = "BINE",
       name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
       growth.form = "Tree",
@@ -948,7 +948,7 @@ GUESS.PFTs <- list(
   ),
   
   # BNS
-  new("PFT",
+  new("Layer",
             id = "BNS",
             name = "Boreal Needleleaved Summergreen Tree",
             growth.form = "Tree",
@@ -960,7 +960,7 @@ GUESS.PFTs <- list(
   ),
   
   # IBS
-  new("PFT",
+  new("Layer",
       id = "IBS",
       name = "Shade-intolerant B/leaved Summergreen Tree",
       growth.form = "Tree",
@@ -974,7 +974,7 @@ GUESS.PFTs <- list(
   # TEMPERATE TREES
   
   # TeBE
-  new("PFT",
+  new("Layer",
       id = "TeBE",
       name = "Temperate Broadleaved Evergreen Tree",
       growth.form = "Tree",
@@ -986,7 +986,7 @@ GUESS.PFTs <- list(
   ),
   
   # TeNE
-  new("PFT",
+  new("Layer",
       id = "TeNE",
       name = "Temperate Needleleaved Evergreen Tree",
       growth.form = "Tree",
@@ -998,7 +998,7 @@ GUESS.PFTs <- list(
   ),
   
   # TeBS
-  new("PFT",
+  new("Layer",
       id = "TeBS",
       name = "Temperate Broadleaved Summergreen Tree",
       growth.form = "Tree",
@@ -1013,7 +1013,7 @@ GUESS.PFTs <- list(
   # TROPICAL TREES
   
   # TrBE
-  new("PFT",
+  new("Layer",
       id = "TrBE",
       name = "Tropical Broadleaved Evergreen Tree",
       growth.form = "Tree",
@@ -1026,7 +1026,7 @@ GUESS.PFTs <- list(
   
   
   # TrIBE
-  new("PFT",
+  new("Layer",
       id = "TrIBE",
       name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
       growth.form = "Tree",
@@ -1038,7 +1038,7 @@ GUESS.PFTs <- list(
   ),
   
   # TrBR 
-  new("PFT",
+  new("Layer",
       id = "TrBR",
       name = "Tropical Broadleaved Raingreen Tree",
       growth.form = "Tree",
@@ -1053,7 +1053,7 @@ GUESS.PFTs <- list(
   # GRASSES
   
   # C3G 
-  new("PFT",
+  new("Layer",
       id = "C3G",
       name = "Boreal/Temperate Grass",
       growth.form = "Grass",
@@ -1065,7 +1065,7 @@ GUESS.PFTs <- list(
   ),
   
   # C4G
-  new("PFT",
+  new("Layer",
       id = "C4G",
       name = "Tropical Grass",
       growth.form = "Grass",
@@ -1857,8 +1857,8 @@ GUESS <- new("Format",
              # FUNCTION TO READ A FIELD 
              getField = getField_GUESS,
              
-             # DEFAULT GLOBAL PFTS  
-             default.pfts = GUESS.PFTs,
+             # DEFAULT GLOBAL LAYERS 
+             default.pfts = GUESS.Layers,
              
              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
              quantities = GUESS.quantities

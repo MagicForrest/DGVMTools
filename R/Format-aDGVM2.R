@@ -779,17 +779,17 @@ availableQuantities_aDGVM2 <- function(source, names, id, adgvm2.scheme ){
 
 
 ###############################################
-########### aDGVM2 PFTS ########################
+########### aDGVM2 Layers ########################
 ###############################################
 
 
 
 #' @format An S4 class object with the slots as defined below.
-#' @rdname PFT-class
+#' @rdname Layer-class
 #' @keywords datasets
-aDGVM2.PFTs <- list(
+aDGVM2.Layers <- list(
   
-  new("PFT",
+  new("Layer",
             id = "C3G",
             name = "Boreal/Temperate Grass",
             growth.form = "Grass",
@@ -800,7 +800,7 @@ aDGVM2.PFTs <- list(
             shade.tolerance = "None"
   ),
   
-  new("PFT",
+  new("Layer",
             id = "C4G",
             name = "Tropical Grass",
             growth.form = "Grass",
@@ -811,7 +811,7 @@ aDGVM2.PFTs <- list(
             shade.tolerance = "None"
   ),
   
-  new("PFT",
+  new("Layer",
           id = "Tr",
           name = "Tropical Tree",
           growth.form = "Tree",
@@ -822,7 +822,7 @@ aDGVM2.PFTs <- list(
           shade.tolerance = "None"
   ),
   
-  new("PFT",
+  new("Layer",
              id = "TrBE",
              name = "Tropical Broadleaved Evergreen Tree",
              growth.form = "Tree",
@@ -833,7 +833,7 @@ aDGVM2.PFTs <- list(
              shade.tolerance = "None"
   ),
   
-  new("PFT",
+  new("Layer",
              id = "TrBR",
              name = "Tropical Broadleaved Raingreen Tree",
              growth.form = "Tree",
@@ -844,7 +844,7 @@ aDGVM2.PFTs <- list(
              shade.tolerance = "None"
   ),
   
-  new("PFT",
+  new("Layer",
               id = "TrBES",
               name = "Tropical Broadleaved Evergreen Shrub",
               growth.form = "Shrub",
@@ -855,7 +855,7 @@ aDGVM2.PFTs <- list(
               shade.tolerance = "None"
   ),
   
-  new("PFT",
+  new("Layer",
               id = "TrBRS",
               name = "Tropical Broadleaved Raingreen Shrub",
               growth.form = "Shrub",
@@ -959,8 +959,8 @@ aDGVM2 <- new("Format",
              # FUNCTION TO READ A FIELD 
              getField = getField_aDGVM2,
              
-             # DEFAULT GLOBAL PFTS  
-             default.pfts = aDGVM2.PFTs,
+             # DEFAULT GLOBAL LayerS  
+             default.pfts = aDGVM2.Layers,
              
              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
              quantities = aDGVM2.quantities

@@ -52,7 +52,7 @@ test.addition <- calcNewField(x=test.Field, y = test.Field.2,
                               x.col = "Total", y.col = "Total", op = "+")
 print(plotSpatial(list(test.addition, test.Field), layers = "Total"))
 
-# multiplication, select a couple of PFTs only and compare to original
+# multiplication, select a couple of Layers only and compare to original
 test.multiplication <- calcNewField(x=test.Field, y = test.Field.2, x.col = c("C3G", "TeBS"), 
                                     y.col = c("C3G", "TeBS"), op = "*", verbose = FALSE)
 print(plotSpatial(list(test.multiplication, test.Field), layers =  c("C3G", "TeBS")))

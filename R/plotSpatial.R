@@ -25,7 +25,7 @@
 #' in this function). 
 #' @param plot.bg.col Colour string for the plot background, default "white".
 #' @param panel.bg.col Colour string for the panel background, default "white".
-#' @param useLongNames Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots.
+#' @param useLongNames Boolean, if TRUE replace Layer IDs with the Layer's full names on the plots.
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param ylim An optional vector of two numerics to specify the y/latitude range of the plot.
@@ -193,13 +193,13 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   }
  
   
-  # check the PFTs present in the Fields and make a unique list
+  # check the defined Layers present in the Fields and make a unique list
   # maybe also here check which one are actually in the layers to plot, since we have that information
-  PFTs <- list()
+  defined.Layers <- list()
   for(object in fields){
-    PFTs <- append(PFTs, object@source@pft.set)
+    defined.Layers <- append(defined.Layers, object@source@pft.set)
   }
-  PFTs <- unique(PFTs)
+  defined.Layers <- unique(defined.Layers)
   
   
   ### DETERMINE X- AND Y-LIMITS, CROP AND MAKE OVERLAY
@@ -335,7 +335,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     else {
       
       # Attempt to match the colours
-      here.cols <- matchPFTCols(unique.vals, PFTs)
+      here.cols <- matchLayerCols(unique.vals, defined.Layers)
       if(length(here.cols) == length(unique.vals)) all.Matched <- TRUE
       
       
@@ -352,9 +352,9 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
               categorical.legend.labels <- append(categorical.legend.labels, "None")
             }
             else {
-              for(PFT in PFTs) {
-                if(this.break == PFT@id) categorical.legend.labels <- append(categorical.legend.labels, PFT@name)
-              } # for each PFT   
+              for(this.Layer in defined.Layers) {
+                if(this.break == this.Layer@id) categorical.legend.labels <- append(categorical.legend.labels, this.Layer@name)
+              } # for each Layer   
             } # if note "None"
             
           } # for each breal

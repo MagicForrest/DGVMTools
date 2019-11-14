@@ -75,10 +75,10 @@ is.Quantity <- function(input) {
 
 #' @rdname is.object-methods
 #' @export
-is.PFT <- function(input) {
+is.Layer <- function(input) {
   class.def <- class(input)
   if (!is.null(attr(class.def, "package")))
-    if (class.def[1] == "PFT" && attr(class.def, "package")=="DGVMTools")
+    if (class.def[1] == "Layer" && attr(class.def, "package")=="DGVMTools")
       return(TRUE)
   return(FALSE)
 }

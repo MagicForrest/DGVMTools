@@ -1000,18 +1000,18 @@ availableQuantities_aDGVM <- function(source, names = TRUE, verbose = FALSE){
 
 
 #####################################################################
-############### aDGVM STANDARD PFTS #################################
+############### aDGVM STANDARD LAYERS ###############################
 #####################################################################
 
 
 #' @format An S4 class object with the slots as defined below.
-#' @rdname PFT-class
+#' @rdname Layer-class
 #' @keywords datasets
-aDGVM.PFTs <- list(
+aDGVM.Layers <- list(
   
   
   # Forest Tree
-  new("PFT",
+  new("Layer",
       id = "ForTr",
       name = "Forest Tree",
       growth.form = "Tree",
@@ -1023,7 +1023,7 @@ aDGVM.PFTs <- list(
   ),
   
   # Savanna Tree
-  new("PFT",
+  new("Layer",
       id = "SavTr",
       name = "Savanna Tree",
       growth.form = "Tree",
@@ -1037,7 +1037,7 @@ aDGVM.PFTs <- list(
   # GRASSES
   
   # C3G 
-  new("PFT",
+  new("Layer",
       id = "C3G",
       name = "C3 Grass",
       growth.form = "Grass",
@@ -1049,7 +1049,7 @@ aDGVM.PFTs <- list(
   ),
   
   # C4G
-  new("PFT",
+  new("Layer",
       id = "C4G",
       name = "C4 Grass",
       growth.form = "Grass",
@@ -1207,8 +1207,8 @@ aDGVM <- new("Format",
               # FUNCTION TO READ A FIELD 
               getField = getField_aDGVM,
               
-              # DEFAULT GLOBAL PFTS  
-              default.pfts = aDGVM.PFTs,
+              # DEFAULT GLOBAL LAYERS  
+              default.pfts = aDGVM.Layers,
               
               # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM aDGVM RUNS  
               quantities = aDGVM.quantities
