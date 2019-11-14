@@ -81,7 +81,7 @@ print(plotSpatialComparison(vegC.comparison, type = "values"))
 
 europe.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 europe.Source <- defineSource(name = "LPJ-GUESS", dir = europe.dir,  format = GUESS)
-model.biomes <- getBiomes(source = europe.Source, 
+model.biomes <- getScheme(source = europe.Source, 
                           scheme = Smith2014BiomeScheme, 
                           year.aggregate.method="mean")
 

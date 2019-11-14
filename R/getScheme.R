@@ -1,19 +1,19 @@
 #!/usr/bin/Rscript
 
 #
-#' Get a biome \code{Field} from a \code{Source}
+#' Get a Classification \code{Field} from a \code{Source}
 #' 
-#' Given a \code{Source} object and a \code{BiomeScheme} object, return an appropriate spatially/temporal/annually-aggregated biome \code{Field} object using the 
-#' classification contained in the \code{BiomeScheme} optionally including spatial, temporal and annual cropping.
+#' Given a \code{Source} object and a \code{Scheme} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object with categorical values u based on the 
+#' classification contained in the \code{Scheme}, optionally including spatial, temporal and annual cropping.
 #' 
 #' Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
-#' @param source The \code{Source} object for which the biome \code{Field} should be built. A list of \code{Source} objects can also be provided, in which case 
+#' @param source The \code{Source} object for which the Classification \code{Field} should be built. A list of \code{Source} objects can also be provided, in which case 
 #' the required \code{Field} object derived from each \code{Source} in the list (for example LAI or fractional cover) are first averaged, and then do the biome 
 #' classification. In the case of a list of \code{Source} objects, the \code{averaged.source} arguments (see below) must also be supplied so that the averaged 
 #' data can be written to/read from disk.
-#' @param scheme The biome scheme to be used as \code{BiomeScheme} object, or the id of a \code{BiomeScheme} defined in the package, as a character string.
+#' @param scheme The classification scheme to be used as \code{Scheme} object, or the id of a \code{Scheme} defined in the package, as a character string.
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
 #' If specified the following 9 arguments are ignored (with a warning).
@@ -74,17 +74,17 @@
 #' test.Source <- defineSource(name = "LPJ-GUESS run", dir = test.dir,  format = GUESS)
 #' 
 #' # Smith et al. 2014
-#' Smith2014.biomes <- getBiomes(source = test.Source, scheme = Smith2014BiomeScheme, 
+#' Smith2014.biomes <- getScheme(source = test.Source, scheme = Smith2014BiomeScheme, 
 #'                               year.aggregate.method = "mean")
 #' print(plotSpatial(Smith2014.biomes))
 #' 
 #' # Forrest et al. 2014
-#' Forrest2015.biomes <- getBiomes(source = test.Source, scheme = Forrest2015BiomeScheme, 
+#' Forrest2015.biomes <- getScheme(source = test.Source, scheme = Forrest2015BiomeScheme, 
 #'                                 year.aggregate.method = "mean")
 #' print(plotSpatial(Forrest2015.biomes))
 #' 
 #' }
-getBiomes <- function(source, 
+getScheme <- function(source, 
                       scheme, 
                       first.year,
                       last.year,
@@ -112,17 +112,17 @@ getBiomes <- function(source,
   
   ### IF A LIST OF SOURCES PROVIDED, CHECK FOR THE averaged.source SOURCE AND SET THE final.source APPROPRIATELY
   if(is.list(source)) {
-    if(missing(averaged.source)) stop("If you want to average over some Sources in getBiomes(), then you need to supply the 'averaged.source' argument for saving the results")
+    if(missing(averaged.source)) stop("If you want to average over some Sources in getScheme(), then you need to supply the 'averaged.source' argument for saving the results")
     else final.source <- averaged.source
   }
   else {
     final.source <- source
   }
   
-  ### CONVERT SCHEME ID STRING TO A BIOME SCHEME
+  ### CONVERT SCHEME ID STRING TO A CLASSIFICATION SCHEME
   if(class(scheme) == "character") {
     scheme.string <- scheme
-    scheme <- byIDfromList(scheme, supported.biome.schemes)
+    scheme <- byIDfromList(scheme, supported.classification.schemes)
   }
   else {
     scheme <- scheme
@@ -179,11 +179,11 @@ getBiomes <- function(source,
     
     # get the object from disk
     if(verbose) {message(paste("File",  file.name, "found in",  final.source@dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
-    biome.field <- readRDS(file.name)
+    scheme.field <- readRDS(file.name)
     
-    # Update the source object, that might have (legitimately) changed compared to the id that was used when this biome.field was created
+    # Update the source object, that might have (legitimately) changed compared to the id that was used when this scheme.field was created
     # for example it might be assigned a new id.
-    biome.field@source <- final.source
+    scheme.field@source <- final.source
     
     
     # Check that the spatial extent matches before returning
@@ -191,26 +191,26 @@ getBiomes <- function(source,
     
     
     full.domain.matched <- FALSE
-    if(length(sta.info@spatial.extent) == 0 && biome.field@spatial.extent.id == "Full") {
+    if(length(sta.info@spatial.extent) == 0 && scheme.field@spatial.extent.id == "Full") {
       full.domain.matched <- TRUE
       if(verbose) message("Full domain matched.")
     }
     
     cropped.domain.matched <- FALSE
-    if(length(sta.info@spatial.extent) > 0 && length(biome.field@spatial.extent)  > 0 ) {
-      if(identical(sta.info@spatial.extent, biome.field@spatial.extent)){
+    if(length(sta.info@spatial.extent) > 0 && length(scheme.field@spatial.extent)  > 0 ) {
+      if(identical(sta.info@spatial.extent, scheme.field@spatial.extent)){
         cropped.domain.matched <- TRUE
         if(verbose) message("Cropped domain matched.")
       }
     }
     
     if(full.domain.matched || cropped.domain.matched){
-      return(biome.field)
+      return(scheme.field)
     }  
     
     # Otherwise we must discard this Field and we need to re-average (and maybe also re-read) using the cases below 
     message(paste("Details of the spatial extent",  sta.info@spatial.extent.id, "didn't match.  So file on disk ignored and the original data is being re-read"))
-    rm(biome.field)
+    rm(scheme.field)
     gc()
     
   }
@@ -287,14 +287,14 @@ getBiomes <- function(source,
   if(verbose) print("Starting classification")
   suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
   
-  # remove all layers which are not the biome layers and set key
+  # remove all layers which are not the scheme layers and set key
   all.layers <- layers(dt)
-  all.non.biome.layers <- all.layers[which(all.layers != scheme@id)]
-  dt[, (all.non.biome.layers) := NULL]
+  all.non.scheme.layers <- all.layers[which(all.layers != scheme@id)]
+  dt[, (all.non.scheme.layers) := NULL]
   setKeyDGVM(dt)
   
   ### BUILD THE FINAL Field
-  biome.field <- new("Field",
+  scheme.field <- new("Field",
                      id = makeFieldID(source = final.source, var.string = scheme@id, sta.info = final.stainfo),
                      data = dt,
                      quant = as(object = scheme, Class = "Quantity"),
@@ -305,7 +305,7 @@ getBiomes <- function(source,
   ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMField object...")}
-    saveRDS(biome.field, file = file.name)
+    saveRDS(scheme.field, file = file.name)
     if(verbose) {message("...done.")}
   }
   
@@ -313,6 +313,6 @@ getBiomes <- function(source,
   rm(dt)
   gc()
   
-  return(biome.field)
+  return(scheme.field)
   
 }

@@ -174,7 +174,7 @@ print(plotSubannual(field = London.mlai,
 ## ----model biomes, echo=TRUE---------------------------------------------
 
 # read and plot global biomes
-biomes.model <- getBiomes(GUESS.run, Smith2014BiomeScheme, year.aggregate.method = "mean")
+biomes.model <- getScheme(GUESS.run, Smith2014BiomeScheme, year.aggregate.method = "mean")
 #print(plotSpatial(biomes.model, map.overlay = "world"))
 print(plotSpatial(biomes.model))
 
