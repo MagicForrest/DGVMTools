@@ -385,8 +385,8 @@ context("Categorical Quantities")
 
 # biomes
 # Note: Known and deliberate warning when calculating biomes, suppress for clarity in results
-GUESS.Smith2014.Biomes <- suppressWarnings(getBiomes(source = GUESS.Europe.test.Source, scheme = Smith2014BiomeScheme, year.aggregate.method = "mean"))
-GUESS.Forrest2015.Biomes <- suppressWarnings(getBiomes(source = GUESS.Europe.test.Source, scheme = Forrest2015BiomeScheme, year.aggregate.method = "mean"))
+GUESS.Smith2014.Biomes <- suppressWarnings(getScheme(source = GUESS.Europe.test.Source, scheme = Smith2014BiomeScheme, year.aggregate.method = "mean"))
+GUESS.Forrest2015.Biomes <- suppressWarnings(getScheme(source = GUESS.Europe.test.Source, scheme = Forrest2015BiomeScheme, year.aggregate.method = "mean"))
 
 # max PFT
 GUESS.Field.lai.annual <- aggregateYears(GUESS.lai.Field.full, "mean")
@@ -414,7 +414,7 @@ test_that("Categorical Quantities", {
                                              name = "LPJ-GUESS Europe Example Run Averaged"),
             "Source")
   
-  GUESS.Smith2014.Biomes.averaged <- suppressWarnings(getBiomes(source = list(GUESS.Europe.test.Source, GUESS.Europe.test.Source), 
+  GUESS.Smith2014.Biomes.averaged <- suppressWarnings(getScheme(source = list(GUESS.Europe.test.Source, GUESS.Europe.test.Source), 
                                                                 scheme = Smith2014BiomeScheme, 
                                                                 year.aggregate.method = "mean",
                                                                 averaged.source = GUESS.Europe.test.Source.Averaged)

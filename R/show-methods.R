@@ -184,15 +184,15 @@ setMethod("show", signature(object="Comparison"), function(object) {
 
 #' @rdname show
 #' @export
-setMethod("show", signature(object="BiomeScheme"), function(object) {
+setMethod("show", signature(object="Scheme"), function(object) {
   
-  cat(paste0("Biome Scheme:\n"))
+  cat(paste0("Scheme:\n"))
   cat(paste0("id = ", "\"", object@id, "\"", "\n"))
   cat(paste0("name = ", object@name, "\"", "\n"))
   #cat(paste0("Totals needed: ", paste0(object@totals.needed, collapse = ' '), "\n"))
   cat(paste0("Data reference: ", "\"", object@data.reference,  "\"", "\n"))
   cat(paste0("Published reference: ", "\"", object@published.reference,  "\"", "\n"))
-  cat(paste0("Biomes:\n"))
+  cat(paste0("Categories:\n"))
   for(type in object@units) {
     cat(paste0("     ", type,"\n"))
   }

@@ -43,14 +43,14 @@ lookupQuantity <- function(quant.id, context = Standard.quantities, verbose = TR
   }
   
   # this code will make the function first check for a user-defined dgvm.quantities list
-  local.supported.biome.schemes <- get('supported.biome.schemes', envir=.GlobalEnv)
+  local.supported.classification.schemes <- get('supported.classification.schemes', envir=.GlobalEnv)
 
-  for(biome.scheme in local.supported.biome.schemes){
-    if(as(object = biome.scheme, Class = "Quantity")@id == quant.id) return(as(object = biome.scheme, Class = "Quantity"))
+  for(classification.scheme in local.supported.classification.schemes){
+    if(as(object = classification.scheme, Class = "Quantity")@id == quant.id) return(as(object = classification.scheme, Class = "Quantity"))
   }
   
   # fail because can't find the quantity
-  stop(paste0("Can't find a quantity with id = ", quant.id, " anywhere in this context, or in Standard.quantities, or the supported.biomes.schemes, so failing."))
+  stop(paste0("Can't find a quantity with id = ", quant.id, " anywhere in this context, or in Standard.quantities, or the supported.classification.schemes, so failing."))
   
 }
 

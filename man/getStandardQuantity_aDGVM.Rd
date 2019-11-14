@@ -36,6 +36,6 @@ output variable.  Normally it will read the file from disk, but if that has alre
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
 
-Glenn Moncrief \email{glenn@saeon.ac.za}
+Glenn Moncrieff \email{glenn@saeon.ac.za}
 }
 \keyword{internal}
