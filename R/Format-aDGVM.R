@@ -408,6 +408,7 @@ getDailyField_aDGVM <- function(run,
   Grass_LeafBiomassDeadStanding = Grass_LeafBiomassLive = Grass_RootBiomassLive = NULL
   Tree_LeafBiomassLive = Tree_RootBiomassLive = Tree_StemBiomassLive = NULL
   Seedlings = Saplings = SmallTrees = LargeTrees = NULL
+  Grass_GPP = Total_GPP = Tree_GPP  = NULL
   
   # extract from the target.sta
   first.year = target.sta@first.year
@@ -418,7 +419,7 @@ getDailyField_aDGVM <- function(run,
   else if(tolower(adgvm.file.type) == "fire") file.substring <- "Fire"
   else if(tolower(adgvm.file.type) == "soil") file.substring <- "Soil"
   else if(tolower(adgvm.file.type) == "size") file.substring <- "Size"
-  else stop(paste0("Argument adgvm.file.type is set to ", adgvm.file.type, " which is not valid.  Please use one of \"Yearly\"/\"Sys\"/\"Fire\"/\"Soil\"/\"Size\" depending on where the varibale you want to read has been written."))
+  else stop(paste0("Argument adgvm.file.type is set to ", adgvm.file.type, " which is not valid.  Please use one of \"Yearly\"/\"Sys\"/\"Fire\"/\"Soil\"/\"Size\" depending on where the variable you want to read has been written."))
   
   # if no custom header defined, use the default appropriate for the file type that is being opened 
   if(missing(adgvm.header)) {

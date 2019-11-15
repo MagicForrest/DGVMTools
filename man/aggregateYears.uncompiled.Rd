@@ -9,7 +9,7 @@ aggregateYears.uncompiled(input.obj, method = "mean", verbose = FALSE)
 \arguments{
 \item{input.obj}{A Field or data.table (with a "Year" column)}
 
-\item{method}{A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
+\item{method}{A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!}
 
 \item{verbose}{If TRUE give some progress update about the averaging.}

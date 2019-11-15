@@ -11,7 +11,7 @@ aggregateSpatial.uncompiled(input.obj, method = "mean",
 \item{input.obj}{Field (or data.table) to be averaged}
 
 \item{method}{The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
-"weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".}
+"weighted.sum", "w.sum", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).}
 
 \item{verbose}{If TRUE give some progress update about the averaging.}
 

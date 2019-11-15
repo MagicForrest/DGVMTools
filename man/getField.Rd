@@ -19,7 +19,7 @@ getField(source, var, first.year, last.year, year.aggregate.method,
 
 \item{last.year}{The last year (as a numeric) of the data to be return}
 
-\item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
+\item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 See \code{\link{aggregateYears}}}
 
@@ -28,7 +28,7 @@ See \code{\link{aggregateYears}}}
 \item{spatial.extent.id}{A character string to give an identifier for the spatial extent this ModelField covers.}
 
 \item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
-"weighted.sum"/"w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+"weighted.sum"/"w.sum", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 See \code{\link{aggregateSpatial}}}
 
 \item{subannual.resolution}{A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".}
@@ -36,7 +36,7 @@ See \code{\link{aggregateSpatial}}}
 \item{subannual.original}{A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 Can be "Year", "Month" or "Day".  Currently ignored.}
 
-\item{subannual.aggregate.method}{A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "sd" or "var".
+\item{subannual.aggregate.method}{A character string specifying the method by which to aggregate the data subannually,  can be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean)
 See \code{\link{aggregateSubannual}}}
 
 \item{sta.info}{Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.
