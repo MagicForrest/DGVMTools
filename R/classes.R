@@ -369,33 +369,34 @@ setClass("Comparison",
 
 
 ##########################################################################################
-########  BIOME CLASSIFICATION AND COMPARISON CLASSES ####################################
+########  CLASSIFICATION AND COMPARISON CLASSES ####################################
 ##########################################################################################
 
 
-########## BIOME SCHEME
+########## CLASSIFICATION SCHEME
 #
-#' A biome scheme
+#' A classification scheme
 #' 
-#' This class stores the information about a biome scheme.  It describes what how the model output (in the form of a data.table) must be prepared, and then the rules which are used to classify the biomes.
+#' This class stores the information about a classification scheme, for example a biome classification scheme.  
+#' It describes what how the model output (in the form of a data.table) must be prepared, and then the rules which are used to do the classification.
 #' 
-#' @slot id A unique character string to identify this particular biome scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")
-#' @slot name A character string that can be more descriptive of the biome scheme. (Inherited from Quantity via "contains")
-#' @slot units A list of character strings giving the names of categories (biomes). (Inherited from Quantity via "contains")
-#' @slot colours A function that returns the colour scale for this BiomeScheme. (Inherited from Quantity via "contains")
+#' @slot id A unique character string to identify this particular classification scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")
+#' @slot name A character string that can be more descriptive of the classification scheme. (Inherited from Quantity via "contains")
+#' @slot units A list of character strings giving the names of categories. (Inherited from Quantity via "contains")
+#' @slot colours A function that returns the colour scale for this Scheme. (Inherited from Quantity via "contains")
 #' @slot format Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.
-#' @slot rules A function which is applied to every row of the data.table and describes the biome classification rules.
-#' @slot layers.needed List of vegetation layers needed to calculate biomes and the name of the new layer, to be interpreted by layerOp(), specifified as a list of three- or four-item list 
+#' @slot rules A function which is applied to every row of the data.table and describes the classification rules.
+#' @slot layers.needed List of vegetation layers needed to perform the classification and the name of the new layer, to be interpreted by layerOp(), specifified as a list of three- or four-item list 
 #' whose elements first element id the id of a DGVMTools::Quantity and whose other elements are passed as arguements to the layerOp() function.  
 #' For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
 #' which would make a layer called "Woody" which would be the sum of all LAI trees and shrubs.
-#' @slot data.reference Character string giving a reference where the data for this biome scheme comes from
+#' @slot data.reference Character string giving a reference where the data for this classification scheme comes from
 #' @slot published.reference Character string giving a reference where this model output classification scheme was published
-#' @name BiomeScheme-class
-#' @rdname BiomeScheme-class
-#' @exportClass BiomeScheme
+#' @name Scheme-class
+#' @rdname Scheme-class
+#' @exportClass Scheme
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("BiomeScheme",
+setClass("Scheme",
          contains = "Quantity",
          slots = c(rules = "function",
                    layers.needed = "list",

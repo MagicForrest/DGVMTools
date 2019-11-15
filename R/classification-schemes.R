@@ -92,7 +92,7 @@ Smith2014BiomeRules <- function(x){
 #' 
 #' @rdname BiomeScheme-class
 #' @export
-Smith2014BiomeScheme <- new("BiomeScheme",
+Smith2014BiomeScheme <- new("Scheme",
                         new("Quantity",
                             id = "Smith2014",
                             name = "Smith et al. 2014 Biomes", 
@@ -321,7 +321,7 @@ Hickler2012Rules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 
-Hickler2012BiomeScheme <- new("BiomeScheme",
+Hickler2012BiomeScheme <- new("Scheme",
                           new("Quantity",
                               id = "Hickler2012",
                               name = "Hickler2012",
@@ -471,7 +471,7 @@ Forrest2015MegaBiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #'
-Forrest2015BiomeScheme <- new("BiomeScheme",
+Forrest2015BiomeScheme <- new("Scheme",
                           new("Quantity",
                               id = "Forrest2015",
                               name = "Forrest et al. 2015",
@@ -602,7 +602,7 @@ MeditBiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-MeditBiomeScheme <- new("BiomeScheme",
+MeditBiomeScheme <- new("Scheme",
                           new("Quantity",
                               id = "MeditBiomeScheme",
                               name = "Mediterranean Biomes",
@@ -727,7 +727,7 @@ MegaBiomeRules_dev <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-DevMegaBiomeScheme <- new("BiomeScheme",
+DevMegaBiomeScheme <- new("Scheme",
                              new("Quantity",
                                  id = "Megabiomes",
                                  name = "Megabiomes",
@@ -848,7 +848,7 @@ FireMIPBiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-FireMIPBiomeScheme <- new("BiomeScheme",
+FireMIPBiomeScheme <- new("Scheme",
                             new("Quantity",
                                 id = "FireMIP",
                                 name = "FireMIP Biomes",
@@ -974,7 +974,7 @@ FPCMegaBiomeRules <- function(x) {
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-FPCMegaBiomeScheme <- new("BiomeScheme",
+FPCMegaBiomeScheme <- new("Scheme",
                             new("Quantity",
                                 id = "FPCMegaBiomeScheme",
                                 name = "FPCMegaBiomeScheme",
@@ -1078,7 +1078,7 @@ aDGVMBiomeRules <- function(x){
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
 
-aDGVMBiomeScheme <- new("BiomeScheme",
+aDGVMBiomeScheme <- new("Scheme",
                                new("Quantity",
                                    id = "aDGVMBiomeScheme",
                                    name = "aDGVM(1) Biomes",
@@ -1153,7 +1153,7 @@ SimpleAdgvm2BiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
-SimpleAdgvm2BiomeScheme <- new("BiomeScheme",
+SimpleAdgvm2BiomeScheme <- new("Scheme",
                                  new("Quantity",
                                      id = "SimpleAdgvm2BiomeScheme",
                                      name = "Simple aDGVM2 Biomes",
@@ -1216,7 +1216,7 @@ SimpleHeightAdgvm2BiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-SimpleHeightAdgvm2BiomeScheme <- new("BiomeScheme",
+SimpleHeightAdgvm2BiomeScheme <- new("Scheme",
                                        new("Quantity",
                                            id = "SimpleHeightAdgvm2BiomeScheme",
                                            name = "Simple aDGVM2 Biomes",
@@ -1281,7 +1281,7 @@ GrowthFormAdgvm2BiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-GrowthFormAdgvm2BiomeScheme <- new("BiomeScheme",
+GrowthFormAdgvm2BiomeScheme <- new("Scheme",
                                      new("Quantity",
                                          id = "GrowthFormAdgvm2BiomeScheme",
                                          name = "Growth Form aDGVM2 Biomes",
@@ -1347,7 +1347,7 @@ PhenologyAdgvm2BiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-PhenologyAdgvm2BiomeScheme <- new("BiomeScheme",
+PhenologyAdgvm2BiomeScheme <- new("Scheme",
                                     new("Quantity",
                                         id = "PhenologyAdgvm2BiomeScheme",
                                         name = "Phenology aDGVM2 Biomes",
@@ -1378,9 +1378,9 @@ PhenologyAdgvm2BiomeScheme <- new("BiomeScheme",
 
 
 
-#' Currently supported biome schemes
+#' Currently supported classification schemes
 #' 
-#' This is a list of all BiomeSchemes defined by DGVMTools.
+#' This is a list of all classification Schemes defined by DGVMTools.
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
@@ -1397,17 +1397,17 @@ PhenologyAdgvm2BiomeScheme <- new("BiomeScheme",
 #' test.Source <- defineSource(name = "LPJ-GUESS run", dir = test.dir,  format = GUESS)
 #' 
 #' # Smith et al. 2014
-#' Smith2014.biomes <- getBiomes(source = test.Source, scheme = Smith2014BiomeScheme, 
+#' Smith2014.biomes <- getScheme(source = test.Source, scheme = Smith2014BiomeScheme, 
 #'                               year.aggregate.method = "mean")
 #' print(plotSpatial(Smith2014.biomes))
 #' 
 #' # Forrest et al. 2014
-#' Forrest2015.biomes <- getBiomes(source = test.Source, scheme = Forrest2015BiomeScheme, 
+#' Forrest2015.biomes <- getScheme(source = test.Source, scheme = Forrest2015BiomeScheme, 
 #'                                 year.aggregate.method = "mean")
 #' print(plotSpatial(Forrest2015.biomes))
 #' 
 #' }
-supported.biome.schemes <- c("Smith2014" = Smith2014BiomeScheme,
+supported.classification.schemes <- c("Smith2014" = Smith2014BiomeScheme,
                              "Hickler2012" = Hickler2012BiomeScheme,
                              "Forrest2015" = Forrest2015BiomeScheme,
                              "DevMegaBiomes" = DevMegaBiomeScheme,

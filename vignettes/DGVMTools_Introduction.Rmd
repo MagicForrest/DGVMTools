@@ -295,13 +295,13 @@ Note, that since `plotSeasonal()` takes different arguments and follows a differ
 
 #### Calculating biomes and categorical comparisons 
 
-The `getBiomes()` function can be used to classify model output into some pre-defined biome categories.
+The `getScheme()` function can be used to classify model output into some pre-defined classification categories.  Here we classify vegetation into global biomes.
 
 
 ``` {r model biomes, echo=TRUE}
 
 # read and plot global biomes
-biomes.model <- getBiomes(GUESS.run, Smith2014BiomeScheme, year.aggregate.method = "mean")
+biomes.model <- getScheme(GUESS.run, Smith2014BiomeScheme, year.aggregate.method = "mean")
 #print(plotSpatial(biomes.model, map.overlay = "world"))
 print(plotSpatial(biomes.model))
 ```

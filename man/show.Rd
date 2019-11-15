@@ -10,7 +10,7 @@
 \alias{show,STAInfo-method}
 \alias{show,Field-method}
 \alias{show,Comparison-method}
-\alias{show,BiomeScheme-method}
+\alias{show,Scheme-method}
 \alias{show,Format-method}
 \title{Show a DGVMTools object}
 \usage{
@@ -28,7 +28,7 @@
 
 \S4method{show}{Comparison}(object)
 
-\S4method{show}{BiomeScheme}(object)
+\S4method{show}{Scheme}(object)
 
 \S4method{show}{Format}(object)
 }
