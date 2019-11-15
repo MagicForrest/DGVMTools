@@ -3,23 +3,26 @@
 
 #' Format class
 #'
-#' This class encapsulates all the specific details of a supported model or dataset.  It stores meta-data and methods (just functions, not technically
-#'  methods in R terms) for a DGVM output format (or other data format).  Note that the default.pfts and  'quantities' arguments are just default 
-#'  values, it is easy to add new ones.  Equally they don't all need to to be available for a particular run or dataset.  You can define your own for your 
-#'  own data format if you, for example, want to include a new model type.    
-#'  Format objects which are  included in the package by default are listed below:
+#' This class encapsulates all the specific details of a supported model or dataset.  Thiis comprises functions to read the data off the disk, and metadata
+#' describing certain properties of the vegetation. From a user-perspective, these are used as the \code{format} argument to \link{defineSource} function.
+#' 
+#'  Format objects which are included in the package are listed below:
 #'
 #' @slot id Simple character string to gave an uniquely identify this format
-#' @slot default.pfts 'Standard' vegetation types (PFTs, Plant Functional Type) that this format uses, as a list of DGVMTools::PFT objects.  
-#' This is mostly likely applicable to formats decsribing DGVM output, but also for some data sets.  
-#' This is just a default PFT set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
-#' @slot quantities 'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output or dataset.
+#' @slot defined.layers 'Standard' Layer type that this format uses, as a list of DGVMTools::\linkS4class{Layer} objects.  
+#' This is most likely applicable to formats decsribing DGVM output, but also for some data sets.  
+#' This is just a default Layer set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
+#' @slot quantities 'Standard' quantities (as a list of DGVMTools::\linkS4class{Quantity} objects) which might be availably from the model output or dataset.
 #' @slot availableQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
 #' @slot getField A function to retrieve actually data from the model output or dataset.  This is likely to be a fairly complex function, and really depends on the specifics 
 #' and idiosynchrasies of the model output format or dataset.
 #' 
-#' @details Normally a user won't need to deal with this class since it defines model/dataset spcific metadata and functions which should be defined once and then
-#' 'just work' (haha) in the future. If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
+#' @details For DGVMTools to support a particular model or dataset, this is the object that needs to be defined.  But normally a user won't need to deal with this 
+#' class since it defines model/dataset spcific metadata and functions which should be defined once and then 'just work' (haha) in the future. 
+#' If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
+#' 
+#' Note that the 'defined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
+#' to to be available for a particular run or dataset.  You can define your own for your own data format if you, for example, want to include a new model type.    
 #' 
 #' @name Format-class
 #' @rdname Format-class
@@ -27,7 +30,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("Format", 
          slots = c(id = "character",
-                   default.pfts = "list",
+                   defined.layers = "list",
                    quantities = "list",
                    availableQuantities = "function",
                    getField = "function"
@@ -78,7 +81,7 @@ setClass("Period",
 
 #' STAInfo class
 #'
-#' This class encapsulations all the Spatial (S, longitude and latidude), Temporal (T, monthly, daily etc.) and Annual (A, years included) 
+#' This class encapsulations all the Spatial (the 'S', longitude and latidude), Temporal (the 'T', monthly, daily etc.) and Annual (the 'A', years included) 
 #' Information  (hence the name 'STAInfo') about a particular DGVMTools::Field.  Normally the user won't have to deal with this (it is mostly used internally),
 #' but it can be handy, for example to extract the STAInfo from one Field, and use it extract another field with the same dimensions. 
 #'     
@@ -127,39 +130,39 @@ setClass("STAInfo",
 
 
 
-#' Class to hold the metadata for a Plant Functional Type (PFT)
+#' Class to hold the metadata for a "Layer"
 #' 
-#' @description   This is a class to hold meta-data about PFTs.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, 
-#' as well as their growth form, phenology, leaftype, climate zone, shade tolerance and a default plot colour.
-#' These are defined in lists for the default PFTs for supported model format (see'Usage' below). 
+#' @description   This is a class to hold meta-data about a Layer.  A Layer is a component of a Field, for example a Field might have a Layer for each PFT, or each soil carbon pool.  
+#' As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, a default plot colour and a list of properties.
+#' It is this list of properties that allows DGVMTools to automatically select groups of layer for aggregating or other operations.
+#' These are defined in lists for the default Layers for supported model format (see'Usage' below). 
 #' 
-#' @slot id A unique character string to identify this particular PFT.  Recommended to be alphanumeric because it is used to construct file names.
-#' @slot name A character string to describe the PFT. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
-#' @slot growth.form A string defining the growth.form of the PFT, typically either "Tree", "Grass" or "Shrub"
-#' @slot leaf.form A string defining the leaf.form of the PFT, typically either "Broadleaved" or "Needleleaved"
-#' @slot phenology A string defining the phenology of the PFT, typically "Evergreen", "Summergreen", "Raingreen" or "GrassPhenology"
-#' @slot climate.zone A string defining the climate climate.zone of a PFT, typically "Boreal", "Temperate" or "Tropical" (could go crazy and also have "Mediterranean", for example)
-#' @slot shade.tolerance A string defining the \code{id} of a shade tolerance characteristric of a PFT. 
+#' @slot id A unique character string to identify this particular Layer.  This should match the column names in the @data slot of 
+#' the appropriate Field object.  It might correspond to, for example, the abbreviation used for a PFT.
+#' @slot name A character string to describe the Layer. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
 #' @slot colour A string defining a preferred R colour to plot this PFT (for line graphs etc)
+#' @slot properties A list with named items containing metadata describing the Layer.  These are used with the \link{whichLayers} and \link{layerOp}
+#' functions to automagically select layers.  There is a lot of flexibility here, but it is recommended that the list includes at least an
+#'  element called "type", and then ideally all the proprties required to describe the layer.  An examble for a broadleaved summergreen tree PFT could look like: \cr
+#' \code{properties = list(type = "PFT", growth.form = "Tree", phenology = "Summergreen")}.  \cr 
+#' A slow litter soil carbon pool could look like: \cr \cr
+#' \code{properties = list(type = "CPool", speed = "Slow", zone = "Soil", comprises = "Litter")}. 
 #' 
-#' @details The \code{PFT-class} is only meta-data but is very important as it allows users to calculate, for example, the total Tree LAI with a simple command. 
-#' The standard PFTs for some models are included (see above), but if you have other PFTs then you simply need define them.  You then combine the PFTs into an R list
-#' and then provide them as the 'pft.set' argument to the \code{defineSource} call and bingo! you are using your custom PFTs. 
+#' @details The \code{Layer-class} is only meta-data but is very useful as it allows users to conveniently aggregate or process the data 
+#' corresponding to, for example, all trees with simple command. 
+#' The standard Layers for some models are included (see above), but if you have other Layers then you simply need define them (see funtion \code{XXXXX}).  You then combine the
+#' existing Layers into an R list and then provide them as the 'default.layers' argument to the \link{defineSource} call and bingo! you are using your custom Layers. 
 #' 
 
-#' @name PFT-class
-#' @rdname PFT-class
-#' @exportClass PFT
+#' @name Layer-class
+#' @rdname Layer-class
+#' @exportClass Layer
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-setClass("PFT", 
+setClass("Layer", 
          slots = c(id = "character",
                    name = "character",
-                   growth.form = "character",
-                   leaf.form = "character",
-                   phenology = "character",
-                   climate.zone = "character",
-                   shade.tolerance = "character",
-                   colour = "character"
+                   colour = "character",
+                   properties = "list"
          )
 )
 

@@ -20,11 +20,8 @@ aDGVM
 aDGVM2
 }
 \description{
-This class encapsulates all the specific details of a supported model or dataset.  It stores meta-data and methods (just functions, not technically
- methods in R terms) for a DGVM output format (or other data format).  Note that the default.pfts and  'quantities' arguments are just default 
- values, it is easy to add new ones.  Equally they don't all need to to be available for a particular run or dataset.  You can define your own for your 
- own data format if you, for example, want to include a new model type.    
- Format objects which are  included in the package by default are listed below:
+This class encapsulates all the specific details of a supported model or dataset.  Thiis comprises functions to read the data off the disk, and metadata
+describing certain properties of the vegetation. From a user-perspective, these are used as the \code{format} argument to \link{defineSource} function.
 
 \code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format.  It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
 Can be produced using the companion DGVMData package.
@@ -36,19 +33,25 @@ Can be produced using the companion DGVMData package.
 \code{aDGVM2} - a Format for reading aDGVM2 model output
 }
 \details{
-Normally a user won't need to deal with this class since it defines model/dataset spcific metadata and functions which should be defined once and then
-'just work' (haha) in the future. If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
+Format objects which are included in the package are listed below:
+
+For DGVMTools to support a particular model or dataset, this is the object that needs to be defined.  But normally a user won't need to deal with this 
+class since it defines model/dataset spcific metadata and functions which should be defined once and then 'just work' (haha) in the future. 
+If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
+
+Note that the 'defined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
+to to be available for a particular run or dataset.  You can define your own for your own data format if you, for example, want to include a new model type.
 }
 \section{Slots}{
 
 \describe{
 \item{\code{id}}{Simple character string to gave an uniquely identify this format}
 
-\item{\code{default.pfts}}{'Standard' vegetation types (PFTs, Plant Functional Type) that this format uses, as a list of DGVMTools::PFT objects.
-This is mostly likely applicable to formats decsribing DGVM output, but also for some data sets.  
-This is just a default PFT set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).}
+\item{\code{defined.layers}}{'Standard' Layer type that this format uses, as a list of DGVMTools::\linkS4class{Layer} objects.
+This is most likely applicable to formats decsribing DGVM output, but also for some data sets.  
+This is just a default Layer set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).}
 
-\item{\code{quantities}}{'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output or dataset.}
+\item{\code{quantities}}{'Standard' quantities (as a list of DGVMTools::\linkS4class{Quantity} objects) which might be availably from the model output or dataset.}
 
 \item{\code{availableQuantities}}{A function to determine which quantities \emph{are actually available} from the model run or dataset.}
 

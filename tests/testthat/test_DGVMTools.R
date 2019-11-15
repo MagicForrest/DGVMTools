@@ -142,44 +142,44 @@ test_that("Field",{
 })
 
 
-# PFTs
-context("PFTs")
+# Layers
+context("Layers")
 
-# test PFTs
-test_that("PFTs",{
+# test Layers
+test_that("Layers",{
   
   
-  # Test return PFT objects from a Field with different criteria (and also NULL - ie no criteria)
-  all.criteria = list(NULL, "Grass", "Tree", "Evergreen", "Summergreen", "Raingreen", "Boreal", "Temperate", "Tropical", "Needleleaved", "Broadleaved")
+  # Test return Layer objects from a Field with different criteria (and also NULL - ie no criteria)
+  all.criteria = list("Grass", "Tree", "Evergreen", "Summergreen", "Raingreen", "Boreal", "Temperate", "Tropical", "Needleleaved", "Broadleaved")
   
   for(criteria in all.criteria) {
     
-    # get list of PFTs from a Field
-    list.PFTs <- listPFTs(x = GUESS.lai.Field.full, criteria = criteria, return.ids = FALSE)
-    expect_is(list.PFTs, "list")
-    for(PFT in list.PFTs) {
-      expect_is(PFT, "PFT")
+    # get list of Layers from a Field
+    list.Layers <- whichLayers(x = GUESS.lai.Field.full, criteria = criteria, return.ids = FALSE)
+    expect_is(list.Layers, "list")
+    for(Layer in list.Layers) {
+      expect_is(Layer, "Layer")
     }
     
-    # get vector of PFT ids (character strings) from a Field
-    list.PFTs <- listPFTs(x = GUESS.lai.Field.full, criteria = criteria, return.ids = TRUE)
-    expect_is(list.PFTs, "character")
-    for(PFT in list.PFTs) {
-      expect_is(PFT, "character")
+    # get vector of Layer ids (character strings) from a Field
+    list.Layers <- whichLayers(x = GUESS.lai.Field.full, criteria = criteria, return.ids = TRUE)
+    expect_is(list.Layers, "character")
+    for(Layer in list.Layers) {
+      expect_is(Layer, "character")
     }
     
-    # get list of PFTs from a list of PFTs
-    list.PFTs <- listPFTs(x = GUESS@default.pfts, criteria = criteria, return.ids = FALSE)
-    expect_is(list.PFTs, "list")
-    for(PFT in list.PFTs) {
-      expect_is(PFT, "PFT")
+    # get list of Layers from a list of Layers
+    list.Layers <- whichLayers(x = GUESS@defined.layers, criteria = criteria, return.ids = FALSE)
+    expect_is(list.Layers, "list")
+    for(Layer in list.Layers) {
+      expect_is(Layer, "Layer")
     }
     
-    # get vector of PFT ids from a list of PFTs
-    list.PFTs <- listPFTs(x = GUESS@default.pfts, criteria = criteria, return.ids = TRUE)
-    expect_is(list.PFTs, "character")
-    for(PFT in list.PFTs) {
-      expect_is(PFT, "character")
+    # get vector of Layer ids from a list of Layers
+    list.Layers <- whichLayers(x = GUESS@defined.layers, criteria = criteria, return.ids = TRUE)
+    expect_is(list.Layers, "character")
+    for(Layer in list.Layers) {
+      expect_is(Layer, "character")
     }
     
   }

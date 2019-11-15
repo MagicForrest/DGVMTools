@@ -748,8 +748,8 @@ DGVMData <- new("Format",
                 # FUNCTION TO READ A FIELD 
                 getField = getField_DGVMData,
                 
-                # DEFAULT GLOBAL PFTS  
-                default.pfts = list(),
+                # DEFAULT GLOBAL LAYERS  
+                defined.layers = list(),
                 
                 # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
                 quantities = DGVMData.quantities

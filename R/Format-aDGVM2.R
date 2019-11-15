@@ -21,16 +21,16 @@
 #' @keywords internal
 #' @seealso \code{\link{getQuantity_aDGVM2_Scheme1}, \link{getQuantity_aDGVM2_Scheme2}}
 getField_aDGVM2 <- function(source,
-                           quant,
-                           target.STAInfo,
-                           file.name,
-                           verbose,
-                           adgvm2.scheme,
-                           adgvm2.daily) {
+                            quant,
+                            target.STAInfo,
+                            file.name,
+                            verbose,
+                            adgvm2.scheme,
+                            adgvm2.daily) {
   
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read aDGVM2 data.")
-
+  
   if(missing(adgvm2.scheme)) adgvm2.scheme <- 1
   if(missing(adgvm2.daily)) adgvm2.daily <- FALSE
   
@@ -38,13 +38,13 @@ getField_aDGVM2 <- function(source,
     
     if(adgvm2.scheme == 1) return(getQuantity_aDGVM2_Scheme1(run = source, target.sta = target.STAInfo, file.name = file.name, variable = quant, adgvm2.daily))
     if(adgvm2.scheme == 2) return(getQuantity_aDGVM2_Scheme2(run = source, target.sta = target.STAInfo, file.name = file.name, variable = quant))
-
+    
   }
   else {
     stop(paste("Quantity", quant@id, "doesn't seem to be defined for aDGVM2"))
   }
   
-
+  
   
 }
 
@@ -90,7 +90,7 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
   yy <- ncdf4::ncvar_get(d,"lat")
   tt <- ncdf4::ncvar_get(d,"time")
   len_tt <- length(tt)
-
+  
   # select the years we want
   # note that here we are assuming monthing data, so set meta-data to monthly
   # also assume that all years are in the days
@@ -110,12 +110,12 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
   
   if(length(first.year) == 0) first.year <- actual.sta.info@first.year
   if(length(last.year) == 0) last.year <- actual.sta.info@last.year
-
+  
   start.point <- ((first.year-actual.sta.info@first.year) * time.steps.per.year) + 1 
   n.years <- last.year - first.year +1
   time.count <-  time.steps.per.year * n.years
   end.point <- start.point + time.count - 1
-
+  
   dim.names <- list(xx, yy, start.point:end.point)
   
   nc.start.vec.tr <- c(  1, 1, 1, start.point )
@@ -127,11 +127,11 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
   years_fire <- 20
   
   #if(variable@id == "firefreq" | variable@id == "burntfraction_std" ){
-    
+  
   # tmp <- ncdf4::ncvar_get( d, "firecount", start=c( x,y,len_tt-(years_fire*12)+1 ), count=c( 1,1,years_fire*12 ) )
   # fir <- matrix( tmp, ncol=12, byrow=T )[,12]
   # tmp.fi <- min( sum(fir)/length(fir), 1)
-
+  
   # z <- max(t_seq)
   #         #            Lon      Lat    Year            Tr      C4G     C3G     Total
   # out.vec <- c( xx[x],  yy[y], which(t_seq == z), tmp.fi, tmp.fi, tmp.fi, tmp.fi )
@@ -179,9 +179,9 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
     tmp.g4 <- ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.g4, count=nc.count.vec )*ncdf4::ncvar_get( d, "meanSla", start=nc.start.vec.g4, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
     tmp.g3 <- ncdf4::ncvar_get( d, "SumBLeaf", start=nc.start.vec.g3, count=nc.count.vec )*ncdf4::ncvar_get( d, "meanSla", start=nc.start.vec.g3, count=nc.count.vec )/10 # division by 10 to scale with stand area and convert t/ha to kg
     
-#    tmp.tr <- ncdf4::ncvar_get( d, "MeanLai", start=nc.start.vec.tr, count=nc.count.vec )
-#    tmp.g4 <- ncdf4::ncvar_get( d, "MeanLai", start=nc.start.vec.g4, count=nc.count.vec )
-#    tmp.g3 <- ncdf4::ncvar_get( d, "MeanLai", start=nc.start.vec.g3, count=nc.count.vec )
+    #    tmp.tr <- ncdf4::ncvar_get( d, "MeanLai", start=nc.start.vec.tr, count=nc.count.vec )
+    #    tmp.g4 <- ncdf4::ncvar_get( d, "MeanLai", start=nc.start.vec.g4, count=nc.count.vec )
+    #    tmp.g3 <- ncdf4::ncvar_get( d, "MeanLai", start=nc.start.vec.g3, count=nc.count.vec )
   }
   
   if(variable@id == "meanheight"){
@@ -250,7 +250,7 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
     tmp.g4 <- tmp.g4/2
     tmp.g3 <- tmp.g3/2
   }
-
+  
   # If simulations were done for single study sites only, the tmp.XX variables
   # are only one-dimensional (time) and not tree-dimensional (x, y, time).
   # Therefore, variables need to be converted into 3d arrays.
@@ -259,11 +259,11 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
     tmp.g4   <- array( tmp.g4, c(length(xx), length(yy), length(start.point:end.point) ) )
     tmp.g3   <- array( tmp.g3, c(length(xx), length(yy), length(start.point:end.point) ) )
   }
-
+  
   dimnames(tmp.tr) <- dim.names
   dimnames(tmp.g4) <- dim.names
   dimnames(tmp.g3) <- dim.names
-
+  
   # prepare data.table from the slice (array) for each PFT
   tr.dt <- as.data.table(melt(tmp.tr))
   names(tr.dt) <- c("Lon", "Lat", "Time", "Tr")
@@ -284,7 +284,7 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
   # NOTE: something special is happening here. The ':=' operator is changing the data.table in place.
   # this means that you don't need to do a re-assignment using '<-' 
   out.all[, Year := as.integer(floor((Time-1)/time.steps.per.year) + run@year.offset) ] # - 1]
-
+  
   if(adgvm2.daily) {
     out.all[, Day := as.integer(((Time-1) %% time.steps.per.year) + 1)]
   }
@@ -295,7 +295,7 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
   
   out.all = stats::na.omit(out.all)
   print(out.all)
-
+  
   # Now that we have the data we can set a spatial.extent
   actual.sta.info@spatial.extent <- extent(out.all)
   
@@ -347,7 +347,7 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
   last.year = target.sta@last.year
   
   fname <- file.path(run@dir, paste("trait_", run@id,".nc", sep=""))
-
+  
   # STAInfo object to summarise the spatial-temporal-annual dimensions of the data
   actual.sta.info <- new("STAInfo")
   
@@ -361,7 +361,7 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
   max_pop_size <- length(ncdf4::ncvar_get(d,"individual"))          # maximum population size
   
   timestep <- tt[2]-tt[1] # time step in file
-
+  
   actual.sta.info@first.year <- run@year.offset
   actual.sta.info@last.year <- run@year.offset + (length(tt)-1)*timestep 
   
@@ -376,17 +376,17 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
   end.point <- start.point + time.count - 1
   
   dim.names <- list(xx, yy, start.point:end.point)
-
+  
   nc.start.vec <- c(  1,  1,            1, start.point )
   nc.count.vec <- c( -1, -1, max_pop_size, time.count )
-
+  
   tmp.te   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
   tmp.td   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
   tmp.se   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
   tmp.sd   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
   tmp.g4   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
   tmp.g3   <- array( NA, c(length(xx), length(yy), length(start.point:end.point) ) )
-
+  
   for ( x in 1:length(xx) )
   {
     cat( "Progress:", round(x/length(xx)*100,1), "%                                     \r")
@@ -419,7 +419,7 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
             tmp.sd1 <- sum(bm.wood.all[ind.sd]+bm.bark.all[ind.sd])
             tmp.g41 <- sum(bm.leaf.all[ind.g4])
             tmp.g31 <- sum(bm.leaf.all[ind.g3])
-          
+            
             tmp.te[x,y,z-start.point+1] <- tmp.te1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
             tmp.td[x,y,z-start.point+1] <- tmp.td1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
             tmp.se[x,y,z-start.point+1] <- tmp.se1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
@@ -458,14 +458,14 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
             bm.repr <- ncdf4::ncvar_get( d, "BRepr",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
             bm.stor <- ncdf4::ncvar_get( d, "BStor",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
             bm.root <- ncdf4::ncvar_get( d, "BRoot",     start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-          
+            
             tmp.te1 <- sum(bm.leaf[ind.te]+bm.root[ind.te]+bm.stor[ind.te]+bm.repr[ind.te]+bm.wood[ind.te]+bm.bark[ind.te])
             tmp.td1 <- sum(bm.leaf[ind.td]+bm.root[ind.td]+bm.stor[ind.td]+bm.repr[ind.td]+bm.wood[ind.td]+bm.bark[ind.td])
             tmp.se1 <- sum(bm.leaf[ind.se]+bm.root[ind.se]+bm.stor[ind.se]+bm.repr[ind.se]+bm.wood[ind.se]+bm.bark[ind.se])
             tmp.sd1 <- sum(bm.leaf[ind.sd]+bm.root[ind.sd]+bm.stor[ind.sd]+bm.repr[ind.sd]+bm.wood[ind.sd]+bm.bark[ind.sd])
             tmp.g41 <- sum(bm.leaf[ind.g4]+bm.root[ind.g4]+bm.stor[ind.g4]+bm.repr[ind.g4])
             tmp.g31 <- sum(bm.leaf[ind.g3]+bm.root[ind.g3]+bm.stor[ind.g3]+bm.repr[ind.g3])
-          
+            
             tmp.te[x,y,z-start.point+1] <- tmp.te1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
             tmp.td[x,y,z-start.point+1] <- tmp.td1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
             tmp.se[x,y,z-start.point+1] <- tmp.se1*1/1000*(1/20)  # convert from kg/ha to kgC/m^2
@@ -487,13 +487,13 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
             tmp.g4[x,y,z-start.point+1]   <- sum(tmp.blf[ind.g4]*tmp.sla[ind.g4])/10000
             tmp.g3[x,y,z-start.point+1]   <- sum(tmp.blf[ind.g3]*tmp.sla[ind.g3])/10000
             
-#            tmp.all  <- ncdf4::ncvar_get( d, "Lai", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-#            tmp.te[x,y,z-start.point+1]   <- mean(tmp.all[ind.te])*(length(ind.te)/length(alive))
-#            tmp.td[x,y,z-start.point+1]   <- mean(tmp.all[ind.td])*(length(ind.td)/length(alive))
-#            tmp.se[x,y,z-start.point+1]   <- mean(tmp.all[ind.se])*(length(ind.se)/length(alive))
-#            tmp.sd[x,y,z-start.point+1]   <- mean(tmp.all[ind.sd])*(length(ind.sd)/length(alive))
-#            tmp.g4[x,y,z-start.point+1]   <- mean(tmp.all[ind.g4])*(length(ind.g4)/length(alive))
-#            tmp.g3[x,y,z-start.point+1]   <- mean(tmp.all[ind.g3])*(length(ind.g3)/length(alive))
+            #            tmp.all  <- ncdf4::ncvar_get( d, "Lai", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
+            #            tmp.te[x,y,z-start.point+1]   <- mean(tmp.all[ind.te])*(length(ind.te)/length(alive))
+            #            tmp.td[x,y,z-start.point+1]   <- mean(tmp.all[ind.td])*(length(ind.td)/length(alive))
+            #            tmp.se[x,y,z-start.point+1]   <- mean(tmp.all[ind.se])*(length(ind.se)/length(alive))
+            #            tmp.sd[x,y,z-start.point+1]   <- mean(tmp.all[ind.sd])*(length(ind.sd)/length(alive))
+            #            tmp.g4[x,y,z-start.point+1]   <- mean(tmp.all[ind.g4])*(length(ind.g4)/length(alive))
+            #            tmp.g3[x,y,z-start.point+1]   <- mean(tmp.all[ind.g3])*(length(ind.g3)/length(alive))
           }
         }
         
@@ -523,7 +523,7 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
         if(variable@id == "meanheight"){
           if (length(ind.alive)>0) {
             tmp.all  <- ncdf4::ncvar_get( d, "Height", start=c( x,y,1,z ), count=c( 1,1,max_pop_size,1) )
-
+            
             tmp.te[x,y,z-start.point+1]   <- ifelse( length(ind.te)>0, mean(tmp.all[ind.te]), 0 )
             tmp.td[x,y,z-start.point+1]   <- ifelse( length(ind.td)>0, mean(tmp.all[ind.td]), 0 )
             tmp.se[x,y,z-start.point+1]   <- ifelse( length(ind.se)>0, mean(tmp.all[ind.se]), 0 )
@@ -559,7 +559,7 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
             tmp.sd1   <- length(ind.sd)
             tmp.g41   <- length(ind.g4)
             tmp.g31   <- length(ind.g3)
-          
+            
             ind.tot  <- tmp.te1+tmp.td1+tmp.se1+tmp.sd1+tmp.g41+tmp.g31
             tmp.te[x,y,z-start.point+1]   <- tmp.te1/ind.tot
             tmp.td[x,y,z-start.point+1]   <- tmp.td1/ind.tot
@@ -582,7 +582,7 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
             
             tmp.cov   <- tmp.te1+tmp.td1+tmp.se1+tmp.sd1+tmp.g41+tmp.g31
             if ( tmp.cov<1 ) tmp.cov <- 1
-
+            
             tmp.te[x,y,z-start.point+1]   <- tmp.te1/tmp.cov*100  # *100 to convert to %
             tmp.td[x,y,z-start.point+1]   <- tmp.td1/tmp.cov*100  # *100 to convert to %
             tmp.se[x,y,z-start.point+1]   <- tmp.se1/tmp.cov*100  # *100 to convert to %
@@ -620,7 +620,7 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
     }
   }
   cat( "                                                       \n\n")
-
+  
   dimnames(tmp.te) <- dim.names
   dimnames(tmp.td) <- dim.names
   dimnames(tmp.se) <- dim.names
@@ -661,12 +661,12 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
   # this means that you don't need to do a re-assignment using '<-' 
   out.all[, Year := as.integer(Time*timestep + run@year.offset - timestep) ]
   
-#  if(adgvm2.daily) {
-#    out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
-#  }
-#  else {
+  #  if(adgvm2.daily) {
+  #    out.all[, Day := ((Time-1) %% time.steps.per.year) + 1]
+  #  }
+  #  else {
   out.all[, Month := 1L]
-#  }
+  #  }
   out.all[, Time := NULL]
   out.all[, Day := NULL]
   
@@ -724,7 +724,7 @@ availableQuantities_aDGVM2 <- function(source, names, id, adgvm2.scheme ){
     message(paste("Check quantities in adgvm2.scheme=1,", fname, "\n"))
     d <- ncdf4::nc_open(fname)
     quantities.ncfile <- names(d[['var']])
-
+    
     quantities.present <- NULL
     if(all(c("SumCanopyArea0") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegcover_std" )
     if(all(c("SumBasalArea") %in% quantities.ncfile)==TRUE)   quantities.present <- c( quantities.present, "basalarea" )
@@ -737,7 +737,7 @@ availableQuantities_aDGVM2 <- function(source, names, id, adgvm2.scheme ){
     if(all(c("SumBBark", "SumBWood", "SumBLeaf") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "abg" )
     if(all(c("SumBRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
     if(all(c("SumBBark", "SumBWood", "SumBLeaf", "SumBStor", "SumBRoot", "SumBRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
-  
+    
     #message("Quantities available for adgvm2.scheme=1: ")
     #print( quantities.present )
   }
@@ -746,9 +746,9 @@ availableQuantities_aDGVM2 <- function(source, names, id, adgvm2.scheme ){
     message(paste("Check quantities in adgvm2.scheme=2,", fname, "\n"))
     d <- ncdf4::nc_open(fname)
     quantities.ncfile <- names(d[['var']])
-
+    
     quantities.present <- NULL
-
+    
     if(all(c("alive", "VegType", "Evergreen", "StemCount") %in% quantities.ncfile)==TRUE) { 
       if(all(c("CrownArea") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegcover_std" )
       if(all(c("StemDiamTot") %in% quantities.ncfile)==TRUE)   quantities.present <- c( quantities.present, "basalarea" )
@@ -761,7 +761,7 @@ availableQuantities_aDGVM2 <- function(source, names, id, adgvm2.scheme ){
       if(all(c("BBark", "BWood", "BLeaf") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "abg" )
       if(all(c("BRoot") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "bgb" )
       if(all(c("BBark", "BWood", "BLeaf", "BStor", "BRoot", "BRepr") %in% quantities.ncfile)==TRUE) quantities.present <- c( quantities.present, "vegC_std" )
-    
+      
       #message("Quantities available for adgvm2.scheme=2: ")
       #print( quantities.present )
     }
@@ -773,97 +773,99 @@ availableQuantities_aDGVM2 <- function(source, names, id, adgvm2.scheme ){
     message("Invalid value for adgvm2.scheme.")
     quantities.present <- NULL
   }
-
+  
   return(quantities.present)  
 }
 
 
 ###############################################
-########### aDGVM2 PFTS ########################
+########### aDGVM2 Layers ########################
 ###############################################
 
 
 
 #' @format An S4 class object with the slots as defined below.
-#' @rdname PFT-class
+#' @rdname Layer-class
 #' @keywords datasets
-aDGVM2.PFTs <- list(
+aDGVM2.Layers <- list(
   
-  new("PFT",
-            id = "C3G",
-            name = "Boreal/Temperate Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
-            colour = "lightgoldenrod1",
-            shade.tolerance = "None"
+  new("Layer",
+      id = "C3G",
+      name = "Boreal/Temperate Grass",
+      colour = "lightgoldenrod1",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA")
   ),
   
-  new("PFT",
-            id = "C4G",
-            name = "Tropical Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
-            colour = "sienna2",
-            shade.tolerance = "None"
+  new("Layer",
+      id = "C4G",
+      name = "Tropical Grass",
+      colour = "sienna2",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA")
   ),
   
-  new("PFT",
-          id = "Tr",
-          name = "Tropical Tree",
-          growth.form = "Tree",
-          leaf.form = "Broadleaved",
-          phenology = "Mixed",
-          climate.zone = "Tropical",
-          colour = "palevioletred",
-          shade.tolerance = "None"
+  new("Layer",
+      id = "Tr",
+      name = "Tropical Tree",
+      colour = "palevioletred",
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Mixed",
+                        climate.zone = "Tropical")
   ),
   
-  new("PFT",
-             id = "TrBE",
-             name = "Tropical Broadleaved Evergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Evergreen",
-             climate.zone = "Tropical",
-             colour = "orchid4",
-             shade.tolerance = "None"
+  new("Layer",
+      id = "TrBE",
+      name = "Tropical Broadleaved Evergreen Tree",
+      colour = "orchid4",
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical",
+                        shade.tolerance = "None")
   ),
   
-  new("PFT",
-             id = "TrBR",
-             name = "Tropical Broadleaved Raingreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Raingreen",
-             climate.zone = "Tropical",
-             colour = "palevioletred",
-             shade.tolerance = "None"
+  new("Layer",
+      id = "TrBR",
+      name = "Tropical Broadleaved Raingreen Tree",
+      colour = "palevioletred",
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Raingreen",
+                        climate.zone = "Tropical")
+      
   ),
   
-  new("PFT",
-              id = "TrBES",
-              name = "Tropical Broadleaved Evergreen Shrub",
-              growth.form = "Shrub",
-              leaf.form = "Broadleaved",
-              phenology = "Evergreen",
-              climate.zone = "Tropical",
-              colour = "orchid4",
-              shade.tolerance = "None"
+  new("Layer",
+      id = "TrBES",
+      name = "Tropical Broadleaved Evergreen Shrub",
+      colour = "orchid4",
+      properties = list(type = "PFT",
+                        growth.form = "Shrub",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical")
   ),
   
-  new("PFT",
-              id = "TrBRS",
-              name = "Tropical Broadleaved Raingreen Shrub",
-              growth.form = "Shrub",
-              leaf.form = "Broadleaved",
-              phenology = "Raingreen",
-              climate.zone = "Tropical",
-              colour = "palevioletred",
-              shade.tolerance = "None"
+  new("Layer",
+      id = "TrBRS",
+      name = "Tropical Broadleaved Raingreen Shrub",
+      colour = "palevioletred",
+      properties = list(type = "PFT",
+                        growth.form = "Shrub",
+                        leaf.form = "Broadleaved",
+                        phenology = "Raingreen",
+                        climate.zone = "Tropical")
   )
   
   
@@ -949,20 +951,20 @@ aDGVM2.quantities <- list(
 #' @export
 #' 
 aDGVM2 <- new("Format",
-             
-             # UNIQUE ID
-             id = "aDGVM2",
-                  
-             # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-             availableQuantities = availableQuantities_aDGVM2,
-             
-             # FUNCTION TO READ A FIELD 
-             getField = getField_aDGVM2,
-             
-             # DEFAULT GLOBAL PFTS  
-             default.pfts = aDGVM2.PFTs,
-             
-             # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
-             quantities = aDGVM2.quantities
-             
+              
+              # UNIQUE ID
+              id = "aDGVM2",
+              
+              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
+              availableQuantities = availableQuantities_aDGVM2,
+              
+              # FUNCTION TO READ A FIELD 
+              getField = getField_aDGVM2,
+              
+              # DEFAULT GLOBAL LayerS  
+              defined.layers = aDGVM2.Layers,
+              
+              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
+              quantities = aDGVM2.quantities
+              
 )

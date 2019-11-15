@@ -378,20 +378,20 @@ correct.map.offset <- function(spl) {
 
 
 
-#' Make a PFT colour list
+#' Make a LAyer colour list
 #' 
-#' This is a helper function for when plotting PFTs by colour.  It takes a list of PFT ids (other things like "Total" or "Tree" can also be specified) and returns a list 
-#' of colours with the names of the PFT (which is how ggplot likes colours to be specified).
+#' This is a helper function for when plotting Layers by colour.  It takes a list of Layer ids (other things like "Total" or "Tree" can also be specified) and returns a list 
+#' of colours with the names of the Layer (which is how ggplot likes colours to be specified).
 #' 
 #' @param values List of values (as chararacters) for which you want standard colours.
-#' @param pfts A list of PFT objects (which should contain PFTs with ids provided in 'values)
+#' @param layers A list of Layer objects (which should contain Layers with ids provided in 'values)
 #' @param others A list of other name-colour combinations, for example to plot 'Total' as black, "None" as grey, or whatever.  Some defaults are defined.
 #' @return Returns a named list of colours, where the names are the values that the colours will represent
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 #' 
 #' 
-matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub = "red")) {
+matchLayerCols <- function(values, layers, others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub = "red")) {
   
   these.cols <- list()
   at.least.one.match <- FALSE
@@ -400,17 +400,17 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
     # ignore NAs
     if(!is.na(val)) {
       
-      # check if it is a PFT
+      # check if it is a layer
       done <- FALSE
-      for(PFT in pfts){
-        if(val == PFT@id) {
-          these.cols[[val]] <- PFT@colour
+      for(this.layer in layers){
+        if(val == this.layer@id) {
+          these.cols[[val]] <- this.layer@colour
           done <- TRUE
           at.least.one.match <- TRUE
         }
       } 
       
-      # if not a PFT, check if it is as 'other' 
+      # if not a Layer, check if it is as 'other' 
       if(!done) {
         for(other in names(others)) {
           if(tolower(val) == tolower(other)) {
@@ -423,7 +423,7 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
       
       # if no colour can be found to match the value, fail gently
       if(!done && at.least.one.match) {
-        warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchPFTCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument"))
+        warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchLayerCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument"))
         return(NULL)
       }  
       

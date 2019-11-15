@@ -3,7 +3,7 @@
 \docType{methods}
 \name{show}
 \alias{show}
-\alias{show,PFT-method}
+\alias{show,Layer-method}
 \alias{show,Quantity-method}
 \alias{show,Period-method}
 \alias{show,Source-method}
@@ -14,7 +14,7 @@
 \alias{show,Format-method}
 \title{Show a DGVMTools object}
 \usage{
-\S4method{show}{PFT}(object)
+\S4method{show}{Layer}(object)
 
 \S4method{show}{Quantity}(object)
 

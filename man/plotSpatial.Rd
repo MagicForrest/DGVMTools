@@ -34,7 +34,7 @@ in this function).}
 
 \item{panel.bg.col}{Colour string for the panel background, default "white".}
 
-\item{useLongNames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots.}
+\item{useLongNames}{Boolean, if TRUE replace Layer IDs with the Layer's full names on the plots.}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}

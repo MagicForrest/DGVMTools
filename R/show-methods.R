@@ -23,10 +23,16 @@ if(!isGeneric("show")) setGeneric("show", function(object, ...) standardGeneric(
 
 #' @rdname show
 #' @export
-setMethod('show', signature(object="PFT"), function(object) {
+setMethod('show', signature(object="Layer"), function(object) {
   
-  cat(paste0("PFT: ", object@id," (", object@name, "): ", "Growth form=",  object@growth.form, ", Leaf form=", object@leaf.form, ", Phenology=", object@phenology, ", Climate zone=", object@climate.zone, ", Shade tolerance=", object@shade.tolerance, ", Preferred colour=", object@colour, "\n"))
-  
+  cat(paste0("Layer: ", object@id," (", object@name, "), plot colour =  ", object@colour, "\n" ))
+  prop.string <- "\t With properties:"
+  for(this.name in names(object)) {
+    prop.string <- paste0(prop.string, this.name, "=", object[[this.name]], ", ")
+  }
+  if(length(names(object)) > 0) prop.string <- substr(prop.string, 1, nchar(prop.string) -2)
+  prop.string <- paste0(prop.string, "\n")
+  cat(prop.string)
   
 })
 
@@ -206,7 +212,7 @@ setMethod("show", signature(object="Format"), function(object) {
   cat(paste0("Format:\n"))
   cat(paste0("id = \"", object@id, "\"", "\n"))
   cat(paste0("Default PFTs:\n"))
-  for(PFT in object@default.pfts){
+  for(PFT in object@defined.layers){
     print(PFT)
   }
   cat(paste0("Defined Quantities:\n"))

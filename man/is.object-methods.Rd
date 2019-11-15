@@ -6,7 +6,7 @@
 \alias{is.Comparison}
 \alias{is.Source}
 \alias{is.Quantity}
-\alias{is.PFT}
+\alias{is.Layer}
 \alias{is.Statistics}
 \alias{is.Format}
 \alias{is.STAInfo}
@@ -20,7 +20,7 @@ is.Source(input)
 
 is.Quantity(input)
 
-is.PFT(input)
+is.Layer(input)
 
 is.Statistics(input)
 

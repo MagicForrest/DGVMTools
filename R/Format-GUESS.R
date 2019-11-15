@@ -78,7 +78,7 @@ openLPJOutputFile <- function(run,
   # extract from the target.sta
   first.year = target.sta@first.year
   last.year = target.sta@last.year
-
+  
   if(!data.table.only && class(quant)[1] != "Quantity") stop("Please supply a formal Quantity object as the quant argument since you are not requesting at data.table")
   
   if(class(quant)[1] == "Quantity") variable <- quant@id
@@ -140,7 +140,7 @@ openLPJOutputFile <- function(run,
     }
   }
   
-
+  
   # if spatial extent specified, crop to it
   new.extent <- NULL
   if(!is.null(target.sta@spatial.extent)) {
@@ -159,7 +159,7 @@ openLPJOutputFile <- function(run,
       new.extent <- extent(dt)
     } 
     
-   
+    
     
   }
   
@@ -235,7 +235,7 @@ openLPJOutputFile <- function(run,
     
     # make the ID and then make and return Field
     field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
-   
+    
     return(
       
       new("Field",
@@ -496,11 +496,11 @@ openLPJOutputFile_FireMIP <- function(run,
     
     dt_upper <- openLPJOutputFile(run, "mwcont_upper", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
     setKeyDGVM(dt_upper)
-
+    
     dt_lower <- openLPJOutputFile(run, "mwcont_lower", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
     setKeyDGVM(dt_lower)
     dt <- dt_upper[dt_lower]
-
+    
     dt <- dt[dt_cap]
     dt <- stats::na.omit(dt)
     dt[, mrso := (mwcont_lower * thickness_lower_layer_mm * Capacity) + (mwcont_upper * thickness_upper_layer_mm * Capacity)]
@@ -912,168 +912,182 @@ LPJQuantFromFilename <- function(var.filename){
 
 
 #####################################################################
-########### LPJ-GUESS(-SPITFIRE) GLOBAL PFTS ########################
+########### LPJ-GUESS(-SPITFIRE) GLOBAL LAYERS ########################
 #####################################################################
 
 
 #' @format An S4 class object with the slots as defined below.
-#' @rdname PFT-class
+#' @rdname Layer-class
 #' @keywords datasets
-GUESS.PFTs <- list(
+GUESS.Layers <- list(
   
   # BOREAL TREES
   
   # BNE
-  new("PFT",
+  new("Layer",
       id = "BNE",
       name = "Boreal Needleleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Needleleaved",
-      phenology = "Evergreen",
-      climate.zone = "Boreal",
       colour = "darkblue",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None")
   ),
   
   # BINE
-  new("PFT",
+  new("Layer",
       id = "BINE",
       name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Needleleaved",
-      phenology = "Evergreen",
-      climate.zone = "Boreal",
       colour = "dodgerblue3",
-      shade.tolerance = "BNE"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "BNE")
   ),
   
   # BNS
-  new("PFT",
-            id = "BNS",
-            name = "Boreal Needleleaved Summergreen Tree",
-            growth.form = "Tree",
-            leaf.form = "Needleleaved",
-            phenology = "Summergreen",
-            climate.zone = "Boreal",
-            colour = "cadetblue2",
-            shade.tolerance = "None"
+  new("Layer",
+      id = "BNS",
+      name = "Boreal Needleleaved Summergreen Tree",
+      colour = "cadetblue2",
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None"
+      )
   ),
   
   # IBS
-  new("PFT",
+  new("Layer",
       id = "IBS",
       name = "Shade-intolerant B/leaved Summergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Summergreen",
-      climate.zone = "Temperate",
       colour = "chartreuse",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None")
   ),
   
   # TEMPERATE TREES
   
   # TeBE
-  new("PFT",
+  new("Layer",
       id = "TeBE",
       name = "Temperate Broadleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Evergreen",
-      climate.zone = "Temperate",
       colour = "darkgreen",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None")
   ),
   
   # TeNE
-  new("PFT",
+  new("Layer",
       id = "TeNE",
       name = "Temperate Needleleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Needleleaved",
-      phenology = "Evergreen",
-      climate.zone = "Temperate",
       colour = "lightseagreen",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None")
   ),
   
   # TeBS
-  new("PFT",
+  new("Layer",
       id = "TeBS",
       name = "Temperate Broadleaved Summergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Summergreen",
       colour = "darkolivegreen3",
-      climate.zone = "Temperate",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None")
   ),
   
   
   # TROPICAL TREES
   
   # TrBE
-  new("PFT",
+  new("Layer",
       id = "TrBE",
       name = "Tropical Broadleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Evergreen",
-      climate.zone = "Tropical",
       colour = "orchid4",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical",
+                        shade.tolerance = "None")
   ),
   
   
   # TrIBE
-  new("PFT",
+  new("Layer",
       id = "TrIBE",
       name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Evergreen",
-      climate.zone = "Tropical", 
       colour = "orchid",
-      shade.tolerance = "TrBE"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical", 
+                        shade.tolerance = "TrBE")
   ),
   
   # TrBR 
-  new("PFT",
+  new("Layer",
       id = "TrBR",
       name = "Tropical Broadleaved Raingreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Raingreen",
-      climate.zone = "Tropical",
       colour = "palevioletred",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Raingreen",
+                        climate.zone = "Tropical",
+                        shade.tolerance = "None")
   ),
   
   
   # GRASSES
   
   # C3G 
-  new("PFT",
+  new("Layer",
       id = "C3G",
       name = "Boreal/Temperate Grass",
-      growth.form = "Grass",
-      leaf.form = "Broadleaved",
-      phenology = "GrassPhenology",
-      climate.zone = "NA",
       colour = "lightgoldenrod1",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None")
   ),
   
   # C4G
-  new("PFT",
+  new("Layer",
       id = "C4G",
       name = "Tropical Grass",
-      growth.form = "Grass",
-      leaf.form = "Broadleaved",
-      phenology = "GrassPhenology",
-      climate.zone = "NA",
       colour = "sienna2",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        name = "Tropical Grass",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None")
   )
   
 )
@@ -1850,15 +1864,15 @@ GUESS <- new("Format",
              
              # UNIQUE ID
              id = "GUESS",
-            
+             
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
              availableQuantities = availableQuantities_GUESS,
              
              # FUNCTION TO READ A FIELD 
              getField = getField_GUESS,
              
-             # DEFAULT GLOBAL PFTS  
-             default.pfts = GUESS.PFTs,
+             # DEFAULT GLOBAL LAYERS 
+             defined.layers = GUESS.Layers,
              
              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
              quantities = GUESS.quantities

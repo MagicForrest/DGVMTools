@@ -26,7 +26,7 @@ see aggregateSpatial.  If no spatial aggregation has been applied it should be N
 See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.}
 }
 \description{
-This class encapsulations all the Spatial (S, longitude and latidude), Temporal (T, monthly, daily etc.) and Annual (A, years included) 
+This class encapsulations all the Spatial (the 'S', longitude and latidude), Temporal (the 'T', monthly, daily etc.) and Annual (the 'A', years included) 
 Information  (hence the name 'STAInfo') about a particular DGVMTools::Field.  Normally the user won't have to deal with this (it is mostly used internally),
 but it can be handy, for example to extract the STAInfo from one Field, and use it extract another field with the same dimensions.
 }
