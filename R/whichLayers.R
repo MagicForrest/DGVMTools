@@ -86,7 +86,7 @@ whichLayers <- function(x, criteria, return.ids = TRUE) {
   for(Layer in layer.list) {
     
     # check each property in turn
-    for(this.property in Layer) {
+    for(this.property in Layer@properties) {
       if(tolower(this.property) == criteria) {
         if(return.ids) matched.layers[[Layer@id]] <- Layer@id 
         else matched.layers[[Layer@id]] <- Layer

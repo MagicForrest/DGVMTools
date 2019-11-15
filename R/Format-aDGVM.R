@@ -1015,11 +1015,11 @@ aDGVM.Layers <- list(
       id = "ForTr",
       name = "Forest Tree",
       colour = "darkgreen",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Adaptive",
-           climate.zone = "Tropical")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Adaptive",
+                        climate.zone = "Tropical")
   ),
   
   # Savanna Tree
@@ -1027,11 +1027,11 @@ aDGVM.Layers <- list(
       id = "SavTr",
       name = "Savanna Tree",
       colour = "lightgreen",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Adaptive",
-           climate.zone = "Tropical")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Adaptive",
+                        climate.zone = "Tropical")
   ),
   
   # GRASSES
@@ -1041,11 +1041,11 @@ aDGVM.Layers <- list(
       id = "C3G",
       name = "C3 Grass",
       colour = "lightgoldenrod1",
-      list(type = "PFT",
-           growth.form = "Grass",
-           leaf.form = "Broadleaved",
-           phenology = "Adaptive",
-           climate.zone = "Tropical")
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "Adaptive",
+                        climate.zone = "Tropical")
   ),
   
   # C4G
@@ -1053,11 +1053,11 @@ aDGVM.Layers <- list(
       id = "C4G",
       name = "C4 Grass",
       colour = "sienna2",
-      list(type = "PFT",
-           growth.form = "Grass",
-           leaf.form = "Broadleaved",
-           phenology = "Adaptive",
-           climate.zone = "Tropical"
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "Adaptive",
+                        climate.zone = "Tropical"
       )
   )
   

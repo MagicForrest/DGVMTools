@@ -928,12 +928,12 @@ GUESS.Layers <- list(
       id = "BNE",
       name = "Boreal Needleleaved Evergreen Tree",
       colour = "darkblue",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Needleleaved",
-           phenology = "Evergreen",
-           climate.zone = "Boreal",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None")
   ),
   
   # BINE
@@ -941,12 +941,12 @@ GUESS.Layers <- list(
       id = "BINE",
       name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
       colour = "dodgerblue3",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Needleleaved",
-           phenology = "Evergreen",
-           climate.zone = "Boreal",
-           shade.tolerance = "BNE")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "BNE")
   ),
   
   # BNS
@@ -954,12 +954,12 @@ GUESS.Layers <- list(
       id = "BNS",
       name = "Boreal Needleleaved Summergreen Tree",
       colour = "cadetblue2",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Needleleaved",
-           phenology = "Summergreen",
-           climate.zone = "Boreal",
-           shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None"
       )
   ),
   
@@ -968,12 +968,12 @@ GUESS.Layers <- list(
       id = "IBS",
       name = "Shade-intolerant B/leaved Summergreen Tree",
       colour = "chartreuse",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Summergreen",
-           climate.zone = "Temperate",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None")
   ),
   
   # TEMPERATE TREES
@@ -983,12 +983,12 @@ GUESS.Layers <- list(
       id = "TeBE",
       name = "Temperate Broadleaved Evergreen Tree",
       colour = "darkgreen",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Evergreen",
-           climate.zone = "Temperate",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None")
   ),
   
   # TeNE
@@ -996,12 +996,12 @@ GUESS.Layers <- list(
       id = "TeNE",
       name = "Temperate Needleleaved Evergreen Tree",
       colour = "lightseagreen",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Needleleaved",
-           phenology = "Evergreen",
-           climate.zone = "Temperate",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None")
   ),
   
   # TeBS
@@ -1009,12 +1009,12 @@ GUESS.Layers <- list(
       id = "TeBS",
       name = "Temperate Broadleaved Summergreen Tree",
       colour = "darkolivegreen3",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Summergreen",
-           climate.zone = "Temperate",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None")
   ),
   
   
@@ -1025,12 +1025,12 @@ GUESS.Layers <- list(
       id = "TrBE",
       name = "Tropical Broadleaved Evergreen Tree",
       colour = "orchid4",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Evergreen",
-           climate.zone = "Tropical",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical",
+                        shade.tolerance = "None")
   ),
   
   
@@ -1039,12 +1039,12 @@ GUESS.Layers <- list(
       id = "TrIBE",
       name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
       colour = "orchid",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Evergreen",
-           climate.zone = "Tropical", 
-           shade.tolerance = "TrBE")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical", 
+                        shade.tolerance = "TrBE")
   ),
   
   # TrBR 
@@ -1052,12 +1052,12 @@ GUESS.Layers <- list(
       id = "TrBR",
       name = "Tropical Broadleaved Raingreen Tree",
       colour = "palevioletred",
-            list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Raingreen",
-           climate.zone = "Tropical",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Raingreen",
+                        climate.zone = "Tropical",
+                        shade.tolerance = "None")
   ),
   
   
@@ -1068,12 +1068,12 @@ GUESS.Layers <- list(
       id = "C3G",
       name = "Boreal/Temperate Grass",
       colour = "lightgoldenrod1",
-      list(type = "PFT",
-           growth.form = "Grass",
-           leaf.form = "Broadleaved",
-           phenology = "GrassPhenology",
-           climate.zone = "NA",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None")
   ),
   
   # C4G
@@ -1081,13 +1081,13 @@ GUESS.Layers <- list(
       id = "C4G",
       name = "Tropical Grass",
       colour = "sienna2",
-      list(type = "PFT",
-           name = "Tropical Grass",
-           growth.form = "Grass",
-           leaf.form = "Broadleaved",
-           phenology = "GrassPhenology",
-           climate.zone = "NA",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        name = "Tropical Grass",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None")
   )
   
 )

@@ -129,23 +129,26 @@ setClass("STAInfo",
 
 #' Class to hold the metadata for a "Layer"
 #' 
-#' @description   This is a class to hold meta-data about a Layer.  A Layer is a component of a Field, for example a Field might have a Layer for each PFT, or each soil carbon pool.  As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, 
-#' as well as their growth form, phenology, leaftype, climate zone, shade tolerance and a default plot colour.
+#' @description   This is a class to hold meta-data about a Layer.  A Layer is a component of a Field, for example a Field might have a Layer for each PFT, or each soil carbon pool.  
+#' As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, a default plot colour and a list of properties.
+#' It is this list of properties that allows DGVMTools to automatically select groups of layer for aggregating or other operations.
 #' These are defined in lists for the default Layers for supported model format (see'Usage' below). 
 #' 
-#' @slot id A unique character string to identify this particular Layer.  Recommended to be alphanumeric because it is used to construct file names.
+#' @slot id A unique character string to identify this particular Layer.  This should match the column names in the @data slot of 
+#' the appropriate Field object.  It might correspond to, for example, the abbreviation used for a PFT.
 #' @slot name A character string to describe the Layer. Used for building plot labels, not file names, so doesn't need to be alphanumeric and can so can be prettier.
-#' @slot growth.form A string defining the growth.form of the PFT, typically either "Tree", "Grass" or "Shrub"
-#' @slot leaf.form A string defining the leaf.form of the PFT, typically either "Broadleaved" or "Needleleaved"
-#' @slot phenology A string defining the phenology of the PFT, typically "Evergreen", "Summergreen", "Raingreen" or "GrassPhenology"
-#' @slot climate.zone A string defining the climate climate.zone of a PFT, typically "Boreal", "Temperate" or "Tropical" (could go crazy and also have "Mediterranean", for example)
-#' @slot shade.tolerance A string defining the \code{id} of a shade tolerance characteristric of a PFT. 
 #' @slot colour A string defining a preferred R colour to plot this PFT (for line graphs etc)
+#' @slot properties A list with named items containing metadata describing the Layer.  These are used with the \link{whichLayers} and \link{layerOp}
+#' functions to automagically select layers.  There is a lot of flexibility here, but it is recommended that the list includes at least an
+#'  element called "type", and then ideally all the proprties required to describe the layer.  An examble for a broadleaved summergreen tree PFT could look like: \cr
+#' \code{properties = list(type = "PFT", growth.form = "Tree", phenology = "Summergreen")}.  \cr 
+#' A slow litter soil carbon pool could look like: \cr \cr
+#' \code{properties = list(type = "CPool", speed = "Slow", zone = "Soil", comprises = "Litter")}. 
 #' 
 #' @details The \code{Layer-class} is only meta-data but is very useful as it allows users to conveniently aggregate or process the data 
 #' corresponding to, for example, all trees with simple command. 
 #' The standard Layers for some models are included (see above), but if you have other Layers then you simply need define them (see funtion \code{XXXXX}).  You then combine the
-#' existing Layers into an R list and then provide them as the 'default.layers' argument to the \code{defineSource} call and bingo! you are using your custom Layers. 
+#' existing Layers into an R list and then provide them as the 'default.layers' argument to the \link{defineSource} call and bingo! you are using your custom Layers. 
 #' 
 
 #' @name Layer-class
@@ -155,14 +158,9 @@ setClass("STAInfo",
 setClass("Layer", 
          slots = c(id = "character",
                    name = "character",
-                   #growth.form = "character",
-                   #leaf.form = "character",
-                   #phenology = "character",
-                   #climate.zone = "character",
-                   #shade.tolerance = "character",
-                   colour = "character"
-         ),
-         contains = "list"
+                   colour = "character",
+                   properties = "list"
+         )
 )
 
 

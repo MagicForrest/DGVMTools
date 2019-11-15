@@ -793,56 +793,56 @@ aDGVM2.Layers <- list(
       id = "C3G",
       name = "Boreal/Temperate Grass",
       colour = "lightgoldenrod1",
-      list(type = "PFT",
-           growth.form = "Grass",
-           leaf.form = "Broadleaved",
-           phenology = "GrassPhenology",
-           climate.zone = "NA")
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA")
   ),
   
   new("Layer",
       id = "C4G",
       name = "Tropical Grass",
       colour = "sienna2",
-      list(type = "PFT",
-           growth.form = "Grass",
-           leaf.form = "Broadleaved",
-           phenology = "GrassPhenology",
-           climate.zone = "NA")
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA")
   ),
   
   new("Layer",
       id = "Tr",
       name = "Tropical Tree",
       colour = "palevioletred",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Mixed",
-           climate.zone = "Tropical")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Mixed",
+                        climate.zone = "Tropical")
   ),
   
   new("Layer",
       id = "TrBE",
       name = "Tropical Broadleaved Evergreen Tree",
       colour = "orchid4",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Evergreen",
-           climate.zone = "Tropical",
-           shade.tolerance = "None")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical",
+                        shade.tolerance = "None")
   ),
   
   new("Layer",
       id = "TrBR",
       name = "Tropical Broadleaved Raingreen Tree",
       colour = "palevioletred",
-      list(type = "PFT",
-           growth.form = "Tree",
-           leaf.form = "Broadleaved",
-           phenology = "Raingreen",
-           climate.zone = "Tropical")
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Raingreen",
+                        climate.zone = "Tropical")
       
   ),
   
@@ -850,22 +850,22 @@ aDGVM2.Layers <- list(
       id = "TrBES",
       name = "Tropical Broadleaved Evergreen Shrub",
       colour = "orchid4",
-      list(type = "PFT",
-           growth.form = "Shrub",
-           leaf.form = "Broadleaved",
-           phenology = "Evergreen",
-           climate.zone = "Tropical")
+      properties = list(type = "PFT",
+                        growth.form = "Shrub",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical")
   ),
   
   new("Layer",
       id = "TrBRS",
       name = "Tropical Broadleaved Raingreen Shrub",
       colour = "palevioletred",
-      list(type = "PFT",
-           growth.form = "Shrub",
-           leaf.form = "Broadleaved",
-           phenology = "Raingreen",
-           climate.zone = "Tropical")
+      properties = list(type = "PFT",
+                        growth.form = "Shrub",
+                        leaf.form = "Broadleaved",
+                        phenology = "Raingreen",
+                        climate.zone = "Tropical")
   )
   
   
