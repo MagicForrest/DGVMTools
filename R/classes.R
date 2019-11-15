@@ -155,13 +155,14 @@ setClass("STAInfo",
 setClass("Layer", 
          slots = c(id = "character",
                    name = "character",
-                   growth.form = "character",
-                   leaf.form = "character",
-                   phenology = "character",
-                   climate.zone = "character",
-                   shade.tolerance = "character",
+                   #growth.form = "character",
+                   #leaf.form = "character",
+                   #phenology = "character",
+                   #climate.zone = "character",
+                   #shade.tolerance = "character",
                    colour = "character"
-         )
+         ),
+         contains = "list"
 )
 
 

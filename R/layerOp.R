@@ -39,8 +39,7 @@ layerOp <- function(x, operator, layers, new.layer){
     if(substring(layer, 1, 1) == '.') {
       
       criteria <- substring(layer, 2)
-      if(tolower(criteria) == "pfts" || tolower(criteria) == "pft") expanded.layers <- whichLayers(x)
-      else expanded.layers <- whichLayers(x, criteria)
+      expanded.layers <- whichLayers(x, criteria)
       final.layers <- append(final.layers, unlist(expanded.layers))
       
     }

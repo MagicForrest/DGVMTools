@@ -25,8 +25,14 @@ if(!isGeneric("show")) setGeneric("show", function(object, ...) standardGeneric(
 #' @export
 setMethod('show', signature(object="Layer"), function(object) {
   
-  cat(paste0("Layer: ", object@id," (", object@name, "): ", "Growth form=",  object@growth.form, ", Leaf form=", object@leaf.form, ", Phenology=", object@phenology, ", Climate zone=", object@climate.zone, ", Shade tolerance=", object@shade.tolerance, ", Preferred colour=", object@colour, "\n"))
-  
+  cat(paste0("Layer: ", object@id," (", object@name, "), plot colour =  ", object@colour, "\n" ))
+  prop.string <- "\t With properties:"
+  for(this.name in names(object)) {
+    prop.string <- paste0(prop.string, this.name, "=", object[[this.name]], ", ")
+  }
+  if(length(names(object)) > 0) prop.string <- substr(prop.string, 1, nchar(prop.string) -2)
+  prop.string <- paste0(prop.string, "\n")
+  cat(prop.string)
   
 })
 

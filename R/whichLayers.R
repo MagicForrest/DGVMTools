@@ -1,88 +1,77 @@
-#' Select PFTs
+#' Select Layers
 #' 
-#' Uses PFT metadata to return all PFTs with a particular properties.  For example only tree PFTs, or only evergreen PFTs.
+#' Uses Layer metadata to return all Layers with a particular properties.  For example only tree Layers, or only evergreen Layers.
 #' 
-#' @param x Either a Field, or a list of PFT objects
-#' @param criteria A character string to use to select PFTs.  This compared to every the value of every slot of a PFT object.  If one matches, the PFT is inlucded in the return.
-#  If left empty or set to NULL the return all PFTs.
-#' @param return.ids A logical, if TRUE (default) then return the the id of the PFT, if FALSE return the entire PFT object
+#' @param x Either a Field, or a list of Layer objects
+#' @param criteria A character string to use to select Layers.  This compared to every the value of every slot of a Layer object.  If one matches, the Layer is inlucded in the return.
+#  If left empty or set to NULL the return all Layers.
+#' @param return.ids A logical, if TRUE (default) then return the the id of the Layers, if FALSE return the entire Layer objects
 #' 
-#' @return Either a vector of characters (the ids of the PFTs) or a list of PFT object (depending on argument return.ids)
+#' @return Either a vector of characters (the ids of the Layers) or a list of Layer object (depending on argument return.ids)
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
 #' @examples
 #' 
-#' ## List PFTs from a list of PFT objects
+#' ## List Layers from a list of Layer objects
 #' 
-#' # make a list of PFTs for selecting from 
-#' PFT.list <- GUESS@default.pfts
-#' print(PFT.list)
+#' # make a list of Layers for selecting from 
+#' layer.list <- GUESS@default.pfts
+#' print(layer.list)
 #' 
-#' # return with no criteria (trivial)
-#' whichLayers(PFT.list)
-#' 
-#' # return as the full PFT objects
-#' whichLayers(PFT.list, return.ids = FALSE)
 #' 
 #' # return Tree, Grass, Evergreen and Tropical PFTs
-#' whichLayers(PFT.list, criteria = "Tree")
-#' whichLayers(PFT.list, criteria = "Grass")
-#' whichLayers(PFT.list, criteria = "Evergreen")
-#' whichLayers(PFT.list, criteria = "Tropical")
+#' whichLayers(layer.list, criteria = "Tree")
+#' whichLayers(layer.list, criteria = "Grass")
+#' whichLayers(layer.list, criteria = "Evergreen")
+#' whichLayers(layer.list, criteria = "Tropical")
 #' 
-#' # return Tropical PFTs as a list of PFTs objects (not just the ids)
-#' whichLayers(PFT.list, criteria = "Tropical", return.ids = FALSE)
+#' # return Tropical PFTs as a list of Layers objects (not just the ids)
+#' whichLayers(layer.list, criteria = "Tropical", return.ids = FALSE)
 #' 
 #' \donttest{
 #'  
-#' ## List PFTs from a Field object
+#' ## List Layers from a Field object
 #' 
-#' # Load a per-PFT Field from the example data
+#' # Load a multi-Layer (one layer per-PFT) Field from the example data
 #' run.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 #' test.Source <- defineSource(id = "LPJ-GUESS_Example", dir = run.dir,  format = GUESS)
-#' test.Field.perPFT <- getField(source = test.Source, var = "lai") 
+#' test.Field.perLayer <- getField(source = test.Source, var = "lai") 
 #' 
-#' # Perform the same examples as above but with the Field instead of a list of PFTs objects
+#' # Perform the same examples as above but with the Field instead of a list of Layers objects
 #' 
-#' # return with no criteria (trivial)#' 
-#' whichLayers(test.Field.perPFT )
 #' 
-#' # return as the full PFT objects
-#' whichLayers(test.Field.perPFT, return.ids = FALSE)
+#' # return Tree, Grass, Evergreen and Tropical Layers
+#' whichLayers(test.Field.perLayer, criteria = "Tree")
+#' whichLayers(test.Field.perLayer, criteria = "Grass")
+#' whichLayers(test.Field.perLayer, criteria = "Evergreen")
+#' whichLayers(test.Field.perLayer, criteria = "Tropical")
 #' 
-#' # return Tree, Grass, Evergreen and Tropical PFTs
-#' whichLayers(test.Field.perPFT, criteria = "Tree")
-#' whichLayers(test.Field.perPFT, criteria = "Grass")
-#' whichLayers(test.Field.perPFT, criteria = "Evergreen")
-#' whichLayers(test.Field.perPFT, criteria = "Tropical")
-#' 
-#' # return Tropical PFTs as a list of PFTs objects (not just the ids)
-#' whichLayers(test.Field.perPFT, criteria = "Tropical", return.ids = FALSE)
+#' # return Tropical PFTs as a list of Layers objects (not just the ids)
+#' whichLayers(test.Field.perLayer, criteria = "Tropical", return.ids = FALSE)
 #' 
 #' }
 #' 
 #' @export
 
-whichLayers <- function(x, criteria = NULL, return.ids = TRUE) {
+whichLayers <- function(x, criteria, return.ids = TRUE) {
   
   
-  # first prepare a list of all PFTs present
+  # first prepare a list of all Layers present
   
-  # if Field compare the layers of x with the PFTs in the Format object
+  # if Field compare the layers of x with the Layers in the Format object
   if(is.Field(x)) {
-    pft.list <- list()
-    for(this.PFT in x@source@pft.set) {
-      if(this.PFT@id %in% layers(x)) pft.list <- append(pft.list, this.PFT)
+    layer.list <- list()
+    for(this.Layer in x@source@pft.set) {
+        if(this.Layer@id %in% layers(x)) layer.list[[length(layer.list)+1]] <- this.Layer
     }
   }
-  
-  # else if list, check that all elements are a PFT
+  # else if list, check that all elements are a Layer
   else if(is.list(x)){
     for(this in x) {
-      if(!is.Layer(this)) stop("At least one item in the input list is not an object PFT class")
+      if(!is.Layer(this)) stop("At least one item in the input list is not an object Layer class")
     }
-    pft.list <- x
+    layer.list <- x
   }  
   
   # else fail
@@ -91,25 +80,23 @@ whichLayers <- function(x, criteria = NULL, return.ids = TRUE) {
   }
   
   
-  # now check each PFT in X to see if it matches the criteria
-  matched.pfts <- list()
-  if(!is.null(criteria)) criteria <- tolower(criteria)
-  for(PFT in pft.list) {
+  # now check each Layer in X to see if it matches the criteria
+  matched.layers <- list()
+  criteria <- tolower(criteria)
+  for(Layer in layer.list) {
     
-    if(tolower(PFT@growth.form) == criteria 
-       || tolower(PFT@climate.zone) == criteria
-       || tolower(PFT@leaf.form) == criteria 
-       || tolower(PFT@phenology) == criteria
-       || is.null(criteria)) {
-      
-      if(return.ids) matched.pfts[[PFT@id]] <- PFT@id 
-      else matched.pfts[[PFT@id]] <- PFT
-      
+    # check each property in turn
+    for(this.property in Layer) {
+      if(tolower(this.property) == criteria) {
+        if(return.ids) matched.layers[[Layer@id]] <- Layer@id 
+        else matched.layers[[Layer@id]] <- Layer
+        break()
+      }
     }
-    
+   
   }
   
-  if(return.ids) return(unlist(matched.pfts))
-  else return(matched.pfts)
+  if(return.ids) return(unlist(matched.layers))
+  else return(matched.layers)
   
 }

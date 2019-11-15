@@ -150,7 +150,7 @@ test_that("Layers",{
   
   
   # Test return Layer objects from a Field with different criteria (and also NULL - ie no criteria)
-  all.criteria = list(NULL, "Grass", "Tree", "Evergreen", "Summergreen", "Raingreen", "Boreal", "Temperate", "Tropical", "Needleleaved", "Broadleaved")
+  all.criteria = list("Grass", "Tree", "Evergreen", "Summergreen", "Raingreen", "Boreal", "Temperate", "Tropical", "Needleleaved", "Broadleaved")
   
   for(criteria in all.criteria) {
     

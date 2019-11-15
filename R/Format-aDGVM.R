@@ -19,12 +19,12 @@
 #' @author Glenn Moncrieff \email{glenn@@saeon.ac.za} 
 #' @keywords internal
 getField_aDGVM <- function(source,
-                            quant,
-                            target.STAInfo,
-                            file.name,
-                            verbose,
-                            adgvm.file.type = "Yearly",
-                            ...) {
+                           quant,
+                           target.STAInfo,
+                           file.name,
+                           verbose,
+                           adgvm.file.type = "Yearly",
+                           ...) {
   
   # aDGVM yearly quantities
   if("aDGVM" %in% quant@format 
@@ -70,15 +70,15 @@ getField_aDGVM <- function(source,
 #' @import data.table
 #' @keywords internal
 getYearlyField_aDGVM <- function(run,
-                                  quant,
-                                  target.sta,
-                                  file.name = file.name,
-                                  verbose = FALSE,
-                                  data.table.only = FALSE,
-                                  adgvm.fire = 1,
-                                  adgvm.climate = 0,
-                                  adgvm.header,
-                                  ...){
+                                 quant,
+                                 target.sta,
+                                 file.name = file.name,
+                                 verbose = FALSE,
+                                 data.table.only = FALSE,
+                                 adgvm.fire = 1,
+                                 adgvm.climate = 0,
+                                 adgvm.header,
+                                 ...){
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = Day = NULL
@@ -391,16 +391,16 @@ getYearlyField_aDGVM <- function(run,
 #' @import data.table
 #' @keywords internal
 getDailyField_aDGVM <- function(run,
-                                 quant,
-                                 target.sta,
-                                 file.name = file.name,
-                                 adgvm.file.type,
-                                 verbose = FALSE,
-                                 data.table.only = FALSE,
-                                 adgvm.fire = 1,
-                                 adgvm.climate = 0,
-                                 adgvm.header,
-                                 ...){
+                                quant,
+                                target.sta,
+                                file.name = file.name,
+                                adgvm.file.type,
+                                verbose = FALSE,
+                                data.table.only = FALSE,
+                                adgvm.fire = 1,
+                                adgvm.climate = 0,
+                                adgvm.header,
+                                ...){
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = Day = NULL
@@ -645,7 +645,7 @@ getDailyField_aDGVM <- function(run,
     
     
   }
-
+  
   #  Print messages
   if(verbose) {
     message("Read table. It has header:")
@@ -811,12 +811,12 @@ getDailyField_aDGVM <- function(run,
 #' @keywords internal
 
 getStandardQuantity_aDGVM <- function(run, 
-                                       quant, 
-                                       target.sta,
-                                       file.name = file.name,
-                                       adgvm.file.type,
-                                       verbose = FALSE,
-                                       ...) {
+                                      quant, 
+                                      target.sta,
+                                      file.name = file.name,
+                                      adgvm.file.type,
+                                      verbose = FALSE,
+                                      ...) {
   
   Total = Year = FireRT = NULL
   
@@ -833,7 +833,7 @@ getStandardQuantity_aDGVM <- function(run,
   # vegC_std 
   if(quant@id == "vegC_std") {
     
-  
+    
     stem <- getField_aDGVM(run, lookupQuantity("StemBiomass", aDGVM), target.sta, file.name, verbose, adgvm.file.type, ...)
     leaf <- getField_aDGVM(run, lookupQuantity("LeafBiomass", aDGVM), target.sta, file.name, verbose, adgvm.file.type, ...)
     root <- getField_aDGVM(run, lookupQuantity("RootBiomass", aDGVM), target.sta, file.name, verbose, adgvm.file.type, ...)
@@ -899,7 +899,7 @@ getStandardQuantity_aDGVM <- function(run,
     
   }
   
-
+  
   
   
   # else stop
@@ -946,7 +946,7 @@ availableQuantities_aDGVM <- function(source, names = TRUE, verbose = FALSE){
   if(fire.present & verbose) print("Found Fire files")
   size.present <- length(list.files(directory, "SizeData*")) > 0
   if(fire.present & verbose) print("Found Size annual files")
-
+  
   # check for consistency of 'daily' files
   daily.output.avail <- FALSE
   daily.files.avail <- sum(sys.present, soil.present, fire.present, size.present)
@@ -981,7 +981,7 @@ availableQuantities_aDGVM <- function(source, names = TRUE, verbose = FALSE){
   else {
     
     yearly.quantities <- c("Cancov", "LeafBiomass", "RootBiomass", "StemBiomass", "DeadGrassBiomass", 
-                     "LiveGrassBiomass", "ET", "PopSize", "C3C4_Ratio")
+                           "LiveGrassBiomass", "ET", "PopSize", "C3C4_Ratio")
     if(names) return(yearly.quantities)
     else {
       available.quantities <- list()
@@ -993,7 +993,7 @@ availableQuantities_aDGVM <- function(source, names = TRUE, verbose = FALSE){
     }
     
   }
-
+  
 }
 
 
@@ -1014,24 +1014,24 @@ aDGVM.Layers <- list(
   new("Layer",
       id = "ForTr",
       name = "Forest Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Adaptive",
-      climate.zone = "Tropical",
       colour = "darkgreen",
-      shade.tolerance = "None"
+      list(type = "PFT",
+           growth.form = "Tree",
+           leaf.form = "Broadleaved",
+           phenology = "Adaptive",
+           climate.zone = "Tropical")
   ),
   
   # Savanna Tree
   new("Layer",
       id = "SavTr",
       name = "Savanna Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Adaptive",
-      climate.zone = "Boreal",
       colour = "lightgreen",
-      shade.tolerance = "None"
+      list(type = "PFT",
+           growth.form = "Tree",
+           leaf.form = "Broadleaved",
+           phenology = "Adaptive",
+           climate.zone = "Tropical")
   ),
   
   # GRASSES
@@ -1040,24 +1040,25 @@ aDGVM.Layers <- list(
   new("Layer",
       id = "C3G",
       name = "C3 Grass",
-      growth.form = "Grass",
-      leaf.form = "Broadleaved",
-      phenology = "Adaptive",
-      climate.zone = "Tropical",
       colour = "lightgoldenrod1",
-      shade.tolerance = "None"
+      list(type = "PFT",
+           growth.form = "Grass",
+           leaf.form = "Broadleaved",
+           phenology = "Adaptive",
+           climate.zone = "Tropical")
   ),
   
   # C4G
   new("Layer",
       id = "C4G",
       name = "C4 Grass",
-      growth.form = "Grass",
-      leaf.form = "Broadleaved",
-      phenology = "Adaptive",
-      climate.zone = "Tropical",
       colour = "sienna2",
-      shade.tolerance = "None"
+      list(type = "PFT",
+           growth.form = "Grass",
+           leaf.form = "Broadleaved",
+           phenology = "Adaptive",
+           climate.zone = "Tropical"
+      )
   )
   
 )
@@ -1197,21 +1198,21 @@ aDGVM.quantities <- list(
 #' @export
 #' 
 aDGVM <- new("Format",
-              
-              # UNIQUE ID
-              id = "aDGVM",
-              
-              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-              availableQuantities = availableQuantities_aDGVM,
-              
-              # FUNCTION TO READ A FIELD 
-              getField = getField_aDGVM,
-              
-              # DEFAULT GLOBAL LAYERS  
-              default.pfts = aDGVM.Layers,
-              
-              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM aDGVM RUNS  
-              quantities = aDGVM.quantities
-              
+             
+             # UNIQUE ID
+             id = "aDGVM",
+             
+             # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
+             availableQuantities = availableQuantities_aDGVM,
+             
+             # FUNCTION TO READ A FIELD 
+             getField = getField_aDGVM,
+             
+             # DEFAULT GLOBAL LAYERS  
+             default.pfts = aDGVM.Layers,
+             
+             # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM aDGVM RUNS  
+             quantities = aDGVM.quantities
+             
 )
 

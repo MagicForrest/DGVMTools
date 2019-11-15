@@ -10,7 +10,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
   
-  ```{r packages, echo=FALSE}
+```{r packages, echo=FALSE}
 library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 #library(raster, quietly = TRUE, warn.conflicts = FALSE)
 #library(data.table, quietly = TRUE, warn.conflicts = FALSE)
@@ -19,8 +19,8 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 #library(Cairo, quietly = TRUE, warn.conflicts = FALSE)
 
 ```
-
-
+  
+  
 ```{r setup, include=FALSE}
 ```
 
@@ -48,14 +48,14 @@ str(original.Layers)
 To add a new PFT we can simple take our copy of the list, add a new PFT, and copy it back into the `Format` object.
 ```{r modify PFTs, echo=TRUE}
 new.Layer =  new("Layer",
-               id = "NewTree",
-               name = "Some New Tree PFT Layer",
-               growth.form = "Tree",
-               leaf.form = "Broadleaved",
-               phenology = "Summergreen",
-               colour = "red",
-               climate.zone = "Temperate",
-               shade.tolerance = "None"
+                 id = "NewTree",
+                 name = "Some New Tree PFT Layer",
+                 colour = "red",
+                 list(type = "PFT",
+                      growth.form = "Tree",
+                      leaf.form = "Broadleaved",
+                      phenology = "Summergreen",
+                      climate.zone = "Temperate")
 )
 
 new.Layer.list <- append(original.Layers, new.Layer)
@@ -100,24 +100,24 @@ Layers_NewFormat <- list(
   TeBE = new("Layer",
              id = "TeBE",
              name = "Temperate Broadleaved Evergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Evergreen",
-             climate.zone = "Temperate",
              colour = "darkgreen",
-             shade.tolerance = "None"
+             list(type = "PFT",
+                  growth.form = "Tree",
+                  leaf.form = "Broadleaved",
+                  phenology = "Evergreen",
+                  climate.zone = "Temperate")
   ),
   
   
   TeBS = new("Layer",
              id = "TeBS",
              name = "Temperate Broadleaved Summergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Summergreen",
              colour = "darkolivegreen3",
-             climate.zone = "Temperate",
-             shade.tolerance = "None"
+             list(type = "PFT",
+                  growth.form = "Tree",
+                  leaf.form = "Broadleaved",
+                  phenology = "Summergreen",
+                  climate.zone = "Temperate")
   ),
   
   
@@ -126,23 +126,23 @@ Layers_NewFormat <- list(
   C3G = new("Layer",
             id = "C3G",
             name = "Boreal/Temperate Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
             colour = "lightgoldenrod1",
-            shade.tolerance = "None"
+            list(type = "PFT",
+                 growth.form = "Grass",
+                 leaf.form = "Broadleaved",
+                 phenology = "GrassPhenology",
+                 climate.zone = "NA")
   ),
   
   C4G = new("Layer",
             id = "C4G",
             name = "Tropical Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
             colour = "sienna2",
-            shade.tolerance = "None"
+            list(type = "PFT",
+                 growth.form = "Grass",
+                 leaf.form = "Broadleaved",
+                 phenology = "GrassPhenology",
+                 climate.zone = "NA")
   )
   
 )
@@ -235,7 +235,7 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
   
   # dummy code
   dt <- data.table()
- 
+  
   
   # also an STAInfo object
   # define this properly based on the actual data in the data.table
@@ -249,15 +249,15 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
                          subannual.resolution = "monthly", # let's say
                          subannual.aggregate.method = "none", # see NOTE 1 below
                          subannual.original = "monthly" # let's say
-                         )
+  )
   
-   # NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)
-   # NOTE 2: if no spatial cropping at this stage set this to be the character string "Full", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
+  # NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)
+  # NOTE 2: if no spatial cropping at this stage set this to be the character string "Full", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
   
   
   # make the Field ID based on the STAInfo and 
   field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
-    
+  
   # build a new Field
   return.Field <- new("Field",
                       id = field.id,
@@ -265,8 +265,8 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
                       data = dt,
                       sta.info = return.sta.info,
                       source = source)
-
-   
+  
+  
   return(return.field)
   
 } 
@@ -275,7 +275,7 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
 ### Combining
 
 Finally we can combine the six parts that we just made to make the new `Format` object,
- 
+
 ```{r Builing the Format, echo=TRUE}
 NewFormat <- new("Format", 
                  id = id_NewFormat,
