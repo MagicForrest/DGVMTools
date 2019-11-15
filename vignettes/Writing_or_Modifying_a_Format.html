@@ -110,8 +110,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>A <code>Format</code> is an S4-class, and like all S4 classes the slots are accessed using the @ symbol. So, for example, to access the id slot of the pre-defined <code>GUESS</code> format:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GUESS@id</code></pre></div>
 <pre><code>## [1] &quot;GUESS&quot;</code></pre>
-<p>The <span class="citation">@default.pfts</span> slot is just a list of DGVMTools::Layer objects.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">original.Layers &lt;-<span class="st"> </span>GUESS@default.pfts
+<p>The <span class="citation">@defined.layers</span> slot is just a list of DGVMTools::Layer objects.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">original.Layers &lt;-<span class="st"> </span>GUESS@defined.layers
 
 <span class="kw">str</span>(original.Layers)</code></pre></div>
 <pre><code>## List of 12
@@ -357,7 +357,7 @@ new.Layer.list &lt;-<span class="st"> </span><span class="kw">append</span>(orig
 ##   .. ..@ shade.tolerance: chr &quot;None&quot;
 ##   .. ..@ colour         : chr &quot;red&quot;
 ## NULL</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GUESS@default.pfts &lt;-<span class="st"> </span>new.Layer.list</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GUESS@defined.layers &lt;-<span class="st"> </span>new.Layer.list</code></pre></div>
 <p>And done!</p>
 <p>Note that this change will only remain active in this particular R session (it doesn’t modify the <code>Format</code> in the package), so you will need to do it once at the top of your analysis script.</p>
 </div>
@@ -371,8 +371,8 @@ new.Layer.list &lt;-<span class="st"> </span><span class="kw">append</span>(orig
 <p>This is very simple, just a character string to uniquely identify this format.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">id_NewFormat &lt;-<span class="st"> &quot;Example_Format&quot;</span></code></pre></div>
 </div>
-<div id="the-default.pfts-slot" class="section level3">
-<h3>2. The <code>default.pfts</code> slot</h3>
+<div id="the-defined.layers-slot" class="section level3">
+<h3>2. The <code>defined.layers</code> slot</h3>
 <p>This is a list of DGVMTools::Layer objects. If the Format is for a DGVM, these Layers should correspond to the standard default PFTs, soil C or N pools or fluxes etc. in the DGVM. It is possible that if the Format is for a data set, the concept of Layers might not make sense so this can just be an empty list.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Layers_NewFormat &lt;-<span class="st"> </span><span class="kw">list</span>(
   
@@ -548,7 +548,7 @@ for(quant in quantities_NewFormat ) {
 <p>Finally we can combine the six parts that we just made to make the new <code>Format</code> object,</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">NewFormat &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;Format&quot;</span>, 
                  <span class="dt">id =</span> id_NewFormat,
-                 <span class="dt">default.pfts =</span> Layers_NewFormat, 
+                 <span class="dt">defined.layers =</span> Layers_NewFormat, 
                  <span class="dt">quantities =</span> quantities_NewFormat, 
                  <span class="dt">availableQuantities =</span> availableQuantities_NewFormat, 
                  <span class="dt">getField =</span>getField_NewFormat)</code></pre></div>

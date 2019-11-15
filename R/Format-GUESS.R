@@ -1872,7 +1872,7 @@ GUESS <- new("Format",
              getField = getField_GUESS,
              
              # DEFAULT GLOBAL LAYERS 
-             default.pfts = GUESS.Layers,
+             defined.layers = GUESS.Layers,
              
              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
              quantities = GUESS.quantities

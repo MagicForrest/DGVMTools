@@ -39,9 +39,9 @@ A `Format` is an S4-class, and like all S4 classes the slots are accessed using 
 ```{r accessing a slot, echo=TRUE}
 GUESS@id
 ```
-The @default.pfts slot is just a list of DGVMTools::Layer objects.
+The @defined.layers slot is just a list of DGVMTools::Layer objects.
 ```{r get Layers, echo=TRUE}
-original.Layers <- GUESS@default.pfts
+original.Layers <- GUESS@defined.layers
 
 str(original.Layers)
 ```
@@ -62,7 +62,7 @@ new.Layer.list <- append(original.Layers, new.Layer)
 
 print(str(new.Layer.list))
 
-GUESS@default.pfts <- new.Layer.list
+GUESS@defined.layers <- new.Layer.list
 
 ```
 And done!
@@ -87,12 +87,12 @@ id_NewFormat <- "Example_Format"
 ```
 
 
-### 2. The `default.pfts` slot
+### 2. The `defined.layers` slot
 
 This is a list of DGVMTools::Layer objects.  If the Format is for a DGVM, these Layers should correspond to the standard default PFTs, soil C or N pools or fluxes etc. in the DGVM.  It is possible that if the Format is for a data set, the concept of Layers might not make sense so this can just be an empty list. 
 
 
-```{r default.pfts slot, echo=TRUE}
+```{r defined.layers slot, echo=TRUE}
 Layers_NewFormat <- list(
   
   # A couple of tree PFTs
@@ -279,7 +279,7 @@ Finally we can combine the six parts that we just made to make the new `Format` 
 ```{r Builing the Format, echo=TRUE}
 NewFormat <- new("Format", 
                  id = id_NewFormat,
-                 default.pfts = Layers_NewFormat, 
+                 defined.layers = Layers_NewFormat, 
                  quantities = quantities_NewFormat, 
                  availableQuantities = availableQuantities_NewFormat, 
                  getField =getField_NewFormat)

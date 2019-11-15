@@ -13,7 +13,7 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 GUESS@id
 
 ## ----get Layers, echo=TRUE-----------------------------------------------
-original.Layers <- GUESS@default.pfts
+original.Layers <- GUESS@defined.layers
 
 str(original.Layers)
 
@@ -33,13 +33,13 @@ new.Layer.list <- append(original.Layers, new.Layer)
 
 print(str(new.Layer.list))
 
-GUESS@default.pfts <- new.Layer.list
+GUESS@defined.layers <- new.Layer.list
 
 
 ## ----id slot, echo=TRUE--------------------------------------------------
 id_NewFormat <- "Example_Format"
 
-## ----default.pfts slot, echo=TRUE----------------------------------------
+## ----defined.layers slot, echo=TRUE----------------------------------------
 Layers_NewFormat <- list(
   
   # A couple of tree PFTs
@@ -190,7 +190,7 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
 ## ----Builing the Format, echo=TRUE---------------------------------------
 NewFormat <- new("Format", 
                  id = id_NewFormat,
-                 default.pfts = Layers_NewFormat, 
+                 defined.layers = Layers_NewFormat, 
                  quantities = quantities_NewFormat, 
                  availableQuantities = availableQuantities_NewFormat, 
                  getField =getField_NewFormat)

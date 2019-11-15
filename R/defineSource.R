@@ -80,7 +80,7 @@ defineSource <- function(id,
   
   # 
   if(missing(pft.set)){
-    pft.set <- format@default.pfts
+    pft.set <- format@defined.layers
   }
   
   # 

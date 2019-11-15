@@ -3,23 +3,26 @@
 
 #' Format class
 #'
-#' This class encapsulates all the specific details of a supported model or dataset.  It stores meta-data and methods (just functions, not technically
-#'  methods in R terms) for a DGVM output format (or other data format).  Note that the default.pfts and  'quantities' arguments are just default 
-#'  values, it is easy to add new ones.  Equally they don't all need to to be available for a particular run or dataset.  You can define your own for your 
-#'  own data format if you, for example, want to include a new model type.    
-#'  Format objects which are  included in the package by default are listed below:
+#' This class encapsulates all the specific details of a supported model or dataset.  Thiis comprises functions to read the data off the disk, and metadata
+#' describing certain properties of the vegetation. From a user-perspective, these are used as the \code{format} argument to \link{defineSource} function.
+#' 
+#'  Format objects which are included in the package are listed below:
 #'
 #' @slot id Simple character string to gave an uniquely identify this format
-#' @slot default.pfts 'Standard' vegetation types (PFTs, Plant Functional Type) that this format uses, as a list of DGVMTools::PFT objects.  
-#' This is mostly likely applicable to formats decsribing DGVM output, but also for some data sets.  
-#' This is just a default PFT set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
-#' @slot quantities 'Standard' quantities (as a list of DGVMTools::Quantity objects) which might be availably from the model output or dataset.
+#' @slot defined.layers 'Standard' Layer type that this format uses, as a list of DGVMTools::\linkS4class{Layer} objects.  
+#' This is most likely applicable to formats decsribing DGVM output, but also for some data sets.  
+#' This is just a default Layer set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
+#' @slot quantities 'Standard' quantities (as a list of DGVMTools::\linkS4class{Quantity} objects) which might be availably from the model output or dataset.
 #' @slot availableQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
 #' @slot getField A function to retrieve actually data from the model output or dataset.  This is likely to be a fairly complex function, and really depends on the specifics 
 #' and idiosynchrasies of the model output format or dataset.
 #' 
-#' @details Normally a user won't need to deal with this class since it defines model/dataset spcific metadata and functions which should be defined once and then
-#' 'just work' (haha) in the future. If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
+#' @details For DGVMTools to support a particular model or dataset, this is the object that needs to be defined.  But normally a user won't need to deal with this 
+#' class since it defines model/dataset spcific metadata and functions which should be defined once and then 'just work' (haha) in the future. 
+#' If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
+#' 
+#' Note that the 'defined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
+#' to to be available for a particular run or dataset.  You can define your own for your own data format if you, for example, want to include a new model type.    
 #' 
 #' @name Format-class
 #' @rdname Format-class
@@ -27,7 +30,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("Format", 
          slots = c(id = "character",
-                   default.pfts = "list",
+                   defined.layers = "list",
                    quantities = "list",
                    availableQuantities = "function",
                    getField = "function"
@@ -78,7 +81,7 @@ setClass("Period",
 
 #' STAInfo class
 #'
-#' This class encapsulations all the Spatial (S, longitude and latidude), Temporal (T, monthly, daily etc.) and Annual (A, years included) 
+#' This class encapsulations all the Spatial (the 'S', longitude and latidude), Temporal (the 'T', monthly, daily etc.) and Annual (the 'A', years included) 
 #' Information  (hence the name 'STAInfo') about a particular DGVMTools::Field.  Normally the user won't have to deal with this (it is mostly used internally),
 #' but it can be handy, for example to extract the STAInfo from one Field, and use it extract another field with the same dimensions. 
 #'     

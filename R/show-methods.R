@@ -212,7 +212,7 @@ setMethod("show", signature(object="Format"), function(object) {
   cat(paste0("Format:\n"))
   cat(paste0("id = \"", object@id, "\"", "\n"))
   cat(paste0("Default PFTs:\n"))
-  for(PFT in object@default.pfts){
+  for(PFT in object@defined.layers){
     print(PFT)
   }
   cat(paste0("Defined Quantities:\n"))
