@@ -2,9 +2,11 @@
 
 #' Define a Source object that represents a model run or data set, setting up all the required metadata (only). 
 #' 
-#' This function is preferred to a \code{new("Source",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
+#' This function is preferred to a \code{new("Source",...)} initialisation because it does noth the initialisations (including some defaults)
+#' and also performs some extra checks.
 #'
-#' Note that initially no actual data is stored, only metadata. The data, stored as Fields, can be added to a Source object, are added built with later with other commands and added to \code{Source} command using \code{addToSource}
+#' Note that no actual data is stored in the resultant \linkS4class{Source} object, rather this object should be used in calls to \link{getField}
+#' to get data as a \linkS4class{Field} object.
 #'
 #' @param id A unique character string to identify this particular data.  Recommended to be alphanumeric because it is used to construct file names and to use underscores and full stops (periods) 
 #' for separating characters where need be.   For example, "Standard_v4.0" or "Saatchi2011.HD"  (can be derived from \code{name} if a \code{name} is supplied, otherwise mandatory)
@@ -23,9 +25,9 @@
 #' @param contact Name and email address of responsible person (default to OS username).
 #' @param institute Name of the institute (default "none").
 #' @param ... extra arguments, not used yet
-#' Note that that \code{id}, \code{name}, \code{format}, and \code{dir} are compulsory, the rest will be filled with dummy/default values if left blank.
-#' Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS configurations.
-#' @return A Source object including metadata defined by empty data slots
+#' Note that that \code{format}, \code{dir} and one of \code{id} or \code{name} are compulsory, the rest will be filled with dummy/default values if left blank.
+#' Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for aDGVM1 and some LPJ-GUESS configurations.
+#' @return A Source object 
 #' @export
 #' @seealso Source
 #' @include classes.R

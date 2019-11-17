@@ -25,14 +25,14 @@ if(!isGeneric("show")) setGeneric("show", function(object, ...) standardGeneric(
 #' @export
 setMethod('show', signature(object="Layer"), function(object) {
   
-  cat(paste0("Layer: ", object@id," (", object@name, "), plot colour =  ", object@colour, "\n" ))
-  prop.string <- "\t With properties:"
-  for(this.name in names(object)) {
-    prop.string <- paste0(prop.string, this.name, "=", object[[this.name]], ", ")
+  cat(paste0("Layer: ", object@id," (", object@name, "), plot colour = ", object@colour, "\n" ))
+  prop.string <- "\t With properties: "
+  for(this.name in names(object@properties)) {
+    prop.string <- paste0(prop.string, this.name, "=", object@properties[[this.name]], ", ")
   }
-  if(length(names(object)) > 0) prop.string <- substr(prop.string, 1, nchar(prop.string) -2)
+  if(length(names(object)) > 0) prop.string <- substr(prop.string, 1, nchar(prop.string)-2)
   prop.string <- paste0(prop.string, "\n")
-  cat(prop.string)
+  cat(paste0(prop.string))
   
 })
 
@@ -42,8 +42,7 @@ setMethod('show', signature(object="Layer"), function(object) {
 #' @export
 setMethod("show", signature(object="Quantity"), function(object) {
   
-  cat(paste0("Quantity:\n"))
-  cat(paste0("\t\t", object@id," (", object@name, "): ",  "Units=", object@units, ", Defined for format: ", paste0(unlist(object@format), collapse = ', '), "\n"))
+  cat(paste0("Quantity: \t\t", object@id," (", object@name, "): ",  "Units=", object@units, ", Defined for format: ", paste0(unlist(object@format), collapse = ', '), "\n"))
   
 })
 

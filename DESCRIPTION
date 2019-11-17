@@ -67,6 +67,7 @@ Collate:
     'compareLayers.R'
     'copyLayers.R'
     'crop-methods.R'
+    'defineLayer.R'
     'defineSource.R'
     'determinePFTs.R'
     'export-methods.R'

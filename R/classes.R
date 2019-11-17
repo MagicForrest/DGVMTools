@@ -412,13 +412,13 @@ setClass("Scheme",
 
 
 
-#' Contains one aspect of the output, eg. LAI
+#' Field-class containsdata
 #' 
-#' A key class of the package as it actually holds the data (most other classes are for metadata).  A \code{Field} stores the data and metadata for one quantity
+#' Field is a key class of the package as it actually holds the data (most other classes are for metadata).  A \code{Field} stores the data and metadata for one quantity
 #' that comes from a dataset or vegetation model run (including information about the run iself). For example LAI (Leaf Area Index), or evapotranspiration. 
 #' The data can be aggragted across space, and across and within years, and manipulated and plotted by mayn funtions in this package.
 #' 
-#' Generally these are not created directly by the user, but rather by functions like \code{getField}.
+#' Generally these are not created directly by the user, but rather by functions like \link{getField}.
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
