@@ -1,45 +1,113 @@
 ######## DEFINE A LAYER OBJECT 
 
-#' Define a Layer object 
+#' @title Define a Layer object
 #' 
-#' This function is  \linkS4class{Layer} represents a sub-component or one particular aspect of a \linkS4class{Field} object, 
-#' for example one PFT or one carbon pool.
-#' 
-#' This function is preferred to a \code{new("Layer",...)} initialisation because it does both the initialisation 
+#' @description This function defines a \linkS4class{Layer} object represents a sub-component or one particular aspect of a \linkS4class{Field} object, 
+#' for example one PFT or one carbon pool.  It preferred to a \code{new("Layer",...)} initialisation because it does both the initialisation 
 #' and also optionally adds the Field to to a \linkS4class{Format} object with the \code{add.to} argument.
-#'
+#' 
+#' @param id A unique character string to identify this newly defined \linkS4class{Layer}. This could be, for example, a PFT abbreviation.
+#' @param name A more readable character string to describe the \linkS4class{Layer}, for example the full PFT name.  
+#' Optional, if omitted the id argument will be used here.
+#' @param colour A character string giving the preferred plot colour for this \linkS4class{Layer}.
+#' @param properties A list with named items containing metadata describing the Layer.  These are used with the \link{whichLayers} and \link{layerOp}
+#' functions to automagically select layers.  There is a lot of flexibility here, but it is recommended that the list includes at least an
+#'  element called "type", and then ideally all the proprties required to describe the layer.  An example for a broadleaved summergreen tree PFT could look like: \cr
+#' \code{properties = list(type = "PFT", growth.form = "Tree", phenology = "Summergreen")}.  \cr \cr
+#' A slow litter soil carbon pool could look like: \cr
+#' \code{properties = list(type = "CPool", speed = "Slow", zone = "Soil", comprises = "Litter")}. 
+#' @param add.to A Format object to which this newly defined layer should be added (optional). 
+#' 
+#' 
+#' @details Only the \code{id} and \code{colour} argument are compulsory, the rest will be filled with dummy/default values if left blank.
+#' However, one advantage of formally defining a \linkS4class{Layer} object is that one can use the \code{properties} slot of the 
+#' \linkS4class{Layer} to conveniently select, aggregate and operate on layers with functions \link{whichLayers} and \link{layerOp},
+#' so it is recommended to define the properties to take advantage of this. 
+#' When defining Layers it is important that the properties are defined consistently between Layer so that the functions 
+#' \link{whichLayers} and \link{layerOp} work as expected. \cr
 #' Note that no actual data is stored in the resultant \linkS4class{Layer}, only metadata. 
 #' 
-#' @param id A unique character string to identify this particular data.  Recommended to be alphanumeric because it is used to construct file names and to use underscores and full stops (periods) 
-#' for separating characters where need be.   For example, "Standard_v4.0" or "Saatchi2011.HD"  (can be derived from \code{name} if a \code{name} is supplied, otherwise mandatory)
-#' @param format A Format object to describe the type of source.  Can be GUESS, aDGVM, aDGVM2 or DGVMData (note no quotes since these are actual R objects not strings).  (Mandatory) DEPRECATED: alternatively a character string to identify the format of the files of this data sorce. This can be anything, but should be in order for "getField()" to work corrected 
-
-#' MF TODO UPDATE THIS DOCUMENTATION Note that that \code{id}, \code{name}, \code{format}, and \code{dir} are compulsory, the rest will be filled with dummy/default values if left blank.
-#' Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS configurations.
-#' @return A Layer object including metadata defined by empty data slots
+#' @return A \linkS4class{Layer} object
 #' @export
-#' @seealso Layer
+#' @seealso \linkS4class{Layer}, \linkS4class{Format}, \link{whichLayers} and \link{layerOp}. 
 #' @include classes.R
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' 
+#' @examples
+#' 
+#' ## Define a couple of new Layers
+#' 
+#' 
+#' ## a hypothetical shrub PFT and add it to the GUESS format
+#' TeBES.PFT <- defineLayer(id = "TeBES",
+#'                        name = "Temperate Broadleaved Evergreen Shrub",
+#'                        colour = "red",
+#'                        properties = list(type = "PFT",      
+#'                                          climate.zone = "Temperate",
+#'                                          leaf.form = "Broadleaved",
+#'                                          phenology = "Evergreen",
+#'                                          growth.form = "Shrub"),
+#'                        add.to = GUESS)
+#' 
+#' # check is is there: 
+#' print(GUESS@defined.layers)
+#' 
+#' ## Also add a couple of aggregate Layers
+#' 
+#' # Note, not defining growth.form etc because they might get double counted 
+#' Grass  <- defineLayer(id = "Grass",
+#'                        name = "Grass Total",
+#'                        colour = "red",
+#'                        properties = list(type = "Aggregate"),
+#'                        add.to = GUESS)
+#'                        
+#' Tree  <- defineLayer(id = "Tree",
+#'                        name = "Tree Total",
+#'                        colour = "gray",
+#'                        properties = list(type = "Aggregate"),
+#'                        add.to = GUESS)
+#' 
+#'
+#' \donttest{
+#'  
+#' ## Show the plot colours in action
+#' 
+#' # Load a multi-Layer (one layer per-PFT) Field from the example data averaged in space
+#' run.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+#' test.Source <- defineSource(id = "LPJ-GUESS_Example", dir = run.dir,  format = GUESS)
+#' test.Field <- getField(source = test.Source, var = "lai", spatial.aggregate.method = "mean", 
+#'                        spatial.extent.id = "CentralEurope") 
+#' 
+#' # make calculate Tree and Grass sums
+#' test.Field <- layerOp(test.Field, "+", ".Tree", "Tree")
+#' test.Field <- layerOp(test.Field, "+", ".Grass", "Grass")
+#' 
+#' # plot - notice the defined colours for the Tree and Grass layer are plotted
+#' print(plotTemporal(test.Field))
+#' 
+#' # also plot all the 'Aggregate' layers
+#' print(plotTemporal(test.Field, whichLayers(test.Field, criteria = "Aggregate")))
+#' 
+#' 
+#' }
+#' 
+#' @export
 
 defineLayer <- function(id,
-                         name,
-                         colour,
-                         properties = list(type = "Undefined"),
-                         add.to){
-  
-  # if name is missing use id
-  if(missing(name)) name <- id
+                        name = id,
+                        colour,
+                        properties = list(type = "Undefined"),
+                        add.to){
   
   # check that properties is a full-named list
   if(!is.list(properties) || length(names(properties)) != length(properties) || "" %in% names(properties)) stop("The 'properties' argument to defineLayer() must be a named list")
-
+  
   # make Source object from the supplied meta data
   layer <- new("Layer",
-              id = id,
-              name = name,
-              colour = colour,
-              properties = properties)
+               id = id,
+               name = name,
+               colour = colour,
+               properties = properties)
   
   if(!missing(add.to)) {
     
@@ -57,7 +125,7 @@ defineLayer <- function(id,
       if(these.defined.layers[[this.layer.index]]@id == id) {
         warning(paste("Function defineLayer() is replacing an exisiting Layer with id =", id, "in Format", deparse(substitute(add.to)), sep = " "))
         this.index <- this.layer.index
-       }
+      }
     }
     these.defined.layers[[this.index]] <- layer
     
@@ -66,8 +134,8 @@ defineLayer <- function(id,
     this.format@defined.layers <- these.defined.layers
     
     # finally, add the updated Format object to the global environment
-    assign(x = deparse(substitute(add.to)), value = this.format, pos = ".GlobalEnv")
-
+    assign(x = deparse(substitute(add.to)), value = this.format, pos = "package:DGVMTools")
+    
   }
   
   # return the Layer

@@ -23,7 +23,7 @@ It is this list of properties that allows DGVMTools to automatically select grou
 These are defined in lists for the default Layers for supported model format (see'Usage' below).
 }
 \details{
-The \code{Layer-class} is only meta-data but is very useful as it allows users to conveniently aggregate or process the data 
+The \code{Layer-class} is only meta-data and does not \emph{need} to be defined for every layer.  However is very useful as it allows users to conveniently aggregate or process the data 
 corresponding to, for example, all trees with simple command. 
 The standard Layers for some models are included (see above), but if you have other Layers then you simply need define them (see funtion \code{XXXXX}).  You then combine the
 existing Layers into an R list and then provide them as the 'default.layers' argument to the \link{defineSource} call and bingo! you are using your custom Layers.
