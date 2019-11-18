@@ -231,8 +231,7 @@ checkSource <- function(object){
 #' @slot id A unique character string to identify this particular data source.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot dir The location of this run on the file system (Mandatory)
 #' @slot format A character string or a DGVMTools::Format pbject to describe how this data is stored on disk.  This will depend on either the model 
-#' that was used to produce it or the dataset type.  Currently defined Format objects are \code{GUESS}, \code{aDGVM} and \code{DGVMData} but for convenience the 
-#' strings, "GUESS", "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM" and "DGVMData" make be used. (Mandatory)
+#' that was used to produce it or the dataset type.  Currently defined Format objects are \link{GUESS}, \link{aDGVM}, \link{aDGVM2} and \link{DGVMData}.
 #' @slot pft.set A list of PFT objects which includes all the PFTs included in this model run/dataset.
 #' @slot name A character string describing this data source, ie. "LPJ-GUESS v3.1" (can be omitted, in which case the id will be used instead)
 #' @slot forcing.data A character string identifying the climate or other data used to produce this data
