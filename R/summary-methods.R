@@ -40,7 +40,7 @@ setMethod("summary", signature(object="Source"), function(object) {
   cat(paste0("contact = ", "\"", object@contact, "\"", "\n"))
   cat(paste0("PFT superset:", "\n"))
   all.PFTs <- c()
-  for(PFT in object@pft.set){
+  for(PFT in object@defined.layers){
     all.PFTs <- append(all.PFTs, PFT@id)
   }
   cat(paste0(all.PFTs))

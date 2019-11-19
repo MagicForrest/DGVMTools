@@ -24,7 +24,7 @@ Uses Layer metadata to return all Layers with a particular properties.  For exam
 ## List Layers from a list of Layer objects
 
 # make a list of Layers for selecting from 
-layer.list <- GUESS@defined.layers
+layer.list <- GUESS@predefined.layers
 print(layer.list)
 
 

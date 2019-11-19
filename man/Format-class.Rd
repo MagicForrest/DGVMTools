@@ -39,7 +39,7 @@ For DGVMTools to support a particular model or dataset, this is the object that 
 class since it defines model/dataset spcific metadata and functions which should be defined once and then 'just work' (haha) in the future. 
 If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
 
-Note that the 'defined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
+Note that the 'predefined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
 to to be available for a particular run or dataset.  You can define your own for your own data format if you, for example, want to include a new model type.
 }
 \section{Slots}{
@@ -47,7 +47,7 @@ to to be available for a particular run or dataset.  You can define your own for
 \describe{
 \item{\code{id}}{Simple character string to gave an uniquely identify this format}
 
-\item{\code{defined.layers}}{'Standard' Layer type that this format uses, as a list of DGVMTools::\linkS4class{Layer} objects.
+\item{\code{predefined.layers}}{'Standard' Layer type that this format uses, as a list of DGVMTools::\linkS4class{Layer} objects.
 This is most likely applicable to formats decsribing DGVM output, but also for some data sets.  
 This is just a default Layer set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).}
 

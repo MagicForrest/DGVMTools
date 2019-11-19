@@ -1210,7 +1210,7 @@ aDGVM <- new("Format",
              getField = getField_aDGVM,
              
              # DEFAULT GLOBAL LAYERS  
-             defined.layers = aDGVM.Layers,
+             predefined.layers = aDGVM.Layers,
              
              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM aDGVM RUNS  
              quantities = aDGVM.quantities

@@ -962,7 +962,7 @@ aDGVM2 <- new("Format",
               getField = getField_aDGVM2,
               
               # DEFAULT GLOBAL LayerS  
-              defined.layers = aDGVM2.Layers,
+              predefined.layers = aDGVM2.Layers,
               
               # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
               quantities = aDGVM2.quantities

@@ -195,11 +195,11 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   # check the defined Layers present in the Fields and make a unique list
   # maybe also here check which one are actually in the layers to plot, since we have that information
-  defined.Layers <- list()
+  all.layers.defined <- list()
   for(object in fields){
-    defined.Layers <- append(defined.Layers, object@source@pft.set)
+    all.layers.defined <- append(all.layers.defined, object@source@defined.layers)
   }
-  defined.Layers <- unique(defined.Layers)
+  all.layers.defined <- unique(all.layers.defined)
   
   
   ### DETERMINE X- AND Y-LIMITS, CROP AND MAKE OVERLAY
@@ -335,7 +335,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     else {
       
       # Attempt to match the colours
-      here.cols <- matchLayerCols(unique.vals, defined.Layers)
+      here.cols <- matchLayerCols(unique.vals, all.layers.defined)
       if(length(here.cols) == length(unique.vals)) all.Matched <- TRUE
       
       
@@ -352,7 +352,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
               categorical.legend.labels <- append(categorical.legend.labels, "None")
             }
             else {
-              for(this.Layer in defined.Layers) {
+              for(this.Layer in all.layers.defined) {
                 if(this.break == this.Layer@id) categorical.legend.labels <- append(categorical.legend.labels, this.Layer@name)
               } # for each Layer   
             } # if note "None"

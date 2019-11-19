@@ -2,7 +2,7 @@
 
 #' Define a Source object that represents a model run or data set, setting up all the required metadata (only). 
 #' 
-#' This function is preferred to a \code{new("Source",...)} initialisation because it does noth the initialisations (including some defaults)
+#' This function is preferred to a \code{new("Source",...)} initialisation because it does both the initialisations (including some defaults)
 #' and also performs some extra checks.
 #'
 #' Note that no actual data is stored in the resultant \linkS4class{Source} object, rather this object should be used in calls to \link{getField}
@@ -12,7 +12,7 @@
 #' for separating characters where need be.   For example, "Standard_v4.0" or "Saatchi2011.HD"  (can be derived from \code{name} if a \code{name} is supplied, otherwise mandatory)
 #' @param format A Format object to describe the type of source.  Can be GUESS, aDGVM, aDGVM2 or DGVMData (note no quotes since these are actual R objects not strings).  (Mandatory) DEPRECATED: alternatively a character string to identify the format of the files of this data sorce. This can be anything, but should be in order for "getField()" to work corrected 
 #' it needs be a \code{supported.format} which is either a supported model that produced this (e.g. "LPJ-GUESS") or "DGVMData" for data files produced by the DGVMData package 
-#' @param pft.set A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
+#' @param defined.layers A list of PFT objects which includes all the PFTs used is this model run (Mandatory)
 #' @param name A character string describing this run, ie. "LPJ-GUESS v3.1" (can be derived from \code{id} if an \code{id} is supplied, otherwise mandatory)
 #' @param dir The location of this source on the file system (Mandatory)
 #' @param quantities A list of Quantity object what we expect to have in this Source.  The option allows the over-riding the default quantities in the Format object.  
@@ -38,7 +38,7 @@ defineSource <- function(id,
                          dir,
                          format,
                          quantities = NULL, # why do we have this?  is it useful?
-                         pft.set = list(),
+                         defined.layers = list(),
                          lonlat.offset = c(0,0),
                          year.offset = 0,
                          london.centre = TRUE,
@@ -81,8 +81,8 @@ defineSource <- function(id,
   }
   
   # 
-  if(missing(pft.set)){
-    pft.set <- format@defined.layers
+  if(missing(defined.layers)){
+    defined.layers <- format@predefined.layers
   }
   
   # 
@@ -94,7 +94,7 @@ defineSource <- function(id,
   source <- new("Source",
               id = id,
               format = format,
-              pft.set = pft.set,
+              defined.layers = defined.layers,
               name = name,
               dir = dir,                              
               forcing.data = forcing.data,
@@ -106,7 +106,7 @@ defineSource <- function(id,
               institute = institute)
   
   # if things aren't specified set them here because it seems like the 'prototype' field isn't working
-  if(length(source@pft.set) == 0) source@pft.set <- list()
+  if(length(source@defined.layers) == 0) source@defined.layers <- list()
   if(length(source@lonlat.offset) == 0)  source@lonlat.offset <- c(0,0)
   if(length(source@year.offset) == 0)  source@year.offset <- 0
   if(length(source@forcing.data) == 0)  source@forcing.data <- "No forcing data set"
