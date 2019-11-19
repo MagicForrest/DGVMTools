@@ -87,7 +87,7 @@ setMethod("show", signature(object="Source"), function(object) {
   cat(paste0("\tcontact = ", "\"", object@contact, "\"", "\n"))
   cat(paste0("\tPFTs defined:\n"))
   all.PFTs <- c()
-  for(PFT in object@pft.set){
+  for(PFT in object@defined.layers){
     all.PFTs <- append(all.PFTs, PFT@id)
   }
   cat(paste0(all.PFTs))
@@ -211,7 +211,7 @@ setMethod("show", signature(object="Format"), function(object) {
   cat(paste0("Format:\n"))
   cat(paste0("id = \"", object@id, "\"", "\n"))
   cat(paste0("Default PFTs:\n"))
-  for(PFT in object@defined.layers){
+  for(PFT in object@predefined.layers){
     print(PFT)
   }
   cat(paste0("Defined Quantities:\n"))

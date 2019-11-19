@@ -5,7 +5,7 @@
 \title{Define a Source object that represents a model run or data set, setting up all the required metadata (only).}
 \usage{
 defineSource(id, name, dir, format, quantities = NULL,
-  pft.set = list(), lonlat.offset = c(0, 0), year.offset = 0,
+  defined.layers = list(), lonlat.offset = c(0, 0), year.offset = 0,
   london.centre = TRUE, forcing.data = "Not specified",
   land.use.included = FALSE, contact = "Not specified",
   institute = "Not specified", ...)
@@ -24,7 +24,7 @@ it needs be a \code{supported.format} which is either a supported model that pro
 \item{quantities}{A list of Quantity object what we expect to have in this Source.  The option allows the over-riding the default quantities in the Format object.
 Not 100\% sure why this might be useful though.}
 
-\item{pft.set}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
+\item{defined.layers}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
 
 \item{lonlat.offset}{A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the localities, somewhat legacy for old LPJ-GUESS runs.}
 
@@ -48,7 +48,7 @@ Take care with \code{lon.lat.offset} and \code{year.offset} which are initialise
 A Source object
 }
 \description{
-This function is preferred to a \code{new("Source",...)} initialisation because it does noth the initialisations (including some defaults)
+This function is preferred to a \code{new("Source",...)} initialisation because it does both the initialisations (including some defaults)
 and also performs some extra checks.
 }
 \details{

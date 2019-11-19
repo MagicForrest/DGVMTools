@@ -9,7 +9,7 @@
 #'  Format objects which are included in the package are listed below:
 #'
 #' @slot id Simple character string to gave an uniquely identify this format
-#' @slot defined.layers 'Standard' Layer type that this format uses, as a list of DGVMTools::\linkS4class{Layer} objects.  
+#' @slot predefined.layers 'Standard' Layer type that this format uses, as a list of DGVMTools::\linkS4class{Layer} objects.  
 #' This is most likely applicable to formats decsribing DGVM output, but also for some data sets.  
 #' This is just a default Layer set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
 #' @slot quantities 'Standard' quantities (as a list of DGVMTools::\linkS4class{Quantity} objects) which might be availably from the model output or dataset.
@@ -21,7 +21,7 @@
 #' class since it defines model/dataset spcific metadata and functions which should be defined once and then 'just work' (haha) in the future. 
 #' If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
 #' 
-#' Note that the 'defined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
+#' Note that the 'predefined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
 #' to to be available for a particular run or dataset.  You can define your own for your own data format if you, for example, want to include a new model type.    
 #' 
 #' @name Format-class
@@ -30,7 +30,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 setClass("Format", 
          slots = c(id = "character",
-                   defined.layers = "list",
+                   predefined.layers = "list",
                    quantities = "list",
                    availableQuantities = "function",
                    getField = "function"
@@ -231,8 +231,9 @@ checkSource <- function(object){
 #' @slot id A unique character string to identify this particular data source.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot dir The location of this run on the file system (Mandatory)
 #' @slot format A character string or a DGVMTools::Format pbject to describe how this data is stored on disk.  This will depend on either the model 
-#' that was used to produce it or the dataset type.  Currently defined Format objects are \link{GUESS}, \link{aDGVM}, \link{aDGVM2} and \link{DGVMData}.
-#' @slot pft.set A list of PFT objects which includes all the PFTs included in this model run/dataset.
+#' that was used to produce it or the dataset type.  Currently defined Format objects are \code{GUESS}, \code{aDGVM} and \code{DGVMData} but for convenience the 
+#' strings, "GUESS", "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM" and "DGVMData" make be used. (Mandatory)
+#' @slot defined.layers A list of \linkS4class{Layer} objects to describe the Layers, includes the PFTs, included in this model run/dataset.
 #' @slot name A character string describing this data source, ie. "LPJ-GUESS v3.1" (can be omitted, in which case the id will be used instead)
 #' @slot forcing.data A character string identifying the climate or other data used to produce this data
 #' @slot lonlat.offset A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the modelled localities.
@@ -246,7 +247,7 @@ checkSource <- function(object){
 setClass("Source", 
          slots = c(id = "character",
                    format = "Format",
-                   pft.set = "list",
+                   defined.layers = "list",
                    name = "character",
                    dir = "character",                              
                    forcing.data = "character",
@@ -257,7 +258,7 @@ setClass("Source",
                    contact = "character",
                    institute = "character"
          ),
-         prototype = c(pft.set = list(),
+         prototype = c(defined.layers = list(),
                        forcing.data = "not specified",
                        lonlat.offset = 0,
                        year.offset = 0,

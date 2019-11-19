@@ -21,7 +21,7 @@ determinePFTs <- function(x, ...) {
   # else 
   else{
     warning("Malformed determinePFTs slot of the Format object. Returning the fill list of PFTs")
-    return(x@defined.layers)
+    return(x@predefined.layers)
   }
   
 

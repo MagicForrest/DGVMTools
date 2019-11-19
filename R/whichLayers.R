@@ -16,7 +16,7 @@
 #' ## List Layers from a list of Layer objects
 #' 
 #' # make a list of Layers for selecting from 
-#' layer.list <- GUESS@defined.layers
+#' layer.list <- GUESS@predefined.layers
 #' print(layer.list)
 #' 
 #' 
@@ -62,7 +62,7 @@ whichLayers <- function(x, criteria, return.ids = TRUE) {
   # if Field compare the layers of x with the Layers in the Format object
   if(is.Field(x)) {
     layer.list <- list()
-    for(this.Layer in x@source@pft.set) {
+    for(this.Layer in x@source@defined.layers) {
         if(this.Layer@id %in% layers(x)) layer.list[[length(layer.list)+1]] <- this.Layer
     }
   }

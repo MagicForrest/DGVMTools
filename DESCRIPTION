@@ -54,6 +54,7 @@ Collate:
     'Standard-Quantities.R'
     'addArea.R'
     'addStandardSpatialAttributes.R'
+    'addTo.R'
     'aggregateSpatial.R'
     'aggregateSubannual.R'
     'aggregateYears.R'

@@ -169,14 +169,14 @@ test_that("Layers",{
     }
     
     # get list of Layers from a list of Layers
-    list.Layers <- whichLayers(x = GUESS@defined.layers, criteria = criteria, return.ids = FALSE)
+    list.Layers <- whichLayers(x = GUESS@predefined.layers, criteria = criteria, return.ids = FALSE)
     expect_is(list.Layers, "list")
     for(Layer in list.Layers) {
       expect_is(Layer, "Layer")
     }
     
     # get vector of Layer ids from a list of Layers
-    list.Layers <- whichLayers(x = GUESS@defined.layers, criteria = criteria, return.ids = TRUE)
+    list.Layers <- whichLayers(x = GUESS@predefined.layers, criteria = criteria, return.ids = TRUE)
     expect_is(list.Layers, "character")
     for(Layer in list.Layers) {
       expect_is(Layer, "character")
@@ -390,7 +390,7 @@ GUESS.Forrest2015.Biomes <- suppressWarnings(getScheme(source = GUESS.Europe.tes
 
 # max PFT
 GUESS.Field.lai.annual <- aggregateYears(GUESS.lai.Field.full, "mean")
-GUESS.Field.lai.annual <- layerOp(GUESS.Field.lai.annual, operator = "max.layer", ".PFTs", "MaxPFT")
+GUESS.Field.lai.annual <- layerOp(GUESS.Field.lai.annual, operator = "max.layer", ".PFT", "MaxPFT")
 
 
 test_that("Categorical Quantities", {

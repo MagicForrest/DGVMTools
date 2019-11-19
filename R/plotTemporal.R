@@ -142,8 +142,13 @@ plotTemporal <- function(fields,
     y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
   }
  
-  # TODO quick n dirty
-  defined.layers <- fields[[1]]@source@pft.set
+  # check the defined Layers present in the Fields and make a unique list
+  # maybe also here check which one are actually in the layers to plot, since we have that information
+  all.layers.defined <- list()
+  for(object in fields){
+    all.layers.defined <- append(all.layers.defined, object@source@defined.layers)
+  }
+  all.layers.defined <- unique(all.layers.defined)
   
   
   ### 8. MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
@@ -227,7 +232,7 @@ plotTemporal <- function(fields,
   # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer meta-data
   if(missing(cols) & col.by == "Layer"){
     all.layers <- unique(as.character(data.toplot[["Layer"]]))
-    cols <- matchLayerCols(all.layers, defined.layers)
+    cols <- matchLayerCols(all.layers, all.layers.defined)
   }
   # else colours will be determined by ggplot (or cols argument)
   

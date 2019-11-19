@@ -22,10 +22,11 @@ functions to automagically select layers.  There is a lot of flexibility here, b
 A slow litter soil carbon pool could look like: \cr
 \code{properties = list(type = "CPool", speed = "Slow", zone = "Soil", comprises = "Litter")}.}
 
-\item{add.to}{A Format object to which this newly defined layer should be added (optional).}
+\item{add.to}{A \linkS4class{Format}, or a \linkS4class{Source}, or a \linkS4class{Field} object to which this newly defined layer should be added (optional).}
 }
 \value{
-A \linkS4class{Layer} object
+Either an \linkS4class{Layer} object (if "add.to" arguement not suppliued), or an updated \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} 
+object if "add.to" was specified.
 }
 \description{
 This function defines a \linkS4class{Layer} object represents a sub-component or one particular aspect of a \linkS4class{Field} object, 
@@ -46,7 +47,7 @@ Note that no actual data is stored in the resultant \linkS4class{Layer}, only me
 ## Define a couple of new Layers
 
 
-## a hypothetical shrub PFT and add it to the GUESS format
+## a hypothetical shrub PFT 
 TeBES.PFT <- defineLayer(id = "TeBES",
                        name = "Temperate Broadleaved Evergreen Shrub",
                        colour = "red",
@@ -54,27 +55,34 @@ TeBES.PFT <- defineLayer(id = "TeBES",
                                          climate.zone = "Temperate",
                                          leaf.form = "Broadleaved",
                                          phenology = "Evergreen",
-                                          growth.form = "Shrub" ),
-                       add.to = GUESS)
+                                         growth.form = "Shrub"))
 
-# check is is there: 
-print(GUESS@defined.layers)
+# print it
+print(TeBES.PFT)
 
-## Also add a couple of aggregate Layers
+# and add it to the GUESS format and check it is there
+GUESS <- addTo(TeBES.PFT, GUESS)
+print(GUESS@predefined.layers)
+
+## Also add a couple of aggregate Layers *directly* to the GUESS source
+## by using the "add.to" argument
 
 # Note, not defining growth.form etc because they might get double counted 
-Grass  <- defineLayer(id = "Grass",
+GUESS  <- defineLayer(id = "Grass",
                        name = "Grass Total",
                        colour = "red",
                        properties = list(type = "Aggregate"),
                        add.to = GUESS)
                        
-Tree  <- defineLayer(id = "Tree",
+GUESS  <- defineLayer(id = "Tree",
                        name = "Tree Total",
                        colour = "gray",
                        properties = list(type = "Aggregate"),
                        add.to = GUESS)
-
+                       
+                       
+# check them out 
+ print(GUESS@predefined.layers)
 
 \donttest{
  
@@ -94,6 +102,7 @@ test.Field <- layerOp(test.Field, "+", ".Grass", "Grass")
 print(plotTemporal(test.Field))
 
 # also plot all the 'Aggregate' layers
+print(whichLayers(test.Field, criteria = "Aggregate"))
 print(plotTemporal(test.Field, whichLayers(test.Field, criteria = "Aggregate")))
 
 
@@ -101,7 +110,7 @@ print(plotTemporal(test.Field, whichLayers(test.Field, criteria = "Aggregate")))
 
 }
 \seealso{
-\linkS4class{Layer}, \linkS4class{Format}, \link{whichLayers} and \link{layerOp}.
+\linkS4class{Layer}, \linkS4class{Format}, \link{whichLayers}, \link{layerOp}, \link{addTo}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
