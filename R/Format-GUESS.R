@@ -166,6 +166,59 @@ openLPJOutputFile <- function(run,
   gc()
   
   
+  # if year cropping selected, do that here, before aggregating
+  all.years <- sort(unique(dt[["Year"]]))
+  
+  crop.first <- FALSE
+  if(length(target.sta@first.year) == 1) {
+    if(target.sta@first.year != min(all.years)) {
+      first.year <- target.sta@first.year
+      crop.first <- TRUE
+    }
+    else {
+      first.year <- min(all.years)
+      crop.first <- FALSE
+    }
+  }
+  
+  crop.last <- FALSE
+  if(length(target.sta@last.year) == 1) {
+    if(target.sta@last.year != max(all.years)) {
+      last.year <- target.sta@last.year
+      crop.last <- TRUE
+    }
+    else {
+      last.year <- target.sta@last.year
+      crop.last <- FALSE
+    }
+  }
+  
+  if(crop.first || crop.last) {
+    
+    if(verbose) message(paste("Selecting years from", first.year, "to", last.year, sep = " "))
+    dt <- selectYears(dt, first = first.year, last = last.year) 
+    all.years <- sort(unique(dt[["Year"]]))
+  }
+  else {
+    if(verbose) message("No year selection being applied")
+  }
+  
+  
+  
+  # if yearly aggregating requested, so it before melting (so save on memory)
+  # first store all the years before averaging them away
+
+  this.year.aggregate.method <- "none"
+  if(target.sta@year.aggregate.method != "none") {
+    
+    dt <- aggregateYears(input.obj = dt, method = target.sta@year.aggregate.method, verbose = verbose)
+    this.year.aggregate.method <- target.sta@year.aggregate.method
+    
+  }
+  
+  gc()
+  
+  
   
   # If data is has monthly or daily columns, melt to long/tidy data where "Month" becomes a column
   
@@ -204,7 +257,6 @@ openLPJOutputFile <- function(run,
   setKeyDGVM(dt)
   
   # Build as STAInfo object describing the data
-  all.years <- sort(unique(dt[["Year"]]))
   dimensions <- getDimInfo(dt)
   subannual <- "Year"
   if("Month" %in% dimensions) subannual <- "Month"
@@ -214,6 +266,7 @@ openLPJOutputFile <- function(run,
   sta.info = new("STAInfo",
                  first.year = min(all.years),
                  last.year = max(all.years),
+                 year.aggregate.method = this.year.aggregate.method,
                  subannual.resolution = subannual,
                  subannual.original = subannual)
   
@@ -820,8 +873,9 @@ getStandardQuantity_LPJ <- function(run,
     
   }
   
-  # Update the Field with the 'standard' Quantity and return
+  # Update the Field with the 'standard' Quantity (also Field id) and return
   this.Field@quant <- quant
+  this.Field@id <- makeFieldID(source = this.Field@source, var.string = quant@id, sta.info = as(object = this.Field, Class = "STAInfo"))
   return(this.Field)
   
 }

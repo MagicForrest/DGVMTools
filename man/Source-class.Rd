@@ -23,7 +23,7 @@ Slots can be accessed by user directly, but more easily and usefully by function
 that was used to produce it or the dataset type.  Currently defined Format objects are \code{GUESS}, \code{aDGVM} and \code{DGVMData} but for convenience the 
 strings, "GUESS", "LPJ-GUESS", "LPJ-GUESS-SPITFIRE", "aDGVM" and "DGVMData" make be used. (Mandatory)}
 
-\item{\code{defined.layers}}{A list of PFT objects which includes all the PFTs included in this model run/dataset.}
+\item{\code{defined.layers}}{A list of \linkS4class{Layer} objects to describe the Layers, includes the PFTs, included in this model run/dataset.}
 
 \item{\code{name}}{A character string describing this data source, ie. "LPJ-GUESS v3.1" (can be omitted, in which case the id will be used instead)}
 

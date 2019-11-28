@@ -7,13 +7,12 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
-<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <meta name="author" content="Matthew Forrest" />
 
-<meta name="date" content="2019-11-14" />
+<meta name="date" content="2019-11-28" />
 
 <title>Writing or Modifying a Format</title>
 
@@ -71,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -96,7 +95,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Writing or Modifying a Format</h1>
 <h4 class="author">Matthew Forrest</h4>
-<h4 class="date">2019-11-14</h4>
+<h4 class="date">2019-11-28</h4>
 
 
 
@@ -108,256 +107,307 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="simple-case-adding-a-new-layer-to-a-format-object" class="section level2">
 <h2>Simple case: Adding a new Layer to a <code>Format</code> object</h2>
 <p>A <code>Format</code> is an S4-class, and like all S4 classes the slots are accessed using the @ symbol. So, for example, to access the id slot of the pre-defined <code>GUESS</code> format:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GUESS@id</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GUESS<span class="op">@</span>id</code></pre></div>
 <pre><code>## [1] &quot;GUESS&quot;</code></pre>
 <p>The <span class="citation">@defined.layers</span> slot is just a list of DGVMTools::Layer objects.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">original.Layers &lt;-<span class="st"> </span>GUESS@defined.layers
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">original.Layers &lt;-<span class="st"> </span>GUESS<span class="op">@</span>predefined.layers
 
 <span class="kw">str</span>(original.Layers)</code></pre></div>
 <pre><code>## List of 12
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;BNE&quot;
-##   .. ..@ name           : chr &quot;Boreal Needleleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Needleleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;darkblue&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;BINE&quot;
-##   .. ..@ name           : chr &quot;Boreal Shade-Intolerant Needleleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Needleleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
-##   .. ..@ shade.tolerance: chr &quot;BNE&quot;
-##   .. ..@ colour         : chr &quot;dodgerblue3&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;BNS&quot;
-##   .. ..@ name           : chr &quot;Boreal Needleleaved Summergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Needleleaved&quot;
-##   .. ..@ phenology      : chr &quot;Summergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;cadetblue2&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;IBS&quot;
-##   .. ..@ name           : chr &quot;Shade-intolerant B/leaved Summergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Summergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;chartreuse&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TeBE&quot;
-##   .. ..@ name           : chr &quot;Temperate Broadleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;darkgreen&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TeNE&quot;
-##   .. ..@ name           : chr &quot;Temperate Needleleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Needleleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;lightseagreen&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TeBS&quot;
-##   .. ..@ name           : chr &quot;Temperate Broadleaved Summergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Summergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;darkolivegreen3&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TrBE&quot;
-##   .. ..@ name           : chr &quot;Tropical Broadleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;orchid4&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TrIBE&quot;
-##   .. ..@ name           : chr &quot;Tropical Shade-intolerant Broadleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
-##   .. ..@ shade.tolerance: chr &quot;TrBE&quot;
-##   .. ..@ colour         : chr &quot;orchid&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TrBR&quot;
-##   .. ..@ name           : chr &quot;Tropical Broadleaved Raingreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Raingreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;palevioletred&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;C3G&quot;
-##   .. ..@ name           : chr &quot;Boreal/Temperate Grass&quot;
-##   .. ..@ growth.form    : chr &quot;Grass&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;GrassPhenology&quot;
-##   .. ..@ climate.zone   : chr &quot;NA&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;lightgoldenrod1&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;C4G&quot;
-##   .. ..@ name           : chr &quot;Tropical Grass&quot;
-##   .. ..@ growth.form    : chr &quot;Grass&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;GrassPhenology&quot;
-##   .. ..@ climate.zone   : chr &quot;NA&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;sienna2&quot;</code></pre>
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;BNE&quot;
+##   .. ..@ name      : chr &quot;Boreal Needleleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;darkblue&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Needleleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Boreal&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;BINE&quot;
+##   .. ..@ name      : chr &quot;Boreal Shade-Intolerant Needleleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;dodgerblue3&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Needleleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Boreal&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;BNE&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;BNS&quot;
+##   .. ..@ name      : chr &quot;Boreal Needleleaved Summergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;cadetblue2&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Needleleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Summergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Boreal&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;IBS&quot;
+##   .. ..@ name      : chr &quot;Shade-intolerant B/leaved Summergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;chartreuse&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Summergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Temperate&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TeBE&quot;
+##   .. ..@ name      : chr &quot;Temperate Broadleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;darkgreen&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Temperate&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TeNE&quot;
+##   .. ..@ name      : chr &quot;Temperate Needleleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;lightseagreen&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Needleleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Temperate&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TeBS&quot;
+##   .. ..@ name      : chr &quot;Temperate Broadleaved Summergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;darkolivegreen3&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Summergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Temperate&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TrBE&quot;
+##   .. ..@ name      : chr &quot;Tropical Broadleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;orchid4&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Tropical&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TrIBE&quot;
+##   .. ..@ name      : chr &quot;Tropical Shade-intolerant Broadleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;orchid&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Tropical&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;TrBE&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TrBR&quot;
+##   .. ..@ name      : chr &quot;Tropical Broadleaved Raingreen Tree&quot;
+##   .. ..@ colour    : chr &quot;palevioletred&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Raingreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Tropical&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;C3G&quot;
+##   .. ..@ name      : chr &quot;Boreal/Temperate Grass&quot;
+##   .. ..@ colour    : chr &quot;lightgoldenrod1&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Grass&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;GrassPhenology&quot;
+##   .. .. ..$ climate.zone   : chr &quot;NA&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;C4G&quot;
+##   .. ..@ name      : chr &quot;Tropical Grass&quot;
+##   .. ..@ colour    : chr &quot;sienna2&quot;
+##   .. ..@ properties:List of 7
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ name           : chr &quot;Tropical Grass&quot;
+##   .. .. ..$ growth.form    : chr &quot;Grass&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;GrassPhenology&quot;
+##   .. .. ..$ climate.zone   : chr &quot;NA&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;</code></pre>
 <p>To add a new PFT we can simple take our copy of the list, add a new PFT, and copy it back into the <code>Format</code> object.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">new.Layer =<span class="st">  </span><span class="kw">new</span>(<span class="st">&quot;Layer&quot;</span>,
-               <span class="dt">id =</span> <span class="st">&quot;NewTree&quot;</span>,
-               <span class="dt">name =</span> <span class="st">&quot;Some New Tree PFT Layer&quot;</span>,
-               <span class="dt">growth.form =</span> <span class="st">&quot;Tree&quot;</span>,
-               <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
-               <span class="dt">phenology =</span> <span class="st">&quot;Summergreen&quot;</span>,
-               <span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>,
-               <span class="dt">climate.zone =</span> <span class="st">&quot;Temperate&quot;</span>,
-               <span class="dt">shade.tolerance =</span> <span class="st">&quot;None&quot;</span>
+                 <span class="dt">id =</span> <span class="st">&quot;NewTree&quot;</span>,
+                 <span class="dt">name =</span> <span class="st">&quot;Some New Tree PFT Layer&quot;</span>,
+                 <span class="dt">colour =</span> <span class="st">&quot;red&quot;</span>,
+                 <span class="dt">properties =</span> <span class="kw">list</span>(<span class="dt">type =</span> <span class="st">&quot;PFT&quot;</span>,
+                      <span class="dt">growth.form =</span> <span class="st">&quot;Tree&quot;</span>,
+                      <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
+                      <span class="dt">phenology =</span> <span class="st">&quot;Summergreen&quot;</span>,
+                      <span class="dt">climate.zone =</span> <span class="st">&quot;Temperate&quot;</span>)
 )
 
 new.Layer.list &lt;-<span class="st"> </span><span class="kw">append</span>(original.Layers, new.Layer)
 
 <span class="kw">print</span>(<span class="kw">str</span>(new.Layer.list))</code></pre></div>
 <pre><code>## List of 13
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;BNE&quot;
-##   .. ..@ name           : chr &quot;Boreal Needleleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Needleleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;darkblue&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;BINE&quot;
-##   .. ..@ name           : chr &quot;Boreal Shade-Intolerant Needleleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Needleleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
-##   .. ..@ shade.tolerance: chr &quot;BNE&quot;
-##   .. ..@ colour         : chr &quot;dodgerblue3&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;BNS&quot;
-##   .. ..@ name           : chr &quot;Boreal Needleleaved Summergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Needleleaved&quot;
-##   .. ..@ phenology      : chr &quot;Summergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Boreal&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;cadetblue2&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;IBS&quot;
-##   .. ..@ name           : chr &quot;Shade-intolerant B/leaved Summergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Summergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;chartreuse&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TeBE&quot;
-##   .. ..@ name           : chr &quot;Temperate Broadleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;darkgreen&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TeNE&quot;
-##   .. ..@ name           : chr &quot;Temperate Needleleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Needleleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;lightseagreen&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TeBS&quot;
-##   .. ..@ name           : chr &quot;Temperate Broadleaved Summergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Summergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;darkolivegreen3&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TrBE&quot;
-##   .. ..@ name           : chr &quot;Tropical Broadleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;orchid4&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TrIBE&quot;
-##   .. ..@ name           : chr &quot;Tropical Shade-intolerant Broadleaved Evergreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Evergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
-##   .. ..@ shade.tolerance: chr &quot;TrBE&quot;
-##   .. ..@ colour         : chr &quot;orchid&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;TrBR&quot;
-##   .. ..@ name           : chr &quot;Tropical Broadleaved Raingreen Tree&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Raingreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Tropical&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;palevioletred&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;C3G&quot;
-##   .. ..@ name           : chr &quot;Boreal/Temperate Grass&quot;
-##   .. ..@ growth.form    : chr &quot;Grass&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;GrassPhenology&quot;
-##   .. ..@ climate.zone   : chr &quot;NA&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;lightgoldenrod1&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;C4G&quot;
-##   .. ..@ name           : chr &quot;Tropical Grass&quot;
-##   .. ..@ growth.form    : chr &quot;Grass&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;GrassPhenology&quot;
-##   .. ..@ climate.zone   : chr &quot;NA&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;sienna2&quot;
-##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 8 slots
-##   .. ..@ id             : chr &quot;NewTree&quot;
-##   .. ..@ name           : chr &quot;Some New Tree PFT Layer&quot;
-##   .. ..@ growth.form    : chr &quot;Tree&quot;
-##   .. ..@ leaf.form      : chr &quot;Broadleaved&quot;
-##   .. ..@ phenology      : chr &quot;Summergreen&quot;
-##   .. ..@ climate.zone   : chr &quot;Temperate&quot;
-##   .. ..@ shade.tolerance: chr &quot;None&quot;
-##   .. ..@ colour         : chr &quot;red&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;BNE&quot;
+##   .. ..@ name      : chr &quot;Boreal Needleleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;darkblue&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Needleleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Boreal&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;BINE&quot;
+##   .. ..@ name      : chr &quot;Boreal Shade-Intolerant Needleleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;dodgerblue3&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Needleleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Boreal&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;BNE&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;BNS&quot;
+##   .. ..@ name      : chr &quot;Boreal Needleleaved Summergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;cadetblue2&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Needleleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Summergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Boreal&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;IBS&quot;
+##   .. ..@ name      : chr &quot;Shade-intolerant B/leaved Summergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;chartreuse&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Summergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Temperate&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TeBE&quot;
+##   .. ..@ name      : chr &quot;Temperate Broadleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;darkgreen&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Temperate&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TeNE&quot;
+##   .. ..@ name      : chr &quot;Temperate Needleleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;lightseagreen&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Needleleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Temperate&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TeBS&quot;
+##   .. ..@ name      : chr &quot;Temperate Broadleaved Summergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;darkolivegreen3&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Summergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Temperate&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TrBE&quot;
+##   .. ..@ name      : chr &quot;Tropical Broadleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;orchid4&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Tropical&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TrIBE&quot;
+##   .. ..@ name      : chr &quot;Tropical Shade-intolerant Broadleaved Evergreen Tree&quot;
+##   .. ..@ colour    : chr &quot;orchid&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Evergreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Tropical&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;TrBE&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;TrBR&quot;
+##   .. ..@ name      : chr &quot;Tropical Broadleaved Raingreen Tree&quot;
+##   .. ..@ colour    : chr &quot;palevioletred&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;Raingreen&quot;
+##   .. .. ..$ climate.zone   : chr &quot;Tropical&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;C3G&quot;
+##   .. ..@ name      : chr &quot;Boreal/Temperate Grass&quot;
+##   .. ..@ colour    : chr &quot;lightgoldenrod1&quot;
+##   .. ..@ properties:List of 6
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form    : chr &quot;Grass&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;GrassPhenology&quot;
+##   .. .. ..$ climate.zone   : chr &quot;NA&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;C4G&quot;
+##   .. ..@ name      : chr &quot;Tropical Grass&quot;
+##   .. ..@ colour    : chr &quot;sienna2&quot;
+##   .. ..@ properties:List of 7
+##   .. .. ..$ type           : chr &quot;PFT&quot;
+##   .. .. ..$ name           : chr &quot;Tropical Grass&quot;
+##   .. .. ..$ growth.form    : chr &quot;Grass&quot;
+##   .. .. ..$ leaf.form      : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology      : chr &quot;GrassPhenology&quot;
+##   .. .. ..$ climate.zone   : chr &quot;NA&quot;
+##   .. .. ..$ shade.tolerance: chr &quot;None&quot;
+##  $ :Formal class 'Layer' [package &quot;DGVMTools&quot;] with 4 slots
+##   .. ..@ id        : chr &quot;NewTree&quot;
+##   .. ..@ name      : chr &quot;Some New Tree PFT Layer&quot;
+##   .. ..@ colour    : chr &quot;red&quot;
+##   .. ..@ properties:List of 5
+##   .. .. ..$ type        : chr &quot;PFT&quot;
+##   .. .. ..$ growth.form : chr &quot;Tree&quot;
+##   .. .. ..$ leaf.form   : chr &quot;Broadleaved&quot;
+##   .. .. ..$ phenology   : chr &quot;Summergreen&quot;
+##   .. .. ..$ climate.zone: chr &quot;Temperate&quot;
 ## NULL</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GUESS@defined.layers &lt;-<span class="st"> </span>new.Layer.list</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GUESS<span class="op">@</span>predefined.layers &lt;-<span class="st"> </span>new.Layer.list</code></pre></div>
 <p>And done!</p>
 <p>Note that this change will only remain active in this particular R session (it doesn’t modify the <code>Format</code> in the package), so you will need to do it once at the top of your analysis script.</p>
 </div>
@@ -381,24 +431,24 @@ new.Layer.list &lt;-<span class="st"> </span><span class="kw">append</span>(orig
   <span class="dt">TeBE =</span> <span class="kw">new</span>(<span class="st">&quot;Layer&quot;</span>,
              <span class="dt">id =</span> <span class="st">&quot;TeBE&quot;</span>,
              <span class="dt">name =</span> <span class="st">&quot;Temperate Broadleaved Evergreen Tree&quot;</span>,
-             <span class="dt">growth.form =</span> <span class="st">&quot;Tree&quot;</span>,
-             <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
-             <span class="dt">phenology =</span> <span class="st">&quot;Evergreen&quot;</span>,
-             <span class="dt">climate.zone =</span> <span class="st">&quot;Temperate&quot;</span>,
              <span class="dt">colour =</span> <span class="st">&quot;darkgreen&quot;</span>,
-             <span class="dt">shade.tolerance =</span> <span class="st">&quot;None&quot;</span>
+             <span class="dt">properties =</span> <span class="kw">list</span>(<span class="dt">type =</span> <span class="st">&quot;PFT&quot;</span>,
+                  <span class="dt">growth.form =</span> <span class="st">&quot;Tree&quot;</span>,
+                  <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
+                  <span class="dt">phenology =</span> <span class="st">&quot;Evergreen&quot;</span>,
+                  <span class="dt">climate.zone =</span> <span class="st">&quot;Temperate&quot;</span>)
   ),
   
   
   <span class="dt">TeBS =</span> <span class="kw">new</span>(<span class="st">&quot;Layer&quot;</span>,
              <span class="dt">id =</span> <span class="st">&quot;TeBS&quot;</span>,
              <span class="dt">name =</span> <span class="st">&quot;Temperate Broadleaved Summergreen Tree&quot;</span>,
-             <span class="dt">growth.form =</span> <span class="st">&quot;Tree&quot;</span>,
-             <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
-             <span class="dt">phenology =</span> <span class="st">&quot;Summergreen&quot;</span>,
              <span class="dt">colour =</span> <span class="st">&quot;darkolivegreen3&quot;</span>,
-             <span class="dt">climate.zone =</span> <span class="st">&quot;Temperate&quot;</span>,
-             <span class="dt">shade.tolerance =</span> <span class="st">&quot;None&quot;</span>
+             <span class="dt">properties =</span> <span class="kw">list</span>(<span class="dt">type =</span> <span class="st">&quot;PFT&quot;</span>,
+                  <span class="dt">growth.form =</span> <span class="st">&quot;Tree&quot;</span>,
+                  <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
+                  <span class="dt">phenology =</span> <span class="st">&quot;Summergreen&quot;</span>,
+                  <span class="dt">climate.zone =</span> <span class="st">&quot;Temperate&quot;</span>)
   ),
   
   
@@ -407,35 +457,39 @@ new.Layer.list &lt;-<span class="st"> </span><span class="kw">append</span>(orig
   <span class="dt">C3G =</span> <span class="kw">new</span>(<span class="st">&quot;Layer&quot;</span>,
             <span class="dt">id =</span> <span class="st">&quot;C3G&quot;</span>,
             <span class="dt">name =</span> <span class="st">&quot;Boreal/Temperate Grass&quot;</span>,
-            <span class="dt">growth.form =</span> <span class="st">&quot;Grass&quot;</span>,
-            <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
-            <span class="dt">phenology =</span> <span class="st">&quot;GrassPhenology&quot;</span>,
-            <span class="dt">climate.zone =</span> <span class="st">&quot;NA&quot;</span>,
             <span class="dt">colour =</span> <span class="st">&quot;lightgoldenrod1&quot;</span>,
-            <span class="dt">shade.tolerance =</span> <span class="st">&quot;None&quot;</span>
+            <span class="dt">properties =</span> <span class="kw">list</span>(<span class="dt">type =</span> <span class="st">&quot;PFT&quot;</span>,
+                 <span class="dt">growth.form =</span> <span class="st">&quot;Grass&quot;</span>,
+                 <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
+                 <span class="dt">phenology =</span> <span class="st">&quot;GrassPhenology&quot;</span>,
+                 <span class="dt">climate.zone =</span> <span class="st">&quot;NA&quot;</span>)
   ),
   
   <span class="dt">C4G =</span> <span class="kw">new</span>(<span class="st">&quot;Layer&quot;</span>,
             <span class="dt">id =</span> <span class="st">&quot;C4G&quot;</span>,
             <span class="dt">name =</span> <span class="st">&quot;Tropical Grass&quot;</span>,
-            <span class="dt">growth.form =</span> <span class="st">&quot;Grass&quot;</span>,
-            <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
-            <span class="dt">phenology =</span> <span class="st">&quot;GrassPhenology&quot;</span>,
-            <span class="dt">climate.zone =</span> <span class="st">&quot;NA&quot;</span>,
             <span class="dt">colour =</span> <span class="st">&quot;sienna2&quot;</span>,
-            <span class="dt">shade.tolerance =</span> <span class="st">&quot;None&quot;</span>
+            <span class="dt">properties =</span> <span class="kw">list</span>(<span class="dt">type =</span> <span class="st">&quot;PFT&quot;</span>,
+                 <span class="dt">growth.form =</span> <span class="st">&quot;Grass&quot;</span>,
+                 <span class="dt">leaf.form =</span> <span class="st">&quot;Broadleaved&quot;</span>,
+                 <span class="dt">phenology =</span> <span class="st">&quot;GrassPhenology&quot;</span>,
+                 <span class="dt">climate.zone =</span> <span class="st">&quot;NA&quot;</span>)
   )
   
 )
 
 <span class="co"># Now take a look at them</span>
-for(Layer in Layers_NewFormat) {
+<span class="cf">for</span>(Layer <span class="cf">in</span> Layers_NewFormat) {
   <span class="kw">print</span>(Layer)
 }</code></pre></div>
-<pre><code>## Layer: TeBE (Temperate Broadleaved Evergreen Tree): Growth form=Tree, Leaf form=Broadleaved, Phenology=Evergreen, Climate zone=Temperate, Shade tolerance=None, Preferred colour=darkgreen
-## Layer: TeBS (Temperate Broadleaved Summergreen Tree): Growth form=Tree, Leaf form=Broadleaved, Phenology=Summergreen, Climate zone=Temperate, Shade tolerance=None, Preferred colour=darkolivegreen3
-## Layer: C3G (Boreal/Temperate Grass): Growth form=Grass, Leaf form=Broadleaved, Phenology=GrassPhenology, Climate zone=NA, Shade tolerance=None, Preferred colour=lightgoldenrod1
-## Layer: C4G (Tropical Grass): Growth form=Grass, Leaf form=Broadleaved, Phenology=GrassPhenology, Climate zone=NA, Shade tolerance=None, Preferred colour=sienna2</code></pre>
+<pre><code>## Layer: TeBE (Temperate Broadleaved Evergreen Tree), plot colour = darkgreen
+##   With properties: type=PFT, growth.form=Tree, leaf.form=Broadleaved, phenology=Evergreen, climate.zone=Temperate, 
+## Layer: TeBS (Temperate Broadleaved Summergreen Tree), plot colour = darkolivegreen3
+##   With properties: type=PFT, growth.form=Tree, leaf.form=Broadleaved, phenology=Summergreen, climate.zone=Temperate, 
+## Layer: C3G (Boreal/Temperate Grass), plot colour = lightgoldenrod1
+##   With properties: type=PFT, growth.form=Grass, leaf.form=Broadleaved, phenology=GrassPhenology, climate.zone=NA, 
+## Layer: C4G (Tropical Grass), plot colour = sienna2
+##   With properties: type=PFT, growth.form=Grass, leaf.form=Broadleaved, phenology=GrassPhenology, climate.zone=NA,</code></pre>
 </div>
 <div id="the-quantities-slot" class="section level3">
 <h3>3. The <code>quantities</code> slot</h3>
@@ -456,23 +510,21 @@ for(Layer in Layers_NewFormat) {
       <span class="dt">id =</span> <span class="st">&quot;Veg_C&quot;</span>,
       <span class="dt">name =</span> <span class="st">&quot;Vegetation Carbon Mass&quot;</span>,
       <span class="dt">units =</span> <span class="st">&quot;kgC/m^2&quot;</span>,
-      <span class="dt">colours =</span> viridis::viridis,
+      <span class="dt">colours =</span> viridis<span class="op">::</span>viridis,
       <span class="dt">format =</span> <span class="kw">c</span>(<span class="st">&quot;Example_Format&quot;</span>))
 )
 
 <span class="co"># Now take a look at them</span>
-for(quant in quantities_NewFormat ) {
+<span class="cf">for</span>(quant <span class="cf">in</span> quantities_NewFormat ) {
   <span class="kw">print</span>(quant)
 }</code></pre></div>
-<pre><code>## Quantity:
-##      LAI (LAI): Units=m^2/m^2, Defined for format: Example_Format
-## Quantity:
-##      Veg_C (Vegetation Carbon Mass): Units=kgC/m^2, Defined for format: Example_Format</code></pre>
+<pre><code>## Quantity:        LAI (LAI): Units=m^2/m^2, Defined for format: Example_Format
+## Quantity:        Veg_C (Vegetation Carbon Mass): Units=kgC/m^2, Defined for format: Example_Format</code></pre>
 </div>
 <div id="the-determinequantities-slot" class="section level3">
 <h3>4. The <code>determineQuantities</code> slot</h3>
 <p>This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of Quantities available to read. The first argument should be the Source object. The second argument “names”, is logical and ff TRUE, the function should return a list of the ids of the quantities, otherwise it returns the list of DGVMTools::Quantity objects. Additionaly arguments for Format-specific details can also be added.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">availableQuantities_NewFormat &lt;-<span class="st"> </span>function(x, <span class="dt">names =</span> <span class="ot">TRUE</span>, additional.args){ 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">availableQuantities_NewFormat &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">names =</span> <span class="ot">TRUE</span>, additional.args){ 
   
   <span class="co"># typical stuff </span>
   <span class="co"># * get a list of files in the directory</span>
@@ -497,7 +549,7 @@ for(quant in quantities_NewFormat ) {
 </ul>
 <p>It should return a DGVMTools::Field object. For more details of the Field class see the classes.R file and the main package documentatation (“Field-class)”.</p>
 <p>Note that the input “sta.info” argument and the sta.info slot of the returned Field don’t need to match, the rest of the the cropping/aggregating is done automatically by the package, but it maybe more efficient to read only a subset of the data from disk (eg. for netCDF files where you can easily cut out exactly the ‘hyperslab’ of data that you need), rather than read the whole file and then crop it.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">getField_NewFormat &lt;-<span class="st"> </span>function(source, quant, sta.info, verbose, ...){ 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">getField_NewFormat &lt;-<span class="st"> </span><span class="cf">function</span>(source, quant, sta.info, verbose, ...){ 
   
   <span class="co"># open the file and read the data with ncvar_get() or read.table() or whatever</span>
   
@@ -507,29 +559,29 @@ for(quant in quantities_NewFormat ) {
   
   <span class="co"># dummy code</span>
   dt &lt;-<span class="st"> </span><span class="kw">data.table</span>()
- 
+  
   
   <span class="co"># also an STAInfo object</span>
   <span class="co"># define this properly based on the actual data in the data.table</span>
   return.sta.info &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;STAInfo&quot;</span>,
                          <span class="dt">first.year =</span> <span class="dv">1901</span>, <span class="co"># let's say</span>
                          <span class="dt">last.year =</span> <span class="dv">2018</span>, <span class="co"># let's say</span>
-                         <span class="dt">year.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see NOTE 1 below</span>
+                         <span class="dt">year.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see </span><span class="al">NOTE</span><span class="co"> 1 below</span>
                          <span class="dt">spatial.extent =</span> <span class="kw">extent</span>(dt), <span class="co"># raster::extent function has been define for data.tables, might be useful</span>
-                         <span class="dt">spatial.extent.id =</span> <span class="st">&quot;Full&quot;</span>, <span class="co"># see NOTE 2 below</span>
-                         <span class="dt">spatial.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see NOTE 1 below</span>
+                         <span class="dt">spatial.extent.id =</span> <span class="st">&quot;Full&quot;</span>, <span class="co"># see </span><span class="al">NOTE</span><span class="co"> 2 below</span>
+                         <span class="dt">spatial.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see </span><span class="al">NOTE</span><span class="co"> 1 below</span>
                          <span class="dt">subannual.resolution =</span> <span class="st">&quot;monthly&quot;</span>, <span class="co"># let's say</span>
-                         <span class="dt">subannual.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see NOTE 1 below</span>
+                         <span class="dt">subannual.aggregate.method =</span> <span class="st">&quot;none&quot;</span>, <span class="co"># see </span><span class="al">NOTE</span><span class="co"> 1 below</span>
                          <span class="dt">subannual.original =</span> <span class="st">&quot;monthly&quot;</span> <span class="co"># let's say</span>
-                         )
+  )
   
-   <span class="co"># NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)</span>
-   <span class="co"># NOTE 2: if no spatial cropping at this stage set this to be the character string &quot;Full&quot;, if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object</span>
+  <span class="co"># </span><span class="al">NOTE</span><span class="co"> 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)</span>
+  <span class="co"># </span><span class="al">NOTE</span><span class="co"> 2: if no spatial cropping at this stage set this to be the character string &quot;Full&quot;, if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object</span>
   
   
   <span class="co"># make the Field ID based on the STAInfo and </span>
-  field.id &lt;-<span class="st"> </span><span class="kw">makeFieldID</span>(<span class="dt">source =</span> source, <span class="dt">var.string =</span> quant@id, <span class="dt">sta.info =</span> sta.info)
-    
+  field.id &lt;-<span class="st"> </span><span class="kw">makeFieldID</span>(<span class="dt">source =</span> source, <span class="dt">var.string =</span> quant<span class="op">@</span>id, <span class="dt">sta.info =</span> sta.info)
+  
   <span class="co"># build a new Field</span>
   return.Field &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;Field&quot;</span>,
                       <span class="dt">id =</span> field.id,
@@ -537,8 +589,8 @@ for(quant in quantities_NewFormat ) {
                       <span class="dt">data =</span> dt,
                       <span class="dt">sta.info =</span> return.sta.info,
                       <span class="dt">source =</span> source)
-
-   
+  
+  
   <span class="kw">return</span>(return.field)
   
 } </code></pre></div>
@@ -548,7 +600,7 @@ for(quant in quantities_NewFormat ) {
 <p>Finally we can combine the six parts that we just made to make the new <code>Format</code> object,</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">NewFormat &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;Format&quot;</span>, 
                  <span class="dt">id =</span> id_NewFormat,
-                 <span class="dt">defined.layers =</span> Layers_NewFormat, 
+                 <span class="dt">predefined.layers =</span> Layers_NewFormat, 
                  <span class="dt">quantities =</span> quantities_NewFormat, 
                  <span class="dt">availableQuantities =</span> availableQuantities_NewFormat, 
                  <span class="dt">getField =</span>getField_NewFormat)</code></pre></div>
@@ -557,22 +609,21 @@ for(quant in quantities_NewFormat ) {
 <pre><code>## Format:
 ## id = &quot;Example_Format&quot;
 ## Default PFTs:
-## Layer: TeBE (Temperate Broadleaved Evergreen Tree): Growth form=Tree, Leaf form=Broadleaved, Phenology=Evergreen, Climate zone=Temperate, Shade tolerance=None, Preferred colour=darkgreen
-## Layer: TeBS (Temperate Broadleaved Summergreen Tree): Growth form=Tree, Leaf form=Broadleaved, Phenology=Summergreen, Climate zone=Temperate, Shade tolerance=None, Preferred colour=darkolivegreen3
-## Layer: C3G (Boreal/Temperate Grass): Growth form=Grass, Leaf form=Broadleaved, Phenology=GrassPhenology, Climate zone=NA, Shade tolerance=None, Preferred colour=lightgoldenrod1
-## Layer: C4G (Tropical Grass): Growth form=Grass, Leaf form=Broadleaved, Phenology=GrassPhenology, Climate zone=NA, Shade tolerance=None, Preferred colour=sienna2
+## Layer: TeBE (Temperate Broadleaved Evergreen Tree), plot colour = darkgreen
+##   With properties: type=PFT, growth.form=Tree, leaf.form=Broadleaved, phenology=Evergreen, climate.zone=Temperate, 
+## Layer: TeBS (Temperate Broadleaved Summergreen Tree), plot colour = darkolivegreen3
+##   With properties: type=PFT, growth.form=Tree, leaf.form=Broadleaved, phenology=Summergreen, climate.zone=Temperate, 
+## Layer: C3G (Boreal/Temperate Grass), plot colour = lightgoldenrod1
+##   With properties: type=PFT, growth.form=Grass, leaf.form=Broadleaved, phenology=GrassPhenology, climate.zone=NA, 
+## Layer: C4G (Tropical Grass), plot colour = sienna2
+##   With properties: type=PFT, growth.form=Grass, leaf.form=Broadleaved, phenology=GrassPhenology, climate.zone=NA, 
 ## Defined Quantities:
-## Quantity:
-##      LAI (LAI): Units=m^2/m^2, Defined for format: Example_Format
-## Quantity:
-##      Veg_C (Vegetation Carbon Mass): Units=kgC/m^2, Defined for format: Example_Format</code></pre>
+## Quantity:        LAI (LAI): Units=m^2/m^2, Defined for format: Example_Format
+## Quantity:        Veg_C (Vegetation Carbon Mass): Units=kgC/m^2, Defined for format: Example_Format</code></pre>
 </div>
 </div>
 </div>
 
-
-
-<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

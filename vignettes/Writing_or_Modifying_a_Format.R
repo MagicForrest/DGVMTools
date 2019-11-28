@@ -13,33 +13,33 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 GUESS@id
 
 ## ----get Layers, echo=TRUE-----------------------------------------------
-original.Layers <- GUESS@defined.layers
+original.Layers <- GUESS@predefined.layers
 
 str(original.Layers)
 
 ## ----modify PFTs, echo=TRUE----------------------------------------------
 new.Layer =  new("Layer",
-               id = "NewTree",
-               name = "Some New Tree PFT Layer",
-               growth.form = "Tree",
-               leaf.form = "Broadleaved",
-               phenology = "Summergreen",
-               colour = "red",
-               climate.zone = "Temperate",
-               shade.tolerance = "None"
+                 id = "NewTree",
+                 name = "Some New Tree PFT Layer",
+                 colour = "red",
+                 properties = list(type = "PFT",
+                      growth.form = "Tree",
+                      leaf.form = "Broadleaved",
+                      phenology = "Summergreen",
+                      climate.zone = "Temperate")
 )
 
 new.Layer.list <- append(original.Layers, new.Layer)
 
 print(str(new.Layer.list))
 
-GUESS@defined.layers <- new.Layer.list
+GUESS@predefined.layers <- new.Layer.list
 
 
 ## ----id slot, echo=TRUE--------------------------------------------------
 id_NewFormat <- "Example_Format"
 
-## ----defined.layers slot, echo=TRUE----------------------------------------
+## ----defined.layers slot, echo=TRUE--------------------------------------
 Layers_NewFormat <- list(
   
   # A couple of tree PFTs
@@ -47,24 +47,24 @@ Layers_NewFormat <- list(
   TeBE = new("Layer",
              id = "TeBE",
              name = "Temperate Broadleaved Evergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Evergreen",
-             climate.zone = "Temperate",
              colour = "darkgreen",
-             shade.tolerance = "None"
+             properties = list(type = "PFT",
+                  growth.form = "Tree",
+                  leaf.form = "Broadleaved",
+                  phenology = "Evergreen",
+                  climate.zone = "Temperate")
   ),
   
   
   TeBS = new("Layer",
              id = "TeBS",
              name = "Temperate Broadleaved Summergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Summergreen",
              colour = "darkolivegreen3",
-             climate.zone = "Temperate",
-             shade.tolerance = "None"
+             properties = list(type = "PFT",
+                  growth.form = "Tree",
+                  leaf.form = "Broadleaved",
+                  phenology = "Summergreen",
+                  climate.zone = "Temperate")
   ),
   
   
@@ -73,23 +73,23 @@ Layers_NewFormat <- list(
   C3G = new("Layer",
             id = "C3G",
             name = "Boreal/Temperate Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
             colour = "lightgoldenrod1",
-            shade.tolerance = "None"
+            properties = list(type = "PFT",
+                 growth.form = "Grass",
+                 leaf.form = "Broadleaved",
+                 phenology = "GrassPhenology",
+                 climate.zone = "NA")
   ),
   
   C4G = new("Layer",
             id = "C4G",
             name = "Tropical Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
             colour = "sienna2",
-            shade.tolerance = "None"
+            properties = list(type = "PFT",
+                 growth.form = "Grass",
+                 leaf.form = "Broadleaved",
+                 phenology = "GrassPhenology",
+                 climate.zone = "NA")
   )
   
 )
@@ -151,7 +151,7 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
   
   # dummy code
   dt <- data.table()
- 
+  
   
   # also an STAInfo object
   # define this properly based on the actual data in the data.table
@@ -165,15 +165,15 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
                          subannual.resolution = "monthly", # let's say
                          subannual.aggregate.method = "none", # see NOTE 1 below
                          subannual.original = "monthly" # let's say
-                         )
+  )
   
-   # NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)
-   # NOTE 2: if no spatial cropping at this stage set this to be the character string "Full", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
+  # NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)
+  # NOTE 2: if no spatial cropping at this stage set this to be the character string "Full", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
   
   
   # make the Field ID based on the STAInfo and 
   field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
-    
+  
   # build a new Field
   return.Field <- new("Field",
                       id = field.id,
@@ -181,8 +181,8 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
                       data = dt,
                       sta.info = return.sta.info,
                       source = source)
-
-   
+  
+  
   return(return.field)
   
 } 
@@ -190,7 +190,7 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
 ## ----Builing the Format, echo=TRUE---------------------------------------
 NewFormat <- new("Format", 
                  id = id_NewFormat,
-                 defined.layers = Layers_NewFormat, 
+                 predefined.layers = Layers_NewFormat, 
                  quantities = quantities_NewFormat, 
                  availableQuantities = availableQuantities_NewFormat, 
                  getField =getField_NewFormat)

@@ -80,12 +80,10 @@ defineSource <- function(id,
     }
   }
   
-  # 
   if(missing(defined.layers)){
     defined.layers <- format@predefined.layers
   }
-  
-  # 
+
   if(!missing(quantities)){
     format@quantities <- quantities
   }
@@ -114,7 +112,7 @@ defineSource <- function(id,
   if(length(source@land.use.included) == 0)  source@land.use.included <- FALSE
   if(length(source@contact) == 0)  source@contact <- Sys.getenv("USER")
   if(length(source@institute) == 0)  source@institute <- "none"
-  
+
   # return a Source object with empty data fields but meta data filled  
   return(source)
   
