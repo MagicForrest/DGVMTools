@@ -121,8 +121,11 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' @param input a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.
 #' @param unit area unit. Default "m^2", can also be "km^2" and "ha"
 #' @param ellipse If the eath should be assumed to be a ellipsoid instead of a sphere.
-#' @param digits Numeric, number of digits to which to truncate the coordinates when merging the area data.table with the input. This is a technical detail,
-#' you only need to use it if you have troubles because of coordinates with a few decimal places.   
+#' @param tolerance Numeric, passed to \link{copyLayers}. Defines how close the longitudes and latitudes of the gridcells in \code{input} and the internally calculated
+#' \code{area} data.table  need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance for both lon and lat) or a vector 
+#' of two numerics (for lon and lat separately).
+#' #' Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  
+#' This is a technical detail, you only need to use it if you have troubles because of coordinates with a few decimal places.
 #' @param verbose print some information.
 #' 
 #' The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{aggregateSpatial} but it can
@@ -168,7 +171,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' print(p)
 #' 
 #' }
-addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10) {
+addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = NULL) {
   ## to avoid "no visible binding for global variable" during check
   Lat = Lon = Area = NULL
   if (is.na(unit))
@@ -222,16 +225,8 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
     setKeyDGVM(area)
     setkeyv(input, key(area))
 
-    if(!is.null(digits)) {
-      
-      input[, Lon := round(Lon, digits)]
-      input[, Lat := round(Lat, digits)]
-      area[, Lon := round(Lon, digits)]
-      area[, Lat := round(Lat, digits)]
-      
-    }
+    input <- copyLayers(from = area, to = input, layer.names = "Area", tolerance = tolerance)
  
-    input <- merge(area, input, all.x = FALSE, all.y = TRUE)
     
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "' to data.table.", sep=""))
@@ -244,10 +239,8 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
   } else {
     
     setKeyDGVM(area)
-   
-    
-    if(missing(digits)) input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE)
-    else  input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE, dec.places = digits)
+    print(tolerance)
+    input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE, tolerance = tolerance)
    
     # dt <- input@data
     # 

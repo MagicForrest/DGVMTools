@@ -5,7 +5,7 @@
 \title{Copy layers from one Field to another}
 \usage{
 copyLayers(from, to, layer.names, new.layer.names = NULL,
-  keep.all.to = TRUE, keep.all.from = TRUE, dec.places = NULL,
+  keep.all.to = TRUE, keep.all.from = TRUE, tolerance = NULL,
   fill.dims = TRUE)
 }
 \arguments{
@@ -22,9 +22,9 @@ example, if a layer "Total" is copied to an object which already has a "Total" l
 
 \item{keep.all.from}{Logical, if set to FALSE, all points in the 'from' object which don't have corresponding points in the 'to' object are removed.}
 
-\item{dec.places}{Numeric with either 1 or 2 elements to specify how many decimal places to which the coordinates (Lon and Lat dimensions) should be rounded
-in order to get a match between the two Fields/data.tables.   If one number is supplied it is applied to both Lon and Lat. If two numbers are supplied, the first is applied to Lon and the second to Lat.
-Default is no rounding (value is NULL) and is fine for most regularly spaced grids.   Hoewever, setting this can be useful to force matching of 
+\item{tolerance}{Numeric, passed to copyLayers. Defines how close the longitudes and latitudes of the gridcells in \code{from} and \code{to}
+need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance for both lon and lat) or a vector of two numerics (for lon and lat separately).
+Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  However, setting this can be useful to force matching of 
 coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
 
 \item{fill.dims}{Logical, if TRUE (the default) and if the 'from' Field/data.table has less dimensions than the 'to' Field/data.table, then just fill in all the values
@@ -39,7 +39,7 @@ and any points in the 'to' object which don't have corresponding points in the '
 }
 \details{
 This function allows layers (reminder, they are implemented as columns in a data.table) to be copied from one Field, Comaprison or data.table to another.  
-This function is used extensively internally but can also be useful for user doing more advanced analysis and plotting.  is particularly useful for colouring or facetting a plot of one variable by another one.  To give a more concrete example, one could use a biome classification 
+This function is used extensively internally but can also be useful for user doing more advanced analysis and plotting. For example, is particularly useful for colouring or facetting a plot of one variable by another one.  To give a more concrete example, one could use a biome classification 
 to split (facet) a data-vs-model scatter plot.
 }
 \author{

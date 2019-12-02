@@ -16,7 +16,10 @@
 #' @param override.quantity Logical, if TRUE ignore situation where field1 and field2 have non-identical Quantities and use the Quantity from field1 for the returned Comparison
 #' @param match.NAs Logical, if TRUE copy NAs from one layer to the other.  This is mostly to make sure that when you later plot the data in the final Comparison side-by-side,
 #' that the both have 'no data' (typically grey areas) plotted on both maps.
-#' @param dec.places Numeric, passed to copyLayers. Defines to how many decimal places to round the coordinates in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.  
+#' @param tolerance Numeric, passed to copyLayers. Defines how close the longitudes and latitudes of the gridcells in \code{field1} and \code{field2}
+#' need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance) or a vector of two numerics (for lon and lat separately).
+#' Default is no rounding (value is NULL) and so is fine for most regular spaced grids. However, setting this can be useful to force matching of 
+#' coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.
 #' @param show.stats Logical, if TRUE print the summary statistics
 #' @param custom.metrics A named list of functions (defined by the user) to calculate additional custom metrics.  The functions must take a data.table and 
 #' two character vectors of layer names to be compared (in order in the case of multi-layer comparisons).  Spatial-temporal-annual column names of Lon, Lat, Year, Month and Day
@@ -124,7 +127,7 @@ compareLayers <- function(field1,
                           match.NAs = FALSE,
                           show.stats = TRUE,
                           custom.metrics = list(),
-                          dec.places = NULL){
+                          tolerance = NULL){
   
   ### Check that the object have the same dimensions and that we have the same number of layers, if not fail immediately
   if(!identical(getDimInfo(field1), getDimInfo(field2))) stop("Trying to compare layers with different dimenisons.  Definitely can't do this.  Check your dimension and/or averaging")
@@ -217,7 +220,7 @@ compareLayers <- function(field1,
                            new.layer.names = NULL, 
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
-                           dec.places = dec.places)@data
+                           tolerance = tolerance)@data
     
   }
   

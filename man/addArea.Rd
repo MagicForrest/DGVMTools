@@ -5,7 +5,7 @@
 \title{Adds the gridcell area to a spatial Field or data.table/data.frame}
 \usage{
 addArea(input, unit = "m^2", ellipse = FALSE, verbose = TRUE,
-  digits = 10)
+  tolerance = NULL)
 }
 \arguments{
 \item{input}{a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.}
@@ -19,8 +19,11 @@ addArea(input, unit = "m^2", ellipse = FALSE, verbose = TRUE,
 The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{aggregateSpatial} but it can
 be utilised by the user for any other purpose.}
 
-\item{digits}{Numeric, number of digits to which to truncate the coordinates when merging the area data.table with the input. This is a technical detail,
-you only need to use it if you have troubles because of coordinates with a few decimal places.}
+\item{tolerance}{Numeric, passed to \link{copyLayers}. Defines how close the longitudes and latitudes of the gridcells in \code{input} and the internally calculated
+\code{area} data.table  need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance for both lon and lat) or a vector 
+of two numerics (for lon and lat separately).
+#' Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  
+This is a technical detail, you only need to use it if you have troubles because of coordinates with a few decimal places.}
 }
 \value{
 same class as input

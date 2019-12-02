@@ -2,15 +2,15 @@
 % Please edit documentation in R/plotScatter.R
 \name{plotScatter}
 \alias{plotScatter}
-\title{Make A scatter plot}
+\title{Make a scatter plot}
 \usage{
 plotScatter(x, y = x, layer.x, layer.y = layer.x, alpha = 1,
-  text.multiplier)
+  text.multiplier, tolerance = NULL)
 }
 \arguments{
-\item{x}{The first Field, Comparison or data., object from which the data to be plotted should be taken.}
+\item{x}{The first DGVMTools::Field or Comparison object from which the data to be plotted should be taken.}
 
-\item{y}{The second DGVMTools::Field object from which the data to be plotted should be taken.
+\item{y}{The second DGVMTools::Field or Comparison object from which the data to be plotted should be taken.
 Default value is x.}
 
 \item{layer.x}{The first layer to be plotted (taken from x)}
@@ -21,6 +21,11 @@ Default value is x.}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}
+
+\item{tolerance}{Numeric, passed to copyLayers. Defines how close the longitudes and latitudes of the gridcells in \code{x} and \code{y} (if different)
+need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance for both lon and lat) or a vector of two numerics (for lon and lat separately).
+Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  However, setting this can be useful to force matching of 
+coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
 }
 \value{
 A ggplot2 object
