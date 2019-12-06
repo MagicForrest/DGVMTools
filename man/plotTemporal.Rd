@@ -4,15 +4,33 @@
 \alias{plotTemporal}
 \title{Plot temporal data}
 \usage{
-plotTemporal(fields, layers = NULL, gridcells = NULL,
-  title = character(0), subtitle = character(0), cols = NULL,
-  col.by = "Layer", col.labels = waiver(), types = NULL,
-  type.by = NULL, type.labels = waiver(), sizes = NULL,
-  size.by = NULL, size.labels = waiver(), alphas = NULL,
-  alpha.by = NULL, alpha.labels = waiver(), y.label = NULL,
-  y.lim = NULL, x.label = NULL, x.lim = NULL,
-  legend.position = "bottom", text.multiplier = NULL, plot = TRUE,
-  ...)
+plotTemporal(
+  fields,
+  layers = NULL,
+  gridcells = NULL,
+  title = character(0),
+  subtitle = character(0),
+  cols = NULL,
+  col.by = "Layer",
+  col.labels = waiver(),
+  types = NULL,
+  type.by = NULL,
+  type.labels = waiver(),
+  sizes = NULL,
+  size.by = NULL,
+  size.labels = waiver(),
+  alphas = NULL,
+  alpha.by = NULL,
+  alpha.labels = waiver(),
+  y.label = NULL,
+  y.lim = NULL,
+  x.label = NULL,
+  x.lim = NULL,
+  legend.position = "bottom",
+  text.multiplier = NULL,
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{fields}{The data to be plotted, either as a Field or list of Fields.}

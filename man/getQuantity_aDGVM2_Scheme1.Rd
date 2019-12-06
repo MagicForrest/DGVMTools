@@ -4,8 +4,13 @@
 \alias{getQuantity_aDGVM2_Scheme1}
 \title{Read aDGVM2 quantities from pop file}
 \usage{
-getQuantity_aDGVM2_Scheme1(run, variable, target.sta,
-  file.name = file.name, adgvm2.daily)
+getQuantity_aDGVM2_Scheme1(
+  run,
+  variable,
+  target.sta,
+  file.name = file.name,
+  adgvm2.daily
+)
 }
 \arguments{
 \item{run}{A \code{source} containing the meta-data about the aDGVM2 run}

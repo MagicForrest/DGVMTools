@@ -4,11 +4,17 @@
 \alias{plotSpatialComparison}
 \title{Plot a comparison between two spatial layers}
 \usage{
-plotSpatialComparison(comparisons, type = c("difference",
-  "percentage.difference", "values", "nme"), limits = NULL,
-  panel.bg.col = "white", override.cols = NULL,
-  symmetric.scale = TRUE, percentage.difference.limit = 300,
-  do.phase = FALSE, ...)
+plotSpatialComparison(
+  comparisons,
+  type = c("difference", "percentage.difference", "values", "nme"),
+  limits = NULL,
+  panel.bg.col = "white",
+  override.cols = NULL,
+  symmetric.scale = TRUE,
+  percentage.difference.limit = 300,
+  do.phase = FALSE,
+  ...
+)
 }
 \arguments{
 \item{comparisons}{The data to plot, must be a Comparison or a list of Comparisons}

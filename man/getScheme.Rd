@@ -4,12 +4,27 @@
 \alias{getScheme}
 \title{Get a Classification \code{Field} from a \code{Source}}
 \usage{
-getScheme(source, scheme, first.year, last.year, year.aggregate.method,
-  spatial.extent, spatial.extent.id, spatial.aggregate.method,
-  subannual.resolution, subannual.original, subannual.aggregate.method,
-  sta.info, write = FALSE, write.components = FALSE,
-  read.full = TRUE, read.full.components = TRUE, averaged.source,
-  verbose = FALSE, ...)
+getScheme(
+  source,
+  scheme,
+  first.year,
+  last.year,
+  year.aggregate.method,
+  spatial.extent,
+  spatial.extent.id,
+  spatial.aggregate.method,
+  subannual.resolution,
+  subannual.original,
+  subannual.aggregate.method,
+  sta.info,
+  write = FALSE,
+  write.components = FALSE,
+  read.full = TRUE,
+  read.full.components = TRUE,
+  averaged.source,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{source}{The \code{Source} object for which the Classification \code{Field} should be built. A list of \code{Source} objects can also be provided, in which case 

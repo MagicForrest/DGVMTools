@@ -4,8 +4,15 @@
 \alias{getField_aDGVM2}
 \title{Get a Field for aDGVM2}
 \usage{
-getField_aDGVM2(source, quant, target.STAInfo, file.name, verbose,
-  adgvm2.scheme, adgvm2.daily)
+getField_aDGVM2(
+  source,
+  quant,
+  target.STAInfo,
+  file.name,
+  verbose,
+  adgvm2.scheme,
+  adgvm2.daily
+)
 }
 \arguments{
 \item{quant}{A Quantity object to define what quantity from the aDGVM2 run to extract}

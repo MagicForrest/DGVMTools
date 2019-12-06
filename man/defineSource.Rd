@@ -4,11 +4,22 @@
 \alias{defineSource}
 \title{Define a Source object that represents a model run or data set, setting up all the required metadata (only).}
 \usage{
-defineSource(id, name, dir, format, quantities = NULL,
-  defined.layers = list(), lonlat.offset = c(0, 0), year.offset = 0,
-  london.centre = TRUE, forcing.data = "Not specified",
-  land.use.included = FALSE, contact = "Not specified",
-  institute = "Not specified", ...)
+defineSource(
+  id,
+  name,
+  dir,
+  format,
+  quantities = NULL,
+  defined.layers = list(),
+  lonlat.offset = c(0, 0),
+  year.offset = 0,
+  london.centre = TRUE,
+  forcing.data = "Not specified",
+  land.use.included = FALSE,
+  contact = "Not specified",
+  institute = "Not specified",
+  ...
+)
 }
 \arguments{
 \item{id}{A unique character string to identify this particular data.  Recommended to be alphanumeric because it is used to construct file names and to use underscores and full stops (periods) 

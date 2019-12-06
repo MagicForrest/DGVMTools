@@ -4,9 +4,19 @@
 \alias{getDailyField_aDGVM}
 \title{Get a 'daily' aDGVM Field}
 \usage{
-getDailyField_aDGVM(run, quant, target.sta, file.name = file.name,
-  adgvm.file.type, verbose = FALSE, data.table.only = FALSE,
-  adgvm.fire = 1, adgvm.climate = 0, adgvm.header, ...)
+getDailyField_aDGVM(
+  run,
+  quant,
+  target.sta,
+  file.name = file.name,
+  adgvm.file.type,
+  verbose = FALSE,
+  data.table.only = FALSE,
+  adgvm.fire = 1,
+  adgvm.climate = 0,
+  adgvm.header,
+  ...
+)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the aDGVM run}

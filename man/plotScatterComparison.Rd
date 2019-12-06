@@ -4,11 +4,22 @@
 \alias{plotScatterComparison}
 \title{Plot scatter of model vs data}
 \usage{
-plotScatterComparison(comparisons, run.ids = NULL, run.labels = NULL,
-  wrap = TRUE, facet.labels = NULL, xlim = NULL, ylim = NULL,
-  xlab = NULL, ylab = NULL, text.multiplier = NULL,
-  showFitLine = TRUE, showStats = TRUE, alpha = 0.05,
-  text.size = 6)
+plotScatterComparison(
+  comparisons,
+  run.ids = NULL,
+  run.labels = NULL,
+  wrap = TRUE,
+  facet.labels = NULL,
+  xlim = NULL,
+  ylim = NULL,
+  xlab = NULL,
+  ylab = NULL,
+  text.multiplier = NULL,
+  showFitLine = TRUE,
+  showStats = TRUE,
+  alpha = 0.05,
+  text.size = 6
+)
 }
 \arguments{
 \item{comparisons}{The Comparison object, or list of Comparision objects, for which to make the scatter plot.}

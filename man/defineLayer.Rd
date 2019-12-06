@@ -4,8 +4,13 @@
 \alias{defineLayer}
 \title{Define a Layer object}
 \usage{
-defineLayer(id, name = id, colour, properties = list(type =
-  "Undefined"), add.to)
+defineLayer(
+  id,
+  name = id,
+  colour,
+  properties = list(type = "Undefined"),
+  add.to
+)
 }
 \arguments{
 \item{id}{A unique character string to identify this newly defined \linkS4class{Layer}. This could be, for example, a PFT abbreviation.}

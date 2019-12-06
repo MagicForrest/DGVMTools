@@ -4,8 +4,15 @@
 \alias{trimFieldsForPlotting}
 \title{Subsets data from Field for plotting}
 \usage{
-trimFieldsForPlotting(fields, layers, years = NULL, days = NULL,
-  months = NULL, seasons = NULL, gridcells = NULL)
+trimFieldsForPlotting(
+  fields,
+  layers,
+  years = NULL,
+  days = NULL,
+  months = NULL,
+  seasons = NULL,
+  gridcells = NULL
+)
 }
 \arguments{
 \item{fields}{The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)}

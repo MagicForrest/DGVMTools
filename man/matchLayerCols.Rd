@@ -4,8 +4,12 @@
 \alias{matchLayerCols}
 \title{Make a LAyer colour list}
 \usage{
-matchLayerCols(values, layers, others = list(Total = "black", None =
-  "grey75", Tree = "brown", Grass = "green", Shrub = "red"))
+matchLayerCols(
+  values,
+  layers,
+  others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub
+    = "red")
+)
 }
 \arguments{
 \item{values}{List of values (as chararacters) for which you want standard colours.}

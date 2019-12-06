@@ -41,7 +41,7 @@ License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 VignetteBuilder: knitr
 Encoding: UTF-8
 Collate:

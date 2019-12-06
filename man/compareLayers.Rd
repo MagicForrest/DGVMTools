@@ -4,10 +4,21 @@
 \alias{compareLayers}
 \title{Compare single layers to each other}
 \usage{
-compareLayers(field1, field2, layers1, layers2 = layers1,
-  do.seasonality = FALSE, keepall1 = FALSE, keepall2 = FALSE,
-  override.quantity = FALSE, verbose = FALSE, match.NAs = FALSE,
-  show.stats = TRUE, custom.metrics = list(), tolerance = NULL)
+compareLayers(
+  field1,
+  field2,
+  layers1,
+  layers2 = layers1,
+  do.seasonality = FALSE,
+  keepall1 = FALSE,
+  keepall2 = FALSE,
+  override.quantity = FALSE,
+  verbose = FALSE,
+  match.NAs = FALSE,
+  show.stats = TRUE,
+  custom.metrics = list(),
+  tolerance = NULL
+)
 }
 \arguments{
 \item{field1}{A Field from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.}

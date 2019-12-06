@@ -4,11 +4,25 @@
 \alias{getField}
 \title{Get a \code{Field} from a \code{Source}}
 \usage{
-getField(source, var, first.year, last.year, year.aggregate.method,
-  spatial.extent, spatial.extent.id, spatial.aggregate.method,
-  subannual.resolution, subannual.original, subannual.aggregate.method,
-  sta.info, file.name = NULL, write = FALSE, read.full = TRUE,
-  verbose = FALSE, ...)
+getField(
+  source,
+  var,
+  first.year,
+  last.year,
+  year.aggregate.method,
+  spatial.extent,
+  spatial.extent.id,
+  spatial.aggregate.method,
+  subannual.resolution,
+  subannual.original,
+  subannual.aggregate.method,
+  sta.info,
+  file.name = NULL,
+  write = FALSE,
+  read.full = TRUE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{source}{The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.}

@@ -4,9 +4,16 @@
 \alias{copyLayers}
 \title{Copy layers from one Field to another}
 \usage{
-copyLayers(from, to, layer.names, new.layer.names = NULL,
-  keep.all.to = TRUE, keep.all.from = TRUE, tolerance = NULL,
-  fill.dims = TRUE)
+copyLayers(
+  from,
+  to,
+  layer.names,
+  new.layer.names = NULL,
+  keep.all.to = TRUE,
+  keep.all.from = TRUE,
+  tolerance = NULL,
+  fill.dims = TRUE
+)
 }
 \arguments{
 \item{from}{The Field/Comparison/data.table that the layers are to be copied from.}

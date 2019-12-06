@@ -4,9 +4,15 @@
 \alias{selectGridcells}
 \title{Select gridcells}
 \usage{
-selectGridcells(x, gridcells, spatial.extent.id = NULL,
-  tolerance = NULL, decimal.places = NULL, cover.threshold = NULL,
-  ...)
+selectGridcells(
+  x,
+  gridcells,
+  spatial.extent.id = NULL,
+  tolerance = NULL,
+  decimal.places = NULL,
+  cover.threshold = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{The Field, data.table or data.frame from which the gridcells should be selected.  Note that a data.table or data.frame 

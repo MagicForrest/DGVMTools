@@ -4,8 +4,12 @@
 \alias{aggregateSubannual.uncompiled}
 \title{Sub-annual aggregation}
 \usage{
-aggregateSubannual.uncompiled(input.obj, method = "mean",
-  target = "Year", verbose = FALSE)
+aggregateSubannual.uncompiled(
+  input.obj,
+  method = "mean",
+  target = "Year",
+  verbose = FALSE
+)
 }
 \arguments{
 \item{input.obj}{data.table or Field}

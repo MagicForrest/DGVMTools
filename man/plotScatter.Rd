@@ -4,8 +4,15 @@
 \alias{plotScatter}
 \title{Make a scatter plot}
 \usage{
-plotScatter(x, y = x, layer.x, layer.y = layer.x, alpha = 1,
-  text.multiplier, tolerance = NULL)
+plotScatter(
+  x,
+  y = x,
+  layer.x,
+  layer.y = layer.x,
+  alpha = 1,
+  text.multiplier,
+  tolerance = NULL
+)
 }
 \arguments{
 \item{x}{The first DGVMTools::Field or Comparison object from which the data to be plotted should be taken.}

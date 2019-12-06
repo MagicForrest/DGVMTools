@@ -4,15 +4,34 @@
 \alias{plotSpatial}
 \title{Plot maps from a \code{Field} or a lists of \code{Field}.}
 \usage{
-plotSpatial(fields, layers = NULL, title = character(0),
-  subtitle = character(0), facet.labels = NULL, facet.order = NULL,
-  plot.bg.col = "white", panel.bg.col = "white",
-  useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
-  ylim = NULL, years = NULL, days = NULL, months = NULL,
-  seasons = NULL, limits = NULL, cols = NULL, cuts = NULL,
-  drop.cuts = TRUE, map.overlay = NULL, grid = FALSE,
-  grid.switch = FALSE, plot = TRUE, interior.lines = TRUE,
-  tile = FALSE)
+plotSpatial(
+  fields,
+  layers = NULL,
+  title = character(0),
+  subtitle = character(0),
+  facet.labels = NULL,
+  facet.order = NULL,
+  plot.bg.col = "white",
+  panel.bg.col = "white",
+  useLongNames = FALSE,
+  text.multiplier = NULL,
+  xlim = NULL,
+  ylim = NULL,
+  years = NULL,
+  days = NULL,
+  months = NULL,
+  seasons = NULL,
+  limits = NULL,
+  cols = NULL,
+  cuts = NULL,
+  drop.cuts = TRUE,
+  map.overlay = NULL,
+  grid = FALSE,
+  grid.switch = FALSE,
+  plot = TRUE,
+  interior.lines = TRUE,
+  tile = FALSE
+)
 }
 \arguments{
 \item{fields}{The data to plot. Can be a Field or a list of Fields.}

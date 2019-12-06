@@ -4,8 +4,15 @@
 \alias{getStandardQuantity_aDGVM}
 \title{Returns the data from one aDGVM output variable as a \code{data.table}.}
 \usage{
-getStandardQuantity_aDGVM(run, quant, target.sta, file.name = file.name,
-  adgvm.file.type, verbose = FALSE, ...)
+getStandardQuantity_aDGVM(
+  run,
+  quant,
+  target.sta,
+  file.name = file.name,
+  adgvm.file.type,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the aDGVM run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.}

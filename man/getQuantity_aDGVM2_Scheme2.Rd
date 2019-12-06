@@ -4,8 +4,7 @@
 \alias{getQuantity_aDGVM2_Scheme2}
 \title{Read aDGVM2 quantities from trait file}
 \usage{
-getQuantity_aDGVM2_Scheme2(run, variable, target.sta,
-  file.name = file.name)
+getQuantity_aDGVM2_Scheme2(run, variable, target.sta, file.name = file.name)
 }
 \arguments{
 \item{run}{A \code{source} containing the meta-data about the aDGVM2 run}

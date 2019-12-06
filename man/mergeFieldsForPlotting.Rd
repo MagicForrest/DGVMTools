@@ -4,8 +4,13 @@
 \alias{mergeFieldsForPlotting}
 \title{Merge data from Field for plotting}
 \usage{
-mergeFieldsForPlotting(fields, add.Quantity = FALSE, add.Site = FALSE,
-  add.Region = FALSE, add.Years = FALSE)
+mergeFieldsForPlotting(
+  fields,
+  add.Quantity = FALSE,
+  add.Site = FALSE,
+  add.Region = FALSE,
+  add.Years = FALSE
+)
 }
 \arguments{
 \item{fields}{The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)}

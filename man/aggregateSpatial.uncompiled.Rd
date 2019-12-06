@@ -4,8 +4,7 @@
 \alias{aggregateSpatial.uncompiled}
 \title{Spatially aggregate a Field}
 \usage{
-aggregateSpatial.uncompiled(input.obj, method = "mean",
-  verbose = FALSE, ...)
+aggregateSpatial.uncompiled(input.obj, method = "mean", verbose = FALSE, ...)
 }
 \arguments{
 \item{input.obj}{Field (or data.table) to be averaged}

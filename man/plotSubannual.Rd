@@ -4,9 +4,18 @@
 \alias{plotSubannual}
 \title{Plots sub-annual cycles}
 \usage{
-plotSubannual(fields, layers = NULL, title = NULL, subtitle = NULL,
-  plotAverage = TRUE, text.multiplier = NULL, plot = TRUE,
-  year.col.gradient = NULL, alpha = 0.2, ...)
+plotSubannual(
+  fields,
+  layers = NULL,
+  title = NULL,
+  subtitle = NULL,
+  plotAverage = TRUE,
+  text.multiplier = NULL,
+  plot = TRUE,
+  year.col.gradient = NULL,
+  alpha = 0.2,
+  ...
+)
 }
 \arguments{
 \item{fields}{The data to plot. Can be a Field or a list of Fields.}

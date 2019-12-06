@@ -4,9 +4,18 @@
 \alias{getYearlyField_aDGVM}
 \title{Get a yearly aDGVM Field}
 \usage{
-getYearlyField_aDGVM(run, quant, target.sta, file.name = file.name,
-  verbose = FALSE, data.table.only = FALSE, adgvm.fire = 1,
-  adgvm.climate = 0, adgvm.header, ...)
+getYearlyField_aDGVM(
+  run,
+  quant,
+  target.sta,
+  file.name = file.name,
+  verbose = FALSE,
+  data.table.only = FALSE,
+  adgvm.fire = 1,
+  adgvm.climate = 0,
+  adgvm.header,
+  ...
+)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the aDGVM run}

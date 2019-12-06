@@ -4,8 +4,12 @@
 \alias{promoteToRaster}
 \title{Convert to Raster}
 \usage{
-promoteToRaster(input.data, layers = "all", tolerance = 0.01,
-  grid.topology = NULL)
+promoteToRaster(
+  input.data,
+  layers = "all",
+  tolerance = 0.01,
+  grid.topology = NULL
+)
 }
 \arguments{
 \item{input.data}{Field, Comparison or data.table}

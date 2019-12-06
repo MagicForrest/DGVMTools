@@ -4,8 +4,12 @@
 \alias{aggregateSubannual}
 \title{Sub-annual aggregation}
 \usage{
-aggregateSubannual(input.obj, method = "mean", target = "Year",
-  verbose = FALSE)
+aggregateSubannual(
+  input.obj,
+  method = "mean",
+  target = "Year",
+  verbose = FALSE
+)
 }
 \arguments{
 \item{input.obj}{data.table or Field}

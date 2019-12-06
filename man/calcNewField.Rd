@@ -4,8 +4,15 @@
 \alias{calcNewField}
 \title{Simple calculation of new Fields}
 \usage{
-calcNewField(x, y, op, x.col = NULL, y.col = NULL, quant = NULL,
-  verbose = TRUE)
+calcNewField(
+  x,
+  y,
+  op,
+  x.col = NULL,
+  y.col = NULL,
+  quant = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{x}{The first \code{\linkS4class{Field}}}
