@@ -239,7 +239,6 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = 
   } else {
     
     setKeyDGVM(area)
-    print(tolerance)
     input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE, tolerance = tolerance)
    
     # dt <- input@data

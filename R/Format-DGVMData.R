@@ -403,7 +403,7 @@ getField_DGVMData <- function(source,
       dimnames(this.slice) <- dimension.names
       
       # prepare data.table from the slice (array)
-      this.slice.dt <- as.data.table(melt(this.slice))
+      this.slice.dt <- as.data.table(reshape2::melt(this.slice))
       rm(this.slice)
       gc()
       this.slice.dt <- stats::na.omit(this.slice.dt)

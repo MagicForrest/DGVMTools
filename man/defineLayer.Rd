@@ -27,25 +27,27 @@ functions to automagically select layers.  There is a lot of flexibility here, b
 A slow litter soil carbon pool could look like: \cr
 \code{properties = list(type = "CPool", speed = "Slow", zone = "Soil", comprises = "Litter")}.}
 
-\item{add.to}{A \linkS4class{Format}, or a \linkS4class{Source}, or a \linkS4class{Field} object to which this newly defined layer should be added (optional).}
+\item{add.to}{A \linkS4class{Format}, or a \linkS4class{Source}, or a \linkS4class{Field} object to which this newly defined layer should be 
+added (optional). If this is specified then the defineQuantity() returns the  \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} 
+with the \linkS4class{Quantity} added.}
 }
 \value{
-Either an \linkS4class{Layer} object (if "add.to" arguement not suppliued), or an updated \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} 
+Either an \linkS4class{Layer} object (if "add.to" argument not supplied), or an updated \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} 
 object if "add.to" was specified.
 }
 \description{
 This function defines a \linkS4class{Layer} object represents a sub-component or one particular aspect of a \linkS4class{Field} object, 
 for example one PFT or one carbon pool.  It preferred to a \code{new("Layer",...)} initialisation because it does both the initialisation 
-and also optionally adds the Field to to a \linkS4class{Format} object with the \code{add.to} argument.
+and also optionally adds the \linkS4class{Layer} to to a \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} object with the \code{add.to} argument.
 }
 \details{
-Only the \code{id} and \code{colour} argument are compulsory, the rest will be filled with dummy/default values if left blank.
+Only the \code{id} and \code{colour} arguments are compulsory, the rest will be filled with dummy/default values if left blank.
 However, one advantage of formally defining a \linkS4class{Layer} object is that one can use the \code{properties} slot of the 
 \linkS4class{Layer} to conveniently select, aggregate and operate on layers with functions \link{whichLayers} and \link{layerOp},
 so it is recommended to define the properties to take advantage of this. 
 When defining Layers it is important that the properties are defined consistently between Layer so that the functions 
 \link{whichLayers} and \link{layerOp} work as expected. \cr
-Note that no actual data is stored in the resultant \linkS4class{Layer}, only metadata.
+Note that no actual data is stored in the resultant \linkS4class{Field}, only metadata.
 }
 \examples{
 

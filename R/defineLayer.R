@@ -4,7 +4,7 @@
 #' 
 #' @description This function defines a \linkS4class{Layer} object represents a sub-component or one particular aspect of a \linkS4class{Field} object, 
 #' for example one PFT or one carbon pool.  It preferred to a \code{new("Layer",...)} initialisation because it does both the initialisation 
-#' and also optionally adds the Field to to a \linkS4class{Format} object with the \code{add.to} argument.
+#' and also optionally adds the \linkS4class{Layer} to to a \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} object with the \code{add.to} argument.
 #' 
 #' @param id A unique character string to identify this newly defined \linkS4class{Layer}. This could be, for example, a PFT abbreviation.
 #' @param name A more readable character string to describe the \linkS4class{Layer}, for example the full PFT name.  
@@ -16,18 +16,19 @@
 #' \code{properties = list(type = "PFT", growth.form = "Tree", phenology = "Summergreen")}.  \cr \cr
 #' A slow litter soil carbon pool could look like: \cr
 #' \code{properties = list(type = "CPool", speed = "Slow", zone = "Soil", comprises = "Litter")}. 
-#' @param add.to A \linkS4class{Format}, or a \linkS4class{Source}, or a \linkS4class{Field} object to which this newly defined layer should be added (optional). 
+#' @param add.to A \linkS4class{Format}, or a \linkS4class{Source}, or a \linkS4class{Field} object to which this newly defined layer should be 
+#' added (optional). If this is specified then the defineQuantity() returns the  \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} 
+#' with the \linkS4class{Quantity} added.
 #' 
-#' 
-#' @details Only the \code{id} and \code{colour} argument are compulsory, the rest will be filled with dummy/default values if left blank.
+#' @details Only the \code{id} and \code{colour} arguments are compulsory, the rest will be filled with dummy/default values if left blank.
 #' However, one advantage of formally defining a \linkS4class{Layer} object is that one can use the \code{properties} slot of the 
 #' \linkS4class{Layer} to conveniently select, aggregate and operate on layers with functions \link{whichLayers} and \link{layerOp},
 #' so it is recommended to define the properties to take advantage of this. 
 #' When defining Layers it is important that the properties are defined consistently between Layer so that the functions 
 #' \link{whichLayers} and \link{layerOp} work as expected. \cr
-#' Note that no actual data is stored in the resultant \linkS4class{Layer}, only metadata. 
+#' Note that no actual data is stored in the resultant \linkS4class{Field}, only metadata. 
 #' 
-#' @return Either an \linkS4class{Layer} object (if "add.to" arguement not suppliued), or an updated \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} 
+#' @return Either an \linkS4class{Layer} object (if "add.to" argument not supplied), or an updated \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} 
 #' object if "add.to" was specified.
 #' @export
 #' @seealso \linkS4class{Layer}, \linkS4class{Format}, \link{whichLayers}, \link{layerOp}, \link{addTo}
@@ -111,7 +112,7 @@ defineLayer <- function(id,
   # check that properties is a full-named list
   if(!is.list(properties) || length(names(properties)) != length(properties) || "" %in% names(properties)) stop("The 'properties' argument to defineLayer() must be a named list")
   
-  # make Source object from the supplied meta data
+  # make Layer object from the supplied meta data
   layer <- new("Layer",
                id = id,
                name = name,
@@ -124,7 +125,6 @@ defineLayer <- function(id,
   }
   # if not, return the Layer
   else return(layer)
-  
   
 }
 

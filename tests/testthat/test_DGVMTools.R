@@ -45,27 +45,36 @@ test_that("Sources",{
 context("Quantity")
 
 vegC_std.Quantity <- lookupQuantity("vegC_std")
+new.Quantity <- defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity")
 
 
 test_that("Quantity",{
   
+  # test result from lookupQuantity
   expect_is(vegC_std.Quantity , "Quantity")
 
+  # test availableQuantities function
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = FALSE), "list")
-  
   expect_is(availableQuantities(GUESS.Africa.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(GUESS.Africa.test.Source, names = FALSE), "list")
-  
   expect_is(availableQuantities(DGVMData.SaatchiBiomass.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(DGVMData.SaatchiBiomass.test.Source, names = FALSE), "list")
-  
   expect_is(availableQuantities(DGVMData.PNVBiomes.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(DGVMData.PNVBiomes.test.Source, names = FALSE), "list")
   
+  # test result from defineQuantity
+  expect_is(new.Quantity , "Quantity")
   
+  # add pre-defined Quantity to Source and Format
+  expect_is(addTo(new.Quantity, GUESS), "Format")
+  expect_is(addTo(new.Quantity, GUESS.Europe.test.Source), "Source")
+  # note: test adding to a Field is done in 'Fields' block below
   
-  
+  # add directly to Format/Source using defineQuantity
+  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity", add.to = GUESS), "Format")
+  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity", add.to = GUESS.Europe.test.Source), "Source")
+ 
 })
 
 
@@ -104,6 +113,10 @@ test_that("Field",{
   # check the DGVMData
   expect_is(Saatchi.Field.full, "Field")
   expect_is(Biomes.Field.full, "Field")
+  
+  # add new quantities to the fields
+  expect_is(addTo(new.Quantity, Standard.Field), "Field")
+  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity", add.to = Standard.Field), "Field")
   
   
 })
@@ -145,9 +158,11 @@ test_that("Field",{
 # Layers
 context("Layers")
 
+# define a new Layer for testing (make it at file scopt to also use it in the 'Fields' blocsk later
+new.Layer <- defineLayer(id = "NewLayer", name = "New Layer", colour = "red", properties = list(type = "Test"))
+
 # test Layers
 test_that("Layers",{
-  
   
   # Test return Layer objects from a Field with different criteria (and also NULL - ie no criteria)
   all.criteria = list("Grass", "Tree", "Evergreen", "Summergreen", "Raingreen", "Boreal", "Temperate", "Tropical", "Needleleaved", "Broadleaved")
@@ -183,6 +198,18 @@ test_that("Layers",{
     }
     
   }
+  
+  # test the new Layer, and add it to some things
+  expect_is(new.Layer, "Layer")
+  expect_is(addTo(new.Layer, GUESS), "Format")
+  expect_is(addTo(new.Layer, GUESS.Europe.test.Source), "Source")
+  expect_is(addTo(new.Layer, GUESS.mlai.Field.full), "Field")
+
+  # add directly to Format/Source using defineQuantity
+  expect_is(defineLayer(id = "NewLayer", name = "New Layer", colour = "red", properties = list(type = "Test"), add.to = GUESS), "Format")
+  expect_is(defineLayer(id = "NewLayer", name = "New Layer", colour = "red", properties = list(type = "Test"), add.to = GUESS.Europe.test.Source), "Source")
+  expect_is(defineLayer(id = "NewLayer", name = "New Layer", colour = "red", properties = list(type = "Test"), add.to = GUESS.mlai.Field.full), "Field")
+  
   
 })
 

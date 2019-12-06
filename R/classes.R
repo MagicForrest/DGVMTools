@@ -308,7 +308,7 @@ setClass("Quantity",
          prototype = c(id = "UnknownID",
                        name = "UnknownString",
                        units = "-",
-                       colours = fields::tim.colors,
+                       colours = viridis::viridis,
                        format = "Standard",
                        cf.name = "unknown"
          )

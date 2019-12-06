@@ -69,6 +69,7 @@ Collate:
     'copyLayers.R'
     'crop-methods.R'
     'defineLayer.R'
+    'defineQuantity.R'
     'defineSource.R'
     'determinePFTs.R'
     'export-methods.R'
