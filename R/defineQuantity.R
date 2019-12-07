@@ -55,12 +55,12 @@
 #' print(Cturnover.Quantity)
 #' 
 #' # and add it to the GUESS format and check it is there
-#' GUESS <- addTo(Cturnover.Quantity, GUESS)
-#' print(GUESS@quantities)
-#' 
+#' GUESS.updated <- addTo(Cturnover.Quantity, GUESS)
+#' print(GUESS.updated@quantities)
+#'
 #' ## Also add it *directly* to the GUESS Source by using the "add.to" argument of the defineQuantity
 #' 
-#' GUESS.new <- defineQuantity(id = "Cturnover",
+#' GUESS.updated2 <- defineQuantity(id = "Cturnover2",
 #'                         name = "Carbon Turnover Time",
 #'                         colours = viridis::magma,
 #'                         units = "y",
@@ -68,7 +68,7 @@
 #'                        
 #'                        
 #' # check it out 
-#' print(GUESS.new@quantities)
+#' print(GUESS.updated2@quantities)
 #'  
 #' \donttest{
 #'  
