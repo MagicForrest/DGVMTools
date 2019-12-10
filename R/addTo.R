@@ -12,6 +12,68 @@
 #' @seealso \linkS4class{Layer}, \linkS4class{Quantity}, \link{defineQuantity}, \link{defineLayer}
 #' @include classes.R
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
+#' 
+#' 
+#' @examples
+#' 
+#' ## Using addTo() to add a new Layer to a Format and a Source
+#' 
+#' ## a hypothetical shrub PFT layer
+#' TeBES.PFT <- defineLayer(id = "TeBES",
+#'                        name = "Temperate Broadleaved Evergreen Shrub",
+#'                        colour = "red",
+#'                        properties = list(type = "PFT",      
+#'                                          climate.zone = "Temperate",
+#'                                          leaf.form = "Broadleaved",
+#'                                          phenology = "Evergreen",
+#'                                          growth.form = "Shrub"))
+#' 
+#' # print it
+#' print(TeBES.PFT)
+#' invisible(readline(prompt="Press [enter] to continue"))
+#' 
+#' # and add it to the GUESS Format and check it is there
+#' GUESS.withNewLayer <- addTo(TeBES.PFT, GUESS) 
+#' print(GUESS.withNewLayer@predefined.layers)#' 
+#' invisible(readline(prompt="Press [enter] to continue"))
+#'  
+#' # also to a Source
+#' 
+#' # first make test Source
+#' run.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+#' test.Source <- defineSource(id = "LPJ-GUESS_Example", dir = run.dir,  format = GUESS)
+#' 
+#' # add and check
+#' test.Source <- addTo(TeBES.PFT, test.Source) 
+#' print(test.Source@defined.layers)#' 
+#' invisible(readline(prompt="Press [enter] to continue"))
+#' 
+#' 
+#' ## Using addTo() to add a new Quantity to a Format and a Source
+#' 
+#' ## eg. C turnover time
+#' Cturnover.Quantity <- defineQuantity(id = "Cturnover",
+#'                                      name = "Carbon Turnover Time",
+#'                                      colours = viridis::magma,
+#'                                      units = "y") # note no CF standard name is defined
+#' 
+#' # print it
+#' print(Cturnover.Quantity)
+#' invisible(readline(prompt="Press [enter] to continue"))
+#' 
+#' # and add it to the GUESS Format and check it is there
+#' GUESS.withNewQuantity <- addTo(Cturnover.Quantity, GUESS) 
+#' print(GUESS.withNewQuantity@quantities)
+#' 
+#' invisible(readline(prompt="Press [enter] to continue")) 
+#' 
+#' # also to a Source 
+#' 
+#' # add and check
+#' test.Source <- addTo(Cturnover.Quantity, test.Source) 
+#' print(test.Source@format@quantities)
+#' 
+
 
 addTo <- function(x, add.to) {
   
