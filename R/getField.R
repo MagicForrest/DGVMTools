@@ -224,7 +224,7 @@ getField <- function(source,
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
     # note that data.tables *do* return a valid extent, but we don't want to crop with that here (hence the second condition)
     if (class(possible.error) != "try-error" && !is.data.table(spatial.extent)) {
-      this.Field <- crop(x = this.Field, y = sta.info@spatial.extent)  
+      this.Field <- crop(x = this.Field, y = sta.info@spatial.extent, spatial.extent.id = sta.info@spatial.extent.id)  
     }
     
     # else check if some gridcells to be selected with getGridcells
