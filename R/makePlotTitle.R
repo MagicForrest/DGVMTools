@@ -44,7 +44,10 @@ makePlotTitle <- function(fields){
   ##### make year section
   year.string <- character(0)
   if(sta.info@year.aggregate.method != "none") year.string <- paste(year.string, sta.info@year.aggregate.method)
-  if(length(sta.info@first.year) > 0 && length(sta.info@last.year) > 0) year.string <- paste(year.string, paste(sta.info@first.year, sta.info@last.year, sep = "-"))
+  if(length(sta.info@first.year) > 0 && length(sta.info@last.year) > 0) {
+    if(sta.info@first.year == sta.info@last.year)  year.string <- paste(year.string, sta.info@first.year)
+    else year.string <- paste(year.string, paste(sta.info@first.year, sta.info@last.year, sep = "-"))
+  }
   year.string <- trimws(year.string)
   
   ##### make subannual section
