@@ -9,6 +9,7 @@ plotSpatial(
   layers = NULL,
   title = character(0),
   subtitle = character(0),
+  legend.title = character(0),
   facet.labels = NULL,
   facet.order = NULL,
   plot.bg.col = "white",
@@ -41,6 +42,10 @@ plotSpatial(
 \item{title}{A character string to override the default title.  Set to NULL for no title.}
 
 \item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.}
+
+\item{legend.title}{A character string or expression to override the default legend title. Set to NULL for no legend title.  The default legend title is the \code{units}
+of the \linkS4class{Quantity} of the first \linkS4class{Field} provided in the \code{field} argument.  This argument allows general flexibility, but it is particularly handy
+to facilitate expressions for nicely marked up subscript and superscript.}
 
 \item{facet.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
 Sensible titles will be constructed if this is not specified.}
@@ -107,14 +112,11 @@ a data.table then calls ggplot2 function geom_raster() and it returns a ggplot o
 using further ggplot2 commands.
 }
 \details{
-This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
+This function is the main spatial plotting functions and can be very useful to the user for making quick plots
 in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
-However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
-
-The function works best for \code{Fields} (which contain a lot of useful metadata).
 }
 \seealso{
-\code{plotTemporal}
+\link{plotTemporal}, \link{plotSpatialComparison}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
