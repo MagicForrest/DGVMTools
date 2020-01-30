@@ -18,11 +18,8 @@
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
-#' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
-#' Sensible titles will be constructed if this is not specified.
-#' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
-#' and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
-#' in this function). 
+#' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  This simply conists of the facet names.
+#' To get these values programmatically you can call this funtion with "plot=FALSE" and check the unique values of the 'Facet' column. 
 #' @param plot.bg.col Colour string for the plot background, default "white".
 #' @param panel.bg.col Colour string for the panel background, default "white".
 #' @param useLongNames Boolean, if TRUE replace Layer IDs with the Layer's full names on the plots.
@@ -39,10 +36,6 @@
 #' @param cuts Cut ranges (a numeric vector) to override the default colour delimitation,  discretise the data into discrete colour bands
 #' @param drop.cuts Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.  
 #' Default is TRUE.  Ignored if 'cuts' argument is not used.
-#' @param grid Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().  
-#' Useful when not all combinations of Sources x Layers exist which would leave blank panels.
-#' @param grid.switch Boolean, if TRUE reverse the default panel layout of plots, such plots arranged horizontally are arranged vertically and vice-versa.  Ignored 
-#' if the 'grid' option is FALSE. 
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
 #' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
 #' Note that using these, especially "worldHires", can add quite a bit of time. 
@@ -50,6 +43,16 @@
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
 #' @param tile Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
 #' for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.
+#' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+#' \itemize{
+#'  \item{"nrow"}{The number of rows of facets}
+#'  \item{"ncol"}{The number of columns of facets}
+#'  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
+#'  "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
+#'  \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation.
+#'  But basically what you want is to define a named character vector, the names are the previous facet names and the values are the new names.  
+#'  Then make this into a function by passing it to the ggplot function "as.labeller", and then that becomes your 'labeller' argument.} 
+#' }
 #' 
 #' @details  This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
 #' in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
@@ -69,7 +72,6 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
                         layers = NULL,
                         title = character(0),
                         subtitle = character(0),
-                        facet.labels =  NULL,
                         facet.order = NULL,
                         plot.bg.col =  "white",
                         panel.bg.col = "white", #"809DB8", #"cae1ff",
@@ -86,12 +88,11 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
                         cuts = NULL,
                         drop.cuts = TRUE,
                         map.overlay = NULL,
-                        grid = FALSE,
-                        grid.switch = FALSE,
                         plot = TRUE,
                         interior.lines = TRUE,
-                        tile = FALSE){
-  
+                        tile = FALSE,
+                        ...){
+
   J = Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = Years = NULL
   
@@ -133,7 +134,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   # first select the layers and points in space-time that we want to plot
   final.fields <- trimFieldsForPlotting(fields, layers, years = years, days = days, months = months)
- 
+  
   
   ### 6. LAYER TYPE CHECKS
   # check if layers are all continuous or discrete
@@ -147,9 +148,9 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers") 
     if(!discrete & !continuous) stop("plotSpatial can only plot 'numeric', 'integer', 'factor' or 'logical' layers, check your layers")  
   }
-
+  
   ### 7. MELT AND COMBINE THE FINAL FIELDS 
-  # MF TODO: Consider adding add.Site and add.Region like for plotTemporal?
+  # MF TODO: Consider adding add.Region like for plotTemporal?
   
   # first determine if there are different time periods (ie years) in the Fields to be plotted
   add.Years= FALSE
@@ -167,7 +168,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = FALSE, add.Site = FALSE, add.Region = FALSE, add.Years = add.Years)
   
- 
+  
   ### Check for meta-data to automagic the plots a little bit if possble
   first <- TRUE
   for(this.field in final.fields) {
@@ -191,7 +192,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     first <- FALSE
     
   }
- 
+  
   
   # check the defined Layers present in the Fields and make a unique list
   # maybe also here check which one are actually in the layers to plot, since we have that information
@@ -396,152 +397,85 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     
   }
   
-  ### HANDLE THE FACET GRID/WRAP ISSUE
+  ### XX FACETTING
   
-  # first determine how many facet "dimensions" we have
-  multiple.years = multiple.days =  multiple.months = multiple.seasons = FALSE
-  if(!is.null(years)) multiple.years <- length(years) > 1
-  if(!is.null(days)) multiple.days <- length(days) > 1
-  if(!is.null(months)) multiple.months <- length(months) > 1
-  if(!is.null(seasons)) multiple.seasons <- length(seasons) > 1
+  # all column names, used a lot below 
+  all.columns <- names(data.toplot)
   
-  # check for multiple layers (because each layer will need a panel)
-  multiple.layers <- length(layers) > 1
+  # at first, assume facetting by everything except for dontFacet values below
+  # it is essential to facet be everything else otherwise data can be plotted over other data and you don't know
+  dontFacet <- c("Value", "Lon", "Lat")
+  facet.vars <- all.columns[!all.columns %in% dontFacet]
   
-  # and for multiple Sources
-  multiple.sources <- FALSE
-  this.source.name <- final.fields[[1]]@source@name
-  for(this.field in final.fields) {
-    if(this.field@source@name != this.source.name) {
-      multiple.sources <- TRUE
-      break()
+  # then remove facets with only one unique value
+  for(this.facet in facet.vars) {
+    if(length(unique(data.toplot[[this.facet]])) == 1) facet.vars <- facet.vars[!facet.vars == this.facet]
+  }
+  
+  # if at least one facet variable make a "Facet" column of a specially ordered factor to control the facettigng  
+  if(length(facet.vars > 0)) {
+    
+    
+    # First, re-order so that Layer comes first and Day, Month, Season, Year, Years come at the end (in that order)
+    # this just an aesthetic choice in the labelling
+    if("Layer" %in% facet.vars) {
+      facet.vars <- facet.vars[!facet.vars %in% "Layer"] 
+      facet.vars <- append("Layer", facet.vars)
+    } 
+    for(this.ender in c("Day", "Month", "Season", "Year", "Years")){
+      if(this.ender %in% facet.vars) {
+        facet.vars <- facet.vars[!facet.vars %in% this.ender] 
+        facet.vars <- append(facet.vars, this.ender)
+      }
     }
-  }
-  
-  # and for multiple year periods
-  multiple.yearperiods <- FALSE
-  if("Years" %in% names(data.toplot))  multiple.yearperiods <- TRUE
-  
-  
-  num.panel.dimensions <- sum(multiple.sources, multiple.layers, multiple.years, multiple.days, multiple.months, multiple.seasons, multiple.yearperiods)
-  
-  
-  # if got a single source, layer and year facetting is impossible/unnecessary 
-  if(num.panel.dimensions == 0) {
-    facet <- FALSE
-    wrap <- FALSE
-    if(grid) warning("Option grid is TRUE, but there is only one panel to plot so using facet_grid seems silly.  I am ignoring the grid option.")
-    grid <- FALSE
-  }
-  # if got exactly one or two multiples of source, layer or year facetting is necessary and gridding is possible
-  else if(num.panel.dimensions == 1 || num.panel.dimensions == 2) {
-    facet <- TRUE
-    if(!grid) wrap <- TRUE
-    else wrap <- FALSE
-  }
-  # else if got more that two of multiple fields, layers or years then gridding is impossible, must use facet_wrap()
-  else if(num.panel.dimensions > 2){
-    facet <- TRUE
-    wrap <- TRUE
-    if(grid) warning("Option grid is TRUE, but there are too many plot 'dimensions' to make a 2D grid of panels so I am ignoring the grid option.")
-    grid <- FALSE
-  }
-  
-  
-  # if wrapping, add a new column to uniquely describe each facet
-  if(wrap){
+    
     factor.levels <- ""
     data.toplot[, Facet := ""]
-    if(multiple.layers) { 
-      data.toplot[, Facet := paste(Facet, Layer)] 
-      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Layer"]]), paste))
-    }
-    if(multiple.sources) {
-      data.toplot[, Facet := paste(Facet, Source)] 
-      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Source"]]), paste))
-    }
-    if(multiple.years) { 
-      data.toplot[, Facet := paste(Facet, Year)] 
-      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Year"]]), paste))
-    }
-    if(multiple.days) { 
-      data.toplot[, Facet := paste(Facet, Day)]
-      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Day"]]), paste))
-    }
-    if(multiple.months) {
-      data.toplot[, Facet := paste(Facet, Month)]
-      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Month"]]), paste))
-    }
-    if(multiple.seasons) { 
-      
-      data.toplot[, Facet := paste(Facet, Season)] 
-      #  special case for the seasons (since they have an 'inherent' ordering not reflected in their alphabetical ordering)
-      #  -> re-order the "unique(data.toplot[["Season"]])" part to orders the panels correctly
-      final.ordered <- c()
-      for(season in all.seasons){
-        if(season@id %in% unique(data.toplot[["Season"]])) final.ordered <- append(final.ordered, season@id)
-      }
-      factor.levels <- as.vector(outer(factor.levels, final.ordered, paste))
-      
-    }
-    if(multiple.yearperiods) {
-      data.toplot[, Facet := paste(Facet, Years)]
-      factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[["Years"]]), paste))
-    }
-    data.toplot[, Facet := factor(trimws(Facet), levels = trimws(factor.levels))]
     
-    # if facet order specified, re-order the facets
+    # for each variable we are facetting over
+    for(this.facet.var in facet.vars) {
+      
+      # add the facet variable name to the Facet column
+      data.toplot[, Facet := paste(Facet, get(this.facet.var))] 
+      
+      # add to the list of factor levels in a way that produces a sensible ordering
+      if(!this.facet.var == "Season") {
+        factor.levels <- as.vector(outer(factor.levels, unique(data.toplot[[this.facet.var]]), paste))
+      } 
+      # SPECIAL CASE for the seasons (since they have an 'inherent' ordering not reflected in their alphabetical ordering)
+      # -> re-order the "unique(data.toplot[["Season"]])" part to order the panels correctly
+      else {
+        final.ordered <- c()
+        for(season in all.seasons){
+          if(season@id %in% unique(data.toplot[["Season"]])) final.ordered <- append(final.ordered, season@id)
+        }
+        factor.levels <- as.vector(outer(factor.levels, final.ordered, paste))
+      }
+      
+    }
+    
+    
+    # trim white space, drop factors from the the list of levels which are not actually present in the Facet column 
+    # and set the Facet column as an apropriately ordered fac
+    data.toplot[, Facet := trimws(Facet)]
+    factor.levels <- trimws(factor.levels)
+    factor.levels <- factor.levels[which(factor.levels %in% unique(data.toplot[["Facet"]]))]
+    data.toplot[, Facet := factor(Facet, levels = factor.levels)]
+    
+    # if facet order specified, use that instead
     if(!is.null(facet.order)) {
+      
       if(length(facet.order) != length(levels(data.toplot[["Facet"]]))) {
         warning(paste("You have not supplied the correct number of facets in the \'facet.order\' argument, (you supplied ", length(facet.order), "but I need", length(levels(data.toplot[["Facet"]])), ")", "so I am ignoring your facte re-ordering command", sep = " "))
       }
       else {
-        data.toplot[, Facet := factor(trimws(Facet), levels = trimws(facet.order))]
+        data.toplot[, Facet := factor(Facet, levels = facet.order)]
       }
       
     }
     
-  }
+  } # end if facetting
   
-  
-  # if gridding get the columns to grid by
-  if(grid){
-    grid.columns <- c()
-    if(multiple.layers) {
-      grid.columns <- append(grid.columns, "Layer")
-      data.toplot[, Layer := factor(Layer, levels = unique(data.toplot[["Layer"]]))]
-    }
-    if(multiple.sources) {
-      grid.columns <- append(grid.columns, "Source")
-      data.toplot[, Source := factor(Source, levels = unique(data.toplot[["Source"]]))]
-    }
-    if(multiple.years) {
-      grid.columns <- append(grid.columns, "Year")
-      data.toplot[, Year := factor(Year, levels = unique(data.toplot[["Year"]]))]
-    }
-    if(multiple.days) {
-      grid.columns <- append(grid.columns, "Day")
-      data.toplot[, Day := factor(Day, levels = unique(data.toplot[["Day"]]))]
-    }
-    if(multiple.months) {
-      grid.columns <- append(grid.columns, "Month")
-      data.toplot[, Month := factor(Month, levels = unique(data.toplot[["Month"]]))]
-    }
-    if(multiple.seasons) {
-      grid.columns <- append(grid.columns, "Season")
-      final.ordered <- c()
-      for(season in all.seasons){
-        if(season@id %in% unique(data.toplot[["Season"]])) final.ordered <- append(final.ordered, season@id)
-      }
-      data.toplot[, Season := factor(Season, levels = final.ordered)]
-    }
-    if(multiple.yearperiods) {
-      grid.columns <- append(grid.columns, "Years")
-      data.toplot[, Years := factor(Years, levels = unique(data.toplot[["Years"]]))]
-    }
-    if(!grid.switch) grid.string <- paste(grid.columns, collapse = "~")
-    else grid.string <- paste(rev(grid.columns), collapse = "~")
-  }
   
   
   ### RETURN DATA.TABLE ONLY NOT PLOT REQUESTED
@@ -570,33 +504,53 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   # basic plot building
   mp <- ggplot(data = as.data.frame(data.toplot))
   
-  # facet with grid or wrap 
-  if(facet){
+  ### MAKE THE PLOT - PANEL-BY-PANEL
+  
+  # if facetting required (column "Facet" will have been defined above)
+  if(length(facet.vars > 0)){
     
     # note that we add each facet as an individual layer to support multiple resolutions
-    if(wrap){
-      for(facet in levels(data.toplot[["Facet"]])){
-        if(!tile) mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
-        else mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
-      }
-      mp <- mp + facet_wrap(~Facet)      
+    for(facet in levels(data.toplot[["Facet"]])){
+      if(!tile) mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value"))
+      else mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value"))
     }
-    if(grid){
-      for(col1 in unique(data.toplot[[grid.columns[1]]])){ 
-        for(col2 in unique(data.toplot[[grid.columns[2]]])){ 
-          if(!tile) mp <- mp + geom_raster(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
-          else mp <- mp + geom_tile(data = data.toplot[get(grid.columns[1]) == col1 && get(grid.columns[2]) == col2,], aes_string(x = "Lon", y = "Lat", fill = "Value")) 
-        }
-      }
-      mp <- mp + facet_grid(stats::as.formula(paste(grid.string)), switch = "y")    
-    }
+    mp <- mp + facet_wrap(~Facet, ...)
     
   }
   # else simple case with no facetting
   else {
-    if(!tile) mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value")) 
-    else mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value")) 
+    if(!tile) mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
+    else mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
   }
+  
+  
+  # # Alternative facetting without using a "Facet" column, not used
+  # # Note that this is in many ways much simpler and more elegant in the ggplot style *but* I can't figure out how to manipulate
+  # # the facet labelling with the 'labeller' argument and because setting the correct order with multiple facetting variables 
+  # # in a programatic way within this function will be complicated.  The better option is therefore to make a "Facet" column
+  # # so that the facet ordering and labelling van be more easily manipulated
+  # if(length(facet.vars > 0)){
+  #   
+  #   # get all the facet combos and set keys
+  #   all.facet.combos <- unique(data.toplot[,facet.vars, with = FALSE])
+  #   setkeyv(data.toplot, facet.vars)
+  #   
+  #   # plot each layer inviidiually (to presevre different resolution on each plo)
+  #   for(row.index in 1:NROW(all.facet.combos)) { 
+  #     if(!tile) mp <- mp + geom_raster(data = data.toplot[as.list(all.facet.combos[row.index])], aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  #     else mp <- mp + geom_tile(data = data.toplot[as.list(all.facet.combos[row.index])], aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  #   }
+  #   
+  #   # This is the trouble
+  #   # mp <- mp + facet_wrap(facet.vars, labeller = label_context(multi_line = FALSE, sep = ", "), ...)
+  #   # mp <- mp + facet_wrap(facet.vars, labeller = label_context(labels = all.facet.combos), ...)
+  #   mp <- mp + facet_wrap(facet.vars2, ...)
+  # }
+  # else {
+  #   if(!tile) mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  #   else mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  # }
+  
   
   # colour bar
   if(continuous)  {

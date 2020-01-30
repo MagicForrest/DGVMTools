@@ -9,7 +9,6 @@ plotSpatial(
   layers = NULL,
   title = character(0),
   subtitle = character(0),
-  facet.labels = NULL,
   facet.order = NULL,
   plot.bg.col = "white",
   panel.bg.col = "white",
@@ -26,11 +25,10 @@ plotSpatial(
   cuts = NULL,
   drop.cuts = TRUE,
   map.overlay = NULL,
-  grid = FALSE,
-  grid.switch = FALSE,
   plot = TRUE,
   interior.lines = TRUE,
-  tile = FALSE
+  tile = FALSE,
+  ...
 )
 }
 \arguments{
@@ -42,12 +40,8 @@ plotSpatial(
 
 \item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.}
 
-\item{facet.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
-Sensible titles will be constructed if this is not specified.}
-
-\item{facet.order}{A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
-and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
-in this function).}
+\item{facet.order}{A vector of the characters that, if supplied, control the order of the facets.  This simply conists of the facet names.
+To get these values programmatically you can call this funtion with "plot=FALSE" and check the unique values of the 'Facet' column.}
 
 \item{plot.bg.col}{Colour string for the plot background, default "white".}
 
@@ -82,12 +76,6 @@ Default is TRUE.  Ignored if 'cuts' argument is not used.}
 \item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.
 Note that using these, especially "worldHires", can add quite a bit of time.}
 
-\item{grid}{Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().
-Useful when not all combinations of Sources x Layers exist which would leave blank panels.}
-
-\item{grid.switch}{Boolean, if TRUE reverse the default panel layout of plots, such plots arranged horizontally are arranged vertically and vice-versa.  Ignored 
-if the 'grid' option is FALSE.}
-
 \item{plot}{Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
 
 \item{interior.lines}{Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
@@ -95,6 +83,17 @@ Other things can be overlain on the resulting plot with further ggplot2 commands
 
 \item{tile}{Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
 for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.}
+
+\item{...}{Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+\itemize{
+ \item{"nrow"}{The number of rows of facets}
+ \item{"ncol"}{The number of columns of facets}
+ \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
+ "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
+ \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation.
+ But basically what you want is to define a named character vector, the names are the previous facet names and the values are the new names.  
+ Then make this into a function by passing it to the ggplot function "as.labeller", and then that becomes your 'labeller' argument.} 
+}}
 }
 \value{
 Returns a ggplot object
