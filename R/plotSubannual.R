@@ -82,10 +82,34 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   final.fields <- trimFieldsForPlotting(fields, layers)
   
   ### MERGE DATA FOR PLOTTING INTO ONE BIG DATA.TABLE
+  # MF TODO maybe make some clever checks on these switches
+  add.Quantity <- TRUE
+  if("Lon" %in% dim.names & "Lat" %in% dim.names) add.Site <- TRUE
+  else add.Site <- FALSE
+  add.Region <- TRUE
+  
   # MF TODO: Consider adding add.TimePeriod?
-  data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = TRUE, add.Site = FALSE, add.Region = FALSE)
+  data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = TRUE, add.Site = add.Site, add.Region = TRUE)
   
+  ### XX. FACETTING
   
+  # all column names, used a lot below 
+  all.columns <- names(data.toplot)
+  
+  # check the "xxx.by" arguments - currently disable
+  #if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
+  #if(!missing(type.by) && !is.null(type.by) && !type.by %in% all.columns) stop(paste("Setting line types by", type.by, "requested, but that is not available, so failing."))
+  #if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting line sizes by", size.by, "requested, but that is not available, so failing."))
+  #if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting line alphas by", alpha.by, "requested, but that is not available, so failing."))
+  
+  # ar first assume facetting by everything except for...
+  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat")
+  facet.vars <- all.columns[!all.columns %in% dontFacet]
+  
+  # then remove facets with only one unique value
+  for(this.facet in facet.vars) {
+    if(length(unique(data.toplot[[this.facet]])) == 1) facet.vars <- facet.vars[!facet.vars == this.facet]
+  }
   
   #### MAKE LIST OF QUANTITIES AND UNITS FOR Y LABEL
   
@@ -180,7 +204,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   p <- p + theme(legend.position = "right", legend.key.size = unit(2, 'lines'))
   
   # wrap to split by source
-  p <- p + facet_wrap(~Source, ...)
+  p <- p + facet_wrap(facet.vars, ...)
 
   # overall text multiplier
   if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
