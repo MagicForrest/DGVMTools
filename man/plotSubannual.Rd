@@ -13,15 +13,6 @@ plotSubannual(
   cols = NULL,
   col.by = "Year",
   col.labels = waiver(),
-  types = NULL,
-  type.by = NULL,
-  type.labels = waiver(),
-  sizes = NULL,
-  size.by = NULL,
-  size.labels = waiver(),
-  alphas = NULL,
-  alpha.by = NULL,
-  alpha.labels = waiver(),
   plotAverage = TRUE,
   text.multiplier = NULL,
   plot = TRUE,
@@ -41,16 +32,18 @@ Leave empty or NULL to plot all gridcells (but note that if this involves too ma
 
 \item{subtitle}{A character string to override the default subtitle.}
 
-\item{cols, types, sizes, alphas}{A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.
-Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/type/alpha values
-to particular Layers/Sources/Quantities.}
+\item{cols}{A vector of colours to control the colours of the lines (as defined by the \code{col.by} argument above).  If \code{col.by} is set to "Year",
+the colours are used to form a colour palette.   Otherwise the vector can/should be named to match particular colour values
+to particular Layers/Sources/Sites/Quantities.}
 
-\item{col.by, type.by, size.by, alpha.by}{Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
-Can meaningfully take the values "Year", "Layer", "Source", "Site" or "Quantity". By default \code{col.by} is set to "Year" and all others set to NULL, which means the different aspects are 
-distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.}
+\item{col.by}{Character string defining the aspects of the data which which should be used to set the colour of the lines in each panel,
+all other aspects will be put in separate panels.  Can meaningfully take the values "Year", Layer", "Source", "Site" or "Quantity".
+By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
+the data are distinguished by different facet panels.}
 
-\item{col.labels, type.labels, size.labels, alpha.labels}{A vector of character strings which are used as the labels for the lines. Must have the same length as the
-number of Sources/Layers/Quantities in the plot.  The vectors can/should be named to match particular col/size/type/alpha values to particular Layers/Sources/Sites/Quantities.}
+\item{col.labels}{A vector of character strings which are used as the labels for the lines. As for the \code{cols} arguement it must have
+the same length as the number of Layers/Sources/Sites/Quantities in the plot and the vectors can/should be named to match particular 
+labels to  particular Layers/Sources/Sites/Quantities.}
 
 \item{plotAverage}{Boolean, if TRUE plot the mean of all years}
 
