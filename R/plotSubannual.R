@@ -5,13 +5,24 @@
 #' 
 #' @param fields The data to plot. Can be a Field or a list of Fields.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
+#' @param gridcells A list of gridcells to be plotted (either in different panels or the same panel). For formatting of this argument see \code{selectGridcells}.  
+#' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.
 #' @param subtitle A character string to override the default subtitle.
+#' @param col.by Character string defining the aspects of the data which which should be used to set the colour of the lines in each panel,
+#'  all other aspects will be put in separate panels.  Can meaningfully take the values "Year", Layer", "Source", "Site" or "Quantity".
+#'  By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
+#'  the data are distinguished by different facet panels.  
+#' @param cols A vector of colours to control the colours of the lines (as defined by the \code{col.by} argument above).  If \code{col.by} is set to "Year",
+#' the colours are used to form a colour palette.   Otherwise the vector can/should be named to match particular colour values
+#' to particular Layers/Sources/Sites/Quantities.    
+#' @param col.labels A vector of character strings which are used as the labels for the lines. As for the \code{cols} arguement it must have
+#' the same length as the number of Layers/Sources/Sites/Quantities in the plot and the vectors can/should be named to match particular 
+#' labels to  particular Layers/Sources/Sites/Quantities.    
 #' @param plotAverage Boolean, if TRUE plot the mean of all years
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param alpha A numeric (range 0-1), to give the transparency (alpha) of the annual lines
-#' @param year.col.gradient A colour palette as a function to use to colour the annual lines according to their Year.  Only works for a single Quantity and a single Source.
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 #' \itemize{
@@ -38,12 +49,15 @@
 
 plotSubannual <- function(fields, # can be a Field or a list of Fields
                           layers = NULL,
+                          gridcells = NULL,
                           title = NULL,
                           subtitle = NULL,
+                          cols = NULL,
+                          col.by = "Year",
+                          col.labels = waiver(),
                           plotAverage = TRUE,
                           text.multiplier = NULL,
                           plot = TRUE,
-                          year.col.gradient = NULL,
                           alpha = 0.2,
                           ...) {
   
@@ -79,13 +93,51 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   
   ### PREPARE AND CHECK DATA FOR PLOTTING
-  final.fields <- trimFieldsForPlotting(fields, layers)
+  final.fields <- trimFieldsForPlotting(fields, layers, gridcells = gridcells)
   
   ### MERGE DATA FOR PLOTTING INTO ONE BIG DATA.TABLE
+  # MF TODO maybe make some clever checks on these switches
+  if("Lon" %in% dim.names & "Lat" %in% dim.names) add.Site <- TRUE
+  else add.Site <- FALSE
+  add.Region <- TRUE
+  
   # MF TODO: Consider adding add.TimePeriod?
-  data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = TRUE, add.Site = FALSE, add.Region = FALSE)
+  data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = TRUE, add.Site = add.Site, add.Region = TRUE)
   
+  ### XX. FACETTING
   
+  # all column names, used a lot below 
+  all.columns <- names(data.toplot)
+  
+  # check the col.by arguments 
+  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
+ 
+  # ar first assume facetting by everything except for...
+  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by)
+  facet.vars <- all.columns[!all.columns %in% dontFacet]
+  
+  # then remove facets with only one unique value
+  for(this.facet in facet.vars) {
+    if(length(unique(data.toplot[[this.facet]])) == 1) facet.vars <- facet.vars[!facet.vars == this.facet]
+  }
+  
+  ### MATCH LAYER COLOUR 
+  
+  # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer meta-data
+  if(missing(cols) & col.by == "Layer"){
+    
+    # check the defined Layers present in the Fields and make a unique list
+    # maybe also here check which one are actually in the layers to plot, since we have that information
+    all.layers.defined <- list()
+    for(object in fields){
+      all.layers.defined <- append(all.layers.defined, object@source@defined.layers)
+    }
+    all.layers.defined <- unique(all.layers.defined)
+    
+    
+    all.layers <- unique(as.character(data.toplot[["Layer"]]))
+    cols <- matchLayerCols(all.layers, all.layers.defined)
+  }
   
   #### MAKE LIST OF QUANTITIES AND UNITS FOR Y LABEL
   
@@ -115,24 +167,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(length(unique(quant.str)) == 1){ quant.str <- unique(quant.str) }
   else{ quant.str <- paste(id.str, sep = ", ", collapse = ", ") }
   
-  
-  ##### YEAR COLOUR GRADIENT
-  if(!missing(year.col.gradient) && !is.null(year.col.gradient)) {
-    
-    if(length(unique(data.toplot[["Quantity"]])) > 1) {
-      warning("Since plotSeasonal is already trying to plot multiple quantities, and therefore multiple line colours, the year.col.gradient argument is being ignored ")
-      year.col.gradient <- NULL
-    }
-    
-    else if(is.logical(year.col.gradient)){
-      
-      if(year.col.gradient) year.col.gradient <- viridis::viridis
-      else  year.col.gradient <- NULL
-      
-    }
-    
-  }
-  
+
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(missing(title) || missing(subtitle)) {
     titles <- makePlotTitle(final.fields)  
@@ -145,30 +180,41 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   # return the data if plot = FALSE
   if(!plot) return(data.toplot)
   
-  
+ 
   ###### MAKE THE PLOT ######
   
-  # basic plot
-  if(is.null(year.col.gradient)) {
-    p <- ggplot(as.data.frame(data.toplot), aes(get(subannual.dimension), Value, colour = Quantity, group = interaction(Year, Quantity)), alpha = alpha) + geom_line(alpha = alpha)
-    # add average line if chosen
+  # basic plot and colour scale
+  p <- ggplot(as.data.frame(data.toplot), aes(get(subannual.dimension), Value, colour = get(col.by), group = interaction(Year, get(col.by))), alpha = alpha) + geom_line(alpha = alpha)
+  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
+  
+  # if colouring by Year add a continuous scale (special case)
+  if(col.by == "Year") {
+    p <- p + scale_color_gradientn(colours = viridis::viridis(100), name = "Year")
     if(plotAverage) {
-      p <- p + stat_summary(aes(group=Quantity, color=paste("mean", Quantity)), fun.y=mean, geom="line", size = 1, linetype = "longdash")
+         p <- p + stat_summary(aes(group=col.by, linetype = "mean year"), fun.y=mean, geom="line", size = 1)
+         p <- p + scale_linetype_manual(values=c("mean year"="longdash"), name = element_blank())
     }
   }
+  # else colour discretely
   else {
-    p <- ggplot(as.data.frame(data.toplot), aes(get(subannual.dimension), Value, colour = Year, group = interaction(Year, Quantity)), alpha = alpha) + geom_line(alpha = alpha)
-    p <- p + scale_color_gradientn(colours = year.col.gradient(100))
-    # add average line if chosen
+    p <- p + labs(colour=col.by)
+
     if(plotAverage) {
-      p <- p + stat_summary(aes(group=Quantity, linetype = "mean year"), fun.y=mean, geom="line", size = 1)
-      p <- p + scale_linetype_manual(values=c("mean year"="longdash"), name = element_blank())
+ 
+        # get the colours to colour the points by
+        g <- ggplot_build(p)
+        extracted.cols <- unique(g$data[[1]][["colour"]])
+       
+        # add the mean stat and the fill scale
+        p <- p + stat_summary(aes(group=get(col.by), fill = get(col.by)), fun.y=mean, geom="point", color="black", shape = 21)
+        p <- p + scale_fill_manual(values =extracted.cols, name = "Mean year", labels = col.labels)
+     
     }
   }
   
   
   # set the x-axis
-  if(subannual.dimension == "Month") p <- p + scale_x_continuous(breaks = 1:12,labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep","Oct","Nov","Dec"))
+  if(subannual.dimension == "Month") p <- p + scale_x_continuous(breaks = 1:12, labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep","Oct","Nov","Dec"))
   
   # set the title
   p <- p + labs(title = title, subtitle = subtitle,  y = paste(quant.str, " (", unit.str, ")", sep = ""), x = subannual.dimension)
@@ -176,12 +222,11 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
                  plot.subtitle = element_text(hjust = 0.5))
   
   # set legend 
-  if(is.null(year.col.gradient)) p <- p + theme(legend.title=element_blank())
   p <- p + theme(legend.position = "right", legend.key.size = unit(2, 'lines'))
   
   # wrap to split by source
-  p <- p + facet_wrap(~Source, ...)
-
+  p <- p + facet_wrap(facet.vars, ...)
+  
   # overall text multiplier
   if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   

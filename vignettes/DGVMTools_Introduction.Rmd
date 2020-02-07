@@ -286,7 +286,7 @@ London.mlai <- getField(source = GUESS.run,
 
 # plot LAI
 print(plotSubannual(field = London.mlai,
-                   year.col.gradient = TRUE,
+                   col.by = "Year",
                    alpha = 0.5))
 
 ```
