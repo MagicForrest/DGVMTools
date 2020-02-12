@@ -28,7 +28,7 @@
 gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
   nlat <- length(lat)
   area <- array(0.0, nlat)
-
+  
   lat.border <- array(0.0, nlat+1)
   lat.border[1] = lat[1] - (lat[2] -lat[1])/2.
   for (i in 2:nlat) {
@@ -37,9 +37,9 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
   lat.border[nlat+1] = lat[nlat] + (lat[nlat] - lat[nlat-1])/2.
   
   for (i in 1:nlat) {
-# this causes a negligible difference (510.068 compared to 510.1013 10^6 km^2 @ 0.5 degree resolution globally).
+    # this causes a negligible difference (510.068 compared to 510.1013 10^6 km^2 @ 0.5 degree resolution globally).
     if (ellipse)
-        .EarthRadius = .EarthRadius.equator * cos(lat[i]/180.0*pi)^2 + .EarthRadius.polar * sin(lat[i]/180*pi)^2;
+      .EarthRadius = .EarthRadius.equator * cos(lat[i]/180.0*pi)^2 + .EarthRadius.polar * sin(lat[i]/180*pi)^2;
     x <- cos(lat[i]/180.0*pi) * 2. * pi * .EarthRadius / (360.0/dlon);
     y <- 2 * pi * .EarthRadius * (abs(lat.border[i+1] - lat.border[i]) / 360.);
     area[i] <- x*y
@@ -176,12 +176,12 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = 
   Lat = Lon = Area = NULL
   if (is.na(unit))
     unit="m^2"
-
+  
   if (!is.logical(ellipse)) {
     warning(paste("'ellipse=", ellipse,"' is not boolean. Using FALSE instead.", sep=""))
     ellipse=FALSE
   }
-
+  
   if (is.data.table(input) || is.data.frame(input)) {
     if (verbose)
       message("Input is a data.table or data.frame.")
@@ -195,9 +195,9 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = 
   } else {
     stop(paste("addArea: Don't know what to to with class", class(input)))
   }
-
- area <- gridarea2d(lon, lat, ellipse=ellipse)
- 
+  
+  area <- gridarea2d(lon, lat, ellipse=ellipse)
+  
   if (is.data.table(input) || is.Field(input)) {
     area <- as.data.table(area)
     if (is.data.table(input)) {
@@ -206,27 +206,23 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = 
       setKeyDGVM(area)
     }
   }
-
+  
   if (unit!="m^2") {
-   
+    
     if(unit == "km^2") area[, Area := Area / 10^6]
     else if(unit == "ha") area[, Area := Area / 10^4]
     else stop(paste("Unsupported unit string in addArea", unit))
-   
+    
   }
   
   
   
-  #input <- na.omit(input)
-
   if (is.data.table(input)) {
-  
     
     setKeyDGVM(area)
     setkeyv(input, key(area))
-
-    input <- copyLayers(from = area, to = input, layer.names = "Area", tolerance = tolerance)
- 
+    input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE, tolerance = tolerance)
+    
     
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "' to data.table.", sep=""))
@@ -240,20 +236,8 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = 
     
     setKeyDGVM(area)
     input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE, tolerance = tolerance)
-   
-    # dt <- input@data
-    # 
-    # 
-    # 
-    # setKeyDGVM(area)
-    # setkeyv(dt, key(area))
-    # 
-    # print(dt)
-    # print(area)
-    # dt <- area[dt]
-    # print(dt)
-    #     input@data <- dt
-        
+    
+    
     if (verbose)
       message(paste("Added column 'Area' in unit '", unit, "'' to data.table in slot 'data'.", sep=""))
     return(input)
