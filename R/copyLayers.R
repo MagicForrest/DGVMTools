@@ -79,7 +79,7 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
   # set names if required
   if(!is.null(new.layer.names)) setnames(layers.to.add.dt, append(common.dims, new.layer.names))
   
-  # handle the coordinate matching if required
+  # handle the coordinate matching if required (only)
   if(do.nearest) {
     
     if(length(tolerance) == 1) tolerance <- c(tolerance, tolerance)
@@ -87,32 +87,36 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
     nearest <- function(x, matched.vector) {
       return(matched.vector[as.character(x)])
     }
-   
+    
     # get the unique dimensions values
     to.all.dim.values <- getDimInfo(to, "values")
     added.all.dim.values <- getDimInfo(layers.to.add.dt, "values")
     
-    # build longitude look-up table
-    lon.lookup.vector <- numeric()
-    for(add.lon in added.all.dim.values[["Lon"]]) {
-      closest <- to.all.dim.values[["Lon"]][which.min(abs(to.all.dim.values[["Lon"]]-add.lon))]
-      if(abs(add.lon-closest) < tolerance[1] ) lon.lookup.vector <- append(lon.lookup.vector, closest)
-      else lon.lookup.vector <- append(lon.lookup.vector, NA)
+    # build longitude look-up table and do the look-up (only in longitude is present) 
+    if("Lon" %in% getDimInfo(layers.to.add.dt)) {
+      lon.lookup.vector <- numeric()
+      for(add.lon in added.all.dim.values[["Lon"]]) {
+        closest <- to.all.dim.values[["Lon"]][which.min(abs(to.all.dim.values[["Lon"]]-add.lon))]
+        if(abs(add.lon-closest) < tolerance[1] ) lon.lookup.vector <- append(lon.lookup.vector, closest)
+        else lon.lookup.vector <- append(lon.lookup.vector, NA)
+      }
+      names(lon.lookup.vector) <- as.character(added.all.dim.values[["Lon"]])
+      # do the look up
+      layers.to.add.dt[, Lon := apply(.SD, 1, FUN = nearest, lon.lookup.vector), .SDcols = c("Lon")]
     }
-    names(lon.lookup.vector) <- as.character(added.all.dim.values[["Lon"]])
-
-    # build latitude look-up table
-    lat.lookup.vector <- numeric()
-    for(add.lat in added.all.dim.values[["Lat"]]) {
-      closest <- to.all.dim.values[["Lat"]][which.min(abs(to.all.dim.values[["Lat"]]-add.lat))]
-      if(abs(add.lat-closest) < tolerance[2] ) lat.lookup.vector <- append(lat.lookup.vector, closest)
-      else lat.lookup.vector <- append(lat.lookup.vector, NA)
+    
+    # build latitude look-up table and do the look-up (only in latitude is present) 
+    if("Lat" %in% getDimInfo(layers.to.add.dt)) {
+      lat.lookup.vector <- numeric()
+      for(add.lat in added.all.dim.values[["Lat"]]) {
+        closest <- to.all.dim.values[["Lat"]][which.min(abs(to.all.dim.values[["Lat"]]-add.lat))]
+        if(abs(add.lat-closest) < tolerance[2] ) lat.lookup.vector <- append(lat.lookup.vector, closest)
+        else lat.lookup.vector <- append(lat.lookup.vector, NA)
+      }
+      names(lat.lookup.vector) <- as.character(added.all.dim.values[["Lat"]])
+      # do the look up
+      layers.to.add.dt[, Lat := apply(.SD, 1, FUN = nearest, lat.lookup.vector), .SDcols = c("Lat")]
     }
-    names(lat.lookup.vector) <- as.character(added.all.dim.values[["Lat"]])
-
-    # do the look up
-    layers.to.add.dt[, Lon := apply(.SD, 1, FUN = nearest, lon.lookup.vector), .SDcols = c("Lon")]
-    layers.to.add.dt[, Lat := apply(.SD, 1, FUN = nearest, lat.lookup.vector), .SDcols = c("Lat")]
     
     # set key and merge
     setKeyDGVM(to.dt)

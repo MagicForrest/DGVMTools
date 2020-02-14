@@ -213,7 +213,7 @@ compareLayers <- function(field1,
   ### Else, not-so-easy-life is having to check the domains and keeping points or not
   else {
     if(verbose) message("Not so easy life! Fields don't have the same dimensions, doing a copyLayers() operation.")
-   
+    
     new.data <- copyLayers(from = layer.field2, 
                            to = layer.field1, 
                            layer.names = new.ids.2, 
@@ -238,14 +238,15 @@ compareLayers <- function(field1,
     print(new.data)
   }
   
-  # make meta-data for the Comparison
+  # make new id for the Comparison
   id <- paste0(new.ids.1, "-", new.ids.2)
-  se <- extent(new.data)
-  if(!identical(field1@quant, field1@quant)) {
-    if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity", field1@quant@id))
+  
+  # warn/stop if quantities are different
+  if(!identical(field1@quant, field2@quant)) {
+    if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity ", field1@quant@id))
     else stop("Comparing different Quantity")
   }
-
+  
   ### Calculate the approriate statistical comparisons
   
   if(type == "continuous") {
@@ -262,7 +263,7 @@ compareLayers <- function(field1,
     temp.list <- seasonalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
     new.data <- temp.list[["dt"]]
     stats<- temp.list[["stats"]]
-
+    
     setnames(new.data, 
              c("C_1", "C_2", "P_1", "P_2"), 
              c(paste("Seasonal Concentration", field1@id, sep = "."), 
@@ -270,7 +271,7 @@ compareLayers <- function(field1,
                paste("Seasonal Phase", field1@id, sep = "."), 
                paste("Seasonal Phase", field2@id, sep = "."))
     )
-   
+    
   }
   
   else if(type == "categorical") {

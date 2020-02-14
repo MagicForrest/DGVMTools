@@ -1,9 +1,9 @@
-## ----packages and setup, echo=FALSE--------------------------------------
+## ----packages and setup, echo=FALSE-------------------------------------------
   knitr::opts_chunk$set(echo=FALSE, fig.width=8, autodep=TRUE)
 library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 
 
-## ----Define source, echo=TRUE--------------------------------------------
+## ----Define source, echo=TRUE-------------------------------------------------
 
 # a little bit of magic to get the path to the example data included in the package on your system
 example.run.directory <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
@@ -16,28 +16,28 @@ GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
 
 
 
-## ----Source info, echo=TRUE----------------------------------------------
+## ----Source info, echo=TRUE---------------------------------------------------
 class(GUESS.run)
 print(GUESS.run)
 
-## ----Get data, echo=TRUE-------------------------------------------------
+## ----Get data, echo=TRUE------------------------------------------------------
 LAI.full <- getField(source = GUESS.run, 
                      var = "lai")
 
-## ----Field info, echo=TRUE-----------------------------------------------
+## ----Field info, echo=TRUE----------------------------------------------------
 print(LAI.full)
 
-## ----Get data with year aggregation, echo=TRUE---------------------------
+## ----Get data with year aggregation, echo=TRUE--------------------------------
 LAI.year.mean <- getField(source = GUESS.run, 
                           var = "lai", 
                           year.aggregate.method = "mean")
 
 
-## ----Check dimensions, echo = TRUE---------------------------------------
+## ----Check dimensions, echo = TRUE--------------------------------------------
 getDimInfo(LAI.full)
 getDimInfo(LAI.year.mean)
 
-## ----Get data with spatial aggregation, echo = TRUE----------------------
+## ----Get data with spatial aggregation, echo = TRUE---------------------------
 LAI.spatial.mean <- getField(source = GUESS.run, 
                              var = "lai", 
                              spatial.aggregate.method = "mean")
@@ -59,7 +59,7 @@ print(plotTemporal(LAI.spatial.mean))
 print(plotSpatial(LAI.spatial.mean))
 print(plotTemporal(LAI.year.mean))
 
-## ----layerOp, echo=TRUE--------------------------------------------------
+## ----layerOp, echo=TRUE-------------------------------------------------------
 
 # calculate tree total the long way around
 LAI.year.mean <- layerOp(x = LAI.year.mean, operator = "+", layers = c("BINE", "BNE", "BNS", "IBS", "TeBS", "TeBE", "TeNE", "TrBE", "TrIBE", "TrBR"), new.layer = "TreeTotal1")
@@ -73,7 +73,7 @@ print(LAI.year.mean)
 print(plotSpatial(LAI.year.mean, c("TreeTotal1", "TreeTotal2", "TreeTotalDiff")))
 
 
-## ----layerOp max, echo=TRUE----------------------------------------------
+## ----layerOp max, echo=TRUE---------------------------------------------------
 
 # calculate maximum PFT 
 LAI.year.mean <- layerOp(LAI.year.mean, "max.layer", ".PFT", "MaxPFT")
@@ -95,7 +95,7 @@ LAI.year.mean <- layerOp(LAI.year.mean, "max.layer", c("Tree", "Grass"), "MaxLif
 # plot
 print(plotSpatial(LAI.year.mean, c("MaxLifeform")))
 
-## ----layerOp fraction, echo=TRUE-----------------------------------------
+## ----layerOp fraction, echo=TRUE----------------------------------------------
 
 # calculate maximum PFT 
 LAI.year.mean <- layerOp(LAI.year.mean, "/", c("Tree", "Total"), "TreeFraction")
@@ -104,7 +104,7 @@ LAI.year.mean <- layerOp(LAI.year.mean, "/", c("Grass", "Total"), "GrassFraction
 # plot
 print(plotSpatial(LAI.year.mean, c("TreeFraction", "GrassFraction")))
 
-## ----open data, echo=TRUE------------------------------------------------
+## ----open data, echo=TRUE-----------------------------------------------------
 
 # new Source (different model run, this time over fFrica)
 GUESS.Africa.run <- defineSource(id = "LPJ-GUESS_Example_Africa",
@@ -138,7 +138,7 @@ Saatchi.vegC <- getField(source = Saatchi.dataset,
 print(Saatchi.vegC)
 print(plotSpatial(Saatchi.vegC))
 
-## ----comparison, fig.asp = 1, echo=TRUE----------------------------------
+## ----comparison, fig.asp = 1, echo=TRUE---------------------------------------
 # compare layers to produce a Comparison object
 vegC.comparison <- compareLayers(field1 = GUESS.vegC, field2 = Saatchi.vegC, layers1 = "Tree", layers2 = "Tree")
 
@@ -155,7 +155,7 @@ print(plotSpatialComparison(vegC.comparison, type = "values"))
 print(plotScatterComparison(vegC.comparison))
 
 
-## ----select, fig.asp = 1, echo=TRUE--------------------------------------
+## ----select, fig.asp = 1, echo=TRUE-------------------------------------------
 
 # define a gridecll and the get a Field of the monthly LAI for the gridcell
 gridcell <- data.frame(Lon = c(0.25), Lat = c(51.25))
@@ -167,18 +167,18 @@ London.mlai <- getField(source = GUESS.run,
 
 # plot LAI
 print(plotSubannual(field = London.mlai,
-                   year.col.gradient = TRUE,
+                   col.by = "Year",
                    alpha = 0.5))
 
 
-## ----model biomes, echo=TRUE---------------------------------------------
+## ----model biomes, echo=TRUE--------------------------------------------------
 
 # read and plot global biomes
 biomes.model <- getScheme(GUESS.run, Smith2014BiomeScheme, year.aggregate.method = "mean")
 #print(plotSpatial(biomes.model, map.overlay = "world"))
 print(plotSpatial(biomes.model))
 
-## ----data biomes, echo=TRUE----------------------------------------------
+## ----data biomes, echo=TRUE---------------------------------------------------
 
 # data biomes source
 biomes.source <- defineSource(id = "DataBiomes",
@@ -189,7 +189,7 @@ biomes.data <- getField(source = biomes.source, var = "Smith2014")
 print(plotSpatial(biomes.data))
 
 
-## ----biomes comparison, echo=TRUE----------------------------------------
+## ----biomes comparison, echo=TRUE---------------------------------------------
 
 biome.comparison <- compareLayers(field1 = biomes.model, field2 = biomes.data, layers1 = "Smith2014", layers2 = "Smith2014")
 
@@ -204,7 +204,7 @@ print(plotSpatialComparison(biome.comparison, type = "difference"))
 
 
 
-## ----facetting, echo=TRUE------------------------------------------------
+## ----facetting, echo=TRUE-----------------------------------------------------
 # make a plot with silly facets
 lifeform.plot <- plotSpatial(LAI.year.mean, layers = c("Tree", "Grass", "Total"), ylim = c(35,45))
 print(lifeform.plot)
@@ -213,7 +213,7 @@ print(lifeform.plot)
 lifeform.plot <- lifeform.plot + facet_wrap(~Facet, nrow =3)
 print(lifeform.plot)
 
-## ----legends, echo=TRUE--------------------------------------------------
+## ----legends, echo=TRUE-------------------------------------------------------
 
 # ove and format legends, and make the text slightly smaller
 biome.plot <- plotSpatialComparison(biome.comparison, type = "values")

@@ -143,6 +143,7 @@ openLPJOutputFile <- function(run,
   
   # if spatial extent specified, crop to it
   new.extent <- NULL
+  full.extent <- extent(dt)
   if(!is.null(target.sta@spatial.extent)) {
     
     spatial.extent.class <- class(target.sta@spatial.extent)[1]
@@ -156,10 +157,8 @@ openLPJOutputFile <- function(run,
     
     else {
       dt <- crop(x = dt, y = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id)
-      new.extent <- extent(dt)
+      new.extent <- target.sta@spatial.extent
     } 
-    
-    
     
   }
   
@@ -275,9 +274,9 @@ openLPJOutputFile <- function(run,
     sta.info@spatial.extent = new.extent
     sta.info@spatial.extent.id <- target.sta@spatial.extent.id
   }
-  # otherwise set
+  # otherwise set to the (potentially what the extent was before spatial aggregating)
   else {
-    sta.info@spatial.extent = extent(dt)
+    sta.info@spatial.extent = full.extent
     sta.info@spatial.extent.id <- "Full"
   }
   

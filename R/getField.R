@@ -211,11 +211,15 @@ getField <- function(source,
   
   
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
-  if(verbose) message(paste("Field ", target.field.id, " not already saved (or 'read.full' argument set to TRUE), so reading full data file to create the field now.", sep = ""))
+  if(verbose) {
+    if(read.full) message(paste("'read.full' argument set to TRUE, so reading full data file to create the field now.", sep = ""))
+    else if(!read.full && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", target.field.id, " not already saved, so reading full data file to create the field now.", sep = ""))
+    else message(paste("Details of the spatial extent",  sta.info@spatial.extent.id, "didn't match.  So file on disk ignored and the original data is being re-read"))
+  }
   
   this.Field <- source@format@getField(source, quant, sta.info, file.name, verbose, ...)
   actual.sta.info <- as(this.Field, "STAInfo")
- 
+  
   
   ### CROP THE SPATIAL EXTENT IF REQUESTED
   if(!is.null(sta.info@spatial.extent) && sta.info@spatial.extent.id != actual.sta.info@spatial.extent.id)  {
@@ -275,7 +279,7 @@ getField <- function(source,
       
       if(verbose) message(paste("Selecting years from", first.year, "to", last.year, sep = " "))
       this.Field <- selectYears(this.Field, first = first.year, last = last.year) 
- 
+      
     }
     else {
       if(verbose) message("No year selection being applied")
@@ -285,11 +289,11 @@ getField <- function(source,
   
   ### CHECK THAT WE HAVE A VALID DATA.TABLE
   if(nrow(this.Field@data) == 0) stop("getField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
-
+  
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(sta.info@spatial.aggregate.method != "none") {
     
-     if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
+    if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
       
       this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose)
       
@@ -305,7 +309,7 @@ getField <- function(source,
     if("Year" %in% getDimInfo(this.Field, "names")){
       
       this.Field <- aggregateYears(this.Field, method = sta.info@year.aggregate.method, verbose = verbose)
-     
+      
       if(verbose) {
         message("Head of year aggregated data:")
         print(utils::head(this.Field@data))
@@ -338,7 +342,7 @@ getField <- function(source,
     }
   }
   
- 
+  
   ### WRITE THE FIELD TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMField object...")}
