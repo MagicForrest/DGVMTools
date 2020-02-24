@@ -47,6 +47,12 @@ Current release is v0.8.1.  See [NEWS.md](NEWS.md).
 
 ---
 
+### Notes and Issues
+
+* Currently plotSpatial gives unnecessary warnings about raster pixels being placed at uneven horizontal and being shifted.  This is nothing to worry about and can be ignored.  Unfortunately these warnings are difficult to suppress because they occur when the plot is being rendered (i.e. with a print command) and not when they are made (with plotSpatial).  To suppress them one can either wrap the the print command in "suppressWarnings" or call plotSpatial with "tile = TRUE" (with the downside that the plot will take a little bit longer to render).  Neither of these options are particularly satisfactory, but currently there is no other fix (apart form simply ignoring the warnings).  
+
+---
+
 ### Contact
 
 Please file bug reports and feature requests at https://github.com/MagicForrest/DGVMTools/issues.
