@@ -249,8 +249,16 @@ plotTemporal <- function(fields,
   
   ### PLOT! - now make the plot
   p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = type.by, size = size.by, alpha = alpha.by))
-  if(!missing(sizes)) p <- p + geom_line(data = data.toplot, size = sizes)
-  else p <- p + geom_line(data = data.toplot)
+  
+  # build arguments for 'fixed' aesthetic to geom_line
+  arguments.for.geom_line <- list(data = data.toplot)
+  if(!missing(sizes) && is.null(size.by)) arguments.for.geom_line[["size"]] <- sizes
+  if(!missing(cols) && is.null(col.by)) arguments.for.geom_line[["colour"]] <- cols
+  if(!missing(alphas) && is.null(alpha.by)) arguments.for.geom_line[["alpha"]] <- alphas
+  if(!missing(types) && is.null(type.by)) arguments.for.geom_line[["linetype"]] <- types
+  
+  # call geom_line (with fixed aesthetics define above)
+  p <- p + do.call(geom_line, arguments.for.geom_line)
   
   # line formatting
   if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
