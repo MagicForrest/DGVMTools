@@ -1,29 +1,25 @@
 #!/usr/bin/Rscript
 
 
-#################################################################################################################################################
-################################################## PLOT COMPARISON MAPS #########################################################################
-#################################################################################################################################################
+##### PLOT TEMPORAL COMPARISON  ######
 
-
-#' Plot a comparison between two spatial layers
+#' Plot a comparison between two Temporal layers
 #' 
 #' This function is for plotting maps from Comparison objects (or a list of those Comparisons).  Three types of comparisons plots are supported: 'difference' - 
 #' a difference map; "values" - the absolute values plotted in panels and "percentage.difference" - the percentage differences.  
 #' 
 #' @param comparisons The data to plot, must be a Comparison or a list of Comparisons
-#' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
-#' (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)
+#' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "
+#' percentage.difference", "values" (actual values, side-by-side).
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
-#' @param panel.bg.col Colour string for the panel background, default to "white" for absolute values plots, and a grey for difference plots.
-#' @param override.cols A colour palette function to override the defaults.
 #' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)
 #' @param percentage.difference.limit If percentage difference to be plotted, what to limit the scale to.  Default is 300.
 #' @param do.phase Logical, only applies to plotting Comparison objects of type "seasonal".
+#' @param plot.zero.line Logical, if TRUE (default) plot a black line at y=0 in difference plots to better guide the eye for 
 #' If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.
-#' @param ... Parameters passed to \code{plotSpatial()}
+#' @param ... Parameters passed to \code{plotTemporal()}
 #' 
-#' @details  A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  Extra arguments to \code{plotSpatial} can also be specified. 
+#' @details  A wrapper for around \code{plotTemporal()} to plot the temporal Comparisons as maps.  Extra arguments to \code{plotTemporal} can also be specified. 
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -31,16 +27,15 @@
 #' @import ggplot2 data.table
 #' 
 #' @export 
-#' @seealso \code{plotSpatial},  \code{compareLayers}
+#' @seealso \code{plotTemporal},  \code{compareLayers}
 
-plotSpatialComparison <- function(comparisons,
+plotTemporalComparison <- function(comparisons,
                                   type = c("difference", "percentage.difference", "values", "nme"),
                                   limits = NULL,
-                                  panel.bg.col = "white",
-                                  override.cols = NULL,
                                   symmetric.scale = TRUE,
                                   percentage.difference.limit = 300,
                                   do.phase = FALSE,
+                                  plot.zero.line = TRUE,
                                   ...){
   
   Source = Value = Lat = Lon = Layer = long = lat = group = NULL
@@ -62,7 +57,7 @@ plotSpatialComparison <- function(comparisons,
   
   ### 2. DIMENSIONS - check the dimensions (require that all fields the same dimensions and that they include 'Lon' and 'Lat' )
   
-  dim.names <- santiseDimensionsForPlotting(comparisons, require = c("Lon", "Lat"))
+  dim.names <- santiseDimensionsForPlotting(comparisons, require = c("Year"))
   if(is.null(dim.names)) return(NULL)
   # dim names not used later
   
@@ -75,7 +70,6 @@ plotSpatialComparison <- function(comparisons,
     # convert the Comparisons into a Fields  for plotting 
     objects.to.plot <- list()
     max.for.scale <- 0
-    final.layers.to.plot <- c()
     for(object in comparisons){ 
       
       # special case for seasonal comparisons, the layers are actually called "SeasonalConcentration" and "SeasonalPhase"
@@ -119,9 +113,7 @@ plotSpatialComparison <- function(comparisons,
       temp.dt <- object@data
       layers.to.plot <- c()
       for(layer.counter in 1:length(expected.layers.1)) {
-        
         difference.column.name <- paste()
-        
         if(object@type == "categorical")  {
           difference.column.name <- paste("Difference", object@layers1[layer.counter])
           layers.to.plot <- append(layers.to.plot, difference.column.name)
@@ -174,28 +166,17 @@ plotSpatialComparison <- function(comparisons,
       
     }
     
-    # get the unique layer names (since their might be duplicates)
-    layers.to.plot <- unique(final.layers.to.plot)
-    
-    # set the colours
-    if(missing(override.cols)) override.cols <-  rev(RColorBrewer::brewer.pal(11, "RdBu"))
-    
     # set a symmetric scale (so zero always white/centre colour)
     if(symmetric.scale) limits <- c(-max.for.scale, max.for.scale)
-    
-    # if no panel background panel colour specified, use a non-white one
-    if(missing(panel.bg.col)) panel.bg.col = "#999999"
-    
-    the.plot <- plotSpatial(objects.to.plot,
-                            layers = layers.to.plot,
-                            cols = override.cols,
-                            limits = limits,
-                            panel.bg.col = panel.bg.col,
+
+    the.plot <- plotTemporal(objects.to.plot,
+                            y.lim = limits,
+                            y.label = paste0("Difference ", objects.to.plot[[1]]@quant@name, " (", objects.to.plot[[1]]@quant@units, ")"),
                             ...)
     
     
     
-    if(object@type[[1]] == "categorical") the.plot <- the.plot + scale_fill_discrete(name = "Agreement")
+    if(plot.zero.line) the.plot <- the.plot + geom_hline(yintercept = 0, linetype = "dashed", colour = "black")
     return(the.plot)
     
   }
@@ -275,16 +256,11 @@ plotSpatialComparison <- function(comparisons,
       
     }
     
-    return(plotSpatial(objects.to.plot,
+    return(plotTemporal(objects.to.plot,
                        layers =  unique(layers.to.plot),
-                       cols = override.cols,
-                       limits = limits,
+                       y.lim = limits,
                        ...))
     
-    
-    
   }
-  
-  
   
 }

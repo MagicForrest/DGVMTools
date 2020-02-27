@@ -120,7 +120,6 @@ plotTemporal <- function(fields,
   # Final data.table for plotting.  Actual values are in a column called "Value"
   data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = add.Quantity, add.Site = add.Site, add.Region = add.Region)
   
-  
   ### 7. MAKE THE Y-AXIS LABEL
   
   if(is.null(y.label)) {
@@ -133,15 +132,16 @@ plotTemporal <- function(fields,
     
     # select the unique ones
     all.quant.tuples <- unique(all.quant.tuples)
-
+    
     # form the label string
     y.axis.label <- character(0)
     for(this.tuple in all.quant.tuples) {
       y.axis.label <- paste0(y.axis.label, paste0(this.tuple[1], " (", this.tuple[2], "),\n") )
     }
     y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
+    y.label <- y.axis.label
   }
- 
+  
   # check the defined Layers present in the Fields and make a unique list
   # maybe also here check which one are actually in the layers to plot, since we have that information
   all.layers.defined <- list()
@@ -206,9 +206,9 @@ plotTemporal <- function(fields,
     }
     #
   }
-
+  
   ### 10. FACETTING
- 
+  
   # all column names, used a lot below 
   all.columns <- names(data.toplot)
   
@@ -249,15 +249,15 @@ plotTemporal <- function(fields,
   
   ### PLOT! - now make the plot
   p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = type.by, size = size.by, alpha = alpha.by))
-  p <- p + geom_line(data = data.toplot)
-  
+  if(!missing(sizes)) p <- p + geom_line(data = data.toplot, size = sizes)
+  else p <- p + geom_line(data = data.toplot)
   
   # line formatting
   if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
   if(!is.null(type.by) & !is.null(types)) p <- p + scale_linetype_manual(values=types, labels=type.labels)
   if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
-
+  
   # labels and positioning
   p <- p + labs(title = title, subtitle = subtitle, y = y.label)
   p <- p + theme(legend.title=element_blank())
@@ -271,7 +271,7 @@ plotTemporal <- function(fields,
   # set limits
   if(!is.null(x.lim)) p <- p + xlim(x.lim)
   if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
-  p <- p + labs(y = y.axis.label)
+  else p <- p + labs(y = y.label)
   
   # facetting
   if(length(vars.facet > 0)){
