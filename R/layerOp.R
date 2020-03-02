@@ -28,13 +28,9 @@
 #' @export  
 #'    
 
-layerOp <- function(x, operator, layers, new.layer, constant){
-  
+layerOp <- function(x, operator, layers, new.layer, constant = 1){
+
   t1 <- Sys.time()
-  
-  # check we have a constant for the constant operators
-  if(missing(constant) && operator %in% c("mulc", "divc", "addc", "subc")) stop("A constant is required for operators mulc/divc/addc/subc")
-  
   
   ### PREAMBLE - find layers which start with a '.' and expand them to Layer ids
   final.layers <- c()
@@ -89,6 +85,9 @@ layerOp <- function(x, operator, layers, new.layer, constant){
   # else if character
   else if(is.character(operator)) {
     
+    # check we have a constant for the constant operators
+    if(missing(constant) && (operator %in% c("mulc", "divc", "addc", "subc"))) stop("A constant is required for operators mulc/divc/addc/subc")
+  
     # add
     if(operator == "+" || operator == "sum" || operator == "add") {
       if(missing(new.layer)) new.layer <- paste0(layers, collapse = "+")

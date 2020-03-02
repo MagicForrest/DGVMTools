@@ -157,7 +157,7 @@ openLPJOutputFile <- function(run,
     
     else {
       dt <- crop(x = dt, y = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id)
-      new.extent <- target.sta@spatial.extent
+      new.extent <- extent(target.sta@spatial.extent)
     } 
     
   }

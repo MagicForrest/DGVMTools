@@ -20,15 +20,17 @@
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
-#' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
+#' @param text.multiplier A number specifying an overall multiplier for the text on the plot. 
+#' @param plotTrend Boolean, if TRUE plot the linear trend
 #' @param plot Logical, if FALSE return the data.table of data instead of the plot
-#' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+#' @param ... Arguments passed to \code{ggplot2::facet_wrap()} and \code{ggplot2::stat_smooth()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 #' \itemize{
-#'  \item{"nrow"}{The number of rows of facets}
-#'  \item{"ncol"}{The number of columns of facets}
+#'  \item{"nrow"}{The number of rows of facets. (facet_wrap)}
+#'  \item{"ncol"}{The number of columns of facets. (facet_wrap)}
 #'  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
-#'  "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
-#'  \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation} 
+#'  "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively). (facet_wrap)}
+#'  \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation. (facet_wrap)} 
+#'  \item{"se"}{Boolean to determine whether or not to show the confidence intervals for the trend line (stat_smooth)} 
 #' }
 #'   
 #' @details
@@ -65,6 +67,7 @@ plotTemporal <- function(fields,
                          x.lim = NULL,
                          legend.position = "bottom",
                          text.multiplier = NULL,
+                         plotTrend = TRUE,
                          plot = TRUE,
                          ...
 ){
@@ -250,6 +253,9 @@ plotTemporal <- function(fields,
   ### PLOT! - now make the plot
   p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = type.by, size = size.by, alpha = alpha.by))
   
+  # add trend lines
+  if(plotTrend) suppressWarnings( p <- p + stat_smooth(method = "lm", ...) )
+  
   # build arguments for 'fixed' aesthetic to geom_line
   arguments.for.geom_line <- list(data = data.toplot)
   if(!missing(sizes) && is.null(size.by)) arguments.for.geom_line[["size"]] <- sizes
@@ -283,7 +289,7 @@ plotTemporal <- function(fields,
   
   # facetting
   if(length(vars.facet > 0)){
-    p <- p + facet_wrap(vars.facet, ...)
+    suppressWarnings( p <- p + facet_wrap(vars.facet, ...))
   }
   
   return(p)

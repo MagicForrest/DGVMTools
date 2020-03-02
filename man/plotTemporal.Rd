@@ -28,6 +28,7 @@ plotTemporal(
   x.lim = NULL,
   legend.position = "bottom",
   text.multiplier = NULL,
+  plotTrend = TRUE,
   plot = TRUE,
   ...
 )
@@ -63,15 +64,18 @@ number of Sources/Layers/Quantities in the plot.  The vectors can/should be name
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.}
 
+\item{plotTrend}{Boolean, if TRUE plot the linear trend}
+
 \item{plot}{Logical, if FALSE return the data.table of data instead of the plot}
 
-\item{...}{Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+\item{...}{Arguments passed to \code{ggplot2::facet_wrap()} and \code{ggplot2::stat_smooth()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 \itemize{
- \item{"nrow"}{The number of rows of facets}
- \item{"ncol"}{The number of columns of facets}
+ \item{"nrow"}{The number of rows of facets. (facet_wrap)}
+ \item{"ncol"}{The number of columns of facets. (facet_wrap)}
  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
- "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
- \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation} 
+ "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively). (facet_wrap)}
+ \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation. (facet_wrap)} 
+ \item{"se"}{Boolean to determine whether or not to show the confidence intervals for the trend line (stat_smooth)} 
 }}
 }
 \value{

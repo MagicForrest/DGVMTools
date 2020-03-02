@@ -8,11 +8,10 @@ plotTemporalComparison(
   comparisons,
   type = c("difference", "percentage.difference", "values", "nme"),
   limits = NULL,
-  panel.bg.col = "white",
-  override.cols = NULL,
   symmetric.scale = TRUE,
   percentage.difference.limit = 300,
   do.phase = FALSE,
+  plot.zero.line = TRUE,
   ...
 )
 }
@@ -24,15 +23,13 @@ percentage.difference", "values" (actual values, side-by-side).}
 
 \item{limits}{A numeric vector with two members (lower and upper limit) to limit the plotted values.}
 
-\item{panel.bg.col}{Colour string for the panel background, default to "white" for absolute values plots, and a grey for difference plots.}
-
-\item{override.cols}{A colour palette function to override the defaults.}
-
 \item{symmetric.scale}{If plotting a differences, make the scale symmetric around zero (default is TRUE)}
 
 \item{percentage.difference.limit}{If percentage difference to be plotted, what to limit the scale to.  Default is 300.}
 
-\item{do.phase}{Logical, only applies to plotting Comparison objects of type "seasonal".
+\item{do.phase}{Logical, only applies to plotting Comparison objects of type "seasonal".}
+
+\item{plot.zero.line}{Logical, if TRUE (default) plot a black line at y=0 in difference plots to better guide the eye for 
 If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.}
 
 \item{...}{Parameters passed to \code{plotTemporal()}}
