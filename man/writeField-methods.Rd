@@ -10,8 +10,6 @@
 }
 \arguments{
 \item{x}{A Field}
-
-\item{...}{Other arguments, not currently used}
 }
 \value{
 The name of the file written out (probably not so useful, just want to return something)

@@ -4,7 +4,6 @@
 #' must have columns named "Lon" and "Lat" otherwise these methods fail.  
 #' 
 #' @param x A Field, Comaprison or a data.table.
-#' @param ... Other arguments, not currently used
 #' @return A raster::extent
 #' @name extent-methods
 #' @rdname extent-methods

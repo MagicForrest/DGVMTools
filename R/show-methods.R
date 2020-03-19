@@ -5,7 +5,6 @@
 #' Show a DGVMTools object in a reasonably nice and space efficient way.
 #'
 #' @param object Any DGVMTools object to be shown (printed)
-#' @param ... other arguments to be passed on to a further show functions, not currently used.
 #' @name show
 #'
 #' @importMethodsFrom methods show
@@ -18,7 +17,7 @@
 NULL
 
 
-if(!isGeneric("show")) setGeneric("show", function(object, ...) standardGeneric("show"))
+if(!isGeneric("show")) setGeneric("show", function(object) standardGeneric("show"))
 
 
 #' @rdname show
