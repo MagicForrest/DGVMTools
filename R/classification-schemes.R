@@ -157,7 +157,7 @@ Smith2014BiomeScheme <- new("Scheme",
                           # Tropical
                           list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
                           # Total
-                          list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
+                          list(quantity = "LAI_std", operator = "+", layers = ".PFT", new.layer = "Total"),
                           
                           ### Get max tree
                           list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
@@ -367,7 +367,7 @@ Hickler2012BiomeScheme <- new("Scheme",
                             # MaxTree
                             list(quantity = "LAI_std", operator = "max.layer", layers =".Tree", new.layer = "MaxTree"),
                             # MaxPFT
-                            list(quantity = "LAI_std", operator = "max.layer","layers =.PFTs", new.layer = "MaxPFT"),
+                            list(quantity = "LAI_std", operator = "max.layer","layers =.PFT", new.layer = "MaxPFT"),
                             # GrassFraction
                             list(quantity = "LAI_std", operator = "/", layers =c("Grass", "Total"), new.layer = "GrassFraction"),
                             # BorealFractionOfTree
@@ -518,7 +518,7 @@ Forrest2015BiomeScheme <- new("Scheme",
                             # Tropical
                             list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
                             # Total
-                            list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
+                            list(quantity = "LAI_std", operator = "+", layers = ".PFT", new.layer = "Total"),
                             
                             
                             ### Max tree
