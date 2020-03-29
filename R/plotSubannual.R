@@ -224,8 +224,8 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   # set legend 
   p <- p + theme(legend.position = "right", legend.key.size = unit(2, 'lines'))
   
-  # wrap to split by source
-  p <- p + facet_wrap(facet.vars, ...)
+  # facet if necessary
+  if(length(facet.vars) > 0) p <- p + facet_wrap(facet.vars, ...)
   
   # overall text multiplier
   if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
