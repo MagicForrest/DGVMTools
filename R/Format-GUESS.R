@@ -410,7 +410,7 @@ openLPJOutputFile_FireMIP <- function(run,
   
   ## Here look for variables that require conversion to percent
   if(variable == "BA") {
-    guess.var <- "mfirefrac"
+    guess.var <- "monthly_burned_area"
     monthly.to.percent <- TRUE
   }
   if(variable == "ccFuelLiveGrass") {
@@ -848,8 +848,24 @@ getStandardQuantity_LPJ <- function(run,
   # burntfraction_std 
   else if(quant@id == "burntfraction_std") {
     
+    # if annual_burned_area is present the open it and use it
+    if("annual_burned_area" %in% availableQuantities_GUESS(run, names=TRUE)){
+      this.Field <- openLPJOutputFile(run, lookupQuantity("annual_burned_area", GUESS), target.sta, file.name = file.name, verbose = verbose)
+      renameLayers(this.Field, "annual_burned_area", quant@id)
+      
+    }
+    
+    # if monthly_burned_area is present the open it and use it
+    else if("monthly_burned_area" %in% availableQuantities_GUESS(run, names=TRUE)){
+      this.Field <- openLPJOutputFile(run, lookupQuantity("monthly_burned_area", GUESS), target.sta, file.name = file.name, verbose = verbose)
+      this.Field <- aggregateSubannual(this.Field, method = "sum")
+      renameLayers(this.Field, "monthly_burned_area", quant@id)
+      
+    }
+    
+    
     # if mfirefrac is present the open it and use it
-    if("mfirefrac" %in% availableQuantities_GUESS(run, names=TRUE)){
+    else if("mfirefrac" %in% availableQuantities_GUESS(run, names=TRUE)){
       this.Field <- openLPJOutputFile(run, lookupQuantity("mfirefrac", GUESS), target.sta, file.name = file.name, verbose = verbose)
       this.Field <- aggregateSubannual(this.Field, method = "sum")
       renameLayers(this.Field, "mfirefrac", quant@id)
@@ -1441,6 +1457,20 @@ GUESS.quantities <- list(
       units = "years",
       colours = fire.palette,
       format = c("GUESS")),
+  
+  new("Quantity",
+      id = "monthly_burned_area",
+      name = "Monthly Burned Area Fraction",
+      units = "fraction",
+      colours = fields::tim.colors,
+      format = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "annual_burned_area",
+      name = "annual Burned Area Fraction",
+      units = "fraction",
+      colours = fields::tim.colors,
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "fireseason",
