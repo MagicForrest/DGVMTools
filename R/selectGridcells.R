@@ -101,7 +101,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
     
   }
   else if(!(is.data.table(gridcells) || is.data.frame(gridcells))) {
-    stop(paste("Arguments 'gridcells' not of correct type in call to getGridcells(), it should be 'data.table' or 'data.frame', got ", class(gridcells)[1], sep = " "))
+    stop(paste("Arguments 'gridcells' not of correct type in call to getGridcells(), it should be a 'data.table', 'data.frame', 'SpatialPolygonsDataFrame' or a two-element numeric vector (Lon, Lat), got ", class(gridcells)[1], sep = " "))
   }
   else {
     if(ncol(gridcells) < 2) {
@@ -115,10 +115,9 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
         
       }
       
-      if(!is.data.table(gridcells)) { gridcells <- as.data.table(copy(gridcells))   }
-      selection.dt  <- gridcells[,c(1,2)]
+      if(!is.data.table(gridcells)) { selection.dt <- as.data.table(copy(gridcells))[,c(1,2)] }
+      else  { selection.dt <- copy(gridcells)[,c(1,2)] }
       setnames(selection.dt, c("Lon","Lat"))
-      
     }
   }
   
