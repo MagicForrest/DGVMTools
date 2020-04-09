@@ -254,7 +254,7 @@ plotTemporal <- function(fields,
   p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = type.by, size = size.by, alpha = alpha.by))
   
   # add trend lines
-  if(plotTrend) suppressWarnings( p <- p + stat_smooth(method = "lm", ...) )
+  if(plotTrend) suppressWarnings( p <- p + stat_smooth(method = "lm", formula = y ~ x, ...) )
   
   # build arguments for 'fixed' aesthetic to geom_line
   arguments.for.geom_line <- list(data = data.toplot)
