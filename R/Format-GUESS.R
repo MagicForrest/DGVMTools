@@ -851,8 +851,7 @@ getStandardQuantity_LPJ <- function(run,
     # if annual_burned_area is present the open it and use it
     if("annual_burned_area" %in% availableQuantities_GUESS(run, names=TRUE)){
       this.Field <- openLPJOutputFile(run, lookupQuantity("annual_burned_area", GUESS), target.sta, file.name = file.name, verbose = verbose)
-      renameLayers(this.Field, "annual_burned_area", quant@id)
-      
+      renameLayers(this.Field, quant@id)
     }
     
     # if monthly_burned_area is present the open it and use it
@@ -1002,7 +1001,8 @@ GUESS.Layers <- list(
                         leaf.form = "Needleleaved",
                         phenology = "Evergreen",
                         climate.zone = "Boreal",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   # BINE
@@ -1015,7 +1015,8 @@ GUESS.Layers <- list(
                         leaf.form = "Needleleaved",
                         phenology = "Evergreen",
                         climate.zone = "Boreal",
-                        shade.tolerance = "BNE")
+                        shade.tolerance = "BNE",
+                        land.cover = "Natural")
   ),
   
   # BNS
@@ -1028,8 +1029,8 @@ GUESS.Layers <- list(
                         leaf.form = "Needleleaved",
                         phenology = "Summergreen",
                         climate.zone = "Boreal",
-                        shade.tolerance = "None"
-      )
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   # IBS
@@ -1042,7 +1043,8 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Summergreen",
                         climate.zone = "Temperate",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   # TEMPERATE TREES
@@ -1057,7 +1059,8 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Evergreen",
                         climate.zone = "Temperate",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   # TeNE
@@ -1070,7 +1073,8 @@ GUESS.Layers <- list(
                         leaf.form = "Needleleaved",
                         phenology = "Evergreen",
                         climate.zone = "Temperate",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   # TeBS
@@ -1083,7 +1087,8 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Summergreen",
                         climate.zone = "Temperate",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   
@@ -1099,7 +1104,8 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Evergreen",
                         climate.zone = "Tropical",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   
@@ -1113,7 +1119,8 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Evergreen",
                         climate.zone = "Tropical", 
-                        shade.tolerance = "TrBE")
+                        shade.tolerance = "TrBE",
+                        land.cover = "Natural")
   ),
   
   # TrBR 
@@ -1126,7 +1133,8 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Raingreen",
                         climate.zone = "Tropical",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   
@@ -1142,7 +1150,8 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "GrassPhenology",
                         climate.zone = "NA",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   # C4G
@@ -1156,7 +1165,8 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "GrassPhenology",
                         climate.zone = "NA",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   )
   
 )
