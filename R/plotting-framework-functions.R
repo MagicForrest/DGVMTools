@@ -222,13 +222,14 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
 #' @param months The months to be extracted (as a numeric vector), if NULL all months are used
 #' @param seasons The months to be extracted (as a character vector), if NULL all seasons are used
 #' @param gridcells The months to be extracted (as a character vector), if NULL all seasons are used
+#' @param dropEmpty Logical, if TRUE drop layers consisting only of zeros
 #' 
 #' @return Returns a list of Fields
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' 
 #' 
-trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL) {
+trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL, dropEmpty = FALSE) {
 
   J = Year = NULL
   
@@ -245,7 +246,14 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
     all.layers <- names(object)
     layers.present <- c()
     for(this.layer in layers) {
-      if(this.layer %in% all.layers)  layers.present <- append(layers.present, this.layer)
+      # if layer is present
+      if(this.layer %in% all.layers)  {
+        
+        # check if it it non-zero
+        if(!(var(object@data[[this.layer]]) == 0 && sum(object@data[[this.layer]] == 0)) || !dropEmpty)  {
+          layers.present <- append(layers.present, this.layer)
+        }
+      }
     }
     
     # if at least one layer present subset it

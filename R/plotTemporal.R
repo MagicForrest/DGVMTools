@@ -67,6 +67,7 @@ plotTemporal <- function(fields,
                          x.lim = NULL,
                          legend.position = "bottom",
                          text.multiplier = NULL,
+                         dropEmpty = FALSE,
                          plotTrend = TRUE,
                          plot = TRUE,
                          ...

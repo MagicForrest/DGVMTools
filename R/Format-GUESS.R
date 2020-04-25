@@ -858,7 +858,7 @@ getStandardQuantity_LPJ <- function(run,
     else if("monthly_burned_area" %in% availableQuantities_GUESS(run, names=TRUE)){
       this.Field <- openLPJOutputFile(run, lookupQuantity("monthly_burned_area", GUESS), target.sta, file.name = file.name, verbose = verbose)
       this.Field <- aggregateSubannual(this.Field, method = "sum")
-      renameLayers(this.Field, "monthly_burned_area", quant@id)
+      renameLayers(this.Field, quant@id)
       
     }
     
@@ -990,8 +990,6 @@ LPJQuantFromFilename <- function(var.filename){
 GUESS.Layers <- list(
   
   # BOREAL TREES
-  
-  # BNE
   new("Layer",
       id = "BNE",
       name = "Boreal Needleleaved Evergreen Tree",
@@ -1004,8 +1002,6 @@ GUESS.Layers <- list(
                         shade.tolerance = "None",
                         land.cover = "Natural")
   ),
-  
-  # BINE
   new("Layer",
       id = "BINE",
       name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
@@ -1018,8 +1014,6 @@ GUESS.Layers <- list(
                         shade.tolerance = "BNE",
                         land.cover = "Natural")
   ),
-  
-  # BNS
   new("Layer",
       id = "BNS",
       name = "Boreal Needleleaved Summergreen Tree",
@@ -1032,8 +1026,6 @@ GUESS.Layers <- list(
                         shade.tolerance = "None",
                         land.cover = "Natural")
   ),
-  
-  # IBS
   new("Layer",
       id = "IBS",
       name = "Shade-intolerant B/leaved Summergreen Tree",
@@ -1048,8 +1040,6 @@ GUESS.Layers <- list(
   ),
   
   # TEMPERATE TREES
-  
-  # TeBE
   new("Layer",
       id = "TeBE",
       name = "Temperate Broadleaved Evergreen Tree",
@@ -1062,8 +1052,6 @@ GUESS.Layers <- list(
                         shade.tolerance = "None",
                         land.cover = "Natural")
   ),
-  
-  # TeNE
   new("Layer",
       id = "TeNE",
       name = "Temperate Needleleaved Evergreen Tree",
@@ -1076,8 +1064,6 @@ GUESS.Layers <- list(
                         shade.tolerance = "None",
                         land.cover = "Natural")
   ),
-  
-  # TeBS
   new("Layer",
       id = "TeBS",
       name = "Temperate Broadleaved Summergreen Tree",
@@ -1093,8 +1079,6 @@ GUESS.Layers <- list(
   
   
   # TROPICAL TREES
-  
-  # TrBE
   new("Layer",
       id = "TrBE",
       name = "Tropical Broadleaved Evergreen Tree",
@@ -1107,9 +1091,6 @@ GUESS.Layers <- list(
                         shade.tolerance = "None",
                         land.cover = "Natural")
   ),
-  
-  
-  # TrIBE
   new("Layer",
       id = "TrIBE",
       name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
@@ -1122,8 +1103,6 @@ GUESS.Layers <- list(
                         shade.tolerance = "TrBE",
                         land.cover = "Natural")
   ),
-  
-  # TrBR 
   new("Layer",
       id = "TrBR",
       name = "Tropical Broadleaved Raingreen Tree",
@@ -1139,8 +1118,6 @@ GUESS.Layers <- list(
   
   
   # GRASSES
-  
-  # C3G 
   new("Layer",
       id = "C3G",
       name = "Boreal/Temperate Grass",
@@ -1153,12 +1130,10 @@ GUESS.Layers <- list(
                         shade.tolerance = "None",
                         land.cover = "Natural")
   ),
-  
-  # C4G
   new("Layer",
       id = "C4G",
       name = "Tropical Grass",
-      colour = "yellow",
+      colour = "sienna1",
       properties = list(type = "PFT",
                         name = "Tropical Grass",
                         growth.form = "Grass",
@@ -1173,7 +1148,7 @@ GUESS.Layers <- list(
   new("Layer",
       id = "C3G_pas",
       name = "Boreal/Temperate Pasture Grass",
-      colour = "yellowgreen",
+      colour = "lightgoldenrod4",
       properties = list(type = "PFT",
                         growth.form = "Grass",
                         leaf.form = "Broadleaved",
@@ -1185,7 +1160,7 @@ GUESS.Layers <- list(
   new("Layer",
       id = "C4G_pas",
       name = "Tropical Pasture Grass",
-      colour = "yellow",
+      colour = "sienna3",
       properties = list(type = "PFT",
                         growth.form = "Grass",
                         leaf.form = "Broadleaved",
@@ -1355,7 +1330,7 @@ GUESS.Layers <- list(
   new("Layer",
       id = "Crop_sum",
       name = "Crop Sum",
-      colour = "wheat",
+      colour = "Red",
       properties = list(type = "Sum",
                         land.cover = "Cropland")
   ),
