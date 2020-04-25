@@ -881,6 +881,14 @@ getStandardQuantity_LPJ <- function(run,
     
   }
   
+  # mfire_size_std 
+  else if(quant@id == "mfire_size_std") {
+    
+    this.Field <- openLPJOutputFile(run, lookupQuantity("real_fire_size", GUESS), target.sta, file.name = file.name, verbose = verbose)
+    renameLayers(this.Field, "real_fire_size", quant@id)
+    
+  }  
+  
   # else stop
   else {
     
@@ -1156,6 +1164,32 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "GrassPhenology",
                         climate.zone = "NA",
+                        shade.tolerance = "None")
+  ), 
+  
+  # SHRUBS
+  new("Layer",
+      id = "BLSE",
+      name = "Boreal Evergreen Low Shrub",
+      colour = "plum",
+      properties = list(type = "PFT",
+                        name = "Boreal Evergreen Low Shrub",
+                        growth.form = "Shrub",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None")
+  ),
+  new("Layer",
+      id = "BLSS",
+      name = "Boreal Summergreen Low Shrub",
+      colour = "mistyrose3",
+      properties = list(type = "PFT",
+                        name = "Boreal Summergreen Low Shrub",
+                        growth.form = "Shrub",
+                        leaf.form = "Broadleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Boreal",
                         shade.tolerance = "None")
   )
   
@@ -1827,6 +1861,13 @@ GUESS.quantities <- list(
   new("Quantity",
       id = "mfire_size",
       name = "Monthly Fire Size",
+      units = "ha",
+      colours = fields::tim.colors,
+      format = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "real_fire_size",
+      name = "Fire Size",
       units = "ha",
       colours = fields::tim.colors,
       format = c("LPJ-GUESS-SPITFIRE")),

@@ -124,7 +124,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   ### MATCH LAYER COLOUR 
   
   # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer meta-data
-  if(missing(cols) & col.by == "Layer"){
+  if(missing(cols) && !is.null(col.by) && col.by == "Layer"){
     
     # check the defined Layers present in the Fields and make a unique list
     # maybe also here check which one are actually in the layers to plot, since we have that information
@@ -188,7 +188,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
   
   # if colouring by Year add a continuous scale (special case)
-  if(col.by == "Year") {
+  if(!is.null(col.by) && col.by == "Year") {
     p <- p + scale_color_gradientn(colours = viridis::viridis(100), name = "Year")
     if(plotAverage) {
          p <- p + stat_summary(aes(group=col.by, linetype = "mean year"), fun.y=mean, geom="line", size = 1)

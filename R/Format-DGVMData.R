@@ -53,7 +53,7 @@ getField_DGVMData <- function(source,
   
   
   # Make the filename (if necessary) and check for the file, gunzip if necessary, fail if not present
-  if(!is.null(file.name)) file.path(source@dir, file.name)
+  if(!is.null(file.name)) file.name.nc <- file.path(source@dir, file.name)
   else file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
   file.name.nc.gz <- paste(file.name.nc, "gz", sep = ".")
   zipped <- FALSE

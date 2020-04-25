@@ -8,7 +8,13 @@
 \alias{aDGVM.Layers}
 \alias{aDGVM2.Layers}
 \title{Class to hold the metadata for a "Layer"}
-\format{An S4 class object with the slots as defined below.}
+\format{
+An S4 class object with the slots as defined below.
+
+An S4 class object with the slots as defined below.
+
+An S4 class object with the slots as defined below.
+}
 \usage{
 GUESS.Layers
 
