@@ -200,6 +200,17 @@ plotTemporal <- function(fields,
       data.toplot[, Year := NULL]
       data.toplot[, Day := NULL]
     }
+    # convert years and seasons to dates 
+    else if("Year" %in% names(data.toplot) && "Season" %in% names(data.toplot)) {
+      # make a Day colum based on the centre point of a Season
+      day.lookup <- c("DJF" = 14, "MAM" = 105, "JJA" = 196, "SON" = 287)
+      data.toplot[, Day := day.lookup[Season]]
+      data.toplot[, Time := as.Date(paste0(Year, "-", Day), format = "%Y-%j")]
+      data.toplot[, Year := NULL]
+      data.toplot[, Season := NULL]
+      data.toplot[, Day := NULL]
+      
+    }
     # convert years to dates 
     else if("Year" %in% names(data.toplot)) {
       data.toplot[, Time := as.Date(paste0(Year, "-01-01"), format = "%Y-%m-%d")]
