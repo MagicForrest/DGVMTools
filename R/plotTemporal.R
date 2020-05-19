@@ -9,13 +9,13 @@
 #' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
-#' @param col.by,linetype.by,size.by,shapes.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
+#' @param col.by,linetype.by,size.by,shape.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
 #' Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
 #' distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.
 #' @param cols,linetypes,sizes,shapes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
 #' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/linetype/shape/alpha values
 #' to particular Layers/Sources/Quantities.    
-#' @param col.labels,linetype.labels,size.labels,shape.by,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
+#' @param col.labels,linetype.labels,size.labels,shape.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
 #' number of Sources/Layers/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
@@ -24,6 +24,7 @@
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot. 
 #' @param plotTrend Logical, if TRUE plot the linear trend
+#' @param dropEmpty Logical, if TRUE don't plot time series lines consisting only of zeros.
 #' @param plot Logical, if FALSE return the data.table of data instead of the plot
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()} and \code{ggplot2::stat_smooth()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 #' \itemize{
@@ -73,6 +74,7 @@ plotTemporal <- function(fields,
                          points = FALSE,
                          legend.position = "bottom",
                          text.multiplier = NULL,
+                         dropEmpty = FALSE,
                          plotTrend = TRUE,
                          plot = TRUE,
                          ...
@@ -267,7 +269,7 @@ plotTemporal <- function(fields,
   p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = linetype.by, size = size.by, alpha = alpha.by, shape = shape.by))
   
   # add trend lines
-  if(plotTrend) suppressWarnings( p <- p + stat_smooth(method = "lm", ...) )
+  if(plotTrend) suppressWarnings( p <- p + stat_smooth(method = "lm", formula = y ~ x, ...) )
   
   # build arguments for 'fixed' aesthetic to geom_line
   aes.args <- list(data = data.toplot)

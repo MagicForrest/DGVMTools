@@ -22,7 +22,8 @@ getField_DGVMData <- function(source,
                               quant,
                               target.STAInfo,
                               file.name,
-                              verbose = FALSE) {
+                              verbose = FALSE,
+                              ...) {
   
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read DGVMData files.")

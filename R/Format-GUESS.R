@@ -152,7 +152,7 @@ openLPJOutputFile <- function(run,
       dt <- selectGridcells(x = dt, gridcells = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id, ...)
       new.extent <- target.sta@spatial.extent
       # if new.extent is a data.frame, convery it to a data.table for consistency
-      if(is.data.frame(new.extent) & !is.data.table(new.extent)) new.extent <- as.data.table(new.extent)
+      #if(is.data.frame(new.extent) & !is.data.table(new.extent)) new.extent <- as.data.table(new.extent)
     }
     
     else {
@@ -851,15 +851,14 @@ getStandardQuantity_LPJ <- function(run,
     # if annual_burned_area is present the open it and use it
     if("annual_burned_area" %in% availableQuantities_GUESS(run, names=TRUE)){
       this.Field <- openLPJOutputFile(run, lookupQuantity("annual_burned_area", GUESS), target.sta, file.name = file.name, verbose = verbose)
-      renameLayers(this.Field, "annual_burned_area", quant@id)
-      
+      renameLayers(this.Field, quant@id)
     }
     
     # if monthly_burned_area is present the open it and use it
     else if("monthly_burned_area" %in% availableQuantities_GUESS(run, names=TRUE)){
       this.Field <- openLPJOutputFile(run, lookupQuantity("monthly_burned_area", GUESS), target.sta, file.name = file.name, verbose = verbose)
       this.Field <- aggregateSubannual(this.Field, method = "sum")
-      renameLayers(this.Field, "monthly_burned_area", quant@id)
+      renameLayers(this.Field, quant@id)
       
     }
     
@@ -999,8 +998,6 @@ LPJQuantFromFilename <- function(var.filename){
 GUESS.Layers <- list(
   
   # BOREAL TREES
-  
-  # BNE
   new("Layer",
       id = "BNE",
       name = "Boreal Needleleaved Evergreen Tree",
@@ -1010,10 +1007,9 @@ GUESS.Layers <- list(
                         leaf.form = "Needleleaved",
                         phenology = "Evergreen",
                         climate.zone = "Boreal",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # BINE
   new("Layer",
       id = "BINE",
       name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
@@ -1023,10 +1019,9 @@ GUESS.Layers <- list(
                         leaf.form = "Needleleaved",
                         phenology = "Evergreen",
                         climate.zone = "Boreal",
-                        shade.tolerance = "BNE")
+                        shade.tolerance = "BNE",
+                        land.cover = "Natural")
   ),
-  
-  # BNS
   new("Layer",
       id = "BNS",
       name = "Boreal Needleleaved Summergreen Tree",
@@ -1036,11 +1031,9 @@ GUESS.Layers <- list(
                         leaf.form = "Needleleaved",
                         phenology = "Summergreen",
                         climate.zone = "Boreal",
-                        shade.tolerance = "None"
-      )
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # IBS
   new("Layer",
       id = "IBS",
       name = "Shade-intolerant B/leaved Summergreen Tree",
@@ -1050,12 +1043,11 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Summergreen",
                         climate.zone = "Temperate",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   # TEMPERATE TREES
-  
-  # TeBE
   new("Layer",
       id = "TeBE",
       name = "Temperate Broadleaved Evergreen Tree",
@@ -1065,10 +1057,9 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Evergreen",
                         climate.zone = "Temperate",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # TeNE
   new("Layer",
       id = "TeNE",
       name = "Temperate Needleleaved Evergreen Tree",
@@ -1078,10 +1069,9 @@ GUESS.Layers <- list(
                         leaf.form = "Needleleaved",
                         phenology = "Evergreen",
                         climate.zone = "Temperate",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # TeBS
   new("Layer",
       id = "TeBS",
       name = "Temperate Broadleaved Summergreen Tree",
@@ -1091,13 +1081,12 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Summergreen",
                         climate.zone = "Temperate",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   
   # TROPICAL TREES
-  
-  # TrBE
   new("Layer",
       id = "TrBE",
       name = "Tropical Broadleaved Evergreen Tree",
@@ -1107,11 +1096,9 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Evergreen",
                         climate.zone = "Tropical",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  
-  # TrIBE
   new("Layer",
       id = "TrIBE",
       name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
@@ -1121,10 +1108,9 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Evergreen",
                         climate.zone = "Tropical", 
-                        shade.tolerance = "TrBE")
+                        shade.tolerance = "TrBE",
+                        land.cover = "Natural")
   ),
-  
-  # TrBR 
   new("Layer",
       id = "TrBR",
       name = "Tropical Broadleaved Raingreen Tree",
@@ -1134,13 +1120,12 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Raingreen",
                         climate.zone = "Tropical",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   
   # GRASSES
-  
-  # C3G 
   new("Layer",
       id = "C3G",
       name = "Boreal/Temperate Grass",
@@ -1150,21 +1135,21 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "GrassPhenology",
                         climate.zone = "NA",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # C4G
   new("Layer",
       id = "C4G",
       name = "Tropical Grass",
-      colour = "sienna2",
+      colour = "sienna1",
       properties = list(type = "PFT",
                         name = "Tropical Grass",
                         growth.form = "Grass",
                         leaf.form = "Broadleaved",
                         phenology = "GrassPhenology",
                         climate.zone = "NA",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ), 
   
   # SHRUBS
@@ -1178,7 +1163,8 @@ GUESS.Layers <- list(
                         leaf.form = "Needleleaved",
                         phenology = "Evergreen",
                         climate.zone = "Boreal",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   new("Layer",
       id = "BLSS",
@@ -1190,8 +1176,229 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "Summergreen",
                         climate.zone = "Boreal",
-                        shade.tolerance = "None")
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
+  ),
+  
+  # PASTURE PFTS
+  new("Layer",
+      id = "C3G_pas",
+      name = "Boreal/Temperate Pasture Grass",
+      colour = "lightgoldenrod4",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Pasture")
+  ),
+  new("Layer",
+      id = "C4G_pas",
+      name = "Tropical Pasture Grass",
+      colour = "sienna3",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Pasture")
+  ),
+  
+  # CROP AND INTERCROP GRASS PFTS
+  new("Layer",
+      id = "CC3G_ic",
+      name = "Boreal/Temperate Intercrop Grass",
+      colour = "palegreen2",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland")
+  ),
+  new("Layer",
+      id = "CC4G_ic",
+      name = "Tropical Intercrop Grass",
+      colour = "palegreen4",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland")
+  ),
+  new("Layer",
+      id = "CC3ann",
+      name = "C3 Annual Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC3per",
+      name = "C3 Perennial Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC3nfx",
+      name = "C3 Nitrogen Fixing Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC4ann",
+      name = "C4 Annual Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC4per",
+      name = "C4 Perennial Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC3anni",
+      name = "Irrigated C3 Annual Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  new("Layer",
+      id = "CC3peri",
+      name = "Irrigated C3 Perennial Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  new("Layer",
+      id = "CC3nfxi",
+      name = "Irrigated C3 Nitrogen Fixing Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  new("Layer",
+      id = "CC4anni",
+      name = "Irrigiated C4 Annual Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  new("Layer",
+      id = "CC4peri",
+      name = "Irrigated C4 Perennial Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  
+  # PFT LANDCOVER AGGREGATES
+  new("Layer",
+      id = "Crop_sum",
+      name = "Crop Sum",
+      colour = "Red",
+      properties = list(type = "Sum",
+                        land.cover = "Cropland")
+  ),
+  new("Layer",
+      id = "Pasture_sum",
+      name = "Pasture Sum",
+      colour = "springgreen3",
+      properties = list(type = "Sum",
+                        land.cover = "Pasture")
+  ),
+  new("Layer",
+      id = "Natural_sum",
+      name = "Natural Sum",
+      colour = "saddlebrown",
+      properties = list(type = "Sum",
+                        land.cover = "Natural")
+  ),
+  new("Layer",
+      id = "Barren_sum",
+      name = "Barren Sum",
+      colour = "gray75",
+      properties = list(type = "Sum",
+                        land.cover = "Barren")
+  ),
+  new("Layer",
+     id = "Total",
+     name = "Total",
+     colour = "black",
+     properties = list(type = "Sum",
+                       land.cover = "All")
   )
+  
   
 )
 

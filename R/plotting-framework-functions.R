@@ -222,13 +222,14 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
 #' @param months The months to be extracted (as a numeric vector), if NULL all months are used
 #' @param seasons The months to be extracted (as a character vector), if NULL all seasons are used
 #' @param gridcells The months to be extracted (as a character vector), if NULL all seasons are used
+#' @param dropEmpty Logical, if TRUE drop layers consisting only of zeros
 #' 
 #' @return Returns a list of Fields
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' 
 #' 
-trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL) {
+trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL, dropEmpty = FALSE) {
 
   J = Year = NULL
   
@@ -245,8 +246,22 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
     all.layers <- names(object)
     layers.present <- c()
     for(this.layer in layers) {
-      if(this.layer %in% all.layers)  layers.present <- append(layers.present, this.layer)
-    }
+      # if layer is present
+      if(this.layer %in% all.layers)  {
+        
+        # if dropEmpty is true check if it it non-zero before appending it
+        if(dropEmpty) {
+          if(!(object@data[[this.layer]][1] == 0 && all(duplicated(object@data[[this.layer]])[-1L]))){
+              layers.present <- append(layers.present, this.layer)
+          }
+        }
+        # else just append it
+        else {
+          layers.present <- append(layers.present, this.layer)
+        }
+        
+      } #  if layer present
+    }  # for all requested layers loop 
     
     # if at least one layer present subset it
     if(length(layers.present) > 0) {
@@ -477,7 +492,7 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
     map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)
-    if(!gt.180) map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
+    # if(!gt.180) map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
     return(fortify(map.sp.lines.df))
     
   }

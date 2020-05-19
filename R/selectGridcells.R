@@ -4,12 +4,14 @@
 #' 
 #' @param x The Field, data.table or data.frame from which the gridcells should be selected.  Note that a data.table or data.frame 
 #' should have columns "Lon" and "Lat" included.
-#' @param gridcells The gridcells to be extracted.  Can either be:
+#' @param gridcells The gridcells to be extracted.  These can be specified as one of the following:
 #' \itemize{
 #'  \item{A simple two-element numeric to pull out one gridcell (ordering is lon, lat)} 
 #'  \item{A data.frame or data.table in which the first two columns are assumed to be longitude and latitude.}
 #'  \item{An sp::SpatialPolygonsDataFrame.  By default points will be selected that lie under a polygon (feature), 
 #'  but see the argument \code{cover.threshold} to select based on an overlap threshold.}
+#'  \item{An object of type \code{map} as provided by the maps package \emph{provided they are created with fill = TRUE}.  Note the handy \code{region}
+#'  argument to the maps::map function with allows one to pull out the data for one country.}
 #' }
 #' @param spatial.extent.id A character string to describe the gridcells selected.  When selecting gridcells from a Field you *must* specify 
 #' a \code{spatial.extent.id} for meta-data consistency (you have free choice here, but avoid spaces).
@@ -100,6 +102,22 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
     }
     
   }
+  # if it is map (not map should be made with fill = TRUE)
+  else if(class(gridcells) == "map") {
+    
+    # convert the map to SpatialPolygons
+    IDs <- sapply(strsplit(gridcells$names, ":"), function(x) x[1])
+    gridcells.polygons <- map2SpatialPolygons(gridcells, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
+    
+    # rasterise the input Field
+    input.raster <- promoteToRaster(x)
+    gridcell.raster <- raster::rasterize(gridcells.polygons, input.raster)
+    gridcells_df <- raster::as.data.frame(gridcell.raster, xy = TRUE)
+    names(gridcells_df) <- c("Lon", "Lat", "Dummy")
+    selection.dt <- stats::na.omit(as.data.table(gridcells_df))[, c("Lon", "Lat")]
+    
+  }
+  
   else if(!(is.data.table(gridcells) || is.data.frame(gridcells))) {
     stop(paste("Arguments 'gridcells' not of correct type in call to getGridcells(), it should be a 'data.table', 'data.frame', 'SpatialPolygonsDataFrame' or a two-element numeric vector (Lon, Lat), got ", class(gridcells)[1], sep = " "))
   }

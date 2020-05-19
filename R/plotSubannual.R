@@ -191,7 +191,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(!is.null(col.by) && col.by == "Year") {
     p <- p + scale_color_gradientn(colours = viridis::viridis(100), name = "Year")
     if(plotAverage) {
-         p <- p + stat_summary(aes(group=col.by, linetype = "mean year"), fun.y=mean, geom="line", size = 1)
+         p <- p + stat_summary(aes(group=col.by, linetype = "mean year"), fun=mean, geom="line", size = 1)
          p <- p + scale_linetype_manual(values=c("mean year"="longdash"), name = element_blank())
     }
   }
@@ -206,7 +206,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
         extracted.cols <- unique(g$data[[1]][["colour"]])
        
         # add the mean stat and the fill scale
-        p <- p + stat_summary(aes(group=get(col.by), fill = get(col.by)), fun.y=mean, geom="point", color="black", shape = 21, size = 2)
+        p <- p + stat_summary(aes(group=get(col.by), fill = get(col.by)), fun=mean, geom="point", color="black", shape = 21, size = 2)
         p <- p + scale_fill_manual(values =extracted.cols, name = "Mean year", labels = col.labels)
      
     }
