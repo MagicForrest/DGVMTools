@@ -485,8 +485,14 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
     map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)
-    if(!gt.180) map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
-    return(fortify(map.sp.lines.df))
+    map.sp.lines.df.copy <- map.sp.lines.df 
+    if(!gt.180) map.sp.lines.df <- try ( correct.map.offset(map.sp.lines.df), silent=TRUE )
+    if (class(map.sp.lines.df) == "try-error") {
+      return(fortify(map.sp.lines.df.copy))
+    }
+    else {
+      return(fortify(map.sp.lines.df))
+    }
     
   }
   else {
