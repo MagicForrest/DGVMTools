@@ -152,7 +152,7 @@ openLPJOutputFile <- function(run,
       dt <- selectGridcells(x = dt, gridcells = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id, ...)
       new.extent <- target.sta@spatial.extent
       # if new.extent is a data.frame, convery it to a data.table for consistency
-      if(is.data.frame(new.extent) & !is.data.table(new.extent)) new.extent <- as.data.table(new.extent)
+      #if(is.data.frame(new.extent) & !is.data.table(new.extent)) new.extent <- as.data.table(new.extent)
     }
     
     else {
@@ -880,6 +880,14 @@ getStandardQuantity_LPJ <- function(run,
     
   }
   
+  # mfire_size_std 
+  else if(quant@id == "mfire_size_std") {
+    
+    this.Field <- openLPJOutputFile(run, lookupQuantity("real_fire_size", GUESS), target.sta, file.name = file.name, verbose = verbose)
+    renameLayers(this.Field, "real_fire_size", quant@id)
+    
+  }  
+  
   # else stop
   else {
     
@@ -1140,6 +1148,34 @@ GUESS.Layers <- list(
                         leaf.form = "Broadleaved",
                         phenology = "GrassPhenology",
                         climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
+  ), 
+  
+  # SHRUBS
+  new("Layer",
+      id = "BLSE",
+      name = "Boreal Evergreen Low Shrub",
+      colour = "plum",
+      properties = list(type = "PFT",
+                        name = "Boreal Evergreen Low Shrub",
+                        growth.form = "Shrub",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
+  ),
+  new("Layer",
+      id = "BLSS",
+      name = "Boreal Summergreen Low Shrub",
+      colour = "mistyrose3",
+      properties = list(type = "PFT",
+                        name = "Boreal Summergreen Low Shrub",
+                        growth.form = "Shrub",
+                        leaf.form = "Broadleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Boreal",
                         shade.tolerance = "None",
                         land.cover = "Natural")
   ),
@@ -2032,6 +2068,13 @@ GUESS.quantities <- list(
   new("Quantity",
       id = "mfire_size",
       name = "Monthly Fire Size",
+      units = "ha",
+      colours = fields::tim.colors,
+      format = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "real_fire_size",
+      name = "Fire Size",
       units = "ha",
       colours = fields::tim.colors,
       format = c("LPJ-GUESS-SPITFIRE")),

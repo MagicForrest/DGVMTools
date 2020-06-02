@@ -249,12 +249,19 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
       # if layer is present
       if(this.layer %in% all.layers)  {
         
-        # check if it it non-zero
-        if(!(var(object@data[[this.layer]]) == 0 && sum(object@data[[this.layer]] == 0)) || !dropEmpty)  {
+        # if dropEmpty is true check if it it non-zero before appending it
+        if(dropEmpty) {
+          if(!(object@data[[this.layer]][1] == 0 && all(duplicated(object@data[[this.layer]])[-1L]))){
+              layers.present <- append(layers.present, this.layer)
+          }
+        }
+        # else just append it
+        else {
           layers.present <- append(layers.present, this.layer)
         }
-      }
-    }
+        
+      } #  if layer present
+    }  # for all requested layers loop 
     
     # if at least one layer present subset it
     if(length(layers.present) > 0) {
@@ -493,7 +500,7 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     else {
       return(fortify(map.sp.lines.df))
     }
-    
+
   }
   else {
     stop(paste0("Can't make an overlay from type ", class(map.overlay)))

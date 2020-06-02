@@ -24,6 +24,8 @@ should have columns "Lon" and "Lat" included.}
  \item{A data.frame or data.table in which the first two columns are assumed to be longitude and latitude.}
  \item{An sp::SpatialPolygonsDataFrame.  By default points will be selected that lie under a polygon (feature), 
  but see the argument \code{cover.threshold} to select based on an overlap threshold.}
+ \item{An object of type \code{map} as provided by the maps package \emph{provided the are created with fill = TRUE}.  Note the handy \code{region}
+ argument to the maps::map function with allows one to pull out the data for one country.}
 }}
 
 \item{spatial.extent.id}{A character string to describe the gridcells selected.  When selecting gridcells from a Field you *must* specify 
