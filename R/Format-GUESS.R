@@ -2175,7 +2175,17 @@ GUESS.quantities <- list(
       name = "Monthly sum of daily fire probabilites (based on fine fuel threshold)",
       units = "days",
       colours = fields::tim.colors,
+      format = c("LPJ-GUESS-SPITFIRE")),
+  
+  # Daily fire properties
+  new("Quantity",
+      id = "daily_fires_diagnostics",
+      name = "Daily fire properties",
+      units = "mixed",
+      colours = fields::tim.colors,
       format = c("LPJ-GUESS-SPITFIRE"))
+  
+  
 )
 
 ################################################################
