@@ -90,6 +90,16 @@ openLPJOutputFile <- function(run,
   else file.string <- file.path(run@dir, file.name)
   dt <- readRegularASCII(file.string, verbose)
   
+  # correct the dimension names if they are lower case
+  dim.names <- c("Lon", "Lat", "Year", "Month", "Day")
+  dt.header <- names(dt)
+  for(dim.name in dim.names) {
+    if(tolower(dim.name) %in% tolower(dt.header)) {
+      if(verbose) message(paste("Correcting column name", dt.header[which(tolower(dim.name) == tolower(dt.header))], "to", dim.name))
+      setnames(dt, dt.header[which(tolower(dim.name) == tolower(dt.header))], dim.name)
+    }
+  }
+  
   #  Print messages
   if(verbose) {
     message("Read table. It has header:")
