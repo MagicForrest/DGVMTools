@@ -7,8 +7,8 @@
 matchLayerCols(
   values,
   layers,
-  others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub
-    = "red")
+  others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green",
+    Shrub = "red")
 )
 }
 \arguments{

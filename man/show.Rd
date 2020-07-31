@@ -33,8 +33,6 @@
 }
 \arguments{
 \item{object}{Any DGVMTools object to be shown (printed)}
-
-\item{...}{other arguments to be passed on to a further show functions, not currently used.}
 }
 \description{
 Show a DGVMTools object in a reasonably nice and space efficient way.

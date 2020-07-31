@@ -16,8 +16,6 @@
 }
 \arguments{
 \item{x}{A Field, Comaprison or a data.table.}
-
-\item{...}{Other arguments, not currently used}
 }
 \value{
 A raster::extent

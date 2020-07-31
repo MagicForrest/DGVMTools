@@ -191,7 +191,7 @@ getField <- function(source,
         if(verbose) message("Cropped domain matched.")
       }
     }
-    
+   
     if(full.domain.matched || cropped.domain.matched){
       return(model.field)
     }  

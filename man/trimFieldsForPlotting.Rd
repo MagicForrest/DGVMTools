@@ -11,7 +11,8 @@ trimFieldsForPlotting(
   days = NULL,
   months = NULL,
   seasons = NULL,
-  gridcells = NULL
+  gridcells = NULL,
+  dropEmpty = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ trimFieldsForPlotting(
 \item{seasons}{The months to be extracted (as a character vector), if NULL all seasons are used}
 
 \item{gridcells}{The months to be extracted (as a character vector), if NULL all seasons are used}
+
+\item{dropEmpty}{Logical, if TRUE drop layers consisting only of zeros}
 }
 \value{
 Returns a list of Fields

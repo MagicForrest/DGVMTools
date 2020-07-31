@@ -4,7 +4,9 @@
 \name{supported.classification.schemes}
 \alias{supported.classification.schemes}
 \title{Currently supported classification schemes}
-\format{An object of class \code{list} of length 12.}
+\format{
+An object of class \code{list} of length 12.
+}
 \usage{
 supported.classification.schemes
 }

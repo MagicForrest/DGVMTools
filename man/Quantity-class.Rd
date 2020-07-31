@@ -11,7 +11,17 @@
 \alias{aDGVM2.quantities}
 \alias{Standard.quantities}
 \title{Class to hold meta-data for a vegetation quantity}
-\format{The \code{Quantity} class is an S4 class with the slots defined below}
+\format{
+The \code{Quantity} class is an S4 class with the slots defined below
+
+The \code{Quantity} class is an S4 class with the slots defined below
+
+The \code{Quantity} class is an S4 class with the slots defined below
+
+The \code{Quantity} class is an S4 class with the slots defined below
+
+An object of class \code{list} of length 23.
+}
 \usage{
 DGVMData.quantities
 
