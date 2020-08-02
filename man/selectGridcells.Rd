@@ -18,13 +18,13 @@ selectGridcells(
 \item{x}{The Field, data.table or data.frame from which the gridcells should be selected.  Note that a data.table or data.frame 
 should have columns "Lon" and "Lat" included.}
 
-\item{gridcells}{The gridcells to be extracted.  Can either be:
+\item{gridcells}{The gridcells to be extracted.  These can be specified as one of the following:
 \itemize{
  \item{A simple two-element numeric to pull out one gridcell (ordering is lon, lat)} 
  \item{A data.frame or data.table in which the first two columns are assumed to be longitude and latitude.}
  \item{An sp::SpatialPolygonsDataFrame.  By default points will be selected that lie under a polygon (feature), 
  but see the argument \code{cover.threshold} to select based on an overlap threshold.}
- \item{An object of type \code{map} as provided by the maps package \emph{provided the are created with fill = TRUE}.  Note the handy \code{region}
+ \item{An object of type \code{map} as provided by the maps package \emph{provided they are created with fill = TRUE}.  Note the handy \code{region}
  argument to the maps::map function with allows one to pull out the data for one country.}
 }}
 
