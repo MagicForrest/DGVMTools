@@ -107,7 +107,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
     
     # convert the map to SpatialPolygons
     IDs <- sapply(strsplit(gridcells$names, ":"), function(x) x[1])
-    gridcells.polygons <- map2SpatialPolygons(gridcells, IDs=IDs, proj4string=CRS("+proj=longlat +datum=WGS84"))
+    gridcells.polygons <- maptools::map2SpatialPolygons(gridcells, IDs=IDs, proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
     
     # rasterise the input Field
     input.raster <- promoteToRaster(x)

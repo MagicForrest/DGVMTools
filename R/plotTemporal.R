@@ -82,7 +82,7 @@ plotTemporal <- function(fields,
   
   
   # Just to avoid WARNINGS when checking
-  Time = Year = Month = Day = Source = value = variable = Lat = Lon = NULL
+  Time = Year = Season = Month = Day = Source = value = variable = Lat = Lon = NULL
   
 
   ### 0. Check consistency of aesthetics
