@@ -83,9 +83,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
 
       gridcells_rasterised <- raster::rasterize(x = gridcells, y = x_grid)
       gridcells_dt <- as.data.table(raster::as.data.frame(gridcells_rasterised, xy = TRUE))
-      gridcells_dt[, SLM := as.numeric(layer_OBJECTID)]
       setnames(gridcells_dt, c("x", "y"), c("Lon", "Lat"))
-      gridcells_dt <- gridcells_dt[, c("Lon", "Lat", "SLM")]
       selection.dt <- stats::na.omit(gridcells_dt)[, c("Lon", "Lat")]
       
     }
