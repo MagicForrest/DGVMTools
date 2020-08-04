@@ -10,7 +10,7 @@
 #' Aggregates data with sub-annual time resolution to a coarser time resolution.  For example, going from monthly to annual. 
 #'
 #' @param input.obj data.table or Field 
-#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
+#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (also "Annual" is valid). 
 #' Default is year.  
@@ -75,14 +75,15 @@ aggregateSubannual.uncompiled <- function(input.obj,
   
   
   ### SET UP THE AGGREGATE METHOD 
-  method <- match.arg(method, c("mean", "sum", "max", "min", "sd", "var"))
+  method <- match.arg(method, c("mean", "sum", "max", "min", "sd", "var", "cv"))
   method.function <- switch(method,
                             mean = mean,
                             sum = sum,
                             max = max,
                             min = min,
                             sd = stats::sd,
-                            var = stats::var)
+                            var = stats::var,
+                            cv = function(x) {stats::sd(x)/mean(x)})
   
   
   # sort out the input object class
@@ -270,6 +271,8 @@ aggregateSubannual.uncompiled <- function(input.obj,
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@subannual.aggregate.method <- method
+    if(method == "cv") input.obj@quant@units = "fraction"
+    if(method == "var") input.obj@quant@units = paste0("(", input.obj@quant@units, ")^2")
     input.obj@subannual.original <- initial.subannual
     input.obj@subannual.resolution  <- target
     input.obj@id <- makeFieldID(source = input.obj@source,

@@ -53,7 +53,7 @@ getField_DGVMData <- function(source,
   
   
   # Make the filename (if necessary) and check for the file, gunzip if necessary, fail if not present
-  if(!is.null(file.name)) file.path(source@dir, file.name)
+  if(!is.null(file.name)) file.name.nc <- file.path(source@dir, file.name)
   else file.name.nc <- file.path(source@dir, paste(quant@id, "nc", sep = "."))
   file.name.nc.gz <- paste(file.name.nc, "gz", sep = ".")
   zipped <- FALSE
@@ -403,7 +403,7 @@ getField_DGVMData <- function(source,
       dimnames(this.slice) <- dimension.names
       
       # prepare data.table from the slice (array)
-      this.slice.dt <- as.data.table(melt(this.slice))
+      this.slice.dt <- as.data.table(reshape2::melt(this.slice))
       rm(this.slice)
       gc()
       this.slice.dt <- stats::na.omit(this.slice.dt)
@@ -536,10 +536,11 @@ getField_DGVMData <- function(source,
   }
   
   
-  
-  # if london.centre is requested, shift to -180 to +180
-  if(length(all.lons) > 0) {
-    if(source@london.centre  && max(all.lons) >= 180){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  # if london.centre is requested, make sure all longitudes greater than 180 are shifted to negative
+  if(source@london.centre){
+    if(max(all.lons) > 180) {
+      dt[, Lon := LondonCentre(Lon)]
+    }
   }
   
   # set keys
@@ -610,21 +611,6 @@ availableQuantities_DGVMData <- function(source, names){
   
 }
 
-
-#' Detemine PFTs present in an DGVMData source 
-#' 
-#' @param x  A Source objects describing a DGVMData source
-#' @param variables Some variable to look for to detremine the PFTs present in the run.  Not the function automatically searches:
-#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.  Currently ignored.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-
-determinePFTs_DGVMData <- function(x, variables) {
-  
-  warning("Datasets don't normally have PFTs (or they are not likely to be defined consistently) so I am not looking for them.  Instead I am returning the source@format@pft.set argument directly (in case you defined some yourself, which would be the way to go in this case)")
-  return(x@format@pft.set)
-  
-}
 
 
 ########################################################
@@ -756,17 +742,14 @@ DGVMData <- new("Format",
                 # UNIQUE ID
                 id = "DGVMData",
                 
-                # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-                determinePFTs = determinePFTs_DGVMData,
-                
                 # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
                 availableQuantities = availableQuantities_DGVMData,
                 
                 # FUNCTION TO READ A FIELD 
                 getField = getField_DGVMData,
                 
-                # DEFAULT GLOBAL PFTS  
-                default.pfts = list(),
+                # DEFAULT GLOBAL LAYERS  
+                predefined.layers = list(),
                 
                 # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
                 quantities = DGVMData.quantities

@@ -4,10 +4,20 @@
 \alias{makeFieldID}
 \title{Make an ID string for a \code{Field}}
 \usage{
-makeFieldID(field, source, var.string, sta.info, first.year, last.year,
-  year.aggregate.method, subannual.resolution = NULL,
-  spatial.aggregate.method = NULL, subannual.aggregate.method = NULL,
-  spatial.extent.id = NULL, subannual.original = NULL)
+makeFieldID(
+  field,
+  source,
+  var.string,
+  sta.info,
+  first.year,
+  last.year,
+  year.aggregate.method,
+  subannual.resolution = NULL,
+  spatial.aggregate.method = NULL,
+  subannual.aggregate.method = NULL,
+  spatial.extent.id = NULL,
+  subannual.original = NULL
+)
 }
 \arguments{
 \item{var.string}{Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"}

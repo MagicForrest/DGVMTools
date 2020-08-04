@@ -4,8 +4,16 @@
 \alias{trimFieldsForPlotting}
 \title{Subsets data from Field for plotting}
 \usage{
-trimFieldsForPlotting(fields, layers, years = NULL, days = NULL,
-  months = NULL, seasons = NULL, gridcells = NULL)
+trimFieldsForPlotting(
+  fields,
+  layers,
+  years = NULL,
+  days = NULL,
+  months = NULL,
+  seasons = NULL,
+  gridcells = NULL,
+  dropEmpty = FALSE
+)
 }
 \arguments{
 \item{fields}{The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)}
@@ -21,6 +29,8 @@ trimFieldsForPlotting(fields, layers, years = NULL, days = NULL,
 \item{seasons}{The months to be extracted (as a character vector), if NULL all seasons are used}
 
 \item{gridcells}{The months to be extracted (as a character vector), if NULL all seasons are used}
+
+\item{dropEmpty}{Logical, if TRUE drop layers consisting only of zeros}
 }
 \value{
 Returns a list of Fields

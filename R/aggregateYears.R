@@ -11,7 +11,7 @@
 #' Aggregated all available years in a Field or a data.table object (with years denoted by column "Years"). 
 #'
 #' @param input.obj A Field or data.table (with a "Year" column)   
-#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd" and "var".
+#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A Field or data.table depending on the input object
@@ -27,14 +27,15 @@ aggregateYears.uncompiled <- function(input.obj,
   
   
   ### SET UP THE AGGREGATE METHOD 
-  method <- match.arg(method, c("mean", "sum", "max", "min", "sd", "var"))
+  method <- match.arg(method, c("mean", "sum", "max", "min", "sd", "var", "cv"))
   method.function <- switch(method,
                             mean = mean,
                             sum = sum,
                             max = max,
                             min = min,
                             sd = stats::sd,
-                            var = stats::var)
+                            var = stats::var,
+                            cv = function(x) {stats::sd(x)/mean(x)})
   
   
   # sort out the input object class
@@ -97,9 +98,12 @@ aggregateYears.uncompiled <- function(input.obj,
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@year.aggregate.method <- method
+    if(method == "cv") input.obj@quant@units = "fraction"
+    if(method == "var") input.obj@quant@units = paste0("(", input.obj@quant@units, ")^2")
     input.obj@id <- makeFieldID(source = input.obj@source,
                                 var.string = input.obj@quant@id, 
                                 sta.info = as(input.obj, "STAInfo"))
+   
     return(input.obj)
   }
   else if(is.data.table(input.obj)) {return(output.dt)}

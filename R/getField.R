@@ -16,16 +16,16 @@
 #' If specified the following 9 arguments are ignored (with a warning)
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
-#' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
+#' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' See \code{\link{aggregateYears}} 
 #' @param spatial.extent An extent in space to which this Field should be cropped, supplied as a raster::extent object or an object from which a raster::extent object can be derived - eg. a Raster* object or another Field object.
 #' @param spatial.extent.id A character string to give an identifier for the spatial extent this ModelField covers.
 #' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
-#' "weighted.sum"/"w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' "weighted.sum"/"w.sum", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' See \code{\link{aggregateSpatial}} 
 #' @param subannual.resolution A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".
-#' @param subannual.aggregate.method A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "sd" or "var".
+#' @param subannual.aggregate.method A character string specifying the method by which to aggregate the data subannually,  can be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean)
 #' See \code{\link{aggregateSubannual}} 
 #' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 #' Can be "Year", "Month" or "Day".  Currently ignored.
@@ -36,10 +36,25 @@
 #' standardised. However, in the case that they have been renamed, or if other future Formats require a file name, this is available. 
 #' Leave missing or set to \code{NULL} to use the standard file name for the particular Format.
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
-#' @param ...  Other arguments that are passed to the getField function for the specific Format or for selecting space/time/years.  Currently this can be
+#' @param ...  Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.  
+#' For all Formats, the followings arguments apply:
 #' \itemize{
-#'  \item{adgvm.scheme}  For the aDGVM Format, defines the aDGVM PFT scheme which can be 1 or 2.
-#'  \item{cover.fraction}  Optional when selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, should be between 0 and 1.
+#'  \item{\code{cover.fraction}}  When selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, this optional arguement determines 
+#'  how much of the gridcell needs to be in the the polygon for it to be selected. Should be between 0 and 1.
+#' }
+#' For the aDGVM(1) Format, the following arguments apply:
+#' \itemize{
+#'  \item{\code{adgvm.file.type}}  This character string argument specifies from which file to read the data.
+#'  This can be one of "Yearly", "Sys", "Fire", "Soil" or "Size".  The default is "Yearly", which is sensible because the yearly file is always written. 
+#'  \item{\code{adgvm.fire}}  This numeric argument (taking values 0 or 1) specifies to take a run with fire on (1) or off (0). Default is 1.
+#'  \item{\code{adgvm.climate}}   This numeric argument (taking values 0 or 1) specifies to take a run with constant (0) or transient (1) climate.  Default is 0.
+#'  \item{\code{adgvm.header}} If your aDGVM run has been has extra columns added to the output tables, use this argument
+#'  to specify the column names.  For the default column names see the source file \code{aDGVM1-Format}.
+#' }
+#' For the aDGVM2 Format, the following arguments apply:
+#' \itemize{
+#'  \item{\code{adgvm2.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
+#'  \item{\code{adgvm2.daily}}  A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)
 #' }
 #'  
 #' @return A \code{Field}. 
@@ -176,7 +191,7 @@ getField <- function(source,
         if(verbose) message("Cropped domain matched.")
       }
     }
-    
+   
     if(full.domain.matched || cropped.domain.matched){
       return(model.field)
     }  
@@ -196,11 +211,15 @@ getField <- function(source,
   
   
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
-  if(verbose) message(paste("Field ", target.field.id, " not already saved (or 'read.full' argument set to TRUE), so reading full data file to create the field now.", sep = ""))
+  if(verbose) {
+    if(read.full) message(paste("'read.full' argument set to TRUE, so reading full data file to create the field now.", sep = ""))
+    else if(!read.full && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", target.field.id, " not already saved, so reading full data file to create the field now.", sep = ""))
+    else message(paste("Details of the spatial extent",  sta.info@spatial.extent.id, "didn't match.  So file on disk ignored and the original data is being re-read"))
+  }
   
   this.Field <- source@format@getField(source, quant, sta.info, file.name, verbose, ...)
   actual.sta.info <- as(this.Field, "STAInfo")
- 
+  
   
   ### CROP THE SPATIAL EXTENT IF REQUESTED
   if(!is.null(sta.info@spatial.extent) && sta.info@spatial.extent.id != actual.sta.info@spatial.extent.id)  {
@@ -209,7 +228,7 @@ getField <- function(source,
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
     # note that data.tables *do* return a valid extent, but we don't want to crop with that here (hence the second condition)
     if (class(possible.error) != "try-error" && !is.data.table(spatial.extent)) {
-      this.Field <- crop(x = this.Field, y = sta.info@spatial.extent)  
+      this.Field <- crop(x = this.Field, y = sta.info@spatial.extent, spatial.extent.id = sta.info@spatial.extent.id)  
     }
     
     # else check if some gridcells to be selected with getGridcells
@@ -260,7 +279,7 @@ getField <- function(source,
       
       if(verbose) message(paste("Selecting years from", first.year, "to", last.year, sep = " "))
       this.Field <- selectYears(this.Field, first = first.year, last = last.year) 
- 
+      
     }
     else {
       if(verbose) message("No year selection being applied")
@@ -270,11 +289,11 @@ getField <- function(source,
   
   ### CHECK THAT WE HAVE A VALID DATA.TABLE
   if(nrow(this.Field@data) == 0) stop("getField() has produced an empty data.table, so subsequent code will undoubtedly fail.  Please check your input data and the years and spatial.extent that you have requested.")
-
+  
   ###  DO SPATIAL AGGREGATION - must be first because it fails if we do spatial averaging after temporal averaging, not sure why
   if(sta.info@spatial.aggregate.method != "none") {
     
-     if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
+    if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
       
       this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose)
       
@@ -290,7 +309,7 @@ getField <- function(source,
     if("Year" %in% getDimInfo(this.Field, "names")){
       
       this.Field <- aggregateYears(this.Field, method = sta.info@year.aggregate.method, verbose = verbose)
-     
+      
       if(verbose) {
         message("Head of year aggregated data:")
         print(utils::head(this.Field@data))
@@ -323,7 +342,7 @@ getField <- function(source,
     }
   }
   
- 
+  
   ### WRITE THE FIELD TO DISK AS AN DGVMData OBJECT IF REQUESTED
   if(write) {
     if(verbose) {message("Saving as a .DGVMField object...")}

@@ -13,7 +13,7 @@
 #'
 #' @param input.obj Field (or data.table) to be averaged  
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
-#' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".
+#' "weighted.sum", "w.sum", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @param ... Extra arguments passed to addArea function if a weighted method is being used.
 #' @return A Field or data.table depending on the input object
@@ -30,7 +30,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   
   ### SET UP THE AGGREGATE METHOD 
   
-  method <- match.arg(method, c("weighted.mean", "w.mean", "mean", "weighted.sum", "w.sum", "sum", "max", "min", "sd", "var"))
+  method <- match.arg(method, c("weighted.mean", "w.mean", "mean", "weighted.sum", "w.sum", "sum", "max", "min", "sd", "var", "cv"))
   
   method.function <- switch(method,
                             weighted.mean = stats::weighted.mean,
@@ -42,7 +42,8 @@ aggregateSpatial.uncompiled <- function(input.obj,
                             max = max,
                             min = min,
                             sd = stats::sd,
-                            var = stats::var)
+                            var = stats::var,
+                            cv = function(x) {stats::sd(x)/mean(x)})
   
   if(method == "weighted.mean") method = "w.mean"
   if(method == "weighted.sum") method = "w.sum"
@@ -120,6 +121,8 @@ aggregateSpatial.uncompiled <- function(input.obj,
   if(is.Field(input.obj)) {
     input.obj@data <- output.dt
     input.obj@spatial.aggregate.method <- method
+    if(method == "cv") input.obj@quant@units = "fraction"
+    if(method == "var") input.obj@quant@units = paste0("(", input.obj@quant@units, ")^2")
     input.obj@id <- makeFieldID(source = input.obj@source,
                                 var.string = input.obj@quant@id, 
                                 sta.info = as(input.obj, "STAInfo"))

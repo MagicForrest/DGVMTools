@@ -3,14 +3,14 @@
 \docType{class}
 \name{Field-class}
 \alias{Field-class}
-\title{Contains one aspect of the output, eg. LAI}
+\title{Field-class containsdata}
 \description{
-A key class of the package as it actually holds the data (most other classes are for metadata).  A \code{Field} stores the data and metadata for one quantity
+Field is a key class of the package as it actually holds the data (most other classes are for metadata).  A \code{Field} stores the data and metadata for one quantity
 that comes from a dataset or vegetation model run (including information about the run iself). For example LAI (Leaf Area Index), or evapotranspiration. 
 The data can be aggragted across space, and across and within years, and manipulated and plotted by mayn funtions in this package.
 }
 \details{
-Generally these are not created directly by the user, but rather by functions like \code{getField}.
+Generally these are not created directly by the user, but rather by functions like \link{getField}.
 }
 \section{Slots}{
 

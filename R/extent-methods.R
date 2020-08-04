@@ -1,10 +1,9 @@
 #' Extent methods
 #' 
-#' Methods for returning a raster::extent object from a Field, DataObject or a data.table.  The data.table, or the data.table in the "data" slot of the Field and DataObject, 
+#' Methods for returning a raster::extent object from a Field, Comparison or a data.table.  The data.table, or the data.table in the "data" slot of the Field and Comparison, 
 #' must have columns named "Lon" and "Lat" otherwise these methods fail.  
 #' 
-#' @param x A Field, DataObject or a data.table.
-#' @param ... Other arguments, not currently used
+#' @param x A Field, Comaprison or a data.table.
 #' @return A raster::extent
 #' @name extent-methods
 #' @rdname extent-methods

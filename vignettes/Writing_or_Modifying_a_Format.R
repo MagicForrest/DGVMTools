@@ -12,91 +12,91 @@ library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 ## ----accessing a slot, echo=TRUE-----------------------------------------
 GUESS@id
 
-## ----get PFTs, echo=TRUE-------------------------------------------------
-original.PFTs <- GUESS@default.pfts
+## ----get Layers, echo=TRUE-----------------------------------------------
+original.Layers <- GUESS@predefined.layers
 
-str(original.PFTs)
+str(original.Layers)
 
 ## ----modify PFTs, echo=TRUE----------------------------------------------
-new.PFT =  new("PFT",
-               id = "NewPFT",
-               name = "Some New Tree PFT",
-               growth.form = "Tree",
-               leaf.form = "Broadleaved",
-               phenology = "Summergreen",
-               colour = "red",
-               climate.zone = "Temperate",
-               shade.tolerance = "None"
+new.Layer =  new("Layer",
+                 id = "NewTree",
+                 name = "Some New Tree PFT Layer",
+                 colour = "red",
+                 properties = list(type = "PFT",
+                      growth.form = "Tree",
+                      leaf.form = "Broadleaved",
+                      phenology = "Summergreen",
+                      climate.zone = "Temperate")
 )
 
-new.PFT.list <- append(original.PFTs, new.PFT)
+new.Layer.list <- append(original.Layers, new.Layer)
 
-print(str(new.PFT.list))
+print(str(new.Layer.list))
 
-GUESS@default.pfts <- new.PFT.list
+GUESS@predefined.layers <- new.Layer.list
 
 
 ## ----id slot, echo=TRUE--------------------------------------------------
 id_NewFormat <- "Example_Format"
 
-## ----default.pfts slot, echo=TRUE----------------------------------------
-PFTs_NewFormat <- list(
+## ----defined.layers slot, echo=TRUE--------------------------------------
+Layers_NewFormat <- list(
   
   # A couple of tree PFTs
   
-  TeBE = new("PFT",
+  TeBE = new("Layer",
              id = "TeBE",
              name = "Temperate Broadleaved Evergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Evergreen",
-             climate.zone = "Temperate",
              colour = "darkgreen",
-             shade.tolerance = "None"
+             properties = list(type = "PFT",
+                  growth.form = "Tree",
+                  leaf.form = "Broadleaved",
+                  phenology = "Evergreen",
+                  climate.zone = "Temperate")
   ),
   
   
-  TeBS = new("PFT",
+  TeBS = new("Layer",
              id = "TeBS",
              name = "Temperate Broadleaved Summergreen Tree",
-             growth.form = "Tree",
-             leaf.form = "Broadleaved",
-             phenology = "Summergreen",
              colour = "darkolivegreen3",
-             climate.zone = "Temperate",
-             shade.tolerance = "None"
+             properties = list(type = "PFT",
+                  growth.form = "Tree",
+                  leaf.form = "Broadleaved",
+                  phenology = "Summergreen",
+                  climate.zone = "Temperate")
   ),
   
   
   # And a couple of grasses
   
-  C3G = new("PFT",
+  C3G = new("Layer",
             id = "C3G",
             name = "Boreal/Temperate Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
             colour = "lightgoldenrod1",
-            shade.tolerance = "None"
+            properties = list(type = "PFT",
+                 growth.form = "Grass",
+                 leaf.form = "Broadleaved",
+                 phenology = "GrassPhenology",
+                 climate.zone = "NA")
   ),
   
-  C4G = new("PFT",
+  C4G = new("Layer",
             id = "C4G",
             name = "Tropical Grass",
-            growth.form = "Grass",
-            leaf.form = "Broadleaved",
-            phenology = "GrassPhenology",
-            climate.zone = "NA",
             colour = "sienna2",
-            shade.tolerance = "None"
+            properties = list(type = "PFT",
+                 growth.form = "Grass",
+                 leaf.form = "Broadleaved",
+                 phenology = "GrassPhenology",
+                 climate.zone = "NA")
   )
   
 )
 
 # Now take a look at them
-for(PFT in PFTs_NewFormat) {
-  print(PFT)
+for(Layer in Layers_NewFormat) {
+  print(Layer)
 }
 
 
@@ -126,29 +126,8 @@ for(quant in quantities_NewFormat ) {
   print(quant)
 }
 
-## ----determine PFTs, echo=TRUE-------------------------------------------
-determinePFTs_NewFormat <- function(x, names = TRUE){
-  
-  # typical stuff 
-  run.dir <- x@dir
-  
-  # all possible PFTs present 
-  PFTs.possible <- x@pft.set
-  
-  # code to look for and open a commen per-PFT output file (for example LAI) 
-  # typical files to check could be specified in 'additional.args' argument for example
-  # ...
-  
-  # code check the ASCII header or netCDF meta info to see what PFTs are present
-  # ...
-  PFTs.present <- list() # dummy code
-  
-  return(PFTs.present)
-  
-} 
-
 ## ----available Quantities, echo=TRUE-------------------------------------
-availableQuantities_NewFormat <- function(x, additional.args){ 
+availableQuantities_NewFormat <- function(x, names = TRUE, additional.args){ 
   
   # typical stuff 
   # * get a list of files in the directory
@@ -172,7 +151,7 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
   
   # dummy code
   dt <- data.table()
- 
+  
   
   # also an STAInfo object
   # define this properly based on the actual data in the data.table
@@ -186,15 +165,15 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
                          subannual.resolution = "monthly", # let's say
                          subannual.aggregate.method = "none", # see NOTE 1 below
                          subannual.original = "monthly" # let's say
-                         )
+  )
   
-   # NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)
-   # NOTE 2: if no spatial cropping at this stage set this to be the character string "Full", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
+  # NOTE 1: normally there is no reason to do any aggregation in this function since it will be done later (and doesn't save any disk reading)
+  # NOTE 2: if no spatial cropping at this stage set this to be the character string "Full", if spatial cropping was done, set it to the spatail.extent.id argument of the target sta.info object
   
   
   # make the Field ID based on the STAInfo and 
   field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
-    
+  
   # build a new Field
   return.Field <- new("Field",
                       id = field.id,
@@ -202,8 +181,8 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
                       data = dt,
                       sta.info = return.sta.info,
                       source = source)
-
-   
+  
+  
   return(return.field)
   
 } 
@@ -211,9 +190,8 @@ getField_NewFormat <- function(source, quant, sta.info, verbose, ...){
 ## ----Builing the Format, echo=TRUE---------------------------------------
 NewFormat <- new("Format", 
                  id = id_NewFormat,
-                 default.pfts = PFTs_NewFormat, 
+                 predefined.layers = Layers_NewFormat, 
                  quantities = quantities_NewFormat, 
-                 determinePFTs = determinePFTs_NewFormat, 
                  availableQuantities = availableQuantities_NewFormat, 
                  getField =getField_NewFormat)
 

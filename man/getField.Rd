@@ -4,11 +4,25 @@
 \alias{getField}
 \title{Get a \code{Field} from a \code{Source}}
 \usage{
-getField(source, var, first.year, last.year, year.aggregate.method,
-  spatial.extent, spatial.extent.id, spatial.aggregate.method,
-  subannual.resolution, subannual.original, subannual.aggregate.method,
-  sta.info, file.name = NULL, write = FALSE, read.full = TRUE,
-  verbose = FALSE, ...)
+getField(
+  source,
+  var,
+  first.year,
+  last.year,
+  year.aggregate.method,
+  spatial.extent,
+  spatial.extent.id,
+  spatial.aggregate.method,
+  subannual.resolution,
+  subannual.original,
+  subannual.aggregate.method,
+  sta.info,
+  file.name = NULL,
+  write = FALSE,
+  read.full = TRUE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{source}{The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.}
@@ -19,7 +33,7 @@ getField(source, var, first.year, last.year, year.aggregate.method,
 
 \item{last.year}{The last year (as a numeric) of the data to be return}
 
-\item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
+\item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 See \code{\link{aggregateYears}}}
 
@@ -28,7 +42,7 @@ See \code{\link{aggregateYears}}}
 \item{spatial.extent.id}{A character string to give an identifier for the spatial extent this ModelField covers.}
 
 \item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
-"weighted.sum"/"w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+"weighted.sum"/"w.sum", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 See \code{\link{aggregateSpatial}}}
 
 \item{subannual.resolution}{A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".}
@@ -36,7 +50,7 @@ See \code{\link{aggregateSpatial}}}
 \item{subannual.original}{A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 Can be "Year", "Month" or "Day".  Currently ignored.}
 
-\item{subannual.aggregate.method}{A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "sd" or "var".
+\item{subannual.aggregate.method}{A character string specifying the method by which to aggregate the data subannually,  can be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean)
 See \code{\link{aggregateSubannual}}}
 
 \item{sta.info}{Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.
@@ -54,10 +68,25 @@ Leave missing or set to \code{NULL} to use the standard file name for the partic
 
 \item{verbose}{If TRUE give a lot of information for debugging/checking.}
 
-\item{...}{Other arguments that are passed to the getField function for the specific Format or for selecting space/time/years.  Currently this can be
+\item{...}{Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.
+For all Formats, the followings arguments apply:
 \itemize{
- \item{adgvm.scheme}  For the aDGVM Format, defines the aDGVM PFT scheme which can be 1 or 2.
- \item{cover.fraction}  Optional when selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, should be between 0 and 1.
+ \item{\code{cover.fraction}}  When selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, this optional arguement determines 
+ how much of the gridcell needs to be in the the polygon for it to be selected. Should be between 0 and 1.
+}
+For the aDGVM(1) Format, the following arguments apply:
+\itemize{
+ \item{\code{adgvm.file.type}}  This character string argument specifies from which file to read the data.
+ This can be one of "Yearly", "Sys", "Fire", "Soil" or "Size".  The default is "Yearly", which is sensible because the yearly file is always written. 
+ \item{\code{adgvm.fire}}  This numeric argument (taking values 0 or 1) specifies to take a run with fire on (1) or off (0). Default is 1.
+ \item{\code{adgvm.climate}}   This numeric argument (taking values 0 or 1) specifies to take a run with constant (0) or transient (1) climate.  Default is 0.
+ \item{\code{adgvm.header}} If your aDGVM run has been has extra columns added to the output tables, use this argument
+ to specify the column names.  For the default column names see the source file \code{aDGVM1-Format}.
+}
+For the aDGVM2 Format, the following arguments apply:
+\itemize{
+ \item{\code{adgvm2.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
+ \item{\code{adgvm2.daily}}  A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)
 }}
 }
 \value{

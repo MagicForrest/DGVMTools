@@ -4,8 +4,15 @@
 \alias{openLPJOutputFile_FireMIP}
 \title{Open an LPJ-GUESS .out file}
 \usage{
-openLPJOutputFile_FireMIP(run, quant, target.sta, file.name = file.name,
-  verbose = FALSE, soil_water_capacities = "none", ...)
+openLPJOutputFile_FireMIP(
+  run,
+  quant,
+  target.sta,
+  file.name = file.name,
+  verbose = FALSE,
+  soil_water_capacities = "none",
+  ...
+)
 }
 \arguments{
 \item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}

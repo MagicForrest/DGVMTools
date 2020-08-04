@@ -4,8 +4,13 @@
 \alias{mergeFieldsForPlotting}
 \title{Merge data from Field for plotting}
 \usage{
-mergeFieldsForPlotting(fields, add.Quantity = FALSE, add.Site = FALSE,
-  add.Region = FALSE, add.TimePeriod = FALSE)
+mergeFieldsForPlotting(
+  fields,
+  add.Quantity = FALSE,
+  add.Site = FALSE,
+  add.Region = FALSE,
+  add.Years = FALSE
+)
 }
 \arguments{
 \item{fields}{The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)}
@@ -16,7 +21,7 @@ mergeFieldsForPlotting(fields, add.Quantity = FALSE, add.Site = FALSE,
 
 \item{add.Region}{Logical, if TRUE add a column with the with a string containing the Region (as defined by the spatial.extent.id) of each Field.}
 
-\item{add.TimePeriod}{Logical, if TRUE add a column (with name "Time Period") with a string containing the time period of each Field
+\item{add.Years}{Logical, if TRUE add a column (with name "Years") with a string containing the first and last years of each Field
 (as defined by first.year and last.year).}
 }
 \value{

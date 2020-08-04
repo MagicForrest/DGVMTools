@@ -13,6 +13,7 @@
 #'  \item{"/" (or "divide" or "through")} {Divide one layer by another. Nore this does 'safe division' which returns zero if the denomination is zero. Requires exactly two layers to be specified, divides the second by the first, ie. layer1 / layer 2.}
 #'  \item{"max.layer"} {Gets the layer with the maximum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the max.}
 #'  \item{"min.layer"} {Gets the layer with the minimum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the min.}
+#'  \item{"mulc"/"divc"/"addc"/"subc"} {Multiplies, divides, adds or subtracts the layer with a numeric value in the "constant" argument}
 #'  \item{\emph{any numeric value}} {Sets each of the layers specified uniformly to the numeric value specified, most usefuly for 0.  Previously not existing layers in the layers and new.layer argument will be created.}
 #'  \item{\emph{NULL}} {A special case of the above which removes the layers from the Field}
 #'  \item{\emph{Whatever function}} {Now we are into crazy territory!  You can provide any function (the actual function, not a string ) that operates on a vector of numerics and it might just work!  Works for sd, var, min and max, but your mileage may vary.}
@@ -20,18 +21,18 @@
 #' }
 #' @param layers The names of the layers upon which to operate (as a vector of characters).  Furthermore, one can utilise a handy a handy trick whereby any layer spcecified, 
 #' @param new.layer A single character specifying the name of the new layer, will over-write an existing layer if already present.  Will be built automatically if not specified.
+#' @param constant A numeric used for the "mulc"/"divc"/"addc"/"subc" modes
 #'
 #' @return A Field (but not this is not strictly necessary since the objects are changed in place)
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export  
 #'    
 
-layerOp <- function(x, operator, layers, new.layer){
-  
+layerOp <- function(x, operator, layers, new.layer, constant = 1){
+
   t1 <- Sys.time()
   
-  
-  ### PREAMBLE - find layers which start with a '.' and expand them to PFT ids
+  ### PREAMBLE - find layers which start with a '.' and expand them to Layer ids
   final.layers <- c()
   for(layer in layers) {
     
@@ -39,8 +40,7 @@ layerOp <- function(x, operator, layers, new.layer){
     if(substring(layer, 1, 1) == '.') {
       
       criteria <- substring(layer, 2)
-      if(tolower(criteria) == "pfts" || tolower(criteria) == "pft") expanded.layers <- listPFTs(x)
-      else expanded.layers <- listPFTs(x, criteria)
+      expanded.layers <- whichLayers(x, criteria)
       final.layers <- append(final.layers, unlist(expanded.layers))
       
     }
@@ -85,6 +85,9 @@ layerOp <- function(x, operator, layers, new.layer){
   # else if character
   else if(is.character(operator)) {
     
+    # check we have a constant for the constant operators
+    if(missing(constant) && (operator %in% c("mulc", "divc", "addc", "subc"))) stop("A constant is required for operators mulc/divc/addc/subc")
+  
     # add
     if(operator == "+" || operator == "sum" || operator == "add") {
       if(missing(new.layer)) new.layer <- paste0(layers, collapse = "+")
@@ -136,7 +139,19 @@ layerOp <- function(x, operator, layers, new.layer){
       }
       x@data <- x@data[, (new.layer) := factor(apply(.SD, 1, min.layer)), .SDcols = layers]
     }
-    
+    #  adjust by a constant 
+    else if(operator == "mulc") {
+      x@data <- x@data[, (new.layer) := .SD * constant, .SDcols = layers]
+    }
+    else if(operator == "addc") {
+      x@data <- x@data[, (new.layer) := .SD + constant, .SDcols = layers]
+    }
+    else if(operator == "divc") {
+      x@data <- x@data[, (new.layer) := .SD / constant, .SDcols = layers]
+    }
+    else if(operator == "subc") {
+      x@data <- x@data[, (new.layer) := .SD - constant, .SDcols = layers]
+    }
     # else
     else {
       stop(paste("Unknown operator (as character)", operator, " to layerOp().  If you want to try a function, don't quote it."))

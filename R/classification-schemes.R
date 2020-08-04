@@ -92,7 +92,7 @@ Smith2014BiomeRules <- function(x){
 #' 
 #' @rdname BiomeScheme-class
 #' @export
-Smith2014BiomeScheme <- new("BiomeScheme",
+Smith2014BiomeScheme <- new("Scheme",
                         new("Quantity",
                             id = "Smith2014",
                             name = "Smith et al. 2014 Biomes", 
@@ -157,7 +157,7 @@ Smith2014BiomeScheme <- new("BiomeScheme",
                           # Tropical
                           list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
                           # Total
-                          list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
+                          list(quantity = "LAI_std", operator = "+", layers = ".PFT", new.layer = "Total"),
                           
                           ### Get max tree
                           list(quantity = "LAI_std", operator = "max.layer", layers = ".Tree", new.layer = "MaxTree"),
@@ -321,7 +321,7 @@ Hickler2012Rules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 
-Hickler2012BiomeScheme <- new("BiomeScheme",
+Hickler2012BiomeScheme <- new("Scheme",
                           new("Quantity",
                               id = "Hickler2012",
                               name = "Hickler2012",
@@ -367,7 +367,7 @@ Hickler2012BiomeScheme <- new("BiomeScheme",
                             # MaxTree
                             list(quantity = "LAI_std", operator = "max.layer", layers =".Tree", new.layer = "MaxTree"),
                             # MaxPFT
-                            list(quantity = "LAI_std", operator = "max.layer","layers =.PFTs", new.layer = "MaxPFT"),
+                            list(quantity = "LAI_std", operator = "max.layer","layers =.PFT", new.layer = "MaxPFT"),
                             # GrassFraction
                             list(quantity = "LAI_std", operator = "/", layers =c("Grass", "Total"), new.layer = "GrassFraction"),
                             # BorealFractionOfTree
@@ -471,7 +471,7 @@ Forrest2015MegaBiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #'
-Forrest2015BiomeScheme <- new("BiomeScheme",
+Forrest2015BiomeScheme <- new("Scheme",
                           new("Quantity",
                               id = "Forrest2015",
                               name = "Forrest et al. 2015",
@@ -518,7 +518,7 @@ Forrest2015BiomeScheme <- new("BiomeScheme",
                             # Tropical
                             list(quantity = "LAI_std", operator = "+", layers = ".Tropical", new.layer = "Tropical"),
                             # Total
-                            list(quantity = "LAI_std", operator = "+", layers = ".PFTs", new.layer = "Total"),
+                            list(quantity = "LAI_std", operator = "+", layers = ".PFT", new.layer = "Total"),
                             
                             
                             ### Max tree
@@ -602,7 +602,7 @@ MeditBiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-MeditBiomeScheme <- new("BiomeScheme",
+MeditBiomeScheme <- new("Scheme",
                           new("Quantity",
                               id = "MeditBiomeScheme",
                               name = "Mediterranean Biomes",
@@ -727,7 +727,7 @@ MegaBiomeRules_dev <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-DevMegaBiomeScheme <- new("BiomeScheme",
+DevMegaBiomeScheme <- new("Scheme",
                              new("Quantity",
                                  id = "Megabiomes",
                                  name = "Megabiomes",
@@ -848,7 +848,7 @@ FireMIPBiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-FireMIPBiomeScheme <- new("BiomeScheme",
+FireMIPBiomeScheme <- new("Scheme",
                             new("Quantity",
                                 id = "FireMIP",
                                 name = "FireMIP Biomes",
@@ -974,7 +974,7 @@ FPCMegaBiomeRules <- function(x) {
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-FPCMegaBiomeScheme <- new("BiomeScheme",
+FPCMegaBiomeScheme <- new("Scheme",
                             new("Quantity",
                                 id = "FPCMegaBiomeScheme",
                                 name = "FPCMegaBiomeScheme",
@@ -1018,7 +1018,94 @@ FPCMegaBiomeScheme <- new("BiomeScheme",
                             data.reference = "-",
                             published.reference = "-")
 
+#####################################################################
+########### ADGVM(1) BIOME CLASSIFICATION SCHEMES #####################
+#####################################################################
 
+
+
+#####################################################################
+########### SIMPLE BIOME CLASSIFICATION #############################
+#####################################################################
+
+#' Rules to classify tropical biomes from aDGVM1 output
+#' 
+#' No reference yet
+#' 
+#' @param x Numerical vector of vegetation over values for a particular location. 
+#' Certain fractions and quantities should have been pre-calculated.
+#' 
+#' @return Biomes code (1-5, baren, C4 grassland, C3 grassland, woodland, forest)
+#' @keywords internal
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
+
+aDGVMBiomeRules <- function(x){
+  
+  # BIOME 1 - Forest
+  if(as.numeric(x[['Cancov_Tree']]) >= 0.8) {return("Forest")}
+  
+  # BIOME 2 - Woodland
+  else if(as.numeric(x[['Cancov_Tree']]) < 0.8 & x[['Cancov_Tree']] > 0.1 & x[['Cancov_ForTr_Fraction_Of_Tree']] > 0.5) {return("Woodland")}
+  
+  # BIOME 3 - C4 Savanna
+  else if(as.numeric(x[['Cancov_Tree']]) < 0.8 & x[['Cancov_Tree']] > 0.1 & x[['Cancov_ForTr_Fraction_Of_Tree']] <= 0.5 & x[['C3C4_Ratio_Grass']] < 0.5) {return("C4 Savanna")}
+
+  # BIOME 4 - C3 Savanna
+  else if(as.numeric(x[['Cancov_Tree']]) < 0.8 & x[['Cancov_Tree']] > 0.1 & x[['Cancov_ForTr_Fraction_Of_Tree']] <= 0.5 & x[['C3C4_Ratio_Grass']] >= 0.5) {return("C3 Savanna")}
+
+  # BIOME 5 - C4 Grassland
+  else if(as.numeric(x[['Cancov_Tree']]) <= 0.1 & x[['LeafBiomass_Grass']] > 0.5 & x[['C3C4_Ratio_Grass']] >= 0.5) {return("C4 Grassland")}
+  
+  # BIOME 6 - C3 Grassland
+  else if(as.numeric(x[['Cancov_Tree']]) <= 0.1 & x[['LeafBiomass_Grass']] > 0.5 & x[['C3C4_Ratio_Grass']] < 0.5) {return("C3 Grassland")}
+ 
+  # BIOME 7 - Desert
+  else if(as.numeric(x[['Cancov_Tree']]) <= 0.1 & x[['LeafBiomass_Grass']] <= 0.5) {return("Desert")}
+
+  # BIOME 8 - Remainder, Unclassified
+  else {
+    return("Unclassifiable/Other")
+  }
+}
+
+#' Meta-data describing a simple scheme for aDGVM2 output.
+#' 
+#' \strong{SimpleAdgvm2BiomeScheme} SS document here
+#' 
+#' @rdname BiomeScheme-class
+#' @export
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @author Glenn Moncrief \email{glenn@@saeon.ac.za}
+
+aDGVMBiomeScheme <- new("Scheme",
+                               new("Quantity",
+                                   id = "aDGVMBiomeScheme",
+                                   name = "aDGVM(1) Biomes",
+                                   colours = grDevices::colorRampPalette(c("Baren/Desert" = '#cccccc',
+                                                                           "C4 Grassland" = '#fad052',
+                                                                           "C3 Grassland" = '#f0f571',
+                                                                           "C4 Savanna" = '#a7c454',
+                                                                           "C3 Savanna" = '#caf062',
+                                                                           "Woodland" = '#5fde6e',
+                                                                           "Forest" = '#3c8f46',
+                                                                           "Unclassifiable/Other" = "grey75")),
+                                   units = c("Desert",
+                                             "C4 Grassland",
+                                             "C3 Grassland",
+                                             "C4 Savanna",
+                                             "C3 Savanna",
+                                             "Woodland",
+                                             "Forest",
+                                             "Unclassifiable/Other"),
+                                   format = c("aDGVM1")),
+                               rules = aDGVMBiomeRules,
+                               layers.needed = list( list(quantity = "LeafBiomass", operator = "+", layers = ".Grass", new.layer = "Grass"),
+                                                     list(quantity = "Cancov", operator = "+", layers = ".Tree", new.layer = "Tree"),
+                                                     list(quantity = "Cancov", operator = "/", layers = c("ForTr", "Tree"), new.layer = "ForTr_Fraction_Of_Tree"),
+                                                     list(quantity = "C3C4_Ratio", operator = NULL, layers = "IgnoreThisWarningMessageHonestlyItsFine")),
+                               data.reference = "-",
+                               published.reference = "-")
 
 
 #####################################################################
@@ -1066,7 +1153,7 @@ SimpleAdgvm2BiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' @author Simon Scheiter \email{Simon.Scheiter@@senckenberg.de}
-SimpleAdgvm2BiomeScheme <- new("BiomeScheme",
+SimpleAdgvm2BiomeScheme <- new("Scheme",
                                  new("Quantity",
                                      id = "SimpleAdgvm2BiomeScheme",
                                      name = "Simple aDGVM2 Biomes",
@@ -1129,7 +1216,7 @@ SimpleHeightAdgvm2BiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-SimpleHeightAdgvm2BiomeScheme <- new("BiomeScheme",
+SimpleHeightAdgvm2BiomeScheme <- new("Scheme",
                                        new("Quantity",
                                            id = "SimpleHeightAdgvm2BiomeScheme",
                                            name = "Simple aDGVM2 Biomes",
@@ -1194,7 +1281,7 @@ GrowthFormAdgvm2BiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-GrowthFormAdgvm2BiomeScheme <- new("BiomeScheme",
+GrowthFormAdgvm2BiomeScheme <- new("Scheme",
                                      new("Quantity",
                                          id = "GrowthFormAdgvm2BiomeScheme",
                                          name = "Growth Form aDGVM2 Biomes",
@@ -1260,7 +1347,7 @@ PhenologyAdgvm2BiomeRules <- function(x){
 #' @rdname BiomeScheme-class
 #' @export
 #' 
-PhenologyAdgvm2BiomeScheme <- new("BiomeScheme",
+PhenologyAdgvm2BiomeScheme <- new("Scheme",
                                     new("Quantity",
                                         id = "PhenologyAdgvm2BiomeScheme",
                                         name = "Phenology aDGVM2 Biomes",
@@ -1291,9 +1378,9 @@ PhenologyAdgvm2BiomeScheme <- new("BiomeScheme",
 
 
 
-#' Currently supported biome schemes
+#' Currently supported classification schemes
 #' 
-#' This is a list of all BiomeSchemes defined by DGVMTools.
+#' This is a list of all classification Schemes defined by DGVMTools.
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
@@ -1310,23 +1397,24 @@ PhenologyAdgvm2BiomeScheme <- new("BiomeScheme",
 #' test.Source <- defineSource(name = "LPJ-GUESS run", dir = test.dir,  format = GUESS)
 #' 
 #' # Smith et al. 2014
-#' Smith2014.biomes <- getBiomes(source = test.Source, scheme = Smith2014BiomeScheme, 
+#' Smith2014.biomes <- getScheme(source = test.Source, scheme = Smith2014BiomeScheme, 
 #'                               year.aggregate.method = "mean")
 #' print(plotSpatial(Smith2014.biomes))
 #' 
 #' # Forrest et al. 2014
-#' Forrest2015.biomes <- getBiomes(source = test.Source, scheme = Forrest2015BiomeScheme, 
+#' Forrest2015.biomes <- getScheme(source = test.Source, scheme = Forrest2015BiomeScheme, 
 #'                                 year.aggregate.method = "mean")
 #' print(plotSpatial(Forrest2015.biomes))
 #' 
 #' }
-supported.biome.schemes <- c("Smith2014" = Smith2014BiomeScheme,
+supported.classification.schemes <- c("Smith2014" = Smith2014BiomeScheme,
                              "Hickler2012" = Hickler2012BiomeScheme,
                              "Forrest2015" = Forrest2015BiomeScheme,
                              "DevMegaBiomes" = DevMegaBiomeScheme,
                              "FPCMegaBiomes" = FPCMegaBiomeScheme,
                              "MeditBiomes" = MeditBiomeScheme,
                              "FireMIPBiomes" = FireMIPBiomeScheme,
+                             "aDGVMBiomes" = aDGVMBiomeScheme,
                              "SimpleAdgvm2Biomes" = SimpleAdgvm2BiomeScheme,
                              "SimpleHeightAdgvm2Biomes" = SimpleHeightAdgvm2BiomeScheme,
                              "GrowthFormAdgvm2Biomes" = GrowthFormAdgvm2BiomeScheme,

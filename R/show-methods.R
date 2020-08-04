@@ -5,7 +5,6 @@
 #' Show a DGVMTools object in a reasonably nice and space efficient way.
 #'
 #' @param object Any DGVMTools object to be shown (printed)
-#' @param ... other arguments to be passed on to a further show functions, not currently used.
 #' @name show
 #'
 #' @importMethodsFrom methods show
@@ -18,15 +17,21 @@
 NULL
 
 
-if(!isGeneric("show")) setGeneric("show", function(object, ...) standardGeneric("show"))
+if(!isGeneric("show")) setGeneric("show", function(object) standardGeneric("show"))
 
 
 #' @rdname show
 #' @export
-setMethod('show', signature(object="PFT"), function(object) {
+setMethod('show', signature(object="Layer"), function(object) {
   
-  cat(paste0("PFT: ", object@id," (", object@name, "): ", "Growth form=",  object@growth.form, ", Leaf form=", object@leaf.form, ", Phenology=", object@phenology, ", Climate zone=", object@climate.zone, ", Shade tolerance=", object@shade.tolerance, ", Preferred colour=", object@colour, "\n"))
-  
+  cat(paste0("Layer: ", object@id," (", object@name, "), plot colour = ", object@colour, "\n" ))
+  prop.string <- "\t With properties: "
+  for(this.name in names(object@properties)) {
+    prop.string <- paste0(prop.string, this.name, "=", object@properties[[this.name]], ", ")
+  }
+  if(length(names(object)) > 0) prop.string <- substr(prop.string, 1, nchar(prop.string)-2)
+  prop.string <- paste0(prop.string, "\n")
+  cat(paste0(prop.string))
   
 })
 
@@ -36,8 +41,10 @@ setMethod('show', signature(object="PFT"), function(object) {
 #' @export
 setMethod("show", signature(object="Quantity"), function(object) {
   
-  cat(paste0("Quantity:\n"))
-  cat(paste0("\t\t", object@id," (", object@name, "): ",  "Units=", object@units, ", Defined for format: ", paste0(unlist(object@format), collapse = ', '), "\n"))
+  cat(paste0("Quantity: \t\t", object@id," (", object@name, "): ",  
+             "Units=", object@units, 
+             ", Defined for format: ", paste0(unlist(object@format), collapse = ', '), 
+             ", CF name=", object@cf.name, "\n"))
   
 })
 
@@ -82,7 +89,7 @@ setMethod("show", signature(object="Source"), function(object) {
   cat(paste0("\tcontact = ", "\"", object@contact, "\"", "\n"))
   cat(paste0("\tPFTs defined:\n"))
   all.PFTs <- c()
-  for(PFT in object@pft.set){
+  for(PFT in object@defined.layers){
     all.PFTs <- append(all.PFTs, PFT@id)
   }
   cat(paste0(all.PFTs))
@@ -177,22 +184,22 @@ setMethod("show", signature(object="Comparison"), function(object) {
   print(object@source1)
   cat(paste0("Source for second layer: \n"))
   print(object@source2)
-  
+  cat(paste0("\n"))
 })
 
 
 
 #' @rdname show
 #' @export
-setMethod("show", signature(object="BiomeScheme"), function(object) {
+setMethod("show", signature(object="Scheme"), function(object) {
   
-  cat(paste0("Biome Scheme:\n"))
+  cat(paste0("Scheme:\n"))
   cat(paste0("id = ", "\"", object@id, "\"", "\n"))
   cat(paste0("name = ", object@name, "\"", "\n"))
   #cat(paste0("Totals needed: ", paste0(object@totals.needed, collapse = ' '), "\n"))
   cat(paste0("Data reference: ", "\"", object@data.reference,  "\"", "\n"))
   cat(paste0("Published reference: ", "\"", object@published.reference,  "\"", "\n"))
-  cat(paste0("Biomes:\n"))
+  cat(paste0("Categories:\n"))
   for(type in object@units) {
     cat(paste0("     ", type,"\n"))
   }
@@ -206,7 +213,7 @@ setMethod("show", signature(object="Format"), function(object) {
   cat(paste0("Format:\n"))
   cat(paste0("id = \"", object@id, "\"", "\n"))
   cat(paste0("Default PFTs:\n"))
-  for(PFT in object@default.pfts){
+  for(PFT in object@predefined.layers){
     print(PFT)
   }
   cat(paste0("Defined Quantities:\n"))

@@ -2,17 +2,22 @@
 % Please edit documentation in R/export-methods.R
 \name{promoteToRaster}
 \alias{promoteToRaster}
-\title{Prepares data as a raster object for plotting.}
+\title{Convert to Raster}
 \usage{
-promoteToRaster(input.data, layers = "all", tolerance = 0.01,
-  grid.topology = NULL)
+promoteToRaster(
+  input.data,
+  layers = "all",
+  tolerance = 0.01,
+  grid.topology = NULL
+)
 }
 \arguments{
-\item{input.data}{Field or data.table}
+\item{input.data}{Field, Comparison or data.table}
 
 \item{layers}{The columns to be selected included in the final Raster* object.  Use NULL or "all" if all layers are required.}
 
-\item{tolerance}{Tolerance (in fraction of gridcell size) for unevenly spaced lon and lats,  when converting gridded table to a raster, in the case the the gridded data is not commatters for uneven}
+\item{tolerance}{Tolerance (in fraction of gridcell size) for unevenly spaced Lon and Lats, 
+when converting gridded table to a raster.}
 
 \item{grid.topology}{A character string defining the grid topology when going from a table to raster, used in a call to SpatialPixels}
 }
@@ -20,10 +25,8 @@ promoteToRaster(input.data, layers = "all", tolerance = 0.01,
 A RasterLayer (or RasterBrick)
 }
 \description{
-Converts a data.table, Field or an Spatial*-object to Raster object, also subsetting the requested layers.  
-It can also handle a RasterLayber/Stack/Brick, in which case the only processing done is the subsetting since the data is already in Raster form.
-This is generally called in the \code{plotSpatial} function (or potentially before any use of the raster::spplot and raster::plot functions),
-but can be useful in and of itself.
+Converts a Field, Comparison or data.table to a Raster object, also subsetting the requested layers.  
+This is generally called in the as.Raster and the setAs functions but can be useful in and of itself.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

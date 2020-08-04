@@ -80,13 +80,13 @@ plotSeasonal <- function(runs,
   else if(class(runs)[1] == "list") {
     for(object in runs){ 
       if(!is.Source(object)) {
-        warning("You have passed me a list of items to plot but the items are not exclusively of Source/DataObjects.  Returning NULL")
+        warning("You have passed me a list of items to plot but the items are not exclusively of Sources.  Returning NULL")
         return(NULL)
       }
     }
   }
   else{
-    stop(paste("plotSpatial can only handle single a Source or DataObject, or a list of Source/DataObjects can't plot an object of type", class(runs)[1], sep = " "))
+    stop(paste("plotSpatial can only handle single a Source, or a list of Sources can't plot an object of type", class(runs)[1], sep = " "))
   }
   
   

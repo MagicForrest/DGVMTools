@@ -7,7 +7,7 @@
 getDimInfo(x, info = "names")
 }
 \arguments{
-\item{x}{A DataObject, Field, Comparison or data.tables}
+\item{x}{A Field, Comparison or data.table}
 
 \item{info}{A character string to define what spatio-temporal info you want.  Can be:
 
@@ -25,7 +25,7 @@ getDimInfo(x, info = "names")
 See above
 }
 \description{
-This function returns information about the spacio-temporal dimensions of a DataObject, Field, Comparison or data.table
+This function returns information about the spatio-temporal dimensions of a Field, Comparison or data.table
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

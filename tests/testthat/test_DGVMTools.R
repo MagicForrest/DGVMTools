@@ -45,27 +45,36 @@ test_that("Sources",{
 context("Quantity")
 
 vegC_std.Quantity <- lookupQuantity("vegC_std")
+new.Quantity <- defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity")
 
 
 test_that("Quantity",{
   
+  # test result from lookupQuantity
   expect_is(vegC_std.Quantity , "Quantity")
 
+  # test availableQuantities function
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = FALSE), "list")
-  
   expect_is(availableQuantities(GUESS.Africa.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(GUESS.Africa.test.Source, names = FALSE), "list")
-  
   expect_is(availableQuantities(DGVMData.SaatchiBiomass.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(DGVMData.SaatchiBiomass.test.Source, names = FALSE), "list")
-  
   expect_is(availableQuantities(DGVMData.PNVBiomes.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(DGVMData.PNVBiomes.test.Source, names = FALSE), "list")
   
+  # test result from defineQuantity
+  expect_is(new.Quantity , "Quantity")
   
+  # add pre-defined Quantity to Source and Format
+  expect_is(addTo(new.Quantity, GUESS), "Format")
+  expect_is(addTo(new.Quantity, GUESS.Europe.test.Source), "Source")
+  # note: test adding to a Field is done in 'Fields' block below
   
-  
+  # add directly to Format/Source using defineQuantity
+  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity", add.to = GUESS), "Format")
+  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity", add.to = GUESS.Europe.test.Source), "Source")
+ 
 })
 
 
@@ -105,6 +114,10 @@ test_that("Field",{
   expect_is(Saatchi.Field.full, "Field")
   expect_is(Biomes.Field.full, "Field")
   
+  # add new quantities to the fields
+  expect_is(addTo(new.Quantity, Standard.Field), "Field")
+  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity", add.to = Standard.Field), "Field")
+  
   
 })
 
@@ -142,47 +155,61 @@ test_that("Field",{
 })
 
 
-# PFTs
-context("PFTs")
+# Layers
+context("Layers")
 
-# test PFTs
-test_that("PFTs",{
+# define a new Layer for testing (make it at file scopt to also use it in the 'Fields' blocsk later
+new.Layer <- defineLayer(id = "NewLayer", name = "New Layer", colour = "red", properties = list(type = "Test"))
+
+# test Layers
+test_that("Layers",{
   
-  
-  # Test return PFT objects from a Field with different criteria (and also NULL - ie no criteria)
-  all.criteria = list(NULL, "Grass", "Tree", "Evergreen", "Summergreen", "Raingreen", "Boreal", "Temperate", "Tropical", "Needleleaved", "Broadleaved")
+  # Test return Layer objects from a Field with different criteria (and also NULL - ie no criteria)
+  all.criteria = list("Grass", "Tree", "Evergreen", "Summergreen", "Raingreen", "Boreal", "Temperate", "Tropical", "Needleleaved", "Broadleaved")
   
   for(criteria in all.criteria) {
     
-    # get list of PFTs from a Field
-    list.PFTs <- listPFTs(x = GUESS.lai.Field.full, criteria = criteria, return.ids = FALSE)
-    expect_is(list.PFTs, "list")
-    for(PFT in list.PFTs) {
-      expect_is(PFT, "PFT")
+    # get list of Layers from a Field
+    list.Layers <- whichLayers(x = GUESS.lai.Field.full, criteria = criteria, return.ids = FALSE)
+    expect_is(list.Layers, "list")
+    for(Layer in list.Layers) {
+      expect_is(Layer, "Layer")
     }
     
-    # get vector of PFT ids (character strings) from a Field
-    list.PFTs <- listPFTs(x = GUESS.lai.Field.full, criteria = criteria, return.ids = TRUE)
-    expect_is(list.PFTs, "character")
-    for(PFT in list.PFTs) {
-      expect_is(PFT, "character")
+    # get vector of Layer ids (character strings) from a Field
+    list.Layers <- whichLayers(x = GUESS.lai.Field.full, criteria = criteria, return.ids = TRUE)
+    expect_is(list.Layers, "character")
+    for(Layer in list.Layers) {
+      expect_is(Layer, "character")
     }
     
-    # get list of PFTs from a list of PFTs
-    list.PFTs <- listPFTs(x = GUESS@default.pfts, criteria = criteria, return.ids = FALSE)
-    expect_is(list.PFTs, "list")
-    for(PFT in list.PFTs) {
-      expect_is(PFT, "PFT")
+    # get list of Layers from a list of Layers
+    list.Layers <- whichLayers(x = GUESS@predefined.layers, criteria = criteria, return.ids = FALSE)
+    expect_is(list.Layers, "list")
+    for(Layer in list.Layers) {
+      expect_is(Layer, "Layer")
     }
     
-    # get vector of PFT ids from a list of PFTs
-    list.PFTs <- listPFTs(x = GUESS@default.pfts, criteria = criteria, return.ids = TRUE)
-    expect_is(list.PFTs, "character")
-    for(PFT in list.PFTs) {
-      expect_is(PFT, "character")
+    # get vector of Layer ids from a list of Layers
+    list.Layers <- whichLayers(x = GUESS@predefined.layers, criteria = criteria, return.ids = TRUE)
+    expect_is(list.Layers, "character")
+    for(Layer in list.Layers) {
+      expect_is(Layer, "character")
     }
     
   }
+  
+  # test the new Layer, and add it to some things
+  expect_is(new.Layer, "Layer")
+  expect_is(addTo(new.Layer, GUESS), "Format")
+  expect_is(addTo(new.Layer, GUESS.Europe.test.Source), "Source")
+  expect_is(addTo(new.Layer, GUESS.mlai.Field.full), "Field")
+
+  # add directly to Format/Source using defineQuantity
+  expect_is(defineLayer(id = "NewLayer", name = "New Layer", colour = "red", properties = list(type = "Test"), add.to = GUESS), "Format")
+  expect_is(defineLayer(id = "NewLayer", name = "New Layer", colour = "red", properties = list(type = "Test"), add.to = GUESS.Europe.test.Source), "Source")
+  expect_is(defineLayer(id = "NewLayer", name = "New Layer", colour = "red", properties = list(type = "Test"), add.to = GUESS.mlai.Field.full), "Field")
+  
   
 })
 
@@ -385,12 +412,12 @@ context("Categorical Quantities")
 
 # biomes
 # Note: Known and deliberate warning when calculating biomes, suppress for clarity in results
-GUESS.Smith2014.Biomes <- suppressWarnings(getBiomes(source = GUESS.Europe.test.Source, scheme = Smith2014BiomeScheme, year.aggregate.method = "mean"))
-GUESS.Forrest2015.Biomes <- suppressWarnings(getBiomes(source = GUESS.Europe.test.Source, scheme = Forrest2015BiomeScheme, year.aggregate.method = "mean"))
+GUESS.Smith2014.Biomes <- suppressWarnings(getScheme(source = GUESS.Europe.test.Source, scheme = Smith2014BiomeScheme, year.aggregate.method = "mean"))
+GUESS.Forrest2015.Biomes <- suppressWarnings(getScheme(source = GUESS.Europe.test.Source, scheme = Forrest2015BiomeScheme, year.aggregate.method = "mean"))
 
 # max PFT
 GUESS.Field.lai.annual <- aggregateYears(GUESS.lai.Field.full, "mean")
-GUESS.Field.lai.annual <- layerOp(GUESS.Field.lai.annual, operator = "max.layer", ".PFTs", "MaxPFT")
+GUESS.Field.lai.annual <- layerOp(GUESS.Field.lai.annual, operator = "max.layer", ".PFT", "MaxPFT")
 
 
 test_that("Categorical Quantities", {
@@ -407,13 +434,14 @@ test_that("Categorical Quantities", {
                                            format = GUESS,
                                            name = "LPJ-GUESS Europe Example Run 2 (copy)")
   
-  # Dummy Source for averaged biomes, expect  a Warning because no data from which to determe PFTs
-  expect_warning(GUESS.Europe.test.Source.Averaged <- defineSource(id = "LPJ-GUESS_Example_Averaged",
+  # Dummy Source for averaged biomes
+  expect_is(GUESS.Europe.test.Source.Averaged <- defineSource(id = "LPJ-GUESS_Example_Averaged",
                                              dir = getwd(), 
                                              format = GUESS,
-                                             name = "LPJ-GUESS Europe Example Run Averaged"))
+                                             name = "LPJ-GUESS Europe Example Run Averaged"),
+            "Source")
   
-  GUESS.Smith2014.Biomes.averaged <- suppressWarnings(getBiomes(source = list(GUESS.Europe.test.Source, GUESS.Europe.test.Source), 
+  GUESS.Smith2014.Biomes.averaged <- suppressWarnings(getScheme(source = list(GUESS.Europe.test.Source, GUESS.Europe.test.Source), 
                                                                 scheme = Smith2014BiomeScheme, 
                                                                 year.aggregate.method = "mean",
                                                                 averaged.source = GUESS.Europe.test.Source.Averaged)

@@ -4,18 +4,46 @@
 \alias{plotSubannual}
 \title{Plots sub-annual cycles}
 \usage{
-plotSubannual(fields, layers = NULL, title = NULL, subtitle = NULL,
-  plotAverage = TRUE, text.multiplier = NULL, plot = TRUE,
-  year.col.gradient = NULL, alpha = 0.2, ...)
+plotSubannual(
+  fields,
+  layers = NULL,
+  gridcells = NULL,
+  title = NULL,
+  subtitle = NULL,
+  cols = NULL,
+  col.by = "Year",
+  col.labels = waiver(),
+  plotAverage = TRUE,
+  text.multiplier = NULL,
+  plot = TRUE,
+  alpha = 0.2,
+  ...
+)
 }
 \arguments{
 \item{fields}{The data to plot. Can be a Field or a list of Fields.}
 
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
+\item{gridcells}{A list of gridcells to be plotted (either in different panels or the same panel). For formatting of this argument see \code{selectGridcells}.
+Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop)}
+
 \item{title}{A character string to override the default title.}
 
 \item{subtitle}{A character string to override the default subtitle.}
+
+\item{cols}{A vector of colours to control the colours of the lines (as defined by the \code{col.by} argument above).  If \code{col.by} is set to "Year",
+the colours are used to form a colour palette.   Otherwise the vector can/should be named to match particular colour values
+to particular Layers/Sources/Sites/Quantities.}
+
+\item{col.by}{Character string defining the aspects of the data which which should be used to set the colour of the lines in each panel,
+all other aspects will be put in separate panels.  Can meaningfully take the values "Year", Layer", "Source", "Site" or "Quantity".
+By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
+the data are distinguished by different facet panels.}
+
+\item{col.labels}{A vector of character strings which are used as the labels for the lines. As for the \code{cols} arguement it must have
+the same length as the number of Layers/Sources/Sites/Quantities in the plot and the vectors can/should be named to match particular 
+labels to  particular Layers/Sources/Sites/Quantities.}
 
 \item{plotAverage}{Boolean, if TRUE plot the mean of all years}
 
@@ -23,8 +51,6 @@ plotSubannual(fields, layers = NULL, title = NULL, subtitle = NULL,
 Make it bigger if the text is too small on large plots and vice-versa.}
 
 \item{plot}{Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
-
-\item{year.col.gradient}{A colour palette as a function to use to colour the annual lines according to their Year.  Only works for a single Quantity and a single Source.}
 
 \item{alpha}{A numeric (range 0-1), to give the transparency (alpha) of the annual lines}
 

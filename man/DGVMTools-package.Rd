@@ -16,7 +16,7 @@ it provides many tools for analysing the model results and comparing them to dat
  \item Making maps and time series plots of the model output,
  \item Reading in observed data (satellite data, flux tower data etc.) to which model the model results can be compared,
  \item Calculating statistical metrics to quantify the agreement between models and data, and producing plots (scatter plots, histograms of residuals) to visually compare models and data,
- \item Making a classification biomes or vegetation types from the model output and plotting them,
+ \item Making classifications (such as biomes, vegetation types, pyromes, etc) from the model output and plotting them,
  \item Making differences maps to evaluate the effects of a model change or spatially comparing models to data,
  \item Storing averaged model data on disk for fast re-reading,
  \item Saving model data in standard netCDF format.

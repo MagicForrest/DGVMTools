@@ -23,7 +23,7 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 
 First release for CRAN is in preparation.
 
-We now recommend that you use the current master branch, small bug fixes and small non-breaking feature improvements will be pulled directly into master. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package is currently undergoing reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
+Since the core features of the package are now very stable recommend that you use the master branch.  We will pull small bug fixes and small non-breaking feature improvements frequently into the master for small incremental releases, so hopfeully that master is never to far behind. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package is currently undergoing reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
 
 If you have devtools version 1.x.y (ie < 2.0.0) then run:
 
@@ -47,7 +47,13 @@ devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies 
 
 ### News and Releases
 
-Current release is v0.8.2.  See [NEWS.md](NEWS.md).
+Current release is v0.9.0.  See [NEWS.md](NEWS.md).
+
+---
+
+### Notes and Issues
+
+* Currently plotSpatial gives unnecessary warnings about raster pixels being placed at uneven horizontal and being shifted.  This is nothing to worry about and can be ignored.  Unfortunately these warnings are difficult to suppress because they occur when the plot is being rendered (i.e. with a print command) and not when they are made (with plotSpatial).  To suppress them one can either wrap the the print command in "suppressWarnings" or call plotSpatial with "tile = TRUE" (with the downside that the plot will take a little bit longer to render).  Neither of these options are particularly satisfactory, but currently there is no other fix (apart form simply ignoring the warnings).  
 
 ---
 

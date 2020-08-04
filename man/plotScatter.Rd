@@ -2,19 +2,37 @@
 % Please edit documentation in R/plotScatter.R
 \name{plotScatter}
 \alias{plotScatter}
-\title{Make A scatter plot}
+\title{Make a scatter plot}
 \usage{
-plotScatter(field1, field2 = field1, layer1, layer2 = layer1)
+plotScatter(
+  x,
+  y = x,
+  layer.x,
+  layer.y = layer.x,
+  alpha = 1,
+  text.multiplier,
+  tolerance = NULL
+)
 }
 \arguments{
-\item{field1}{The first DGVMTools::Field object from which the data to be plotted should be taken.}
+\item{x}{The first DGVMTools::Field or Comparison object from which the data to be plotted should be taken.}
 
-\item{field2}{The second DGVMTools::Field object from which the data to be plotted should be taken.
-Default value is field1.}
+\item{y}{The second DGVMTools::Field or Comparison object from which the data to be plotted should be taken.
+Default value is x.}
 
-\item{layer1}{The first layer to be plotted (taken from field1)}
+\item{layer.x}{The first layer to be plotted (taken from x)}
 
-\item{layer2}{The second layer to be plotted (taken from field2).  Defaults to layer1.}
+\item{layer.y}{The second layer to be plotted (taken from y).  Defaults to layer.x.}
+
+\item{alpha}{Numeric between 0 and 1 specifing the transparency of the points.  Default is 1 (= fully opaque).}
+
+\item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
+Make it bigger if the text is too small on large plots and vice-versa.}
+
+\item{tolerance}{Numeric, passed to copyLayers. Defines how close the longitudes and latitudes of the gridcells in \code{x} and \code{y} (if different)
+need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance for both lon and lat) or a vector of two numerics (for lon and lat separately).
+Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  However, setting this can be useful to force matching of 
+coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
 }
 \value{
 A ggplot2 object

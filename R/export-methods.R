@@ -1,14 +1,12 @@
-# Methods to coerce Fields and DataObjects to other R objects
-
-#' Coerce from Fields and DataObjects
+#' Coerce from Fields and Comparisons
 #' 
-#' Functions to coerce Fields and DataObjects into other objects (data.frame, data.table, RasterBrick, SpatialPixelsDataFrame)
+#' Functions to coerce Fields and Comparisons into other objects (data.frame, data.table, Raster* objects)
 #' 
 #' Note that for coercing to a Raster* object (RasterLayer or RasterBrick) the function is called "as.Raster" (capital "R") to avoid conflict with  
 #' another function in the raster package called "as.raster"
 #'
 #'
-#' @param x A Field or a DataObject
+#' @param x A Field or a Comparison object
 #' @param keep.rownames	If ... is a matrix or data.frame, TRUE will retain the rownames of that object in a column named rn.
 #' @param row.names NULL or a character vector giving the row names for the data frame. Missing values are not allowed.
 #' @param optional logical. If TRUE, setting row names and converting column names (to syntactic names: see make.names) is optional. 
@@ -43,6 +41,7 @@ setAs("Comparison", "data.frame", function(from) as.data.frame(from@data))
 #' @export
 as.data.frame.Comparison = function(x, row.names, optional, ...) as(x, "data.frame") 
 
+
 #############  data.table
 
 #' @name export-methods
@@ -66,7 +65,7 @@ as.data.table.Comparison = function(x, keep.rownames, ...) as(x, "data.table")
 setAs("Field", "Raster", function(from) {
   
   field.as.raster = tryCatch({
-     promoteToRaster(from@data)
+    promoteToRaster(from@data)
   },  warning = function(w) {
     #warning(w)
   }, error = function(e) {
@@ -108,7 +107,7 @@ setGeneric("as.Raster", function(x) {
 setMethod("as.Raster", signature("Field"),   function(x) {
   
   field.as.raster = tryCatch({
-     promoteToRaster(x@data)
+    promoteToRaster(x@data)
   },  warning = function(w) {
     #warning(w)
   }, error = function(e) {
@@ -125,7 +124,7 @@ setMethod("as.Raster", signature("Field"),   function(x) {
 setMethod("as.Raster", signature("Comparison"),   function(x){ 
   
   field.as.raster = tryCatch({
-     promoteToRaster(x@data)
+    promoteToRaster(x@data)
   },  warning = function(w) {
     #warning(w)
   }, error = function(e) {
@@ -158,9 +157,9 @@ setMethod("as.array", signature("Field"), function(x, ...) {
 
 ################################# PROMOTE TO RASTER
 #
-#' Prepares data as a raster object for plotting.
+#' Convert to Raster
 #' 
-#' Converts a Field, Comparison or data.table to Raster object, also subsetting the requested layers.  
+#' Converts a Field, Comparison or data.table to a Raster object, also subsetting the requested layers.  
 #' This is generally called in the as.Raster and the setAs functions but can be useful in and of itself.
 #'   
 #' @param input.data Field, Comparison or data.table
@@ -238,8 +237,8 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
   
   # sort the layers
   if(is.null(layers) | layers[1] == "all") {
-     layers = layers(input.data)
-   }
+    layers = layers(input.data)
+  }
   
   # dcast if time dimensions are present
   if("Year" %in% names(input.data) || "Month" %in% names(input.data) || "Day" %in% names(input.data))  {
@@ -247,7 +246,7 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
     # also update the layers
     layers = layers(input.data)
   }
- 
+  
   # convert to SPDF
   #sp.points <- sp::SpatialPoints(data.frame(data[,list(Lon, Lat)]), proj4string = CRS("+proj=longlat +datum=WGS84"))
   sp.points <- sp::SpatialPoints(data.frame(input.data[,list(Lon, Lat)]))
@@ -255,31 +254,37 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
   suppressWarnings( # suppress the "grid has empty column/rows in dimension 1" warning
     sp.pixels <- sp::SpatialPixels(sp.points, tolerance = tolerance, grid = grid.topology)
   )
-
+  
   suppressWarnings( # suppress the "grid has empty column/rows in dimension 1" warning
     data.spdf <- sp::SpatialPixelsDataFrame(sp.pixels, input.data[,layers,with=FALSE], tolerance = tolerance)
   )
-
+  
   # clean up
   rm(sp.points, sp.pixels)
- 
+  
   return(data.spdf)  
   
 }
 
-#' Convert a Field to a multi-dimensional array
+#' Convert a Field to Arrays
 #' 
-#' @param d the data.table of a \code{\linkS4class{Field}}
+#' Convert a Field (or the data.table from a Field) into a list of multi-deminsional arrays (indexed Lon, Lat and Time),
+#' with one array in the list per Layer in the input Field. 
+#' 
+#' @param x the data.table of a \code{\linkS4class{Field}}
 #' @param cname the column name to convert, if not set a list is returned
 #' @param invertlat start in the north
 #' @param verbose print some information
 #' @return a array or a list or arrays
 #' 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
+#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
-FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
+FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   
-  Lon=Lat=Year=Month=Day=variable=NULL
+  Lon=Lat=Year=Month=Day=Time=variable=NULL
+  
+  if(is.Field(x) || is.Comparison(x)) d <- copy(x@data)
+  else  d <- copy(x)
   
   ## get the full spatial extent
   lon <- extract.seq(d$Lon)
@@ -292,84 +297,142 @@ FieldToArray <- function(d, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   ## get temporal info
   st.names <- getDimInfo(d)
   
-  ## check for annual data
+  ## check for time series (temporal data)
   is.temporal <- FALSE
-  if("Year" %in% st.names && !("Month" %in% st.names) && !("Day" %in% st.names)  ) {
-    if (verbose)
-      message("'Year' column present.")
-    time <- (sort(unique(d$Year)) * 1000) + 1
-    is.temporal <- TRUE
-  }
-  ## check for monthly data
-  else if("Year" %in% st.names && "Month" %in% st.names) {
-    cname <- FALSE
+  if("Year" %in% st.names  || "Month" %in% st.names  || "Day" %in% st.names)  is.temporal <- TRUE
+  
+  # if temporal, make a Time column and define the values for it in the fullgrid (see below)
+  if(is.temporal) {
     
-    # lookup vector to match month to day of year (ignore leap years and use th centr of the month)
-    # this could be more sophisticated 
-    lookup.DoY.vector <- c() 
-    counter <- 0
-    for(month in all.months) {
-      lookup.DoY.vector <- append(lookup.DoY.vector, counter + floor(month@days/2))
-      counter <- counter + month@days
+    # if it is temporal (but no Year column) make a dummy year
+    if(!("Year" %in% st.names)) d[, Year := 01]
+    
+    # if only annual temporal resolution (no monthly or daily column)
+    if(!("Month" %in% st.names) && !("Day" %in% st.names)  ) {
+
+      if (verbose)  message("'Year' column present.")
+      time <- (sort(unique(d$Year)) * 1000) + 1
+      d[, Time := Year * 1000 + 1]
+      d[, Year := NULL]
+    
+      
+    }
+    ## check for monthly data
+    else if("Month" %in% st.names) {
+
+      # lookup vector to match month to day of year (ignore leap years and use the centre of the month)
+      # this could be more sophisticated 
+      lookup.DoY.vector <- c() 
+      counter <- 0
+      for(month in all.months) {
+        lookup.DoY.vector <- append(lookup.DoY.vector, counter + floor(month@days/2))
+        counter <- counter + month@days
+      }
+      
+      # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
+      d[, Time:= Year * 1000 + lookup.DoY.vector[Month]]
+      time <- sort(unique(d$Time))
+      
+      d[, Month := NULL]
+      d[, Year := NULL]
+    }
+    # check if daily
+    else if("Day" %in% st.names) {
+
+      # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
+      d[, Time:= Year * 1000 + as.numeric(Day)]
+      time <- sort(unique(d$Time))
+      
+      d[, Day := NULL]
+      d[, Year := NULL]
+      
     }
     
-    # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
-    if (is.temporal) {  d[, Year:= Year * 1000 + lookup.DoY.vector[Month]]  }
-    time <- sort(unique(d$Year))
-    
-    d[, Month := NULL]
-    is.temporal <- TRUE
-  }
-  # check if daily
-  else if("Year" %in% st.names && "Day" %in% st.names) {
-    cname <- FALSE
-    
-    # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
-    if (is.temporal) {  d[, Year:= Year * 1000 + as.numeric(Day)]  }
-    time <- sort(unique(d$Year))
-    
-    d[, Day := NULL]
-    is.temporal <- TRUE
-    
   }
   
-  #print(d)
-  setKeyDGVM(d)
   
-  ## create the target grid
+  ## create the target (full) grid, represented as a data.table, which may also contain a time dimension 
+  ## also set the appropriate keys
   if (is.temporal) {
     full.grid <- data.table(Lon=rep(rep(lon, length(lat)), length(time)),
                             Lat=rep(rep(lat, each=length(lon)), length(time)),
-                            Year=rep(time, each=length(lon) * length(lat)))                     
-    setkey(full.grid, Lon, Lat, Year)
+                            Time=rep(time, each=length(lon) * length(lat)))                     
+    setkey(full.grid, Lon, Lat, Time)
+    setkey(d, Lon, Lat, Time)
   } else {
     full.grid <- data.table(Lon=rep(lon, length(lat)),
                             Lat=rep(lat, each=length(lon)))
     setkey(full.grid, Lon, Lat)
+    setkey(d, Lon, Lat)
   }
   
+  
+  
   ## get the desired column name(s) if none was given
-  if (is.logical(cname))
-    cname <- colnames(d)[!(colnames(d) %in% c("Lon", "Lat", "Year"))]
+  if (missing(cname)) cname <- colnames(d)[!(colnames(d) %in% c("Lon", "Lat", "Time"))]
   
   ## create the array(s)
-  rv <- lapply(cname, function(x) {
-    if (is.temporal) {
-      d <- d[full.grid]
-      rv <- reshape2::acast(d, Lon ~ Lat ~ Year, value.var=x)
-      if (invertlat)
-        rv <- rv[,length(lat):1,]
-    } else {
-      d <- d[full.grid]
-      rv <- reshape2::acast(d, Lon ~ Lat, value.var=cname)
-      if (invertlat)
-        rv <- rv[,length(lat):1]
+  # maybe try this faster way
+  rv <- list()
+  #t1.new <- Sys.time()
+  for(x in cname) {
+    
+    if(is.temporal) {
+      d[, append(c("Lon", "Lat", "Time"), x), with = FALSE][full.grid]
+      rv[[x]] <- reshape2::acast(d, Lon ~ Lat ~ Time, value.var=x)
+    } 
+    else {
+      d[, append(c("Lon", "Lat"), x), with = FALSE][full.grid]
+      rv[[x]] <- reshape2::acast(d, Lon ~ Lat, value.var=x)
     }
-    return(rv)
-  })
-  if (length(rv) == 1)
-    return(rv[[1]])
+    
+    if (invertlat)  rv[[x]] <- rv[[x]][,length(lat):1,]
+    
+  }
   
-  names(rv) <- cname
+  # debug stuff
+  #t2.new <- Sys.time()
+  #print("new way:")
+  #print(t2.new -t1.new)
+  #print(str(rv))
+  
   return(rv)
+  
+  
+  #### Old way programmed by Joerg.   
+  #### Code above is cleaner (to my taste) and slightly slower (~15% on a small data file)
+  #### but it is probably more memory efficient.  This needs to be confirmed, but memory use is a problem when writing
+  #### large netCDF files and the code above might go some way towards changing that.
+  ####  In the meantime, keep the code below just in case the code above ends up horrendoudly slow on larger files
+  
+  
+  # t1.old <- Sys.time()
+  # rv <- lapply(cname, function(x) {
+  #   if (is.temporal) {
+  #   
+  #     d <- d[full.grid]
+  #     
+  #     rv <- reshape2::acast(d, Lon ~ Lat ~ Time, value.var=x)
+  #     if (invertlat)
+  #       rv <- rv[,length(lat):1,]
+  #   } else {
+  #   
+  #     d <- d[full.grid]
+  #    
+  #     rv <- reshape2::acast(d, Lon ~ Lat, value.var=x)
+  #     if (invertlat)
+  #       rv <- rv[,length(lat):1]
+  #   }
+  #   return(rv)
+  # })
+  # t2.old <- Sys.time()
+  # print("old way:")
+  # print(t2.old -t1.old)
+  # 
+  # if (length(rv) == 1)
+  #   return(rv[[1]])
+  # 
+  # names(rv) <- cname
+  # return(rv)
+  
 }

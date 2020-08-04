@@ -1,7 +1,9 @@
 #!/usr/bin/Rscript
 #' writeNetCDF methods
 #' 
-#' Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes.
+#' Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes.  NOTE: when using the function on a raster::Raster object,
+#' you cannot provide both multiple variables and multiple time period, you must do one or the other.   
+#' 
 #'  
 #' @param x A Field or Raster* object to be written as a netCDF file.  The method can also handle a list of arrays (each array in the list represents one layer)
 #' but this is more of a technical, internal use of this method.
@@ -67,37 +69,40 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   
   # ignore parameters and give warnings
   if(!is.null(layer.names)) warning("Argument layer.names is ignored when calling writeNetCDF() for a Field. Layer names are taken from the layer names in the Field.")
-  monthly <- FALSE
   st.names <- getDimInfo(x)
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
-  array.list <- FieldToArray(x@data) 
   
-  layers <- names(x)
-  if(is.array(array.list)) { 
-    array.list <- list(array.list)
-    names(array.list) <- layers
-  }
-  
-  
-  
+  # make a list of arrays from the Field (one array per Layer in the Field)
+  array.list <- FieldToArray(x) 
   
   # determine start date from the Field if it contains a Year dimension
-  if("Year" %in% st.names) {
+  if("Year" %in% st.names | "Month" %in% st.names | "Day" %in% st.names) {
     
     # easy to get first year
-    first.year <- sort(unique(getDimInfo(x, "values")[["Year"]]))[1]
-    
+    if("Year" %in% st.names) first.year <- sort(unique(getDimInfo(x, "values")[["Year"]]))[1]
+    else first.year <- 01
+  
     # now check for either a Month or Day dimension
     if("Month" %in% st.names) {
       # for first month, we first need to subset the first year
-      first.year.Field <- selectYears(x, first.year, first.year)
-      first.month <- sort(unique(getDimInfo(first.year.Field, "values")[["Month"]]))[1]
+      if("Year" %in% st.names) {
+        first.year.Field <- selectYears(x, first.year, first.year)
+        first.month <- sort(unique(getDimInfo(first.year.Field, "values")[["Month"]]))[1]
+      }
+      else {
+        first.month <- sort(unique(getDimInfo(x, "values")[["Month"]]))[1]
+      }
       start.date <- as.POSIXct(as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d'))
     }
     else if("Day" %in% st.names) {
-      # for first month, we first need to subset the first year
-      first.year.Field <- selectYears(x, first.year, first.year)
-      first.day <- sort(unique(getDimInfo(first.year.Field, "values")[["Day"]]))[1]
+      # to find the first day, we first need to subset the first year
+      if("Year" %in% st.names) {
+        first.year.Field <- selectYears(x, first.year, first.year)
+        first.day <- sort(unique(getDimInfo(first.year.Field, "values")[["Day"]]))[1]
+      }
+      else {
+        first.month <- sort(unique(getDimInfo(x, "values")[["Day"]]))[1]
+      }
       start.date <- as.POSIXct(as.Date(first.day-1, origin = paste0(first.year, "-01-01")))
       
     }
@@ -106,8 +111,8 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
     }
     
   }
- 
   
+  # grab other metadata from the ci
   this.quant <- x@quant
   this.source <- x@source
   rm(x)
@@ -133,23 +138,54 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
 setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function(x, filename, ...) {
   
   if(is.null(quantity) || missing(quantity)) stop("When calling a writeNetCDF() on a raster you *need* to pass in a quantity object supply metadata. \n Fortunately the is easy to define if you don't have one, see Quantity-class")
+  if(is.null(layer.names) || missing(layer.names)) stop("When calling a writeNetCDF() on a raster you *need* to provide a 'layer.names' argument to determine how to name the layers.")
   
+  # check input arguments and the number of layers in the input raster to determine the structure of the netCDF file that we should be building
+  
+  # initial important check, can't have mutiple layers *and* multiple time steps
+  if(length(time.values) > 1 && length(layer.names) > 1) {
+    stop("When calling writeNetCDF for Rasters, you cannot write multiple layers and multiple time steps at the same time.")
+  }
   
   # If only a single layer or  if multiple layers and the length of layer.names matches then assume a single time slice with one variabe per layer
   single.time.slice <- FALSE
-  if(raster::nlayers(x) == 1 || raster::nlayers(x) == length(layer.names)) {
+  #  If only a single layer it must be a single time slice for a single variable
+  if(raster::nlayers(x) == 1) {
+    if(verbose) message("writeNetCDF called on a raster with a single layer, so writing a netCDF file with a single time step for a single variable")
     single.time.slice <- TRUE
   }
-  
-  # Else layers correspond to time steps, here make checks
-  else {
-  
-    # if a start date
+  # if time values supplied 
+  else if(length(time.values) > 0 ){
+    
+    # firstly, we must have a start date
     if(is.null(start.date)) {
       stop("When calling writeNetCDF for multi-layered Rasters, you must supply the start.date argument")
     }
     
+    # secondly, the number of layers in the raster must be the same as the number of time.values
+    if(length(time.values) != raster::nlayers(x)) {
+      stop("When calling writeNetCDF for multi-layered Rasters with time.values, the length of time.values must be the same as the number of layers in the Raster")
+    }
+    
+    # okay then we are probably fine
+    if(verbose) message("writeNetCDF called on a raster with a multiple layers and corrsponding time strps, so writing a netCDF file with a one variable and one time slice per input raster layer") 
+    
   }
+  # final case is multiple layers (variables) for a single time-step
+  else if(raster::nlayers(x) == length(layer.names)) {
+    
+    if(verbose) message("writeNetCDF called on a raster with multiple layers , so writing a netCDF file with a single time step for a multiple variables")
+    single.time.slice <- TRUE
+    
+  }
+  # else if the number of layers and layers name don;t match then fail
+  else if(raster::nlayers(x) != length(layer.names)) {
+    
+    stop("When calling writeNetCDF for multi-layered Rasters where each layer corresponds to one variable, the length of the layer.names argument must be the same as the number of layers in the raster.")    
+    
+  }
+  
+  
   
   # make a list of lons and lats
   xres <- raster::xres(x)
@@ -176,7 +212,9 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
       # add a new dimensinsion for the time info
       if(!is.null(start.date)) {
         dim(this.array) <- append(dim(this.array),1)
-        dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = as.numeric(format(start.date,"%Y")))
+        start.year <- as.numeric(format(start.date,"%Y"))
+        start.day <- as.numeric(format(start.date,"%d")) 
+        dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = (start.year * 1000) + start.day)
       }
       else{
         dimnames(this.array) <- list(lon = lon.list, lat = lat.list)
@@ -189,7 +227,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     }
   }
   
-  # else if each layer corresponds to a month 
+  # else each layer corresponds to a time step
   else  {
     
     if(verbose) message("Got a start date (\'start.date\' argument) and \'monthly\' argument is TRUE so assuming that each raster layer corresponds to consecutive months, starting from the month of \'start.date\'")
@@ -198,16 +236,16 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     # what the whole raster into an array (taking care of the stupid inverted lats)
     this.array <- aperm(raster::as.array(x), c(2,1,3))
     this.array <- this.array[, dim(this.array)[2]:1, ]
-   
+    
     # make the time dimension values
     # maybe make this more vectorised and elegant
     time.list <- c()
     start.year <- as.numeric(format(start.date,"%Y"))
     start.day <- as.numeric(format(start.date,"%d")) 
- 
+    
     for(counter in 1:(raster::nlayers(x))) {
       
-        # calculate how may days since the start of the first year
+      # calculate how may days since the start of the first year
       ndays.since.start <- time.values[counter] + start.day
       
       # calculate the number of complete years and the year of this layer
@@ -215,15 +253,15 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
       year.length <- 365
       nyears <- ndays.since.start %/% year.length 
       final.year <- nyears + start.year
-
+      
       # Calculate the number of days into that year
       # the while leap calendat thing will be even more complicated here
       final.day <- ndays.since.start %% year.length
-
+      
       
       final.date <- (final.year * 1000) + final.day
       time.list <- append(time.list, as.character(final.date))
-
+      
     }
     
     dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = time.list)
@@ -233,55 +271,6 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     
   }
   
-  # else if each layer corresponds to a year
-  # else if(annual) {
-  #   
-  #   if(verbose) message("Got a start date (\'start.date\' argument) and \'annual\' argument is TRUE so assuming that each raster layer corresponds to consecutive years, starting from the year of \'start.date\'")
-  #   
-  #   
-  #   # what the whole raster into an array (taking care of the stupid inverted lats)
-  #   this.array <- aperm(raster::as.array(x), c(2,1,3))
-  #   this.array <- this.array[, dim(this.array)[2]:1, ]
-  #   
-  #   # make the time dimension values
-  #   # maybe make this more vectorised and elegant
-  #   time.list <- c()
-  #   start.year <- as.numeric(format(start.date,"%Y"))
-  #   time.list <- as.character(seq(start.year, start.year+raster::nlayers(x)-1))
-  #   
-  #   dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = time.list)
-  #   array.list[[layer.names[1]]] <- this.array
-  #   rm(this.array)
-  #   gc()
-  #   
-  # }
-  
-  # # not  yet implemented
-  # else if(!is.null(time.values)) {
-  #   
-  #   if(verbose) message("Got a start date (\'start.date\' argument) and \'time.values\' argument so assuming that the raster layers corresponds to different time slices of a single variable")
-  #   stop("time.values argument not yet implemented in writeNetCDF.")
-  # }
-  # 
-  # # else simple case of a 2D raster
-  # else {
-  #   # make the array
-  #   this.array <- raster::as.matrix(x)
-  #   this.array <- t(this.array)
-  #   this.array <- this.array[, dim(this.array)[2]:1]
-  #   
-  #   if(!is.null(start.date)) {
-  #     if(verbose) message("Also got a start date (\'start.date\' argument) so setting the time info for this valiable to be simply this date")
-  #     dim(this.array) <- append(dim(this.array),1)
-  #     dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = as.numeric(format(start.date,"%Y")))
-  #   }
-  #   else {
-  #     dimnames(this.array) <- list(lon = lon.list, lat = lat.list)
-  #   }
-  #   array.list[[layer.names[1]]] <- this.array
-  # }
-  # 
-  # 
   
   writeNetCDF(array.list, 
               filename, 
@@ -354,7 +343,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     days <- as.integer(round(as.numeric(all.dimnames[[3]]) - years * 1000)) 
     intervals <- (years - (as.numeric(format(start.date,"%Y")))) * 365 + days - 1
     all.dims[["Time"]] <- ncdf4::ncdim_def(name = time.dim.name, units = time.unit, vals = intervals , calendar = calendar, unlim=TRUE, create_dimvar=TRUE)
-  
+    
   }
   
   # Layer - only if a layer.dim.name has been specifed which mean collapse all the different layers as values along a dimension

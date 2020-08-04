@@ -4,15 +4,26 @@
 \alias{compareLayers}
 \title{Compare single layers to each other}
 \usage{
-compareLayers(field1, field2, layers1, layers2 = layers1,
-  do.seasonality = FALSE, keepall1 = FALSE, keepall2 = FALSE,
-  override.quantity = FALSE, verbose = FALSE, match.NAs = FALSE,
-  show.stats = TRUE, custom.metrics = list(), dec.places = NULL)
+compareLayers(
+  field1,
+  field2,
+  layers1,
+  layers2 = layers1,
+  do.seasonality = FALSE,
+  keepall1 = FALSE,
+  keepall2 = FALSE,
+  override.quantity = FALSE,
+  verbose = FALSE,
+  match.NAs = FALSE,
+  show.stats = TRUE,
+  custom.metrics = list(),
+  tolerance = NULL
+)
 }
 \arguments{
-\item{field1}{A Field or DataObject from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.}
+\item{field1}{A Field from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.}
 
-\item{field2}{A Field or DataObject from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.}
+\item{field2}{A Field from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.}
 
 \item{layers1}{The name of the layers to be compared from field1 (character string)}
 
@@ -42,13 +53,16 @@ that the both have 'no data' (typically grey areas) plotted on both maps.}
 two character vectors of layer names to be compared (in order in the case of multi-layer comparisons).  Spatial-temporal-annual column names of Lon, Lat, Year, Month and Day
 can be assumed in the data.table.  The name of the item in the list is used as the metric name.}
 
-\item{dec.places}{Numeric, passed to copyLayers. Defines to how many decimal places to round the coordinates in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.}
+\item{tolerance}{Numeric, passed to copyLayers. Defines how close the longitudes and latitudes of the gridcells in \code{field1} and \code{field2}
+need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance) or a vector of two numerics (for lon and lat separately).
+Default is no rounding (value is NULL) and so is fine for most regular spaced grids. However, setting this can be useful to force matching of 
+coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
 }
 \value{
 A Comparison object
 }
 \description{
-Compare two layers (each from a Field or DataObject) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object.
+Compare two layers (each from a Field) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object.
 }
 \examples{
 
@@ -81,7 +95,7 @@ print(plotSpatialComparison(vegC.comparison, type = "values"))
 
 europe.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 europe.Source <- defineSource(name = "LPJ-GUESS", dir = europe.dir,  format = GUESS)
-model.biomes <- getBiomes(source = europe.Source, 
+model.biomes <- getScheme(source = europe.Source, 
                           scheme = Smith2014BiomeScheme, 
                           year.aggregate.method="mean")
 

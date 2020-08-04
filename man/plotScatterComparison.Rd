@@ -4,14 +4,25 @@
 \alias{plotScatterComparison}
 \title{Plot scatter of model vs data}
 \usage{
-plotScatterComparison(input.CLayers, run.ids = NULL, run.labels = NULL,
-  wrap = TRUE, facet.labels = NULL, xlim = NULL, ylim = NULL,
-  xlab = NULL, ylab = NULL, text.multiplier = NULL,
-  showFitLine = TRUE, showStats = TRUE, alpha = 0.05,
-  text.size = 6)
+plotScatterComparison(
+  comparisons,
+  run.ids = NULL,
+  run.labels = NULL,
+  wrap = TRUE,
+  facet.labels = NULL,
+  xlim = NULL,
+  ylim = NULL,
+  xlab = NULL,
+  ylab = NULL,
+  text.multiplier = NULL,
+  showFitLine = TRUE,
+  showStats = TRUE,
+  alpha = 0.05,
+  text.size = 6
+)
 }
 \arguments{
-\item{input.CLayers}{The DataObject for which to plot the residual}
+\item{comparisons}{The Comparison object, or list of Comparision objects, for which to make the scatter plot.}
 
 \item{run.ids}{The character vector of run ids of the runs to scatter against the data (must be a vector, not a list).  Leave blank to compare all runs that have been previouslty compared to this dataset.}
 
@@ -47,11 +58,10 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 A ggplot2 plot.
 }
 \description{
-Function will makes multiple scatter plots on one page if more than one Source has been compared to the the DataObject.
+Function will makes multiple scatter plots on one page if more than Comparison have been provided.
 }
 \details{
-This function should be called after a call to \code{benckmarkSpatial} for a DataObject.  It plots the scatters for each model run to which it was compared .  
-It is called automatically by \code{benckmarkSpatial}, but can be called again for better flexibility.
+This function should be called on the Comparison objects produced by a call to function compareLayers().  It plots an x-y scatter for each Comparison.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

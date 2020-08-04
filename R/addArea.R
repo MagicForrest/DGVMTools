@@ -28,7 +28,7 @@
 gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
   nlat <- length(lat)
   area <- array(0.0, nlat)
-
+  
   lat.border <- array(0.0, nlat+1)
   lat.border[1] = lat[1] - (lat[2] -lat[1])/2.
   for (i in 2:nlat) {
@@ -37,9 +37,9 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
   lat.border[nlat+1] = lat[nlat] + (lat[nlat] - lat[nlat-1])/2.
   
   for (i in 1:nlat) {
-# this causes a negligible difference (510.068 compared to 510.1013 10^6 km^2 @ 0.5 degree resolution globally).
+    # this causes a negligible difference (510.068 compared to 510.1013 10^6 km^2 @ 0.5 degree resolution globally).
     if (ellipse)
-        .EarthRadius = .EarthRadius.equator * cos(lat[i]/180.0*pi)^2 + .EarthRadius.polar * sin(lat[i]/180*pi)^2;
+      .EarthRadius = .EarthRadius.equator * cos(lat[i]/180.0*pi)^2 + .EarthRadius.polar * sin(lat[i]/180*pi)^2;
     x <- cos(lat[i]/180.0*pi) * 2. * pi * .EarthRadius / (360.0/dlon);
     y <- 2 * pi * .EarthRadius * (abs(lat.border[i+1] - lat.border[i]) / 360.);
     area[i] <- x*y
@@ -121,8 +121,11 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' @param input a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.
 #' @param unit area unit. Default "m^2", can also be "km^2" and "ha"
 #' @param ellipse If the eath should be assumed to be a ellipsoid instead of a sphere.
-#' @param digits Numeric, number of digits to which to truncate the coordinates when merging the area data.table with the input. This is a technical detail,
-#' you only need to use it if you have troubles because of coordinates with a few decimal places.   
+#' @param tolerance Numeric, passed to \link{copyLayers}. Defines how close the longitudes and latitudes of the gridcells in \code{input} and the internally calculated
+#' \code{area} data.table  need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance for both lon and lat) or a vector 
+#' of two numerics (for lon and lat separately).
+#' #' Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  
+#' This is a technical detail, you only need to use it if you have troubles because of coordinates with a few decimal places.
 #' @param verbose print some information.
 #' 
 #' The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{aggregateSpatial} but it can
@@ -168,17 +171,17 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' print(p)
 #' 
 #' }
-addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10) {
+addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = NULL) {
   ## to avoid "no visible binding for global variable" during check
   Lat = Lon = Area = NULL
   if (is.na(unit))
     unit="m^2"
-
+  
   if (!is.logical(ellipse)) {
     warning(paste("'ellipse=", ellipse,"' is not boolean. Using FALSE instead.", sep=""))
     ellipse=FALSE
   }
-
+  
   if (is.data.table(input) || is.data.frame(input)) {
     if (verbose)
       message("Input is a data.table or data.frame.")
@@ -192,9 +195,9 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
   } else {
     stop(paste("addArea: Don't know what to to with class", class(input)))
   }
-
+  
   area <- gridarea2d(lon, lat, ellipse=ellipse)
- 
+  
   if (is.data.table(input) || is.Field(input)) {
     area <- as.data.table(area)
     if (is.data.table(input)) {
@@ -203,7 +206,7 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
       setKeyDGVM(area)
     }
   }
-
+  
   if (unit!="m^2") {
     
     if(unit == "km^2") area[, Area := Area / 10^6]
@@ -212,25 +215,14 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
     
   }
   
-
-  #input <- na.omit(input)
-
-  if (is.data.table(input)) {
   
+  
+  if (is.data.table(input)) {
     
     setKeyDGVM(area)
     setkeyv(input, key(area))
-
-    if(!is.null(digits)) {
-      
-      input[, Lon := round(Lon, digits)]
-      input[, Lat := round(Lat, digits)]
-      area[, Lon := round(Lon, digits)]
-      area[, Lat := round(Lat, digits)]
-      
-    }
- 
-    input <- merge(area, input, all.x = FALSE, all.y = TRUE)
+    input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE, tolerance = tolerance)
+    
     
     if (verbose)
       message(paste("Added column 'area' in unit '", unit, "' to data.table.", sep=""))
@@ -238,14 +230,16 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, digits = 10)
   } else if (is.data.frame(input)) {
     input <- merge.data.frame(area, input, by=getDimInfo(input))
     if (verbose)
-      message(paste("Added column 'area' in unit '", unit, "' to data.frame.", sep=""))
+      message(paste("Added column 'Area' in unit '", unit, "' to data.frame.", sep=""))
     return(input)
   } else {
-    dt <- input@data
-    dt <- area[dt]
-    input@data <- dt
+    
+    setKeyDGVM(area)
+    input <- copyLayers(from = area, to = input, layer.names = "Area", keep.all.to = TRUE, keep.all.from = FALSE, tolerance = tolerance)
+    
+    
     if (verbose)
-      message(paste("Added column 'area' in unit '", unit, "'' to data.table in slot 'data'.", sep=""))
+      message(paste("Added column 'Area' in unit '", unit, "'' to data.table in slot 'data'.", sep=""))
     return(input)
   }
 }

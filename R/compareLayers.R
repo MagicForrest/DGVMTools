@@ -2,11 +2,11 @@
 
 #' Compare single layers to each other
 #' 
-#' Compare two layers (each from a Field or DataObject) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object. 
+#' Compare two layers (each from a Field) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object. 
 #'
 #' 
-#' @param field1 A Field or DataObject from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.
-#' @param field2 A Field or DataObject from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.
+#' @param field1 A Field from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.
+#' @param field2 A Field from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.
 #' @param layers1 The name of the layers to be compared from field1 (character string)
 #' @param layers2 The name of the layers to be compared from field2 (character string).  If not defined taken to the be the same as layers1
 #' @param do.seasonality Logical, if TRUE use monthly values to calculate the seasonal concentration and phase, and then return NME/NSME of the concentration and MPD 
@@ -16,7 +16,10 @@
 #' @param override.quantity Logical, if TRUE ignore situation where field1 and field2 have non-identical Quantities and use the Quantity from field1 for the returned Comparison
 #' @param match.NAs Logical, if TRUE copy NAs from one layer to the other.  This is mostly to make sure that when you later plot the data in the final Comparison side-by-side,
 #' that the both have 'no data' (typically grey areas) plotted on both maps.
-#' @param dec.places Numeric, passed to copyLayers. Defines to how many decimal places to round the coordinates in order to get a match.  Default is no rounding (value is NULL) and if dine for most regularing spaced grids.  
+#' @param tolerance Numeric, passed to copyLayers. Defines how close the longitudes and latitudes of the gridcells in \code{field1} and \code{field2}
+#' need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance) or a vector of two numerics (for lon and lat separately).
+#' Default is no rounding (value is NULL) and so is fine for most regular spaced grids. However, setting this can be useful to force matching of 
+#' coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.
 #' @param show.stats Logical, if TRUE print the summary statistics
 #' @param custom.metrics A named list of functions (defined by the user) to calculate additional custom metrics.  The functions must take a data.table and 
 #' two character vectors of layer names to be compared (in order in the case of multi-layer comparisons).  Spatial-temporal-annual column names of Lon, Lat, Year, Month and Day
@@ -58,7 +61,7 @@
 #' 
 #' europe.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 #' europe.Source <- defineSource(name = "LPJ-GUESS", dir = europe.dir,  format = GUESS)
-#' model.biomes <- getBiomes(source = europe.Source, 
+#' model.biomes <- getScheme(source = europe.Source, 
 #'                           scheme = Smith2014BiomeScheme, 
 #'                           year.aggregate.method="mean")
 #' 
@@ -124,7 +127,7 @@ compareLayers <- function(field1,
                           match.NAs = FALSE,
                           show.stats = TRUE,
                           custom.metrics = list(),
-                          dec.places = NULL){
+                          tolerance = NULL){
   
   ### Check that the object have the same dimensions and that we have the same number of layers, if not fail immediately
   if(!identical(getDimInfo(field1), getDimInfo(field2))) stop("Trying to compare layers with different dimenisons.  Definitely can't do this.  Check your dimension and/or averaging")
@@ -210,14 +213,14 @@ compareLayers <- function(field1,
   ### Else, not-so-easy-life is having to check the domains and keeping points or not
   else {
     if(verbose) message("Not so easy life! Fields don't have the same dimensions, doing a copyLayers() operation.")
-   
+    
     new.data <- copyLayers(from = layer.field2, 
                            to = layer.field1, 
                            layer.names = new.ids.2, 
                            new.layer.names = NULL, 
                            keep.all.to = keepall1, 
                            keep.all.from = keepall2, 
-                           dec.places = dec.places)@data
+                           tolerance = tolerance)@data
     
   }
   
@@ -235,14 +238,15 @@ compareLayers <- function(field1,
     print(new.data)
   }
   
-  # make meta-data for the Comparison
+  # make new id for the Comparison
   id <- paste0(new.ids.1, "-", new.ids.2)
-  se <- extent(new.data)
-  if(!identical(field1@quant, field1@quant)) {
-    if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity", field1@quant@id))
+  
+  # warn/stop if quantities are different
+  if(!identical(field1@quant, field2@quant)) {
+    if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity ", field1@quant@id))
     else stop("Comparing different Quantity")
   }
-
+  
   ### Calculate the approriate statistical comparisons
   
   if(type == "continuous") {
@@ -259,7 +263,7 @@ compareLayers <- function(field1,
     temp.list <- seasonalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
     new.data <- temp.list[["dt"]]
     stats<- temp.list[["stats"]]
-
+    
     setnames(new.data, 
              c("C_1", "C_2", "P_1", "P_2"), 
              c(paste("Seasonal Concentration", field1@id, sep = "."), 
@@ -267,7 +271,7 @@ compareLayers <- function(field1,
                paste("Seasonal Phase", field1@id, sep = "."), 
                paste("Seasonal Phase", field2@id, sep = "."))
     )
-   
+    
   }
   
   else if(type == "categorical") {

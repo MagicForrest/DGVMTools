@@ -4,11 +4,22 @@
 \alias{defineSource}
 \title{Define a Source object that represents a model run or data set, setting up all the required metadata (only).}
 \usage{
-defineSource(id, name, dir, format, quantities = NULL,
-  pft.set = list(), lonlat.offset = c(0, 0), year.offset = 0,
-  london.centre = TRUE, forcing.data = "Not specified",
-  land.use.included = FALSE, contact = "Not specified",
-  institute = "Not specified", ...)
+defineSource(
+  id,
+  name,
+  dir,
+  format,
+  quantities = NULL,
+  defined.layers = list(),
+  lonlat.offset = c(0, 0),
+  year.offset = 0,
+  london.centre = TRUE,
+  forcing.data = "Not specified",
+  land.use.included = FALSE,
+  contact = "Not specified",
+  institute = "Not specified",
+  ...
+)
 }
 \arguments{
 \item{id}{A unique character string to identify this particular data.  Recommended to be alphanumeric because it is used to construct file names and to use underscores and full stops (periods) 
@@ -18,13 +29,13 @@ for separating characters where need be.   For example, "Standard_v4.0" or "Saat
 
 \item{dir}{The location of this source on the file system (Mandatory)}
 
-\item{format}{A character string to identify the format of the files of this data sorce. This can be anything, but should be in order for "getField()" to work corrected 
-it needs be a \code{supported.format} which is either a supported model that produced this (e.g. "LPJ-GUESS") or "DGVMData" for data files produced by the DGVMData package (Mandatory)}
+\item{format}{A Format object to describe the type of source.  Can be GUESS, aDGVM, aDGVM2 or DGVMData (note no quotes since these are actual R objects not strings).  (Mandatory) DEPRECATED: alternatively a character string to identify the format of the files of this data sorce. This can be anything, but should be in order for "getField()" to work corrected 
+it needs be a \code{supported.format} which is either a supported model that produced this (e.g. "LPJ-GUESS") or "DGVMData" for data files produced by the DGVMData package}
 
 \item{quantities}{A list of Quantity object what we expect to have in this Source.  The option allows the over-riding the default quantities in the Format object.
 Not 100\% sure why this might be useful though.}
 
-\item{pft.set}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
+\item{defined.layers}{A list of PFT objects which includes all the PFTs used is this model run (Mandatory)}
 
 \item{lonlat.offset}{A numeric of length 1 or 2 to define the offsets to Lon and Lat to centre the localities, somewhat legacy for old LPJ-GUESS runs.}
 
@@ -40,19 +51,20 @@ Not 100\% sure why this might be useful though.}
 
 \item{institute}{Name of the institute (default "none").}
 
-\item{...}{extra arguments for call to determinePFTs() to determine the PFTs in a run, for exampel which aDGVM classification scheme to use (normally not needed)
-
-Note that that \code{id}, \code{name}, \code{format}, and \code{dir} are compulsory, the rest will be filled with dummy/default values if left blank.
-Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for some LPJ-GUESS configurations.}
+\item{...}{extra arguments, not used yet
+Note that that \code{format}, \code{dir} and one of \code{id} or \code{name} are compulsory, the rest will be filled with dummy/default values if left blank.
+Take care with \code{lon.lat.offset} and \code{year.offset} which are initialised to 0 which is unsuitable for aDGVM1 and some LPJ-GUESS configurations.}
 }
 \value{
-A Source object including metadata defined by empty data slots
+A Source object
 }
 \description{
-This function is preferred to a \code{new("Source",...)} initialisation because it does both intialisations in one step and also performs some extra checks and initialisations of defaults.
+This function is preferred to a \code{new("Source",...)} initialisation because it does both the initialisations (including some defaults)
+and also performs some extra checks.
 }
 \details{
-Note that initially no actual data is stored, only metadata. The data, stored as Fields, can be added to a Source object, are added built with later with other commands and added to \code{Source} command using \code{addToSource}
+Note that no actual data is stored in the resultant \linkS4class{Source} object, rather this object should be used in calls to \link{getField}
+to get data as a \linkS4class{Field} object.
 }
 \seealso{
 Source

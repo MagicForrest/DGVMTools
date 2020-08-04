@@ -222,13 +222,14 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
 #' @param months The months to be extracted (as a numeric vector), if NULL all months are used
 #' @param seasons The months to be extracted (as a character vector), if NULL all seasons are used
 #' @param gridcells The months to be extracted (as a character vector), if NULL all seasons are used
+#' @param dropEmpty Logical, if TRUE drop layers consisting only of zeros
 #' 
 #' @return Returns a list of Fields
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' 
 #' 
-trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL) {
+trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL, dropEmpty = FALSE) {
 
   J = Year = NULL
   
@@ -245,8 +246,22 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
     all.layers <- names(object)
     layers.present <- c()
     for(this.layer in layers) {
-      if(this.layer %in% all.layers)  layers.present <- append(layers.present, this.layer)
-    }
+      # if layer is present
+      if(this.layer %in% all.layers)  {
+        
+        # if dropEmpty is true check if it it non-zero before appending it
+        if(dropEmpty) {
+          if(!(object@data[[this.layer]][1] == 0 && all(duplicated(object@data[[this.layer]])[-1L]))){
+              layers.present <- append(layers.present, this.layer)
+          }
+        }
+        # else just append it
+        else {
+          layers.present <- append(layers.present, this.layer)
+        }
+        
+      } #  if layer present
+    }  # for all requested layers loop 
     
     # if at least one layer present subset it
     if(length(layers.present) > 0) {
@@ -294,7 +309,7 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
 #' @param add.Quantity Logical, if TRUE add a column with the Quantity name of each Field
 #' @param add.Site Logical, if TRUE add a column with the with a string containing the Lon and Lat of each site (gridcell).
 #' @param add.Region Logical, if TRUE add a column with the with a string containing the Region (as defined by the spatial.extent.id) of each Field.
-#' @param add.TimePeriod Logical, if TRUE add a column (with name "Time Period") with a string containing the time period of each Field
+#' @param add.Years Logical, if TRUE add a column (with name "Years") with a string containing the first and last years of each Field
 #'  (as defined by first.year and last.year).
 #' 
 #' @return Returns a data.table
@@ -302,9 +317,9 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
 #' @keywords internal
 #' 
 #' 
-mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FALSE, add.Region = FALSE, add.TimePeriod = FALSE) {
+mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FALSE, add.Region = FALSE, add.Years = FALSE) {
   
-  Source = Quantity = Site = Lon = Lat = Region = NULL
+  Source = Quantity = Site = Lon = Lat = Region = Years = NULL
   
   data.toplot.list <- list()
   for(this.field in fields) {
@@ -327,7 +342,11 @@ mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FA
     # Region column - only if required
     if(add.Region) {
       this.field.melted[, Region:= this.field@spatial.extent.id]
-    }  
+    }
+    # Years column - only if required
+    if(add.Years) {
+      this.field.melted[, Years := paste(this.field@first.year, this.field@last.year, sep = "-")]
+    }
     # add to the list of data.tables
     data.toplot.list[[length(data.toplot.list)+1]] <- this.field.melted
   }
@@ -374,20 +393,20 @@ correct.map.offset <- function(spl) {
 
 
 
-#' Make a PFT colour list
+#' Make a LAyer colour list
 #' 
-#' This is a helper function for when plotting PFTs by colour.  It takes a list of PFT ids (other things like "Total" or "Tree" can also be specified) and returns a list 
-#' of colours with the names of the PFT (which is how ggplot likes colours to be specified).
+#' This is a helper function for when plotting Layers by colour.  It takes a list of Layer ids (other things like "Total" or "Tree" can also be specified) and returns a list 
+#' of colours with the names of the Layer (which is how ggplot likes colours to be specified).
 #' 
 #' @param values List of values (as chararacters) for which you want standard colours.
-#' @param pfts A list of PFT objects (which should contain PFTs with ids provided in 'values)
+#' @param layers A list of Layer objects (which should contain Layers with ids provided in 'values)
 #' @param others A list of other name-colour combinations, for example to plot 'Total' as black, "None" as grey, or whatever.  Some defaults are defined.
 #' @return Returns a named list of colours, where the names are the values that the colours will represent
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 #' 
 #' 
-matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub = "red")) {
+matchLayerCols <- function(values, layers, others = list(Total = "black", None = "grey75", Tree = "brown", Grass = "green", Shrub = "red")) {
   
   these.cols <- list()
   at.least.one.match <- FALSE
@@ -396,17 +415,17 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
     # ignore NAs
     if(!is.na(val)) {
       
-      # check if it is a PFT
+      # check if it is a layer
       done <- FALSE
-      for(PFT in pfts){
-        if(val == PFT@id) {
-          these.cols[[val]] <- PFT@colour
+      for(this.layer in layers){
+        if(val == this.layer@id) {
+          these.cols[[val]] <- this.layer@colour
           done <- TRUE
           at.least.one.match <- TRUE
         }
       } 
       
-      # if not a PFT, check if it is as 'other' 
+      # if not a Layer, check if it is as 'other' 
       if(!done) {
         for(other in names(others)) {
           if(tolower(val) == tolower(other)) {
@@ -419,7 +438,7 @@ matchPFTCols <- function(values, pfts, others = list(Total = "black", None = "gr
       
       # if no colour can be found to match the value, fail gently
       if(!done && at.least.one.match) {
-        warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchPFTCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument"))
+        warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchLayerCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument"))
         return(NULL)
       }  
       
@@ -462,9 +481,9 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
       if(lon > 180) gt.180 <- TRUE
     }
     
-    if(map.overlay=="world" && gt.180) map.overlay <- "world2"
+    if(map.overlay=="world" && gt.180) map.overlay <- "worldLowres2"
     else if(map.overlay=="worldHires" && gt.180) map.overlay <- "worldHires2"
-    else if(map.overlay=="world2" && !gt.180) map.overlay <- "world"
+    else if(map.overlay=="world2" && !gt.180) map.overlay <- "worldLowres"
     else if(map.overlay=="world2Hires" && !gt.180) map.overlay <- "worldHires"
     
     # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
@@ -473,9 +492,15 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
     rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
     map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)
-    if(!gt.180) map.sp.lines.df <- correct.map.offset(map.sp.lines.df)
-    return(fortify(map.sp.lines.df))
-    
+    map.sp.lines.df.copy <- map.sp.lines.df 
+    if(!gt.180) map.sp.lines.df <- try ( correct.map.offset(map.sp.lines.df), silent=TRUE )
+    if (class(map.sp.lines.df) == "try-error") {
+      return(fortify(map.sp.lines.df.copy))
+    }
+    else {
+      return(fortify(map.sp.lines.df))
+    }
+
   }
   else {
     stop(paste0("Can't make an overlay from type ", class(map.overlay)))

@@ -9,31 +9,36 @@
 #' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
-#' @param col.by,type.by,size.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
+#' @param col.by,linetype.by,size.by,shape.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
 #' Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
 #' distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.
-#' @param cols,types,sizes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
-#' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/type/alpha values
+#' @param cols,linetypes,sizes,shapes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
+#' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/linetype/shape/alpha values
 #' to particular Layers/Sources/Quantities.    
-#' @param col.labels,type.labels,size.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
-#' number of Sources/Layers/Quantities in the plot.  The vectors can/should be named to match particular col/size/type/alpha values to particular Layers/Sources/Sites/Quantities.    
+#' @param col.labels,linetype.labels,size.labels,shape.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
+#' number of Sources/Layers/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
+#' @param points Logical, if TRUE plot data as points (with geom_points) instead of lines (witg geom_lines).  
+#' Good for plotting time series with missing data where geom_lines joins lines over the gaps which is not helpful
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
-#' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
+#' @param text.multiplier A number specifying an overall multiplier for the text on the plot. 
+#' @param plotTrend Logical, if TRUE plot the linear trend
+#' @param dropEmpty Logical, if TRUE don't plot time series lines consisting only of zeros.
 #' @param plot Logical, if FALSE return the data.table of data instead of the plot
-#' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+#' @param ... Arguments passed to \code{ggplot2::facet_wrap()} and \code{ggplot2::stat_smooth()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 #' \itemize{
-#'  \item{"nrow"}{The number of rows of facets}
-#'  \item{"ncol"}{The number of columns of facets}
+#'  \item{"nrow"}{The number of rows of facets. (facet_wrap)}
+#'  \item{"ncol"}{The number of columns of facets. (facet_wrap)}
 #'  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
-#'  "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
-#'  \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation} 
+#'  "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively). (facet_wrap)}
+#'  \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation. (facet_wrap)} 
+#'  \item{"se"}{Boolean to determine whether or not to show the confidence intervals for the trend line (stat_smooth)} 
 #' }
 #'   
 #' @details
 #' 
-#' It allows fairly fine-grained control with respect to labelling lines  corresponding to different Sources, Layers, Sites and Quantities with different colours, sizes, types, alpha (transparency) values, and text labels.  It also
+#' It allows fairly fine-grained control with respect to labelling lines  corresponding to different Sources, Layers, Sites and Quantities with different colours, sizes, linetypes, alpha (transparency) values, and text labels.  It also
 #' allows one to decide if you want different Sources/Layers/Quantities on the same panel or on different panels.  The default is to put different Sources
 #' (ie. runs and datasets) and Quantities (ie different output variables) on different panels, and Layers on the same panel distinguished by colour.  
 #' 
@@ -50,12 +55,15 @@ plotTemporal <- function(fields,
                          cols = NULL,
                          col.by = "Layer",
                          col.labels = waiver(),
-                         types = NULL,
-                         type.by = NULL,
-                         type.labels = waiver(),
+                         linetypes = NULL,
+                         linetype.by = NULL,
+                         linetype.labels = waiver(),
                          sizes = NULL,
                          size.by = NULL,
                          size.labels = waiver(),
+                         shapes = NULL,
+                         shape.by = NULL,
+                         shape.labels = waiver(),
                          alphas = NULL,
                          alpha.by = NULL,
                          alpha.labels = waiver(),
@@ -63,15 +71,24 @@ plotTemporal <- function(fields,
                          y.lim = NULL,
                          x.label = NULL,
                          x.lim = NULL,
+                         points = FALSE,
                          legend.position = "bottom",
                          text.multiplier = NULL,
+                         dropEmpty = FALSE,
+                         plotTrend = TRUE,
                          plot = TRUE,
                          ...
 ){
   
   
   # Just to avoid WARNINGS when checking
-  Time = Year = Month = Day = Source = value = variable = Lat = Lon = NULL
+  Time = Year = Season = Month = Day = Source = value = variable = Lat = Lon = NULL
+  
+
+  ### 0. Check consistency of aesthetics
+  
+  
+  
   
   
   
@@ -120,7 +137,6 @@ plotTemporal <- function(fields,
   # Final data.table for plotting.  Actual values are in a column called "Value"
   data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = add.Quantity, add.Site = add.Site, add.Region = add.Region)
   
-  
   ### 7. MAKE THE Y-AXIS LABEL
   
   if(is.null(y.label)) {
@@ -133,17 +149,23 @@ plotTemporal <- function(fields,
     
     # select the unique ones
     all.quant.tuples <- unique(all.quant.tuples)
-
+    
     # form the label string
     y.axis.label <- character(0)
     for(this.tuple in all.quant.tuples) {
       y.axis.label <- paste0(y.axis.label, paste0(this.tuple[1], " (", this.tuple[2], "),\n") )
     }
     y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
+    y.label <- y.axis.label
   }
- 
-  # TODO quick n dirty
-  PFTs <- fields[[1]]@source@pft.set
+  
+  # check the defined Layers present in the Fields and make a unique list
+  # maybe also here check which one are actually in the layers to plot, since we have that information
+  all.layers.defined <- list()
+  for(object in fields){
+    all.layers.defined <- append(all.layers.defined, object@source@defined.layers)
+  }
+  all.layers.defined <- unique(all.layers.defined)
   
   
   ### 8. MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
@@ -178,6 +200,17 @@ plotTemporal <- function(fields,
       data.toplot[, Year := NULL]
       data.toplot[, Day := NULL]
     }
+    # convert years and seasons to dates 
+    else if("Year" %in% names(data.toplot) && "Season" %in% names(data.toplot)) {
+      # make a Day colum based on the centre point of a Season
+      day.lookup <- c("DJF" = 14, "MAM" = 105, "JJA" = 196, "SON" = 287)
+      data.toplot[, Day := day.lookup[Season]]
+      data.toplot[, Time := as.Date(paste0(Year, "-", Day), format = "%Y-%j")]
+      data.toplot[, Year := NULL]
+      data.toplot[, Season := NULL]
+      data.toplot[, Day := NULL]
+      
+    }
     # convert years to dates 
     else if("Year" %in% names(data.toplot)) {
       data.toplot[, Time := as.Date(paste0(Year, "-01-01"), format = "%Y-%m-%d")]
@@ -201,20 +234,21 @@ plotTemporal <- function(fields,
     }
     #
   }
-
+  
   ### 10. FACETTING
- 
+  
   # all column names, used a lot below 
   all.columns <- names(data.toplot)
   
   # check the "xxx.by" arguments 
-  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
-  if(!missing(type.by) && !is.null(type.by) && !type.by %in% all.columns) stop(paste("Setting line types by", type.by, "requested, but that is not available, so failing."))
-  if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting line sizes by", size.by, "requested, but that is not available, so failing."))
-  if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting line alphas by", alpha.by, "requested, but that is not available, so failing."))
+  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring by", col.by, "requested, but that is not available, so failing."))
+  if(!missing(linetype.by) && !is.null(linetype.by) && !linetype.by %in% all.columns) stop(paste("Setting linetypes by", linetype.by, "requested, but that is not available, so failing."))
+  if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting sizes by", size.by, "requested, but that is not available, so failing."))
+  if(!missing(shape.by) && !is.null(shape.by) && !shape.by %in% all.columns) stop(paste("Setting shapes by", shape.by, "requested, but that is not available, so failing."))
+  if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting alphas by", alpha.by, "requested, but that is not available, so failing."))
   
   # ar first assume facetting by everything except for...
-  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, type.by, size.by, alpha.by)
+  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, linetype.by, size.by, shape.by, alpha.by)
   vars.facet <- all.columns[!all.columns %in% dontFacet]
   
   # then remove facets with only one unique value
@@ -224,14 +258,14 @@ plotTemporal <- function(fields,
   
   ### LINE COLOURS
   
-  # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer (currently still 'PFT') meta-data
-  if(missing(cols) & col.by == "Layer"){
+  # if cols is not specified and plots are to be coloured by Layers, look up line colours from Layer meta-data
+  if(missing(cols) && !is.null(col.by) && col.by == "Layer"){
     all.layers <- unique(as.character(data.toplot[["Layer"]]))
-    cols <- matchPFTCols(all.layers, PFTs)
+    cols <- matchLayerCols(all.layers, all.layers.defined)
   }
   # else colours will be determined by ggplot (or cols argument)
   
-  ### LINE TYPES, SIZES & ALPHAS
+  ### LINETYPES, SIZES & ALPHAS
   # Thus far either ignored or specified by the user
   
   ### LABELS
@@ -243,16 +277,29 @@ plotTemporal <- function(fields,
   if(!plot) return(data.toplot)
   
   ### PLOT! - now make the plot
-  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = type.by, size = size.by, alpha = alpha.by))
-  p <- p + geom_line(data = data.toplot)
+  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = linetype.by, size = size.by, alpha = alpha.by, shape = shape.by))
   
+  # add trend lines
+  if(plotTrend) suppressWarnings( p <- p + stat_smooth(method = "lm", formula = y ~ x, ...) )
+  
+  # build arguments for 'fixed' aesthetic to geom_line
+  aes.args <- list(data = data.toplot)
+  if(!missing(sizes) && is.null(size.by)) aes.args[["size"]] <- sizes
+  if(!missing(cols) && is.null(col.by)) aes.args[["colour"]] <- cols
+  if(!missing(alphas) && is.null(alpha.by)) aes.args[["alpha"]] <- alphas
+  if(!missing(linetypes) && is.null(linetype.by)) aes.args[["linetype"]] <- linetypes
+  if(!missing(shapes) && is.null(shape.by)) aes.args[["shape"]] <- shapes
+  
+  # call geom_line (with fixed aesthetics define above)
+  if(!points) p <- p + do.call(geom_line, aes.args)
+  else p <- p + do.call(geom_point, aes.args)
   
   # line formatting
   if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
-  if(!is.null(type.by) & !is.null(types)) p <- p + scale_linetype_manual(values=types, labels=type.labels)
+  if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
   if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
-
+  
   # labels and positioning
   p <- p + labs(title = title, subtitle = subtitle, y = y.label)
   p <- p + theme(legend.title=element_blank())
@@ -266,11 +313,11 @@ plotTemporal <- function(fields,
   # set limits
   if(!is.null(x.lim)) p <- p + xlim(x.lim)
   if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
-  p <- p + labs(y = y.axis.label)
+  else p <- p + labs(y = y.label)
   
   # facetting
   if(length(vars.facet > 0)){
-    p <- p + facet_wrap(vars.facet, ...)
+    suppressWarnings( p <- p + facet_wrap(vars.facet, ...))
   }
   
   return(p)

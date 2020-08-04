@@ -78,44 +78,27 @@ openLPJOutputFile <- function(run,
   # extract from the target.sta
   first.year = target.sta@first.year
   last.year = target.sta@last.year
-
+  
   if(!data.table.only && class(quant)[1] != "Quantity") stop("Please supply a formal Quantity object as the quant argument since you are not requesting at data.table")
   
   if(class(quant)[1] == "Quantity") variable <- quant@id
   else variable <- quant
   
-  #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
-  compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
-  new.data.table.version <- FALSE
-  if(compare.string >= 0) new.data.table.version <- TRUE
   
-  
-  # Make the filename and check for the file, gunzip if necessary, fail if not present
+  # Make the filename and read the file using the handy utility function
   if(is.null(file.name)) file.string <- file.path(run@dir, paste(variable, ".out", sep=""))
   else file.string <- file.path(run@dir, file.name)
-  re.zip <- FALSE
-  if(file.exists(file.string)){ 
-    if(verbose) message(paste("Found and opening file", file.string, sep = " "))
-    dt <- fread(file.string)
-  }
-  else if(file.exists(paste(file.string, "gz", sep = "."))){
-    if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
-    if(.Platform$OS.type == "unix") {
-      if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-      else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-    }
-    else {
-      re.zip <- TRUE
-      R.utils::gunzip(paste(file.string, "gz", sep = "."))
-      dt <- fread(file.string)
+  dt <- readRegularASCII(file.string, verbose)
+  
+  # correct the dimension names if they are lower case
+  dim.names <- c("Lon", "Lat", "Year", "Month", "Day")
+  dt.header <- names(dt)
+  for(dim.name in dim.names) {
+    if(tolower(dim.name) %in% tolower(dt.header)) {
+      if(verbose) message(paste("Correcting column name", dt.header[which(tolower(dim.name) == tolower(dt.header))], "to", dim.name))
+      setnames(dt, dt.header[which(tolower(dim.name) == tolower(dt.header))], dim.name)
     }
   }
-  else {
-    stop(paste("File (or gzipped file) not found:", file.string))
-  }
-  
-  
-  gc()
   
   #  Print messages
   if(verbose) {
@@ -124,7 +107,6 @@ openLPJOutputFile <- function(run,
     message("It has shape:")
     print(dim(dt))      
   }
-  
   
   # Correct year
   if(run@year.offset != 0) {
@@ -161,11 +143,17 @@ openLPJOutputFile <- function(run,
     print(utils::head(dt))
   }
   
-  # if london.centre is requested, make sure all negative longitudes are shifted to positive
-  if(run@london.centre){ dt[, Lon := vapply(dt[,Lon], 1, FUN = LondonCentre)] }
+  # if london.centre is requested, make sure all longitudes greater than 180 are shifted to negative
+  if(run@london.centre){
+    if(max(dt[["Lon"]]) > 180) {
+      dt[, Lon := LondonCentre(Lon)]
+    }
+  }
+  
   
   # if spatial extent specified, crop to it
   new.extent <- NULL
+  full.extent <- extent(dt)
   if(!is.null(target.sta@spatial.extent)) {
     
     spatial.extent.class <- class(target.sta@spatial.extent)[1]
@@ -174,15 +162,66 @@ openLPJOutputFile <- function(run,
       dt <- selectGridcells(x = dt, gridcells = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id, ...)
       new.extent <- target.sta@spatial.extent
       # if new.extent is a data.frame, convery it to a data.table for consistency
-      if(is.data.frame(new.extent) & !is.data.table(new.extent)) new.extent <- as.data.table(new.extent)
+      #if(is.data.frame(new.extent) & !is.data.table(new.extent)) new.extent <- as.data.table(new.extent)
     }
     
     else {
       dt <- crop(x = dt, y = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id)
-      new.extent <- extent(dt)
+      new.extent <- extent(target.sta@spatial.extent)
     } 
     
-   
+  }
+  
+  gc()
+  
+  
+  # if year cropping selected, do that here, before aggregating
+  all.years <- sort(unique(dt[["Year"]]))
+  
+  crop.first <- FALSE
+  if(length(target.sta@first.year) == 1) {
+    if(target.sta@first.year != min(all.years)) {
+      first.year <- target.sta@first.year
+      crop.first <- TRUE
+    }
+    else {
+      first.year <- min(all.years)
+      crop.first <- FALSE
+    }
+  }
+  
+  crop.last <- FALSE
+  if(length(target.sta@last.year) == 1) {
+    if(target.sta@last.year != max(all.years)) {
+      last.year <- target.sta@last.year
+      crop.last <- TRUE
+    }
+    else {
+      last.year <- target.sta@last.year
+      crop.last <- FALSE
+    }
+  }
+  
+  if(crop.first || crop.last) {
+    
+    if(verbose) message(paste("Selecting years from", first.year, "to", last.year, sep = " "))
+    dt <- selectYears(dt, first = first.year, last = last.year) 
+    all.years <- sort(unique(dt[["Year"]]))
+  }
+  else {
+    if(verbose) message("No year selection being applied")
+  }
+  
+  
+  
+  # if yearly aggregating requested, so it before melting (so save on memory)
+  # first store all the years before averaging them away
+
+  this.year.aggregate.method <- "none"
+  if(target.sta@year.aggregate.method != "none") {
+    
+    dt <- aggregateYears(input.obj = dt, method = target.sta@year.aggregate.method, verbose = verbose)
+    this.year.aggregate.method <- target.sta@year.aggregate.method
     
   }
   
@@ -226,11 +265,7 @@ openLPJOutputFile <- function(run,
   # set the keys (very important!)
   setKeyDGVM(dt)
   
-  # if re-zip
-  if(re.zip) R.utils::gzip(file.string)
-  
   # Build as STAInfo object describing the data
-  all.years <- sort(unique(dt[["Year"]]))
   dimensions <- getDimInfo(dt)
   subannual <- "Year"
   if("Month" %in% dimensions) subannual <- "Month"
@@ -240,6 +275,7 @@ openLPJOutputFile <- function(run,
   sta.info = new("STAInfo",
                  first.year = min(all.years),
                  last.year = max(all.years),
+                 year.aggregate.method = this.year.aggregate.method,
                  subannual.resolution = subannual,
                  subannual.original = subannual)
   
@@ -248,9 +284,9 @@ openLPJOutputFile <- function(run,
     sta.info@spatial.extent = new.extent
     sta.info@spatial.extent.id <- target.sta@spatial.extent.id
   }
-  # otherwise set
+  # otherwise set to the (potentially what the extent was before spatial aggregating)
   else {
-    sta.info@spatial.extent = extent(dt)
+    sta.info@spatial.extent = full.extent
     sta.info@spatial.extent.id <- "Full"
   }
   
@@ -261,7 +297,7 @@ openLPJOutputFile <- function(run,
     
     # make the ID and then make and return Field
     field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
-   
+    
     return(
       
       new("Field",
@@ -384,7 +420,7 @@ openLPJOutputFile_FireMIP <- function(run,
   
   ## Here look for variables that require conversion to percent
   if(variable == "BA") {
-    guess.var <- "mfirefrac"
+    guess.var <- "monthly_burned_area"
     monthly.to.percent <- TRUE
   }
   if(variable == "ccFuelLiveGrass") {
@@ -522,11 +558,11 @@ openLPJOutputFile_FireMIP <- function(run,
     
     dt_upper <- openLPJOutputFile(run, "mwcont_upper", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
     setKeyDGVM(dt_upper)
-
+    
     dt_lower <- openLPJOutputFile(run, "mwcont_lower", target.sta,  file.name = file.name, verbose = verbose, data.table.only = TRUE)
     setKeyDGVM(dt_lower)
     dt <- dt_upper[dt_lower]
-
+    
     dt <- dt[dt_cap]
     dt <- stats::na.omit(dt)
     dt[, mrso := (mwcont_lower * thickness_lower_layer_mm * Capacity) + (mwcont_upper * thickness_upper_layer_mm * Capacity)]
@@ -698,7 +734,6 @@ openLPJOutputFile_FireMIP <- function(run,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @import data.table
 #' @keywords internal
-#' @export
 
 getStandardQuantity_LPJ <- function(run, 
                                     quant, 
@@ -823,8 +858,23 @@ getStandardQuantity_LPJ <- function(run,
   # burntfraction_std 
   else if(quant@id == "burntfraction_std") {
     
+    # if annual_burned_area is present the open it and use it
+    if("annual_burned_area" %in% availableQuantities_GUESS(run, names=TRUE)){
+      this.Field <- openLPJOutputFile(run, lookupQuantity("annual_burned_area", GUESS), target.sta, file.name = file.name, verbose = verbose)
+      renameLayers(this.Field, quant@id)
+    }
+    
+    # if monthly_burned_area is present the open it and use it
+    else if("monthly_burned_area" %in% availableQuantities_GUESS(run, names=TRUE)){
+      this.Field <- openLPJOutputFile(run, lookupQuantity("monthly_burned_area", GUESS), target.sta, file.name = file.name, verbose = verbose)
+      this.Field <- aggregateSubannual(this.Field, method = "sum")
+      renameLayers(this.Field, quant@id)
+      
+    }
+    
+    
     # if mfirefrac is present the open it and use it
-    if("mfirefrac" %in% availableQuantities_GUESS(run, names=TRUE)){
+    else if("mfirefrac" %in% availableQuantities_GUESS(run, names=TRUE)){
       this.Field <- openLPJOutputFile(run, lookupQuantity("mfirefrac", GUESS), target.sta, file.name = file.name, verbose = verbose)
       this.Field <- aggregateSubannual(this.Field, method = "sum")
       renameLayers(this.Field, "mfirefrac", quant@id)
@@ -840,6 +890,14 @@ getStandardQuantity_LPJ <- function(run,
     
   }
   
+  # mfire_size_std 
+  else if(quant@id == "mfire_size_std") {
+    
+    this.Field <- openLPJOutputFile(run, lookupQuantity("real_fire_size", GUESS), target.sta, file.name = file.name, verbose = verbose)
+    renameLayers(this.Field, "real_fire_size", quant@id)
+    
+  }  
+  
   # else stop
   else {
     
@@ -847,8 +905,9 @@ getStandardQuantity_LPJ <- function(run,
     
   }
   
-  # Update the Field with the 'standard' Quantity and return
+  # Update the Field with the 'standard' Quantity (also Field id) and return
   this.Field@quant <- quant
+  this.Field@id <- makeFieldID(source = this.Field@source, var.string = quant@id, sta.info = as(object = this.Field, Class = "STAInfo"))
   return(this.Field)
   
 }
@@ -915,57 +974,6 @@ availableQuantities_GUESS <- function(source, names = TRUE, verbose = FALSE){
 }
 
 
-
-#' Detemine PFTs present in an LPJ-GUESS run
-#' 
-#' @param x  A Source objects describing an LPJ-GUESS(-SPITFIRE) run
-#' @param variables Some variable to loom for to detremine the PFTs present in the run.  Not the function automatically searches:
-#'  "lai", "cmass", "dens" and "fpc".  If they are not in your output you should define another per-PFT variable here.
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-
-determinePFTs_GUESS <- function(x, variables) {
-  
-  # first get a list of all avaiable variables
-  available.vars <- suppressWarnings(availableQuantities_GUESS(x))
-  
-  # check for the presence the following variables (in order)
-  possible.vars <- c("lai", "cmass", "dens", "fpc")
-  
-  for(this.var in possible.vars) {
-    
-    if(this.var %in% available.vars) {
-      
-      file.string = file.path(x@dir, paste(this.var, ".out", sep=""))
-      
-      if(file.exists(file.string)){ 
-        header <- utils::read.table(file.string, header = TRUE, nrow = 1)
-      }
-      else if(file.exists(paste(file.string, "gz", sep = "."))){
-        header <- utils::read.table(gzfile(paste(file.string, "gz", sep = ".")), header = TRUE, nrow = 1)
-      }
-      
-      PFTs.present <- list()
-      for(colname in names(header)){
-        for(PFT in x@pft.set){
-          if(PFT@id == colname) {
-            PFTs.present <- append(PFTs.present, PFT)
-          }
-        }
-      }
-      
-      return(PFTs.present)
-      
-    }
-    
-  }
-  
-  warning(paste("Hmmm, not been able to identify the PFTs in LPJ-GUESS(-SPITFIRE) run", x@name, "because I can't find an appropriate per-PFT file in the run directory. Returning the super-set list.", sep = " ") )
-  return(x@pft.set)
-  
-}
-
-
 ######################### TRIM AN LPJ-GUESS FILENAME  #####################################################################
 #' Helper function to raster::trim the ".out" or the ".out.gz" from an LPJ-GUESS filename to get the variable in question
 #' 
@@ -990,169 +998,417 @@ LPJQuantFromFilename <- function(var.filename){
 
 
 #####################################################################
-########### LPJ-GUESS(-SPITFIRE) GLOBAL PFTS ########################
+########### LPJ-GUESS(-SPITFIRE) GLOBAL LAYERS ########################
 #####################################################################
 
 
 #' @format An S4 class object with the slots as defined below.
-#' @rdname PFT-class
+#' @rdname Layer-class
 #' @keywords datasets
-GUESS.PFTs <- list(
+GUESS.Layers <- list(
   
   # BOREAL TREES
-  
-  # BNE
-  new("PFT",
+  new("Layer",
       id = "BNE",
       name = "Boreal Needleleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Needleleaved",
-      phenology = "Evergreen",
-      climate.zone = "Boreal",
       colour = "darkblue",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # BINE
-  new("PFT",
+  new("Layer",
       id = "BINE",
       name = "Boreal Shade-Intolerant Needleleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Needleleaved",
-      phenology = "Evergreen",
-      climate.zone = "Boreal",
       colour = "dodgerblue3",
-      shade.tolerance = "BNE"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "BNE",
+                        land.cover = "Natural")
   ),
-  
-  # BNS
-  new("PFT",
-            id = "BNS",
-            name = "Boreal Needleleaved Summergreen Tree",
-            growth.form = "Tree",
-            leaf.form = "Needleleaved",
-            phenology = "Summergreen",
-            climate.zone = "Boreal",
-            colour = "cadetblue2",
-            shade.tolerance = "None"
+  new("Layer",
+      id = "BNS",
+      name = "Boreal Needleleaved Summergreen Tree",
+      colour = "cadetblue2",
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # IBS
-  new("PFT",
+  new("Layer",
       id = "IBS",
       name = "Shade-intolerant B/leaved Summergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Summergreen",
-      climate.zone = "Temperate",
       colour = "chartreuse",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   # TEMPERATE TREES
-  
-  # TeBE
-  new("PFT",
+  new("Layer",
       id = "TeBE",
       name = "Temperate Broadleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Evergreen",
-      climate.zone = "Temperate",
       colour = "darkgreen",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # TeNE
-  new("PFT",
+  new("Layer",
       id = "TeNE",
       name = "Temperate Needleleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Needleleaved",
-      phenology = "Evergreen",
-      climate.zone = "Temperate",
       colour = "lightseagreen",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # TeBS
-  new("PFT",
+  new("Layer",
       id = "TeBS",
       name = "Temperate Broadleaved Summergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Summergreen",
       colour = "darkolivegreen3",
-      climate.zone = "Temperate",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Temperate",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   
   # TROPICAL TREES
-  
-  # TrBE
-  new("PFT",
+  new("Layer",
       id = "TrBE",
       name = "Tropical Broadleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Evergreen",
-      climate.zone = "Tropical",
       colour = "orchid4",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  
-  # TrIBE
-  new("PFT",
+  new("Layer",
       id = "TrIBE",
       name = "Tropical Shade-intolerant Broadleaved Evergreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Evergreen",
-      climate.zone = "Tropical", 
       colour = "orchid",
-      shade.tolerance = "TrBE"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Tropical", 
+                        shade.tolerance = "TrBE",
+                        land.cover = "Natural")
   ),
-  
-  # TrBR 
-  new("PFT",
+  new("Layer",
       id = "TrBR",
       name = "Tropical Broadleaved Raingreen Tree",
-      growth.form = "Tree",
-      leaf.form = "Broadleaved",
-      phenology = "Raingreen",
-      climate.zone = "Tropical",
       colour = "palevioletred",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Tree",
+                        leaf.form = "Broadleaved",
+                        phenology = "Raingreen",
+                        climate.zone = "Tropical",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
   
   
   # GRASSES
-  
-  # C3G 
-  new("PFT",
+  new("Layer",
       id = "C3G",
       name = "Boreal/Temperate Grass",
-      growth.form = "Grass",
-      leaf.form = "Broadleaved",
-      phenology = "GrassPhenology",
-      climate.zone = "NA",
       colour = "lightgoldenrod1",
-      shade.tolerance = "None"
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
   ),
-  
-  # C4G
-  new("PFT",
+  new("Layer",
       id = "C4G",
       name = "Tropical Grass",
-      growth.form = "Grass",
-      leaf.form = "Broadleaved",
-      phenology = "GrassPhenology",
-      climate.zone = "NA",
-      colour = "sienna2",
-      shade.tolerance = "None"
+      colour = "sienna1",
+      properties = list(type = "PFT",
+                        name = "Tropical Grass",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
+  ), 
+  
+  # SHRUBS
+  new("Layer",
+      id = "BLSE",
+      name = "Boreal Evergreen Low Shrub",
+      colour = "plum",
+      properties = list(type = "PFT",
+                        name = "Boreal Evergreen Low Shrub",
+                        growth.form = "Shrub",
+                        leaf.form = "Needleleaved",
+                        phenology = "Evergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
+  ),
+  new("Layer",
+      id = "BLSS",
+      name = "Boreal Summergreen Low Shrub",
+      colour = "mistyrose3",
+      properties = list(type = "PFT",
+                        name = "Boreal Summergreen Low Shrub",
+                        growth.form = "Shrub",
+                        leaf.form = "Broadleaved",
+                        phenology = "Summergreen",
+                        climate.zone = "Boreal",
+                        shade.tolerance = "None",
+                        land.cover = "Natural")
+  ),
+  
+  # PASTURE PFTS
+  new("Layer",
+      id = "C3G_pas",
+      name = "Boreal/Temperate Pasture Grass",
+      colour = "lightgoldenrod4",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Pasture")
+  ),
+  new("Layer",
+      id = "C4G_pas",
+      name = "Tropical Pasture Grass",
+      colour = "sienna3",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Pasture")
+  ),
+  
+  # CROP AND INTERCROP GRASS PFTS
+  new("Layer",
+      id = "CC3G_ic",
+      name = "Boreal/Temperate Intercrop Grass",
+      colour = "palegreen2",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland")
+  ),
+  new("Layer",
+      id = "CC4G_ic",
+      name = "Tropical Intercrop Grass",
+      colour = "palegreen4",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "GrassPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland")
+  ),
+  new("Layer",
+      id = "CC3ann",
+      name = "C3 Annual Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC3per",
+      name = "C3 Perennial Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC3nfx",
+      name = "C3 Nitrogen Fixing Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC4ann",
+      name = "C4 Annual Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC4per",
+      name = "C4 Perennial Crop",
+      colour = "red",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = FALSE)
+  ),
+  new("Layer",
+      id = "CC3anni",
+      name = "Irrigated C3 Annual Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  new("Layer",
+      id = "CC3peri",
+      name = "Irrigated C3 Perennial Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  new("Layer",
+      id = "CC3nfxi",
+      name = "Irrigated C3 Nitrogen Fixing Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  new("Layer",
+      id = "CC4anni",
+      name = "Irrigiated C4 Annual Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  new("Layer",
+      id = "CC4peri",
+      name = "Irrigated C4 Perennial Crop",
+      colour = "slategray",
+      properties = list(type = "PFT",
+                        growth.form = "Grass",
+                        leaf.form = "Broadleaved",
+                        phenology = "CropPhenology",
+                        climate.zone = "NA",
+                        shade.tolerance = "None",
+                        land.cover = "Cropland",
+                        irrigated = TRUE)
+  ),
+  
+  # PFT LANDCOVER AGGREGATES
+  new("Layer",
+      id = "Crop_sum",
+      name = "Crop Sum",
+      colour = "Red",
+      properties = list(type = "Sum",
+                        land.cover = "Cropland")
+  ),
+  new("Layer",
+      id = "Pasture_sum",
+      name = "Pasture Sum",
+      colour = "springgreen3",
+      properties = list(type = "Sum",
+                        land.cover = "Pasture")
+  ),
+  new("Layer",
+      id = "Natural_sum",
+      name = "Natural Sum",
+      colour = "saddlebrown",
+      properties = list(type = "Sum",
+                        land.cover = "Natural")
+  ),
+  new("Layer",
+      id = "Barren_sum",
+      name = "Barren Sum",
+      colour = "gray75",
+      properties = list(type = "Sum",
+                        land.cover = "Barren")
+  ),
+  new("Layer",
+     id = "Total",
+     name = "Total",
+     colour = "black",
+     properties = list(type = "Sum",
+                       land.cover = "All")
   )
+  
   
 )
 
@@ -1201,7 +1457,7 @@ GUESS.quantities <- list(
   new("Quantity",
       id = "vegcover",
       name = "Vegetation Cover",
-      units = "m^2/m^2",
+      units = "%",
       colours = veg.palette,
       format = c("GUESS")),
   
@@ -1332,6 +1588,13 @@ GUESS.quantities <- list(
       format = c("GUESS")),
   
   new("Quantity",
+      id = "height",
+      name = "PFT Average Heights",
+      units = "m",
+      colours = fields::tim.colors,
+      format = c("GUESS")),
+  
+  new("Quantity",
       id = "canopyheight",
       name = "Canopy Height",
       units = "m",
@@ -1445,6 +1708,20 @@ GUESS.quantities <- list(
       units = "years",
       colours = fire.palette,
       format = c("GUESS")),
+  
+  new("Quantity",
+      id = "monthly_burned_area",
+      name = "Monthly Burned Area Fraction",
+      units = "fraction",
+      colours = fields::tim.colors,
+      format = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
+      id = "annual_burned_area",
+      name = "annual Burned Area Fraction",
+      units = "fraction",
+      colours = fields::tim.colors,
+      format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
       id = "fireseason",
@@ -1806,6 +2083,13 @@ GUESS.quantities <- list(
       format = c("LPJ-GUESS-SPITFIRE")),
   
   new("Quantity",
+      id = "real_fire_size",
+      name = "Fire Size",
+      units = "ha",
+      colours = fields::tim.colors,
+      format = c("LPJ-GUESS-SPITFIRE")),
+  
+  new("Quantity",
       id = "mhuman_ign",
       name = "Monthly average of human ignition rate",
       units = "ign/day",
@@ -1901,7 +2185,17 @@ GUESS.quantities <- list(
       name = "Monthly sum of daily fire probabilites (based on fine fuel threshold)",
       units = "days",
       colours = fields::tim.colors,
+      format = c("LPJ-GUESS-SPITFIRE")),
+  
+  # Daily fire properties
+  new("Quantity",
+      id = "daily_fires_diagnostics",
+      name = "Daily fire properties",
+      units = "mixed",
+      colours = fields::tim.colors,
       format = c("LPJ-GUESS-SPITFIRE"))
+  
+  
 )
 
 ################################################################
@@ -1922,17 +2216,14 @@ GUESS <- new("Format",
              # UNIQUE ID
              id = "GUESS",
              
-             # FUNCTION TO LIST ALL PFTS APPEARING IN A RUN
-             determinePFTs = determinePFTs_GUESS,
-             
              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
              availableQuantities = availableQuantities_GUESS,
              
              # FUNCTION TO READ A FIELD 
              getField = getField_GUESS,
              
-             # DEFAULT GLOBAL PFTS  
-             default.pfts = GUESS.PFTs,
+             # DEFAULT GLOBAL LAYERS 
+             predefined.layers = GUESS.Layers,
              
              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
              quantities = GUESS.quantities

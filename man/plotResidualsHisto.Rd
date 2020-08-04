@@ -4,13 +4,23 @@
 \alias{plotResidualsHisto}
 \title{Plot the residuals from a Comparison or list of Comparisons as histogram}
 \usage{
-plotResidualsHisto(input.CLayers, cols = NULL, fills = NULL,
-  types = NULL, labels = NULL, title = NULL, xlab = NULL,
-  ylab = NULL, alpha = NULL, reverse = FALSE, bin.width = NULL,
-  xlim = NULL)
+plotResidualsHisto(
+  comparisons,
+  cols = NULL,
+  fills = NULL,
+  types = NULL,
+  labels = NULL,
+  title = NULL,
+  xlab = NULL,
+  ylab = NULL,
+  alpha = NULL,
+  reverse = FALSE,
+  bin.width = NULL,
+  xlim = NULL
+)
 }
 \arguments{
-\item{input.CLayers}{The Comparison or Comparisons for which to plot the residuals}
+\item{comparisons}{The Comparison or Comparisons for which to plot the residuals}
 
 \item{cols, types, fills}{Vector of line colours, line types and fill colours respectively. Each can be left empty but if defined they must have one entry for each set of residuals you are plotting.}
 
@@ -38,8 +48,7 @@ Function will overlay histograms if more than one Comparison is provided.
 Line colours, line types and fill colours can all be specified but have sensible defaults.
 }
 \details{
-This function should be called after a call to \code{benckmarkSpatial} for a DataObject.  It plots the residuals for each model run to which it was compared.  
-It is called automatically by \code{benckmarkSpatial}, but can be called again for better flexibility.
+This function should be called on the Comparison objects produced by a call to function compareLayers().  It plots the residuals for each Comparison.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

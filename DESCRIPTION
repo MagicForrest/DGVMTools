@@ -1,15 +1,16 @@
 Package: DGVMTools
 Type: Package
-Version: 0.8.2
+Version: 0.9.0
 Title: DGVM Processing, Analysis and Plotting Tools
-Date: 2019-02-27
+Date: 2019-11-01
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
              person("Simon", "Scheiter", role=c("aut"), email="simon.scheiter@senckenberg.de"),
-             person("Joerg", "Steinkamp", role=c("aut"), email="joerg.steinkamp@senckenberg.de"))
-Author: Matthew Forrest [aut, cre], Simon Scheiter [aut], Joerg Steinkamp [aut]
+             person("Joerg", "Steinkamp", role=c("aut"), email="joerg.steinkamp@senckenberg.de"),
+             person("Glenn", "Moncrieff", role=c("aut"), email="glenn@saeon.ac.za"))
+Author: Matthew Forrest [aut, cre], Simon Scheiter [aut], Joerg Steinkamp [aut], Glenn Moncrieff [aut]
 Maintainer: Matthew Forrest <matthew.forrest@senckenberg.de>
 Description: Read, process, benchmark, analyse and plot output data produced by dynamic global vegetation
-    models (DGVMs) LPJ-GUESS(-SPITFIRE) and aDGVM2 and potentially soon others, for use in R. 
+    models (DGVMs): LPJ-GUESS(-SPITFIRE), aDGVM and aDGVM2 (and potentially soon others), for use in R. 
     Also reads many standard datasets as processed by companion 'DGVMData' package. 
     FireMIP model output is supported with an additional package (FireMIPTools).
 Depends:
@@ -21,10 +22,10 @@ Imports:
     sp,
     raster,
     compiler,
+    fields,
     maps,
     maptools,
     mapdata,
-    fields,
     RColorBrewer,
     reshape2,
     viridis,
@@ -40,7 +41,7 @@ License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.0
 VignetteBuilder: knitr
 Encoding: UTF-8
 Collate:
@@ -49,32 +50,35 @@ Collate:
     'Format-DGVMData.R'
     'Format-GUESS.R'
     'Format-aDGVM.R'
+    'Format-aDGVM2.R'
     'Standard-Quantities.R'
     'addArea.R'
     'addStandardSpatialAttributes.R'
+    'addTo.R'
     'aggregateSpatial.R'
     'aggregateSubannual.R'
     'aggregateYears.R'
     'availableQuantities.R'
     'averageFields.R'
     'benchmarking.R'
-    'biome-schemes.R'
     'byIDfromList.R'
     'calcNewField.R'
+    'classification-schemes.R'
     'commonSTAInfo.R'
     'compareLayers.R'
     'copyLayers.R'
     'crop-methods.R'
+    'defineLayer.R'
+    'defineQuantity.R'
     'defineSource.R'
     'determinePFTs.R'
     'export-methods.R'
     'extent-methods.R'
-    'getBiomes.R'
     'getDimInfo.R'
     'getField.R'
+    'getScheme.R'
     'is-methods.R'
     'layerOp.R'
-    'listPFTs.R'
     'lookupQuantity.R'
     'makeFieldID.R'
     'makePlotTitle.R'
@@ -89,6 +93,7 @@ Collate:
     'plotSpatialComparison.R'
     'plotSubannual.R'
     'plotTemporal.R'
+    'plotTemporalComparison.R'
     'plotting-framework-functions.R'
     'renameLayers.R'
     'selectDays.R'
@@ -100,5 +105,6 @@ Collate:
     'show-methods.R'
     'small-utility-functions.R'
     'summary-methods.R'
+    'whichLayers.R'
     'writeField-methods.R'
     'writeNetCDF-methods.R'

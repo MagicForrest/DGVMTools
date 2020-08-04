@@ -1,3 +1,43 @@
+#  DGVMTools v0.9.0 (2020-08-04) 
+
+This is a feature release!  Main features are aDGVM1 support, the inclusion of plotTemporalComparison() and the change from PFT objects to the more flexible Layer objects.  However there have been many other bug-fixes and tweaks.
+
+## Main features
+
+* aDGVM1 now supported!  Thanks Glenn Moncrieff! The original aDGVM Format object, which referred to aDGVM2, has been renamed to ... drum roll please... aDGVM2.
+* Biome schemes have been included specifically for aDGVM1.
+* plotTemporalComparison() has been added.
+* The PFT object has been replaced with a Layer object which is designed to be much more flexible.  Where PFT objects had fixed slots to represent their properties, Layer objects feature an R list of properties, which can be user-defined and customised for each supported model.  PFTs are now simply defined as Layer objects, but Layers can also be other things (C pools, soils depths, whatever).
+* Sources now have slots "predefined.layers" to contain, yes you got it, their pre-defined Layers.
+* Facetting has been reworked for plotSpatial() and is now consistent with the other plotXXX() functions.  Note that an automatic calls to facet_grid() are no longer done in plotSpatial(), but of course they can be done afterwards by the user.  Number of rows or columns of facets in a spatial plot should be specified by suppling arguments "nrow" and "ncol" to plotSpatial() (or plotSpatialComparison()).  These are actually completely equivalent to the standard arguments to facet_wrap() in ggplot2.
+
+## Minor features/improvements
+
+* Can now use a map object for selecting gridcells with selectGridcells().
+* Functions defineLayer() and defineQuantity() added.
+* Added the addTo() function to add Layer or Quantity objects to Format or Source objects.  This is simply a user-friendly convience so that users don't need to explicitly access the slots in the S4 class structure, and is designed to work in conjunction with the nee defineLayer() and defineQuantity() function above.
+* Added the legend.title argument to plotSpatial().
+* Coefficient of variation is now a possible method when aggregating with aggregateSpatial(), aggregateSubannual() or aggregateYears().
+* Improved Field to Raster conversion.  It now supports multiple Layers, months and years.
+
+## Breaking changes
+
+* Using a string when specifying the format argument to defineSource() has been disabled.  Please specify the Format object, i.e. Guess instead of "GUESS" or "LPJ-GUESS".
+* BiomeScheme renamed to Scheme, getBiomes() renamed to getScheme().
+* Functions copyLayers() and compareLayers() now use a "tolerance" argument instead of "dec.places" which is more intuitive, efficient and reliable.
+* Function determinePFTs() has been removed as it was not particularly useful and PFT objects have now been generalised to Layer objects.
+* plotScatter() argument names changed to 'x' and 'y' instead of 'field1' and 'field2'
+* First argument to plotScatterComparision() and plotResidualComparison() is now called 'comparisons' instead of 'input.CLayers'.
+
+## Under the hood
+
+* In Format-GUESS, crop and aggregating is now done earlier to save memory.
+* Precision of Lon and Lat handled better in addArea().
+* plotSpatial() now correctly identifies different year periods and puts them in different panels (thanks to Peter Antoni for reporting).
+* Removed correct.map.offset internal function because it now seems unnecesary and just caused problems.
+
+
+
 #  DGVMTools v0.8.2 (2019-10-04) 
 
 This is a bug-fix and "feature tweaking" release - i.e. there is no new major functionality but enhanced useability and other tweaks.

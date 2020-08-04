@@ -254,7 +254,7 @@ Now we formally compare the layers using the `compareLayers()` function, which a
 
 ``` {r comparison, fig.asp = 1, echo=TRUE}
 # compare layers to produce a Comparison object
-vegC.comparison <- compareLayers(field1 = GUESS.vegC, field2 = Saatchi.vegC, layers1 = "Tree", layers2 = "Tree")
+vegC.comparison <- compareLayers(field1 = GUESS.vegC, field2 = Saatchi.vegC, layers1 = "Tree", layers2 = "Tree", override.quantity = TRUE)
 
 # have a look at this comparison object (lots of metadata tracked)
 print(vegC.comparison )
@@ -286,7 +286,7 @@ London.mlai <- getField(source = GUESS.run,
 
 # plot LAI
 print(plotSubannual(field = London.mlai,
-                   year.col.gradient = TRUE,
+                   col.by = "Year",
                    alpha = 0.5))
 
 ```
@@ -295,15 +295,15 @@ Note, that since `plotSeasonal()` takes different arguments and follows a differ
 
 #### Calculating biomes and categorical comparisons 
 
-The `getBiomes()` function can be used to classify model output into some pre-defined biome categories.
+The `getScheme()` function can be used to classify model output into some pre-defined classification categories.  Here we classify vegetation into global biomes.
 
 
 ``` {r model biomes, echo=TRUE}
 
 # read and plot global biomes
-biomes.model <- getBiomes(GUESS.run, Smith2014BiomeScheme, year.aggregate.method = "mean")
-print(plotSpatial(biomes.model, map.overlay = "world"))
-
+biomes.model <- getScheme(GUESS.run, Smith2014BiomeScheme, year.aggregate.method = "mean")
+#print(plotSpatial(biomes.model, map.overlay = "world"))
+print(plotSpatial(biomes.model))
 ```
 
 There is also a global map on potential natural vegetation (PNV) biomes available.
@@ -380,7 +380,7 @@ Whilst the tutorial above will get you started with the package, the following w
 
 Concepts in a typical DGVM workflow are encapsulated into objects (technically these are S4 classes).  For example, data always orginate from a particular source, typically a model simulation or a dataset.  This is represented as a `Source` object, which includes the location of the data on disk, an identifying string and other pertinent pieces of information.  Once a `Source` has been defined, data can be extracted from it which will be stored as a `Field` object.  Conceptually, a `Field` is the data of one particular variable (say biomass) over a period of time and an extent in space (say monthly over the whole globe for the years 1961 to 1990).  `Fields` are the most important objects in DGVMTools because they are manipulated by the users and they contain data (most other classes are metadata). One can think of a `Field` as being similar to raster Stacks or Bricks, but with more metadata and implicit temporal information.  Like Stacks/Bricks, they also have layers, for example one layer per PFT.  These layers can be operated upon, for example to find the total of all of the layers, or the fraction of one layer divided another, or many other operations.  They can also be plotted, and two `Field` objects can be compared to produce a `Comparison` object which has data on the difference between the two fields and statistical summary metrics.
 
-Apart from the all-important `Field`and `Source` (and `Comparison`) objects, there are a few other objects defined in DGVMTools.  Each `Source` object includes `Format` object which describes the format of that data on disk - i.e. how to read data from it, which PFTs one might expect to find in a simulation etc.  Different physical quantities are described by `Quantity` objects which include units, a long name and a default colour scale for plotting. A `PFT` object contains metadata about a plant functional type such as its growth form, phenology, leaf type or climate zone, but also a default colour for consistency across plots.  The `Period` class contains information about sub-annual time periods such as months or seasons.  Users can also define custom periods to define special growing seasons, or 8-day MODIS intervals, or whatever.  The `BiomeScheme` class contains data about different discrete biome classifications (including rules for how to derive biomes from model output).  Oh yeah, spatial-temporal-annual information is encapsulated in an `STAInfo` meta-data object but this mostly is used behind the scenes.
+Apart from the all-important `Field`and `Source` (and `Comparison`) objects, there are a few other objects defined in DGVMTools.  Each `Source` object includes `Format` object which describes the format of that data on disk - i.e. how to read data from it, which PFTs one might expect to find in a simulation etc.  Different physical quantities are described by `Quantity` objects which include units, a long name and a default colour scale for plotting. A `Layer` object contains metadata about a component of a `Field`, for example a particular plant functional type or C pool.  It can include metadata such as its growth form, phenology, leaf type or climate zone, but also a default colour for consistency across plots.  The `Period` class contains information about sub-annual time periods such as months or seasons.  Users can also define custom periods to define special growing seasons, or 8-day MODIS intervals, or whatever.  The `BiomeScheme` class contains data about different discrete biome classifications (including rules for how to derive biomes from model output).  Oh yeah, spatial-temporal-annual information is encapsulated in an `STAInfo` meta-data object but this mostly is used behind the scenes.
 
 Many objects have an `id` which should be a unique alphanumeric character string, typically used for making filenames, and a `name` character string which can be formatted more prettily for use on graphics (although it should also be unique within one analysis).  Examples of most of these objects will follow in the subsequent tutorial.
 
@@ -390,9 +390,9 @@ Obviously there are quite a lot of the fuctions in the package as it aims to go 
 
 Having sorted out the spatial and temporal dimemsions, you can then manipulation the `Field` and plot it.  Rember that data is stored as 'layers' similar to GIS and raster?  To combine layers and perform other operations one can use the `layerOp()` function which supports arithmetic operators (+,-,/,*), finding maximum and minimums of a group of layers, and the mean, standard deviation and variance across layers.  One can plot layers in spatial layers (i.e. maps) with `plotSpatial()` and temporal layers (time series) with `plotTemporal()`.  Two layers can be quickly compared with a scatter plot using `plotScatter()`.  For a more rigorous comparison, one can use `compareLayers()` to a produce a `Comparison` objects which can be plotted in a variety of ways with dedicated functions.
 
-### `listPFTs()` and the `.Layer` (dot-layer) notation for the `layerOp()` function
+### `whichLayers()` and the `.Layer` (dot-layer) notation for the `layerOp()` function
 
-One special feature of DGVMTools that deserves it own mention at this point is the `.Layer` (dot-layer) short-hand notation that can be used with `layerOp()`.  The allows the selecting of layers based on PFT metadata.  For example `.Tree` will select all layers corresponding to a tree PFT.  `.Evergreen` will select all layers with evergreen phenology, `.Boreal` will choose all PFTs associated with the boreal zone, etc.  This is done by a hidden call to the useful function `listPFTs()` which allows you to list all PFTs in a `Field`, or to list all PFTs based on a criteria (say 'Tree', 'Evergreen' or 'Boreal' as above.)
+One special feature of DGVMTools that deserves it own mention at this point is the `.Layer` (dot-layer) short-hand notation that can be used with `layerOp()`.  The allows the selecting of layers based on PFT metadata.  For example `.Tree` will select all layers corresponding to a tree PFT.  `.Evergreen` will select all layers with evergreen phenology, `.Boreal` will choose all PFTs associated with the boreal zone, etc.  This is done by a hidden call to the useful function `whichLayers()` which allows you to list all PFTs in a `Field`, or to list all PFTs based on a criteria (say 'Tree', 'Evergreen' or 'Boreal' as above.)
 
 
 

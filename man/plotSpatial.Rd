@@ -4,15 +4,34 @@
 \alias{plotSpatial}
 \title{Plot maps from a \code{Field} or a lists of \code{Field}.}
 \usage{
-plotSpatial(fields, layers = NULL, title = character(0),
-  subtitle = character(0), facet.labels = NULL, facet.order = NULL,
-  plot.bg.col = "white", panel.bg.col = "white",
-  useLongNames = FALSE, text.multiplier = NULL, xlim = NULL,
-  ylim = NULL, years = NULL, days = NULL, months = NULL,
-  seasons = NULL, limits = NULL, cols = NULL, cuts = NULL,
-  drop.cuts = TRUE, map.overlay = NULL, grid = FALSE,
-  grid.switch = FALSE, plot = TRUE, interior.lines = TRUE,
-  tile = FALSE)
+plotSpatial(
+  fields,
+  layers = NULL,
+  title = character(0),
+  subtitle = character(0),
+  legend.title = character(0),
+  facet.labels = NULL,
+  facet.order = NULL,
+  plot.bg.col = "white",
+  panel.bg.col = "white",
+  useLongNames = FALSE,
+  text.multiplier = NULL,
+  xlim = NULL,
+  ylim = NULL,
+  years = NULL,
+  days = NULL,
+  months = NULL,
+  seasons = NULL,
+  limits = NULL,
+  cols = NULL,
+  cuts = NULL,
+  drop.cuts = TRUE,
+  map.overlay = NULL,
+  plot = TRUE,
+  interior.lines = TRUE,
+  tile = FALSE,
+  ...
+)
 }
 \arguments{
 \item{fields}{The data to plot. Can be a Field or a list of Fields.}
@@ -23,8 +42,12 @@ plotSpatial(fields, layers = NULL, title = character(0),
 
 \item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.}
 
+\item{legend.title}{A character string or expression to override the default legend title. Set to NULL for no legend title.  The default legend title is the \code{units}
+of the \linkS4class{Quantity} of the first \linkS4class{Field} provided in the \code{field} argument.  This argument allows general flexibility, but it is particularly handy
+to facilitate expressions for nicely marked up subscript and superscript.}
+
 \item{facet.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
-Sensible titles will be constructed if this is not specified.}
+Sensible titles will be constructed if this is not specified - NOT CURRENTLY IMPLEMENTED}
 
 \item{facet.order}{A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
 and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
@@ -34,7 +57,7 @@ in this function).}
 
 \item{panel.bg.col}{Colour string for the panel background, default "white".}
 
-\item{useLongNames}{Boolean, if TRUE replace PFT IDs with the PFT's full names on the plots.}
+\item{useLongNames}{Boolean, if TRUE replace Layer IDs with the Layer's full names on the plots.}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}
@@ -63,12 +86,6 @@ Default is TRUE.  Ignored if 'cuts' argument is not used.}
 \item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.
 Note that using these, especially "worldHires", can add quite a bit of time.}
 
-\item{grid}{Boolean, if TRUE then don't use facet_grid() to order the panels in a grid.  Instead use facet_wrap().
-Useful when not all combinations of Sources x Layers exist which would leave blank panels.}
-
-\item{grid.switch}{Boolean, if TRUE reverse the default panel layout of plots, such plots arranged horizontally are arranged vertically and vice-versa.  Ignored 
-if the 'grid' option is FALSE.}
-
 \item{plot}{Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
 
 \item{interior.lines}{Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
@@ -76,6 +93,17 @@ Other things can be overlain on the resulting plot with further ggplot2 commands
 
 \item{tile}{Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
 for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.}
+
+\item{...}{Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+\itemize{
+ \item{"nrow"}{The number of rows of facets}
+ \item{"ncol"}{The number of columns of facets}
+ \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
+ "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
+ \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation.
+ But basically what you want is to define a named character vector, the names are the previous facet names and the values are the new names.  
+ Then make this into a function by passing it to the ggplot function "as.labeller", and then that becomes your 'labeller' argument.} 
+}}
 }
 \value{
 Returns a ggplot object
@@ -88,14 +116,11 @@ a data.table then calls ggplot2 function geom_raster() and it returns a ggplot o
 using further ggplot2 commands.
 }
 \details{
-This function is heavily used by the benchmarking functions and can be very useful to the user for making quick plots
+This function is the main spatial plotting functions and can be very useful to the user for making quick plots
 in standard benchmarking and post-processing.  It is also highly customisable for final results plots for papers and so on.
-However, the \code{plotGGSpatial} function makes pretty plots with a simpler syntax, but with less flexibility.
-
-The function works best for \code{Fields} (which contain a lot of useful metadata).
 }
 \seealso{
-\code{plotTemporal}
+\link{plotTemporal}, \link{plotSpatialComparison}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

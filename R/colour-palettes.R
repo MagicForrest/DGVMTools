@@ -39,11 +39,11 @@ difference.palette <- function(n){
 
 #' @rdname veg.palettes
 #' @export
-fire.palette <- grDevices::colorRampPalette(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3"))
+fire.palette <- grDevices::colorRampPalette(c("red4", "red","orange","yellow", "lightgreen", "cyan2", "skyblue", "blue", "blue3"))
 
 #' @rdname veg.palettes
 #' @export
-reversed.fire.palette <- grDevices::colorRampPalette(rev(c("red4", "red","orange","yellow", "olivedrab2", "chartreuse3", "chartreuse4", "skyblue", "blue", "blue3")))
+reversed.fire.palette <- grDevices::colorRampPalette(rev(c("red4", "red","orange","yellow", "lightgreen", "cyan2", "skyblue", "blue", "blue3")))
 
 #' @rdname veg.palettes
 #' @export
