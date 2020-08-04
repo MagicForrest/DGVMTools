@@ -1,3 +1,30 @@
+#  DGVMTools v0.8.2 (2019-10-04) 
+
+This is a bug-fix and "feature tweaking" release - i.e. there is no new major functionality but enhanced useability and other tweaks.
+
+
+## Feature tweaks
+
+* Reformulated arguments for plotTemporal() giving finer control of facetting vs line colours/styles/widths.
+* "..." argument can be now used to pass arguments to internal call to facet_wrap() in plotTemporal() and plotSubannual().
+* Exporting Fields to Raster now handles multiple years, months and layers.
+* copyLayers() can take dec.places for Lon and Lat deperately.
+* Added extra attibutes in writeNetCDF().
+
+## Potential breaks
+
+* Aguments to plotTemporal() have been changed.
+
+## Bug fixes
+
+* Correctly set keys in copyLayers().
+* Correctly set start date when writing Fields in writeNetCDF().
+
+## Behind-the-scences
+
+* More unifying of plotting code including new sanitiseComparisonsForPlotting() and mergeFieldsForPlotting() functions and completely reworked plotTemporal() to use plotting framework functions.
+
+
 #  DGVMTools v0.8.1 (2019-04-30) 
 
 A few new features in this release.  
