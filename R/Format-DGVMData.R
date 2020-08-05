@@ -214,37 +214,24 @@ getField_DGVMData <- function(source,
       years.to.cover <- 0:(nyears.to.cover-1) + start.date.year
       years.vector <- rep(years.to.cover, each = 12)
       months.vector <- rep(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"), times = nyears.to.cover)
+      
+      # here crop to match the actual length of the data (in case of not complete years)
       years.vector <- years.vector[start.date.month:length(all.time.intervals)]
       months.vector <- months.vector[start.date.month:length(all.time.intervals)]
+    
+      # get the first and last indices based on the years requested
+      # returns a two-element list, with elements "first" and "last"
+      first.last.indices <- calculateYearCroppingIndices(target.STAInfo, years.vector)
+
+      # make the index/count for reading the netCDF files
+      start.time <- first.last.indices$first
+      count.time <- first.last.indices$last - first.last.indices$first + 1
+       
+      # crop the vectors to match 
+      years.vector <- years.vector[first.last.indices$first:first.last.indices$last]
+      months.vector <- months.vector[first.last.indices$first:first.last.indices$last]
       
-      # check for cropping at this stage
-      if(length(target.STAInfo@first.year) > 0 & length(target.STAInfo@last.year) > 0) {
-        target.first.year <- target.STAInfo@first.year
-        target.last.year <-  target.STAInfo@last.year
-        if(target.first.year != years.vector[1] | target.first.year != years.vector[length(years.vector)]) {
-          
-          if(target.first.year < years.vector[1]) stop(paste("In DGVMData requested first.year = ", target.first.year, ", but first year in data is", years.vector[1], sep = " "))
-          if(target.last.year > years.vector[length(years.vector)]) stop(paste("In DGVMData requested last.year = ", target.last.year, ", but last year in data is", years.vector[length(years.vector)], sep = " "))
-          
-          
-          # find the first occurence of the target first.year and the last occurance of the target year in the year.vector
-          first.index <- match(target.first.year, years.vector)
-          last.index <-  match(target.last.year, rev(years.vector))
-          last.index <- length(years.vector) - last.index +1
-          
-          # make the indices
-          start.time <- first.index
-          count.time <- last.index - first.index + 1
-          
-          # crop the vectors to match and make labels
-          years.vector <- years.vector[first.index:last.index]
-          months.vector <- months.vector[first.index:last.index]
-          
-        }
-        
-      }
-      
-      # make a numeric code of Year.Month
+       # make a numeric code of Year.Month for labelling this dimension
       all.times  <- paste(years.vector, months.vector, sep = ".")
       
     }
