@@ -86,7 +86,9 @@ getField <- function(source,
   
   ### CHECK ARGUEMENTS
   if(missing(file.name)) file.name <- NULL
-  if(first.year > last.year) stop("first.year cannot be greater than last.year!")
+  if(!missing(first.year) & !missing(last.year) ) {
+   if(first.year > last.year) stop("first.year cannot be greater than last.year!")
+  }
   
   ### CONVERT STRING TO QUANTITY
   if(class(var) == "character") {

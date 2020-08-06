@@ -32,3 +32,69 @@ calculateYearCroppingIndices <- function(target_STAInfo, years_vector) {
   return(list(first = 1, last = length(years_vector)))
   
 }
+
+
+
+makeYearsAndDaysFromDailyTimeAxis <- function(nc_file, time_axis_string, start.date) {
+  
+  # take truncof the times to give integer values 
+  # (the fraction, if present, is assumed to be the time of day of the measurement, ie a fraction of a day but this can be removed
+  # since a few hours into a day is still the same day
+  all.time.intervals <- trunc(ncdf4::ncvar_get(nc_file, time_axis_string))
+
+  # lookup the calandar attribute and determine if it is proleptic
+  calendar <- ncdf4::ncatt_get(nc_file, time_axis_string, "calendar")
+  if(calendar$hasatt) calendar <- calendar$value
+  else stop("DGVMData format requires a 'calendar' attribute on the time axis for daily data")
+ 
+  # make some strings vectors for the days in years of different lengths 
+  # (these are converted to codes "Year.Day" codes later on, hence the use of zero-padded strings)
+  days.365 <- c(paste0("00", 1:9), paste0("0", 10:99), paste0(100:365)) 
+  days.366 <- c(paste0("00", 1:9), paste0("0", 10:99), paste0(100:366)) 
+  days.360 <- c(paste0("00", 1:9), paste0("0", 10:99), paste0(100:360)) 
+
+  # make a big vector of the years and days from the start date (defined by the netCDF time axis) to the beyond the end of the data
+  years.vector <- c()
+  days.vector<- c()
+  day.counter <-as.numeric(format(start.date,"%d"))
+  year <- as.numeric(format(start.date,"%Y"))
+  while(day.counter < all.time.intervals[length(all.time.intervals)]) {
+    
+    # select year length based on the calendar
+    # 365 day
+    if(calendar == "365_day" | (calendar == "standard" & !is.leapyear(year)) | (calendar == "proleptic_gregorian" & !is.leapyear(year, proleptic = TRUE))) {
+      this.year.days <- days.365
+    }
+    # 366 day
+    else if(calendar == "366_day" | (calendar == "standard" & is.leapyear(year)) | (calendar == "proleptic_gregorian" & is.leapyear(year, proleptic = TRUE))) {
+      this.year.days <- days.366
+    }
+    # 360 day
+    else if(calendar == "360_day") {
+      this.year.days <- days.360
+    }
+    else{
+      stop(paste0("Calendar", calendar, "not supported by DGVMData format in DGVMTools package"))
+    }
+    
+    # append to the vectors
+    years.vector <- append(years.vector, rep(year, times = length(this.year.days)))
+    days.vector <- append(days.vector, this.year.days)
+    
+    # add to the counters
+    day.counter <- day.counter + length(this.year.days)
+    year <- year + 1
+    
+  }
+  
+  
+  # now select values from the massive vector using the all.time.intervals as the indices
+  #  -note that we need to add one to all the time intervals since first time step (from start date) will have an interval of zero 
+  #   but for that time step we need to have an array index of 1
+  years.vector <- years.vector[all.time.intervals+1]
+  days.vector <- days.vector[all.time.intervals+1]
+  
+  return(list(years = years.vector, days = days.vector))
+  
+  
+}
