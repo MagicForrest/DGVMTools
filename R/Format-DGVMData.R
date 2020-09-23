@@ -177,28 +177,16 @@ getField_DGVMData <- function(source,
       end.date.year <- start.date.year+length(all.time.intervals)-1
       years.vector <- start.date.year:end.date.year
       
-      # check for cropping at this stage
-      if(length(target.STAInfo@first.year) > 0 & length(target.STAInfo@last.year) > 0) {
-        target.first.year <- target.STAInfo@first.year
-        target.last.year <-  target.STAInfo@last.year
-        if(target.first.year != start.date.year | target.first.year != end.date.year) {
-          
-          if(target.first.year < start.date.year) stop(paste("In DGVMData requested first.year = ", target.first.year, ", but first year in data is",  start.date.year, sep = " "))
-          if(target.last.year > end.date.year) stop(paste("In DGVMData requested last.year = ", target.last.year, ", but last year in data is", end.date.year, sep = " "))
-          
-          start.time <- target.first.year - start.date.year + 1
-          count.time <- target.last.year - target.first.year + 1
-          
-          # find the first occurence of the target first.year and the last occurance of the target year in the year.vector
-          first.index <- match(target.first.year, years.vector)
-          last.index <-  match(target.last.year, rev(years.vector))
-          last.index <- length(years.vector) - last.index +1
-          
-          # crop the vectors to match and make labels
-          years.vector <- years.vector[first.index:last.index]
-          
-        }
-      }
+      # get the first and last indices based on the years requested
+      # returns a two-element list, with elements "first" and "last"
+      first.last.indices <- calculateYearCroppingIndices(target.STAInfo, years.vector)
+      
+      # make the index/count for reading the netCDF files
+      start.time <- first.last.indices$first
+      count.time <- first.last.indices$last - first.last.indices$first + 1
+      
+      # crop the vectors to match 
+      years.vector <- years.vector[first.last.indices$first:first.last.indices$last]
       
       # make a numeric code of Year
       all.times <- paste(years.vector)
@@ -214,37 +202,24 @@ getField_DGVMData <- function(source,
       years.to.cover <- 0:(nyears.to.cover-1) + start.date.year
       years.vector <- rep(years.to.cover, each = 12)
       months.vector <- rep(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"), times = nyears.to.cover)
+      
+      # here crop to match the actual length of the data (in case of not complete years)
       years.vector <- years.vector[start.date.month:length(all.time.intervals)]
       months.vector <- months.vector[start.date.month:length(all.time.intervals)]
+    
+      # get the first and last indices based on the years requested
+      # returns a two-element list, with elements "first" and "last"
+      first.last.indices <- calculateYearCroppingIndices(target.STAInfo, years.vector)
+
+      # make the index/count for reading the netCDF files
+      start.time <- first.last.indices$first
+      count.time <- first.last.indices$last - first.last.indices$first + 1
+       
+      # crop the vectors to match 
+      years.vector <- years.vector[first.last.indices$first:first.last.indices$last]
+      months.vector <- months.vector[first.last.indices$first:first.last.indices$last]
       
-      # check for cropping at this stage
-      if(length(target.STAInfo@first.year) > 0 & length(target.STAInfo@last.year) > 0) {
-        target.first.year <- target.STAInfo@first.year
-        target.last.year <-  target.STAInfo@last.year
-        if(target.first.year != years.vector[1] | target.first.year != years.vector[length(years.vector)]) {
-          
-          if(target.first.year < years.vector[1]) stop(paste("In DGVMData requested first.year = ", target.first.year, ", but first year in data is", years.vector[1], sep = " "))
-          if(target.last.year > years.vector[length(years.vector)]) stop(paste("In DGVMData requested last.year = ", target.last.year, ", but last year in data is", years.vector[length(years.vector)], sep = " "))
-          
-          
-          # find the first occurence of the target first.year and the last occurance of the target year in the year.vector
-          first.index <- match(target.first.year, years.vector)
-          last.index <-  match(target.last.year, rev(years.vector))
-          last.index <- length(years.vector) - last.index +1
-          
-          # make the indices
-          start.time <- first.index
-          count.time <- last.index - first.index + 1
-          
-          # crop the vectors to match and make labels
-          years.vector <- years.vector[first.index:last.index]
-          months.vector <- months.vector[first.index:last.index]
-          
-        }
-        
-      }
-      
-      # make a numeric code of Year.Month
+       # make a numeric code of Year.Month for labelling this dimension
       all.times  <- paste(years.vector, months.vector, sep = ".")
       
     }
@@ -304,39 +279,31 @@ getField_DGVMData <- function(source,
         
       }
       
-      # to undo the last "year + 1" at the end of the loop
-      final.date.year <- year - 1
-      
+ 
       # now select values from the massive vector using the all.time.intervals as the indices
       #  -note that we need to add one to all the time intervals since first time step (from start date) will have an interval of zero 
       #   but for that time step we need to have an array index of 1
       years.vector <- years.vector[all.time.intervals+1]
       days.vector <- days.vector[all.time.intervals+1]
+      print(days.vector)
+      print(years.vector)
       
-      # check for cropping at this stage
-      if(length(target.STAInfo@first.year) > 0 & length(target.STAInfo@last.year) > 0) {
-        target.first.year <- target.STAInfo@first.year
-        target.last.year <-  target.STAInfo@last.year
-        if(target.first.year != years.vector[1] | target.first.year != years.vector[length(years.vector)]) {
-          
-          if(target.first.year < years.vector[1]) stop(paste("In DGVMData requested first.year = ", target.first.year, ", but first year in data is", years.vector[1], sep = " "))
-          if(target.last.year > years.vector[length(years.vector)]) stop(paste("In DGVMData requested last.year = ", target.last.year, ", but last year in data is", years.vector[length(years.vector)], sep = " "))
-          
-          # find the first occurence of the target first.year and the last occurance of the target year in the year.vector
-          first.index <- match(target.first.year, years.vector)
-          last.index <-  match(target.last.year, rev(years.vector))
-          last.index <- length(years.vector) - last.index +1
-          
-          # crop the vectors to match and make labels
-          years.vector <- years.vector[first.index:last.index]
-          days.vector <- days.vector[first.index:last.index]
-          
-          # make the indices
-          start.time <- first.index
-          count.time <- last.index - first.index + 1
-          
-        }
-      } 
+      years.days.vector <- makeYearsAndDaysFromDailyTimeAxis(this.nc, time.string, start.date)
+
+        print(years.days.vector)
+      
+
+      # get the first and last indices based on the years requested
+      # returns a two-element list, with elements "first" and "last"
+      first.last.indices <- calculateYearCroppingIndices(target.STAInfo, years.vector)
+      
+      # make the index/count for reading the netCDF files
+      start.time <- first.last.indices$first
+      count.time <- first.last.indices$last - first.last.indices$first + 1
+      
+      # crop the vectors to match 
+      years.vector <- years.vector[first.last.indices$first:first.last.indices$last]
+      days.vector <- days.vector[first.last.indices$first:first.last.indices$last]
       
       # make a numeric code of Year.Day
       all.times  <- paste(years.vector, days.vector, sep = ".")
@@ -374,8 +341,8 @@ getField_DGVMData <- function(source,
   
   for(this.var in this.nc$var) {
     
-    # ignore the "time_bnds" variable that CDO creates with time aggregation
-    if(this.var$name != "time_bnds") {
+    # ignore the "Time_bands"/time_bnds" variable that CDO creates with time aggregation
+    if(tolower(this.var$name) != "time_bnds") {
       
       # set start and count appropriately
       start <- numeric()
