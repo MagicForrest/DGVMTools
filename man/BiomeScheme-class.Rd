@@ -18,31 +18,7 @@
  
 \strong{Smith2014BiomeScheme} Classification of global output as per Smith et al. 2014. Designed to be compared to Haxeltine and Prentice (1996) 
 map of potential natural biomes.}
-\format{
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-
-An object of class \code{Scheme} of length 1.
-}
+\format{An object of class \code{Scheme} of length 1.}
 \usage{
 Smith2014BiomeScheme
 

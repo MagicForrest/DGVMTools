@@ -279,7 +279,7 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
 #' 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
-FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
+FieldToArray <- function(x, start.date = NULL, calendar = "365_day", cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   
   Lon=Lat=Year=Month=Day=Time=variable=NULL
   
@@ -304,47 +304,159 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   # if temporal, make a Time column and define the values for it in the fullgrid (see below)
   if(is.temporal) {
     
-    # if it is temporal (but no Year column) make a dummy year
-    if(!("Year" %in% st.names)) d[, Year := 01]
-    
-    # if only annual temporal resolution (no monthly or daily column)
-    if(!("Month" %in% st.names) && !("Day" %in% st.names)  ) {
-
-      if (verbose)  message("'Year' column present.")
-      time <- (sort(unique(d$Year)) * 1000) + 1
-      d[, Time := Year * 1000 + 1]
-      d[, Year := NULL]
-    
+    # old way, label time axis based on codes
+    # keeping this method to be keep the is.array method valid, writing netCDF should do the old way with a start date below
+    if(missing(start.date) || is.null(start.date)) {
       
-    }
-    ## check for monthly data
-    else if("Month" %in% st.names) {
-
-      # lookup vector to match month to day of year (ignore leap years and use the centre of the month)
-      # this could be more sophisticated 
-      lookup.DoY.vector <- c() 
-      counter <- 0
-      for(month in all.months) {
-        lookup.DoY.vector <- append(lookup.DoY.vector, counter + floor(month@days/2))
-        counter <- counter + month@days
+      # if it is temporal (but no Year column) make a dummy year
+      if(!("Year" %in% st.names)) d[, Year := 01]
+      
+      # if only annual temporal resolution (no monthly or daily column)
+      if(!("Month" %in% st.names) && !("Day" %in% st.names)  ) {
+        
+        if (verbose)  message("'Year' column present.")
+        time <- (sort(unique(d$Year)) * 1000) + 1
+        d[, Time := Year * 1000 + 1]
+        d[, Year := NULL]
+        
+        
+      }
+      ## check for monthly data
+      else if("Month" %in% st.names) {
+        
+        # lookup vector to match month to day of year (ignore leap years and use the centre of the month)
+        # this could be more sophisticated 
+        lookup.DoY.vector <- c() 
+        counter <- 0
+        for(month in all.months) {
+          lookup.DoY.vector <- append(lookup.DoY.vector, counter + floor(month@days/2))
+          counter <- counter + month@days
+        }
+        
+        # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
+        d[, Time:= Year * 1000 + lookup.DoY.vector[Month]]
+        time <- sort(unique(d$Time))
+        
+        d[, Month := NULL]
+        d[, Year := NULL]
+      }
+      # check if daily
+      else if("Day" %in% st.names) {
+        
+        # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
+        d[, Time:= Year * 1000 + as.numeric(Day)]
+        time <- sort(unique(d$Time))
+        
+        d[, Day := NULL]
+        d[, Year := NULL]
+        
       }
       
-      # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
-      d[, Time:= Year * 1000 + lookup.DoY.vector[Month]]
-      time <- sort(unique(d$Time))
-      
-      d[, Month := NULL]
-      d[, Year := NULL]
     }
-    # check if daily
-    else if("Day" %in% st.names) {
-
-      # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
-      d[, Time:= Year * 1000 + as.numeric(Day)]
-      time <- sort(unique(d$Time))
+    
+    # here calculate the time dimension label as days since start.date 
+    else {
       
-      d[, Day := NULL]
-      d[, Year := NULL]
+      # initial year
+      start.year <- as.numeric(format(start.date,"%Y"))
+      start.day <- as.numeric(format(start.date,"%j"))
+      start.day.offset <- start.day -1
+      
+      # define column number of years since start years
+      if(calendar == "365_day") {
+        
+        # if daily data
+        if("Day" %in% st.names){
+          if("Year" %in% st.names) {
+            d[, Time := ((Year - start.year) * 365) + Day - start.day.offset]
+            d[, Year := NULL]
+          } 
+          else  {
+            d[, Time := Day - start.day.offset]
+          }
+          d[, Day := NULL]
+        }
+        
+        # if monthly data
+        else if("Month" %in% st.names) {
+          
+          # build look up take for Day of year at centre of month    
+          lookup.DoY.vector <- c() 
+          counter <- 0
+          for(month in all.months) {
+            lookup.DoY.vector <- append(lookup.DoY.vector, counter + floor(month@days/2))
+            counter <- counter + month@days
+          }
+          
+          
+          if("Year" %in% st.names) {
+            d[, Time:= ((Year - start.year) * 365) + lookup.DoY.vector[Month] - start.day.offset]
+            d[, Year := NULL]
+          } 
+          else{
+            d[, Time:= lookup.DoY.vector[Month] - start.day.offset]
+          }
+          d[, Month := NULL]
+          
+        }
+        
+        # if only years
+        else if("Year" %in% st.names) {
+          d[, Time := ((Year - start.year) * 365) - start.day.offset]
+          d[, Year := NULL]
+        }
+        
+        
+      }
+      
+      # standard calendar: actually quite easy since we can use standard R date manipulation
+      else if(calendar == "standard") {
+        
+        # if daily data
+        if("Day" %in% st.names){
+          if("Year" %in% st.names) {
+            d[, Date := as.Date(paste(Year, Day, sep = "-"), format = "%Y-%j")]
+            d[, Year := NULL]
+          } else {
+            d[, Date := as.Date(paste(9999, Day, sep = "-"), format = "%Y-%j") ]
+          }
+        }
+        # if monthly data
+        else if("Month" %in% st.names) {
+          
+          # build look up take for Day of year at centre of month - not    
+          lookup.CentreOfMonth.vector <- c() 
+          for(month in all.months) {
+            lookup.CentreOfMonth.vector <- append(lookup.CentreOfMonth.vector, floor(month@days/2))
+          }
+          
+          if("Year" %in% st.names) {
+            d[, Date := as.Date(paste(Year, Month, "01", sep = "-"), format = "%Y-%m-%d")] 
+            d[, Year := NULL]
+          } else {
+            d[, Date := as.Date(paste(9999, Month, "01", sep = "-"), format = "%Y-%m-%d") ]
+          } 
+          d[, Month := NULL]
+        }
+        # if only annual
+        else if("Year" %in% st.names) {
+          d[, Date := as.Date(paste(Year, "01-01", sep = "-"), format = "%Y-%m-%d") ]
+          d[, Year := NULL]
+        }
+        
+        # now simple subtract start.data from date
+        d[, Time := as.numeric(Date- as.Date(start.date))]
+        d[, Date := NULL]
+        
+        
+      }
+      # proleptic_gregoriancalendar: not yet implemented here
+      else if(calendar == "proleptic_gregorian") {
+        stop("\"proleptic_gregorian\" calendar not yet implemented for FieldToArray")
+      }
+      
+      # make axis values
+      time <- sort(unique(d$Time))
       
     }
     

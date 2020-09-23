@@ -9,17 +9,7 @@
 \alias{all.seasons}
 \alias{annual}
 \title{Time periods - eg. a month or a season or a year.}
-\format{
-An object of class \code{list} of length 17.
-
-List of\code{Period} objects
-
-An object of class \code{list} of length 12.
-
-An object of class \code{list} of length 4.
-
-An object of class \code{list} of length 1.
-}
+\format{An object of class \code{list} of length 17.}
 \usage{
 all.periods
 
