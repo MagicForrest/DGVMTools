@@ -140,7 +140,7 @@ print(plotSpatial(Saatchi.vegC))
 
 ## ----comparison, fig.asp = 1, echo=TRUE---------------------------------------
 # compare layers to produce a Comparison object
-vegC.comparison <- compareLayers(field1 = GUESS.vegC, field2 = Saatchi.vegC, layers1 = "Tree", layers2 = "Tree")
+vegC.comparison <- compareLayers(field1 = GUESS.vegC, field2 = Saatchi.vegC, layers1 = "Tree", layers2 = "Tree", override.quantity = TRUE)
 
 # have a look at this comparison object (lots of metadata tracked)
 print(vegC.comparison )

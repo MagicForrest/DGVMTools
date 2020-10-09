@@ -24,8 +24,6 @@
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
 #' and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
-#' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
-#' Sensible titles will be constructed if this is not specified - NOT CURRENTLY IMPLEMENTED
 #' @param plot.bg.col Colour string for the plot background, default "white".
 #' @param panel.bg.col Colour string for the panel background, default "white".
 #' @param useLongNames Boolean, if TRUE replace Layer IDs with the Layer's full names on the plots.
@@ -77,7 +75,6 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
                         title = character(0),
                         subtitle = character(0),
                         legend.title = character(0),
-                        facet.labels =  NULL,
                         facet.order = NULL,
                         plot.bg.col =  "white",
                         panel.bg.col = "white", #"809DB8", #"cae1ff",
