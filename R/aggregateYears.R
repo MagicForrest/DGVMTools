@@ -11,7 +11,7 @@
 #' Aggregated all available years in a Field or a data.table object (with years denoted by column "Years"). 
 #'
 #' @param input.obj A Field or data.table (with a "Year" column)   
-#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
+#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "mode", "median", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A Field or data.table depending on the input object
@@ -27,9 +27,11 @@ aggregateYears.uncompiled <- function(input.obj,
   
   
   ### SET UP THE AGGREGATE METHOD 
-  method <- match.arg(method, c("mean", "sum", "max", "min", "sd", "var", "cv"))
+  method <- match.arg(method, c("mean", "mode", "median", "sum", "max", "min", "sd", "var", "cv"))
   method.function <- switch(method,
                             mean = mean,
+                            mode = mode,
+                            median = median,
                             sum = sum,
                             max = max,
                             min = min,

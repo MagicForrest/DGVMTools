@@ -13,7 +13,7 @@
 #'
 #' @param input.obj Field (or data.table) to be averaged  
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
-#' "weighted.sum", "w.sum", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
+#' "weighted.sum", "w.sum", "sum", "mode", "median", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @param ... Extra arguments passed to addArea function if a weighted method is being used.
 #' @return A Field or data.table depending on the input object
@@ -30,7 +30,7 @@ aggregateSpatial.uncompiled <- function(input.obj,
   
   ### SET UP THE AGGREGATE METHOD 
   
-  method <- match.arg(method, c("weighted.mean", "w.mean", "mean", "weighted.sum", "w.sum", "sum", "max", "min", "sd", "var", "cv"))
+  method <- match.arg(method, c("weighted.mean", "w.mean", "mean", "weighted.sum", "w.sum", "sum", "median", "mode", "max", "min", "sd", "var", "cv"))
   
   method.function <- switch(method,
                             weighted.mean = stats::weighted.mean,
@@ -39,6 +39,8 @@ aggregateSpatial.uncompiled <- function(input.obj,
                             weighted.sum = sum,
                             w.sum = sum,
                             sum = sum,
+                            mode = mode,
+                            median = median,
                             max = max,
                             min = min,
                             sd = stats::sd,

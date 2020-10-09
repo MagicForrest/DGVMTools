@@ -10,7 +10,7 @@
 #' Aggregates data with sub-annual time resolution to a coarser time resolution.  For example, going from monthly to annual. 
 #'
 #' @param input.obj data.table or Field 
-#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation sd/mean).
+#' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "mode", "median", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (also "Annual" is valid). 
 #' Default is year.  
@@ -75,9 +75,11 @@ aggregateSubannual.uncompiled <- function(input.obj,
   
   
   ### SET UP THE AGGREGATE METHOD 
-  method <- match.arg(method, c("mean", "sum", "max", "min", "sd", "var", "cv"))
+  method <- match.arg(method, c("mean", "mode", "median", "sum", "max", "min", "sd", "var", "cv"))
   method.function <- switch(method,
                             mean = mean,
+                            mode = mode,
+                            median = median,
                             sum = sum,
                             max = max,
                             min = min,
