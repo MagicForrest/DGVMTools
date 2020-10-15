@@ -12,10 +12,10 @@
 #'  \item Subsetting and averaging certain time periods or spatial extents,
 #'  \item Calculating total values for certain seasons, growth forms (for example all trees), leaf phenologies (for example all evergreen vegetation), climate zones (for example all tropical vegetation), and others,
 #'  \item Making maps and time series plots of the model output,
-#'  \item Reading in observed data (satellite data, flux tower data etc.) to which model the model results can be compared,
+#'  \item Reading in observed data (satellite data, flux tower data etc.) to which model results can be compared,
 #'  \item Calculating statistical metrics to quantify the agreement between models and data, and producing plots (scatter plots, histograms of residuals) to visually compare models and data,
 #'  \item Making classifications (such as biomes, vegetation types, pyromes, etc) from the model output and plotting them,
-#'  \item Making differences maps to evaluate the effects of a model change or spatially comparing models to data,
+#'  \item Making difference maps to evaluate the effects of a model change or spatially comparing models to data,
 #'  \item Storing averaged model data on disk for fast re-reading,
 #'  \item Saving model data in standard netCDF format.
 #' }
@@ -31,7 +31,7 @@
 #' documentation and webpage for more info).  This is obviously a great advantage when working with very large spatial-temporal datasets.  
 #' 
 #' Furthermore, the objects defined in DGVMTools can be very easily 
-#' converted into rasters or data.frames, and so can fit directly back into any existing R code, packages or other machinery.  This the transition to using DGVMTools is very smooth.
+#' converted into rasters or data.frames, and so can fit directly back into any existing R code, packages or other machinery.  Thus the transition to using DGVMTools is very smooth.
 #' DGVMTools can be used to read the data and perform standard operations, but then data can be converted to a raster or data.frame for more specific or idosyncratic R scripts or functions.
 #' However, DGVMTools is intended to be a reasonably complete analysis environment in itself.  It should be possible to go from model output all the way to results and publication
 #' quality plots using only DGVMTools and some base R functionality for other tasks.  
