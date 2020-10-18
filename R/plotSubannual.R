@@ -182,9 +182,10 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
  
   ###### MAKE THE PLOT ######
-  
+ 
   # basic plot and colour scale
-  p <- ggplot(as.data.frame(data.toplot), aes(get(subannual.dimension), Value, colour = get(col.by), group = interaction(Year, get(col.by))), alpha = alpha) + geom_line(alpha = alpha)
+  if("Year" %in% dim.names) p <- ggplot(as.data.frame(data.toplot), aes(get(subannual.dimension), Value, colour = get(col.by), group = interaction(Year, get(col.by))), alpha = alpha) + geom_line(alpha = alpha)
+  else p <- ggplot(as.data.frame(data.toplot), aes(get(subannual.dimension), Value, colour = get(col.by)), alpha = alpha) + geom_line(alpha = alpha)
   if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
   
   # if colouring by Year add a continuous scale (special case)
