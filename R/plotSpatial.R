@@ -156,8 +156,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   }
   
   ### 7. MELT AND COMBINE THE FINAL FIELDS 
-  # MF TODO: Consider adding add.Region like for plotTemporal?
-  
+
   # first determine if there are different time periods (ie years) in the Fields to be plotted
   add.Years= FALSE
   if(length(final.fields) > 1){
