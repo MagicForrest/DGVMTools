@@ -9,7 +9,7 @@
 #' Spatially aggregate a Field
 #' 
 #' Spatially aggragte all gridcells of a Field (or a data.table assuming it has columns "Lon" and "Lat"). 
-#' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon, Lat)  
+#' Can use area-weighting to take into account the different areas of gridcells (even though they are constant in Lon, Lat)  
 #'
 #' @param input.obj Field (or data.table) to be averaged  
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 

@@ -728,7 +728,8 @@ DGVMData.quantities <- list(
 ####################################################
 
 
-#' @description \code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format.  It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
+#' @description \code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format. 
+#' It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
 #' Can be produced using the companion DGVMData package. 
 #' 
 #' @format A \code{Quantity} object is an S4 class.
