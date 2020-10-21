@@ -9,7 +9,7 @@
 #' 
 #' Aggregates data with sub-annual time resolution to a coarser time resolution.  For example, going from monthly to annual. 
 #'
-#' @param input.obj data.table or Field 
+#' @param x data.table or Field 
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "mode", "median", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (also "Annual" is valid). 
@@ -22,7 +22,7 @@
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-aggregateSubannual.uncompiled <- function(input.obj,
+aggregateSubannual.uncompiled <- function(x,
                                           method = "mean",
                                           target = "Year",
                                           verbose = FALSE){
@@ -78,8 +78,8 @@ aggregateSubannual.uncompiled <- function(input.obj,
   method <- match.arg(method, c("mean", "mode", "median", "sum", "max", "min", "sd", "var", "cv"))
   method.function <- switch(method,
                             mean = mean,
-                            mode = mode,
-                            median = median,
+                            mode = stats_mode,
+                            median = stats::median,
                             sum = sum,
                             max = max,
                             min = min,
@@ -89,11 +89,11 @@ aggregateSubannual.uncompiled <- function(input.obj,
   
   
   # sort out the input object class
-  if(is.Field(input.obj)) {input.dt <- input.obj@data}
-  else if(is.data.table(input.obj)) {input.dt <- input.obj}
+  if(is.Field(x)) {input.dt <- x@data}
+  else if(is.data.table(x)) {input.dt <- x}
   
   ### Get the spatial-temporal dimensions present and determine the initial subannual resolution
-  avail.dims <- getDimInfo(input.obj)
+  avail.dims <- getDimInfo(x)
   if("Month" %in% avail.dims) initial.subannual <- "Month"
   else if("Day" %in% avail.dims) initial.subannual <- "Day"
   else if("Season" %in% avail.dims) initial.subannual <- "Season"
@@ -164,12 +164,12 @@ aggregateSubannual.uncompiled <- function(input.obj,
     
     else if("Year" %in% avail.dims) {
       warning("Aggregation to Year requested but data already are yearly so no averaging done and returning original data!")
-      return(input.obj)
+      return(x)
     }
     
     else{
       warning("Subannual aggregation requested but no subannual dimensions present, it looks like this has already been aggregated!\n Just returning the original data.")
-      return(input.obj)
+      return(x)
     }
   }
   
@@ -222,7 +222,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
     
     # IF ALREADY SEASONAL
     else if("Season" %in% avail.dims) {warning("Aggregation to Season requested but data already are already Seasonal, so no averging done and returning original data!")
-      return(input.obj)}
+      return(x)}
     
     # ELSE FAIL
     else{
@@ -250,7 +250,7 @@ aggregateSubannual.uncompiled <- function(input.obj,
 
     }
     else if("Month" %in% avail.dims) {warning("Aggregation to monthly requested but data already are already monthly, so no averging done and returning original data!")
-      return(input.obj)}
+      return(x)}
     else{
       stop("Subannual aggregation to Month requested but sub-monthly time dimension not present.  Exiting...")
     }
@@ -270,19 +270,19 @@ aggregateSubannual.uncompiled <- function(input.obj,
   if(target == "month") target <- "Month"
   
   # sort out the input object class
-  if(is.Field(input.obj)) {
-    input.obj@data <- output.dt
-    input.obj@subannual.aggregate.method <- method
-    if(method == "cv") input.obj@quant@units = "fraction"
-    if(method == "var") input.obj@quant@units = paste0("(", input.obj@quant@units, ")^2")
-    input.obj@subannual.original <- initial.subannual
-    input.obj@subannual.resolution  <- target
-    input.obj@id <- makeFieldID(source = input.obj@source,
-                                var.string = input.obj@quant@id, 
-                                sta.info = as(input.obj, "STAInfo"))
-    return(input.obj)
+  if(is.Field(x)) {
+    x@data <- output.dt
+    x@subannual.aggregate.method <- method
+    if(method == "cv") x@quant@units = "fraction"
+    if(method == "var") x@quant@units = paste0("(", x@quant@units, ")^2")
+    x@subannual.original <- initial.subannual
+    x@subannual.resolution  <- target
+    x@id <- makeFieldID(source = x@source,
+                                var.string = x@quant@id, 
+                                sta.info = as(x, "STAInfo"))
+    return(x)
   }
-  else if(is.data.table(input.obj)) {return(output.dt)}
+  else if(is.data.table(x)) {return(output.dt)}
   
 }
 
@@ -310,18 +310,18 @@ aggregateSubannual.uncompiled <- function(input.obj,
 #' field <- getField(source = test.Source, var = "mlai", year.aggregate.method = "mean")
 #' 
 #' # calculate of meteorological seasons (DJF, MAM, JJA, SON)
-#' seasonal.mean <- aggregateSubannual(input.obj = field, method = "mean", 
+#' seasonal.mean <- aggregateSubannual(x = field, method = "mean", 
 #'                                     target = "Season", verbose = TRUE)
 #' print(seasonal.mean@data)
 #' print(plotSpatial(seasonal.mean))
 #' 
 #' #  calculate annual mean
-#' annual.mean <- aggregateSubannual(input.obj = field, method = "mean", verbose = TRUE)
+#' annual.mean <- aggregateSubannual(x = field, method = "mean", verbose = TRUE)
 #' print(annual.mean@data) 
 #' print(plotSpatial(annual.mean))
 #' 
 #' #  calculate annual standard deviation
-#' annual.sd <- aggregateSubannual(input.obj = field, method = "sd", verbose = TRUE)
+#' annual.sd <- aggregateSubannual(x = field, method = "sd", verbose = TRUE)
 #' print(annual.sd@data) 
 #' print(plotSpatial(annual.sd))
 #' 

@@ -10,7 +10,7 @@
 #' 
 #' Aggregated all available years in a Field or a data.table object (with years denoted by column "Years"). 
 #'
-#' @param input.obj A Field or data.table (with a "Year" column)   
+#' @param x A Field or data.table (with a "Year" column)   
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "mode", "median", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param verbose If TRUE give some progress update about the averaging.
@@ -18,7 +18,7 @@
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-aggregateYears.uncompiled <- function(input.obj,
+aggregateYears.uncompiled <- function(x,
                                       method = "mean",
                                       verbose = FALSE){
   
@@ -30,8 +30,8 @@ aggregateYears.uncompiled <- function(input.obj,
   method <- match.arg(method, c("mean", "mode", "median", "sum", "max", "min", "sd", "var", "cv"))
   method.function <- switch(method,
                             mean = mean,
-                            mode = mode,
-                            median = median,
+                            mode = stats_mode,
+                            median = stats::median,
                             sum = sum,
                             max = max,
                             min = min,
@@ -41,15 +41,15 @@ aggregateYears.uncompiled <- function(input.obj,
   
   
   # sort out the input object class
-  if(is.Field(input.obj)) {input.dt <- input.obj@data}
-  else if(is.data.table(input.obj)) {input.dt <- input.obj}
+  if(is.Field(x)) {input.dt <- x@data}
+  else if(is.data.table(x)) {input.dt <- x}
   
   
   # Do the averaging
   if(verbose) message("Aggregating years ...")
   
   # Check the 'by' dims
-  avail.dims <- getDimInfo(input.obj)
+  avail.dims <- getDimInfo(x)
   if(!"Year" %in% avail.dims) stop("Aggregation of years requested, but year column not present.  Failing.")
   by.dims <- avail.dims[-which(avail.dims == "Year")]
   
@@ -97,18 +97,18 @@ aggregateYears.uncompiled <- function(input.obj,
   setKeyDGVM(output.dt)
   
   # sort out the input object class
-  if(is.Field(input.obj)) {
-    input.obj@data <- output.dt
-    input.obj@year.aggregate.method <- method
-    if(method == "cv") input.obj@quant@units = "fraction"
-    if(method == "var") input.obj@quant@units = paste0("(", input.obj@quant@units, ")^2")
-    input.obj@id <- makeFieldID(source = input.obj@source,
-                                var.string = input.obj@quant@id, 
-                                sta.info = as(input.obj, "STAInfo"))
+  if(is.Field(x)) {
+    x@data <- output.dt
+    x@year.aggregate.method <- method
+    if(method == "cv") x@quant@units = "fraction"
+    if(method == "var") x@quant@units = paste0("(", x@quant@units, ")^2")
+    x@id <- makeFieldID(source = x@source,
+                                var.string = x@quant@id, 
+                                sta.info = as(x, "STAInfo"))
    
-    return(input.obj)
+    return(x)
   }
-  else if(is.data.table(input.obj)) {return(output.dt)}
+  else if(is.data.table(x)) {return(output.dt)}
   
 }
 
@@ -133,12 +133,12 @@ aggregateYears.uncompiled <- function(input.obj,
 #' field <- getField(source = test.Source, var = "lai")
 #' 
 #' # calculate of mean of all years
-#' mean.allyears <- aggregateYears(input.obj = field, method = "mean", verbose = TRUE)
+#' mean.allyears <- aggregateYears(x = field, method = "mean", verbose = TRUE)
 #' print(mean.allyears@data)
 #' print(plotSpatial(mean.allyears))
 #' 
 #' #  calculate standard deviation of all years
-#' sd.allyears <- aggregateYears(input.obj = field, method = "sd", verbose = FALSE)
+#' sd.allyears <- aggregateYears(x = field, method = "sd", verbose = FALSE)
 #' print(sd.allyears@data)
 #' print(plotSpatial(sd.allyears))
 #' 

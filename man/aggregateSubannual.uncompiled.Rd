@@ -5,14 +5,14 @@
 \title{Sub-annual aggregation}
 \usage{
 aggregateSubannual.uncompiled(
-  input.obj,
+  x,
   method = "mean",
   target = "Year",
   verbose = FALSE
 )
 }
 \arguments{
-\item{input.obj}{data.table or Field}
+\item{x}{data.table or Field}
 
 \item{method}{A character string describing the method by which to aggregate the data.  Can currently be "mean", "mode", "median", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!}

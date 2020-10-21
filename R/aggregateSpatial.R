@@ -11,7 +11,7 @@
 #' Spatially aggragte all gridcells of a Field (or a data.table assuming it has columns "Lon" and "Lat"). 
 #' Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon, Lat)  
 #'
-#' @param input.obj Field (or data.table) to be averaged  
+#' @param x Field (or data.table) to be averaged  
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "mode", "median", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
 #' @param verbose If TRUE give some progress update about the averaging.
@@ -20,7 +20,7 @@
 #' @keywords internal
 #' @import data.table
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-aggregateSpatial.uncompiled <- function(input.obj,
+aggregateSpatial.uncompiled <- function(x,
                                         method = "mean",
                                         verbose = FALSE,
                                         ...){
@@ -39,8 +39,8 @@ aggregateSpatial.uncompiled <- function(input.obj,
                             weighted.sum = sum,
                             w.sum = sum,
                             sum = sum,
-                            mode = mode,
-                            median = median,
+                            mode = stats_mode,
+                            median = stats::median,
                             max = max,
                             min = min,
                             sd = stats::sd,
@@ -51,15 +51,15 @@ aggregateSpatial.uncompiled <- function(input.obj,
   if(method == "weighted.sum") method = "w.sum"
   
   # sort out the input object class
-  if(is.Field(input.obj)) {input.dt <- input.obj@data}
-  else if(is.data.table(input.obj)) {input.dt <- input.obj}
+  if(is.Field(x)) {input.dt <- x@data}
+  else if(is.data.table(x)) {input.dt <- x}
   
   
   # get the 'by' colums (these are basically the time dimensions if present)
   # check to see if Year is still a colmun name (it might have been averaged away)
   # Check the 'by' dims
   by.dims <- c()
-  avail.dims <- getDimInfo(input.obj)
+  avail.dims <- getDimInfo(x)
   for(possible.dim in list("Year","Season","Month","Day")){
     if(possible.dim %in% avail.dims) by.dims <- append(by.dims, possible.dim)
   }
@@ -120,17 +120,17 @@ aggregateSpatial.uncompiled <- function(input.obj,
   setKeyDGVM(output.dt)
   
   # sort out the input object class
-  if(is.Field(input.obj)) {
-    input.obj@data <- output.dt
-    input.obj@spatial.aggregate.method <- method
-    if(method == "cv") input.obj@quant@units = "fraction"
-    if(method == "var") input.obj@quant@units = paste0("(", input.obj@quant@units, ")^2")
-    input.obj@id <- makeFieldID(source = input.obj@source,
-                                var.string = input.obj@quant@id, 
-                                sta.info = as(input.obj, "STAInfo"))
-    return(input.obj)
+  if(is.Field(x)) {
+    x@data <- output.dt
+    x@spatial.aggregate.method <- method
+    if(method == "cv") x@quant@units = "fraction"
+    if(method == "var") x@quant@units = paste0("(", x@quant@units, ")^2")
+    x@id <- makeFieldID(source = x@source,
+                                var.string = x@quant@id, 
+                                sta.info = as(x, "STAInfo"))
+    return(x)
   }
-  else if(is.data.table(input.obj)) {return(output.dt)}
+  else if(is.data.table(x)) {return(output.dt)}
   
 }
 
@@ -158,11 +158,11 @@ aggregateSpatial.uncompiled <- function(input.obj,
 #' field <- getField(source = africa.Source, var = "cmass")
 #' 
 #' # calculate mean over gridcells and look at the resulting data table
-#' spatial.mean <- aggregateSpatial(input.obj = field, method = "mean", verbose = TRUE)
+#' spatial.mean <- aggregateSpatial(x = field, method = "mean", verbose = TRUE)
 #' print(spatial.mean@data)
 #' 
 #' # do weighted.sum and look at the resulting data table
-#' spatial.wsum <- aggregateSpatial(input.obj = field, method = "w.sum", verbose = TRUE)
+#' spatial.wsum <- aggregateSpatial(x = field, method = "w.sum", verbose = TRUE)
 #' print(spatial.wsum@data) 
 #' 
 #' # plot the weight and unweighted sums as a time series

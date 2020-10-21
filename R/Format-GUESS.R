@@ -220,7 +220,7 @@ openLPJOutputFile <- function(run,
   this.year.aggregate.method <- "none"
   if(target.sta@year.aggregate.method != "none") {
     
-    dt <- aggregateYears(input.obj = dt, method = target.sta@year.aggregate.method, verbose = verbose)
+    dt <- aggregateYears(x = dt, method = target.sta@year.aggregate.method, verbose = verbose)
     this.year.aggregate.method <- target.sta@year.aggregate.method
     
   }

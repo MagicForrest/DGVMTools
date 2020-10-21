@@ -4,10 +4,10 @@
 \alias{aggregateSpatial.uncompiled}
 \title{Spatially aggregate a Field}
 \usage{
-aggregateSpatial.uncompiled(input.obj, method = "mean", verbose = FALSE, ...)
+aggregateSpatial.uncompiled(x, method = "mean", verbose = FALSE, ...)
 }
 \arguments{
-\item{input.obj}{Field (or data.table) to be averaged}
+\item{x}{Field (or data.table) to be averaged}
 
 \item{method}{The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 "weighted.sum", "w.sum", "sum", "mode", "median", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).}
