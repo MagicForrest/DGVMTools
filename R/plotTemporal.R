@@ -255,6 +255,15 @@ plotTemporal <- function(fields,
   # Can be specified by the user, otherwise sensible defaults
   
   
+  ### LEGEND ENTRY ORDERING
+  ## Fix order of items in legend(s) by making them factors with levels corresponding to the order of the input fields
+  all.sources <- list()
+  # first loop across the fields
+  for(this.field in fields) {
+    all.sources <- append(all.sources, this.field@source@name)
+  }
+  if("Source" %in% names(data.toplot)) data.toplot[, Source := factor(Source, levels = unique(all.sources))]
+  
   
   ### If requested, just return the data
   if(!plot) return(data.toplot)

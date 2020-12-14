@@ -144,7 +144,6 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   ### LEGEND ENTRY ORDERING
   ## Fix order of items in legend(s) by making them factors with levels corresponding to the order of the input fields
-  print(data.toplot)
   all.sources <- list()
   # first loop across the fields
   for(this.field in fields) {
