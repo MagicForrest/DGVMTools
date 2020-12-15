@@ -18,7 +18,7 @@ getField_DGVMData(source, quant, target.STAInfo, file.name, verbose = FALSE)
 \item{target.sta.info}{An STAInfo object defining the spatial-temporal-annual extent over which we want the data}
 }
 \value{
-A list containing firstly the data.tablle containing the data, and secondly the STAInfo for the data that we have
+A list containing firstly the data.table containing the data, and secondly the STAInfo for the data that we have
 }
 \description{
 An internal function that reads data from an DGVMData .nc file.
