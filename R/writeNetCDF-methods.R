@@ -323,13 +323,22 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   if(length(layers) != length(x)) stop("Layers not correctly named.  The layer names are taken from the name of each element in the input list, so the elements must be named.")
   
   
-  ### MAKE DIMENSIONS
+  ### MAKE DIMENSIONS 
+  ### Note ordering! First Lon, then Lat, then Layers (if selected), then finally Time (if required)
   all.dimnames <- dimnames(x[[1]])
   all.dims <- list()
   
-  # Lon and Lat - easy-peasy
+  # Lon and Lat - easy-peasy 
   all.dims[["Lon"]] <- ncdf4::ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdf4::ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
+  
+  # Layer - only if a layer.dim.name has been specifed which mean collapse all the different layers as values along a dimension
+  if(!is.null(layer.dim.name)) {
+    
+    if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
+    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
+    
+  }
   
   # Time - only if start.date has been provided (and it not NULL)
   if(!is.null(start.date)) {
@@ -346,13 +355,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     
   }
   
-  # Layer - only if a layer.dim.name has been specifed which mean collapse all the different layers as values along a dimension
-  if(!is.null(layer.dim.name)) {
-    
-    if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
-    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
-    
-  }
+
   
   # # Time - if more than two dimensions one must be time, so hand that
   # if(length(all.dimnames) > 2 ){
