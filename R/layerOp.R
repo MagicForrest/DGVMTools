@@ -19,7 +19,7 @@
 #'  \item{\emph{Whatever function}} {Now we are into crazy territory!  You can provide any function (the actual function, not a string ) that operates on a vector of numerics and it might just work!  Works for sd, var, min and max, but your mileage may vary.}
 #'  \item{\emph{Something else?}}{Contact the author!}
 #' }
-#' @param layers The names of the layers upon which to operate (as a vector of characters).  Furthermore, one can utilise a handy a handy trick whereby any layer spcecified, 
+#' @param layers The names of the layers upon which to operate (as a vector of characters).  Furthermore, one can utilise a handy trick whereby any layer specified, 
 #' @param new.layer A single character specifying the name of the new layer, will over-write an existing layer if already present.  Will be built automatically if not specified.
 #' @param constant A numeric used for the "mulc"/"divc"/"addc"/"subc" modes
 #'

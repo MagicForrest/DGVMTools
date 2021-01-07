@@ -8,7 +8,7 @@
 #' @param x A Field or Raster* object to be written as a netCDF file.  The method can also handle a list of arrays (each array in the list represents one layer)
 #' but this is more of a technical, internal use of this method.
 #' @param filename A character specifying the name of the netCDF file to be written.
-#' @param start.date A date (as a POSIX date) for the start of the time dimension.  Can be omitted for a Field (), \emph{must} be included if you want to write 
+#' @param start.date A date (as a Date object) for the start of the time dimension.  Can be omitted for a Field, \emph{must} be included if you want to write 
 #' a RasterStack or RasterBrick with a time dimension. 
 #' @param verbose Logical, if TRUE print a bunch of progress and debug output
 #' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
@@ -19,9 +19,9 @@
 #' Should be length 1 or the number of layers in the input raster. 
 #' @param layer.dim.name A character string specifing the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 #' is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension. 
-#' @param lat.dim.name Character, the latitude dimension name. Defaults to "Lat".  
-#' @param lon.dim.name Character, the longitude dimension name. Defaults to "Lon". 
-#' @param time.dim.name Character, the time dimension name. Defaults to "Time".
+#' @param lat.dim.name Character, the latitude dimension name. Defaults to "lat".  
+#' @param lon.dim.name Character, the longitude dimension name. Defaults to "lon". 
+#' @param time.dim.name Character, the time dimension name. Defaults to "time".
 #' @param time.values The values along the time dimension (in the case of Raster*, is ignored for a Field) defined as 'days since' the 'start.date' argument.
 #' If not supplied, data is assumed not to have a time axis. In such case if the raster has multiple layers they will be interpreted  
 #' @param precision Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.
@@ -56,9 +56,9 @@ if (!isGeneric("writeNetCDF")) {
                                      source = NULL, 
                                      layer.names = NULL,
                                      layer.dim.name = NULL,
-                                     lat.dim.name = "Lat",
-                                     lon.dim.name = "Lon",
-                                     time.dim.name = "Time",
+                                     lat.dim.name = "lat",
+                                     lon.dim.name = "lon",
+                                     time.dim.name = "time",
                                      precision = "float",
                                      time.values = NULL, 
                                      ...) standardGeneric("writeNetCDF"))
@@ -73,7 +73,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   
   # make a list of arrays from the Field (one array per Layer in the Field)
-  array.list <- FieldToArray(x) 
+  array.list <- FieldToArray(x, fill.gaps = TRUE, verbose = TRUE) 
   
   # determine start date from the Field if it contains a Year dimension
   if("Year" %in% st.names | "Month" %in% st.names | "Day" %in% st.names) {
@@ -92,7 +92,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
       else {
         first.month <- sort(unique(getDimInfo(x, "values")[["Month"]]))[1]
       }
-      start.date <- as.POSIXct(as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d'))
+      start.date <- as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d')
     }
     else if("Day" %in% st.names) {
       # to find the first day, we first need to subset the first year
@@ -103,11 +103,11 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
       else {
         first.month <- sort(unique(getDimInfo(x, "values")[["Day"]]))[1]
       }
-      start.date <- as.POSIXct(as.Date(first.day-1, origin = paste0(first.year, "-01-01")))
-      
+      start.date <-as.Date(first.day-1, origin = paste0(first.year, "-01-01"))
     }
     else {
-      start.date <- as.POSIXct(as.Date(paste(first.year, "1", "1", sep = "-"), format='%Y-%m-%d'))
+      start.date <- as.Date(paste(first.year, "01", "01", sep = "-"), format='%Y-%m-%d')
+     
     }
     
   }
@@ -327,7 +327,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   ### Note ordering! First Lon, then Lat, then Layers (if selected), then finally Time (if required)
   all.dimnames <- dimnames(x[[1]])
   all.dims <- list()
-  
+ 
   # Lon and Lat - easy-peasy 
   all.dims[["Lon"]] <- ncdf4::ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdf4::ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
@@ -342,7 +342,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   
   # Time - only if start.date has been provided (and it not NULL)
   if(!is.null(start.date)) {
-    
+
     # make start date and calendar
     calendar <- "365_day" 
     time.unit <- paste("days since", start.date, "12:00:00")

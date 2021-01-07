@@ -274,12 +274,13 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
 #' @param x the data.table of a \code{\linkS4class{Field}}
 #' @param cname the column name to convert, if not set a list is returned
 #' @param invertlat start in the north
+#' @param fill.gaps logical, if TRUE fill longitude and latitude gaps (must be regularly spaced grid)
 #' @param verbose print some information
 #' @return a array or a list or arrays
 #' 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
-FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
+FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, fill.gaps = FALSE, verbose=FALSE) {
   
   Lon=Lat=Year=Month=Day=Time=variable=NULL
   
@@ -287,8 +288,8 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   else  d <- copy(x)
   
   ## get the full spatial extent
-  lon <- extract.seq(d$Lon)
-  lat <- extract.seq(d$Lat, descending=invertlat)
+  lon <- extract.seq(d$Lon, force.regular = fill.gaps)
+  lat <- extract.seq(d$Lat, force.regular = fill.gaps, descending=invertlat)
   if (verbose) {
     message(paste0("Spatial extent: Lon: ", min(lon), " ", max(lon), " (", length(lon), ")\n", 
                    "                Lat: ", min(lat), " ", max(lat), " (", length(lat), ")"))
@@ -309,17 +310,17 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
     
     # if only annual temporal resolution (no monthly or daily column)
     if(!("Month" %in% st.names) && !("Day" %in% st.names)  ) {
-
+      
       if (verbose)  message("'Year' column present.")
       time <- (sort(unique(d$Year)) * 1000) + 1
       d[, Time := Year * 1000 + 1]
       d[, Year := NULL]
-    
+      
       
     }
     ## check for monthly data
     else if("Month" %in% st.names) {
-
+      
       # lookup vector to match month to day of year (ignore leap years and use the centre of the month)
       # this could be more sophisticated 
       lookup.DoY.vector <- c() 
@@ -338,7 +339,7 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
     }
     # check if daily
     else if("Day" %in% st.names) {
-
+      
       # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
       d[, Time:= Year * 1000 + as.numeric(Day)]
       time <- sort(unique(d$Time))
@@ -349,7 +350,6 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
     }
     
   }
-  
   
   ## create the target (full) grid, represented as a data.table, which may also contain a time dimension 
   ## also set the appropriate keys
@@ -371,6 +371,59 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   ## get the desired column name(s) if none was given
   if (missing(cname)) cname <- colnames(d)[!(colnames(d) %in% c("Lon", "Lat", "Time"))]
   
+  
+  
+  ## add dummy NA values for any missing Lons or Lats
+  lons.present <- unique(d[["Lon"]])
+  lats.present <- unique(d[["Lat"]])
+  
+  # empty data.table for the extra lines 
+  dummy.dt <- data.table()
+  
+  # for each longitude
+  for(this_lon in lon) {
+    # if a lon is missing add a dummy line for it
+    if(!this_lon %in% lons.present) {
+      if(verbose) message(paste("Filling in missing lon", this_lon))
+      temp_newrow <- d[1,]
+      temp_newrow[1, Lon := this_lon]
+      for(this_layer in layers(temp_newrow)) {
+        if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
+      }
+      dummy.dt <- rbind(dummy.dt, temp_newrow)
+    }
+  }
+  
+  # for each latitude is missing for it
+  for(this_lat in lat) {
+    # if a lat is missing
+    if(!this_lat %in% lats.present) {
+      if(verbose) message(paste("Filling in missing lat", this_lat))
+      temp_newrow <- d[1,]
+      temp_newrow[1, Lat := this_lat]
+      for(this_layer in layers(temp_newrow)) {
+        if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
+      }
+      dummy.dt <- rbind(dummy.dt, temp_newrow)
+    }
+  }
+  
+  # if there are missing lons/lats, add 'em  and set keys again
+  if(nrow(dummy.dt > 0))  {
+    
+    d <- rbind(d, dummy.dt)
+    
+    # set keys on d again
+    if (is.temporal) {
+      setkey(d, Lon, Lat, Time)
+    } else {
+      setkey(d, Lon, Lat)
+    }
+    
+  }
+  
+  
+  
   ## create the array(s)
   # maybe try this faster way
   rv <- list()
@@ -379,11 +432,11 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
     
     if(is.temporal) {
       d[, append(c("Lon", "Lat", "Time"), x), with = FALSE][full.grid]
-      rv[[x]] <- reshape2::acast(d, Lon ~ Lat ~ Time, value.var=x)
+      rv[[x]] <- reshape2::acast(d, Lon ~ Lat ~ Time, value.var=x, drop = fill.gaps)
     } 
     else {
       d[, append(c("Lon", "Lat"), x), with = FALSE][full.grid]
-      rv[[x]] <- reshape2::acast(d, Lon ~ Lat, value.var=x)
+      rv[[x]] <- reshape2::acast(d, Lon ~ Lat, value.var=x, drop = fill.gaps)
     }
     
     if (invertlat)  rv[[x]] <- rv[[x]][,length(lat):1,]
@@ -403,7 +456,7 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
   #### Code above is cleaner (to my taste) and slightly slower (~15% on a small data file)
   #### but it is probably more memory efficient.  This needs to be confirmed, but memory use is a problem when writing
   #### large netCDF files and the code above might go some way towards changing that.
-  ####  In the meantime, keep the code below just in case the code above ends up horrendoudly slow on larger files
+  ####  In the meantime, keep the code below just in case the code above ends up horrendously slow on larger files
   
   
   # t1.old <- Sys.time()
