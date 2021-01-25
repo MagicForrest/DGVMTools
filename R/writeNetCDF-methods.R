@@ -24,16 +24,26 @@
 #' @param time.dim.name Character, the time dimension name. Defaults to "time".
 #' @param time.values The values along the time dimension (in the case of Raster*, is ignored for a Field) defined as 'days since' the 'start.date' argument.
 #' If not supplied, data is assumed not to have a time axis. In such case if the raster has multiple layers they will be interpreted  
-#' @param precision Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.
-#' @param ... Other arguments, not currently used
+#' @param ... Other arguments that can usefully be passed to ncdf4::ncvar_def, in particular:
+#' \itemize{
+#'  \item{compression} {Integer to define compression level when define netCDF variables (1 = a little compression, 9 = a lot of compression). 
+#'  Set to NA (default) for no compression.  Using compression forces netCDF version 4.}
+#'  \item{missval} {Numeric, for the missing value.  Default is NA which gives NaN as the missing value. NULL can be used to specify ""no missing value"
+#'  although it is not clear what that does the the resultant netcdf file in practice.  TRENDY/GCP likes -99999.0 for missing values.}
+#'  \item{prec} {Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  
+#'  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
+#'  \item{shuffle} {Logical, if TRUE turn on the shuffle filter see netCDF docs and ncdf4::ncvar_def for details}
+#'  \item{chunksize} {If set, this must be a vector of integers with a length equal to the number of dimensions in the variable. Potentially very useful 
+#'  to optimise the read and write time,  but rather advanced, see netCDF docs and ncdf4::ncvar_def for details}
+#'  }
 #' 
 #' 
 #' 
-#' These methods offers two very convienent things.  Firsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
+#' 
+#' These methods offers two very convenient things.  Firtsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
 #' convenient way to write Raster* objects as netCDF objects than writeRaster (at least in the eye's of the author).  This because is allows specifying of meta data and a time axis, 
-#' allows some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes. 
+#' some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes. 
 #' 
-#' Note that to maintain some parsimony and flexibility, the methods can write *either* a netCDF file with a time dimension *or* one with multiple variables(layers).  
 #'  
 #' 
 #' 
@@ -59,7 +69,6 @@ if (!isGeneric("writeNetCDF")) {
                                      lat.dim.name = "lat",
                                      lon.dim.name = "lon",
                                      time.dim.name = "time",
-                                     precision = "float",
                                      time.values = NULL, 
                                      ...) standardGeneric("writeNetCDF"))
 }
@@ -73,7 +82,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   
   # make a list of arrays from the Field (one array per Layer in the Field)
-  array.list <- FieldToArray(x, fill.gaps = TRUE, verbose = TRUE) 
+  array.list <- FieldToArray(x, fill.gaps = TRUE, verbose = verbose) 
   
   # determine start date from the Field if it contains a Year dimension
   if("Year" %in% st.names | "Month" %in% st.names | "Day" %in% st.names) {
@@ -128,7 +137,6 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
-              precision = precision,
               ...)
   
 })
@@ -282,7 +290,6 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
-              precision = precision,
               ...)
   
 })
@@ -290,8 +297,6 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
 
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x, filename, ...) {
-  
-  missing.fill.value <- -99999
   
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to write netCDF files.")
@@ -413,13 +418,13 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # individual layers
   if(is.null(layer.dim.name)) {  
     for(layer in layers) {
-      all.vars[[layer]] <- ncdf4::ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = long.name, prec = precision, missing.fill.value)  # standard
+      all.vars[[layer]] <- ncdf4::ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = long.name, ...)  # standard
     }
   }
   # else turn layers into a dimension
   else {
     
-    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long.name, prec = precision, missing.fill.value)  # standard
+    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long.name, ...)  # standard
     old.layers <- layers # for storing the key from dimension values to layer
     
   } 
