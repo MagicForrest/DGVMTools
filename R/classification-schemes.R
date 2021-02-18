@@ -61,7 +61,7 @@ Smith2014BiomeRules <- function(x){
   else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_Total']]) <= 2.5) {return("Dry Savanna")}
   
   # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.2 & as.numeric(x[['Lat']]) >= 54 && as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Grass']])) {return("Arctic/Alpine Tundra")}
+  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.2 & as.numeric(x[['Lat']]) >= 54 && as.numeric(x[['LAI_std_Tree']]) < 0.5 * as.numeric(x[['LAI_std_Grass']])) {return("Arctic/Alpine Tundra")}
   
   # BIOME 14 - Tall Grassland
   else if(as.numeric(x[['LAI_std_Grass']]) > 2.0) {return("Tall Grassland")}
@@ -411,10 +411,10 @@ Forrest2015MegaBiomeRules <- function(x){
   else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & as.numeric(x[['LAI_std_TropicalFractionOfTree']] )> 0.5 &  (x[['LAI_std_MaxTree']] == "TrBE" | x[['LAI_std_MaxTree']] == "TrBR" | x[['LAI_std_MaxTree']] == "TrTBR")) {return("Tropical Forest")}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & (x[['LAI_std_MaxTree']] == "BNE" | x[['LAI_std_MaxTree']] == "IBS" | x[['LAI_std_MaxTree']] == "BIBS")) {return("Boreal Forest")}
-  
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.8 & (x[['LAI_std_MaxTree']] == "BNE" | x[['LAI_std_MaxTree']] == "IBS" | x[['LAI_std_MaxTree']] == "BIBS")) {return("Boreal Forest")}
+
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & x[['LAI_std_MaxTree']] == "BNS") {return("Boreal Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.8 & x[['LAI_std_MaxTree']] == "BNS") {return("Boreal Forest")}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
   else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 &  (as.numeric(x[['LAI_std_TeBEFractionOfTree']]) > 0.5 | as.numeric(x[['LAI_std_TeBSFractionOfTree']]) > 0.5) & x[['LAI_std_MaxTree']] == "TeBE") {return("Temperate Evergreen Forest")}
@@ -438,7 +438,7 @@ Forrest2015MegaBiomeRules <- function(x){
   else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_Total']]) <= 2.5) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.5 & as.numeric(x[['Lat']]) >= 54) {return("Tundra")}
+  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.2 & as.numeric(x[['Lat']]) >= 54 && as.numeric(x[['LAI_std_Tree']]) < 0.5 * as.numeric(x[['LAI_std_Grass']])) {return("Tundra")}
   
   # BIOME 14 - Tall Grassland
   else if(as.numeric(x[['LAI_std_Grass']]) > 2.0) {return("Grasslands and Dry Shrublands")}
@@ -457,8 +457,8 @@ Forrest2015MegaBiomeRules <- function(x){
   
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
-    return(NA)
+    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ").  Returning desert as per the Lund reference script." ))
+    return("Desert")
   }
   
   
