@@ -21,7 +21,7 @@ A Field or data.table depending on the input object
 }
 \description{
 Spatially aggragte all gridcells of a Field (or a data.table assuming it has columns "Lon" and "Lat"). 
-Can use area-weighting to take into account the difference different areas of gridcells (even though they are constant in Lon, Lat)
+Can use area-weighting to take into account the different areas of gridcells (even though they are constant in Lon, Lat)
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

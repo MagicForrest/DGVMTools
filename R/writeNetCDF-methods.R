@@ -8,7 +8,7 @@
 #' @param x A Field or Raster* object to be written as a netCDF file.  The method can also handle a list of arrays (each array in the list represents one layer)
 #' but this is more of a technical, internal use of this method.
 #' @param filename A character specifying the name of the netCDF file to be written.
-#' @param start.date A date (as a POSIX date) for the start of the time dimension.  Can be omitted for a Field (), \emph{must} be included if you want to write 
+#' @param start.date A date (as a Date object) for the start of the time dimension.  Can be omitted for a Field, \emph{must} be included if you want to write 
 #' a RasterStack or RasterBrick with a time dimension. 
 #' @param verbose Logical, if TRUE print a bunch of progress and debug output
 #' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
@@ -19,21 +19,31 @@
 #' Should be length 1 or the number of layers in the input raster. 
 #' @param layer.dim.name A character string specifing the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 #' is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension. 
-#' @param lat.dim.name Character, the latitude dimension name. Defaults to "Lat".  
-#' @param lon.dim.name Character, the longitude dimension name. Defaults to "Lon". 
-#' @param time.dim.name Character, the time dimension name. Defaults to "Time".
+#' @param lat.dim.name Character, the latitude dimension name. Defaults to "lat".  
+#' @param lon.dim.name Character, the longitude dimension name. Defaults to "lon". 
+#' @param time.dim.name Character, the time dimension name. Defaults to "time".
 #' @param time.values The values along the time dimension (in the case of Raster*, is ignored for a Field) defined as 'days since' the 'start.date' argument.
 #' If not supplied, data is assumed not to have a time axis. In such case if the raster has multiple layers they will be interpreted  
-#' @param precision Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.
-#' @param ... Other arguments, not currently used
+#' @param ... Other arguments that can usefully be passed to ncdf4::ncvar_def, in particular:
+#' \itemize{
+#'  \item{compression} {Integer to define compression level when define netCDF variables (1 = a little compression, 9 = a lot of compression). 
+#'  Set to NA (default) for no compression.  Using compression forces netCDF version 4.}
+#'  \item{missval} {Numeric, for the missing value.  Default is NA which gives NaN as the missing value. NULL can be used to specify ""no missing value"
+#'  although it is not clear what that does the the resultant netcdf file in practice.  TRENDY/GCP likes -99999.0 for missing values.}
+#'  \item{prec} {Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  
+#'  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
+#'  \item{shuffle} {Logical, if TRUE turn on the shuffle filter see netCDF docs and ncdf4::ncvar_def for details}
+#'  \item{chunksize} {If set, this must be a vector of integers with a length equal to the number of dimensions in the variable. Potentially very useful 
+#'  to optimise the read and write time,  but rather advanced, see netCDF docs and ncdf4::ncvar_def for details}
+#'  }
 #' 
 #' 
 #' 
-#' These methods offers two very convienent things.  Firsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
+#' 
+#' These methods offers two very convenient things.  Firtsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
 #' convenient way to write Raster* objects as netCDF objects than writeRaster (at least in the eye's of the author).  This because is allows specifying of meta data and a time axis, 
-#' allows some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes. 
+#' some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes. 
 #' 
-#' Note that to maintain some parsimony and flexibility, the methods can write *either* a netCDF file with a time dimension *or* one with multiple variables(layers).  
 #'  
 #' 
 #' 
@@ -56,10 +66,9 @@ if (!isGeneric("writeNetCDF")) {
                                      source = NULL, 
                                      layer.names = NULL,
                                      layer.dim.name = NULL,
-                                     lat.dim.name = "Lat",
-                                     lon.dim.name = "Lon",
-                                     time.dim.name = "Time",
-                                     precision = "float",
+                                     lat.dim.name = "lat",
+                                     lon.dim.name = "lon",
+                                     time.dim.name = "time",
                                      time.values = NULL, 
                                      ...) standardGeneric("writeNetCDF"))
 }
@@ -73,7 +82,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   
   # make a list of arrays from the Field (one array per Layer in the Field)
-  array.list <- FieldToArray(x) 
+  array.list <- FieldToArray(x, fill.gaps = TRUE, verbose = verbose) 
   
   # determine start date from the Field if it contains a Year dimension
   if("Year" %in% st.names | "Month" %in% st.names | "Day" %in% st.names) {
@@ -92,7 +101,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
       else {
         first.month <- sort(unique(getDimInfo(x, "values")[["Month"]]))[1]
       }
-      start.date <- as.POSIXct(as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d'))
+      start.date <- as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d')
     }
     else if("Day" %in% st.names) {
       # to find the first day, we first need to subset the first year
@@ -103,11 +112,11 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
       else {
         first.month <- sort(unique(getDimInfo(x, "values")[["Day"]]))[1]
       }
-      start.date <- as.POSIXct(as.Date(first.day-1, origin = paste0(first.year, "-01-01")))
-      
+      start.date <-as.Date(first.day-1, origin = paste0(first.year, "-01-01"))
     }
     else {
-      start.date <- as.POSIXct(as.Date(paste(first.year, "1", "1", sep = "-"), format='%Y-%m-%d'))
+      start.date <- as.Date(paste(first.year, "01", "01", sep = "-"), format='%Y-%m-%d')
+     
     }
     
   }
@@ -128,7 +137,6 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
-              precision = precision,
               ...)
   
 })
@@ -282,7 +290,6 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
-              precision = precision,
               ...)
   
 })
@@ -290,8 +297,6 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
 
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x, filename, ...) {
-  
-  missing.fill.value <- -99999
   
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to write netCDF files.")
@@ -323,17 +328,26 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   if(length(layers) != length(x)) stop("Layers not correctly named.  The layer names are taken from the name of each element in the input list, so the elements must be named.")
   
   
-  ### MAKE DIMENSIONS
+  ### MAKE DIMENSIONS 
+  ### Note ordering! First Lon, then Lat, then Layers (if selected), then finally Time (if required)
   all.dimnames <- dimnames(x[[1]])
   all.dims <- list()
-  
-  # Lon and Lat - easy-peasy
+ 
+  # Lon and Lat - easy-peasy 
   all.dims[["Lon"]] <- ncdf4::ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdf4::ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
   
+  # Layer - only if a layer.dim.name has been specifed which mean collapse all the different layers as values along a dimension
+  if(!is.null(layer.dim.name)) {
+    
+    if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
+    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
+    
+  }
+  
   # Time - only if start.date has been provided (and it not NULL)
   if(!is.null(start.date)) {
-    
+
     # make start date and calendar
     calendar <- "365_day" 
     time.unit <- paste("days since", start.date, "12:00:00")
@@ -346,13 +360,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     
   }
   
-  # Layer - only if a layer.dim.name has been specifed which mean collapse all the different layers as values along a dimension
-  if(!is.null(layer.dim.name)) {
-    
-    if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
-    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
-    
-  }
+
   
   # # Time - if more than two dimensions one must be time, so hand that
   # if(length(all.dimnames) > 2 ){
@@ -410,13 +418,13 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # individual layers
   if(is.null(layer.dim.name)) {  
     for(layer in layers) {
-      all.vars[[layer]] <- ncdf4::ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = long.name, prec = precision, missing.fill.value)  # standard
+      all.vars[[layer]] <- ncdf4::ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = long.name, ...)  # standard
     }
   }
   # else turn layers into a dimension
   else {
     
-    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long.name, prec = precision, missing.fill.value)  # standard
+    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long.name, ...)  # standard
     old.layers <- layers # for storing the key from dimension values to layer
     
   } 
