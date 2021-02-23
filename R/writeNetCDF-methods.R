@@ -73,7 +73,16 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   
   # make a list of arrays from the Field (one array per Layer in the Field)
-  array.list <- FieldToArray(x) 
+  if(verbose) {
+    message(paste0("Calling funtion FieldToArray() on a Field with ", nrow(x@data), " spatio-temporal data points and a total of ", length(layers(x)), " layers"))
+    t1 <- Sys.time()
+  }
+  array.list <- FieldToArray(x, verbose = verbose) 
+  if(verbose) {
+    t2 <- Sys.time()
+    message("FieldToArray took:")
+    print(t2-t1)
+  }
   
   # determine start date from the Field if it contains a Year dimension
   if("Year" %in% st.names | "Month" %in% st.names | "Day" %in% st.names) {
@@ -115,8 +124,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   # grab other metadata from the ci
   this.quant <- x@quant
   this.source <- x@source
-  rm(x)
-  gc()
+  rm(x); gc()
   
   writeNetCDF(array.list, 
               filename, 
@@ -296,7 +304,6 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to write netCDF files.")
   
-  
   ### GET METADATA FROM QUANTITY IF PRESENT
   quantity.units <- "Not_defined"
   quantity.id <- "Not_defined"
@@ -330,6 +337,14 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # Lon and Lat - easy-peasy
   all.dims[["Lon"]] <- ncdf4::ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdf4::ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
+
+  # Layer - only if a layer.dim.name has been specified which mean collapse all the different layers as values along a dimension
+  if(!is.null(layer.dim.name)) {
+    
+    if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
+    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
+    
+  }
   
   # Time - only if start.date has been provided (and it not NULL)
   if(!is.null(start.date)) {
@@ -343,14 +358,6 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     days <- as.integer(round(as.numeric(all.dimnames[[3]]) - years * 1000)) 
     intervals <- (years - (as.numeric(format(start.date,"%Y")))) * 365 + days - 1
     all.dims[["Time"]] <- ncdf4::ncdim_def(name = time.dim.name, units = time.unit, vals = intervals , calendar = calendar, unlim=TRUE, create_dimvar=TRUE)
-    
-  }
-  
-  # Layer - only if a layer.dim.name has been specifed which mean collapse all the different layers as values along a dimension
-  if(!is.null(layer.dim.name)) {
-    
-    if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
-    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
     
   }
   
@@ -445,6 +452,8 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     }
     
   }
+  
+  rm(x); gc()
   
   # add meta-data if layers collapsed to a dimension
   if(!is.null(layer.dim.name)) {
