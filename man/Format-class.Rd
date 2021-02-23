@@ -31,7 +31,8 @@ aDGVM2
 This class encapsulates all the specific details of a supported model or dataset.  Thiis comprises functions to read the data off the disk, and metadata
 describing certain properties of the vegetation. From a user-perspective, these are used as the \code{format} argument to \link{defineSource} function.
 
-\code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format.  It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
+\code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format. 
+It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
 Can be produced using the companion DGVMData package.
 
 \code{GUESS} - a Format for reading standard LPJ-GUESS(-SPITFIRE) model output
@@ -48,7 +49,7 @@ class since it defines model/dataset spcific metadata and functions which should
 If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
 
 Note that the 'predefined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
-to to be available for a particular run or dataset.  You can define your own for your own data format if you, for example, want to include a new model type.
+to be available for a particular run or dataset.  You can define your own for your own data format if you, for example, want to include a new model type.
 }
 \section{Slots}{
 

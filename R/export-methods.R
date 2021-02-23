@@ -281,9 +281,9 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, fill.gaps = FALSE, verbose=FALSE) {
-  
+
   if(verbose) message("* Starting FieldToArray.")
-  
+
   Lon=Lat=Year=Month=Day=Time=variable=NULL
   
   if(verbose) message("** Copying input...")
@@ -324,8 +324,9 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, fill.gaps = FALSE, ver
     }
     ## check for monthly data
     else if("Month" %in% st.names) {
+
       if(verbose) message("** Making monthly time column ...")
-      
+
       # lookup vector to match month to day of year (ignore leap years and use the centre of the month)
       # this could be more sophisticated 
       lookup.DoY.vector <- c() 
@@ -347,8 +348,7 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, fill.gaps = FALSE, ver
     else if("Day" %in% st.names) {
       
       if(verbose) message("** Making daily time column ...")
-      
-      
+
       # note that replacing the step below with some sort of paste command slows things down a lot, faaaar better to use a numeric here
       d[, Time:= Year * 1000 + as.numeric(Day)]
       time <- sort(unique(d$Time))
@@ -360,6 +360,7 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, fill.gaps = FALSE, ver
     
   }
   
+
   ## also set the appropriate keys
   if(verbose) message("** Setting keys...")
   setKeyDGVM(d)
@@ -370,12 +371,13 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, fill.gaps = FALSE, ver
   if (missing(cname)) cname <- colnames(d)[!(colnames(d) %in% c("Lon", "Lat", "Time"))]
   
   
+
   ## add dummy NA values for any missing Lons or Lats
   lons.present <- unique(d[["Lon"]])
   lats.present <- unique(d[["Lat"]])
   
   if(verbose) message("** Checking for missing lons/lats to be filled in...")
-  
+
   # empty data.table for the extra lines 
   dummy.dt <- data.table()
   
@@ -383,13 +385,16 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, fill.gaps = FALSE, ver
   for(this_lon in lon) {
     # if a lon is missing add a dummy line for it
     if(!this_lon %in% lons.present) {
+      
       if(verbose) message(paste("  **** Filling in missing lon", this_lon))
+
       temp_newrow <- d[1,]
       temp_newrow[1, Lon := this_lon]
       for(this_layer in layers(temp_newrow)) {
         if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
       }
       dummy.dt <- rbind(dummy.dt, temp_newrow)
+
     }
   }
   
@@ -407,7 +412,34 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, fill.gaps = FALSE, ver
     }
   }
   
+  # if there are missing lons/lats, add 'em  and set keys again
+  if(nrow(dummy.dt > 0))  {
+    
+    d <- rbind(d, dummy.dt)
+    
+    # set keys on d again
+    if (is.temporal) {
+      setkey(d, Lon, Lat, Time)
+    } else {
+      setkey(d, Lon, Lat)
+    }
+    
+  }
+ 
   
+  # for each latitude is missing for it
+  for(this_lat in lat) {
+    # if a lat is missing
+    if(!this_lat %in% lats.present) {
+      if(verbose) message(paste("  **** Filling in missing lat", this_lat))
+      temp_newrow <- d[1,]
+      temp_newrow[1, Lat := this_lat]
+      for(this_layer in layers(temp_newrow)) {
+        if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
+      }
+      dummy.dt <- rbind(dummy.dt, temp_newrow)
+    }
+  }
   
   
   # if there are missing lons/lats, add 'em  and set keys again
@@ -452,5 +484,5 @@ FieldToArray <- function(x, cname=FALSE, invertlat=FALSE, fill.gaps = FALSE, ver
   names(rv) <- cname
   rm(d);gc()
   return(rv)
-  
+
 }
