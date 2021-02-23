@@ -9,16 +9,17 @@
 #' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.
 #' @param subtitle A character string to override the default subtitle.
-#' @param col.by Character string defining the aspects of the data which which should be used to set the colour of the lines in each panel,
-#'  all other aspects will be put in separate panels.  Can meaningfully take the values "Year", Layer", "Source", "Site" or "Quantity".
-#'  By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
-#'  the data are distinguished by different facet panels.  
-#' @param cols A vector of colours to control the colours of the lines (as defined by the \code{col.by} argument above).  If \code{col.by} is set to "Year",
-#' the colours are used to form a colour palette.   Otherwise the vector can/should be named to match particular colour values
+#' @param x.label,y.label Character strings for the x and y axes (optional)
+#' @param col.by,linetype.by,size.by,shape.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
+#' Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". 
+#' By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
+#' the data are distinguished by different facet panels.  To change this behaviour and colour the lines according to something different, set the "col.by" argument to one of the
+#' strings suggested above.
+#' @param cols,linetypes,sizes,shapes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
+#' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/linetype/shape/alpha values
 #' to particular Layers/Sources/Sites/Quantities.    
-#' @param col.labels A vector of character strings which are used as the labels for the lines. As for the \code{cols} arguement it must have
-#' the same length as the number of Layers/Sources/Sites/Quantities in the plot and the vectors can/should be named to match particular 
-#' labels to  particular Layers/Sources/Sites/Quantities.    
+#' @param col.labels,linetype.labels,size.labels,shape.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
+#' number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
 #' @param plotAverage Boolean, if TRUE plot the mean of all years
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
@@ -55,6 +56,20 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
                           cols = NULL,
                           col.by = "Year",
                           col.labels = waiver(),
+                          linetypes = NULL,
+                          linetype.by = NULL,
+                          linetype.labels = waiver(),
+                          sizes = NULL,
+                          size.by = NULL,
+                          size.labels = waiver(),
+                          shapes = NULL,
+                          shape.by = NULL,
+                          shape.labels = waiver(),
+                          alphas = NULL,
+                          alpha.by = NULL,
+                          alpha.labels = waiver(),
+                          y.label = NULL,
+                          x.label = NULL,
                           plotAverage = TRUE,
                           text.multiplier = NULL,
                           plot = TRUE,
@@ -110,15 +125,36 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   all.columns <- names(data.toplot)
   
   # check the col.by arguments 
-  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring lines by", col.by, "requested, but that is not available, so failing."))
- 
+  # check the "xxx.by" arguments 
+  if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring by", col.by, "requested, but that is not available, so failing."))
+  if(!missing(linetype.by) && !is.null(linetype.by) && !linetype.by %in% all.columns) stop(paste("Setting linetypes by", linetype.by, "requested, but that is not available, so failing."))
+  if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting sizes by", size.by, "requested, but that is not available, so failing."))
+  if(!missing(shape.by) && !is.null(shape.by) && !shape.by %in% all.columns) stop(paste("Setting shapes by", shape.by, "requested, but that is not available, so failing."))
+  if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting alphas by", alpha.by, "requested, but that is not available, so failing."))
+  
   # ar first assume facetting by everything except for...
-  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by)
+  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by,  linetype.by, size.by, shape.by, alpha.by)
   facet.vars <- all.columns[!all.columns %in% dontFacet]
   
   # then remove facets with only one unique value
   for(this.facet in facet.vars) {
     if(length(unique(data.toplot[[this.facet]])) == 1) facet.vars <- facet.vars[!facet.vars == this.facet]
+  }
+  
+  
+  ### LEGEND ENTRY ORDERING
+  ## Fix order of items in legend(s) by making them factors with levels corresponding to the order of the input fields
+  all.sources <- list()
+  # first loop across the fields
+  for(this.field in fields) {
+    all.sources <- append(all.sources, this.field@source@name)
+  }
+  if("Source" %in% names(data.toplot)) data.toplot[, Source := factor(Source, levels = unique(all.sources))]
+  
+  
+  ### 7. MAKE THE Y-AXIS LABEL
+  if(is.null(y.label)) {
+    y.label <- makeYAxis(final.fields)
   }
   
   ### MATCH LAYER COLOUR 
@@ -141,33 +177,35 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   #### MAKE LIST OF QUANTITIES AND UNITS FOR Y LABEL
   
-  unit.str <- list()
-  quant.str <- list()
-  id.str <- list()
-  for(this.field in final.fields) {
-    
-    # pull out the unit string, id and full name string
-    quant <- this.field@quant
-    unit.str <- append(unit.str, quant@units)
-    quant.str <- append(quant.str, quant@name)
-    id.str <- append(id.str, quant@id)
-    
-  }
+  ### DEPRECATED BY CALL TO makeYAxis() above, but some functionality might be needed to keep for now.
   
-  # check the units
-  if(length(unique(unit.str)) == 1){
-    unit.str <- unique(unit.str)
-  }
-  else {
-    unit.str <- paste(unique(unit.str), collapse = ", ")
-    warning("Quants to be plotted have non-identical units in plotSeasonal().")
-  }
+  # unit.str <- list()
+  # quant.str <- list()
+  # id.str <- list()
+  # for(this.field in final.fields) {
+  #   
+  #   # pull out the unit string, id and full name string
+  #   quant <- this.field@quant
+  #   unit.str <- append(unit.str, quant@units)
+  #   quant.str <- append(quant.str, quant@name)
+  #   id.str <- append(id.str, quant@id)
+  #   
+  # }
+  # 
+  # # check the units
+  # if(length(unique(unit.str)) == 1){
+  #   unit.str <- unique(unit.str)
+  # }
+  # else {
+  #   unit.str <- paste(unique(unit.str), collapse = ", ")
+  #   warning("Quants to be plotted have non-identical units in plotSeasonal().")
+  # }
+  # 
+  # # check the strings
+  # if(length(unique(quant.str)) == 1){ quant.str <- unique(quant.str) }
+  # else{ quant.str <- paste(id.str, sep = ", ", collapse = ", ") }
   
-  # check the strings
-  if(length(unique(quant.str)) == 1){ quant.str <- unique(quant.str) }
-  else{ quant.str <- paste(id.str, sep = ", ", collapse = ", ") }
   
-
   ### MAKE A DESCRIPTIVE TITLE IF ONE HAS NOT BEEN SUPPLIED
   if(missing(title) || missing(subtitle)) {
     titles <- makePlotTitle(final.fields)  
@@ -180,35 +218,61 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   # return the data if plot = FALSE
   if(!plot) return(data.toplot)
   
- 
+  
   ###### MAKE THE PLOT ######
   
-  # basic plot and colour scale
-  p <- ggplot(as.data.frame(data.toplot), aes(get(subannual.dimension), Value, colour = get(col.by), group = interaction(Year, get(col.by))), alpha = alpha) + geom_line(alpha = alpha)
-  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
+  # basic plot 
+  if("Year" %in% dim.names) p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", colour = col.by, linetype = linetype.by, group = interaction("Year", col.by)), alpha = alpha)
+  else p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", colour = col.by, linetype = linetype.by, size = size.by, alpha = alpha.by, shape = shape.by), alpha = alpha) 
   
+  # build arguments for 'fixed' aesthetic to geom_line
+  aes.args <- list(data = data.toplot, alpha = alpha)
+  if(!missing(sizes) && is.null(size.by)) aes.args[["size"]] <- sizes
+  if(!missing(cols) && is.null(col.by)) aes.args[["colour"]] <- cols
+  if(!missing(alphas) && is.null(alpha.by)) aes.args[["alpha"]] <- alphas
+  if(!missing(linetypes) && is.null(linetype.by)) aes.args[["linetype"]] <- linetypes
+  if(!missing(shapes) && is.null(shape.by)) aes.args[["shape"]] <- shapes
+  
+  # call geom_line (with fixed aesthetics define above)
+  #if(!points) 
+  p <- p + do.call(geom_line, aes.args)
+  #else p <- p + do.call(geom_point, aes.args)
+  
+  # lines with aesthetics 
+  #p <- p + geom_line(alpha = alpha)
+  
+  
+  # line formatting
+  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
+  if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
+  if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
+  if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
+
+ 
   # if colouring by Year add a continuous scale (special case)
   if(!is.null(col.by) && col.by == "Year") {
     p <- p + scale_color_gradientn(colours = viridis::viridis(100), name = "Year")
     if(plotAverage) {
-         p <- p + stat_summary(aes(group=col.by, linetype = "mean year"), fun=mean, geom="line", size = 1)
-         p <- p + scale_linetype_manual(values=c("mean year"="longdash"), name = element_blank())
+      p <- p + stat_summary(aes(group=col.by, linetype = "mean year"), fun=mean, geom="line", size = 1)
+      p <- p + scale_linetype_manual(values=c("mean year"="longdash"), name = element_blank())
     }
   }
   # else colour discretely
   else {
-    p <- p + labs(colour=col.by)
-
+    #p <- p + labs(colour=col.by)
+    
+    p <- p + theme(legend.title=element_blank(), legend.key.size = unit(2, 'lines'))
+    
     if(plotAverage) {
- 
-        # get the colours to colour the points by
-        g <- ggplot_build(p)
-        extracted.cols <- unique(g$data[[1]][["colour"]])
-       
-        # add the mean stat and the fill scale
-        p <- p + stat_summary(aes(group=get(col.by), fill = get(col.by)), fun=mean, geom="point", color="black", shape = 21, size = 2)
-        p <- p + scale_fill_manual(values =extracted.cols, name = "Mean year", labels = col.labels)
-     
+      
+      # get the colours to colour the points by
+      g <- ggplot_build(p)
+      extracted.cols <- unique(g$data[[1]][["colour"]])
+      
+      # add the mean stat and the fill scale
+      p <- p + stat_summary(aes(group=get(col.by), fill = get(col.by)), fun=mean, geom="point", color="black", shape = 21, size = 2)
+      p <- p + scale_fill_manual(values =extracted.cols, name = "Mean year", labels = col.labels)
+      
     }
   }
   
@@ -217,7 +281,8 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(subannual.dimension == "Month") p <- p + scale_x_continuous(breaks = 1:12, labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep","Oct","Nov","Dec"))
   
   # set the title
-  p <- p + labs(title = title, subtitle = subtitle,  y = paste(quant.str, " (", unit.str, ")", sep = ""), x = subannual.dimension)
+  #p <- p + labs(title = title, subtitle = subtitle,  y = paste(quant.str, " (", unit.str, ")", sep = ""), x = subannual.dimension)
+  p <- p + labs(title = title, subtitle = subtitle,  y = y.label, x = subannual.dimension)
   p <- p + theme(plot.title = element_text(hjust = 0.5),
                  plot.subtitle = element_text(hjust = 0.5))
   

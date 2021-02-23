@@ -15,7 +15,7 @@
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param verbose A logical, set to true to give progress/debug information
-#' @return A list containing firstly the data.tablle containing the data, and secondly the STAInfo for the data that we have
+#' @return A list containing firstly the data.table containing the data, and secondly the STAInfo for the data that we have
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 getField_DGVMData <- function(source,
@@ -728,7 +728,8 @@ DGVMData.quantities <- list(
 ####################################################
 
 
-#' @description \code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format.  It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
+#' @description \code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format. 
+#' It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
 #' Can be produced using the companion DGVMData package. 
 #' 
 #' @format A \code{Quantity} object is an S4 class.
