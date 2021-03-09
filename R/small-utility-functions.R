@@ -16,6 +16,20 @@
 "%/0%" <- function(x,y) ifelse(y==0,0,base::"/"(x,y))
 
 
+#' Statistical mode
+#' 
+#' Calculate the statistical mode with is strangely missing from base R.  In a tie it returns the first of the most common values
+#' encountered in the original vector.
+#' 
+#' @param x vector from which to find the most common value
+#' 
+#' @keywords internal
+#' @return The mode, ie the most common value. In case of ties the return is first in the original vector
+#' 
+stats_mode <- function(x) {
+  unique_x <- unique(x)
+  unique_x[which.max(tabulate(match(x, unique_x)))]
+}
 
 
 ######## SET KEY ON DATA TABLE USED TO STORE VEG INFORMATION

@@ -29,9 +29,9 @@ getField(
 
 \item{var}{The quantity (either a \code{Quantity} or a string containing its \code{id})}
 
-\item{first.year}{The first year (as a numeric) of the data to be return}
+\item{first.year}{The first year (as a numeric) of the data to be returned}
 
-\item{last.year}{The last year (as a numeric) of the data to be return}
+\item{last.year}{The last year (as a numeric) of the data to be returned}
 
 \item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
@@ -41,11 +41,11 @@ See \code{\link{aggregateYears}}}
 
 \item{spatial.extent.id}{A character string to give an identifier for the spatial extent this ModelField covers.}
 
-\item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
+\item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatial aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
 "weighted.sum"/"w.sum", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 See \code{\link{aggregateSpatial}}}
 
-\item{subannual.resolution}{A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".}
+\item{subannual.resolution}{A character string specifying the subannual resolution that you want.  Can be "Year", "Month" or "Day".}
 
 \item{subannual.original}{A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 Can be "Year", "Month" or "Day".  Currently ignored.}
@@ -97,7 +97,7 @@ Given a \code{Source} object and a \code{Quantity} object, return an appropriate
 spatial, temporal and annual cropping.
 }
 \details{
-Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
+Note that because there are three types of aggregating available, the resulting \code{Field} object can have a wide select of spatio-temporal dimensions.
 To check what dimensions you have you can use \code{\link{getDimInfo}}
 }
 \seealso{

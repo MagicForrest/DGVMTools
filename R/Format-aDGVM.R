@@ -515,7 +515,7 @@ getDailyField_aDGVM <- function(run,
   # handle aggregation for fire and the final subannual resolution label 
   final.subannual <- "Day"
   if(file.substring == "Fire") {
-    dt <- aggregateSubannual(input.obj = dt, method = target.sta@subannual.aggregate.method, target = target.sta@subannual.resolution)
+    dt <- aggregateSubannual(x = dt, method = target.sta@subannual.aggregate.method, target = target.sta@subannual.resolution)
     final.subannual <- target.sta@subannual.resolution
   }
   else if(file.substring == "Size"){

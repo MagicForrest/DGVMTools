@@ -15,7 +15,7 @@ layerOp(x, operator, layers, new.layer, constant = 1)
  \item{"mean" (or "average")} {Average the layers, can apply to any number of layers}
  \item{"*" (or "multiply" or "product")} {Multiply the layers, can apply to any number of layers}
  \item{"-" (or "subtract" or "minus")} {Subtract one layer from another. Requires exactly two layers to be specified, subtracts the second from the first, ie. layer1 - layer 2.}
- \item{"/" (or "divide" or "through")} {Divide one layer by another. Nore this does 'safe division' which returns zero if the denomination is zero. Requires exactly two layers to be specified, divides the second by the first, ie. layer1 / layer 2.}
+ \item{"/" (or "divide" or "through")} {Divide one layer by another. Nore this does 'safe division' which returns zero if the denomination is zero. Requires exactly two layers to be specified, divides the first by the second, ie. layer1 / layer 2.}
  \item{"max.layer"} {Gets the layer with the maximum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the max.}
  \item{"min.layer"} {Gets the layer with the minimum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the min.}
  \item{"mulc"/"divc"/"addc"/"subc"} {Multiplies, divides, adds or subtracts the layer with a numeric value in the "constant" argument}
@@ -25,7 +25,7 @@ layerOp(x, operator, layers, new.layer, constant = 1)
  \item{\emph{Something else?}}{Contact the author!}
 }}
 
-\item{layers}{The names of the layers upon which to operate (as a vector of characters).  Furthermore, one can utilise a handy a handy trick whereby any layer spcecified,}
+\item{layers}{The names of the layers upon which to operate (as a vector of characters).  Furthermore, one can utilise a handy trick whereby any layer specified,}
 
 \item{new.layer}{A single character specifying the name of the new layer, will over-write an existing layer if already present.  Will be built automatically if not specified.}
 

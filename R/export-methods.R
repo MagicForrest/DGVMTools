@@ -274,21 +274,30 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
 #' @param x the data.table of a \code{\linkS4class{Field}}
 #' @param cname the column name to convert, if not set a list is returned
 #' @param invertlat start in the north
+#' @param fill.gaps logical, if TRUE fill longitude and latitude gaps (must be regularly spaced grid)
 #' @param verbose print some information
 #' @return a array or a list or arrays
 #' 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
+
+
 FieldToArray <- function(x, start.date = NULL, calendar = "365_day", cname=FALSE, invertlat=FALSE, verbose=FALSE) {
+
+  
+  
+  if(verbose) message("* Starting FieldToArray.")
   
   Lon=Lat=Year=Month=Day=Time=variable=NULL
   
-  if(is.Field(x) || is.Comparison(x)) d <- copy(x@data)
+  if(verbose) message("** Copying input...")
+    if(is.Field(x) || is.Comparison(x)) d <- copy(x@data)
   else  d <- copy(x)
+  if(verbose) message("** ...done.")
   
   ## get the full spatial extent
-  lon <- extract.seq(d$Lon)
-  lat <- extract.seq(d$Lat, descending=invertlat)
+  lon <- extract.seq(d$Lon, force.regular = fill.gaps)
+  lat <- extract.seq(d$Lat, force.regular = fill.gaps, descending=invertlat)
   if (verbose) {
     message(paste0("Spatial extent: Lon: ", min(lon), " ", max(lon), " (", length(lon), ")\n", 
                    "                Lat: ", min(lat), " ", max(lat), " (", length(lat), ")"))
@@ -304,6 +313,7 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", cname=FALSE
   # if temporal, make a Time column and define the values for it in the fullgrid (see below)
   if(is.temporal) {
     
+
     # old way, label time axis based on codes
     # keeping this method to be keep the is.array method valid, writing netCDF should do the old way with a start date below
     if(missing(start.date) || is.null(start.date)) {
@@ -455,6 +465,7 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", cname=FALSE
         stop("\"proleptic_gregorian\" calendar not yet implemented for FieldToArray")
       }
       
+
       # make axis values
       time <- sort(unique(d$Time))
       
@@ -462,89 +473,101 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", cname=FALSE
     
   }
   
-  
-  ## create the target (full) grid, represented as a data.table, which may also contain a time dimension 
+
   ## also set the appropriate keys
-  if (is.temporal) {
-    full.grid <- data.table(Lon=rep(rep(lon, length(lat)), length(time)),
-                            Lat=rep(rep(lat, each=length(lon)), length(time)),
-                            Time=rep(time, each=length(lon) * length(lat)))                     
-    setkey(full.grid, Lon, Lat, Time)
-    setkey(d, Lon, Lat, Time)
-  } else {
-    full.grid <- data.table(Lon=rep(lon, length(lat)),
-                            Lat=rep(lat, each=length(lon)))
-    setkey(full.grid, Lon, Lat)
-    setkey(d, Lon, Lat)
-  }
-  
-  
+  if(verbose) message("** Setting keys...")
+  setKeyDGVM(d)
+  if(verbose) message("** ... done.")
+
   
   ## get the desired column name(s) if none was given
   if (missing(cname)) cname <- colnames(d)[!(colnames(d) %in% c("Lon", "Lat", "Time"))]
   
-  ## create the array(s)
-  # maybe try this faster way
-  rv <- list()
-  #t1.new <- Sys.time()
-  for(x in cname) {
-    
-    if(is.temporal) {
-      d[, append(c("Lon", "Lat", "Time"), x), with = FALSE][full.grid]
-      rv[[x]] <- reshape2::acast(d, Lon ~ Lat ~ Time, value.var=x)
-    } 
-    else {
-      d[, append(c("Lon", "Lat"), x), with = FALSE][full.grid]
-      rv[[x]] <- reshape2::acast(d, Lon ~ Lat, value.var=x)
+  
+
+  ## add dummy NA values for any missing Lons or Lats
+  lons.present <- unique(d[["Lon"]])
+  lats.present <- unique(d[["Lat"]])
+  
+  if(verbose) message("** Checking for missing lons/lats to be filled in...")
+
+  # empty data.table for the extra lines 
+  dummy.dt <- data.table()
+  
+  # for each longitude
+  for(this_lon in lon) {
+    # if a lon is missing add a dummy line for it
+    if(!this_lon %in% lons.present) {
+      
+      if(verbose) message(paste("  **** Filling in missing lon", this_lon))
+
+      temp_newrow <- d[1,]
+      temp_newrow[1, Lon := this_lon]
+      for(this_layer in layers(temp_newrow)) {
+        if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
+      }
+      dummy.dt <- rbind(dummy.dt, temp_newrow)
+
     }
-    
-    if (invertlat)  rv[[x]] <- rv[[x]][,length(lat):1,]
-    
   }
   
-  # debug stuff
-  #t2.new <- Sys.time()
-  #print("new way:")
-  #print(t2.new -t1.new)
-  #print(str(rv))
+  # for each latitude is missing for it
+  for(this_lat in lat) {
+    # if a lat is missing
+    if(!this_lat %in% lats.present) {
+      if(verbose) message(paste("  **** Filling in missing lat", this_lat))
+      temp_newrow <- d[1,]
+      temp_newrow[1, Lat := this_lat]
+      for(this_layer in layers(temp_newrow)) {
+        if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
+      }
+      dummy.dt <- rbind(dummy.dt, temp_newrow)
+    }
+  }
   
+  # if there are missing lons/lats, add 'em  and set keys again
+  if(nrow(dummy.dt > 0))  {
+    
+    d <- rbind(d, dummy.dt)
+    
+    # set keys on d again
+    if(verbose) message("**** ... setting keys again ...")
+    setKeyDGVM(d)
+    if(verbose) message("** ... done.")
+ 
+  } else {
+    if(verbose) message("** ... no missing lons or lats found, done.")
+  }
+  
+  
+  ### NOTE:  At one point I tried doing with with a for look instead of the lapply below in an attempt to save memory.  
+  ###        It didn't help.  But note that I have remove the "full.grid" which was in Joerg's initial implementation.  
+  ###        I think by setting "fill = NA" below one can avoid the need for it.
+  if(verbose) message("** Producing array(s) from data.table (most time-consuming step) ...")
+  t1  <- Sys.time()
+  rv <- lapply(cname, function(x) {
+    if(verbose) message(paste0(" **** Doing layer ", x))
+    if (is.temporal) {
+       # this produces an array with 3 dimensions corresponding to Lon, Lat and Time in the field and populates, 
+       # leaving NA's where there is no data
+       rv <- reshape2::acast(d, Lon ~ Lat ~ Time, value.var=x,  drop = !fill.gaps, fill = NA)
+       if (invertlat)      rv <- rv[,length(lat):1,]
+    } else {
+      # as above but only two dimensions 
+      rv <- reshape2::acast(d, Lon ~ Lat, value.var=x,  drop = !fill.gaps, fill = NA)
+      if (invertlat)  rv <- rv[,length(lat):1]
+    }
+    return(rv)
+  })
+  t2<- Sys.time()
+  if(verbose) {
+    message("** ... done!  Time taken:")
+    print(t2 -t1)
+  }
+
+  # tidy things up and return the array/list of arrays
+  names(rv) <- cname
+  rm(d);gc()
   return(rv)
-  
-  
-  #### Old way programmed by Joerg.   
-  #### Code above is cleaner (to my taste) and slightly slower (~15% on a small data file)
-  #### but it is probably more memory efficient.  This needs to be confirmed, but memory use is a problem when writing
-  #### large netCDF files and the code above might go some way towards changing that.
-  ####  In the meantime, keep the code below just in case the code above ends up horrendoudly slow on larger files
-  
-  
-  # t1.old <- Sys.time()
-  # rv <- lapply(cname, function(x) {
-  #   if (is.temporal) {
-  #   
-  #     d <- d[full.grid]
-  #     
-  #     rv <- reshape2::acast(d, Lon ~ Lat ~ Time, value.var=x)
-  #     if (invertlat)
-  #       rv <- rv[,length(lat):1,]
-  #   } else {
-  #   
-  #     d <- d[full.grid]
-  #    
-  #     rv <- reshape2::acast(d, Lon ~ Lat, value.var=x)
-  #     if (invertlat)
-  #       rv <- rv[,length(lat):1]
-  #   }
-  #   return(rv)
-  # })
-  # t2.old <- Sys.time()
-  # print("old way:")
-  # print(t2.old -t1.old)
-  # 
-  # if (length(rv) == 1)
-  #   return(rv[[1]])
-  # 
-  # names(rv) <- cname
-  # return(rv)
-  
+
 }

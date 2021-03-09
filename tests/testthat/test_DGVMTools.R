@@ -220,10 +220,10 @@ context("Aggregations")
 
 # subannual to monthly
 GUESS.Field.monthly.mean.1 <- getField(GUESS.Europe.test.Source, "mlai", subannual.aggregate.method = "mean", subannual.resolution = "Year")
-GUESS.Field.monthly.mean.2 <- aggregateSubannual(input.obj = GUESS.mlai.Field.full, method = "mean", target = "Year")
+GUESS.Field.monthly.mean.2 <- aggregateSubannual(x = GUESS.mlai.Field.full, method = "mean", target = "Year")
 # subannual to seasonal
 GUESS.Field.seasonal.mean.1 <- getField(GUESS.Europe.test.Source, "mlai", subannual.aggregate.method = "mean", subannual.resolution = "Season")
-GUESS.Field.seasonal.mean.2 <- aggregateSubannual(input.obj = GUESS.mlai.Field.full, method = "mean", target = "Season")
+GUESS.Field.seasonal.mean.2 <- aggregateSubannual(x = GUESS.mlai.Field.full, method = "mean", target = "Season")
 # yearly
 GUESS.Field.yearly.mean.1 <- getField(GUESS.Europe.test.Source, "mlai", year.aggregate.method = "mean")
 GUESS.Field.yearly.mean.2 <- aggregateYears(GUESS.mlai.Field.full, "mean")

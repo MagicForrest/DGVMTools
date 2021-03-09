@@ -14,7 +14,8 @@ Certain fractions and quantities should have been pre-calculated.}
 Biomes code (1-17, ordering as in Smith et al 2014 Figure)
 }
 \description{
-Based on LAI only, see paper for details.
+Based on LAI only, see paper for details.  Note that the code here follows the actual script used at Lund, rather than the table in the paper
+which doesn't quite give the whole picture.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
