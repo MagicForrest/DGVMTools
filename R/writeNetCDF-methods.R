@@ -10,6 +10,7 @@
 #' @param filename A character specifying the name of the netCDF file to be written.
 #' @param start.date A date (as a Date object) for the start of the time dimension.  Can be omitted for a Field, \emph{must} be included if you want to write 
 #' a RasterStack or RasterBrick with a time dimension. 
+#' @param calendar Character, describing the calendar to be used (required for a  Raster*,  optional for a Field), can currently be "standard" or "365_day" (default), 
 #' @param verbose Logical, if TRUE print a bunch of progress and debug output
 #' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
 #' if you want to use different meta-data for a Field just alter the Quantity object in the Field object before you call writeNetCDF)
@@ -70,6 +71,7 @@ if (!isGeneric("writeNetCDF")) {
                                      lon.dim.name = "lon",
                                      time.dim.name = "time",
                                      time.values = NULL, 
+                                     calendar = "365_day",
                                      ...) standardGeneric("writeNetCDF"))
 }
 
@@ -81,54 +83,65 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   st.names <- getDimInfo(x)
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   
+
+  
+  # determine start.date if it is not specified
+  if(missing(start.date)  || is.null(start.date)) {
+    
+    # determine start date from the Field if it contains a Year dimension
+    if("Year" %in% st.names | "Month" %in% st.names | "Day" %in% st.names) {
+      
+      # easy to get first year
+      if("Year" %in% st.names) first.year <- sort(unique(getDimInfo(x, "values")[["Year"]]))[1]
+      else first.year <- 01
+      
+      # now check for either a Month or Day dimension
+      if("Month" %in% st.names) {
+        # for first month, we first need to subset the first year
+        if("Year" %in% st.names) {
+          first.year.Field <- selectYears(x, first.year, first.year)
+          first.month <- sort(unique(getDimInfo(first.year.Field, "values")[["Month"]]))[1]
+        }
+        else {
+          first.month <- sort(unique(getDimInfo(x, "values")[["Month"]]))[1]
+        }
+        start.date <- as.Date(as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d'))
+      }
+      else if("Day" %in% st.names) {
+        # to find the first day, we first need to subset the first year
+        if("Year" %in% st.names) {
+          first.year.Field <- selectYears(x, first.year, first.year)
+          first.day <- sort(unique(getDimInfo(first.year.Field, "values")[["Day"]]))[1]
+        }
+        else {
+          first.month <- sort(unique(getDimInfo(x, "values")[["Day"]]))[1]
+        }
+        start.date <- as.DAte(as.Date(first.day-1, origin = paste0(first.year, "-01-01")))
+        
+      }
+      else {
+        start.date <- as.Date(as.Date(paste(first.year, "1", "1", sep = "-"), format='%Y-%m-%d'))
+      }
+      
+    }
+    
+  }
+  
+  
   # make a list of arrays from the Field (one array per Layer in the Field)
+  # note that the labelling along the time dimension of the array(s) should correspond to "days since start.date", respecting the calendar argument 
   if(verbose) {
     message(paste0("Calling funtion FieldToArray() on a Field with ", nrow(x@data), " spatio-temporal data points and a total of ", length(layers(x)), " layers"))
     t1 <- Sys.time()
   }
-  array.list <- FieldToArray(x, fill.gaps = TRUE, verbose = verbose) 
+  array.list <- FieldToArray(x, start.date = start.date, calendar = calendar) 
   if(verbose) {
     t2 <- Sys.time()
     message("FieldToArray took:")
     print(t2-t1)
-  }
-
-  # determine start date from the Field if it contains a Year dimension
-  if("Year" %in% st.names | "Month" %in% st.names | "Day" %in% st.names) {
-    
-    # easy to get first year
-    if("Year" %in% st.names) first.year <- sort(unique(getDimInfo(x, "values")[["Year"]]))[1]
-    else first.year <- 01
-  
-    # now check for either a Month or Day dimension
-    if("Month" %in% st.names) {
-      # for first month, we first need to subset the first year
-      if("Year" %in% st.names) {
-        first.year.Field <- selectYears(x, first.year, first.year)
-        first.month <- sort(unique(getDimInfo(first.year.Field, "values")[["Month"]]))[1]
-      }
-      else {
-        first.month <- sort(unique(getDimInfo(x, "values")[["Month"]]))[1]
-      }
-      start.date <- as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d')
-    }
-    else if("Day" %in% st.names) {
-      # to find the first day, we first need to subset the first year
-      if("Year" %in% st.names) {
-        first.year.Field <- selectYears(x, first.year, first.year)
-        first.day <- sort(unique(getDimInfo(first.year.Field, "values")[["Day"]]))[1]
-      }
-      else {
-        first.month <- sort(unique(getDimInfo(x, "values")[["Day"]]))[1]
-      }
-      start.date <-as.Date(first.day-1, origin = paste0(first.year, "-01-01"))
-    }
-    else {
-      start.date <- as.Date(paste(first.year, "01", "01", sep = "-"), format='%Y-%m-%d')
-     
-    }
-    
-  }
+  } 
+ 
+ 
   
   # grab other metadata from the ci
   this.quant <- x@quant
@@ -145,6 +158,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
+              calendar = calendar,
               ...)
   
 })
@@ -155,6 +169,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
   
   if(is.null(quantity) || missing(quantity)) stop("When calling a writeNetCDF() on a raster you *need* to pass in a quantity object supply metadata. \n Fortunately the is easy to define if you don't have one, see Quantity-class")
   if(is.null(layer.names) || missing(layer.names)) stop("When calling a writeNetCDF() on a raster you *need* to provide a 'layer.names' argument to determine how to name the layers.")
+  
   
   # check input arguments and the number of layers in the input raster to determine the structure of the netCDF file that we should be building
   
@@ -228,9 +243,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
       # add a new dimensinsion for the time info
       if(!is.null(start.date)) {
         dim(this.array) <- append(dim(this.array),1)
-        start.year <- as.numeric(format(start.date,"%Y"))
-        start.day <- as.numeric(format(start.date,"%d")) 
-        dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = (start.year * 1000) + start.day)
+        dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = 0)
       }
       else{
         dimnames(this.array) <- list(lon = lon.list, lat = lat.list)
@@ -253,34 +266,81 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     this.array <- aperm(raster::as.array(x), c(2,1,3))
     this.array <- this.array[, dim(this.array)[2]:1, ]
     
-    # make the time dimension values
-    # maybe make this more vectorised and elegant
-    time.list <- c()
-    start.year <- as.numeric(format(start.date,"%Y"))
-    start.day <- as.numeric(format(start.date,"%d")) 
+    # # make the time dimension values
+    # # maybe make this more vectorised and elegant
+    # time.list <- c()
+    # start.year <- as.numeric(format(start.date,"%Y"))
+    # start.day <- as.numeric(format(start.date,"%j")) 
+    # 
+    # for(counter in 1:(raster::nlayers(x))) {
+    #   
+    #   # calculate how may days since the start of the first year
+    #   ndays.since.start <- time.values[counter] + start.day
+    #   
+    #   # calculate the number of complete years and the year of this layer
+    #   # *** Assuming 365 day calendar here
+    #   year.length <- 365
+    #   nyears <- ndays.since.start %/% year.length 
+    #   final.year <- nyears + start.year
+    #   
+    #   # Calculate the number of days into that year
+    #   # the while leap calendat thing will be even more complicated here
+    #   final.day <- ndays.since.start %% year.length
+    #   
+    #   
+    #   final.date <- (final.year * 1000) + final.day
+    #   time.list <- append(time.list, as.character(final.date))
+    #   
+    # }
+    # 
+    # print(time.list)
+    # time.list2 <- c()
+    # for(counter in 1:(raster::nlayers(x))) {
+    #   
+    #   # easy, use fixed year length
+    #   if(calendar == "365_day") {
+    #     
+    #     year.length <- 365
+    #     
+    #     # calculate how may days since the start of the first year
+    #     ndays.since.start <- time.values[counter] + start.day
+    #     
+    #     # calculate the number of complete years and the year of this layer
+    #     nyears <- ndays.since.start %/% year.length 
+    #     this.year <- nyears + start.year
+    #     
+    #     # Calculate the number of days into that year
+    #     this.day.of.year <- ndays.since.start %% year.length
+    #     
+    #     
+    #     this.data.numeric_code <- (this.year * 1000) + this.day.of.year
+    #     time.list2 <- append(time.list2, as.character(this.data.numeric_code))
+    #     
+    #   }
+    #   
+    #   # easy, use standard R Date arithmetic
+    #   else if(calendar == "standard") {
+    #     
+    #     # calculate this date based on the interval
+    #     this.date <- start.date + time.values[counter]
+    #     
+    #     # calculate the numeric code by extracting the year and day of year
+    #     this.data.numeric_code <- (as.numeric(format(this.date,"%Y")) * 1000) + as.numeric(format(this.date,"%j"))
+    #     
+    #     # save to the list
+    #     time.list2 <- append(time.list2, as.character(this.data.numeric_code))
+    #   }
+    #   
+    #   else {
+    #     stop(paste0("Calendar ", calendar, " not currently supported."))
+    #   }
+    #   
+      
+    # }
     
-    for(counter in 1:(raster::nlayers(x))) {
-      
-      # calculate how may days since the start of the first year
-      ndays.since.start <- time.values[counter] + start.day
-      
-      # calculate the number of complete years and the year of this layer
-      # *** Assuming 365 day calendar here
-      year.length <- 365
-      nyears <- ndays.since.start %/% year.length 
-      final.year <- nyears + start.year
-      
-      # Calculate the number of days into that year
-      # the while leap calendat thing will be even more complicated here
-      final.day <- ndays.since.start %% year.length
-      
-      
-      final.date <- (final.year * 1000) + final.day
-      time.list <- append(time.list, as.character(final.date))
-      
-    }
+    # print(time.list2)
     
-    dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = time.list)
+    dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = time.values)
     array.list[[layer.names[1]]] <- this.array
     rm(this.array)
     gc()
@@ -298,6 +358,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
+              calendar = calendar,
               ...)
   
 })
@@ -335,12 +396,12 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   if(length(layers) != length(x)) stop("Layers not correctly named.  The layer names are taken from the name of each element in the input list, so the elements must be named.")
   
   
-  ### MAKE DIMENSIONS 
-  ### Note ordering! First Lon, then Lat, then Layers (if selected), then finally Time (if required)
+
+  ### MAKE DIMENSIONS ####
   all.dimnames <- dimnames(x[[1]])
   all.dims <- list()
- 
-  # Lon and Lat - easy-peasy 
+  
+  # LON and LAT - easy-peasy
   all.dims[["Lon"]] <- ncdf4::ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdf4::ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
 
@@ -360,19 +421,15 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     
   }
   
-  # Time - only if start.date has been provided (and it not NULL)
+  # TIME - only if start.date has been provided (and it not NULL)
+  # also now very easy since the labels on the time dimension of the incoming arrays are exactly what we want: days since start date 
   if(!is.null(start.date)) {
-
-    # make start date and calendar
-    calendar <- "365_day" 
-    time.unit <- paste("days since", start.date, "12:00:00")
-    
-    # decode the time dimension names (which should be Year * 1000 + Day) into 'days since start date' 
-    years <- as.integer(round(trunc(as.numeric(all.dimnames[[3]])/1000)))
-    days <- as.integer(round(as.numeric(all.dimnames[[3]]) - years * 1000)) 
-    intervals <- (years - (as.numeric(format(start.date,"%Y")))) * 365 + days - 1
-    all.dims[["Time"]] <- ncdf4::ncdim_def(name = time.dim.name, units = time.unit, vals = intervals , calendar = calendar, unlim=TRUE, create_dimvar=TRUE)
-    
+    all.dims[["Time"]] <- ncdf4::ncdim_def(name = time.dim.name,  
+                                           units = paste("days since", start.date), 
+                                           vals = as.numeric(all.dimnames[[3]]), 
+                                           calendar = calendar, 
+                                           unlim=TRUE, 
+                                           create_dimvar=TRUE)
   }
   
   # # Time - if more than two dimensions one must be time, so hand that

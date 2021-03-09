@@ -95,6 +95,7 @@ Collate:
     'plotTemporal.R'
     'plotTemporalComparison.R'
     'plotting-framework-functions.R'
+    'read-netcdf-utility-functions.R'
     'renameLayers.R'
     'selectDays.R'
     'selectGridcells.R'
