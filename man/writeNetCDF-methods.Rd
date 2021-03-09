@@ -21,6 +21,7 @@
   lon.dim.name = "lon",
   time.dim.name = "time",
   time.values = NULL,
+  calendar = "365_day",
   ...
 )
 
@@ -37,6 +38,7 @@
   lon.dim.name = "lon",
   time.dim.name = "time",
   time.values = NULL,
+  calendar = "365_day",
   ...
 )
 
@@ -53,6 +55,7 @@
   lon.dim.name = "lon",
   time.dim.name = "time",
   time.values = NULL,
+  calendar = "365_day",
   ...
 )
 }
@@ -87,6 +90,8 @@ is created and each layer gets its own variable in the netCDF.  If it is specifi
 
 \item{time.values}{The values along the time dimension (in the case of Raster*, is ignored for a Field) defined as 'days since' the 'start.date' argument.
 If not supplied, data is assumed not to have a time axis. In such case if the raster has multiple layers they will be interpreted}
+
+\item{calendar}{Character, describing the calendar to be used (required for a  Raster*,  optional for a Field), can currently be "standard" or "365_day" (default),}
 
 \item{...}{Other arguments that can usefully be passed to ncdf4::ncvar_def, in particular:
 \itemize{

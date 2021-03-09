@@ -6,20 +6,22 @@
 \usage{
 FieldToArray(
   x,
+  start.date = NULL,
+  calendar = "365_day",
+  fill.gaps = TRUE,
   cname = FALSE,
   invertlat = FALSE,
-  fill.gaps = FALSE,
   verbose = FALSE
 )
 }
 \arguments{
 \item{x}{the data.table of a \code{\linkS4class{Field}}}
 
+\item{fill.gaps}{logical, if TRUE fill longitude and latitude gaps (must be regularly spaced grid)}
+
 \item{cname}{the column name to convert, if not set a list is returned}
 
 \item{invertlat}{start in the north}
-
-\item{fill.gaps}{logical, if TRUE fill longitude and latitude gaps (must be regularly spaced grid)}
 
 \item{verbose}{print some information}
 }

@@ -105,7 +105,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
         else {
           first.month <- sort(unique(getDimInfo(x, "values")[["Month"]]))[1]
         }
-        start.date <- as.Date(as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d'))
+        start.date <- as.Date(paste(first.year, first.month, "01", sep = "-"), format='%Y-%m-%d')
       }
       else if("Day" %in% st.names) {
         # to find the first day, we first need to subset the first year
@@ -116,11 +116,11 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
         else {
           first.month <- sort(unique(getDimInfo(x, "values")[["Day"]]))[1]
         }
-        start.date <- as.DAte(as.Date(first.day-1, origin = paste0(first.year, "-01-01")))
+        start.date <- as.Date(first.day-1, origin = paste0(first.year, "-01-01"))
         
       }
       else {
-        start.date <- as.Date(as.Date(paste(first.year, "1", "1", sep = "-"), format='%Y-%m-%d'))
+        start.date <- as.Date(paste(first.year, "1", "1", sep = "-"), format='%Y-%m-%d')
       }
       
     }

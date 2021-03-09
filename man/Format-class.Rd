@@ -9,7 +9,15 @@
 \alias{aDGVM}
 \alias{aDGVM2}
 \title{Format class}
-\format{A \code{Quantity} object is an S4 class.}
+\format{
+A \code{Quantity} object is an S4 class.
+
+A \code{Quantity} object is an S4 class.
+
+A \code{Quantity} object is an S4 class.
+
+A \code{Quantity} object is an S4 class.
+}
 \usage{
 DGVMData
 

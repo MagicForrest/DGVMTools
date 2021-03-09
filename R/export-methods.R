@@ -282,13 +282,13 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
 #' @keywords internal
 
 
-FieldToArray <- function(x, start.date = NULL, calendar = "365_day", cname=FALSE, invertlat=FALSE, verbose=FALSE) {
+FieldToArray <- function(x, start.date = NULL, calendar = "365_day", fill.gaps = TRUE, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
 
   
   
   if(verbose) message("* Starting FieldToArray.")
   
-  Lon=Lat=Year=Month=Day=Time=variable=NULL
+  Lon=Lat=Year=Month=Day=Time=Date=variable=NULL
   
   if(verbose) message("** Copying input...")
     if(is.Field(x) || is.Comparison(x)) d <- copy(x@data)
