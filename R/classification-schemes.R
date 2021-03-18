@@ -139,13 +139,11 @@ Smith2014BiomeScheme <- new("Scheme",
                           list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
                           list(quantity = "LAI_std", operator = 0, layers = "BINE"),
                           list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                          list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                          list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS"), new.layer = "TeBS"),
                           list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                          list(quantity = "LAI_std", operator = 0, layers = "IBS"),
                           list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
                           list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
-                          list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                          
+
                           ### Make totals
                           # Tree
                           list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
@@ -500,13 +498,11 @@ Forrest2015BiomeScheme <- new("Scheme",
                             list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
                             list(quantity = "LAI_std", operator = 0, layers = "BINE"),
                             list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                            list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                            list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS"), new.layer = "TeBS"),
                             list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),
                             list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
                             list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
-                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),    
-                            
+
                             ### Make totals
                             # Tree
                             list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
