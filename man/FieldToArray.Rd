@@ -9,6 +9,7 @@ FieldToArray(
   start.date = NULL,
   calendar = "365_day",
   fill.gaps = TRUE,
+  global.extent = FALSE,
   cname = FALSE,
   invertlat = FALSE,
   verbose = FALSE
@@ -17,7 +18,9 @@ FieldToArray(
 \arguments{
 \item{x}{the data.table of a \code{\linkS4class{Field}}}
 
-\item{fill.gaps}{logical, if TRUE fill longitude and latitude gaps (must be regularly spaced grid)}
+\item{fill.gaps}{logical, if TRUE fill longitude and latitude gaps (must be regularly spaced grid), default is TRUE}
+
+\item{global.extent}{logical, if TRUE extend the array to be the entire global extent,  default is FALSE}
 
 \item{cname}{the column name to convert, if not set a list is returned}
 
@@ -26,7 +29,7 @@ FieldToArray(
 \item{verbose}{print some information}
 }
 \value{
-a array or a list or arrays
+an array or a list or arrays
 }
 \description{
 Convert a Field (or the data.table from a Field) into a list of multi-deminsional arrays (indexed Lon, Lat and Time),

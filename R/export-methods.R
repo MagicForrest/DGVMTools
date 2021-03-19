@@ -136,10 +136,14 @@ setMethod("as.Raster", signature("Comparison"),   function(x){
   
 })
 
-#' Generic method for coercing to raster  
+#' Generic method for coercing to an array
+#' 
+#'     
+#'       
 #' @name as.array
 #' @rdname export-methods
 #' @exportMethod as.array
+#' @return Either a single array or a list of arrays, depending on if the input Field had one layer or multiple layers 
 setGeneric("as.array", function(x,...) standardGeneric("as.array"))
 
 #' @rdname export-methods
@@ -274,16 +278,17 @@ makeSPDFfromDT <- function(input.data, layers = "all",  tolerance = 0.01, grid.t
 #' @param x the data.table of a \code{\linkS4class{Field}}
 #' @param cname the column name to convert, if not set a list is returned
 #' @param invertlat start in the north
-#' @param fill.gaps logical, if TRUE fill longitude and latitude gaps (must be regularly spaced grid)
+#' @param fill.gaps logical, if TRUE fill longitude and latitude gaps (must be regularly spaced grid), default is TRUE
+#' @param global.extent logical, if TRUE extend the array to be the entire global extent,  default is FALSE
 #' @param verbose print some information
-#' @return a array or a list or arrays
+#' @return an array or a list or arrays
 #' 
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}, Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 
 
-FieldToArray <- function(x, start.date = NULL, calendar = "365_day", fill.gaps = TRUE, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
-
+FieldToArray <- function(x, start.date = NULL, calendar = "365_day", fill.gaps = TRUE, global.extent = FALSE, cname=FALSE, invertlat=FALSE, verbose=FALSE) {
+  
   
   
   if(verbose) message("* Starting FieldToArray.")
@@ -291,7 +296,7 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", fill.gaps =
   Lon=Lat=Year=Month=Day=Time=Date=variable=NULL
   
   if(verbose) message("** Copying input...")
-    if(is.Field(x) || is.Comparison(x)) d <- copy(x@data)
+  if(is.Field(x) || is.Comparison(x)) d <- copy(x@data)
   else  d <- copy(x)
   if(verbose) message("** ...done.")
   
@@ -313,9 +318,10 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", fill.gaps =
   # if temporal, make a Time column and define the values for it in the fullgrid (see below)
   if(is.temporal) {
     
-
+    
     # old way, label time axis based on codes
-    # keeping this method to be keep the is.array method valid, writing netCDF should do the old way with a start date below
+    # keeping this method to be keep the as.array method valid, writing netCDF should do the old way with a start date below
+    # TODO - change the to give more useful codes since it doesn't need to be used for writing netCDF any more
     if(missing(start.date) || is.null(start.date)) {
       
       # if it is temporal (but no Year column) make a dummy year
@@ -465,7 +471,7 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", fill.gaps =
         stop("\"proleptic_gregorian\" calendar not yet implemented for FieldToArray")
       }
       
-
+      
       # make axis values
       time <- sort(unique(d$Time))
       
@@ -473,71 +479,141 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", fill.gaps =
     
   }
   
-
+  
   ## also set the appropriate keys
   if(verbose) message("** Setting keys...")
   setKeyDGVM(d)
   if(verbose) message("** ... done.")
-
+  
   
   ## get the desired column name(s) if none was given
   if (missing(cname)) cname <- colnames(d)[!(colnames(d) %in% c("Lon", "Lat", "Time"))]
   
   
-
+  
   ## add dummy NA values for any missing Lons or Lats
   lons.present <- unique(d[["Lon"]])
   lats.present <- unique(d[["Lat"]])
   
-  if(verbose) message("** Checking for missing lons/lats to be filled in...")
-
-  # empty data.table for the extra lines 
-  dummy.dt <- data.table()
   
-  # for each longitude
-  for(this_lon in lon) {
-    # if a lon is missing add a dummy line for it
-    if(!this_lon %in% lons.present) {
+  if(global.extent) {
+    if(verbose) message("** Extending lons/lats to global extent as requested...")
+    
+    # do latitude first as it is easier
+    lat.max <- 90
+    lat.min <- -90
+    lat.diff <- unique(lat[2:length(lat)] - lat[1:(length(lat)-1)])
+    if(length(lat.diff) == 1) {
+      # extend southwards
+      while(min(lat) > lat.min) {
+        new.lower.lat <- min(lat) - lat.diff
+        if(new.lower.lat >= lat.min) lat <- append(new.lower.lat, lat)
+        else break
+      }
+      # extend northwards
+      while(max(lat) < lat.max) {
+        new.upper.lat <- max(lat) + lat.diff
+        if(new.upper.lat <= lat.max) lat <- append(lat, new.upper.lat)
+        else break
+      }
       
-      if(verbose) message(paste("  **** Filling in missing lon", this_lon))
-
-      temp_newrow <- d[1,]
-      temp_newrow[1, Lon := this_lon]
-      for(this_layer in layers(temp_newrow)) {
-        if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
-      }
-      dummy.dt <- rbind(dummy.dt, temp_newrow)
-
     }
-  }
-  
-  # for each latitude is missing for it
-  for(this_lat in lat) {
-    # if a lat is missing
-    if(!this_lat %in% lats.present) {
-      if(verbose) message(paste("  **** Filling in missing lat", this_lat))
-      temp_newrow <- d[1,]
-      temp_newrow[1, Lat := this_lat]
-      for(this_layer in layers(temp_newrow)) {
-        if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
-      }
-      dummy.dt <- rbind(dummy.dt, temp_newrow)
+    else {
+      if(verbose) message("** CANNOT extent lats to global extent as requested, as latitude spacing is not regular!  Skipping this.")
+      warning("** CANNOT extent lats to global extent as requested, as latitude spacing is not regular!  Skipping this.")
     }
-  }
-  
-  # if there are missing lons/lats, add 'em  and set keys again
-  if(nrow(dummy.dt > 0))  {
     
-    d <- rbind(d, dummy.dt)
+    # do longitude which is slightly trickier because they can be (-180,180) or (0, 360)
+    lon.diff <- unique(lon[2:length(lon)] - lon[1:(length(lon)-1)])
     
-    # set keys on d again
-    if(verbose) message("**** ... setting keys again ...")
-    setKeyDGVM(d)
+    # here check range
+    lon.min <- -180
+    lon.max <- 180
+    if(max(lon) > lon.max) {
+      lon.min <- 0
+      lon.max <- 360
+    }
+    
+    if(length(lon.diff) == 1) {
+      # extend westwards
+      while(min(lon) > lon.min) {
+        new.lower.lon <- min(lon) - lon.diff
+        if(new.lower.lon >= lon.min) lon <- append(new.lower.lon, lon)
+        else break
+      }
+      # extend eastwards
+      while(max(lon) < lon.max) {
+        new.upper.lon <- max(lon) + lon.diff
+        if(new.upper.lon <= lon.max) lon <- append(lon, new.upper.lon)
+        else break
+      }
+      
+    }
+    else {
+      if(verbose) message("** CANNOT extent lons to global extent as requested, as longitude spacing is not regular!  Skipping this.")
+      warning("** CANNOT extent lons to global extent as requested, as longitude spacing is not regular!  Skipping this.")
+    }
+    
     if(verbose) message("** ... done.")
- 
-  } else {
-    if(verbose) message("** ... no missing lons or lats found, done.")
+    
+  }  
+  
+  
+  
+  if(fill.gaps || global.extent) {
+    if(verbose) message("** Checking for missing lons/lats to be filled in...")
+    
+    # empty data.table for the extra lines 
+    dummy.dt <- data.table()
+    
+    # for each longitude
+    for(this_lon in lon) {
+      # if a lon is missing add a dummy line for it
+      if(!this_lon %in% lons.present) {
+        
+        if(verbose) message(paste("  **** Filling in missing lon", this_lon))
+        
+        temp_newrow <- d[1,]
+        temp_newrow[1, Lon := this_lon]
+        for(this_layer in layers(temp_newrow)) {
+          if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
+        }
+        dummy.dt <- rbind(dummy.dt, temp_newrow)
+        
+      }
+    }
+    
+    # for each latitude is missing for it
+    for(this_lat in lat) {
+      # if a lat is missing
+      if(!this_lat %in% lats.present) {
+        if(verbose) message(paste("  **** Filling in missing lat", this_lat))
+        temp_newrow <- d[1,]
+        temp_newrow[1, Lat := this_lat]
+        for(this_layer in layers(temp_newrow)) {
+          if(this_layer != "Time") temp_newrow[1, (this_layer) := NA]  
+        }
+        dummy.dt <- rbind(dummy.dt, temp_newrow)
+      }
+    }
+    
+    # if there are missing lons/lats, add 'em  and set keys again
+    if(nrow(dummy.dt > 0))  {
+      
+      d <- rbind(d, dummy.dt)
+      
+      # set keys on d again
+      if(verbose) message("**** ... setting keys again ...")
+      setKeyDGVM(d)
+      if(verbose) message("** ... done.")
+      
+    } else {
+      if(verbose) message("** ... no missing lons or lats found, done.")
+    }
+    
+    
   }
+  
   
   
   ### NOTE:  At one point I tried doing with with a for look instead of the lapply below in an attempt to save memory.  
@@ -548,10 +624,10 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", fill.gaps =
   rv <- lapply(cname, function(x) {
     if(verbose) message(paste0(" **** Doing layer ", x))
     if (is.temporal) {
-       # this produces an array with 3 dimensions corresponding to Lon, Lat and Time in the field and populates, 
-       # leaving NA's where there is no data
-       rv <- reshape2::acast(d, Lon ~ Lat ~ Time, value.var=x,  drop = !fill.gaps, fill = NA)
-       if (invertlat)      rv <- rv[,length(lat):1,]
+      # this produces an array with 3 dimensions corresponding to Lon, Lat and Time in the field and populates, 
+      # leaving NA's where there is no data
+      rv <- reshape2::acast(d, Lon ~ Lat ~ Time, value.var=x,  drop = !fill.gaps, fill = NA)
+      if (invertlat)      rv <- rv[,length(lat):1,]
     } else {
       # as above but only two dimensions 
       rv <- reshape2::acast(d, Lon ~ Lat, value.var=x,  drop = !fill.gaps, fill = NA)
@@ -564,10 +640,10 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", fill.gaps =
     message("** ... done!  Time taken:")
     print(t2 -t1)
   }
-
+  
   # tidy things up and return the array/list of arrays
   names(rv) <- cname
   rm(d);gc()
   return(rv)
-
+  
 }

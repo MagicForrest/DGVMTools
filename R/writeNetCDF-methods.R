@@ -10,7 +10,8 @@
 #' @param filename A character specifying the name of the netCDF file to be written.
 #' @param start.date A date (as a Date object) for the start of the time dimension.  Can be omitted for a Field, \emph{must} be included if you want to write 
 #' a RasterStack or RasterBrick with a time dimension. 
-#' @param calendar Character, describing the calendar to be used (required for a  Raster*,  optional for a Field), can currently be "standard" or "365_day" (default), 
+#' @param calendar Character, describing the calendar to be used (required for a  Raster*, optional for a Field), can currently be "standard" or "365_day" (default), 
+#' @param global.extent logical, if TRUE extend the netCDF file to the entire global extent, default is FALSE.
 #' @param verbose Logical, if TRUE print a bunch of progress and debug output
 #' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
 #' if you want to use different meta-data for a Field just alter the Quantity object in the Field object before you call writeNetCDF)
@@ -72,6 +73,7 @@ if (!isGeneric("writeNetCDF")) {
                                      time.dim.name = "time",
                                      time.values = NULL, 
                                      calendar = "365_day",
+                                     global.extent = FALSE,
                                      ...) standardGeneric("writeNetCDF"))
 }
 
@@ -134,7 +136,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
     message(paste0("Calling funtion FieldToArray() on a Field with ", nrow(x@data), " spatio-temporal data points and a total of ", length(layers(x)), " layers"))
     t1 <- Sys.time()
   }
-  array.list <- FieldToArray(x, start.date = start.date, calendar = calendar) 
+  array.list <- FieldToArray(x, start.date = start.date, calendar = calendar, fill.gaps = TRUE, global.extent = global.extent, verbose = verbose) 
   if(verbose) {
     t2 <- Sys.time()
     message("FieldToArray took:")
