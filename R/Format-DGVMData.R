@@ -80,9 +80,11 @@ getField_DGVMData <- function(source,
   all.lats <- numeric(0)
   all.lons <- numeric(0)
   all.time.intervals <- numeric(0)
+  all.layers.vals <- numeric(0)
   lat.string <- ""
   lon.string <- ""
   time.string <- ""
+  layer.string <- ""
   for(this.dimension in dims.present) {
     
     matched <- FALSE
@@ -113,6 +115,16 @@ getField_DGVMData <- function(source,
         matched <- TRUE
       }
     }                   
+    
+    # pick up Layers
+    for(possible.dim.name in c("pft", "PFT", "PFTs", "PFTS", "pfts", "vegtype", "vegtypes", "layer", "layers")) {
+      if(this.dimension == possible.dim.name) {
+        layer.string <- possible.dim.name
+        all.layer.vals <- ncdf4::ncvar_get(this.nc, layer.string)
+        matched <- TRUE
+        stop(paste0("Found a 'layer' type fourth dimension in the netCDF file, ", file.name.nc, ", but reading that structure not been implemented yet, so now stopping."))
+      }
+    }     
     
     # Catch the rest
     if(!matched) {
@@ -173,144 +185,60 @@ getField_DGVMData <- function(source,
     
     if(time.res == "Year") {
       
-      # convert the netcdf time increments into years
-      end.date.year <- start.date.year+length(all.time.intervals)-1
-      years.vector <- start.date.year:end.date.year
+      # This function call processes a time axis which is assumed to be yearly
+      # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
+      # and the actual years corresponding to this selection.
+      year.axis.info <- processYearlyNCAxis(axis.values = all.time.intervals, start.year = start.date.year, target.STAInfo = target.STAInfo)  
+      start.time <- year.axis.info$start.time
+      count.time <- year.axis.info$count.time
+      years.vector <- year.axis.info$years.vector 
       
-      # get the first and last indices based on the years requested
-      # returns a two-element list, with elements "first" and "last"
-      first.last.indices <- calculateYearCroppingIndices(target.STAInfo, years.vector)
-      
-      # make the index/count for reading the netCDF files
-      start.time <- first.last.indices$first
-      count.time <- first.last.indices$last - first.last.indices$first + 1
-      
-      # crop the vectors to match 
-      years.vector <- years.vector[first.last.indices$first:first.last.indices$last]
-      
-      # make a numeric code of Year
+      # make a numeric code of the years for labelling this dimension once it is read
       all.times <- paste(years.vector)
       
     }
     
     else if(time.res == "Month") {
       
-      # convert the netcdf time increments into years and months
+      # This function call processes a time axis which is assumed to be monthly
+      # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
+      # and the actual years and months corresponding to this selection.
+      month.axis.info <- processMonthlyNCAxis(axis.values = all.time.intervals, start.date = start.date, target.STAInfo = target.STAInfo)  
+      start.time <- month.axis.info$start.time
+      count.time <- month.axis.info$count.time
+      years.vector <- month.axis.info$years.vector 
+      months.vector <- month.axis.info$months.vector 
       
-      # first make a vector of the years and months
-      nyears.to.cover <- ceiling(length(all.time.intervals) / 12)
-      years.to.cover <- 0:(nyears.to.cover-1) + start.date.year
-      years.vector <- rep(years.to.cover, each = 12)
-      months.vector <- rep(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"), times = nyears.to.cover)
-      
-      # here crop to match the actual length of the data (in case of not complete years)
-      years.vector <- years.vector[start.date.month:length(all.time.intervals)]
-      months.vector <- months.vector[start.date.month:length(all.time.intervals)]
-    
-      # get the first and last indices based on the years requested
-      # returns a two-element list, with elements "first" and "last"
-      first.last.indices <- calculateYearCroppingIndices(target.STAInfo, years.vector)
-
-      # make the index/count for reading the netCDF files
-      start.time <- first.last.indices$first
-      count.time <- first.last.indices$last - first.last.indices$first + 1
-       
-      # crop the vectors to match 
-      years.vector <- years.vector[first.last.indices$first:first.last.indices$last]
-      months.vector <- months.vector[first.last.indices$first:first.last.indices$last]
-      
-       # make a numeric code of Year.Month for labelling this dimension
+      # make the vector of all times as a code "year.month" for labelling this dimension once it is read
       all.times  <- paste(years.vector, months.vector, sep = ".")
       
     }
     
     else if(time.res == "Day") {
       
-      
-      # lookup the calandar attribute and determine if it is proleptic
+      # First, lookup the calandar attribute and determine if it is proleptic
       calendar <- ncdf4::ncatt_get(this.nc, time.string, "calendar")
       if(calendar$hasatt) calendar <- calendar$value
       else stop("DGVMData format requires a 'calendar' attribute on the time axis for daily data")
-      proleptic <- FALSE
-      if(calendar == "proleptic_gregorian")  proleptic <- TRUE
       
-      # make some strings vectors for the days in years of different lengths 
-      # (these are converted to codes "Year.Day" codes later on, hence the use of zero-padded strings)
-      days.365 <- c(paste0("00", 1:9), paste0("0", 10:99), paste0(100:365)) 
-      days.366 <- c(paste0("00", 1:9), paste0("0", 10:99), paste0(100:366)) 
-      days.360 <- c(paste0("00", 1:9), paste0("0", 10:99), paste0(100:360)) 
       
-      # take truncof the times to give integer values 
-      # (the fraction, if present, is assumed to be the time of day of the measurement, ie a fraction of a day but this can be removed
-      # since a few hours into a day is still the same day
-      all.time.intervals <- trunc(all.time.intervals)
-
-      # make a big vector of the years and days from the start date (defined by the netCDF time axis) to the beyond the end of the data
-      years.vector <- c()
-      days.vector<- c()
-      day.counter <- start.date.day
-      year <- start.date.year
-      while(day.counter < all.time.intervals[length(all.time.intervals)]) {
-        
-        # select year length based on the calendar
-        # 365 day
-        if(calendar == "365_day" | (calendar == "standard" & !is.leapyear(year)) | (calendar == "proleptic_gregorian" & !is.leapyear(year, proleptic = TRUE))) {
-          this.year.days <- days.365
-        }
-        # 366 day
-        else if(calendar == "366_day" | (calendar == "standard" & is.leapyear(year)) | (calendar == "proleptic_gregorian" & is.leapyear(year, proleptic = TRUE))) {
-          this.year.days <- days.366
-        }
-        # 360 day
-        else if(calendar == "360_day") {
-          this.year.days <- days.360
-        }
-        else{
-          stop(paste0("Calendar", calendar, "not supported by DGVMData format in DGVMTools package"))
-        }
-        
-        # append to the vectors
-        years.vector <- append(years.vector, rep(year, times = length(this.year.days)))
-        days.vector <- append(days.vector, this.year.days)
-        
-        # add to the counters
-        day.counter <- day.counter + length(this.year.days)
-        year <- year + 1
-        
-      }
+      # This function call processes a time axis which is assumed to be daily
+      # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
+      # and the actual years and days corresponding to this selection.
+      daily.axis.info <- processDailyNCAxis(axis.values = all.time.intervals, 
+                                            start.date = start.date, 
+                                            target.STAInfo = target.STAInfo,
+                                            calendar = calendar)  
+      start.time <- daily.axis.info$start.time
+      count.time <- daily.axis.info$count.time
+      years.vector <- daily.axis.info$years.vector 
+      days.vector <- daily.axis.info$days.vector 
       
- 
-      # now select values from the massive vector using the all.time.intervals as the indices
-      #  -note that we need to add one to all the time intervals since first time step (from start date) will have an interval of zero 
-      #   but for that time step we need to have an array index of 1
-      years.vector <- years.vector[all.time.intervals+1]
-      days.vector <- days.vector[all.time.intervals+1]
-      print(days.vector)
-      print(years.vector)
-      
-      years.days.vector <- makeYearsAndDaysFromDailyTimeAxis(this.nc, time.string, start.date)
-
-        print(years.days.vector)
-      
-
-      # get the first and last indices based on the years requested
-      # returns a two-element list, with elements "first" and "last"
-      first.last.indices <- calculateYearCroppingIndices(target.STAInfo, years.vector)
-      
-      # make the index/count for reading the netCDF files
-      start.time <- first.last.indices$first
-      count.time <- first.last.indices$last - first.last.indices$first + 1
-      
-      # crop the vectors to match 
-      years.vector <- years.vector[first.last.indices$first:first.last.indices$last]
-      days.vector <- days.vector[first.last.indices$first:first.last.indices$last]
       
       # make a numeric code of Year.Day
       all.times  <- paste(years.vector, days.vector, sep = ".")
       
     }  # end if-else statement for different time resolutions
-    
-    
     
     
     # set year and subannual meta-data - note that years.vector (ie. the final years of data that will be selected) must be defined above
