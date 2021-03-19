@@ -23,8 +23,8 @@
 #' Good for plotting time series with missing data where geom_lines joins lines over the gaps which is not helpful
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot. 
-#' @param plotTrend Logical, if TRUE plot the linear trend
-#' @param dropEmpty Logical, if TRUE don't plot time series lines consisting only of zeros.
+#' @param plotTrend Logical, if TRUE plot the linear trend (default is FALSE)
+#' @param dropEmpty Logical, if TRUE don't plot time series lines consisting only of zeros (default is FALSE).
 #' @param plot Logical, if FALSE return the data.table of data instead of the plot
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()} and \code{ggplot2::stat_smooth()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 #' \itemize{
@@ -75,7 +75,7 @@ plotTemporal <- function(fields,
                          legend.position = "bottom",
                          text.multiplier = NULL,
                          dropEmpty = FALSE,
-                         plotTrend = TRUE,
+                         plotTrend = FALSE,
                          plot = TRUE,
                          ...
 ){

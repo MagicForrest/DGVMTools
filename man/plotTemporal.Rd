@@ -33,7 +33,7 @@ plotTemporal(
   legend.position = "bottom",
   text.multiplier = NULL,
   dropEmpty = FALSE,
-  plotTrend = TRUE,
+  plotTrend = FALSE,
   plot = TRUE,
   ...
 )
@@ -72,9 +72,9 @@ Good for plotting time series with missing data where geom_lines joins lines ove
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.}
 
-\item{dropEmpty}{Logical, if TRUE don't plot time series lines consisting only of zeros.}
+\item{dropEmpty}{Logical, if TRUE don't plot time series lines consisting only of zeros (default is FALSE).}
 
-\item{plotTrend}{Logical, if TRUE plot the linear trend}
+\item{plotTrend}{Logical, if TRUE plot the linear trend (default is FALSE)}
 
 \item{plot}{Logical, if FALSE return the data.table of data instead of the plot}
 
