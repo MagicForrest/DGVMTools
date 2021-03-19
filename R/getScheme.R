@@ -287,7 +287,7 @@ getScheme <- function(source,
   rm(all.fields)
   
   if(verbose) print("Starting classification")
-  suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
+  suppressWarnings(dt[, scheme@id := factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1), levels = scheme@units)])
   
   # remove all layers which are not the scheme layers and set key
   all.layers <- layers(dt)
