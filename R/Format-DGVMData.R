@@ -24,6 +24,8 @@ getField_DGVMData <- function(source,
                               file.name,
                               verbose = FALSE) {
   
+  warning("The 'DGVMData' Format is now deprecated!  Please use the more general NetCDF Format instead.  It should work with your existing files.")
+  
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read DGVMData files.")
   

@@ -169,7 +169,7 @@ quantities_NewFormat <- list(
       units = "m^2/m^2",
       colours = reversed.viridis,
       format = c("Example_Format"),
-      cf.name = "leaf_area_index"),
+      standard_name = "leaf_area_index"),
   
   new("Quantity",
       id = "Veg_C",

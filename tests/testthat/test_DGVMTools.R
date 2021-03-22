@@ -45,7 +45,7 @@ test_that("Sources",{
 context("Quantity")
 
 vegC_std.Quantity <- lookupQuantity("vegC_std")
-new.Quantity <- defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity")
+new.Quantity <- defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", standard_name = "new_quantity")
 
 
 test_that("Quantity",{
@@ -72,8 +72,8 @@ test_that("Quantity",{
   # note: test adding to a Field is done in 'Fields' block below
   
   # add directly to Format/Source using defineQuantity
-  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity", add.to = GUESS), "Format")
-  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity", add.to = GUESS.Europe.test.Source), "Source")
+  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", standard_name = "new_quantity", add.to = GUESS), "Format")
+  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", standard_name = "new_quantity", add.to = GUESS.Europe.test.Source), "Source")
  
 })
 
@@ -116,7 +116,7 @@ test_that("Field",{
   
   # add new quantities to the fields
   expect_is(addTo(new.Quantity, Standard.Field), "Field")
-  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", cf.name = "new_quantity", add.to = Standard.Field), "Field")
+  expect_is(defineQuantity(id = "NewQuant", name = "New Quantity", units = "kg m^-1", format = "GUESS", standard_name = "new_quantity", add.to = Standard.Field), "Field")
   
   
 })

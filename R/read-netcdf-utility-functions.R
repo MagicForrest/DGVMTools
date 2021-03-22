@@ -118,7 +118,7 @@ getNetCDFDimension <- function(nc, dimension, verbose) {
       
       # try to get dimension with exception handling
       this.result <- tryCatch({
-        this.dim <- ncvar_get(nc, possible,verbose=verbose)
+        this.dim <- ncdf4::ncvar_get(nc, possible,verbose=verbose)
       }, warning = function(war) {
         return(NA)
       }, error = function(err) {

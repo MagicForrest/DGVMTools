@@ -133,7 +133,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   # make a list of arrays from the Field (one array per Layer in the Field)
   # note that the labelling along the time dimension of the array(s) should correspond to "days since start.date", respecting the calendar argument 
   if(verbose) {
-    message(paste0("Calling funtion FieldToArray() on a Field with ", nrow(x@data), " spatio-temporal data points and a total of ", length(layers(x)), " layers"))
+    message(paste0("Calling function FieldToArray() on a Field with ", nrow(x@data), " spatio-temporal data points and a total of ", length(layers(x)), " layers"))
     t1 <- Sys.time()
   }
   array.list <- FieldToArray(x, start.date = start.date, calendar = calendar, fill.gaps = TRUE, global.extent = global.extent, verbose = verbose) 
@@ -376,12 +376,12 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   quantity.units <- "Not_defined"
   quantity.id <- "Not_defined"
   standard_name <- "Not_defined"
-  long.name <- "Not_defined"
+  long_name <- "Not_defined"
   if(!is.null(quantity)) {
     quantity.units <- quantity@units
     quantity.id <- quantity@id
     standard_name <- quantity@standard_name
-    long.name <- quantity@name
+    long_name <- quantity@name
   }
   
   ### CHECK INPUT LIST AND GET LAYER NAMES
@@ -490,13 +490,13 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # individual layers
   if(is.null(layer.dim.name)) {  
     for(layer in layers) {
-      all.vars[[layer]] <- ncdf4::ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = long.name, ...)  # standard
+      all.vars[[layer]] <- ncdf4::ncvar_def(name = layer, units = quantity.units, dim = all.dims, longname = long_name, ...)  # standard
     }
   }
   # else turn layers into a dimension
   else {
     
-    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long.name, ...)  # standard
+    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long_name, ...)  # standard
     old.layers <- layers # for storing the key from dimension values to layer
     
   } 
@@ -515,6 +515,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     if(is.null(layer.dim.name)) {
       ncdf4::ncvar_put(nc = outfile, varid = layer,  vals = x[[layer]], start=NA, count=NA, verbose=verbose)
       ncdf4::ncatt_put(outfile, layer, "standard_name", standard_name)
+
     }
     # else slightly more complicated case of all layers going into one variable
     else{

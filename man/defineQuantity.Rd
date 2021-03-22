@@ -10,7 +10,7 @@ defineQuantity(
   units,
   colours = viridis::viridis,
   format = "Standard",
-  cf.name = "unknown",
+  standard_name = "unknown",
   add.to
 )
 }
@@ -27,7 +27,7 @@ Optional, if omitted the id argument will be used here.}
 \item{format}{A character string (or a list of character strings) defining which \linkS4class{Format} this quantity is defined for.  Should match the id/ids
 of the \linkS4class{Format}s.}
 
-\item{cf.name}{A character string givien the standard CF-compliant name for writing netCDF files, e.g. "leaf_area_index" (optional, such standard names
+\item{standard_name}{A character string givien the standard CF-compliant name for writing netCDF files, e.g. "leaf_area_index" (optional, such standard names
 don't exist for all variables)}
 
 \item{add.to}{A \linkS4class{Format}, or a \linkS4class{Source}, or a \linkS4class{Field} object to which this newly defined

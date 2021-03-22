@@ -62,7 +62,7 @@ ideally match with the name of a particular model output/dataset variable.  Reco
 
 \item{\code{format}}{Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.}
 
-\item{\code{cf.name}}{A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
+\item{\code{standard_name}}{A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
 but it makes sense to use this where possible.}
 }}
 

@@ -267,6 +267,8 @@ getField_NetCDF <- function(source,
   
   # keep track of all the units, long names and standard names for later
   all.units <- c()
+  all.standard_names <- c()
+  all.long_names <- c()
   
   for(this.var in this.nc$var) {
     
@@ -299,8 +301,11 @@ getField_NetCDF <- function(source,
       this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
       dimnames(this.slice) <- dimension.names
       
-      # store the units field for later
-      all.units < append(all.units,  ncdf4::ncatt_get(this.nc, this.var, "units"))
+      # store the units, standard_names and long_names for later
+      if(ncdf4::ncatt_get(this.nc, this.var, "units")$hasatt) all.units <- append(all.units,  ncdf4::ncatt_get(this.nc, this.var, "units")$value)
+      if(ncdf4::ncatt_get(this.nc, this.var, "standard_name")$hasatt) all.standard_names <- append(all.standard_names,  ncdf4::ncatt_get(this.nc, this.var, "standard_name")$value)
+      if(ncdf4::ncatt_get(this.nc, this.var, "long_name")$hasatt) all.long_names <- append(all.long_names,  ncdf4::ncatt_get(this.nc, this.var, "long_name")$value)
+      
       
       # prepare data.table from the slice (array)
       this.slice.dt <- as.data.table(reshape2::melt(this.slice))
@@ -427,19 +432,33 @@ getField_NetCDF <- function(source,
   # units
   unique.units <- unique(all.units) 
   final.units <- unique(all.units)[1]
-  if(unique.units > 1) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.units, ")."))
-  if(final.units != quant@units & quant@units != "undefined unit"){
-    warning(paste0("Overriding requesting units when reading NetCDF file ", file.name.nc, ". ", quant@units, "was specified but ",final.units, " was found (so using that)."))
+  if(length(unique.units) > 1) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.units, ")."))
+print(quant@units)
+print(final.units)
+print(all.units)
+print(unique.units)
+
+    if(final.units != quant@units & quant@units != "undefined unit"){
+    warning(paste0("Overriding requesting units when reading NetCDF file ", file.name.nc, ". ", quant@units, " was specified but ",final.units, " was found (so using that)."))
     quant@units <- final.units
   }
   
-  # "long" names
-  unique.units <- unique(all.units) 
-  final.units <- unique(all.units)[1]
-  if(unique.units > 1) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.units, ")."))
-  if(final.units != quant@units & quant@units != "undefined unit"){
-    warning(paste0("Overriding requesting units when reading NetCDF file ", file.name.nc, ". ", quant@units, "was specified but ",final.units, " was found (so using that)."))
-    quant@units <- final.units
+  # standard names (CF standard_name)
+  unique.standard_name <- unique(all.standard_names) 
+  final.standard_name <- unique(all.standard_names)[1]
+  if(length(unique.standard_name) > 1) warning(paste0("Multiple standard_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.standard_name, ")."))
+  if(final.standard_name != quant@standard_name & quant@standard_name != "undefined unit"){
+    warning(paste0("Overriding requested standard_name when reading NetCDF file ", file.name.nc, ". ", quant@standard_name, " was specified but ",final.standard_name, " was found (so using that)."))
+    quant@standard_name <- final.standard_name
+  }
+  
+  # long names (CF long_name which is mapped to DGVMTools @name)
+  unique.long_name <- unique(all.long_names) 
+  final.long_name <- unique(all.long_names)[1]
+  if(length(unique.long_name) > 1) warning(paste0("Multiple long_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.long_name, ")."))
+  if(final.long_name != quant@name & quant@name != "undefined unit"){
+    warning(paste0("Overriding requested long_name when reading NetCDF file ", file.name.nc, ". ", quant@name, " was specified but ",final.long_name, " was found (so using that)."))
+    quant@name <- final.long_name
   }
   
   
