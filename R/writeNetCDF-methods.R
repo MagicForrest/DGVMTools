@@ -19,13 +19,15 @@
 #' if saving a Raster* object. It is ignored in the case of a Field (but note  that if you want to use different meta-data for a Field just alter the Source object in the Field object before you call writeNetCDF)
 #' @param layer.names A vector of characters to specify the names of the variables in the netCDF file, ignored for a Field.  
 #' Should be length 1 or the number of layers in the input raster. 
-#' @param layer.dim.name A character string specifing the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
+#' @param layer.dim.name A character string specifying the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 #' is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension. 
 #' @param lat.dim.name Character, the latitude dimension name. Defaults to "lat".  
 #' @param lon.dim.name Character, the longitude dimension name. Defaults to "lon". 
 #' @param time.dim.name Character, the time dimension name. Defaults to "time".
 #' @param time.values The values along the time dimension (in the case of Raster*, is ignored for a Field) defined as 'days since' the 'start.date' argument.
 #' If not supplied, data is assumed not to have a time axis. In such case if the raster has multiple layers they will be interpreted  
+#' @param .sta.info Advanced. An object of STAInfo for tracking spatio-temporal metadata.  IGNORED for for a Field as it is handled
+#' automatically when writing a Field. But can be added manually for a raster if you wish.  
 #' @param ... Other arguments that can usefully be passed to ncdf4::ncvar_def, in particular:
 #' \itemize{
 #'  \item{compression} {Integer to define compression level when define netCDF variables (1 = a little compression, 9 = a lot of compression). 
@@ -74,6 +76,7 @@ if (!isGeneric("writeNetCDF")) {
                                      time.values = NULL, 
                                      calendar = "365_day",
                                      global.extent = FALSE,
+                                     .sta.info = NULL,
                                      ...) standardGeneric("writeNetCDF"))
 }
 
@@ -148,6 +151,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   # grab other metadata from the ci
   this.quant <- x@quant
   this.source <- x@source
+  this.sta.info <- as(x, "STAInfo")
   rm(x); gc()
   
   writeNetCDF(array.list, 
@@ -161,6 +165,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
               calendar = calendar,
+              .sta.info = this.sta.info,
               ...)
   
 })
@@ -361,6 +366,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
               calendar = calendar,
+              .sta.info = .sta.info,
               ...)
   
 })
@@ -554,15 +560,28 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
       ncdf4::ncatt_put(outfile, 0, "Institute", source@institute)
   }
   
-  # ADD DGVMDATA ATTRIBUTES
+  # ADD ATTRIBUTES
   ncdf4::ncatt_put(outfile, 0, "DGVMData_quant", quantity.id)
-  #ncdf4::ncatt_put(outfile, 0, "DGVMData_name", name)
-  #ncdf4::ncatt_put(outfile, 0, "DGVMData_id", id)
-  #ncdf4::ncatt_put(outfile, 0, "DGVMData_spatial.extent", "Original")
-  #ncdf4::ncatt_put(outfile, 0, "DGVMData_first.year", first.year)
-  #ncdf4::ncatt_put(outfile, 0, "DGVMData_last.year", last.year)
-  #ncdf4::ncatt_put(outfile, 0, "DGVMData_year.aggregation.method", "mean")
-  #ncdf4::ncatt_put(outfile, 0, "DGVMData_quantity", quantity.id)
+  # Spatio-temporal id available
+  if(!missing(.sta.info) & !is.null(.sta.info)) {
+    #ncdf4::ncatt_put(outfile, 0, "DGVMData_name", name)
+    #ncdf4::ncatt_put(outfile, 0, "DGVMData_id", id)
+    if(class(.sta.info@spatial.extent) == "Extent"){
+      ncdf4::ncatt_put(outfile, 0, "xmin", .sta.info@spatial.extent@xmin)
+      ncdf4::ncatt_put(outfile, 0, "xmax", .sta.info@spatial.extent@xmax)
+      ncdf4::ncatt_put(outfile, 0, "ymin", .sta.info@spatial.extent@ymin)
+      ncdf4::ncatt_put(outfile, 0, "ymax", .sta.info@spatial.extent@ymax)
+    }
+    ncdf4::ncatt_put(outfile, 0, "spatial.extent.id", .sta.info@spatial.extent.id)
+    ncdf4::ncatt_put(outfile, 0, "spatial.aggregate.method", .sta.info@spatial.aggregate.method)
+    ncdf4::ncatt_put(outfile, 0, "first.year", .sta.info@first.year)
+    ncdf4::ncatt_put(outfile, 0, "last.year", .sta.info@last.year)
+    ncdf4::ncatt_put(outfile, 0, "year.aggregate.method", .sta.info@year.aggregate.method)
+    ncdf4::ncatt_put(outfile, 0, "subannual.resolution", .sta.info@subannual.resolution)
+    ncdf4::ncatt_put(outfile, 0, "subannual.aggregate.method", .sta.info@subannual.aggregate.method)
+    ncdf4::ncatt_put(outfile, 0, "subannual.original", .sta.info@subannual.original)
+  }
+ 
   
   # CLOSE
   ncdf4::nc_close(outfile)

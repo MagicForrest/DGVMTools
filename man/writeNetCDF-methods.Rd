@@ -23,6 +23,7 @@
   time.values = NULL,
   calendar = "365_day",
   global.extent = FALSE,
+  .sta.info = NULL,
   ...
 )
 
@@ -41,6 +42,7 @@
   time.values = NULL,
   calendar = "365_day",
   global.extent = FALSE,
+  .sta.info = NULL,
   ...
 )
 
@@ -59,6 +61,7 @@
   time.values = NULL,
   calendar = "365_day",
   global.extent = FALSE,
+  .sta.info = NULL,
   ...
 )
 }
@@ -82,7 +85,7 @@ if saving a Raster* object. It is ignored in the case of a Field (but note  that
 \item{layer.names}{A vector of characters to specify the names of the variables in the netCDF file, ignored for a Field.
 Should be length 1 or the number of layers in the input raster.}
 
-\item{layer.dim.name}{A character string specifing the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
+\item{layer.dim.name}{A character string specifying the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension.}
 
 \item{lat.dim.name}{Character, the latitude dimension name. Defaults to "lat".}
@@ -97,6 +100,9 @@ If not supplied, data is assumed not to have a time axis. In such case if the ra
 \item{calendar}{Character, describing the calendar to be used (required for a  Raster*, optional for a Field), can currently be "standard" or "365_day" (default),}
 
 \item{global.extent}{logical, if TRUE extend the netCDF file to the entire global extent, default is FALSE.}
+
+\item{.sta.info}{Advanced. An object of STAInfo for tracking spatio-temporal metadata.  IGNORED for for a Field as it is handled
+automatically when writing a Field. But can be added manually for a raster if you wish.}
 
 \item{...}{Other arguments that can usefully be passed to ncdf4::ncvar_def, in particular:
 \itemize{
