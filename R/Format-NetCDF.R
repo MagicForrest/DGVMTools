@@ -1,16 +1,16 @@
 #!/usr/bin/Rscript
 
 ############################################################################################################################
-############################ FUNCTIONS TO HANDLE DGVMData FILES ###########################################################
+############################ FUNCTIONS TO HANDLE NetCDF FILES ###########################################################
 ############################################################################################################################
 
 
-#' Get a Field for DGVMData
+#' Get a Field for NetCDF
 #' 
 #' 
-#' An internal function that reads data from an DGVMData .nc file.  
+#' An internal function that reads data from an NetCDF .nc file.  
 #' 
-#' @param source A \code{Source} containing the meta-data about the DGVMData source
+#' @param source A \code{Source} containing the meta-data about the NetCDF source
 #' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
@@ -18,39 +18,36 @@
 #' @return A list containing firstly the data.table containing the data, and secondly the STAInfo for the data that we have
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
-getField_DGVMData <- function(source,
-                              quant,
-                              target.STAInfo,
-                              file.name,
-                              verbose = FALSE) {
+getField_NetCDF <- function(source,
+                            quant,
+                            target.STAInfo,
+                            file.name,
+                            verbose = FALSE) {
   
   # first check that ncdf4 netCDF package is installed
-  if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read DGVMData files.")
-  
+  if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read NetCDF files.")
   
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Year = Month = Time = NULL
+  
+  # handy function to check for attributes, also including the kind of deprecated "DGVMTools_" and "DGVMData_" variants for global attributes
+  lookupAttribute <- function(nc, var, attname, verbose) {
+    this_try <- ncdf4::ncatt_get(nc, var, attname, verbose)
+    if(this_try$hasatt) return(this_try$value)
+    this_try <- ncdf4::ncatt_get(nc, var, paste0("DGVMData_",  attname), verbose)
+    if(this_try$hasatt) return(this_try$value)
+    this_try <- ncdf4::ncatt_get(nc, var, paste0("DGVMTools_", attname), verbose)
+    if(this_try$hasatt) return(this_try$value)
+    return("Unspecified")
+  }
+  
   
   # get first and last year for use later on
   first.year = target.STAInfo@first.year
   last.year = target.STAInfo@last.year
   
-  # function read attributes and warn if they are not present.
-  getGlobalAttribute <- function(attr.name, global.attributes) {
-    dgvm.attr.name <- paste("DGVMData", attr.name, sep = "_")
-    if(dgvm.attr.name %in% names(global.attributes)) {
-      return(global.attributes[[dgvm.attr.name]]) 
-    }
-    else {
-      warning(paste0("No ", attr.name,  " attribute (", dgvm.attr.name, " ) found in file ", file.name.nc, ".  This is not DGVMData compliant.  Right now setting attribute to NULL, but this might cause problems later"))
-      return(NULL)
-    }
-  }
-  
-  
   # STAInfo object describing the data
   sta.info = new("STAInfo")
-  
   
   # Make the filename (if necessary) and check for the file, gunzip if necessary, fail if not present
   if(!is.null(file.name)) file.name.nc <- file.path(source@dir, file.name)
@@ -70,7 +67,8 @@ getField_DGVMData <- function(source,
   if(verbose) message(paste0("Opening file ", file.name.nc))     
   if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
   else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
-  global.attributes <- ncdf4::ncatt_get(this.nc, 0, attname=NA, verbose=FALSE)
+
+
   
   # Check out dimensions and ignore bnds dimension if present
   dims.present <- names(this.nc$dim)
@@ -147,12 +145,8 @@ getField_DGVMData <- function(source,
   
   #### TIME AXIS - calculate the time labels and the start and count values for the time axis
   
-  # first look up year-related attributes
-  first.year.present  <- getGlobalAttribute("first.year", global.attributes)
-  last.year.present  <- getGlobalAttribute("last.year", global.attributes)
-  year.aggregate.method <- getGlobalAttribute("year.aggregate.method", global.attributes)
   
-  # next let's determine some details about the time axis
+  # First, let's determine some details about the time axis
   if(length(all.time.intervals) > 0) { 
     
     # extract the start data from the time units string
@@ -160,7 +154,7 @@ getField_DGVMData <- function(source,
     time.units.string.list <- strsplit(time.units.attr$value, " ")
     tmp.unit <- unlist(time.units.string.list[1]) # Isolate the unit .i.e. seconds, hours, days etc.
     timestep.unit <- tmp.unit[which(tmp.unit %in% c("seconds","hours","days"))[1]] # Check unit
-    if(timestep.unit != "days") stop('Currently DGVMData only accepts data with a units of time axis = "days"')
+    if(timestep.unit != "days") stop('Currently reading netCDF data with DGVMTools only accepts data with a units of time axis = "days"')
     
     # extract the start day, month and year
     start.date <- as.POSIXct(gsub(paste(timestep.unit,'since '),'',time.units.attr$value),format="%Y-%m-%d %H:%M:%S") ## Extract the start / origin date
@@ -176,7 +170,7 @@ getField_DGVMData <- function(source,
     else if(mean.timestep.differences >= 28 & mean.timestep.differences <= 31 ) time.res <- "Month"
     # if the mean is between 359 and 367 (inclusive) assume yearly  
     else if(mean.timestep.differences >= 360 & mean.timestep.differences <= 367 ) time.res <- "Year"       
-    else stop("Data doesn't appear to be daily, monthly, or yearly.  Other options are not currently supported by the DGVMData Format, but could potentially be.  So if you need this please contact the author.")
+    else stop("Data doesn't appear to be on daily, monthly, or yearly timesteps.  Other options are not currently supported by the DGVMTools, but could potentially be.  So if you need this please contact the author.")
     
     
     # default values if no time selection is required
@@ -219,7 +213,7 @@ getField_DGVMData <- function(source,
       # First, lookup the calandar attribute and determine if it is proleptic
       calendar <- ncdf4::ncatt_get(this.nc, time.string, "calendar")
       if(calendar$hasatt) calendar <- calendar$value
-      else stop("DGVMData format requires a 'calendar' attribute on the time axis for daily data")
+      else stop("DGVMTools requires a 'calendar' attribute on the time axis for daily netCDF data")
       
       
       # This function call processes a time axis which is assumed to be daily
@@ -242,13 +236,17 @@ getField_DGVMData <- function(source,
     
     
     # set year and subannual meta-data - note that years.vector (ie. the final years of data that will be selected) must be defined above
+    
+    # time resolution and start and end yers are determined from the file and cropping
     sta.info@first.year <- years.vector[1]
     sta.info@last.year <- years.vector[length(years.vector)]
     sta.info@subannual.resolution <- time.res
-    subannual.original.attr <- ncdf4::ncatt_get(nc = this.nc, varid = 0, attname = "DGVMData_subannual.original")
-    if(subannual.original.attr$hasatt)  sta.info@subannual.original <- subannual.original.attr$value
-    else sta.info@subannual.original <- time.res
     
+    # original subannual resolution and subannual aggregation method can be determined from metadata if they exist
+    sta.info@subannual.aggregate.method <- lookupAttribute(this.nc, 0, "subannual.aggregate.method", verbose)
+
+    sta.info@subannual.original <- lookupAttribute(this.nc, 0, "subannual.original", verbose)
+    if(sta.info@subannual.original == "none") sta.info@subannual.original <- time.res
     
   }
   
@@ -267,12 +265,16 @@ getField_DGVMData <- function(source,
   if(length(all.lats) > 0) dimension.names[["Lat"]] <- all.lats
   if(length(all.time.intervals) > 0) dimension.names[["Time"]] <- all.times
   
+  # keep track of all the units, long names and standard names for later
+  all.units <- c()
+  
   for(this.var in this.nc$var) {
     
     # ignore the "Time_bands"/time_bnds" variable that CDO creates with time aggregation
     if(tolower(this.var$name) != "time_bnds") {
       
       # set start and count appropriately
+      # note this is done slightly clumsily with a for loop to make sure the ordering is correct
       start <- numeric()
       count <- numeric()
       
@@ -296,6 +298,9 @@ getField_DGVMData <- function(source,
       # Get the actual data and set the dimension names    
       this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
       dimnames(this.slice) <- dimension.names
+      
+      # store the units field for later
+      all.units < append(all.units,  ncdf4::ncatt_get(this.nc, this.var, "units"))
       
       # prepare data.table from the slice (array)
       this.slice.dt <- as.data.table(reshape2::melt(this.slice))
@@ -333,23 +338,18 @@ getField_DGVMData <- function(source,
         }
         
         # make new column order so that the quant is last
-        all.names <- names(this.slice.dt)
-        all.names <- all.names[-which(all.names == this.var$name)]
-        all.names <- append(all.names, this.var$name)
-        setcolorder(this.slice.dt, all.names)
+        all.col.names <- names(this.slice.dt)
+        all.col.names <- all.col.names[-which(all.col.names == this.var$name)]
+        all.col.names <- append(all.col.names, this.var$name)
+        setcolorder(this.slice.dt, all.col.names)
         
       }
       
       setKeyDGVM(this.slice.dt)
       
-      
+      # If quantity is a categorical scheme (i.e. more than one entry in the @units slot), convert it to a factor
       if(length(quant@units) > 1) {
-        
-        # # remove categories which aren't present
-        categories.present <- unique(this.slice.dt[[this.var$name]])
-        all.categories <- quant@units
-        
-        this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = all.categories[sort(categories.present)])]
+          this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = quant@units)]
       }
       
       # now join this to all.dt
@@ -400,37 +400,52 @@ getField_DGVMData <- function(source,
   }
   
   
-  ### DETERMINE SPATIAL EXTENT 
+  #### DETERMINE SPATIAL EXTENT AND RELATED METADATA ####
   
-  # simple ones
-  spatial.extent.id  <- getGlobalAttribute("spatial.extent.id", global.attributes)
-  if(!is.null(spatial.extent.id)) { sta.info@spatial.extent.id <- spatial.extent.id  }
-  else { sta.info@spatial.extent.id <- "Full"  }
-  spatial.aggregate.method  <- getGlobalAttribute("spatial.aggregate.method", global.attributes)
-  if(!is.null(spatial.aggregate.method)) sta.info@spatial.aggregate.method <- spatial.aggregate.method
-  else { sta.info@spatial.aggregate.method <- "none"  }
-  
-  # first attempt to use the attributes from the NetCDF file
-  xmin  <- getGlobalAttribute("xmin", global.attributes)
-  xmax  <- getGlobalAttribute("xmax", global.attributes)
-  ymin  <- getGlobalAttribute("ymin", global.attributes)
-  ymax  <- getGlobalAttribute("ymax", global.attributes)
-  # else attempt to lookm of from Lon and Lat columns
-  if(!is.null(xmin) & !is.null(xmax) & !is.null(ymin) & !is.null(ymax)){
-    sta.info@spatial.extent <- raster::extent(xmin, xmax, ymin,ymax)
-    if(verbose) message("Setting spatial extent from DGVMData attributes")
-  }
-  else if("Lon" %in% st.info && "Lat" %in% st.info) {
-    sta.info@spatial.extent <- extent(dt)
-    if(verbose) message("Setting spatial extent from Lon and Lat dimensions")
-  }
-  else{
-    if(verbose) message(paste("No spatial extent determinable from DGVMData", file.name.nc,"file. A filler extent will be set."))
-    warning(paste("No spatial extent determinable from DGVMData", file.name.nc,"file. A filler extent will be set."))
-    sta.info@spatial.extent <- numeric(0)
+  # for the extent, look at the lons and lats originally determined from the NetCDF files
+  if(length(all.lons) > 1 && length(all.lats) > 1) {
+    lon.diffs <- diff(all.lons)
+    lat.diffs <- diff(all.lats)
+    if(!length(unique(lon.diffs)) == 1)  warning(paste("Longitude differences in file", file.name.nc, "are not equal, so guessing the overall longitude bounds, which might not be 100% accurate."))
+    if(!length(unique(lat.diffs)) == 1)  warning(paste("Latitude differences in file", file.name.nc, "are not equal, so guessing the overall latitude bounds, which might not be 100% accurate."))
+    sta.info@spatial.extent <- raster::extent(min(all.lons) - mean(lon.diffs)/2, 
+                                              max(all.lons) + mean(lon.diffs)/2, 
+                                              min(all.lats) - mean(lat.diffs)/2,
+                                              max(all.lats) + mean(lat.diffs)/2)
+    }
+  else {
+    warning(paste("No spatial extent determinable from netcdf file", file.name.nc,"file. A filler extent will be set."))
+    sta.info@spatial.extent <- raster::extent(-1,1,-1,1)
   }
   
+  # Look up spatial metadata for things that cannot be determined from the lons and lats 
+  sta.info@spatial.extent.id <- lookupAttribute(this.nc, 0, "spatial.extent.id", verbose)
+  sta.info@spatial.aggregate.method <- lookupAttribute(this.nc, 0, "spatial.aggregate.method", verbose)
+
+  #### PROCESS QUANTITY RELATED METADATA ####
   
+  # units
+  unique.units <- unique(all.units) 
+  final.units <- unique(all.units)[1]
+  if(unique.units > 1) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.units, ")."))
+  if(final.units != quant@units & quant@units != "undefined unit"){
+    warning(paste0("Overriding requesting units when reading NetCDF file ", file.name.nc, ". ", quant@units, "was specified but ",final.units, " was found (so using that)."))
+    quant@units <- final.units
+  }
+  
+  # "long" names
+  unique.units <- unique(all.units) 
+  final.units <- unique(all.units)[1]
+  if(unique.units > 1) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.units, ")."))
+  if(final.units != quant@units & quant@units != "undefined unit"){
+    warning(paste0("Overriding requesting units when reading NetCDF file ", file.name.nc, ". ", quant@units, "was specified but ",final.units, " was found (so using that)."))
+    quant@units <- final.units
+  }
+  
+  
+  
+  
+  #### LONDON CENTRE ####
   # if london.centre is requested, make sure all longitudes greater than 180 are shifted to negative
   if(source@london.centre){
     if(max(all.lons) > 180) {
@@ -485,7 +500,7 @@ getField_DGVMData <- function(source,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 
-availableQuantities_DGVMData <- function(source, names){
+availableQuantities_NetCDF <- function(source, names){
   
   # First get the list of *.out files present
   files.present <- list.files(source@dir, "*.nc")
@@ -519,7 +534,7 @@ availableQuantities_DGVMData <- function(source, names){
 #' @include colour-palettes.R
 #' 
 #' 
-DGVMData.quantities <- list(
+NetCDF.quantities <- list(
   
   
   new("Quantity",
@@ -527,7 +542,7 @@ DGVMData.quantities <- list(
       name = "Fraction",
       units = "",
       colours = grDevices::colorRampPalette(c("grey85", "black")), 
-      format = c("DGVMData"),
+      format = c("NetCDF"),
       standard_name = "area_fraction"), 
   
   new("Quantity",
@@ -535,7 +550,7 @@ DGVMData.quantities <- list(
       name = "Area Fraction",
       units = "%",
       colours = veg.palette, 
-      format = c("DGVMData"),
+      format = c("NetCDF"),
       standard_name = "area_fraction_percent"), 
   
   new("Quantity",
@@ -543,7 +558,7 @@ DGVMData.quantities <- list(
       name = "Area Fraction",
       units = "%",
       colours = veg.palette, 
-      format = c("DGVMData"),
+      format = c("NetCDF"),
       standard_name = "area_fraction_percent"), 
   
   new("Quantity",
@@ -551,7 +566,7 @@ DGVMData.quantities <- list(
       name = "Vegetation Carbon Mass",
       units = "kg m-2",
       colours = reversed.viridis,
-      format = c("DGVMData"),
+      format = c("NetCDF"),
       standard_name = "vegetation_carbon_content"),
   
   new("Quantity",
@@ -559,7 +574,7 @@ DGVMData.quantities <- list(
       name = "LAI",
       units = "1",
       colours = viridis::viridis,
-      format = c("DGVMData"),
+      format = c("NetCDF"),
       standard_name = "leaf_area_index"),
   
   new("Quantity",
@@ -574,7 +589,7 @@ DGVMData.quantities <- list(
       name = "Annual GPP",
       units = "kgC m-2 year-1",
       colours = viridis::inferno,
-      format = c("DGVMData"),
+      format = c("NetCDF"),
       standard_name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
   
   new("Quantity",
@@ -582,14 +597,14 @@ DGVMData.quantities <- list(
       name = "Annual NPP",
       units = "kgC/m^2/year",
       colours = fields::tim.colors,
-      format = c("DGVMData")),
+      format = c("NetCDF")),
   
   new("Quantity",
       id = "canopyheight_std",
       name = "Canopy Height",
       units = "m",
       colours = reversed.magma,
-      format = c("DGVMData"),
+      format = c("NetCDF"),
       standard_name = "canopy_height"),
   
   new("Quantity",
@@ -597,7 +612,7 @@ DGVMData.quantities <- list(
       name = "Annual Fraction Burned",
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
-      format = c("DGVMData"),
+      format = c("NetCDF"),
       standard_name = "burned_area_fraction"),
   
   new("Quantity",
@@ -605,7 +620,7 @@ DGVMData.quantities <- list(
       name = "Fraction absorbed of Photosynthetically Active Radiation",
       units = "fraction",
       colours = veg.palette,
-      format = c("DGVMData"),
+      format = c("NetCDF"),
       standard_name = "fraction_absorbed_of_photosynthetically_active_radiation"),
   
   new("Quantity",
@@ -613,42 +628,41 @@ DGVMData.quantities <- list(
       name = "Annual land sink (NEE)",
       units = "GtC/year",
       colours = veg.palette,
-      format = c("DGVMData"))
+      format = c("NetCDF"))
   
 )
 
 
 ####################################################
-########### DGVMDATA FORMAT ########################
+########### NetCDF FORMAT ########################
 ####################################################
 
 
-#' @description \code{DGVMData} - a format defined here to unify the multitude of different datasets into a common format. 
+#' @description \code{NetCDF} - a Format object defined here for reading NetCDF files.
 #' It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
-#' Can be produced using the companion DGVMData package. 
 #' 
-#' @format A \code{Quantity} object is an S4 class.
+#' @format A \code{Format} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
 #' @include colour-palettes.R
 #' @export
-DGVMData <- new("Format",
-                
-                # UNIQUE ID
-                id = "DGVMData",
-                
-                # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
-                availableQuantities = availableQuantities_DGVMData,
-                
-                # FUNCTION TO READ A FIELD 
-                getField = getField_DGVMData,
-                
-                # DEFAULT GLOBAL LAYERS  
-                predefined.layers = list(),
-                
-                # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
-                quantities = DGVMData.quantities
-                
+NetCDF <- new("Format",
+              
+              # UNIQUE ID
+              id = "NetCDF",
+              
+              # FUNCTION TO LIST ALL QUANTIES AVAILABLE IN A RUN
+              availableQuantities = availableQuantities_NetCDF,
+              
+              # FUNCTION TO READ A FIELD 
+              getField = getField_NetCDF,
+              
+              # DEFAULT GLOBAL LAYERS  
+              predefined.layers = list(),
+              
+              # QUANTITIES THAT CAN BE PULLED DIRECTLY FROM LPJ-GUESS RUNS  
+              quantities = NetCDF.quantities
+              
 )
 

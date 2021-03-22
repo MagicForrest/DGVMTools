@@ -287,7 +287,7 @@ setClass("Source",
 #' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
 #' @slot colours A function that returns a colour scale suited for plotting this quantity.
 #' @slot format Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.
-#' @slot cf.name A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
+#' @slot standard_name A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
 #' but it makes sense to use this where possible.  
 #' 
 #' @details Note that quantities in the \code{Standard.quantities} list should ideally be defined for all model types. 
@@ -302,14 +302,14 @@ setClass("Quantity",
                    units = "character",
                    colours = "function",
                    format = "character",
-                   cf.name = "character"
+                   standard_name = "character"
          ),
          prototype = c(id = "UnknownID",
                        name = "UnknownString",
                        units = "-",
                        colours = viridis::viridis,
                        format = "Standard",
-                       cf.name = "unknown"
+                       standard_name = "unknown"
          )
 )
 

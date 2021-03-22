@@ -1430,7 +1430,7 @@ GUESS.quantities <- list(
       units = "m^2/m^2",
       colours = reversed.viridis,
       format = c("GUESS"),
-      cf.name = "leaf_area_index"),
+      standard_name = "leaf_area_index"),
   
   new("Quantity",
       id = "mlai",
@@ -1438,7 +1438,7 @@ GUESS.quantities <- list(
       units = "m^2/m^2",
       colours = viridis::viridis,
       format = c("GUESS"),
-      cf.name = "leaf_area_index"),
+      standard_name = "leaf_area_index"),
   
   new("Quantity",
       id = "fpc",
@@ -1600,7 +1600,7 @@ GUESS.quantities <- list(
       units = "m",
       colours = reversed.magma,
       format = c("GUESS"),
-      cf.name = "canopy_height"),
+      standard_name = "canopy_height"),
   
   new("Quantity",
       id = "doc",
@@ -1608,7 +1608,7 @@ GUESS.quantities <- list(
       units = "kgC/m^2/year",
       colours = reversed.magma,
       format = c("GUESS"),
-      cf.name = "canopy_height"),
+      standard_name = "canopy_height"),
   
   new("Quantity",
       id = "maet",
@@ -1750,7 +1750,7 @@ GUESS.quantities <- list(
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
       format = c("GUESS"),
-      cf.name = "burned_area_fraction"),
+      standard_name = "burned_area_fraction"),
   
   new("Quantity",
       id = "tot_runoff",

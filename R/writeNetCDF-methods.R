@@ -375,12 +375,12 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   ### GET METADATA FROM QUANTITY IF PRESENT
   quantity.units <- "Not_defined"
   quantity.id <- "Not_defined"
-  standard.name <- "Not_defined"
+  standard_name <- "Not_defined"
   long.name <- "Not_defined"
   if(!is.null(quantity)) {
     quantity.units <- quantity@units
     quantity.id <- quantity@id
-    standard.name <- quantity@cf.name
+    standard_name <- quantity@standard_name
     long.name <- quantity@name
   }
   
@@ -514,7 +514,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     # simple case of one variable per layer
     if(is.null(layer.dim.name)) {
       ncdf4::ncvar_put(nc = outfile, varid = layer,  vals = x[[layer]], start=NA, count=NA, verbose=verbose)
-      ncdf4::ncatt_put(outfile, layer, "standard_name", standard.name)
+      ncdf4::ncatt_put(outfile, layer, "standard_name", standard_name)
     }
     # else slightly more complicated case of all layers going into one variable
     else{
@@ -530,7 +530,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   
   # add meta-data if layers collapsed to a dimension
   if(!is.null(layer.dim.name)) {
-    ncdf4::ncatt_put(outfile, quantity@id, "standard_name", standard.name)
+    ncdf4::ncatt_put(outfile, quantity@id, "standard_name", standard_name)
     for(counter in 1:length(old.layers)){
       ncdf4::ncatt_put(outfile, all.vars, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
     }

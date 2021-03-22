@@ -49,6 +49,7 @@ Collate:
     'colour-palettes.R'
     'Format-DGVMData.R'
     'Format-GUESS.R'
+    'Format-NetCDF.R'
     'Format-aDGVM.R'
     'Format-aDGVM2.R'
     'Standard-Quantities.R'

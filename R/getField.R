@@ -105,7 +105,7 @@ getField <- function(source,
             units = "undefined unit",
             colours = viridis::viridis,
             format = c(source@format@id),
-            cf.name = var)
+            standard_name = var)
       },
       warning=function(cond) {
       },

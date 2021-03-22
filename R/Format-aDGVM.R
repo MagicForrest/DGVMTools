@@ -1084,7 +1084,7 @@ aDGVM.quantities <- list(
       units = "%",
       colours = reversed.viridis,
       format = c("aDGVM"),
-      cf.name = "land_area_fraction"),
+      standard_name = "land_area_fraction"),
   
   new("Quantity",
       id = "LeafBiomass",
