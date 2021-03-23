@@ -6,7 +6,7 @@
 \usage{
 compareLayers(
   field1,
-  field2,
+  field2 = field1,
   layers1,
   layers2 = layers1,
   do.seasonality = FALSE,
