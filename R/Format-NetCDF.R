@@ -30,8 +30,12 @@ getField_NetCDF <- function(source,
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Year = Month = Time = NULL
   
+  # Variables to ignore in any netCDF file
+  # TODO - the time_bnds information could of course be used
+  vars.to.ignore <- c("time_bnds")
+  
   # handy function to check for attributes, also including the kind of deprecated "DGVMTools_" and "DGVMData_" variants for global attributes
-  lookupAttribute <- function(nc, var, attname, verbose) {
+  lookupAttribute <- function(nc, var, attname, verbose = FALSE) {
     this_try <- ncdf4::ncatt_get(nc, var, attname, verbose)
     if(this_try$hasatt) return(this_try$value)
     this_try <- ncdf4::ncatt_get(nc, var, paste0("DGVMData_",  attname), verbose)
@@ -63,12 +67,23 @@ getField_NetCDF <- function(source,
     if(verbose) message(paste("Found, gunzipping and opening file", file.name.nc.gz, sep = " "))
   }
   
-  # Open file and get global attributes
+  # Open file
   if(verbose) message(paste0("Opening file ", file.name.nc))     
   if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
   else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
-
-
+  
+  # Check out the variables present
+  all.vars <- this.nc$var
+  if(verbose) message(paste("* NetCDF file contains variables:", paste(all.vars, collapse = ", ")))
+  if(quant@id %in% all.vars) {
+    vars.to.read <- quant@id
+    if(verbose) message(paste0("* Reading variable ", vars.to.read, ", which matches requested quant ID"))
+  }
+  else {
+    vars.to.read <- all.vars[!all.vars %in% vars.to.ignore]
+    if(verbose) message(paste0("* No variable in netCDF file matches requested quant ID (", quant@id, "so reading _all_ netCDF variables that look suitable:", paste(vars.to.read, collapse = ", ")))
+  }
+  
   
   # Check out dimensions and ignore bnds dimension if present
   dims.present <- names(this.nc$dim)
@@ -78,7 +93,7 @@ getField_NetCDF <- function(source,
   all.lats <- numeric(0)
   all.lons <- numeric(0)
   all.time.intervals <- numeric(0)
-  all.layers.vals <- numeric(0)
+  all.layer.vals <- numeric(0)
   lat.string <- ""
   lon.string <- ""
   time.string <- ""
@@ -120,7 +135,6 @@ getField_NetCDF <- function(source,
         layer.string <- possible.dim.name
         all.layer.vals <- ncdf4::ncvar_get(this.nc, layer.string)
         matched <- TRUE
-        stop(paste0("Found a 'layer' type fourth dimension in the netCDF file, ", file.name.nc, ", but reading that structure not been implemented yet, so now stopping."))
       }
     }     
     
@@ -130,6 +144,12 @@ getField_NetCDF <- function(source,
     }
     
   }
+  
+  # check if we have multiple layers from both a "vegtype" style axis *and* multiple requested variable inside the netcdf file
+  if(length(layer.string) > 0 & length(vars.to.read) > 1) {
+    
+  }
+  
   
   
   #### LON AXIS AND LAT AXIS
@@ -157,7 +177,7 @@ getField_NetCDF <- function(source,
     if(timestep.unit != "days") stop('Currently reading netCDF data with DGVMTools only accepts data with a units of time axis = "days"')
     
     # extract the start day, month and year
-    start.date <- as.POSIXct(gsub(paste(timestep.unit,'since '),'',time.units.attr$value),format="%Y-%m-%d %H:%M:%S") ## Extract the start / origin date
+    start.date <- as.POSIXct(gsub(paste(timestep.unit,'since '),'',time.units.attr$value), tryFormats=c("%Y-%m-%d %H:%M:%S", "%Y-%m-%d")) # Extract the start / origin date
     start.date.year <- as.numeric(format(start.date,"%Y"))
     start.date.month <- as.numeric(format(start.date,"%m"))
     start.date.day <- as.numeric(format(start.date,"%d"))
@@ -244,13 +264,11 @@ getField_NetCDF <- function(source,
     
     # original subannual resolution and subannual aggregation method can be determined from metadata if they exist
     sta.info@subannual.aggregate.method <- lookupAttribute(this.nc, 0, "subannual.aggregate.method", verbose)
-
+    
     sta.info@subannual.original <- lookupAttribute(this.nc, 0, "subannual.original", verbose)
     if(sta.info@subannual.original == "none") sta.info@subannual.original <- time.res
     
   }
-  
-  
   
   
   
@@ -259,126 +277,165 @@ getField_NetCDF <- function(source,
   # list of data.tables, one for each netCDF var (or 'layer' in DGVMTools terms)
   dt.list <- list()
   
-  # set up the dimension list for naming the dimensions
-  dimension.names <- list()
-  if(length(all.lons) > 0) dimension.names[["Lon"]] <- all.lons
-  if(length(all.lats) > 0) dimension.names[["Lat"]] <- all.lats
-  if(length(all.time.intervals) > 0) dimension.names[["Time"]] <- all.times
   
   # keep track of all the units, long names and standard names for later
   all.units <- c()
   all.standard_names <- c()
   all.long_names <- c()
   
-  for(this.var in this.nc$var) {
+  
+  
+  for(this.var in vars.to.read) {
     
-    # ignore the "Time_bands"/time_bnds" variable that CDO creates with time aggregation
-    if(tolower(this.var$name) != "time_bnds") {
+    # set start and count appropriately
+    # note this is done slightly clumsily with a for loop to make sure the ordering is correct
+    start <- numeric()
+    count <- numeric()
+    # also set up the dimension list for naming the dimensions once the data cube is read
+    dimension.names <- list()
+    
+    for(this.dim in this.var$dim) {
       
-      # set start and count appropriately
-      # note this is done slightly clumsily with a for loop to make sure the ordering is correct
-      start <- numeric()
-      count <- numeric()
+      if(this.dim$name == lat.string) {
+        start <- append(start, start.lat)
+        count <- append(count, count.lat)
+        if(length(all.lats) > 0) dimension.names[["Lat"]] <- all.lats
+      }
+      else if(this.dim$name  == lon.string) {
+        start <- append(start, start.lon)
+        count <- append(count, count.lon)
+        if(length(all.lons) > 0) dimension.names[["Lon"]] <- all.lons
+      }
+      else if(this.dim$name  == time.string) {
+        start <- append(start, start.time)
+        count <- append(count, count.time)
+        if(length(all.time.intervals) > 0) dimension.names[["Time"]] <- all.times
+      }
+      else if(this.dim$name  == layer.string) {
+        start <- append(start, 1)
+        count <- append(count, -1)
+        if(length(all.layer.vals) > 0) dimension.names[["Layers"]] <- all.layer.vals
+      }
       
-      for(this.dim in this.var$dim) {
+    }
+    
+    # Get the actual data and set the dimension names    
+    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
+    dimnames(this.slice) <- dimension.names
+    
+    # store the units, standard_names and long_names for later
+    if(ncdf4::ncatt_get(this.nc, this.var, "units")$hasatt) all.units <- append(all.units,  ncdf4::ncatt_get(this.nc, this.var, "units")$value)
+    if(ncdf4::ncatt_get(this.nc, this.var, "standard_name")$hasatt) all.standard_names <- append(all.standard_names,  ncdf4::ncatt_get(this.nc, this.var, "standard_name")$value)
+    if(ncdf4::ncatt_get(this.nc, this.var, "long_name")$hasatt) all.long_names <- append(all.long_names,  ncdf4::ncatt_get(this.nc, this.var, "long_name")$value)
+    
+    
+    # prepare data.table from the slice (array)
+    this.slice.dt <- as.data.table(reshape2::melt(this.slice))
+    rm(this.slice)
+    gc()
+    
+    # if necessary dcast the Layers column back to make separate columns for each layer
+    if("Layers" %in% names(this.slice.dt)) this.slice.dt <- dcast(this.slice.dt, ... ~ Layers, value.var = "value")
+    
+    this.slice.dt <- stats::na.omit(this.slice.dt)
+    if("value" %in% names(this.slice.dt)) setnames(this.slice.dt, "value", this.var$name)
+    
+    
+    # ###  HANDLE TIME AXIS 
+    if(length(all.time.intervals) > 0) {
+      
+      if(time.res == "Year") {
+        this.slice.dt[, Year := as.numeric(Time)]
+        this.slice.dt[, Time := NULL]
+      }
+      else if(time.res == "Month") {
+        toYearandMonth <- function(x) {
+          Year <- as.integer(trunc(x))
+          return(list("Year" = Year, "Month" = as.integer(round((x-Year)*100))) )
+        }
+        this.slice.dt[, c("Year", "Month") := toYearandMonth(as.numeric(Time))]
+        this.slice.dt[, Time := NULL]
         
-        if(this.dim$name == lat.string) {
-          start <- append(start, start.lat)
-          count <- append(count, count.lat)
+      }
+      else if(time.res == "Day") {
+        toYearandDay <- function(x) {
+          Year <- as.integer(trunc(x))
+          return(list("Year" = Year, "Day" = as.integer(round((x-Year)*1000))) )
         }
-        else if(this.dim$name  == lon.string) {
-          start <- append(start, start.lon)
-          count <- append(count, count.lon)
-        }
-        else if(this.dim$name  == time.string) {
-          start <- append(start, start.time)
-          count <- append(count, count.time)
-        }
+        this.slice.dt[, c("Year", "Day") := toYearandDay(as.numeric(Time))]
+        this.slice.dt[, Time := NULL]
         
       }
       
-      # Get the actual data and set the dimension names    
-      this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
-      dimnames(this.slice) <- dimension.names
-      
-      # store the units, standard_names and long_names for later
-      if(ncdf4::ncatt_get(this.nc, this.var, "units")$hasatt) all.units <- append(all.units,  ncdf4::ncatt_get(this.nc, this.var, "units")$value)
-      if(ncdf4::ncatt_get(this.nc, this.var, "standard_name")$hasatt) all.standard_names <- append(all.standard_names,  ncdf4::ncatt_get(this.nc, this.var, "standard_name")$value)
-      if(ncdf4::ncatt_get(this.nc, this.var, "long_name")$hasatt) all.long_names <- append(all.long_names,  ncdf4::ncatt_get(this.nc, this.var, "long_name")$value)
-      
-      
-      # prepare data.table from the slice (array)
-      this.slice.dt <- as.data.table(reshape2::melt(this.slice))
-      rm(this.slice)
-      gc()
-      this.slice.dt <- stats::na.omit(this.slice.dt)
-      setnames(this.slice.dt, "value", this.var$name)
-      
-      
-      
-      # ###  HANDLE TIME AXIS 
-      if(length(all.time.intervals) > 0) {
-        
-        if(time.res == "Year") {
-          this.slice.dt[, Year := as.numeric(Time)]
-          this.slice.dt[, Time := NULL]
-        }
-        else if(time.res == "Month") {
-          toYearandMonth <- function(x) {
-            Year <- as.integer(trunc(x))
-            return(list("Year" = Year, "Month" = as.integer(round((x-Year)*100))) )
-          }
-          this.slice.dt[, c("Year", "Month") := toYearandMonth(as.numeric(Time))]
-          this.slice.dt[, Time := NULL]
-          
-        }
-        else if(time.res == "Day") {
-          toYearandDay <- function(x) {
-            Year <- as.integer(trunc(x))
-            return(list("Year" = Year, "Day" = as.integer(round((x-Year)*1000))) )
-          }
-          this.slice.dt[, c("Year", "Day") := toYearandDay(as.numeric(Time))]
-          this.slice.dt[, Time := NULL]
-          
-        }
-        
-        # make new column order so that the quant is last
-        all.col.names <- names(this.slice.dt)
-        all.col.names <- all.col.names[-which(all.col.names == this.var$name)]
-        all.col.names <- append(all.col.names, this.var$name)
-        setcolorder(this.slice.dt, all.col.names)
-        
-      }
-      
-      setKeyDGVM(this.slice.dt)
+    }
+    
+    # handle column order and names
+    # if no layer dimensions
+    if(length(layer.string) == 0) {
+      # make new column order so that data is last
+      all.col.names <- names(this.slice.dt)
+      all.col.names <- all.col.names[-which(all.col.names == this.var$name)]
+      all.col.names <- append(all.col.names, this.var$name)
+      setcolorder(this.slice.dt, all.col.names)
       
       # If quantity is a categorical scheme (i.e. more than one entry in the @units slot), convert it to a factor
       if(length(quant@units) > 1) {
-          this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = quant@units)]
+        this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = quant@units)]
       }
       
-      # now join this to all.dt
-      dt.list[[length(dt.list)+1]] <- this.slice.dt
+    }
+    # for the case of a layer dimension, rename each layer and move it to the end layers
+    else {
       
+      for(this_layer_value in all.layer.vals) {
+        
+        # look for attribute with name "<layername>_<value>" or "<value>", on either the data variable or the dimension variable
+        final_layer_name <- lookupAttribute(this.nc, var = this.var, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = verbose)
+        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = this.var,  attname = paste(this_layer_value), verbose = verbose)
+        if(final_layer_name == "Unspecified")  final_layer_name <- lookupAttribute(this.nc, var =layer.string, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = verbose)
+        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = layer.string,  attname = paste(this_layer_value), verbose = verbose)
+        
+        # if didn't find something, return to the original value 
+        if(final_layer_name == "Unspecified")  final_layer_name <- this_layer_value
+        
+        # If reading multiple variables from the NetCDF file, prepend the variable name to the layer name 
+        if(length(vars.to.read) > 1) final_layer_name <- paste(this.var, final_layer_name, sep = "_")
+        
+        # set name its final name    
+        setnames(this.slice.dt, paste(this_layer_value), final_layer_name)
+        
+        # and move it to the end
+        all.col.names <- names(this.slice.dt)
+        all.col.names <- all.col.names[-which(all.col.names == final_layer_name)]
+        all.col.names <- append(all.col.names, final_layer_name)
+        setcolorder(this.slice.dt, all.col.names)
+        
+        # If quantity is a categorical scheme (i.e. more than one entry in the @units slot), convert it to a factor
+        if(length(quant@units) > 1) {
+          this.slice.dt[,this.var$name := factor(this.slice.dt[[final_layer_name]], labels = quant@units)]
+        }
+
+      }  # for each value on the layer dimensions
       
-    } # end if statement for ignoring "time_bnds" variable
+    } # if got a layer dimension
+    
+    # now join this slice to dt.list
+    setKeyDGVM(this.slice.dt)
+    dt.list[[length(dt.list)+1]] <- this.slice.dt
     
   }
   
   
   # join all together and set key
   dt <- dt.list[[1]]
-  
-  
   if(length(dt.list) > 1) {
     for(this.dt in dt.list[2:length(dt.list)]) {
       dt <- merge(x = dt, y = this.dt)
     }
   }
   
-  rm(dt.list)
-  gc()
-  
+  # clean up and set key
+  rm(dt.list); gc()
   if(verbose) message("Setting key")
   dt <- setKeyDGVM(dt)
   
@@ -417,7 +474,7 @@ getField_NetCDF <- function(source,
                                               max(all.lons) + mean(lon.diffs)/2, 
                                               min(all.lats) - mean(lat.diffs)/2,
                                               max(all.lats) + mean(lat.diffs)/2)
-    }
+  }
   else {
     warning(paste("No spatial extent determinable from netcdf file", file.name.nc,"file. A filler extent will be set."))
     sta.info@spatial.extent <- raster::extent(-1,1,-1,1)
@@ -426,19 +483,14 @@ getField_NetCDF <- function(source,
   # Look up spatial metadata for things that cannot be determined from the lons and lats 
   sta.info@spatial.extent.id <- lookupAttribute(this.nc, 0, "spatial.extent.id", verbose)
   sta.info@spatial.aggregate.method <- lookupAttribute(this.nc, 0, "spatial.aggregate.method", verbose)
-
+  
   #### PROCESS QUANTITY RELATED METADATA ####
   
   # units
   unique.units <- unique(all.units) 
   final.units <- unique(all.units)[1]
   if(length(unique.units) > 1) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.units, ")."))
-print(quant@units)
-print(final.units)
-print(all.units)
-print(unique.units)
-
-    if(final.units != quant@units & quant@units != "undefined unit"){
+  if(final.units != quant@units & quant@units != "undefined unit"){
     warning(paste0("Overriding requesting units when reading NetCDF file ", file.name.nc, ". ", quant@units, " was specified but ",final.units, " was found (so using that)."))
     quant@units <- final.units
   }

@@ -148,7 +148,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
  
  
   
-  # grab other metadata from the ci
+  # grab other metadata from the Field
   this.quant <- x@quant
   this.source <- x@source
   this.sta.info <- as(x, "STAInfo")
@@ -433,7 +433,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # also now very easy since the labels on the time dimension of the incoming arrays are exactly what we want: days since start date 
   if(!is.null(start.date)) {
     all.dims[["Time"]] <- ncdf4::ncdim_def(name = time.dim.name,  
-                                           units = paste("days since", start.date), 
+                                           units = paste("days since", start.date, "12:00:00"), 
                                            vals = as.numeric(all.dimnames[[3]]), 
                                            calendar = calendar, 
                                            unlim=TRUE, 
@@ -536,10 +536,12 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   rm(x); gc()
   
   # add meta-data if layers collapsed to a dimension
+  # put it to both the data variable and the dimension axis (not sure which is prefereable, but metadata is cheap)
   if(!is.null(layer.dim.name)) {
     ncdf4::ncatt_put(outfile, quantity@id, "standard_name", standard_name)
     for(counter in 1:length(old.layers)){
       ncdf4::ncatt_put(outfile, all.vars, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
+      ncdf4::ncatt_put(outfile, layer.dim.name, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
     }
   }
   
