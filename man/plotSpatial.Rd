@@ -29,6 +29,7 @@ plotSpatial(
   plot = TRUE,
   interior.lines = TRUE,
   tile = FALSE,
+  pixel.size = NULL,
   ...
 )
 }
@@ -89,6 +90,9 @@ Other things can be overlain on the resulting plot with further ggplot2 commands
 
 \item{tile}{Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
 for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.}
+
+\item{pixel.size}{Numeric, allows you to alter the plotted pixel size (height and width simultaneously using the same value).  This is useful 
+if you are plotting a collection of individual sites which do not have regular spacing.  Note the "tile = TRUE" (see above) will automatically set if you haven't done it manually.}
 
 \item{...}{Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 \itemize{
