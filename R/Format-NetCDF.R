@@ -72,22 +72,28 @@ getField_NetCDF <- function(source,
   if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
   else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
   
-  # Check out the variables present
-  all.vars <- this.nc$var
-  if(verbose) message(paste("* NetCDF file contains variables:", paste(all.vars, collapse = ", ")))
-  if(quant@id %in% all.vars) {
+  #### EXAMINE VARIABLES PRESENT IN FILE ####
+  
+  # Build a vector of variables which have dimensions associated with them and which aren't flagged as dimension variables
+  all_vars_names <- c()
+  for(this_var in this.nc$var){
+    if(this_var$ndims > 0 && !this_var$id$isdimvar) all_vars_names <- append(all_vars_names, this_var$name)
+  }
+  
+  if(verbose) message(paste("* NetCDF file contains useful variables:", paste(all_vars_names, collapse = ", ")))
+  vars.to.read <- list()
+  if(quant@id %in% all_vars_names) {
     vars.to.read <- quant@id
     if(verbose) message(paste0("* Reading variable ", vars.to.read, ", which matches requested quant ID"))
   }
   else {
-    vars.to.read <- all.vars[!all.vars %in% vars.to.ignore]
-    if(verbose) message(paste0("* No variable in netCDF file matches requested quant ID (", quant@id, "so reading _all_ netCDF variables that look suitable:", paste(vars.to.read, collapse = ", ")))
+    vars.to.read <- all_vars_names[!all_vars_names %in% vars.to.ignore]
+    if(verbose) message(paste0("* No variable in netCDF file matches requested quant ID (", quant@id, ") so reading *all* netCDF variables that look suitable: ", paste(vars.to.read, collapse = ", ")))
   }
-  
   
   # Check out dimensions and ignore bnds dimension if present
   dims.present <- names(this.nc$dim)
-  if(verbose) message(paste("File has dimensions", paste(dims.present, collapse = ","), sep = " "))
+  if(verbose) message(paste("* Dimensions present in file:", paste(dims.present, collapse = ","), sep = " "))
   dims.present <- dims.present[which(dims.present != "bnds")]
   
   all.lats <- numeric(0)
@@ -108,6 +114,7 @@ getField_NetCDF <- function(source,
         lat.string <- possible.dim.name
         all.lats <- ncdf4::ncvar_get(this.nc, lat.string) 
         matched <- TRUE
+        if(verbose) message(paste0("** Confirmed latitude dimension: '", lat.string, "', with ", length(all.lats), " values."))
       }
     }
     
@@ -117,6 +124,8 @@ getField_NetCDF <- function(source,
         lon.string <- possible.dim.name
         all.lons <-  ncdf4::ncvar_get(this.nc, lon.string) 
         matched <- TRUE
+        if(verbose) message(paste0("** Confirmed longitude dimension: '", lon.string, "', with ", length(all.lons), " values."))
+        
       }
     }
     
@@ -126,15 +135,17 @@ getField_NetCDF <- function(source,
         time.string <- possible.dim.name
         all.time.intervals <- ncdf4::ncvar_get(this.nc, time.string)
         matched <- TRUE
+        if(verbose) message(paste0("** Confirmed time dimension: '", time.string, "', with ", length(all.time.intervals), " values."))
       }
     }                   
     
     # pick up Layers
-    for(possible.dim.name in c("pft", "PFT", "PFTs", "PFTS", "pfts", "vegtype", "vegtypes", "layer", "layers")) {
+    for(possible.dim.name in c("pft", "PFT", "PFTs", "PFTS", "pfts", "vegtype", "vegtypes", "layer", "layers", "z", "Z")) {
       if(this.dimension == possible.dim.name) {
         layer.string <- possible.dim.name
         all.layer.vals <- ncdf4::ncvar_get(this.nc, layer.string)
         matched <- TRUE
+        if(verbose) message(paste0("** Confirmed layer-type dimension: '", layer.string, "', with ", length(all.layer.vals), " values."))
       }
     }     
     
@@ -143,6 +154,10 @@ getField_NetCDF <- function(source,
       stop(paste("Unknown dimension found", this.dimension, "which I don't know what to do with."))
     }
     
+  }
+  
+  if( lat.string == "" &&  lon.string == "" &&  time.string == "" &&  layer.string == "") {
+    stop("Not picked up any dimensions, failing...")
   }
   
   # check if we have multiple layers from both a "vegtype" style axis *and* multiple requested variable inside the netcdf file
@@ -166,7 +181,7 @@ getField_NetCDF <- function(source,
   #### TIME AXIS - calculate the time labels and the start and count values for the time axis
   
   
-  # First, let's determine some details about the time axis
+  # First, let's determine some details about the time axis if there is one
   if(length(all.time.intervals) > 0) { 
     
     # extract the start data from the time units string
@@ -287,6 +302,14 @@ getField_NetCDF <- function(source,
   
   for(this.var in vars.to.read) {
     
+    if(verbose) message(paste0("* Reading variable: '", this.var, "'"))
+    
+    for(this_var_obj in this.nc$var) {
+      if(this_var_obj$name == this.var) {
+        break
+      }
+    }
+
     # set start and count appropriately
     # note this is done slightly clumsily with a for loop to make sure the ordering is correct
     start <- numeric()
@@ -294,39 +317,45 @@ getField_NetCDF <- function(source,
     # also set up the dimension list for naming the dimensions once the data cube is read
     dimension.names <- list()
     
-    for(this.dim in this.var$dim) {
+    for(this.dim in this_var_obj$dim) {
       
       if(this.dim$name == lat.string) {
         start <- append(start, start.lat)
         count <- append(count, count.lat)
         if(length(all.lats) > 0) dimension.names[["Lat"]] <- all.lats
+        if(verbose) message(paste("* Reading data for", count.lat, "latitude values ('-1' means reading the full range available"))
       }
       else if(this.dim$name  == lon.string) {
         start <- append(start, start.lon)
         count <- append(count, count.lon)
         if(length(all.lons) > 0) dimension.names[["Lon"]] <- all.lons
+        if(verbose) message(paste("* Reading data for", count.lon, "longitude values ('-1' means reading the full range available"))
       }
       else if(this.dim$name  == time.string) {
         start <- append(start, start.time)
         count <- append(count, count.time)
         if(length(all.time.intervals) > 0) dimension.names[["Time"]] <- all.times
+        if(verbose) message(paste("* Reading data for", count.time, "time values ('-1' means reading the full range available"))
       }
       else if(this.dim$name  == layer.string) {
         start <- append(start, 1)
         count <- append(count, -1)
         if(length(all.layer.vals) > 0) dimension.names[["Layers"]] <- all.layer.vals
+        if(verbose) message(paste("* Reading data for", -1, "layer values ('-1' means reading the full range available"))
       }
       
     }
     
     # Get the actual data and set the dimension names    
-    this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
+    this.slice <- ncdf4::ncvar_get(this.nc, this_var_obj, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
+    if(verbose) message(paste0("Read slice of netCDF file with dimensions: ", paste(dim(this.slice), collapse = ", ")))
+    if(verbose) message(paste("Setting dimension names: ", paste(names(dimension.names), collapse = ", ")))
     dimnames(this.slice) <- dimension.names
     
     # store the units, standard_names and long_names for later
-    if(ncdf4::ncatt_get(this.nc, this.var, "units")$hasatt) all.units <- append(all.units,  ncdf4::ncatt_get(this.nc, this.var, "units")$value)
-    if(ncdf4::ncatt_get(this.nc, this.var, "standard_name")$hasatt) all.standard_names <- append(all.standard_names,  ncdf4::ncatt_get(this.nc, this.var, "standard_name")$value)
-    if(ncdf4::ncatt_get(this.nc, this.var, "long_name")$hasatt) all.long_names <- append(all.long_names,  ncdf4::ncatt_get(this.nc, this.var, "long_name")$value)
+    if(ncdf4::ncatt_get(this.nc, this_var_obj, "units")$hasatt) all.units <- append(all.units,  ncdf4::ncatt_get(this.nc, this_var_obj, "units")$value)
+    if(ncdf4::ncatt_get(this.nc, this_var_obj, "standard_name")$hasatt) all.standard_names <- append(all.standard_names,  ncdf4::ncatt_get(this.nc, this_var_obj, "standard_name")$value)
+    if(ncdf4::ncatt_get(this.nc, this_var_obj, "long_name")$hasatt) all.long_names <- append(all.long_names,  ncdf4::ncatt_get(this.nc, this_var_obj, "long_name")$value)
     
     
     # prepare data.table from the slice (array)
@@ -338,7 +367,7 @@ getField_NetCDF <- function(source,
     if("Layers" %in% names(this.slice.dt)) this.slice.dt <- dcast(this.slice.dt, ... ~ Layers, value.var = "value")
     
     this.slice.dt <- stats::na.omit(this.slice.dt)
-    if("value" %in% names(this.slice.dt)) setnames(this.slice.dt, "value", this.var$name)
+    if("value" %in% names(this.slice.dt)) setnames(this.slice.dt, "value", this_var_obj$name)
     
     
     # ###  HANDLE TIME AXIS 
@@ -374,13 +403,13 @@ getField_NetCDF <- function(source,
     if(length(layer.string) == 0) {
       # make new column order so that data is last
       all.col.names <- names(this.slice.dt)
-      all.col.names <- all.col.names[-which(all.col.names == this.var$name)]
-      all.col.names <- append(all.col.names, this.var$name)
+      all.col.names <- all.col.names[-which(all.col.names == this_var_obj$name)]
+      all.col.names <- append(all.col.names, this_var_obj$name)
       setcolorder(this.slice.dt, all.col.names)
       
       # If quantity is a categorical scheme (i.e. more than one entry in the @units slot), convert it to a factor
       if(length(quant@units) > 1) {
-        this.slice.dt[,this.var$name := factor(this.slice.dt[[this.var$name]], labels = quant@units)]
+        this.slice.dt[,this_var_obj$name := factor(this.slice.dt[[this_var_obj$name]], labels = quant@units)]
       }
       
     }
@@ -390,8 +419,8 @@ getField_NetCDF <- function(source,
       for(this_layer_value in all.layer.vals) {
         
         # look for attribute with name "<layername>_<value>" or "<value>", on either the data variable or the dimension variable
-        final_layer_name <- lookupAttribute(this.nc, var = this.var, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = verbose)
-        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = this.var,  attname = paste(this_layer_value), verbose = verbose)
+        final_layer_name <- lookupAttribute(this.nc, var = this_var_obj, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = verbose)
+        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = this_var_obj,  attname = paste(this_layer_value), verbose = verbose)
         if(final_layer_name == "Unspecified")  final_layer_name <- lookupAttribute(this.nc, var =layer.string, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = verbose)
         if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = layer.string,  attname = paste(this_layer_value), verbose = verbose)
         
@@ -402,7 +431,10 @@ getField_NetCDF <- function(source,
         if(length(vars.to.read) > 1) final_layer_name <- paste(this.var, final_layer_name, sep = "_")
         
         # set name its final name    
-        setnames(this.slice.dt, paste(this_layer_value), final_layer_name)
+        print(this_layer_value)
+        print(final_layer_name)
+        
+        setnames(this.slice.dt, paste(this_layer_value), paste(final_layer_name))
         
         # and move it to the end
         all.col.names <- names(this.slice.dt)
@@ -412,9 +444,9 @@ getField_NetCDF <- function(source,
         
         # If quantity is a categorical scheme (i.e. more than one entry in the @units slot), convert it to a factor
         if(length(quant@units) > 1) {
-          this.slice.dt[,this.var$name := factor(this.slice.dt[[final_layer_name]], labels = quant@units)]
+          this.slice.dt[,this_var_obj$name := factor(this.slice.dt[[final_layer_name]], labels = quant@units)]
         }
-
+        
       }  # for each value on the layer dimensions
       
     } # if got a layer dimension
@@ -438,6 +470,10 @@ getField_NetCDF <- function(source,
   rm(dt.list); gc()
   if(verbose) message("Setting key")
   dt <- setKeyDGVM(dt)
+  
+  # special case for exactly one layer in total, set the name that the Quant ID
+  if(length(layers(dt)) == 1) setnames(dt, layers(dt), quant@id)
+  
   
   # STInfo
   st.info <- getDimInfo(dt)
@@ -483,36 +519,42 @@ getField_NetCDF <- function(source,
   # Look up spatial metadata for things that cannot be determined from the lons and lats 
   sta.info@spatial.extent.id <- lookupAttribute(this.nc, 0, "spatial.extent.id", verbose)
   sta.info@spatial.aggregate.method <- lookupAttribute(this.nc, 0, "spatial.aggregate.method", verbose)
+  if(sta.info@spatial.aggregate.method == "Unspecified")  sta.info@spatial.aggregate.method <- "none"
   
   #### PROCESS QUANTITY RELATED METADATA ####
   
   # units
   unique.units <- unique(all.units) 
   final.units <- unique(all.units)[1]
-  if(length(unique.units) > 1) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.units, ")."))
-  if(final.units != quant@units & quant@units != "undefined unit"){
-    warning(paste0("Overriding requesting units when reading NetCDF file ", file.name.nc, ". ", quant@units, " was specified but ",final.units, " was found (so using that)."))
-    quant@units <- final.units
+  if(length(final.units) > 0) {
+    if(length(unique.units) > 1) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.units, ")."))
+    if(final.units != quant@units & quant@units != "undefined unit"){
+      warning(paste0("Overriding requested units when reading NetCDF file ", file.name.nc, ". ", quant@units, " was specified but ", final.units, " was found (so using that)."))
+      quant@units <- final.units
+    }
   }
   
   # standard names (CF standard_name)
   unique.standard_name <- unique(all.standard_names) 
   final.standard_name <- unique(all.standard_names)[1]
-  if(length(unique.standard_name) > 1) warning(paste0("Multiple standard_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.standard_name, ")."))
-  if(final.standard_name != quant@standard_name & quant@standard_name != "undefined unit"){
-    warning(paste0("Overriding requested standard_name when reading NetCDF file ", file.name.nc, ". ", quant@standard_name, " was specified but ",final.standard_name, " was found (so using that)."))
-    quant@standard_name <- final.standard_name
+  if(length(final.standard_name) > 0) {
+    if(length(unique.standard_name) > 1) warning(paste0("Multiple standard_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.standard_name, ")."))
+    if(final.standard_name != quant@standard_name & quant@standard_name != "undefined unit"){
+      warning(paste0("Overriding requested standard_name when reading NetCDF file ", file.name.nc, ". ", quant@standard_name, " was specified but ",final.standard_name, " was found (so using that)."))
+      quant@standard_name <- final.standard_name
+    }
   }
   
   # long names (CF long_name which is mapped to DGVMTools @name)
   unique.long_name <- unique(all.long_names) 
   final.long_name <- unique(all.long_names)[1]
-  if(length(unique.long_name) > 1) warning(paste0("Multiple long_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.long_name, ")."))
-  if(final.long_name != quant@name & quant@name != "undefined unit"){
-    warning(paste0("Overriding requested long_name when reading NetCDF file ", file.name.nc, ". ", quant@name, " was specified but ",final.long_name, " was found (so using that)."))
-    quant@name <- final.long_name
+  if(length(final.long_name) > 0) {
+    if(length(unique.long_name) > 1) warning(paste0("Multiple long_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.long_name, ")."))
+    if(final.long_name != quant@name & quant@name != "undefined unit"){
+      warning(paste0("Overriding requested long_name when reading NetCDF file ", file.name.nc, ". ", quant@name, " was specified but ",final.long_name, " was found (so using that)."))
+      quant@name <- final.long_name
+    }
   }
-  
   
   
   
@@ -527,7 +569,7 @@ getField_NetCDF <- function(source,
   # set keys
   setKeyDGVM(dt)
   
-  # remove any NAs, complete list and return
+  # remove any NAs
   dt <- stats::na.omit(dt)
   
   # close the netcdf file and if necessary zip again
@@ -538,17 +580,14 @@ getField_NetCDF <- function(source,
   
   # make the ID and then make and return Field
   field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
-  
-  return(
-    
-    new("Field",
-        id = field.id,
-        data = dt,
-        quant = quant,
-        source = source,
-        sta.info 
-    )
-    
+  message(paste0("Reading of NetCDF file ", file.name.nc, " sucessful!"))
+  new("Field",
+      id = field.id,
+      data = dt,
+      quant = quant,
+      source = source,
+      sta.info 
+      
   )
   
 }

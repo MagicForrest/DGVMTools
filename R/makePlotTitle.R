@@ -26,8 +26,8 @@ makePlotTitle <- function(fields){
   
   ##### make spatial section
   spatial.string <- character(0)
-  if(sta.info@spatial.aggregate.method != "none") spatial.string <- paste(spatial.string, sta.info@spatial.aggregate.method)
-  if(length(sta.info@spatial.extent.id) > 0) {
+  if(!sta.info@spatial.aggregate.method %in% c("none", "Unspecified")) spatial.string <- paste(spatial.string, sta.info@spatial.aggregate.method)
+  if(length(sta.info@spatial.extent.id) > 0  && !sta.info@spatial.extent.id %in% c("Unspecified") ) {
     # if no method then no need to insert "over" 
     if(length((spatial.string)) == 0) {
       if(sta.info@spatial.extent.id == "Full")  spatial.string <- paste(spatial.string, "full spatial extent")
