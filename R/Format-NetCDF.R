@@ -130,7 +130,7 @@ getField_NetCDF <- function(source,
     }
     
     # pick up Time
-    for(possible.dim.name in c("time", "Time")) {
+    for(possible.dim.name in c("time", "Time", "year", "Year")) {
       if(this.dimension == possible.dim.name) {
         time.string <- possible.dim.name
         all.time.intervals <- ncdf4::ncvar_get(this.nc, time.string)
@@ -184,90 +184,155 @@ getField_NetCDF <- function(source,
   # First, let's determine some details about the time axis if there is one
   if(length(all.time.intervals) > 0) { 
     
-    # extract the start data from the time units string
+    
+    # extract the details about the time axis, if it the units attributes exists
+    relative.time.axis <- FALSE
     time.units.attr <- ncdf4::ncatt_get(this.nc, time.string, "units")
-    time.units.string.list <- strsplit(time.units.attr$value, " ")
-    tmp.unit <- unlist(time.units.string.list[1]) # Isolate the unit .i.e. seconds, hours, days etc.
-    timestep.unit <- tmp.unit[which(tmp.unit %in% c("seconds","hours","days"))[1]] # Check unit
-    if(timestep.unit != "days") stop('Currently reading netCDF data with DGVMTools only accepts data with a units of time axis = "days"')
-    
-    # extract the start day, month and year
-    start.date <- as.POSIXct(gsub(paste(timestep.unit,'since '),'',time.units.attr$value), tryFormats=c("%Y-%m-%d %H:%M:%S", "%Y-%m-%d")) # Extract the start / origin date
-    start.date.year <- as.numeric(format(start.date,"%Y"))
-    start.date.month <- as.numeric(format(start.date,"%m"))
-    start.date.day <- as.numeric(format(start.date,"%d"))
-    
-    # look at the time steps
-    mean.timestep.differences <- mean(diff(all.time.intervals))
-    # if the mean is exactly unity then the data is daily 
-    if(mean.timestep.differences == 1 ) time.res <- "Day"
-    # if the mean is between 28 and 31 (inclusive) assume monthly   
-    else if(mean.timestep.differences >= 28 & mean.timestep.differences <= 31 ) time.res <- "Month"
-    # if the mean is between 359 and 367 (inclusive) assume yearly  
-    else if(mean.timestep.differences >= 360 & mean.timestep.differences <= 367 ) time.res <- "Year"       
-    else stop("Data doesn't appear to be on daily, monthly, or yearly timesteps.  Other options are not currently supported by the DGVMTools, but could potentially be.  So if you need this please contact the author.")
-    
-    
-    # default values if no time selection is required
-    start.time <- 1
-    count.time <- -1
-    
-    if(time.res == "Year") {
-      
-      # This function call processes a time axis which is assumed to be yearly
-      # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
-      # and the actual years corresponding to this selection.
-      year.axis.info <- processYearlyNCAxis(axis.values = all.time.intervals, start.year = start.date.year, target.STAInfo = target.STAInfo)  
-      start.time <- year.axis.info$start.time
-      count.time <- year.axis.info$count.time
-      years.vector <- year.axis.info$years.vector 
-      
-      # make a numeric code of the years for labelling this dimension once it is read
-      all.times <- paste(years.vector)
-      
+    if(time.units.attr$hasatt) {
+      time.units.string.vec <- unlist(strsplit(time.units.attr$value, " "))
+      timestep.unit <- time.units.string.vec[1]
+      if(tolower(time.units.string.vec[2]) == "since"  || tolower(time.units.string.vec[2]) == "after") relative.time.axis <- TRUE
+    }
+    # if no unit attributes make some assumptions (based on the axis name only or fail
+    else {
+      if(tolower(time.string) == "years"  || tolower(time.string) == "year") {
+        timestep.unit <- "year"
+      }
+      else stop(paste("Unclear time axis in file", file.name.nc))
     }
     
-    else if(time.res == "Month") {
+    if(relative.time.axis) {
       
-      # This function call processes a time axis which is assumed to be monthly
-      # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
-      # and the actual years and months corresponding to this selection.
-      month.axis.info <- processMonthlyNCAxis(axis.values = all.time.intervals, start.date = start.date, target.STAInfo = target.STAInfo)  
-      start.time <- month.axis.info$start.time
-      count.time <- month.axis.info$count.time
-      years.vector <- month.axis.info$years.vector 
-      months.vector <- month.axis.info$months.vector 
+      #if(timestep.unit != "days") stop('When reading relative time axes, DGVMTools only accepts units = "days since ..."')
       
-      # make the vector of all times as a code "year.month" for labelling this dimension once it is read
-      all.times  <- paste(years.vector, months.vector, sep = ".")
+      # extract the start day, month and year and return it as custom date type (vector with $year, $month and $day)
+      # the reason for using this custom format is to support years < 0 and > 9999
+      start.date <- parseStartDate(time.units.attr$value)
+      
+      # if time step unit is days
+      if(timestep.unit == "days") {
+        
+        # look at the time steps
+        mean.timestep.differences <- mean(diff(all.time.intervals))
+        # if the mean is exactly unity then the data is daily 
+        if(mean.timestep.differences == 1 ) time.res <- "Day"
+        # if the mean is between 28 and 31 (inclusive) assume monthly   
+        else if(mean.timestep.differences >= 28 & mean.timestep.differences <= 31 ) time.res <- "Month"
+        # if the mean is between 359 and 367 (inclusive) assume yearly  
+        else if(mean.timestep.differences >= 360 & mean.timestep.differences <= 367 ) time.res <- "Year"       
+        else stop("Data doesn't appear to be on daily, monthly, or yearly timesteps.  Other options are not currently supported by the DGVMTools, but could potentially be.  So if you need this please contact the author.")
+        
+        
+        # default values if no time selection is required
+        start.time <- 1
+        count.time <- -1
+        
+        if(time.res == "Year") {
+          
+          # This function call processes a time axis which is assumed to be yearly
+          # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
+          # and the actual years corresponding to this selection.
+          year.axis.info <- processYearlyNCAxis(axis.values = all.time.intervals, 
+                                                start.year = start.date["year"], 
+                                                target.STAInfo = target.STAInfo)  
+          start.time <- year.axis.info$start.time
+          count.time <- year.axis.info$count.time
+          years.vector <- year.axis.info$years.vector 
+          
+          # make a numeric code of the years for labelling this dimension once it is read
+          all.times <- paste(years.vector)
+          
+        }
+        
+        else if(time.res == "Month") {
+          
+          # This function call processes a time axis which is assumed to be monthly
+          # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
+          # and the actual years and months corresponding to this selection.
+          month.axis.info <- processMonthlyNCAxis(axis.values = all.time.intervals, 
+                                                  start.year = start.date["year"], 
+                                                  start.month = start.date["month"],
+                                                  target.STAInfo = target.STAInfo)  
+          start.time <- month.axis.info$start.time
+          count.time <- month.axis.info$count.time
+          years.vector <- month.axis.info$years.vector 
+          months.vector <- month.axis.info$months.vector 
+          
+          # make the vector of all times as a code "year.month" for labelling this dimension once it is read
+          all.times  <- paste(years.vector, months.vector, sep = ".")
+          
+        }
+        
+        else if(time.res == "Day") {
+          
+          # First, lookup the calandar attribute and determine if it is proleptic
+          calendar <- ncdf4::ncatt_get(this.nc, time.string, "calendar")
+          if(calendar$hasatt) calendar <- calendar$value
+          else stop("DGVMTools requires a 'calendar' attribute on the time axis for daily netCDF data")
+          
+          
+          # This function call processes a time axis which is assumed to be daily
+          # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
+          # and the actual years and days corresponding to this selection.
+          daily.axis.info <- processDailyNCAxis(axis.values = all.time.intervals, 
+                                                start.year = start.date["year"], 
+                                                start.day = start.date["day"], 
+                                                target.STAInfo = target.STAInfo,
+                                                calendar = calendar)  
+          start.time <- daily.axis.info$start.time
+          count.time <- daily.axis.info$count.time
+          years.vector <- daily.axis.info$years.vector 
+          days.vector <- daily.axis.info$days.vector 
+          
+          
+          # make a numeric code of Year.Day
+          all.times  <- paste(years.vector, days.vector, sep = ".")
+          
+        }  # end if-else statement for different time resolutions
+        
+      } # end if time step is days
+      # if time step unit is month
+      else if(timestep.unit == "months") {
+        
+        
+        
+        
+        print("WOOOHOOOODILLLLYYY")
+        stop()
+        
+      }
+      # else catch whatever else
+      else stop('When reading relative time axes, DGVMTools only accepts units = "days since ...", "month since..."')
+      
+    } # end if relative time axis
+    
+    # else an absolute time axis
+    else {
+      
+      # right now only considering one timestep unit "year(s)", which is pretty easy
+      if(tolower(timestep.unit) == "year" || tolower(timestep.unit) == "years") {
+        time.res <- "Year"
+        # check they are all integer values (ie no confusing fractional year)
+        if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) stop("For an absolute time axis, only integer values of years are supported")
+        
+        # get the indices consider cropping
+        cropped.year.indices <- calculateYearCroppingIndices(target.STAInfo, all.time.intervals)
+        start.time <- cropped.year.indices$first
+        count.time <- cropped.year.indices$last - cropped.year.indices$first + 1 
+        
+        # get the years.vector by cropping the full years
+        years.vector <- all.time.intervals[cropped.year.indices$first:cropped.year.indices$last]
+        
+        # make a numeric code of the years for labelling this dimension once it is read
+        all.times <- paste(years.vector)
+        
+      }
+      else {
+        stop("Absolute time axes with any unit other than 'year', not currently supported")
+      }
+      
       
     }
-    
-    else if(time.res == "Day") {
-      
-      # First, lookup the calandar attribute and determine if it is proleptic
-      calendar <- ncdf4::ncatt_get(this.nc, time.string, "calendar")
-      if(calendar$hasatt) calendar <- calendar$value
-      else stop("DGVMTools requires a 'calendar' attribute on the time axis for daily netCDF data")
-      
-      
-      # This function call processes a time axis which is assumed to be daily
-      # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
-      # and the actual years and days corresponding to this selection.
-      daily.axis.info <- processDailyNCAxis(axis.values = all.time.intervals, 
-                                            start.date = start.date, 
-                                            target.STAInfo = target.STAInfo,
-                                            calendar = calendar)  
-      start.time <- daily.axis.info$start.time
-      count.time <- daily.axis.info$count.time
-      years.vector <- daily.axis.info$years.vector 
-      days.vector <- daily.axis.info$days.vector 
-      
-      
-      # make a numeric code of Year.Day
-      all.times  <- paste(years.vector, days.vector, sep = ".")
-      
-    }  # end if-else statement for different time resolutions
     
     
     # set year and subannual meta-data - note that years.vector (ie. the final years of data that will be selected) must be defined above
@@ -309,7 +374,7 @@ getField_NetCDF <- function(source,
         break
       }
     }
-
+    
     # set start and count appropriately
     # note this is done slightly clumsily with a for loop to make sure the ordering is correct
     start <- numeric()
@@ -431,9 +496,6 @@ getField_NetCDF <- function(source,
         if(length(vars.to.read) > 1) final_layer_name <- paste(this.var, final_layer_name, sep = "_")
         
         # set name its final name    
-        print(this_layer_value)
-        print(final_layer_name)
-        
         setnames(this.slice.dt, paste(this_layer_value), paste(final_layer_name))
         
         # and move it to the end

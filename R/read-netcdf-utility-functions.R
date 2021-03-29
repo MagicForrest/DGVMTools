@@ -1,3 +1,69 @@
+#' Parse start date
+#' 
+#' Parses a "units" attribute string of the time axis of a netCDF file.  Returns a three-vector of year,month,time.
+#' NOTE: Accepts years < 0 and years > 9999 
+#' 
+#' @keywords internal
+
+parseStartDate <- function(start.date.string) {
+  
+  # extract the time step string  (ie. day/month/year) so we can gsup it out
+  time.units.string.vec <- unlist(strsplit(start.date.string, " "))
+  timestep.unit <- time.units.string.vec[1]
+  
+  # process the attribute string a little to extract the start date
+  start.date.string <- gsub(paste0(timestep.unit,' '),'', start.date.string)
+  start.date.string <- gsub(paste0("since",' '),'', start.date.string)
+  start.date.string <- gsub(paste0("after",' '),'', start.date.string)
+  start.date.string <- trimws(start.date.string)
+
+  # check for negative start year
+  negative.year.multiplier <- 1
+  if(substr(start.date.string, 1, 1) == "-") {
+    start.date.string <- substr(start.date.string, 2, nchar(start.date.string))
+    negative.year.multiplier <- -1
+  }
+
+  
+  # try to get start daye with exception handling
+  start.date <- tryCatch({
+     as.POSIXct(start.date.string, tryFormats=c("%Y-%m-%d %H:%M:%S", "%Y-%m-%d")) # Extract the start / origin date
+  }, warning = function(war) {
+    return(NA)
+  }, error = function(err) {
+    return(NA)
+  }, finally = {
+  })
+  
+  # if standard date format worked then easy, happy days
+  if(!is.na(start.date)) {
+    return(c(year = as.numeric(format(start.date,"%Y")) * negative.year.multiplier,
+             month = as.numeric(format(start.date,"%m")),
+             day = as.numeric(format(start.date,"%d"))
+             
+    ))
+  }
+  # else do some "hard parsing"
+  else{
+    
+    # first split string by " " (space) to remove and select the first part to get the date (discarding the time)
+    start.date.string.dateonly <- unlist(strsplit(start.date.string, " "))[1]
+    
+    # now split it by "-" to separate the day month year
+    start.date.string.dateonly.vec <- unlist(strsplit(start.date.string.dateonly, "-"))
+    start.date.year <- as.numeric(start.date.string.dateonly.vec[1]) *  negative.year.multiplier
+    if(length(start.date.string.dateonly.vec) > 1) start.date.month <- as.numeric(start.date.string.dateonly.vec[2])
+    if(length(start.date.string.dateonly.vec) > 2) start.date.day <- as.numeric(start.date.string.dateonly.vec[3])
+    
+  }
+  
+  return( c(year = start.date.year, 
+            month = start.date.month, 
+            day = start.date.day))
+  
+}
+
+
 
 calculateYearCroppingIndices <- function(target_STAInfo, years_vector) {
   
@@ -155,7 +221,6 @@ processYearlyNCAxis <- function(axis.values, start.year, target.STAInfo) {
   # get the first and last indices based on the years requested
   # returns a two-element list, with elements "first" and "last"
   first.last.indices <- calculateYearCroppingIndices(target.STAInfo, years.vector)
-  
   # make the index/count for reading the netCDF files
   start.time <- first.last.indices$first
   count.time <- first.last.indices$last - first.last.indices$first + 1
@@ -177,12 +242,9 @@ processYearlyNCAxis <- function(axis.values, start.year, target.STAInfo) {
 #' and the actual years and months corresponding to this selection.
 #' 
 #' @keywords internal
-processMonthlyNCAxis <- function(axis.values, start.date, target.STAInfo) {
+processMonthlyNCAxis <- function(axis.values, start.year, start.month, target.STAInfo) {
   
-  # extract the month and year from the start date
-  start.year <- as.numeric(format(start.date,"%Y"))
-  start.month <- as.numeric(format(start.date,"%m"))
-  
+ 
   # convert the netcdf time increments into years and months
   
   # first make a vector of the years and months
@@ -221,11 +283,7 @@ processMonthlyNCAxis <- function(axis.values, start.date, target.STAInfo) {
 #' and the actual years and days corresponding to this selection.
 #' 
 #' @keywords internal
-processDailyNCAxis <- function(axis.values, start.date, target.STAInfo,  calendar)  {
-  
-  # get start day and year from start.date
-  start.date.year <- as.numeric(format(start.date,"%Y"))
-  start.date.day <- as.numeric(format(start.date,"%d"))
+processDailyNCAxis <- function(axis.values, start.year, start.day, target.STAInfo,  calendar)  {
   
   # is calendar proleptic
   proleptic <- FALSE
@@ -245,8 +303,8 @@ processDailyNCAxis <- function(axis.values, start.date, target.STAInfo,  calenda
   # make a big vector of the years and days from the start date (defined by the netCDF time axis) to the beyond the end of the data
   years.vector <- c()
   days.vector<- c()
-  day.counter <- start.date.day
-  year <- start.date.year
+  day.counter <- start.day
+  year <- start.year
   while(day.counter < axis.values[length(axis.values)]) {
     
     # select year length based on the calendar
