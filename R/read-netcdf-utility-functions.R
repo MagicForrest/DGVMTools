@@ -1,13 +1,13 @@
 #' Parse start date
 #' 
 #' Parses a "units" attribute string of the time axis of a netCDF file.  Returns a three-vector of year,month,time.
-#' NOTE: Accepts years < 0 and years > 9999 
+#' NOTE: Accepts years < 0 and years > 9999, unlike POSIX and "Date" dates. 
 #' 
 #' @keywords internal
 
 parseStartDate <- function(start.date.string) {
   
-  # extract the time step string  (ie. day/month/year) so we can gsup it out
+  # extract the time step string  (ie. "day"/"month"/"year") so we can gsub it out
   time.units.string.vec <- unlist(strsplit(start.date.string, " "))
   timestep.unit <- time.units.string.vec[1]
   
@@ -25,7 +25,7 @@ parseStartDate <- function(start.date.string) {
   }
 
   
-  # try to get start daye with exception handling
+  # try to get start date with very neccessary exception handling
   start.date <- tryCatch({
      as.POSIXct(start.date.string, tryFormats=c("%Y-%m-%d %H:%M:%S", "%Y-%m-%d")) # Extract the start / origin date
   }, warning = function(war) {
@@ -46,10 +46,10 @@ parseStartDate <- function(start.date.string) {
   # else do some "hard parsing"
   else{
     
-    # first split string by " " (space) to remove and select the first part to get the date (discarding the time)
+    # first split string by " " (space) to remove and select the first part to get the date (discarding the time and whatever else)
     start.date.string.dateonly <- unlist(strsplit(start.date.string, " "))[1]
     
-    # now split it by "-" to separate the day month year
+    # now split it by "-" to separate the year, month, day
     start.date.string.dateonly.vec <- unlist(strsplit(start.date.string.dateonly, "-"))
     start.date.year <- as.numeric(start.date.string.dateonly.vec[1]) *  negative.year.multiplier
     if(length(start.date.string.dateonly.vec) > 1) start.date.month <- as.numeric(start.date.string.dateonly.vec[2])
@@ -249,7 +249,8 @@ processMonthlyNCAxis <- function(axis.values, start.year, start.month, target.ST
   
   # first make a vector of the years and months
   nyears.to.cover <- ceiling(length(axis.values) / 12)
-  years.to.cover <- 0:(nyears.to.cover-1) + start.year
+  years.to.cover <- start.year:((nyears.to.cover-1) + start.year)
+  
   years.vector <- rep(years.to.cover, each = 12)
   months.vector <- rep(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"), times = nyears.to.cover)
   

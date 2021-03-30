@@ -291,18 +291,34 @@ getField_NetCDF <- function(source,
         }  # end if-else statement for different time resolutions
         
       } # end if time step is days
+      
       # if time step unit is month
       else if(timestep.unit == "months") {
         
+        time.res <- "Month"
+        
+        # first check that we have all integer months, nothing too crazy
+        if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) stop("For an relative time axis with unit of months, only integer values are supported.")
         
         
+        # This function call processes a time axis which is assumed to be monthly
+        # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
+        # and the actual years and months corresponding to this selection.
+        month.axis.info <- processMonthlyNCAxis(axis.values = all.time.intervals, 
+                                                start.year = start.date["year"], 
+                                                start.month = start.date["month"],
+                                                target.STAInfo = target.STAInfo)  
+        start.time <- month.axis.info$start.time
+        count.time <- month.axis.info$count.time
+        years.vector <- month.axis.info$years.vector 
+        months.vector <- month.axis.info$months.vector 
         
-        print("WOOOHOOOODILLLLYYY")
-        stop()
+        # make the vector of all times as a code "year.month" for labelling this dimension once it is read
+        all.times  <- paste(years.vector, months.vector, sep = ".")
         
       }
       # else catch whatever else
-      else stop('When reading relative time axes, DGVMTools only accepts units = "days since ...", "month since..."')
+      else stop('When reading relative time axes, DGVMTools only accepts units = "days since ..." or "month since..."')
       
     } # end if relative time axis
     
@@ -416,15 +432,27 @@ getField_NetCDF <- function(source,
     if(verbose) message(paste0("Read slice of netCDF file with dimensions: ", paste(dim(this.slice), collapse = ", ")))
     if(verbose) message(paste("Setting dimension names: ", paste(names(dimension.names), collapse = ", ")))
     dimnames(this.slice) <- dimension.names
-    
-    # store the units, standard_names and long_names for later
     if(ncdf4::ncatt_get(this.nc, this_var_obj, "units")$hasatt) all.units <- append(all.units,  ncdf4::ncatt_get(this.nc, this_var_obj, "units")$value)
     if(ncdf4::ncatt_get(this.nc, this_var_obj, "standard_name")$hasatt) all.standard_names <- append(all.standard_names,  ncdf4::ncatt_get(this.nc, this_var_obj, "standard_name")$value)
     if(ncdf4::ncatt_get(this.nc, this_var_obj, "long_name")$hasatt) all.long_names <- append(all.long_names,  ncdf4::ncatt_get(this.nc, this_var_obj, "long_name")$value)
     
     
-    # prepare data.table from the slice (array)
-    this.slice.dt <- as.data.table(reshape2::melt(this.slice))
+    # if only a 2-D 'matrix', convert to a 3-D 'array' to that it melts properly with the as.data.table command below
+    if(length(dim(this.slice)) < 3) {
+      dim(this.slice) <- c(dim(this.slice), 1)
+      dimension.names[["Temp"]] <- 1
+      dimnames(this.slice) <- dimension.names
+    }
+    
+    # 'melt' and remove the Temp column if necessary 
+    this.slice.dt <- as.data.table(this.slice, na.rm = TRUE, keep.rownames = TRUE)
+    if("Temp" %in% names(this.slice.dt)) this.slice.dt[ , Temp := NULL]
+    if("Lon" %in% names(this.slice.dt)) this.slice.dt[ , Lon := as.numeric(Lon)]
+    if("Lat" %in% names(this.slice.dt)) this.slice.dt[ , Lat := as.numeric(Lat)]
+    if("Time" %in% names(this.slice.dt)) this.slice.dt[ , Time := as.numeric(Time)]
+    
+    
+    # clear up 
     rm(this.slice)
     gc()
     
@@ -439,24 +467,25 @@ getField_NetCDF <- function(source,
     if(length(all.time.intervals) > 0) {
       
       if(time.res == "Year") {
-        this.slice.dt[, Year := as.numeric(Time)]
-        this.slice.dt[, Time := NULL]
+        setnames(this.slice.dt, "Time", "Year")
       }
       else if(time.res == "Month") {
         toYearandMonth <- function(x) {
           Year <- as.integer(trunc(x))
           return(list("Year" = Year, "Month" = as.integer(round((x-Year)*100))) )
         }
-        this.slice.dt[, c("Year", "Month") := toYearandMonth(as.numeric(Time))]
+        this.slice.dt[, c("Year", "Month") := toYearandMonth(Time)]
+        if(min(this.slice.dt[["Month"]]) < 0)  this.slice.dt[, Month := abs(Month)]
         this.slice.dt[, Time := NULL]
-        
+           
       }
       else if(time.res == "Day") {
         toYearandDay <- function(x) {
           Year <- as.integer(trunc(x))
-          return(list("Year" = Year, "Day" = as.integer(round((x-Year)*1000))) )
+          return(list("Year" = Year, "Day" = abs(as.integer(round((x-Year)*1000)))) )
         }
-        this.slice.dt[, c("Year", "Day") := toYearandDay(as.numeric(Time))]
+        this.slice.dt[, c("Year", "Day") := toYearandDay(Time)]
+        if(min(this.slice.dt[["Day"]]) < 0)  this.slice.dt[, Day := abs(Day)]
         this.slice.dt[, Time := NULL]
         
       }
