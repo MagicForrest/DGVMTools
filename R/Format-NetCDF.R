@@ -15,6 +15,8 @@
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param verbose A logical, set to true to give progress/debug information
+#' @param nc.verbose A logical, set to true to give progress/debug information from the ncdf4 package functions.  This can be a lot, 
+#' so it is handy to control that separately.
 #' @return A list containing firstly the data.table containing the data, and secondly the STAInfo for the data that we have
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
@@ -22,7 +24,8 @@ getField_NetCDF <- function(source,
                             quant,
                             target.STAInfo,
                             file.name,
-                            verbose = FALSE) {
+                            verbose = FALSE,
+                            nc.verbose = FALSE) {
   
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read NetCDF files.")
@@ -35,7 +38,7 @@ getField_NetCDF <- function(source,
   vars.to.ignore <- c("time_bnds")
   
   # handy function to check for attributes, also including the kind of deprecated "DGVMTools_" and "DGVMData_" variants for global attributes
-  lookupAttribute <- function(nc, var, attname, verbose = FALSE) {
+  lookupAttribute <- function(nc, var, attname, verbose) {
     this_try <- ncdf4::ncatt_get(nc, var, attname, verbose)
     if(this_try$hasatt) return(this_try$value)
     this_try <- ncdf4::ncatt_get(nc, var, paste0("DGVMData_",  attname), verbose)
@@ -69,8 +72,8 @@ getField_NetCDF <- function(source,
   
   # Open file
   if(verbose) message(paste0("Opening file ", file.name.nc))     
-  if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
-  else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
+  if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=nc.verbose, suppress_dimvals=FALSE )
+  else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=nc.verbose, suppress_dimvals=FALSE ))
   
   #### EXAMINE VARIABLES PRESENT IN FILE ####
   
@@ -413,9 +416,9 @@ getField_NetCDF <- function(source,
     sta.info@subannual.resolution <- time.res
     
     # original subannual resolution and subannual aggregation method can be determined from metadata if they exist
-    sta.info@subannual.aggregate.method <- lookupAttribute(this.nc, 0, "subannual.aggregate.method", verbose)
+    sta.info@subannual.aggregate.method <- lookupAttribute(this.nc, 0, "subannual.aggregate.method", nc.verbose)
     
-    sta.info@subannual.original <- lookupAttribute(this.nc, 0, "subannual.original", verbose)
+    sta.info@subannual.original <- lookupAttribute(this.nc, 0, "subannual.original", nc.verbose)
     if(sta.info@subannual.original == "none") sta.info@subannual.original <- time.res
     
   }
@@ -481,7 +484,7 @@ getField_NetCDF <- function(source,
     }
     
     # Get the actual data and set the dimension names    
-    this.slice <- ncdf4::ncvar_get(this.nc, this_var_obj, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
+    this.slice <- ncdf4::ncvar_get(this.nc, this_var_obj, start = start, count = count, verbose = nc.verbose, collapse_degen=FALSE)
     if(verbose) message(paste0("Read slice of netCDF file with dimensions: ", paste(dim(this.slice), collapse = ", ")))
     if(verbose) message(paste("Setting dimension names: ", paste(names(dimension.names), collapse = ", ")))
     dimnames(this.slice) <- dimension.names
@@ -572,10 +575,10 @@ getField_NetCDF <- function(source,
       for(this_layer_value in all.layer.vals) {
         
         # look for attribute with name "<layername>_<value>" or "<value>", on either the data variable or the dimension variable
-        final_layer_name <- lookupAttribute(this.nc, var = this_var_obj, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = verbose)
-        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = this_var_obj,  attname = paste(this_layer_value), verbose = verbose)
-        if(final_layer_name == "Unspecified")  final_layer_name <- lookupAttribute(this.nc, var =layer.string, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = verbose)
-        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = layer.string,  attname = paste(this_layer_value), verbose = verbose)
+        final_layer_name <- lookupAttribute(this.nc, var = this_var_obj, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)
+        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = this_var_obj,  attname = paste(this_layer_value), verbose = nc.verbose)
+        if(final_layer_name == "Unspecified")  final_layer_name <- lookupAttribute(this.nc, var =layer.string, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)
+        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = layer.string,  attname = paste(this_layer_value), verbose = nc.verbose)
         
         # if didn't find something, return to the original value 
         if(final_layer_name == "Unspecified")  final_layer_name <- this_layer_value
@@ -675,8 +678,8 @@ getField_NetCDF <- function(source,
   }
   
   # Look up spatial metadata for things that cannot be determined from the lons and lats 
-  sta.info@spatial.extent.id <- lookupAttribute(this.nc, 0, "spatial.extent.id", verbose)
-  sta.info@spatial.aggregate.method <- lookupAttribute(this.nc, 0, "spatial.aggregate.method", verbose)
+  sta.info@spatial.extent.id <- lookupAttribute(this.nc, 0, "spatial.extent.id", nc.verbose)
+  sta.info@spatial.aggregate.method <- lookupAttribute(this.nc, 0, "spatial.aggregate.method", nc.verbose)
   if(sta.info@spatial.aggregate.method == "Unspecified")  sta.info@spatial.aggregate.method <- "none"
   
   #### PROCESS QUANTITY RELATED METADATA ####

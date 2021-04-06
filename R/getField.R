@@ -56,6 +56,11 @@
 #'  \item{\code{adgvm2.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
 #'  \item{\code{adgvm2.daily}}  A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)
 #' }
+#' For the NetCDF Format, the following arguments apply:
+#'  \itemize{
+#'  item{\code{nc.verbose}} A logical, set to true to give progress/debug information from the ncdf4 package functions.  This can be a lot, 
+#' so it is handy to control that separately.
+#' }
 #'  
 #' @return A \code{Field}. 
 #' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}}   

@@ -4,7 +4,14 @@
 \alias{getField_NetCDF}
 \title{Get a Field for NetCDF}
 \usage{
-getField_NetCDF(source, quant, target.STAInfo, file.name, verbose = FALSE)
+getField_NetCDF(
+  source,
+  quant,
+  target.STAInfo,
+  file.name,
+  verbose = FALSE,
+  nc.verbose = FALSE
+)
 }
 \arguments{
 \item{source}{A \code{Source} containing the meta-data about the NetCDF source}
@@ -14,6 +21,9 @@ getField_NetCDF(source, quant, target.STAInfo, file.name, verbose = FALSE)
 \item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
+
+\item{nc.verbose}{A logical, set to true to give progress/debug information from the ncdf4 package functions.  This can be a lot, 
+so it is handy to control that separately.}
 
 \item{target.sta.info}{An STAInfo object defining the spatial-temporal-annual extent over which we want the data}
 }
