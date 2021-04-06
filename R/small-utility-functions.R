@@ -75,8 +75,6 @@ LondonCentre <- function(lon) {
 
 
 
-## Some date function
-## not yet really needed. However, potentially useful with the daily LPJ-GUESS output.
 
 #' check if a given year is a leap year
 #' 

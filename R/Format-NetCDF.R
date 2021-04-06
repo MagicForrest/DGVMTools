@@ -14,6 +14,9 @@
 #' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
+#' @param calendar Character string, sometimes the calendar string on the time axis can be incorrect or missing.  Here you can manually provide it.
+#' Note: A common error in paleo files is "standard" instead of "proleptic_gregorian". Specifically, if you have dates with years 1582 
+#' (the start of the Gregorian calendar) and it includes leap years the calendar needs to be set to "proleptic_gregorian".
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param nc.verbose A logical, set to true to give progress/debug information from the ncdf4 package functions.  This can be a lot, 
 #' so it is handy to control that separately.
@@ -24,6 +27,7 @@ getField_NetCDF <- function(source,
                             quant,
                             target.STAInfo,
                             file.name,
+                            calendar,
                             verbose = FALSE,
                             nc.verbose = FALSE) {
   
@@ -228,20 +232,23 @@ getField_NetCDF <- function(source,
         
         # calculate the mean to guess if is monthly or yearly 
         mean.timestep.differences <- mean(diff.all.time.intervals)
-       
+        
+        
         # if the mean is between 28 and 31 (inclusive) assume monthly   
         if(mean.timestep.differences >= 28 & mean.timestep.differences <= 31 ) time.res <- "Month"
         # if the mean is between 359 and 367 (inclusive) assume yearly  
         else if(mean.timestep.differences >= 360 & mean.timestep.differences <= 367 ) time.res <- "Year"   
         # if all the time steps are integer values, assume daily (but potentially with missing days) 
-        else if(isTRUE(all(diff.all.time.intervals == floor(diff.all.time.intervals)))) time.res <- "Day"
+        else if(isTRUE(all(diff.all.time.intervals == floor(diff.all.time.intervals))) || mean.timestep.differences == 1) time.res <- "Day"
         else stop("Data doesn't appear to be on daily, monthly, or yearly timesteps.  Other options are not currently supported by the DGVMTools, but could potentially be.  So if you need this please contact the author.")
         
         
         # lookup the calandar attribute and determine if it is proleptic
-        calendar <- ncdf4::ncatt_get(this.nc, time.string, "calendar")
-        if(calendar$hasatt) calendar <- calendar$value
-        else stop("DGVMTools requires a 'calendar' attribute on the relative time axis with units of 'days since ...'")
+        if(missing(calendar)) {
+          calendar <- ncdf4::ncatt_get(this.nc, time.string, "calendar")
+          if(calendar$hasatt) calendar <- calendar$value
+          else stop("DGVMTools requires a 'calendar' attribute on the relative time axis with units of 'days since ...'")
+        }
         
         
         # default values if no time selection is required
@@ -299,9 +306,9 @@ getField_NetCDF <- function(source,
         # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
         # and the actual years and months corresponding to this selection.
         month.axis.info <- processMonthlyNCAxis(axis.values = all.time.intervals, 
-                                                         start.year = start.date["year"], 
-                                                         start.month = start.date["month"],
-                                                         target.STAInfo = target.STAInfo)  
+                                                start.year = start.date["year"], 
+                                                start.month = start.date["month"],
+                                                target.STAInfo = target.STAInfo)  
         start.time <- month.axis.info$start.time
         count.time <- month.axis.info$count.time
         years.vector <- month.axis.info$years.vector 
@@ -312,8 +319,7 @@ getField_NetCDF <- function(source,
         
       }
       else if(timestep.unit == "years") {
-        
-        print("")
+
         time.res <- "Year"
         
         # first check that we have all integer years, nothing too crazy
@@ -378,9 +384,9 @@ getField_NetCDF <- function(source,
         # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
         # and the actual years and months corresponding to this selection.
         month.axis.info <- processMonthlyNCAxis(axis.values = all.time.intervals, 
-                                                         start.year = 1, # absolute time axis, start in "year 1" because we have no other reference 
-                                                         start.month = all.time.intervals[1], # again absolute time axis, so take the first month as the start month
-                                                         target.STAInfo = target.STAInfo)  
+                                                start.year = 1, # absolute time axis, start in "year 1" because we have no other reference 
+                                                start.month = all.time.intervals[1], # again absolute time axis, so take the first month as the start month
+                                                target.STAInfo = target.STAInfo)  
         start.time <- month.axis.info$start.time
         count.time <- month.axis.info$count.time
         years.vector <- month.axis.info$years.vector 

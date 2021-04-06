@@ -241,6 +241,7 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
     # select year length based on the calendar
     # 365 day
     if(calendar == "365_day" | 
+       calendar == "no_leap" |
        (calendar == "standard" & !is.leapyear(year)) | 
        (calendar == "gregorian" & !is.leapyear(year)) | 
        (calendar == "proleptic_gregorian" & !is.leapyear(year, proleptic = TRUE))) {
@@ -248,13 +249,15 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
     }
     # 366 day
     else if(calendar == "366_day" | 
+            calendar == "all_leap" | 
             (calendar == "standard" & is.leapyear(year)) | 
             (calendar == "gregorian" & is.leapyear(year)) | 
             (calendar == "proleptic_gregorian" & is.leapyear(year, proleptic = TRUE))) {
       temp.dt <- data.table(CumDay = (1:366)+nrow(all.dates)-(start.day), Day = 1:366, Month = Month.col.366.day, Year = rep(year, 366))
     }
     # 360 day
-    else if(calendar == "360_day") {
+    else if(calendar == "360_day" |
+            calendar == "uniform30day") {
       temp.dt <- data.table(CumDay = (1:360)+nrow(all.dates)-(start.day), Day = 1:360, Month = Month.col.360.day, Year = rep(year, 360))
     }
     else{
@@ -268,9 +271,10 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
     
   }
   
-  
   # now select the ones that actually correspond to values on the time axis
-  actual.dates <- all.dates[CumDay %in% axis.values,]
+  # use of "floor" is because some netCDF files use fractional days to represent the time of the day (which we ignore)
+  # and so here we are simply trunctating away this fractional time.
+  actual.dates <- all.dates[CumDay %in% floor(axis.values),]
   
   # check this worked and that we have a row in the data.table for each entry on the original netCDF time axis!
   if(length(axis.values) != nrow(actual.dates)) stop(paste0("ERROR: Something went wrong when reading relative netCDF axis. Axis had ", length(axis.values), " dates, but the function has calculated ", nrow(actual.dates), ". Teminating."))
