@@ -28,7 +28,7 @@ getField_NetCDF <- function(source,
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read NetCDF files.")
   
   # To avoid annoying NOTES when R CMD check-ing
-  Lon = Lat = Year = Month = Time = NULL
+  Lon = Lat = Year = Month = Day = Time = Temp =NULL
   
   # Variables to ignore in any netCDF file
   # TODO - the time_bnds information could of course be used
@@ -130,7 +130,7 @@ getField_NetCDF <- function(source,
     }
     
     # pick up Time
-    for(possible.dim.name in c("time", "Time", "year", "Year")) {
+    for(possible.dim.name in c("time", "Time", "year", "Year", "month", "Month", "t", "T")) {
       if(this.dimension == possible.dim.name) {
         time.string <- possible.dim.name
         all.time.intervals <- ncdf4::ncvar_get(this.nc, time.string)
@@ -191,14 +191,19 @@ getField_NetCDF <- function(source,
     if(time.units.attr$hasatt) {
       time.units.string.vec <- unlist(strsplit(time.units.attr$value, " "))
       timestep.unit <- time.units.string.vec[1]
-      if(tolower(time.units.string.vec[2]) == "since"  || tolower(time.units.string.vec[2]) == "after") relative.time.axis <- TRUE
+      if(length(time.units.string.vec) > 1) {
+        if(tolower(time.units.string.vec[2]) == "since"  || tolower(time.units.string.vec[2]) == "after") relative.time.axis <- TRUE
+      }
     }
-    # if no unit attributes make some assumptions (based on the axis name only or fail
+    # if no unit attributes make some assumptions (based on the axis name) only or fail
     else {
       if(tolower(time.string) == "years"  || tolower(time.string) == "year") {
         timestep.unit <- "year"
       }
-      else stop(paste("Unclear time axis in file", file.name.nc))
+      else if(tolower(time.string) == "months"  || tolower(time.string) == "month") {
+        timestep.unit <- "month"
+      }
+      else stop(paste0("Unclear time axis in file ", file.name.nc,", which appears to have a time axis named ", time.string, " but no units attribute to help me interpret it."))
     }
     
     if(relative.time.axis) {
@@ -317,15 +322,37 @@ getField_NetCDF <- function(source,
         all.times  <- paste(years.vector, months.vector, sep = ".")
         
       }
+      else if(timestep.unit == "years") {
+        
+        time.res <- "Year"
+        
+        # first check that we have all integer years, nothing too crazy
+        if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) stop("For an relative time axis with unit of years, only integer values are supported.")
+        
+        
+        # This function call processes a time axis which is assumed to be yearly
+        # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
+        # and the actual years and months corresponding to this selection.
+        year.axis.info <- processYearlyNCAxis(axis.values = all.time.intervals, 
+                                                start.year = start.date["year"], 
+                                                target.STAInfo = target.STAInfo)  
+        start.time <- year.axis.info$start.time
+        count.time <- year.axis.info$count.time
+        years.vector <- year.axis.info$years.vector 
+
+        # make the vector of all years as character vectors for labelling this dimension once it is read
+        all.times  <- paste(years.vector)
+        
+      }
       # else catch whatever else
-      else stop('When reading relative time axes, DGVMTools only accepts units = "days since ..." or "month since..."')
+      else stop('When reading relative time axes, DGVMTools only accepts units = "days since ..."/"months since ..."/"years since ...".')
       
     } # end if relative time axis
     
     # else an absolute time axis
     else {
       
-      # right now only considering one timestep unit "year(s)", which is pretty easy
+      # timestep unit "year(s)", which is pretty easy
       if(tolower(timestep.unit) == "year" || tolower(timestep.unit) == "years") {
         time.res <- "Year"
         # check they are all integer values (ie no confusing fractional year)
@@ -343,8 +370,35 @@ getField_NetCDF <- function(source,
         all.times <- paste(years.vector)
         
       }
+      # timestep unit "month(s)", which is pretty easy
+      else if(tolower(timestep.unit) == "month" || tolower(timestep.unit) == "months") {
+        
+        time.res <- "Month"
+        # check they are all integer values (ie no confusing fractions of a month)
+        if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) stop("For an absolute time axis, only integer values of monthd are supported")
+        
+        
+        # a value of "0" will mess things up, so offset it 
+        if(min(all.time.intervals) == 0) all.time.intervals <- all.time.intervals +1
+        
+        # This function call processes a time axis which is assumed to be monthly
+        # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
+        # and the actual years and months corresponding to this selection.
+        month.axis.info <- processMonthlyNCAxis(axis.values = all.time.intervals, 
+                                                start.year = 1, # absolute time axis, start in "year 1" because we have no other reference 
+                                                start.month = all.time.intervals[1], # again absolute time axis, so take the first month as the start month
+                                                target.STAInfo = target.STAInfo)  
+        start.time <- month.axis.info$start.time
+        count.time <- month.axis.info$count.time
+        years.vector <- month.axis.info$years.vector 
+        months.vector <- month.axis.info$months.vector 
+        
+        # make the vector of all times as a code "year.month" for labelling this dimension once it is read
+        all.times  <- paste(years.vector, months.vector, sep = ".")
+        
+      }
       else {
-        stop("Absolute time axes with any unit other than 'year', not currently supported")
+        stop("Absolute time axes with any unit other than 'year' or 'month' not currently supported")
       }
       
       
@@ -353,7 +407,7 @@ getField_NetCDF <- function(source,
     
     # set year and subannual meta-data - note that years.vector (ie. the final years of data that will be selected) must be defined above
     
-    # time resolution and start and end yers are determined from the file and cropping
+    # time resolution and start and end years are determined from the file and cropping
     sta.info@first.year <- years.vector[1]
     sta.info@last.year <- years.vector[length(years.vector)]
     sta.info@subannual.resolution <- time.res
@@ -370,9 +424,8 @@ getField_NetCDF <- function(source,
   
   #### RETRIEVE THE DATA
   
-  # list of data.tables, one for each netCDF var (or 'layer' in DGVMTools terms)
+  # list of data.tables, one for each netCDF var (which will be interpreted as a 'Layer' in DGVMTools terms)
   dt.list <- list()
-  
   
   # keep track of all the units, long names and standard names for later
   all.units <- c()
@@ -467,7 +520,7 @@ getField_NetCDF <- function(source,
     if(length(all.time.intervals) > 0) {
       
       if(time.res == "Year") {
-        setnames(this.slice.dt, "Time", "Year")
+        if("Time" %in% names(this.slice.dt)) setnames(this.slice.dt, "Time", "Year")
       }
       else if(time.res == "Month") {
         toYearandMonth <- function(x) {
@@ -477,7 +530,13 @@ getField_NetCDF <- function(source,
         this.slice.dt[, c("Year", "Month") := toYearandMonth(Time)]
         if(min(this.slice.dt[["Month"]]) < 0)  this.slice.dt[, Month := abs(Month)]
         this.slice.dt[, Time := NULL]
-           
+        
+        ## SPECIAL CASE FOR MONTHLY CLIMATOLGIES - delete Year column if it has only one value and months are 1:12
+        ## and set metadata
+        if(length(unique(this.slice.dt[["Year"]])) ==1 && all(sort(unique(this.slice.dt[["Month"]])) == (1:12)))  {
+          this.slice.dt[, Year := NULL]
+          sta.info@year.aggregate.method <- "Climatology"
+        }
       }
       else if(time.res == "Day") {
         toYearandDay <- function(x) {
@@ -494,7 +553,7 @@ getField_NetCDF <- function(source,
     
     # handle column order and names
     # if no layer dimensions
-    if(length(layer.string) == 0) {
+    if(length(layer.string) == 0  || layer.string == "") {
       # make new column order so that data is last
       all.col.names <- names(this.slice.dt)
       all.col.names <- all.col.names[-which(all.col.names == this_var_obj$name)]
@@ -597,10 +656,18 @@ getField_NetCDF <- function(source,
     lat.diffs <- diff(all.lats)
     if(!length(unique(lon.diffs)) == 1)  warning(paste("Longitude differences in file", file.name.nc, "are not equal, so guessing the overall longitude bounds, which might not be 100% accurate."))
     if(!length(unique(lat.diffs)) == 1)  warning(paste("Latitude differences in file", file.name.nc, "are not equal, so guessing the overall latitude bounds, which might not be 100% accurate."))
-    sta.info@spatial.extent <- raster::extent(min(all.lons) - mean(lon.diffs)/2, 
-                                              max(all.lons) + mean(lon.diffs)/2, 
-                                              min(all.lats) - mean(lat.diffs)/2,
-                                              max(all.lats) + mean(lat.diffs)/2)
+    
+    # calculate the extent (including London centering) 
+    if(source@london.centre && max(all.lons) >= 180)  temp.lons <- LondonCentre(all.lons)   
+    else temp.lons <- all.lons
+    
+    this.extent <- raster::extent(min(temp.lons) - mean(lon.diffs)/2, 
+                                  max(temp.lons) + mean(lon.diffs)/2, 
+                                  min(all.lats) - mean(lat.diffs)/2,
+                                  max(all.lats) + mean(lat.diffs)/2)
+    
+    sta.info@spatial.extent <- this.extent      
+    
   }
   else {
     warning(paste("No spatial extent determinable from netcdf file", file.name.nc,"file. A filler extent will be set."))

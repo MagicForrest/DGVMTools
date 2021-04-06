@@ -7,7 +7,7 @@ This function processes a time axis which is assumed to be monthly
 It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
 and the actual years and months corresponding to this selection.}
 \usage{
-processMonthlyNCAxis(axis.values, start.date, target.STAInfo)
+processMonthlyNCAxis(axis.values, start.year, start.month, target.STAInfo)
 }
 \description{
 processMonthlyNCAxis

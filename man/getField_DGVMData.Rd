@@ -4,7 +4,14 @@
 \alias{getField_DGVMData}
 \title{Get a Field for DGVMData}
 \usage{
-getField_DGVMData(source, quant, target.STAInfo, file.name, verbose = FALSE)
+getField_DGVMData(
+  source,
+  quant,
+  target.STAInfo,
+  file.name,
+  verbose = FALSE,
+  nc.verbose = FALSE
+)
 }
 \arguments{
 \item{source}{A \code{Source} containing the meta-data about the DGVMData source}

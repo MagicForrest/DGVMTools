@@ -22,7 +22,8 @@ getField_DGVMData <- function(source,
                               quant,
                               target.STAInfo,
                               file.name,
-                              verbose = FALSE) {
+                              verbose = FALSE,
+                              nc.verbose = FALSE) {
   
   warning("The 'DGVMData' Format is now deprecated!  Please use the more general NetCDF Format instead.  It should work with your existing files.")
   
@@ -70,9 +71,9 @@ getField_DGVMData <- function(source,
   
   # Open file and get global attributes
   if(verbose) message(paste0("Opening file ", file.name.nc))     
-  if(verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE )
-  else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=verbose, suppress_dimvals=FALSE ))
-  global.attributes <- ncdf4::ncatt_get(this.nc, 0, attname=NA, verbose=FALSE)
+  if(nc.verbose) this.nc <- ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=nc.verbose, suppress_dimvals=FALSE )
+  else this.nc <- invisible(ncdf4::nc_open(file.name.nc, readunlim=FALSE, verbose=nc.verbose, suppress_dimvals=FALSE ))
+  global.attributes <- ncdf4::ncatt_get(this.nc, 0, attname=NA, verbose=nc.verbose)
   
   # Check out dimensions and ignore bnds dimension if present
   dims.present <- names(this.nc$dim)
@@ -296,7 +297,7 @@ getField_DGVMData <- function(source,
       }
       
       # Get the actual data and set the dimension names    
-      this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = verbose, collapse_degen=FALSE)
+      this.slice <- ncdf4::ncvar_get(this.nc, this.var, start = start, count = count, verbose = nc.verbose, collapse_degen=FALSE)
       dimnames(this.slice) <- dimension.names
       
       # prepare data.table from the slice (array)

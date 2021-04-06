@@ -7,7 +7,13 @@ This function processes a time axis which is assumed to be daily
 It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
 and the actual years and days corresponding to this selection.}
 \usage{
-processDailyNCAxis(axis.values, start.date, target.STAInfo, calendar)
+processDailyNCAxis(
+  axis.values,
+  start.year,
+  start.day,
+  target.STAInfo,
+  calendar
+)
 }
 \description{
 processDailyNCAxis

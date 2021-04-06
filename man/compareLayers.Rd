@@ -91,7 +91,7 @@ print(plotSpatialComparison(vegC.comparison, type = "values"))
 
 ##### Categorical (single-layer) comparison
 # classification is by Smith et al 2014
-# Load Haveltine and Prentice PNV biomes data and LPJ-GUESS biomes over Europe
+# Load Haxeltine and Prentice PNV biomes data and calculate LPJ-GUESS biomes over Europe
 
 europe.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 europe.Source <- defineSource(name = "LPJ-GUESS", dir = europe.dir,  format = GUESS)
