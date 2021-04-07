@@ -220,7 +220,6 @@ processMonthlyNCAxis <- function(axis.values, start.year, start.month, target.ST
 #' @keywords internal
 processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, start.day, target.STAInfo, calendar) {
   
-  
   # vector assigning months to days for different possible years/calendars
   Month.col.360.day <- rep(1:12, each = 30)
   Month.col.365.day <- numeric(0)

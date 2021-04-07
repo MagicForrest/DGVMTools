@@ -17,6 +17,9 @@
 #' @param calendar Character string, sometimes the calendar string on the time axis can be incorrect or missing.  Here you can manually provide it.
 #' Note: A common error in paleo files is "standard" instead of "proleptic_gregorian". Specifically, if you have dates with years 1582 
 #' (the start of the Gregorian calendar) and it includes leap years the calendar needs to be set to "proleptic_gregorian".
+#' @param vars.to.ignore A list of character strings specifying which cvariables *not* to read.  These are typically metadata about the coordinate data
+#' (hence the defaults ""time_bnds", "lon_bnds", "lat_bnds", "lat" and "lon"), but you can also use this argument to ignore a particular data variable from a file.
+#' that typically hold coordinate metadata 
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param nc.verbose A logical, set to true to give progress/debug information from the ncdf4 package functions.  This can be a lot, 
 #' so it is handy to control that separately.
@@ -27,9 +30,13 @@ getField_NetCDF <- function(source,
                             quant,
                             target.STAInfo,
                             file.name,
-                            calendar,
                             verbose = FALSE,
-                            nc.verbose = FALSE) {
+                            nc.verbose = FALSE,
+                            vars.to.ignore = c("time_bnds", "lon_bnds", "lat_bnds", "lat", "lon"),
+                            calendar = "standard") {
+  
+  # timing
+  t1 <- Sys.time()
   
   # first check that ncdf4 netCDF package is installed
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to read NetCDF files.")
@@ -37,9 +44,15 @@ getField_NetCDF <- function(source,
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Year = Month = Day = Time = Temp =NULL
   
-  # Variables to ignore in any netCDF file
-  # TODO - the time_bnds information could of course be used
-  vars.to.ignore <- c("time_bnds")
+  # supported calendars
+  supported.calendars <- c("standard", "gregorian", "proleptic_gregorian", "360_day", "366_day", "365_day", "uniform30day", "no_leap", "all_leap" )
+  
+  # possible dimensions names
+  # TODO maybe move these to arguments for greater flexibility
+  possible.lat.dim.names <- c("lat", "Lat", "latitude", "Latitude", "y", "Y")
+  possible.lon.dim.names <- c("lon", "Lon", "longitude", "Longitude", "x", "X")
+  possible.time.dim.names <- c("time", "Time", "times", "Times", "year", "Year", "month", "Month", "t", "T")
+  
   
   # handy function to check for attributes, also including the kind of deprecated "DGVMTools_" and "DGVMData_" variants for global attributes
   lookupAttribute <- function(nc, var, attname, verbose) {
@@ -87,23 +100,53 @@ getField_NetCDF <- function(source,
     if(this_var$ndims > 0 && !this_var$id$isdimvar) all_vars_names <- append(all_vars_names, this_var$name)
   }
   
-  if(verbose) message(paste("* NetCDF file contains useful variables:", paste(all_vars_names, collapse = ", ")))
+  if(verbose) message(paste("* NetCDF file contains potentially useful variables:", paste(all_vars_names, collapse = ", ")))
   vars.to.read <- list()
   if(quant@id %in% all_vars_names) {
     vars.to.read <- quant@id
-    if(verbose) message(paste0("* Reading variable ", vars.to.read, ", which matches requested quant ID"))
+    if(verbose) message(paste0("* Reading variable ", vars.to.read, ", which matches requested quant string or ID"))
   }
   else {
     vars.to.read <- all_vars_names[!all_vars_names %in% vars.to.ignore]
-    if(verbose) message(paste0("* No variable in netCDF file matches requested quant ID (", quant@id, ") so reading *all* netCDF variables that look suitable: ", paste(vars.to.read, collapse = ", ")))
+    if(verbose) {
+      message(paste0("* No variable in netCDF file matches requested quant ID (", quant@id, ") so reading *all* netCDF variables that look suitable: ", paste(vars.to.read, collapse = ", ")))
+      message(paste0("  (TIP: If you don't want to try to read all these variables (say because this function later fails) use the 'vars.to.ignore' argument in your 'getField()' call)"))
+    }
   }
   
-  # Check out dimensions and ignore bnds dimension if present
-  dims.to.ignore <- c("bnds", "crs")
-  dims.present <- names(this.nc$dim)
-  if(verbose) message(paste("* Dimensions present in file:", paste(dims.present, collapse = ","), sep = " "))
-  dims.present <- dims.present[which(!dims.present %in% dims.to.ignore)]
   
+  #### FIND DIMENSIONS USED BY VARIABLES ####
+  # having established which variables we want to read, check which dimensions they have 
+  # and, if we have got multiple variables, check that they have the same dimensions
+  # potential TODO - this can probably be factored out
+  
+  # for each variable to read
+  all_required_dims <- list()
+  for(this_var in vars.to.read) {
+    
+    # find the "var" object corresponding to it
+    for(this_var_obj in this.nc$var) {
+      if(this_var_obj$name == this_var) break
+    }
+    
+    # make a vector of the dimensions required
+    these_required_dims <- c()   
+    for(this_dim in this_var_obj$dim) {
+      these_required_dims <- append(these_required_dims, this_dim$name)
+    }
+    all_required_dims[[this_var_obj$name]] <- these_required_dims
+    
+  }
+  
+  # check all variables have the same dimensions and make the final list of required dimensions
+  if(length(unique(all_required_dims)) != 1) stop("In a single getField() call (NetCDF Format), trying to read variables with different dimensions.  Please read these separately in *different* getField() calls.")
+  all_required_dims <- unlist(unique(all_required_dims))
+  if(verbose) message(paste("* All variables indexed by dimensions:", paste(all_required_dims, collapse = ", ")))
+  
+  #### READ AND VERFIY DIMENSION INFO ####
+  
+  
+  # set dimensions names and values to zero/zero-length strings until a matching dimension is found
   all.lats <- numeric(0)
   all.lons <- numeric(0)
   all.time.intervals <- numeric(0)
@@ -112,58 +155,45 @@ getField_NetCDF <- function(source,
   lon.string <- ""
   time.string <- ""
   layer.string <- ""
-  for(this.dimension in dims.present) {
-    
-    matched <- FALSE
-    
+  
+  # assign each of the required dimensions to lon, lat, time or 'layer'
+  for(this.dimension in all_required_dims) {
+
     # pick up Lat
-    for(possible.dim.name in c("lat", "Lat", "latitude", "Latitude")) {
-      if(this.dimension == possible.dim.name) {
-        lat.string <- possible.dim.name
-        all.lats <- ncdf4::ncvar_get(this.nc, lat.string) 
-        matched <- TRUE
-        if(verbose) message(paste0("** Confirmed latitude dimension: '", lat.string, "', with ", length(all.lats), " values."))
-      }
+    if(this.dimension %in% possible.lat.dim.names) {
+      lat.string <- this.dimension
+      all.lats <- ncdf4::ncvar_get(this.nc, lat.string) 
+      if(verbose) message(paste0("** Confirmed latitude dimension: '", lat.string, "', with ", length(all.lats), " values."))
     }
     
     # pick up Lon
-    for(possible.dim.name in c("lon", "Lon", "longitude", "Longitude")) {
-      if(this.dimension == possible.dim.name) {
-        lon.string <- possible.dim.name
-        all.lons <-  ncdf4::ncvar_get(this.nc, lon.string) 
-        matched <- TRUE
-        if(verbose) message(paste0("** Confirmed longitude dimension: '", lon.string, "', with ", length(all.lons), " values."))
-        
-      }
+    else if(this.dimension %in% possible.lon.dim.names) {
+      lon.string <- this.dimension
+      all.lons <-  ncdf4::ncvar_get(this.nc, lon.string) 
+      if(verbose) message(paste0("** Confirmed longitude dimension: '", lon.string, "', with ", length(all.lons), " values."))
     }
     
     # pick up Time
-    for(possible.dim.name in c("time", "Time", "year", "Year", "month", "Month", "t", "T")) {
-      if(this.dimension == possible.dim.name) {
-        time.string <- possible.dim.name
-        all.time.intervals <- ncdf4::ncvar_get(this.nc, time.string)
-        matched <- TRUE
-        if(verbose) message(paste0("** Confirmed time dimension: '", time.string, "', with ", length(all.time.intervals), " values."))
-      }
+    else if(this.dimension %in% possible.time.dim.names) {
+      time.string <- this.dimension
+      all.time.intervals <- ncdf4::ncvar_get(this.nc, time.string)
+      if(verbose) message(paste0("** Confirmed time dimension: '", time.string, "', with ", length(all.time.intervals), " values."))
     }                   
     
-    # pick up Layers
-    for(possible.dim.name in c("pft", "PFT", "PFTs", "PFTS", "pfts", "vegtype", "vegtypes", "layer", "layers", "z", "Z")) {
-      if(this.dimension == possible.dim.name) {
-        layer.string <- possible.dim.name
-        all.layer.vals <- ncdf4::ncvar_get(this.nc, layer.string)
-        matched <- TRUE
-        if(verbose) message(paste0("** Confirmed layer-type dimension: '", layer.string, "', with ", length(all.layer.vals), " values."))
-      }
-    }     
-    
-    # Catch the rest
-    if(!matched) {
-      stop(paste("Unknown dimension found", this.dimension, "which I don't know what to do with."))
+    # pick up 'layer' dimension (ie not one of the previous)
+    else if(layer.string == ""){
+      layer.string <- this.dimension
+      all.layer.vals <- ncdf4::ncvar_get(this.nc, layer.string)
+      if(verbose) message(paste0("** Confirmed layer-type dimension: '", layer.string, "', with ", length(all.layer.vals), " values."))
+    }
+    # If two "layer" dimensions found then fail
+    else {
+      stop(paste0("Found two 'layer'-type dimensions (i.e. not lon, lat or time): ", this.dimension, " and ", layer.string,  ". Can't deal with that, so stopping."))
     }
     
   }
   
+  # check for at least one dimension
   if( lat.string == "" &&  lon.string == "" &&  time.string == "" &&  layer.string == "") {
     stop("Not picked up any dimensions, failing...")
   }
@@ -193,7 +223,7 @@ getField_NetCDF <- function(source,
   if(length(all.time.intervals) > 0) { 
     
     
-    # extract the details about the time axis, if it the units attributes exists
+    # extract the details about the time axis, if the units attributes exists
     relative.time.axis <- FALSE
     time.units.attr <- ncdf4::ncatt_get(this.nc, time.string, "units")
     if(time.units.attr$hasatt) {
@@ -201,7 +231,8 @@ getField_NetCDF <- function(source,
       timestep.unit <- time.units.string.vec[1]
       if(length(time.units.string.vec) > 1) {
         if(tolower(time.units.string.vec[2]) == "since"  || tolower(time.units.string.vec[2]) == "after") relative.time.axis <- TRUE
-      }
+        else if(tolower(time.units.string.vec[2]) == "as") stop("Absolute time axis with 'day as ...' not currently implemented.  Contact the package author is this becomes important for you.")
+        }
     }
     # if no unit attributes make some assumptions (based on the axis name) only or fail
     else {
@@ -217,8 +248,6 @@ getField_NetCDF <- function(source,
     
     #### RELATIVE TIME AXIS ####
     if(relative.time.axis) {
-      
-      #if(timestep.unit != "days") stop('When reading relative time axes, DGVMTools only accepts units = "days since ..."')
       
       # extract the start day, month and year and return it as custom date type (vector with $year, $month and $day)
       # the reason for using this custom format is to support years < 0 and > 9999
@@ -243,11 +272,12 @@ getField_NetCDF <- function(source,
         else stop("Data doesn't appear to be on daily, monthly, or yearly timesteps.  Other options are not currently supported by the DGVMTools, but could potentially be.  So if you need this please contact the author.")
         
         
-        # lookup the calandar attribute and determine if it is proleptic
+        # lookup the calendar attribute (if not provided)
         if(missing(calendar)) {
-          calendar <- ncdf4::ncatt_get(this.nc, time.string, "calendar")
-          if(calendar$hasatt) calendar <- calendar$value
-          else stop("DGVMTools requires a 'calendar' attribute on the relative time axis with units of 'days since ...'")
+          calendar.att <- ncdf4::ncatt_get(this.nc, time.string, "calendar")
+          if(calendar.att$hasatt) calendar <- calendar.att$value
+          else if(!calendar %in% supported.calendars) stop(paste("Unsupported calendar.  Supported calendars:", paste(supported.calendars, collapse = ", ")))
+          else warning("DGVMTools requires a correctly defined 'calendar' attribute on a daily relative time axis.  None has been found in the netCDF file, so I am assuming 'standard'.  Note that you also can specify one in your getField() call.")
         }
         
         
@@ -255,7 +285,7 @@ getField_NetCDF <- function(source,
         start.time <- 1
         count.time <- -1
         
-        # PROCESS REALTIVE TIME AXIS AND RETURN ALL INFO IN A DATA.TABLE (including cropping to the years that are wanted)
+        # PROCESS RELATIVE DAILY TIME AXIS AND RETURN ALL INFO IN A DATA.TABLE (including cropping to the years that are wanted)
         # This function call processes a relative time axis with unit of "days since ..."
         # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
         # and the actual years,months  and days corresponding to this selection.
@@ -265,6 +295,13 @@ getField_NetCDF <- function(source,
                                                    start.day = start.date["day"],
                                                    target.STAInfo = target.STAInfo,
                                                    calendar = calendar)  
+        
+        if(verbose) {
+          message("Time axis information table:") 
+          print(axis.info.dt)      
+          message("You can compare the above to the netCDF time axis in your file to check everything alighns as expected.")  
+          message("(The cdo command 'showdate' and ncdump with the option '-c' are very useful in this regard.)")
+        }
         
         # pull out start index and count for when reading the netCDF slice
         start.time <- axis.info.dt[["Index"]][1]
@@ -296,7 +333,7 @@ getField_NetCDF <- function(source,
         
         time.res <- "Month"
         
-        if(verbose) message("Processing time axis as relative time axis with units of monthy and monthly values.")
+        if(verbose) message("Processing time axis as relative time axis with units of month and monthly values.")
         
         # first check that we have all integer months, nothing too crazy
         if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) stop("For an relative time axis with unit of months, only integer values are supported.")
@@ -319,7 +356,7 @@ getField_NetCDF <- function(source,
         
       }
       else if(timestep.unit == "years") {
-
+        
         time.res <- "Year"
         
         # first check that we have all integer years, nothing too crazy
@@ -399,7 +436,6 @@ getField_NetCDF <- function(source,
       else {
         stop("Absolute time axes with any unit other than 'year' or 'month' not currently supported")
       }
-      
       
     }
     
@@ -520,7 +556,7 @@ getField_NetCDF <- function(source,
     # ###  HANDLE TIME AXIS 
     if(length(all.time.intervals) > 0) {
       
-      if(verbose) message("Translating time axis in Year/Month/Day...")
+      if(verbose) message("Translating Time axis to Year/Month/Day...")
       
       if(time.res == "Year") {
         if("Time" %in% names(this.slice.dt)) setnames(this.slice.dt, "Time", "Year")
@@ -738,6 +774,11 @@ getField_NetCDF <- function(source,
   # make the ID and then make and return Field
   field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
   message(paste0("Reading of NetCDF file ", file.name.nc, " sucessful!"))
+  if(verbose) {
+    message("Reading of file took:")
+    print(Sys.time() - t1)
+  }
+  
   new("Field",
       id = field.id,
       data = dt,
