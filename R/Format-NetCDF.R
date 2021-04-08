@@ -314,7 +314,8 @@ getField_NetCDF <- function(source,
                                                    start.month = start.date["month"],
                                                    start.day = start.date["day"],
                                                    target.STAInfo = target.STAInfo,
-                                                   calendar = calendar)  
+                                                   calendar = calendar,
+                                                   year.offset = source@year.offset)  
         
         if(verbose) {
           message("Time axis information table:") 
@@ -365,7 +366,8 @@ getField_NetCDF <- function(source,
         month.axis.info <- processMonthlyNCAxis(axis.values = all.time.intervals, 
                                                 start.year = start.date["year"], 
                                                 start.month = start.date["month"],
-                                                target.STAInfo = target.STAInfo)  
+                                                target.STAInfo = target.STAInfo,
+                                                year.offset = source@year.offset)  
         start.time <- month.axis.info$start.time
         count.time <- month.axis.info$count.time
         years.vector <- month.axis.info$years.vector 
@@ -388,7 +390,8 @@ getField_NetCDF <- function(source,
         # and the actual years and months corresponding to this selection.
         year.axis.info <- processYearlyNCAxis(axis.values = all.time.intervals, 
                                               start.year = start.date["year"], 
-                                              target.STAInfo = target.STAInfo)  
+                                              target.STAInfo = target.STAInfo,
+                                              year.offset = source@year.offset)  
         start.time <- year.axis.info$start.time
         count.time <- year.axis.info$count.time
         years.vector <- year.axis.info$years.vector 
@@ -407,9 +410,24 @@ getField_NetCDF <- function(source,
       
       # timestep unit "year(s)", which is pretty easy
       if(tolower(timestep.unit) == "year" || tolower(timestep.unit) == "years") {
+        
+        
+        if(verbose) message("Processing time axis as absolute time axis with units of year and yearly values.")
+        
         time.res <- "Year"
+        
         # check they are all integer values (ie no confusing fractional year)
         if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) stop("For an absolute time axis, only integer values of years are supported")
+        
+        # check the values on time dimension are unique, if not something is wrong and make an assumption to make them unique
+        if(length(all.time.intervals) != length(unique(all.time.intervals))) {
+          warning(paste0("Don't have unique values on time (year) dimension in netCDF file ", file.name.nc, ". This should not be, so I am improvising.  Please check the years are as expected in the resulting Field and consider setting sensibles values for the time dimension."))
+          print(paste0("Don't have unique values on time (year) dimension in netCDF file ", file.name.nc, ". This should not be, so I am improvising.  Please check the years are as expected in the resulting Field and consider setting sensibles values for the time dimension."))
+          all.time.intervals <- all.time.intervals:(all.time.intervals+length(all.time.intervals)-1)
+        }
+        
+        # apply year offset prior to cropping 
+        if(source@year.offset != 0) all.time.intervals <- all.time.intervals + source@year.offset
         
         # get the indices consider cropping
         cropped.year.indices <- calculateYearCroppingIndices(target.STAInfo, all.time.intervals)
@@ -443,7 +461,8 @@ getField_NetCDF <- function(source,
         month.axis.info <- processMonthlyNCAxis(axis.values = all.time.intervals, 
                                                 start.year = 1, # absolute time axis, start in "year 1" because we have no other reference 
                                                 start.month = all.time.intervals[1], # again absolute time axis, so take the first month as the start month
-                                                target.STAInfo = target.STAInfo)  
+                                                target.STAInfo = target.STAInfo,
+                                                year.offset = source@year.offset)  
         start.time <- month.axis.info$start.time
         count.time <- month.axis.info$count.time
         years.vector <- month.axis.info$years.vector 
@@ -693,9 +712,12 @@ getField_NetCDF <- function(source,
   st.info <- getDimInfo(dt)
   
   
-  # Correct year, lons and lats
-  if(verbose) message("Correcting years, lons and lats with offsets...")
-  if(source@year.offset != 0 && "Year" %in% st.info) dt[,Year := Year + source@year.offset]
+  # Correct lons and lats
+  # Note: Year offset has been applied above, this is necessary because it needs to be applied *before* cropping.
+  #       Also, if lon and lat cropping is implemented at the stage of reading the NetCDF (for extra efficiency), 
+  #       these corrections will also need to be done earlier.
+  
+  if(verbose) message("Correcting lons and lats with offsets...")
   if(length(source@lonlat.offset) == 2 ){
     if(source@lonlat.offset[1] != 0) dt[, Lon := Lon + source@lonlat.offset[1]]
     if(source@lonlat.offset[2] != 0) dt[, Lat := Lat + source@lonlat.offset[2]]

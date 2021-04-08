@@ -146,11 +146,14 @@ getNetCDFDimension <- function(nc, dimension, verbose) {
 #' and the actual years corresponding to this selection.
 #' 
 #' @keywords internal
-processYearlyNCAxis <- function(axis.values, start.year, target.STAInfo) {
+processYearlyNCAxis <- function(axis.values, start.year, target.STAInfo, year.offset) {
   
   # convert the netcdf time increments into years
   end.year <- start.year+length(axis.values)-1
   years.vector <- start.year:end.year
+  
+  # apply the year offset before cropping 
+  if(year.offset != 0) years.vector <- years.vector + year.offset
   
   # get the first and last indices based on the years requested
   # returns a two-element list, with elements "first" and "last"
@@ -176,7 +179,7 @@ processYearlyNCAxis <- function(axis.values, start.year, target.STAInfo) {
 #' and the actual years and months corresponding to this selection.
 #' 
 #' @keywords internal
-processMonthlyNCAxis <- function(axis.values, start.year, start.month, target.STAInfo) {
+processMonthlyNCAxis <- function(axis.values, start.year, start.month, target.STAInfo, year.offset) {
   
   
   # convert the netcdf time increments into years and months
@@ -191,6 +194,9 @@ processMonthlyNCAxis <- function(axis.values, start.year, start.month, target.ST
   # here crop to match the actual length of the data (in case of not complete years)
   years.vector <- years.vector[start.month:length(axis.values)]
   months.vector <- months.vector[start.month:length(axis.values)]
+  
+  # apply the year offset before cropping 
+  if(year.offset != 0) years.vector <- years.vector + year.offset
   
   # get the first and last indices based on the years requested
   # returns a two-element list, with elements "first" and "last"
@@ -218,7 +224,7 @@ processMonthlyNCAxis <- function(axis.values, start.year, start.month, target.ST
 #' Finally it returns a data.tables with all this information including the netCDF indices (cropped to the years) 
 #' 
 #' @keywords internal
-processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, start.day, target.STAInfo, calendar) {
+processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, start.day, target.STAInfo, calendar, year.offset) {
   
   # vector assigning months to days for different possible years/calendars
   Month.col.360.day <- rep(1:12, each = 30)
@@ -281,6 +287,9 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
   # add a simple index to match the index required for reading netCDF
   actual.dates[, NetCDFIndex := 1:length(axis.values)]
   
+  # apply the year offset before cropping 
+  if(year.offset != 0) actual.dates[, Year := Year + year.offset]
+  
   # get the first and last indices based on the years requested
   # returns a two-element list, with elements "first" and "last"
   first.last.indices <- calculateYearCroppingIndices(target.STAInfo, actual.dates[["Year"]])
@@ -297,7 +306,7 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
 #' and the actual years and days corresponding to this selection.
 #' 
 #' @keywords internal
-processDailyNCAxis <- function(axis.values, start.year, start.day, target.STAInfo,  calendar)  {
+processDailyNCAxis <- function(axis.values, start.year, start.day, target.STAInfo,  calendar, year.offset)  {
   
   # is calendar proleptic
   proleptic <- FALSE
@@ -361,6 +370,8 @@ processDailyNCAxis <- function(axis.values, start.year, start.day, target.STAInf
   years.vector <- years.vector[axis.values+1]
   days.vector <- days.vector[axis.values+1]
   
+  # apply the year offset before cropping 
+  if(year.offset != 0) years.vector <- years.vector + year.offset
   
   # get the first and last indices based on the years requested
   # returns a two-element list, with elements "first" and "last"
