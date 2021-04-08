@@ -183,7 +183,20 @@ getField_NetCDF <- function(source,
     # pick up 'layer' dimension (ie not one of the previous)
     else if(layer.string == ""){
       layer.string <- this.dimension
-      all.layer.vals <- ncdf4::ncvar_get(this.nc, layer.string)
+      
+      ## SPECIAL CASE: for layer type dimensions in case they they have no corresponding variable defined
+      # for try with exception handling
+      all.layer.vals <- tryCatch({
+        ncdf4::ncvar_get(this.nc, layer.string)
+      }, warning = function(war) {
+        print("getField_NetCDF: **** SAVED **** No it won't, exception caught! Boom! But maybe you want to consider adding netcdf 'variables' for each 'dimension' in the file.")
+        1:this.nc$dim[[this.dimension]]$len
+      }, error = function(err) {
+        print("getField_NetCDF: **** SAVED **** No it won't, exception caught! Boom! But maybe you want to consider adding netcdf 'variables' for each 'dimension' in the file.")
+        1:this.nc$dim[[this.dimension]]$len
+      }, finally = {
+      })
+
       if(verbose) message(paste0("** Confirmed layer-type dimension: '", layer.string, "', with ", length(all.layer.vals), " values."))
     }
     # If two "layer" dimensions found then fail
@@ -253,6 +266,13 @@ getField_NetCDF <- function(source,
       # the reason for using this custom format is to support years < 0 and > 9999
       start.date <- parseStartDate(time.units.attr$value)
       
+      # if time step unit is seconds convert to days and proceed
+      if(timestep.unit == "seconds") {
+        all.time.intervals <- all.time.intervals/(60*60*24)
+        timestep.unit <- "days"
+      }
+      
+      
       # if time step unit is days
       if(timestep.unit == "days") {
         
@@ -304,7 +324,7 @@ getField_NetCDF <- function(source,
         }
         
         # pull out start index and count for when reading the netCDF slice
-        start.time <- axis.info.dt[["Index"]][1]
+        start.time <- axis.info.dt[["NetCDFIndex"]][1]
         count.time <- nrow(axis.info.dt)
         
         # also a vector of years for establishing first and last year later on (could be streamlined)
@@ -378,7 +398,7 @@ getField_NetCDF <- function(source,
         
       }
       # else catch whatever else
-      else stop('When reading relative time axes, DGVMTools only accepts units = "days since ..."/"months since ..."/"years since ...".')
+      else stop('When reading relative time axes, DGVMTools only accepts unit strings of the form = "seconds/days/months/years since/as <start_time>".')
       
     } # end if relative time axis
     
@@ -534,6 +554,10 @@ getField_NetCDF <- function(source,
     
     # 'melt' and remove the Temp column if necessary 
     if(verbose) message(paste("Melting array slice to data.table.  This might take a while (depending on the size of the slice)..."))
+    # TODO This is pretty much the rate-limiting step and it can gobble up a huge amount of memory.  
+    # But there is a possible solution.  It should be possible to split up this.slice (totally arbitrarily) in to smaller slices
+    # which came be melted separated and then rbind-ed together at the end.  That will definely help with the memory issue, 
+    # not sure about speed
     this.slice.dt <- as.data.table(this.slice, na.rm = TRUE, keep.rownames = TRUE)
     if("Temp" %in% names(this.slice.dt)) this.slice.dt[ , Temp := NULL]
     if("Lon" %in% names(this.slice.dt)) this.slice.dt[ , Lon := as.numeric(Lon)]
@@ -606,17 +630,22 @@ getField_NetCDF <- function(source,
       
       for(this_layer_value in all.layer.vals) {
         
+        
         # look for attribute with name "<layername>_<value>" or "<value>", on either the data variable or the dimension variable
-        final_layer_name <- lookupAttribute(this.nc, var = this_var_obj, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)
-        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = this_var_obj,  attname = paste(this_layer_value), verbose = nc.verbose)
-        if(final_layer_name == "Unspecified")  final_layer_name <- lookupAttribute(this.nc, var =layer.string, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)
-        if(final_layer_name == "Unspecified") final_layer_name <- lookupAttribute(this.nc, var = layer.string,  attname = paste(this_layer_value), verbose = nc.verbose)
-        
-        # if didn't find something, return to the original value 
-        if(final_layer_name == "Unspecified")  final_layer_name <- this_layer_value
-        
-        # If reading multiple variables from the NetCDF file, prepend the variable name to the layer name 
-        if(length(vars.to.read) > 1) final_layer_name <- paste(this.var, final_layer_name, sep = "_")
+        final_layer_name <- tryCatch({
+          capture.output(invisible(final_layer_name <- lookupAttribute(this.nc, var = layer.string, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)))
+          if(final_layer_name == "Unspecified") invisible(capture.output(final_layer_name <- lookupAttribute(this.nc, var = layer.string,  attname = paste(this_layer_value), verbose = nc.verbose)))
+          else if(final_layer_name == "Unspecified")  invisible(capture.output(final_layer_name <- lookupAttribute(this.nc, var = this_var_obj, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)))
+          else if(final_layer_name == "Unspecified") invisible(capture.output(final_layer_name <- lookupAttribute(this.nc, var = this_var_obj,  attname = paste(this_layer_value), verbose = nc.verbose)))
+          # if didn't find something, return to the original value 
+          else if(final_layer_name == "Unspecified")  final_layer_name <- this_layer_value
+          final_layer_name
+        }, warning = function(war){
+          this_layer_value
+        }, error = function(err){
+          this_layer_value
+        }, finally = {
+        })
         
         # set name its final name    
         setnames(this.slice.dt, paste(this_layer_value), paste(final_layer_name))

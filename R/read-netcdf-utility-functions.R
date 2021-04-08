@@ -25,7 +25,7 @@ parseStartDate <- function(start.date.string) {
   }
   
   
-  # try to get start date with very neccessary exception handling
+  # try to get start date with very necessary exception handling
   start.date <- tryCatch({
     as.POSIXct(start.date.string, tryFormats=c("%Y-%m-%d %H:%M:%S", "%Y-%m-%d")) # Extract the start / origin date
   }, warning = function(war) {
@@ -244,7 +244,7 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
        (calendar == "standard" & !is.leapyear(year)) | 
        (calendar == "gregorian" & !is.leapyear(year)) | 
        (calendar == "proleptic_gregorian" & !is.leapyear(year, proleptic = TRUE))) {
-      temp.dt <- data.table(CumDay = (1:365)+nrow(all.dates)-(start.day), Day = 1:365, Month = Month.col.365.day, Year = rep(year, 365))
+      temp.dt <- data.table(CumulativeDay = (1:365)+nrow(all.dates)-(start.day), Day = 1:365, Month = Month.col.365.day, Year = rep(year, 365))
     }
     # 366 day
     else if(calendar == "366_day" | 
@@ -252,12 +252,12 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
             (calendar == "standard" & is.leapyear(year)) | 
             (calendar == "gregorian" & is.leapyear(year)) | 
             (calendar == "proleptic_gregorian" & is.leapyear(year, proleptic = TRUE))) {
-      temp.dt <- data.table(CumDay = (1:366)+nrow(all.dates)-(start.day), Day = 1:366, Month = Month.col.366.day, Year = rep(year, 366))
+      temp.dt <- data.table(CumulativeDay = (1:366)+nrow(all.dates)-(start.day), Day = 1:366, Month = Month.col.366.day, Year = rep(year, 366))
     }
     # 360 day
     else if(calendar == "360_day" |
             calendar == "uniform30day") {
-      temp.dt <- data.table(CumDay = (1:360)+nrow(all.dates)-(start.day), Day = 1:360, Month = Month.col.360.day, Year = rep(year, 360))
+      temp.dt <- data.table(CumulativeDay = (1:360)+nrow(all.dates)-(start.day), Day = 1:360, Month = Month.col.360.day, Year = rep(year, 360))
     }
     else{
       stop(paste0("Calendar", calendar, "not supported by DGVMData format in DGVMTools package"))
@@ -266,27 +266,27 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
     # append to the data.table and increment years
     all.dates <- rbind(all.dates, temp.dt)
     year <- year+1
-    last.day.covered <- temp.dt[["CumDay"]][length(temp.dt[["CumDay"]])]
+    last.day.covered <- temp.dt[["CumulativeDay"]][length(temp.dt[["CumulativeDay"]])]
     
   }
   
   # now select the ones that actually correspond to values on the time axis
   # use of "floor" is because some netCDF files use fractional days to represent the time of the day (which we ignore)
   # and so here we are simply trunctating away this fractional time.
-  actual.dates <- all.dates[CumDay %in% floor(axis.values),]
+  actual.dates <- all.dates[CumulativeDay %in% floor(axis.values),]
   
   # check this worked and that we have a row in the data.table for each entry on the original netCDF time axis!
   if(length(axis.values) != nrow(actual.dates)) stop(paste0("ERROR: Something went wrong when reading relative netCDF axis. Axis had ", length(axis.values), " dates, but the function has calculated ", nrow(actual.dates), ". Teminating."))
 
   # add a simple index to match the index required for reading netCDF
-  actual.dates[, Index := 1:length(axis.values)]
+  actual.dates[, NetCDFIndex := 1:length(axis.values)]
   
   # get the first and last indices based on the years requested
   # returns a two-element list, with elements "first" and "last"
   first.last.indices <- calculateYearCroppingIndices(target.STAInfo, actual.dates[["Year"]])
   
   # crop the table to match the years we want and return
-  actual.dates[Index >= first.last.indices$first & Index <= first.last.indices$last, ]
+  actual.dates[NetCDFIndex >= first.last.indices$first & NetCDFIndex <= first.last.indices$last, ]
 
 }
 
