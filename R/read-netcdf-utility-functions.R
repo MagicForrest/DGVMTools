@@ -148,6 +148,12 @@ getNetCDFDimension <- function(nc, dimension, verbose) {
 #' @keywords internal
 processYearlyNCAxis <- function(axis.values, start.year, target.STAInfo, year.offset) {
   
+  # Potential TODO - rewrite this function to return a data.table with all the time axis information similarly to 
+  # the function "processDailyRelativeNCAxis()"
+  
+  # adjust start.year by number of years which the first time value is after start.year
+  start.year <- start.year + axis.values[1]
+  
   # convert the netcdf time increments into years
   end.year <- start.year+length(axis.values)-1
   years.vector <- start.year:end.year
@@ -181,13 +187,17 @@ processYearlyNCAxis <- function(axis.values, start.year, target.STAInfo, year.of
 #' @keywords internal
 processMonthlyNCAxis <- function(axis.values, start.year, start.month, target.STAInfo, year.offset) {
   
+  # Potential TODO - rewrite this function to return a data.table with all the time axis information similarly to 
+  # the function "processDailyRelativeNCAxis()"
   
   # convert the netcdf time increments into years and months
+  
+  # adjust start.year by number of years which the first time value is after start.year
+  start.year <- start.year + axis.values[1] %/% 12
   
   # first make a vector of the years and months
   nyears.to.cover <- ceiling(length(axis.values) / 12)
   years.to.cover <- start.year:((nyears.to.cover-1) + start.year)
-  
   years.vector <- rep(years.to.cover, each = 12)
   months.vector <- rep(c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"), times = nyears.to.cover)
   
