@@ -356,9 +356,12 @@ getField_NetCDF <- function(source,
         
         if(verbose) message("Processing time axis as relative time axis with units of month and monthly values.")
         
-        # first check that we have all integer months, nothing too crazy
-        if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) stop("For an relative time axis with unit of months, only integer values are supported.")
-        
+        # first enforce that we have all integer months
+        if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) {
+          warning("Found non-integer months values on relative time axis with unit of months.  I am truncating these values to give integer values. Please check this aligns the months as you expect.")
+          if(verbose)  message("WARNING: Found non-integer months values on relative time axis with unit of months.  I am truncating these values to give integer values. Please check this aligns the months as you expect.")
+          all.time.intervals <- floor(all.time.intervals)
+        } 
         
         # This function call processes a time axis which is assumed to be monthly
         # It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
@@ -381,8 +384,12 @@ getField_NetCDF <- function(source,
         
         time.res <- "Year"
         
-        # first check that we have all integer years, nothing too crazy
-        if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) stop("For an relative time axis with unit of years, only integer values are supported.")
+        # first enforce that we have all integer years
+        if(!isTRUE(all(all.time.intervals == floor(all.time.intervals)))) {
+          warning("Found non-integer years values on relative time axis with unit of years.  I am truncating these values to give integer values. Please check this aligns the years as you expect.")
+          if(verbose)  message("WARNING: Found non-integer years values on relative time axis with unit of years.  I am truncating these values to give integer values. Please check this aligns the years as you expect.")
+          all.time.intervals <- floor(all.time.intervals)
+        }
         
         
         # This function call processes a time axis which is assumed to be yearly
@@ -599,7 +606,7 @@ getField_NetCDF <- function(source,
     # ###  HANDLE TIME AXIS 
     if(length(all.time.intervals) > 0) {
       
-      if(verbose) message("Translating Time axis to Year/Month/Day...")
+      if(verbose) message("Translating Time axis to Year/Month/Day as required...")
       
       if(time.res == "Year") {
         if("Time" %in% names(this.slice.dt)) setnames(this.slice.dt, "Time", "Year")

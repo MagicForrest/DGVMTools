@@ -72,11 +72,11 @@ makePlotTitle <- function(fields){
   }
   
   if(length(final.subannual ) > 0) subannual.string <- trimws(paste(subannual.string, final.subannual , sep = " "))
-  if(sta.info@subannual.aggregate.method != "none") {
+  if(sta.info@subannual.aggregate.method != "none" && sta.info@subannual.aggregate.method != "Unspecified") {
     if(length(original.subannual) > 0) subannual.string <- trimws(paste(subannual.string, sta.info@subannual.aggregate.method, "of", sep = " "))
     else subannual.string <- trimws(paste(subannual.string, sta.info@subannual.aggregate.method, sep = " "))
   }
-  if(length(original.subannual) > 0 && sta.info@subannual.aggregate.method != "none")   {
+  if(length(original.subannual) > 0 && sta.info@subannual.aggregate.method != "none" && sta.info@subannual.aggregate.method != "Unspecified")   {
     if(original.subannual != final.subannual){
       subannual.string <- trimws(paste(subannual.string, original.subannual, sep = " "))
     }
