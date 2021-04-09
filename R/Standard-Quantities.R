@@ -15,7 +15,7 @@ Standard.quantities <- list(
       units = "",
       colours = grDevices::colorRampPalette(c("grey85", "black")), 
       format = c("Standard"),
-      cf.name = "area_fraction"), 
+      standard_name = "area_fraction"), 
   
   new("Quantity",
       id = "vegcover_std",
@@ -23,7 +23,7 @@ Standard.quantities <- list(
       units = "%",
       colours = veg.palette, 
       format = c("Standard"),
-      cf.name = "area_fraction_percent"), 
+      standard_name = "area_fraction_percent"), 
   
   
   new("Quantity",
@@ -32,7 +32,7 @@ Standard.quantities <- list(
       units = "%",
       colours = veg.palette, 
       format = c("Standard"),
-      cf.name = "area_fraction_percent"), 
+      standard_name = "area_fraction_percent"), 
   
   
   new("Quantity",
@@ -41,7 +41,7 @@ Standard.quantities <- list(
       units = "kg m-2",
       colours = reversed.viridis,
       format = c("Standard"),
-      cf.name = "vegetation_carbon_content"),
+      standard_name = "vegetation_carbon_content"),
   
   new("Quantity",
       id = "LAI_std",
@@ -49,7 +49,7 @@ Standard.quantities <- list(
       units = "1",
       colours = viridis::viridis,
       format = c("Standard"),
-      cf.name = "leaf_area_index"),
+      standard_name = "leaf_area_index"),
   
   new("Quantity",
       id = "mGPP_std",
@@ -64,7 +64,7 @@ Standard.quantities <- list(
       units = "kgC m-2 year-1",
       colours = viridis::inferno,
       format = c("Standard"),
-      cf.name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
+      standard_name = "annual_gross_primary_productivity_of_biomass_expressed_as_carbon"),
   
   new("Quantity",
       id = "aNPP_std",
@@ -79,7 +79,7 @@ Standard.quantities <- list(
       units = "m",
       colours = reversed.magma,
       format = c("Standard"),
-      cf.name = "canopy_height"),
+      standard_name = "canopy_height"),
   
   new("Quantity",
       id = "burntfraction_std",
@@ -87,7 +87,7 @@ Standard.quantities <- list(
       units = "fraction of gridcell",
       colours = reversed.fire.palette,
       format = c("Standard"),
-      cf.name = "burned_area_fraction"),
+      standard_name = "burned_area_fraction"),
   
   new("Quantity",
       id = "FPAR_std",
@@ -95,7 +95,7 @@ Standard.quantities <- list(
       units = "fraction",
       colours = veg.palette,
       format = c("Standard"),
-      cf.name = "fraction_absorbed_of_photosynthetically_active_radiation"),
+      standard_name = "fraction_absorbed_of_photosynthetically_active_radiation"),
   
   new("Quantity",
       id = "aNEE_std",

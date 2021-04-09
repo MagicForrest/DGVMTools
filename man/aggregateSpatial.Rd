@@ -4,13 +4,13 @@
 \alias{aggregateSpatial}
 \title{Spatially aggregate a Field}
 \usage{
-aggregateSpatial(input.obj, method = "mean", verbose = FALSE, ...)
+aggregateSpatial(x, method = "mean", verbose = FALSE, ...)
 }
 \arguments{
-\item{input.obj}{Field (or data.table) to be averaged}
+\item{x}{Field (or data.table) to be averaged}
 
 \item{method}{The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
-"weighted.sum", "w.sum", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).}
+"weighted.sum", "w.sum", "sum", "mode", "median", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).}
 
 \item{verbose}{If TRUE give some progress update about the averaging.}
 
@@ -37,11 +37,11 @@ africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GU
 field <- getField(source = africa.Source, var = "cmass")
 
 # calculate mean over gridcells and look at the resulting data table
-spatial.mean <- aggregateSpatial(input.obj = field, method = "mean", verbose = TRUE)
+spatial.mean <- aggregateSpatial(x = field, method = "mean", verbose = TRUE)
 print(spatial.mean@data)
 
 # do weighted.sum and look at the resulting data table
-spatial.wsum <- aggregateSpatial(input.obj = field, method = "w.sum", verbose = TRUE)
+spatial.wsum <- aggregateSpatial(x = field, method = "w.sum", verbose = TRUE)
 print(spatial.wsum@data) 
 
 # plot the weight and unweighted sums as a time series

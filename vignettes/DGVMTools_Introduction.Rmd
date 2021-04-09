@@ -213,7 +213,7 @@ The `layerOp()` functions is very flexible (it even works with suitable arbitrar
 
 #### Reading data and comparing layers
 
-The package can also read datasets that have been processed into the `DGVMData` format.  This format is essentially just CF-compliant netCDF, whicha few extra attricute of meta-data.  There are a couple of files included in the package, one of which we will use here and compare to another run of LPJ-GUESS, this time cover a part of central-western Africa.  Please contact the author if you want more useful data files in the `DGVMData` format.
+The package can also read netCDF files using the `NetCDF` format.  As netCDF files can be structured in myriad different ways, it is not absolutely guaranteed that all files will read correctly.  However, most files that conform closely to the CF convention should work.  There are a couple of small example netCDF files included in the package, one of which we will use here and compare to another run of LPJ-GUESS, this time cover a part of central-western Africa.  Please contact the author if you have a request to read netCDF with particular features which aren't currently supported.
 
 ``` {r open data, echo=TRUE}
 
@@ -238,8 +238,8 @@ print(plotSpatial(GUESS.vegC, "Tree"))
 # define the data Source (Saatchi biomass data @ HD)
 Saatchi.dataset <- defineSource(id = "Saatch2011",
                                 name = "Saatchi et al. 2011 tropical biomass",
-                                format = DGVMData,
-                                dir = system.file("extdata", "DGVMData", "Saatchi2011", "HD", package = "DGVMTools"))
+                                format = NetCDF,
+                                dir = system.file("extdata", "NetCDF", "Saatchi2011", "HD", package = "DGVMTools"))
 
 # get the data field
 Saatchi.vegC <- getField(source = Saatchi.dataset,
@@ -254,7 +254,7 @@ Now we formally compare the layers using the `compareLayers()` function, which a
 
 ``` {r comparison, fig.asp = 1, echo=TRUE}
 # compare layers to produce a Comparison object
-vegC.comparison <- compareLayers(field1 = GUESS.vegC, field2 = Saatchi.vegC, layers1 = "Tree", layers2 = "Tree", override.quantity = TRUE)
+vegC.comparison <- compareLayers(field1 = GUESS.vegC, field2 = Saatchi.vegC, layers1 = "Tree", layers2 = "vegC_std", override.quantity = TRUE)
 
 # have a look at this comparison object (lots of metadata tracked)
 print(vegC.comparison )
@@ -312,8 +312,8 @@ There is also a global map on potential natural vegetation (PNV) biomes availabl
 
 # data biomes source
 biomes.source <- defineSource(id = "DataBiomes",
-                              dir = system.file("extdata", "DGVMData", "HandP_PNV", "HD", package = "DGVMTools"), 
-                              format = DGVMData,
+                              dir = system.file("extdata", "NetCDF", "HandP_PNV", "HD", package = "DGVMTools"), 
+                              format = NetCDF,
                               name = "Haxeltine and Prentice Biomes")
 biomes.data <- getField(source = biomes.source, var = "Smith2014")
 print(plotSpatial(biomes.data))
@@ -398,9 +398,9 @@ One special feature of DGVMTools that deserves it own mention at this point is t
 
 ### Applicability
 
-The package treats model output and observed data in an equivalent fashion and so is equally useful for model-to-data, model-to-model and data-to-data analyses.  A companion R package DGVMData reads data from a variety of sources (primarly satellite data) and formats it such that it can be read natively by DGVMTools (this is basically just CF-compliant netCDF files with a couple of extra attributes).
+The package treats model output and observed data in an equivalent fashion and so is equally useful for model-to-data, model-to-model and data-to-data analyses.  A companion R package, DGVMData, processes a selection of data to different resolution and outputs the data as netCDF files which can be read easily with the `NetCDF` Format included in DGVMTools.
 
-Much of the package could be utilised for any data which follows comes distributed over space (longitude, latitude), time (multiple years of data with subannual time resolution of daily, monthly or annual) and and different conceptual layers (for example different vegetation types or soil carbon pools).  However it has several additional features which are focussed on vegetation modelling, namely: the ability to read data from selected DGVMs in their native formats (currently LPJ-GUESS(-SPITFIRE) and aDGVM2 are supported); facilities for handling metadata about Plant Functional Types (PFTs); and the means to classify vegetation model output into biomes.  
+Much of the package could be utilised for any data which follows comes distributed over space (longitude, latitude), time (multiple years of data with subannual time resolution of daily, monthly or annual) and and different conceptual layers (for example different vegetation types or soil carbon pools).  However it has several additional features which are focussed on vegetation modelling, namely: the ability to read data from selected DGVMs in their native formats (currently LPJ-GUESS(-SPITFIRE), aDGVM(1) and aDGVM2 are supported); facilities for handling metadata about Plant Functional Types (PFTs); and the means to classify vegetation model output into biomes.  
 
 
 ### Miscellaneous details

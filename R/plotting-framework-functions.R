@@ -364,6 +364,40 @@ mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FA
 }
 
 
+#' Make y-axis
+#' 
+#' This is an internal helper function to build a y-axis for Temporal and Subannual plots, possibly with multiple Quantities
+#' 
+#' @param final.fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
+#' 
+#' @return Returns the y-axis as a chatacter string,
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+  
+makeYAxis <- function(final.fields) {
+
+  # first extract the names and units and store them in a tuples (two element vector) for the Quantity from each Field
+  all.quant.tuples <- list()
+  for(field in final.fields) {
+    all.quant.tuples[[length(all.quant.tuples)+1]] <- c(field@quant@name, field@quant@units)
+  } 
+  
+  # select the unique ones
+  all.quant.tuples <- unique(all.quant.tuples)
+  
+  # form the label string
+  y.axis.label <- character(0)
+  for(this.tuple in all.quant.tuples) {
+    y.axis.label <- paste0(y.axis.label, paste0(this.tuple[1], " (", this.tuple[2], "),\n") )
+  }
+  y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
+  y.label <- y.axis.label
+  
+  return(y.label)
+  
+}
+
 
 #####################################################################################################################
 ################ CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED ########################

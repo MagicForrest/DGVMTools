@@ -29,8 +29,7 @@ for separating characters where need be.   For example, "Standard_v4.0" or "Saat
 
 \item{dir}{The location of this source on the file system (Mandatory)}
 
-\item{format}{A Format object to describe the type of source.  Can be GUESS, aDGVM, aDGVM2 or DGVMData (note no quotes since these are actual R objects not strings).  (Mandatory) DEPRECATED: alternatively a character string to identify the format of the files of this data sorce. This can be anything, but should be in order for "getField()" to work corrected 
-it needs be a \code{supported.format} which is either a supported model that produced this (e.g. "LPJ-GUESS") or "DGVMData" for data files produced by the DGVMData package}
+\item{format}{A Format object to describe the type of source.  Can be GUESS, aDGVM, aDGVM2 or NetCDF (NOTE no quotes since these are actual R objects not strings).}
 
 \item{quantities}{A list of Quantity object what we expect to have in this Source.  The option allows the over-riding the default quantities in the Format object.
 Not 100\% sure why this might be useful though.}

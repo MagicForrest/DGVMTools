@@ -30,7 +30,7 @@ This vignette describes how to manipulate and create `Format` objects in DGVMToo
 
 Writing code to describe a new `Format` object is essential for reading a new DGVM or other data source.  So the second (and much longer) part of this vignette describes how to do that.  It is also a reference for making more complicated modifications to an existing `Format` (for example reading new model variables) 
 
-Note: It doesn't really make sense to write a new Format for one dataset (that is probably overkill and it would probably rather make sense to bash the data in a DGVMData `Format`, rather than define a new `Format`), but it might make sense for many datatsets with a standard file format, for example MODIS or Fluxnet. 
+Note: It doesn't really make sense to write a new Format for one dataset (that is probably overkill and it would probably rather make sense to bash the data into something compatible with the pre-supplied a NetCDF `Format`, rather than define a new `Format`), but it might make sense for many datatsets with a standard file format, for example MODIS or Fluxnet. 
 
 
 ## Simple case: Adding a new Layer to a `Format` object
@@ -71,7 +71,7 @@ Note that this change will only remain active in this particular R session (it d
 
 ## Writing a new `Format` (or more involved modifications)
 
-Writing a completely new `Format` is obviously more involved, and in this case details will depends very much on the way the data files are structered.  If you are making a new `Format` to read ASCII data then the Format-GUESS.R is a good reference.  If you are writing a format for netCDF data, use Format-DGVMData.R for reference.
+Writing a completely new `Format` is obviously more involved, and in this case details will depends very much on the way the data files are structered.  If you are making a new `Format` to read ASCII data then the Format-GUESS.R is a good reference.  If you are writing a format for netCDF data, use Format-NetCDF.R for reference.
 
 This section of the vignette also gives some idea for how to do 'intermediate level' modifications to a `Format` object, for example added a new `Quantity`.
 
@@ -169,7 +169,7 @@ quantities_NewFormat <- list(
       units = "m^2/m^2",
       colours = reversed.viridis,
       format = c("Example_Format"),
-      cf.name = "leaf_area_index"),
+      standard_name = "leaf_area_index"),
   
   new("Quantity",
       id = "Veg_C",

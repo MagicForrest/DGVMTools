@@ -24,8 +24,6 @@
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
 #' and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
-#' @param facet.labels List of character strings to be used as panel labels for summary plots and titles for the individual plots.  
-#' Sensible titles will be constructed if this is not specified - NOT CURRENTLY IMPLEMENTED
 #' @param plot.bg.col Colour string for the plot background, default "white".
 #' @param panel.bg.col Colour string for the panel background, default "white".
 #' @param useLongNames Boolean, if TRUE replace Layer IDs with the Layer's full names on the plots.
@@ -49,6 +47,8 @@
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
 #' @param tile Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
 #' for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.
+#' @param pixel.size Numeric, allows you to alter the plotted pixel size (height and width simultaneously using the same value).  This is useful 
+#' if you are plotting a collection of individual sites which do not have regular spacing.  Note the "tile = TRUE" (see above) will automatically set if you haven't done it manually.
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 #' \itemize{
 #'  \item{"nrow"}{The number of rows of facets}
@@ -77,7 +77,6 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
                         title = character(0),
                         subtitle = character(0),
                         legend.title = character(0),
-                        facet.labels =  NULL,
                         facet.order = NULL,
                         plot.bg.col =  "white",
                         panel.bg.col = "white", #"809DB8", #"cae1ff",
@@ -97,8 +96,9 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
                         plot = TRUE,
                         interior.lines = TRUE,
                         tile = FALSE,
+                        pixel.size = NULL,
                         ...){
-
+  
   J = Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = Years = NULL
   
@@ -106,6 +106,10 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   categorical.legend.labels <- waiver()
   if(missing(legend.title)) legend.title <- NULL
   drop.from.scale <- waiver() # only set to FALSE when discretising a scale 
+  if(!missing(pixel.size) & !is.null(pixel.size) & !tile){
+    warning("In plotSpatial(), if you specifiy the 'pixel.size' argument then the 'tile' argument should also be set to TRUE.  I have done this for you, but plotting might take longer as a result.")
+    tile <- TRUE
+  }
   
   
   ### SANITISE FIELDS, LAYERS AND STINFO
@@ -518,7 +522,10 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     # note that we add each facet as an individual layer to support multiple resolutions
     for(facet in levels(data.toplot[["Facet"]])){
       if(!tile) mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value"))
-      else mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value"))
+      else {
+        if(!missing(pixel.size) & !is.null(pixel.size)) mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value"), width = pixel.size, height = pixel.size)
+        else mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value"))
+      }
     }
     mp <- mp + facet_wrap(~Facet, ...)
     
@@ -526,7 +533,10 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   # else simple case with no facetting
   else {
     if(!tile) mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
-    else mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
+    else {
+      if(!missing(pixel.size) & !is.null(pixel.size)) mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"), width = pixel.size, height = pixel.size)
+      else mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
+    }
   }
   
   

@@ -10,7 +10,6 @@ plotSpatial(
   title = character(0),
   subtitle = character(0),
   legend.title = character(0),
-  facet.labels = NULL,
   facet.order = NULL,
   plot.bg.col = "white",
   panel.bg.col = "white",
@@ -30,6 +29,7 @@ plotSpatial(
   plot = TRUE,
   interior.lines = TRUE,
   tile = FALSE,
+  pixel.size = NULL,
   ...
 )
 }
@@ -45,9 +45,6 @@ plotSpatial(
 \item{legend.title}{A character string or expression to override the default legend title. Set to NULL for no legend title.  The default legend title is the \code{units}
 of the \linkS4class{Quantity} of the first \linkS4class{Field} provided in the \code{field} argument.  This argument allows general flexibility, but it is particularly handy
 to facilitate expressions for nicely marked up subscript and superscript.}
-
-\item{facet.labels}{List of character strings to be used as panel labels for summary plots and titles for the individual plots.
-Sensible titles will be constructed if this is not specified - NOT CURRENTLY IMPLEMENTED}
 
 \item{facet.order}{A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
 and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
@@ -93,6 +90,9 @@ Other things can be overlain on the resulting plot with further ggplot2 commands
 
 \item{tile}{Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
 for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.}
+
+\item{pixel.size}{Numeric, allows you to alter the plotted pixel size (height and width simultaneously using the same value).  This is useful 
+if you are plotting a collection of individual sites which do not have regular spacing.  Note the "tile = TRUE" (see above) will automatically set if you haven't done it manually.}
 
 \item{...}{Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 \itemize{

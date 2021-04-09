@@ -1,6 +1,6 @@
 Package: DGVMTools
 Type: Package
-Version: 0.9.0
+Version: 0.10.0
 Title: DGVM Processing, Analysis and Plotting Tools
 Date: 2019-11-01
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
@@ -41,14 +41,14 @@ License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 VignetteBuilder: knitr
 Encoding: UTF-8
 Collate:
     'classes.R'
     'colour-palettes.R'
-    'Format-DGVMData.R'
     'Format-GUESS.R'
+    'Format-NetCDF.R'
     'Format-aDGVM.R'
     'Format-aDGVM2.R'
     'Standard-Quantities.R'
@@ -95,6 +95,7 @@ Collate:
     'plotTemporal.R'
     'plotTemporalComparison.R'
     'plotting-framework-functions.R'
+    'read-netcdf-utility-functions.R'
     'renameLayers.R'
     'selectDays.R'
     'selectGridcells.R'

@@ -13,7 +13,8 @@
 
 #' Rules to classify biomes as per Smith et al. 2014
 #' 
-#' Based on LAI only, see paper for details.
+#' Based on LAI only, see paper for details.  Note that the code here follows the actual script used at Lund, rather than the table in the paper
+#' which doesn't quite give the whole picture.
 #' 
 #' @param x Numerical vector of LAI values for a particular location. 
 #' Certain fractions and quantities should have been pre-calculated.
@@ -33,10 +34,10 @@ Smith2014BiomeRules <- function(x){
   else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & as.numeric(x[['LAI_std_TropicalFractionOfTree']] )> 0.5 &  (x[['LAI_std_MaxTree']] == "TrBE" | x[['LAI_std_MaxTree']] == "TrBR" | x[['LAI_std_MaxTree']] == "TrTBR")) {return("Tropical Seasonal Forest")}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & (x[['LAI_std_MaxTree']] == "BNE" | x[['LAI_std_MaxTree']] == "IBS" | x[['LAI_std_MaxTree']] == "BIBS")) {return("Boreal Evergreen Forest/Woodland")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.8 & (x[['LAI_std_MaxTree']] == "BNE" | x[['LAI_std_MaxTree']] == "IBS" | x[['LAI_std_MaxTree']] == "BIBS")) {return("Boreal Evergreen Forest/Woodland")}
   
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 &  as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & x[['LAI_std_MaxTree']] == "BNS") {return("Boreal Deciduous Forest/Woodland")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 &  as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.8 & x[['LAI_std_MaxTree']] == "BNS") {return("Boreal Deciduous Forest/Woodland")}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
   else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & (as.numeric(x[['LAI_std_TeBEFractionOfTree']]) > 0.5 | as.numeric(x[['LAI_std_TeBSFractionOfTree']]) > 0.5) & x[['LAI_std_MaxTree']] == "TeBE") {return("Temperate Broadleaved Evergreen Forest")}
@@ -60,7 +61,7 @@ Smith2014BiomeRules <- function(x){
   else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_Total']]) <= 2.5) {return("Dry Savanna")}
   
   # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.5 & as.numeric(x[['Lat']]) >= 54) {return("Arctic/Alpine Tundra")}
+  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.2 & as.numeric(x[['Lat']]) >= 54 && as.numeric(x[['LAI_std_Tree']]) < 0.5 * as.numeric(x[['LAI_std_Grass']])) {return("Arctic/Alpine Tundra")}
   
   # BIOME 14 - Tall Grassland
   else if(as.numeric(x[['LAI_std_Grass']]) > 2.0) {return("Tall Grassland")}
@@ -79,8 +80,8 @@ Smith2014BiomeRules <- function(x){
   
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
-    return(NA)
+    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ").  Returning desert as per the Lund reference script." ))
+    return("Desert")
   }
   
 }
@@ -138,13 +139,11 @@ Smith2014BiomeScheme <- new("Scheme",
                           list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
                           list(quantity = "LAI_std", operator = 0, layers = "BINE"),
                           list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                          list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                          list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS"), new.layer = "TeBS"),
                           list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                          list(quantity = "LAI_std", operator = 0, layers = "IBS"),
                           list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
                           list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
-                          list(quantity = "LAI_std", operator = 0, layers = "IBS"),
-                          
+
                           ### Make totals
                           # Tree
                           list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),
@@ -410,10 +409,10 @@ Forrest2015MegaBiomeRules <- function(x){
   else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 & as.numeric(x[['LAI_std_TropicalFractionOfTree']] )> 0.5 &  (x[['LAI_std_MaxTree']] == "TrBE" | x[['LAI_std_MaxTree']] == "TrBR" | x[['LAI_std_MaxTree']] == "TrTBR")) {return("Tropical Forest")}
   
   # BIOME 4 - Boreal Evergreen Forest/Woodland
-  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & (x[['LAI_std_MaxTree']] == "BNE" | x[['LAI_std_MaxTree']] == "IBS" | x[['LAI_std_MaxTree']] == "BIBS")) {return("Boreal Forest")}
-  
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.8 & (x[['LAI_std_MaxTree']] == "BNE" | x[['LAI_std_MaxTree']] == "IBS" | x[['LAI_std_MaxTree']] == "BIBS")) {return("Boreal Forest")}
+
   # BIOME 5 - Boreal Deciduous Forest/Woodland
-  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.5 & x[['LAI_std_MaxTree']] == "BNS") {return("Boreal Forest")}
+  else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_BorealFractionOfTree']]) > 0.8 & x[['LAI_std_MaxTree']] == "BNS") {return("Boreal Forest")}
   
   # BIOME 6 - Temperate Broadleaved Evergreen Forest
   else if(as.numeric(x[['LAI_std_Tree']]) > 2.5 &  (as.numeric(x[['LAI_std_TeBEFractionOfTree']]) > 0.5 | as.numeric(x[['LAI_std_TeBSFractionOfTree']]) > 0.5) & x[['LAI_std_MaxTree']] == "TeBE") {return("Temperate Evergreen Forest")}
@@ -437,7 +436,7 @@ Forrest2015MegaBiomeRules <- function(x){
   else if(as.numeric(x[['LAI_std_Tree']]) > 0.5 & as.numeric(x[['LAI_std_Tree']]) < 2.5 & as.numeric(x[['LAI_std_Total']]) <= 2.5) {return("Grasslands and Dry Shrublands")}
   
   # BIOME 13 - Arctic/alpine Tundra
-  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.5 & as.numeric(x[['Lat']]) >= 54) {return("Tundra")}
+  else if(as.numeric(x[['LAI_std_Tree']]) < 0.5 & as.numeric(x[['LAI_std_Total']]) > 0.2 & as.numeric(x[['Lat']]) >= 54 && as.numeric(x[['LAI_std_Tree']]) < 0.5 * as.numeric(x[['LAI_std_Grass']])) {return("Tundra")}
   
   # BIOME 14 - Tall Grassland
   else if(as.numeric(x[['LAI_std_Grass']]) > 2.0) {return("Grasslands and Dry Shrublands")}
@@ -456,8 +455,8 @@ Forrest2015MegaBiomeRules <- function(x){
   
   # REMAINDER
   else {
-    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ")" ))
-    return(NA)
+    print(paste("Oops, not classified: Location (", as.numeric(x[['Lon']]), ",", as.numeric(x[['Lat']]), ").  Returning desert as per the Lund reference script." ))
+    return("Desert")
   }
   
   
@@ -499,13 +498,11 @@ Forrest2015BiomeScheme <- new("Scheme",
                             list(quantity = "LAI_std", operator = "+", layers = c("BNE", "BINE", "BIBS"), new.layer = "BNE"),
                             list(quantity = "LAI_std", operator = 0, layers = "BINE"),
                             list(quantity = "LAI_std", operator = 0, layers = "BIBS"),
-                            list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS", "IBS"), new.layer = "TeBS"),
+                            list(quantity = "LAI_std", operator = "+", layers = c("TeBS", "TeIBS"), new.layer = "TeBS"),
                             list(quantity = "LAI_std", operator = 0, layers = "TeIBS"),
-                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),
                             list(quantity = "LAI_std", operator = "+", layers = c("TrBE", "TrIBE"), new.layer = "TrBE"),
                             list(quantity = "LAI_std", operator = 0, layers = "TrIBE"),
-                            list(quantity = "LAI_std", operator = 0, layers = "IBS"),    
-                            
+
                             ### Make totals
                             # Tree
                             list(quantity = "LAI_std", operator = "+", layers = ".Tree", new.layer = "Tree"),

@@ -44,6 +44,9 @@ basically with the meaning of data.frame(*, check.names = !optional).}
 
 \item{keep.rownames}{If ... is a matrix or data.frame, TRUE will retain the rownames of that object in a column named rn.}
 }
+\value{
+Either a single array or a list of arrays, depending on if the input Field had one layer or multiple layers
+}
 \description{
 Functions to coerce Fields and Comparisons into other objects (data.frame, data.table, Raster* objects)
 }

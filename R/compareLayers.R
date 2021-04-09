@@ -42,8 +42,8 @@
 #' africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
 #' model.cmass <- getField(source = africa.Source, var = "cmass", year.aggregate.method="mean")
 #' 
-#' Saatchi.dir <- system.file("extdata", "DGVMData", "Saatchi2011", "HD", package = "DGVMTools")
-#' Saatchi.Source <- defineSource(name = "Saatchi Biomass", dir = Saatchi.dir,  format = DGVMData)
+#' Saatchi.dir <- system.file("extdata", "NetCDF", "Saatchi2011", "HD", package = "DGVMTools")
+#' Saatchi.Source <- defineSource(name = "Saatchi Biomass", dir = Saatchi.dir,  format = NetCDF)
 #' Saatchi.cmass <- getField(source = Saatchi.Source , var = "vegC_std") #' 
 #'
 #' ## Calculate veg C of trees in model, compare layers, and print the statistics 
@@ -57,7 +57,7 @@
 #' 
 #' ##### Categorical (single-layer) comparison
 #' # classification is by Smith et al 2014
-#' # Load Haveltine and Prentice PNV biomes data and LPJ-GUESS biomes over Europe
+#' # Load Haxeltine and Prentice PNV biomes data and calculate LPJ-GUESS biomes over Europe
 #' 
 #' europe.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 #' europe.Source <- defineSource(name = "LPJ-GUESS", dir = europe.dir,  format = GUESS)
@@ -65,8 +65,8 @@
 #'                           scheme = Smith2014BiomeScheme, 
 #'                           year.aggregate.method="mean")
 #' 
-#' PNV.dir <- system.file("extdata", "DGVMData", "HandP_PNV", "HD", package = "DGVMTools")
-#' PNV.Source <- defineSource(name = "H and P PNV", dir = PNV.dir,  format = DGVMData)
+#' PNV.dir <- system.file("extdata", "NetCDF", "HandP_PNV", "HD", package = "DGVMTools")
+#' PNV.Source <- defineSource(name = "H and P PNV", dir = PNV.dir,  format = NetCDF)
 #' PNV.biomes <- getField(source = PNV.Source , var = "Smith2014")
 #'
 #' ## Compare biomes, print the statistics
@@ -116,7 +116,7 @@
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 compareLayers <- function(field1, 
-                          field2, 
+                          field2=field1, 
                           layers1, 
                           layers2=layers1,
                           do.seasonality = FALSE,
@@ -133,6 +133,16 @@ compareLayers <- function(field1,
   if(!identical(getDimInfo(field1), getDimInfo(field2))) stop("Trying to compare layers with different dimenisons.  Definitely can't do this.  Check your dimension and/or averaging")
   if(length(layers1) != length(layers2)) stop("Trying to compare a different number of layers between two Fields.  Definitely can't do this.  Check you layers1 and layers2 argument.")  
   
+  ### Check that the Layers to be compared are actually present in the Fields
+  for(this_layer in layers1){
+    if(!this_layer %in% layers(field1)) stop(paste0("Comparing layer ", this_layer, " from field1 was requested but it wasn't there.  Available layers are: ", paste0(layers(field1),  collapse = ", ")))
+  }
+  for(this_layer in layers2){
+    if(!this_layer %in% layers(field2)) stop(paste0("Comparing layer ", this_layer, " from field2 was requested but it wasn't there.  Available layers are: ", paste0(layers(field2), collapse = ", ")))
+  }
+  
+  # If both field2 and layers2 arguments are missing then it is a trivial comparison
+  if(missing(field2) & missing(layers2)) warning("You are comparing the same Layer(s) from the same Field.  These are tautologically identical, are you sure you wanted to do this?")
   
   ### Find what nature of comparison we are doing
   type <- NULL
@@ -243,8 +253,7 @@ compareLayers <- function(field1,
   
   # warn/stop if quantities are different
   if(!identical(field1@quant, field2@quant)) {
-    if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity ", field1@quant@id))
-    else stop("Comparing different Quantity")
+    if(!override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity ", field1@quant@id))
   }
   
   ### Calculate the approriate statistical comparisons

@@ -44,7 +44,7 @@ setMethod("show", signature(object="Quantity"), function(object) {
   cat(paste0("Quantity: \t\t", object@id," (", object@name, "): ",  
              "Units=", object@units, 
              ", Defined for format: ", paste0(unlist(object@format), collapse = ', '), 
-             ", CF name=", object@cf.name, "\n"))
+             ", CF standard_name=", object@standard_name, "\n"))
   
 })
 

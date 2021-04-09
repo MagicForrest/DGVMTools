@@ -13,7 +13,7 @@
 #' @param colours A  functions giving the preferred colour palette for this \linkS4class{Quantity}.  Defaults to viridis.
 #' @param format A character string (or a list of character strings) defining which \linkS4class{Format} this quantity is defined for.  Should match the id/ids
 #' of the \linkS4class{Format}s.
-#' @param cf.name A character string givien the standard CF-compliant name for writing netCDF files, e.g. "leaf_area_index" (optional, such standard names
+#' @param standard_name A character string givien the standard CF-compliant name for writing netCDF files, e.g. "leaf_area_index" (optional, such standard names
 #' don't exist for all variables)
 #' @param add.to A \linkS4class{Format}, or a \linkS4class{Source}, or a \linkS4class{Field} object to which this newly defined
 #'  \linkS4class{Quantity} should be added (optional). If this is specified then the defineQuantity() returns the
@@ -108,7 +108,7 @@ defineQuantity <- function(id,
                         units,
                         colours = viridis::viridis,
                         format = "Standard",
-                        cf.name = "unknown", 
+                        standard_name = "unknown", 
                         add.to){
   
   # check the important arguments
@@ -124,7 +124,7 @@ defineQuantity <- function(id,
                units = units,
                colours = colours,
                format = format,
-               cf.name = cf.name)
+               standard_name = standard_name)
   
   # return updated object if "add.to" argument supplied
   if(!missing(add.to)) {

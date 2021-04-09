@@ -19,16 +19,18 @@
 #' If specified the following 9 arguments are ignored (with a warning).
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
-#' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd" and "var".
-#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "mode", "median", "sd" and "var".
+#' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!  Note that this aggregation is done before the Scheme is calculated.
 #' See \code{\link{aggregateYears}} 
 #' @param spatial.extent An extent in space to which this Field should be cropped, supplied as a raster::extent object or an object from which a raster::extent object can be derived - eg. a Raster* object or another Field object.
 #' @param spatial.extent.id A character string to give an identifier for the spatial extent this ModelField covers.
 #' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean", "w.mean", "mean", 
-#' "weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' "mode", "median", weighted.sum", "w.sum", "sum", "max", "min", "sd" or "var".  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' Note that this aggregation is done before the Scheme is calculated.
 #' See \code{\link{aggregateSpatial}} 
 #' @param subannual.resolution A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".
-#' @param subannual.aggregate.method A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "sd" or "var".
+#' @param subannual.aggregate.method A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "mode", "median", "sd" or "var".
+#' Note that this aggregation is done before the Scheme is calculated.
 #' See \code{\link{aggregateSubannual}} 
 #' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 #' Can be "Year", "Month" or "Day".  Currently ignored.
@@ -285,7 +287,7 @@ getScheme <- function(source,
   rm(all.fields)
   
   if(verbose) print("Starting classification")
-  suppressWarnings(dt[, scheme@id := as.factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1))])
+  suppressWarnings(dt[, scheme@id := factor(apply(dt[,,with=FALSE],FUN=scheme@rules,MARGIN=1), levels = scheme@units)])
   
   # remove all layers which are not the scheme layers and set key
   all.layers <- layers(dt)
@@ -302,9 +304,9 @@ getScheme <- function(source,
                      final.stainfo)
   
   
-  ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
+  ### WRITE THE VEGOBJECT TO DISK AS AN .RData OBJECT IF REQUESTED
   if(write) {
-    if(verbose) {message("Saving as a .DGVMField object...")}
+    if(verbose) {message("Saving as a .RData object...")}
     saveRDS(scheme.field, file = file.name)
     if(verbose) {message("...done.")}
   }

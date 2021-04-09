@@ -17,11 +17,13 @@
   source = NULL,
   layer.names = NULL,
   layer.dim.name = NULL,
-  lat.dim.name = "Lat",
-  lon.dim.name = "Lon",
-  time.dim.name = "Time",
-  precision = "float",
+  lat.dim.name = "lat",
+  lon.dim.name = "lon",
+  time.dim.name = "time",
   time.values = NULL,
+  calendar = "365_day",
+  global.extent = FALSE,
+  .sta.info = NULL,
   ...
 )
 
@@ -34,11 +36,13 @@
   source = NULL,
   layer.names = NULL,
   layer.dim.name = NULL,
-  lat.dim.name = "Lat",
-  lon.dim.name = "Lon",
-  time.dim.name = "Time",
-  precision = "float",
+  lat.dim.name = "lat",
+  lon.dim.name = "lon",
+  time.dim.name = "time",
   time.values = NULL,
+  calendar = "365_day",
+  global.extent = FALSE,
+  .sta.info = NULL,
   ...
 )
 
@@ -51,11 +55,13 @@
   source = NULL,
   layer.names = NULL,
   layer.dim.name = NULL,
-  lat.dim.name = "Lat",
-  lon.dim.name = "Lon",
-  time.dim.name = "Time",
-  precision = "float",
+  lat.dim.name = "lat",
+  lon.dim.name = "lon",
+  time.dim.name = "time",
   time.values = NULL,
+  calendar = "365_day",
+  global.extent = FALSE,
+  .sta.info = NULL,
   ...
 )
 }
@@ -65,7 +71,7 @@ but this is more of a technical, internal use of this method.}
 
 \item{filename}{A character specifying the name of the netCDF file to be written.}
 
-\item{start.date}{A date (as a POSIX date) for the start of the time dimension.  Can be omitted for a Field (), \emph{must} be included if you want to write 
+\item{start.date}{A date (as a Date object) for the start of the time dimension.  Can be omitted for a Field, \emph{must} be included if you want to write 
 a RasterStack or RasterBrick with a time dimension.}
 
 \item{verbose}{Logical, if TRUE print a bunch of progress and debug output}
@@ -79,29 +85,44 @@ if saving a Raster* object. It is ignored in the case of a Field (but note  that
 \item{layer.names}{A vector of characters to specify the names of the variables in the netCDF file, ignored for a Field.
 Should be length 1 or the number of layers in the input raster.}
 
-\item{layer.dim.name}{A character string specifing the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
+\item{layer.dim.name}{A character string specifying the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension.}
 
-\item{lat.dim.name}{Character, the latitude dimension name. Defaults to "Lat".}
+\item{lat.dim.name}{Character, the latitude dimension name. Defaults to "lat".}
 
-\item{lon.dim.name}{Character, the longitude dimension name. Defaults to "Lon".}
+\item{lon.dim.name}{Character, the longitude dimension name. Defaults to "lon".}
 
-\item{time.dim.name}{Character, the time dimension name. Defaults to "Time".}
-
-\item{precision}{Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
+\item{time.dim.name}{Character, the time dimension name. Defaults to "time".}
 
 \item{time.values}{The values along the time dimension (in the case of Raster*, is ignored for a Field) defined as 'days since' the 'start.date' argument.
 If not supplied, data is assumed not to have a time axis. In such case if the raster has multiple layers they will be interpreted}
 
-\item{...}{Other arguments, not currently used
+\item{calendar}{Character, describing the calendar to be used (required for a  Raster*, optional for a Field), can currently be "standard" or "365_day" (default),}
+
+\item{global.extent}{logical, if TRUE extend the netCDF file to the entire global extent, default is FALSE.}
+
+\item{.sta.info}{Advanced. An object of STAInfo for tracking spatio-temporal metadata.  IGNORED for for a Field as it is handled
+automatically when writing a Field. But can be added manually for a raster if you wish.}
+
+\item{...}{Other arguments that can usefully be passed to ncdf4::ncvar_def, in particular:
+\itemize{
+ \item{compression} {Integer to define compression level when define netCDF variables (1 = a little compression, 9 = a lot of compression). 
+ Set to NA (default) for no compression.  Using compression forces netCDF version 4.}
+ \item{missval} {Numeric, for the missing value.  Default is NA which gives NaN as the missing value. NULL can be used to specify ""no missing value"
+ although it is not clear what that does the the resultant netcdf file in practice.  TRENDY/GCP likes -99999.0 for missing values.}
+ \item{prec} {Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  
+ See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
+ \item{shuffle} {Logical, if TRUE turn on the shuffle filter see netCDF docs and ncdf4::ncvar_def for details}
+ \item{chunksize} {If set, this must be a vector of integers with a length equal to the number of dimensions in the variable. Potentially very useful 
+ to optimise the read and write time,  but rather advanced, see netCDF docs and ncdf4::ncvar_def for details}
+ }
 
 
 
-These methods offers two very convienent things.  Firsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
+
+These methods offers two very convenient things.  Firtsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
 convenient way to write Raster* objects as netCDF objects than writeRaster (at least in the eye's of the author).  This because is allows specifying of meta data and a time axis, 
-allows some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes. 
-
-Note that to maintain some parsimony and flexibility, the methods can write *either* a netCDF file with a time dimension *or* one with multiple variables(layers).}
+some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes.}
 }
 \value{
 Nothing

@@ -29,9 +29,9 @@ getField(
 
 \item{var}{The quantity (either a \code{Quantity} or a string containing its \code{id})}
 
-\item{first.year}{The first year (as a numeric) of the data to be return}
+\item{first.year}{The first year (as a numeric) of the data to be returned}
 
-\item{last.year}{The last year (as a numeric) of the data to be return}
+\item{last.year}{The last year (as a numeric) of the data to be returned}
 
 \item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
@@ -41,11 +41,11 @@ See \code{\link{aggregateYears}}}
 
 \item{spatial.extent.id}{A character string to give an identifier for the spatial extent this ModelField covers.}
 
-\item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatially aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
+\item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatial aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
 "weighted.sum"/"w.sum", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 See \code{\link{aggregateSpatial}}}
 
-\item{subannual.resolution}{A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".}
+\item{subannual.resolution}{A character string specifying the subannual resolution that you want.  Can be "Year", "Month" or "Day".}
 
 \item{subannual.original}{A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 Can be "Year", "Month" or "Day".  Currently ignored.}
@@ -58,15 +58,16 @@ Can also be a Field object from which the STA info will de derived.
 If specified the following 9 arguments are ignored (with a warning)}
 
 \item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
-(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{DGVMData} and \code{aDGVM} Formats since the file names are normally 
-standardised. However, in the case that they have been renamed, or if other future Formats require a file name, this is available. 
-Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
+(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
+standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
+in the same way that model output does.}
 
 \item{write}{If TRUE, write the data of the \code{Field} to disk as text file.}
 
 \item{read.full}{If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)}
 
-\item{verbose}{If TRUE give a lot of information for debugging/checking.}
+\item{verbose}{If TRUE give a lot of information for debugging/checking.
+Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
 
 \item{...}{Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.
 For all Formats, the followings arguments apply:
@@ -87,6 +88,14 @@ For the aDGVM2 Format, the following arguments apply:
 \itemize{
  \item{\code{adgvm2.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
  \item{\code{adgvm2.daily}}  A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)
+}
+For the NetCDF Format, the following arguments apply:
+ \itemize{
+ \item{\code{nc.verbose}} A logical, set to true to give progress/debug information from the ncdf4 package functions.  This can be a lot, 
+so it is handy to control that separately.
+ \item{\code{calendar}} Character string, sometimes the calendar string on the time axis can be incorrect or missing.  Here you can manually provide it.
+Note: A common error in paleo files is "standard" instead of "proleptic_gregorian". Specifically, if you have dates with years before 1582 
+(the start of the Gregorian calendar) and it includes leap years the calendar needs to be set to "proleptic_gregorian".
 }}
 }
 \value{
@@ -97,7 +106,7 @@ Given a \code{Source} object and a \code{Quantity} object, return an appropriate
 spatial, temporal and annual cropping.
 }
 \details{
-Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
+Note that because there are three types of aggregating available, the resulting \code{Field} object can have a wide select of spatio-temporal dimensions.
 To check what dimensions you have you can use \code{\link{getDimInfo}}
 }
 \seealso{

@@ -14,17 +14,17 @@
 #' distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.
 #' @param cols,linetypes,sizes,shapes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
 #' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/linetype/shape/alpha values
-#' to particular Layers/Sources/Quantities.    
+#' to particular Layers/Sources/Sites/Quantities.    
 #' @param col.labels,linetype.labels,size.labels,shape.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
-#' number of Sources/Layers/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
+#' number of Sources/Layers/Site/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
 #' @param points Logical, if TRUE plot data as points (with geom_points) instead of lines (witg geom_lines).  
 #' Good for plotting time series with missing data where geom_lines joins lines over the gaps which is not helpful
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot. 
-#' @param plotTrend Logical, if TRUE plot the linear trend
-#' @param dropEmpty Logical, if TRUE don't plot time series lines consisting only of zeros.
+#' @param plotTrend Logical, if TRUE plot the linear trend (default is FALSE)
+#' @param dropEmpty Logical, if TRUE don't plot time series lines consisting only of zeros (default is FALSE).
 #' @param plot Logical, if FALSE return the data.table of data instead of the plot
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()} and \code{ggplot2::stat_smooth()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 #' \itemize{
@@ -75,7 +75,7 @@ plotTemporal <- function(fields,
                          legend.position = "bottom",
                          text.multiplier = NULL,
                          dropEmpty = FALSE,
-                         plotTrend = TRUE,
+                         plotTrend = FALSE,
                          plot = TRUE,
                          ...
 ){
@@ -138,25 +138,8 @@ plotTemporal <- function(fields,
   data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = add.Quantity, add.Site = add.Site, add.Region = add.Region)
   
   ### 7. MAKE THE Y-AXIS LABEL
-  
   if(is.null(y.label)) {
-    
-    # first extract the names and units and store them in a tuples (two element vector) for the Quantity from each Field
-    all.quant.tuples <- list()
-    for(field in final.fields) {
-      all.quant.tuples[[length(all.quant.tuples)+1]] <- c(field@quant@name, field@quant@units)
-    } 
-    
-    # select the unique ones
-    all.quant.tuples <- unique(all.quant.tuples)
-    
-    # form the label string
-    y.axis.label <- character(0)
-    for(this.tuple in all.quant.tuples) {
-      y.axis.label <- paste0(y.axis.label, paste0(this.tuple[1], " (", this.tuple[2], "),\n") )
-    }
-    y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
-    y.label <- y.axis.label
+    y.label <- makeYAxis(final.fields)
   }
   
   # check the defined Layers present in the Fields and make a unique list
@@ -271,6 +254,15 @@ plotTemporal <- function(fields,
   ### LABELS
   # Can be specified by the user, otherwise sensible defaults
   
+  
+  ### LEGEND ENTRY ORDERING
+  ## Fix order of items in legend(s) by making them factors with levels corresponding to the order of the input fields
+  all.sources <- list()
+  # first loop across the fields
+  for(this.field in fields) {
+    all.sources <- append(all.sources, this.field@source@name)
+  }
+  if("Source" %in% names(data.toplot)) data.toplot[, Source := factor(Source, levels = unique(all.sources))]
   
   
   ### If requested, just return the data
