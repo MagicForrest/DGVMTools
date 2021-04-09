@@ -1,31 +1,46 @@
-#  DGVMTools v0.10.0 (2021-04-0X) 
+#  DGVMTools v0.10.0 (2021-04-0) 
 
-Feature release, and a good one!  A new flexible netCDF file reader is now included! This completely supersedes the previous DGVMData Format (which has been removed), please now use the NetCDF Format instead (it should also read any old DGVMData file without problems).  For further details of this and other features and bugfixes, see below.
+Feature release, and a good one!  A new flexible netCDF file reader is now included! This completely supersedes the previous "DGVMData"" Format (which has been removed), please now use the "NetCDF"" Format instead (it should also read any old DGVMData file without problems). For further details of this and other features and bugfixes, see below.
 
-## Main Features
+## Main Feature
 
-* New NetCDF Format completely replaced the old DGVMData Format.  This new Format will attempt to read any netCDF files with the following considerations:
-  - Time axes can be relative (units "days/months/years/seconds since...") or absolute (units "years/months").
+* New 'NetCDF' Format is implemented and completely replaces the old 'DGVMData' Format.  This new Format will attempt to read any netCDF file, with the following considerations:
+  - Time axes (if present) can be relative (units "days/months/years/seconds since...") or absolute (units "years/months").
   - Longitude and latitude dimensions must be present in the netCDF files with a (single) corresponding variable defined i.e. no rotated grids (CDO will regrid a properly-defined rotated grid to a normal) or "land_id"-style 1D index of points.   
-  Both of these limitation can be addressed if there is user demand for more flexibility, so if you want  something reach out to the author on github. 
-This new Format has been well-tested and works with ISIMIP biome sector output, TRENDY/FireMIP2019 output and a broad sample of netCDF files found "in the wild".  However, if you have problems with your, please just get in touch.
-* ...
+  - Aside from lon, lat and time, variables can have only *one* further dimension (to represent, say, PFT or carbon pool, etc).    Correspondingly, DGVMTools interprets this dimension as a Layer dimensison .
+  These limitation can be addressed if there is user demand for more flexibility. So if you want something, reach out to the author by raising an Issue on Github. 
+This new Format has been well-tested and works with ISIMIP biome sector output, TRENDY/FireMIP2019 output and a broad sample of netCDF files found "in the wild".  However, if you have problems with your, again please just get in touch and raise an Issue.
 
 ## Minor features/improvements
 
-* ...
+* aggregateXXXX() functions now accept "mode" and "median" to their method argument. 
+* plotTrend argument set to FALSE by default in plotTemporal().
+* Added "global.extent" as an argument to writeNetCDF() to automatically make a netCDF file that covers the whole globe.
+* All possible factor levels are included in the return from getScheme() (even if not all levels are present in the data).
+* Implemented "gap-making" in writeNetCDF() to ensure ocean-only bands are present with NAs (and not just missing).
+* plotSubannual() aesthetics now consistent with plotTemporal().
+* Legend order now matches input order of Fields in plotTemporal(). 
+
+## Breaking changes
+
+* DGVMData Format removed, NetCDF Format should be a drop in replacement.  Any problems, let me know.
+* The 'file.name' argument has been moved higher in the argument list for getField().  This is to reflect its new important when 
+  using the NetCDF Format.
 
 ## Bug fixes
 
-* ...
-
+* Minor corrections to the logic of Smith2014 and Forrest2015 biome schemes (now strictly based on the original Lund script and logic).
+* Unused 'facet.labels' argument remove from plotSpatial().  Please pass in standard ggplot arguments to control facetting.
+* Bug fix to plotSubannual where function failed if Year had been averaged away.
+* Corrected dimension ordering when writing "Layer" dimension in netCDF files.
 
 ## Under the hood
 
-* ...?
+* When writing netCDF files, arguments to ncdf4 functions are passed through automatically with "...".
+* FieldToArray reworked for efficiency, clarity and consistency.  Labelling of time axis of arrays now of form "days since". 
+* Much netCDF reading code has been factored out into read-netcdf-utility-functions.R, for clarity and re-usability.
 
-
-
+*Thank you to everyone for your bug reports and feature requests!  Keep 'em coming :-)*
 
 
 

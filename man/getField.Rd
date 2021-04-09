@@ -58,8 +58,8 @@ Can also be a Field object from which the STA info will de derived.
 If specified the following 9 arguments are ignored (with a warning)}
 
 \item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
-(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM}2 Formats since the file names are normally 
-standardised (however, in the case that they have been renamed). However for \code{NetCDF} Format this is pretty much always essentail because random NetCDF files don't tend to have standardised file names
+(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
+standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
 in the same way that model output does.}
 
 \item{write}{If TRUE, write the data of the \code{Field} to disk as text file.}
