@@ -253,8 +253,7 @@ compareLayers <- function(field1,
   
   # warn/stop if quantities are different
   if(!identical(field1@quant, field2@quant)) {
-    if(override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity ", field1@quant@id))
-    else stop("Comparing different Quantity")
+    if(!override.quantity) warning(paste0("Quantity objects from compared objects do not match (", field1@quant@id, " and ", field2@quant@id, "), proceeding using quantity ", field1@quant@id))
   }
   
   ### Calculate the approriate statistical comparisons

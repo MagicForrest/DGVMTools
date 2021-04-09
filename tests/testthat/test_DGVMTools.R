@@ -19,15 +19,15 @@ GUESS.Africa.test.Source <- defineSource(id = "LPJ-GUESS_Example",
                                          name = "LPJ-GUESS Africa Example Run")
 
 
-DGVMData.PNVBiomes.test.Source <- defineSource(id = "HandP_PNV",
-                                               dir = system.file("extdata", "DGVMData", "HandP_PNV", "HD", package = "DGVMTools"), 
-                                               format = DGVMData,
+NetCDF.PNVBiomes.test.Source <- defineSource(id = "HandP_PNV",
+                                               dir = system.file("extdata", "NetCDF", "HandP_PNV", "HD", package = "DGVMTools"), 
+                                               format = NetCDF,
                                                name = "Haxeltine & Prentice 1996 PNV Biomes")
 
 
-DGVMData.SaatchiBiomass.test.Source <- defineSource(id = "Saatchi2011",
-                                                    dir = system.file("extdata", "DGVMData", "Saatchi2011", "HD", package = "DGVMTools"), 
-                                                    format = DGVMData,
+NetCDF.SaatchiBiomass.test.Source <- defineSource(id = "Saatchi2011",
+                                                    dir = system.file("extdata", "NetCDF", "Saatchi2011", "HD", package = "DGVMTools"), 
+                                                    format = NetCDF,
                                                     name = "Saatchi et al. 2011 Vegetation Carbon")
 
 # test Source
@@ -35,8 +35,8 @@ test_that("Sources",{
   
   expect_is(GUESS.Europe.test.Source, "Source")
   expect_is(GUESS.Africa.test.Source, "Source")
-  expect_is(DGVMData.SaatchiBiomass.test.Source, "Source")
-  expect_is(DGVMData.PNVBiomes.test.Source, "Source")
+  expect_is(NetCDF.SaatchiBiomass.test.Source, "Source")
+  expect_is(NetCDF.PNVBiomes.test.Source, "Source")
   
 })
 
@@ -58,10 +58,10 @@ test_that("Quantity",{
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = FALSE), "list")
   expect_is(availableQuantities(GUESS.Africa.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(GUESS.Africa.test.Source, names = FALSE), "list")
-  expect_is(availableQuantities(DGVMData.SaatchiBiomass.test.Source, names = TRUE), "character")
-  expect_is(availableQuantities(DGVMData.SaatchiBiomass.test.Source, names = FALSE), "list")
-  expect_is(availableQuantities(DGVMData.PNVBiomes.test.Source, names = TRUE), "character")
-  expect_is(availableQuantities(DGVMData.PNVBiomes.test.Source, names = FALSE), "list")
+  expect_is(availableQuantities(NetCDF.SaatchiBiomass.test.Source, names = TRUE), "character")
+  expect_is(availableQuantities(NetCDF.SaatchiBiomass.test.Source, names = FALSE), "list")
+  expect_is(availableQuantities(NetCDF.PNVBiomes.test.Source, names = TRUE), "character")
+  expect_is(availableQuantities(NetCDF.PNVBiomes.test.Source, names = FALSE), "list")
   
   # test result from defineQuantity
   expect_is(new.Quantity , "Quantity")
@@ -87,8 +87,8 @@ GUESS.mlai.Field.full <- getField(GUESS.Europe.test.Source, "mlai")
 GUESS.lai.Field.full <- getField(GUESS.Europe.test.Source, "lai")
 GUESS.cmass.Field.full <- getField(GUESS.Africa.test.Source, "cmass")
 GUESS.vegC_std.Field.full <- getField(GUESS.Africa.test.Source, vegC_std.Quantity)
-Saatchi.Field.full <- getField(DGVMData.SaatchiBiomass.test.Source, vegC_std.Quantity)
-Biomes.Field.full <- getField(DGVMData.PNVBiomes.test.Source, "Smith2014")
+Saatchi.Field.full <- getField(NetCDF.SaatchiBiomass.test.Source, vegC_std.Quantity)
+Biomes.Field.full <- getField(NetCDF.PNVBiomes.test.Source, "Smith2014")
 
 
 # test Fields
@@ -110,7 +110,7 @@ test_that("Field",{
   # Check the data are the same
   expect_identical(Standard.Field@data, GUESS.lai.Field.full@data)
 
-  # check the DGVMData
+  # check the NetCDF
   expect_is(Saatchi.Field.full, "Field")
   expect_is(Biomes.Field.full, "Field")
   
@@ -387,7 +387,7 @@ test_that("Numeric Comparisons and Benchmarks", {
   GUESS.Field.vegC_std.annual <- aggregateYears(GUESS.vegC_std.Field.full, "mean")
   GUESS.Field.vegC_std.annual <- layerOp(GUESS.Field.vegC_std.annual, "+", ".Tree", "Tree")
   expect_is(GUESS.Field.vegC_std.annual, "Field")
-  Saatchi.comparison <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", verbose = FALSE, show.stats = FALSE)
+  Saatchi.comparison <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", layers2 = "vegC_std", verbose = FALSE, show.stats = FALSE, override.quantity = TRUE)
   expect_is(Saatchi.comparison, "Comparison")
   
   # plot said numeric Comparison
@@ -399,7 +399,7 @@ test_that("Numeric Comparisons and Benchmarks", {
   
   # test with a dummy benchmark
   dummy.benchmark <- function(x, layer1, layer2) { return(1)}
-  Saatchi.comparison.with.dummy.benchmark <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
+  Saatchi.comparison.with.dummy.benchmark <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", layers2 = "vegC_std", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE, override.quantity = TRUE)
   expect_is(Saatchi.comparison.with.dummy.benchmark, "Comparison")
   
   # can possible place extra tests on metrics here
@@ -464,7 +464,7 @@ context("Categorical Comparisons and Benchmarks")
 test_that("Categorical Comparisons and Benchmarks", {
   
   # build and test a categorical Comparison
-  Biomes.comparison <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, show.stats = FALSE)
+  Biomes.comparison <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, show.stats = FALSE, override.quantity = TRUE)
   expect_is(Biomes.comparison, "Comparison")
   
   # plot said categorical Comparison
@@ -475,7 +475,7 @@ test_that("Categorical Comparisons and Benchmarks", {
 
   # test with a dummy benchmark
   dummy.benchmark <- function(x, layer1, layer2) { return(1)}
-  Biomes.comparison.with.dummy.benchmark <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
+  Biomes.comparison.with.dummy.benchmark <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE, override.quantity = TRUE)
   expect_is(Biomes.comparison.with.dummy.benchmark, "Comparison")
   
 })
