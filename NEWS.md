@@ -1,4 +1,4 @@
-#  DGVMTools v0.10.0 (2021-04-0) 
+#  DGVMTools v0.10.0 (2021-04-09) 
 
 Feature release, and a good one!  A new flexible netCDF file reader is now included! This completely supersedes the previous "DGVMData"" Format (which has been removed), please now use the "NetCDF"" Format instead (it should also read any old DGVMData file without problems). For further details of this and other features and bugfixes, see below.
 
@@ -24,7 +24,7 @@ This new Format has been well-tested and works with ISIMIP biome sector output, 
 ## Breaking changes
 
 * DGVMData Format removed, NetCDF Format should be a drop in replacement.  Any problems, let me know.
-* The 'file.name' argument has been moved higher in the argument list for getField().  This is to reflect its new important when 
+* The 'file.name' argument has been moved higher in the argument list for getField().  This is to reflect its new importance when 
   using the NetCDF Format.
 
 ## Bug fixes

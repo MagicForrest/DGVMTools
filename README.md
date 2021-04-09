@@ -7,8 +7,8 @@ R tools for processing, analysing and plotting output from DGVMs (Dynamic Global
 
 DGVMTools is a high-level framework for analysing DGVM data output.  The framework enables a complete DGVM analysis workflow, taking raw model output through comprehensive analysis and evaluation to publication-quality figures.  It also easily interfaces with both the raster package and base R functionality. Functionality includes:
 
-* Read raw output from supported DGVMs, currently LPJ-GUESS, aDGVM (and the FireMIP output with the companion FireMIPTools package).
-* Read pre-prepared benchmarking data sets at commonly used spatial resolutions (contact matthew.forrest@senckenberg.de for access to data files). 
+* Read raw output from supported DGVMs, currently LPJ-GUESS, aDGVM(1) and aDGVM2.
+* Read a wide diversity of spatial netCDF files spatial netCDF files via a general netCDF reader. In general, files which closely follow the standard structure and the CF convention for metadata should read nicely.  In particular, output from model intercomparison projects, such as ISIMIP biome sector and TRENDY, are well supported.
 * Crop and aggregate the data space and time (and sub-annual dimensions).
 * Convenient and flexible potting of data in time and space (also seasonal cycles).  Plots further customisable with ggplot2.
 * Easy aggregation across layers PFTs, to calculate for example, total tree biomass, grass productivity or evergreen tree cover.
@@ -21,15 +21,8 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 
 ### Installation
 
-First release for CRAN is in preparation.
+Since the core features of the package are now very stable recommend that you use the master branch.  We will pull small bug fixes and small non-breaking feature improvements frequently into the master for small incremental releases, so hopefully that master is never to far behind. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package is currently undergoing reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
 
-Since the core features of the package are now very stable recommend that you use the master branch.  We will pull small bug fixes and small non-breaking feature improvements frequently into the master for small incremental releases, so hopfeully that master is never to far behind. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package is currently undergoing reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
-
-If you have devtools version 1.x.y (ie < 2.0.0) then run:
-
-```S
-devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_vignettes = TRUE)
-```
 
 If you have devtools >= 2.0.0 then run:
 
@@ -37,7 +30,16 @@ If you have devtools >= 2.0.0 then run:
 devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_opts = c("--no-resave-data", "--no-manual"), force=T)
 ```
 
+If you have devtools version 1.x.y (ie < 2.0.0) then run:
+
+```S
+devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_vignettes = TRUE)
+```
+
 (thanks to Peter Anthoni for reporting)
+
+Eventually release on CRAN is anticipated.
+
 
 #### Installation troubleshooting
 
@@ -47,7 +49,7 @@ devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies 
 
 ### News and Releases
 
-Current release is v0.9.0.  See [NEWS.md](NEWS.md).
+Current release is v0.10.0.  See [NEWS.md](NEWS.md).
 
 ---
 
