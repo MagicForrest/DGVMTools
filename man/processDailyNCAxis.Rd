@@ -12,7 +12,8 @@ processDailyNCAxis(
   start.year,
   start.day,
   target.STAInfo,
-  calendar
+  calendar,
+  year.offset
 )
 }
 \description{

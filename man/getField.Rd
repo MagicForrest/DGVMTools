@@ -90,8 +90,11 @@ For the aDGVM2 Format, the following arguments apply:
 }
 For the NetCDF Format, the following arguments apply:
  \itemize{
- item{\code{nc.verbose}} A logical, set to true to give progress/debug information from the ncdf4 package functions.  This can be a lot, 
+ \item{\code{nc.verbose}} A logical, set to true to give progress/debug information from the ncdf4 package functions.  This can be a lot, 
 so it is handy to control that separately.
+ \item{\code{calendar}} Character string, sometimes the calendar string on the time axis can be incorrect or missing.  Here you can manually provide it.
+Note: A common error in paleo files is "standard" instead of "proleptic_gregorian". Specifically, if you have dates with years before 1582 
+(the start of the Gregorian calendar) and it includes leap years the calendar needs to be set to "proleptic_gregorian".
 }}
 }
 \value{

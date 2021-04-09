@@ -7,7 +7,7 @@ This function processes a time axis which is assumed to be yearly
 It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
 and the actual years corresponding to this selection.}
 \usage{
-processYearlyNCAxis(axis.values, start.year, target.STAInfo)
+processYearlyNCAxis(axis.values, start.year, target.STAInfo, year.offset)
 }
 \description{
 processYearlyNCAxis
