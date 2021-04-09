@@ -76,8 +76,8 @@ africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package 
 africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
 model.cmass <- getField(source = africa.Source, var = "cmass", year.aggregate.method="mean")
 
-Saatchi.dir <- system.file("extdata", "DGVMData", "Saatchi2011", "HD", package = "DGVMTools")
-Saatchi.Source <- defineSource(name = "Saatchi Biomass", dir = Saatchi.dir,  format = DGVMData)
+Saatchi.dir <- system.file("extdata", "NetCDF", "Saatchi2011", "HD", package = "DGVMTools")
+Saatchi.Source <- defineSource(name = "Saatchi Biomass", dir = Saatchi.dir,  format = NetCDF)
 Saatchi.cmass <- getField(source = Saatchi.Source , var = "vegC_std") #' 
 
 ## Calculate veg C of trees in model, compare layers, and print the statistics 
@@ -99,8 +99,8 @@ model.biomes <- getScheme(source = europe.Source,
                           scheme = Smith2014BiomeScheme, 
                           year.aggregate.method="mean")
 
-PNV.dir <- system.file("extdata", "DGVMData", "HandP_PNV", "HD", package = "DGVMTools")
-PNV.Source <- defineSource(name = "H and P PNV", dir = PNV.dir,  format = DGVMData)
+PNV.dir <- system.file("extdata", "NetCDF", "HandP_PNV", "HD", package = "DGVMTools")
+PNV.Source <- defineSource(name = "H and P PNV", dir = PNV.dir,  format = NetCDF)
 PNV.biomes <- getField(source = PNV.Source , var = "Smith2014")
 
 ## Compare biomes, print the statistics

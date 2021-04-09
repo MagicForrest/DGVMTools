@@ -304,9 +304,9 @@ getScheme <- function(source,
                      final.stainfo)
   
   
-  ### WRITE THE VEGOBJECT TO DISK AS AN DGVMData OBJECT IF REQUESTED
+  ### WRITE THE VEGOBJECT TO DISK AS AN .RData OBJECT IF REQUESTED
   if(write) {
-    if(verbose) {message("Saving as a .DGVMField object...")}
+    if(verbose) {message("Saving as a .RData object...")}
     saveRDS(scheme.field, file = file.name)
     if(verbose) {message("...done.")}
   }

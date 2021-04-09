@@ -79,8 +79,8 @@ calculateYearCroppingIndices <- function(target_STAInfo, years_vector) {
       
       
       # if first or last year is outisde the dataset then file
-      if(target.first.year < years_vector[1]) stop(paste("In DGVMData requested first.year = ", target.first.year, ", but first year in data is", years_vector[1], sep = " "))
-      if(target.last.year > years_vector[length(years_vector)]) stop(paste("In DGVMData requested last.year = ", target.last.year, ", but last year in data is", years_vector[length(years_vector)], sep = " "))
+      if(target.first.year < years_vector[1]) stop(paste("Requested first.year = ", target.first.year, ", but first year in data is", years_vector[1], sep = " "))
+      if(target.last.year > years_vector[length(years_vector)]) stop(paste("Requested last.year = ", target.last.year, ", but last year in data is", years_vector[length(years_vector)], sep = " "))
       
       # find the first occurence of the target first.year and the last occurance of the target year in the year.vector
       first.index <- match(target.first.year, years_vector)
@@ -236,6 +236,10 @@ processMonthlyNCAxis <- function(axis.values, start.year, start.month, target.ST
 #' @keywords internal
 processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, start.day, target.STAInfo, calendar, year.offset) {
   
+  
+  # Kill CHECK NOTES
+  CumulativeDay = NetCDFIndex = Year = NULL
+  
   # vector assigning months to days for different possible years/calendars
   Month.col.360.day <- rep(1:12, each = 30)
   Month.col.365.day <- numeric(0)
@@ -276,7 +280,7 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
       temp.dt <- data.table(CumulativeDay = (1:360)+nrow(all.dates)-(start.day), Day = 1:360, Month = Month.col.360.day, Year = rep(year, 360))
     }
     else{
-      stop(paste0("Calendar", calendar, "not supported by DGVMData format in DGVMTools package"))
+      stop(paste0("Calendar", calendar, "not supported by NetCDF format in DGVMTools package"))
     }
     
     # append to the data.table and increment years
@@ -360,7 +364,7 @@ processDailyNCAxis <- function(axis.values, start.year, start.day, target.STAInf
       this.year.days <- days.360
     }
     else{
-      stop(paste0("Calendar", calendar, "not supported by DGVMData format in DGVMTools package"))
+      stop(paste0("Calendar", calendar, "not supported by NetCDF format in DGVMTools package"))
     }
     
     # append to the vectors

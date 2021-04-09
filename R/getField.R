@@ -11,6 +11,10 @@
 #' 
 #' @param source The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
+#' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
+#' (usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
+#' standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
+#' in the same way that model output does. 
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
 #' If specified the following 9 arguments are ignored (with a warning)
@@ -31,9 +35,6 @@
 #' Can be "Year", "Month" or "Day".  Currently ignored.
 #' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
-#' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
-#' (usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{DGVMData} and \code{aDGVM} Formats since the file names are normally 
-#' standardised. However, in the case that they have been renamed, or if other future Formats require a file name, this is available. 
 #' Leave missing or set to \code{NULL} to use the standard file name for the particular Format.
 #' @param write If TRUE, write the data of the \code{Field} to disk as text file.
 #' @param ...  Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.  
@@ -187,7 +188,7 @@ getField <- function(source,
     # Note that there are two cases to check here (specifically defined extents or just the same ids)
     
     # If no spatial extent was specified (ie length of spatial.extent arguement was 0) and the spatial.extent.id of the Field that was read in is either 
-    # "Full" or "Global" (which comes some DGVMData files) then we are sure we have got the full, original spatial extent of the dataset and can use it
+    # "Full" or "Global" (which comes some netCDF files processed by the DGVMData package) then we are sure we have got the full, original spatial extent of the dataset and can use it
     full.domain.matched <- FALSE
     if(length(sta.info@spatial.extent) == 0 && (model.field@spatial.extent.id == "Full" | model.field@spatial.extent.id == "Global")) {
       full.domain.matched <- TRUE
@@ -354,9 +355,9 @@ getField <- function(source,
   }
   
   
-  ### WRITE THE FIELD TO DISK AS AN DGVMData OBJECT IF REQUESTED
+  ### WRITE THE FIELD TO DISK AS AN RData OBJECT IF REQUESTED
   if(write) {
-    if(verbose) {message("Saving as a .DGVMField object...")}
+    if(verbose) {message("Saving as a .RData object...")}
     saveRDS(this.Field, file = preprocessed.file.name)
     if(verbose) {message("...done.")}
   }

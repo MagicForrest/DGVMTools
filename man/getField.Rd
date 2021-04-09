@@ -58,15 +58,16 @@ Can also be a Field object from which the STA info will de derived.
 If specified the following 9 arguments are ignored (with a warning)}
 
 \item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
-(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{DGVMData} and \code{aDGVM} Formats since the file names are normally 
-standardised. However, in the case that they have been renamed, or if other future Formats require a file name, this is available. 
-Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
+(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM}2 Formats since the file names are normally 
+standardised (however, in the case that they have been renamed). However for \code{NetCDF} Format this is pretty much always essentail because random NetCDF files don't tend to have standardised file names
+in the same way that model output does.}
 
 \item{write}{If TRUE, write the data of the \code{Field} to disk as text file.}
 
 \item{read.full}{If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)}
 
-\item{verbose}{If TRUE give a lot of information for debugging/checking.}
+\item{verbose}{If TRUE give a lot of information for debugging/checking.
+Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
 
 \item{...}{Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.
 For all Formats, the followings arguments apply:

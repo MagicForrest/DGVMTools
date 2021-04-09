@@ -1,3 +1,34 @@
+#  DGVMTools v0.10.0 (2021-04-0X) 
+
+Feature release, and a good one!  A new flexible netCDF file reader is now included! This completely supersedes the previous DGVMData Format (which has been removed), please now use the NetCDF Format instead (it should also read any old DGVMData file without problems).  For further details of this and other features and bugfixes, see below.
+
+## Main Features
+
+* New NetCDF Format completely replaced the old DGVMData Format.  This new Format will attempt to read any netCDF files with the following considerations:
+  - Time axes can be relative (units "days/months/years/seconds since...") or absolute (units "years/months").
+  - Longitude and latitude dimensions must be present in the netCDF files with a (single) corresponding variable defined i.e. no rotated grids (CDO will regrid a properly-defined rotated grid to a normal) or "land_id"-style 1D index of points.   
+  Both of these limitation can be addressed if there is user demand for more flexibility, so if you want  something reach out to the author on github. 
+This new Format has been well-tested and works with ISIMIP biome sector output, TRENDY/FireMIP2019 output and a broad sample of netCDF files found "in the wild".  However, if you have problems with your, please just get in touch.
+* ...
+
+## Minor features/improvements
+
+* ...
+
+## Bug fixes
+
+* ...
+
+
+## Under the hood
+
+* ...?
+
+
+
+
+
+
 #  DGVMTools v0.9.0 (2020-08-04) 
 
 This is a feature release!  Main features are aDGVM1 support, the inclusion of plotTemporalComparison() and the change from PFT objects to the more flexible Layer objects.  However there have been many other bug-fixes and tweaks.

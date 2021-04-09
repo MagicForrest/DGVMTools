@@ -563,11 +563,11 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   }
   
   # ADD ATTRIBUTES
-  ncdf4::ncatt_put(outfile, 0, "DGVMData_quant", quantity.id)
+  ncdf4::ncatt_put(outfile, 0, "DGVMTools_quant", quantity.id)
   # Spatio-temporal id available
   if(!missing(.sta.info) & !is.null(.sta.info)) {
-    #ncdf4::ncatt_put(outfile, 0, "DGVMData_name", name)
-    #ncdf4::ncatt_put(outfile, 0, "DGVMData_id", id)
+    #ncdf4::ncatt_put(outfile, 0, "DGVMTools_name", name)
+    #ncdf4::ncatt_put(outfile, 0, "DGVMTools_id", id)
     if(class(.sta.info@spatial.extent) == "Extent"){
       ncdf4::ncatt_put(outfile, 0, "xmin", .sta.info@spatial.extent@xmin)
       ncdf4::ncatt_put(outfile, 0, "xmax", .sta.info@spatial.extent@xmax)

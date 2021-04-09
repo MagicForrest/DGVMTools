@@ -20,7 +20,7 @@ Slots can be accessed by user directly, but more easily and usefully by function
 \item{\code{dir}}{The location of this run on the file system (Mandatory)}
 
 \item{\code{format}}{A character string or a DGVMTools::Format pbject to describe how this data is stored on disk.  This will depend on either the model 
-that was used to produce it or the dataset type.  Currently defined Format objects are \code{GUESS}, \code{aDGVM}, \code{aDGVM2} and \code{DGVMData}. (Mandatory)}
+that was used to produce it or the dataset type.  Currently defined Format objects are \code{GUESS}, \code{aDGVM}, \code{aDGVM2} and \code{NetCDF}. (Mandatory)}
 
 \item{\code{defined.layers}}{A list of \linkS4class{Layer} objects to describe the Layers, includes the PFTs, included in this model run/dataset.}
 

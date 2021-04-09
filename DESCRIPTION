@@ -47,7 +47,6 @@ Encoding: UTF-8
 Collate:
     'classes.R'
     'colour-palettes.R'
-    'Format-DGVMData.R'
     'Format-GUESS.R'
     'Format-NetCDF.R'
     'Format-aDGVM.R'

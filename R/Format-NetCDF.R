@@ -659,10 +659,10 @@ getField_NetCDF <- function(source,
         
         # look for attribute with name "<layername>_<value>" or "<value>", on either the data variable or the dimension variable
         final_layer_name <- tryCatch({
-          capture.output(invisible(final_layer_name <- lookupAttribute(this.nc, var = layer.string, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)))
-          if(final_layer_name == "Unspecified") invisible(capture.output(final_layer_name <- lookupAttribute(this.nc, var = layer.string,  attname = paste(this_layer_value), verbose = nc.verbose)))
-          else if(final_layer_name == "Unspecified")  invisible(capture.output(final_layer_name <- lookupAttribute(this.nc, var = this_var_obj, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)))
-          else if(final_layer_name == "Unspecified") invisible(capture.output(final_layer_name <- lookupAttribute(this.nc, var = this_var_obj,  attname = paste(this_layer_value), verbose = nc.verbose)))
+          utils::capture.output(invisible(final_layer_name <- lookupAttribute(this.nc, var = layer.string, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)))
+          if(final_layer_name == "Unspecified") invisible(utils::capture.output(final_layer_name <- lookupAttribute(this.nc, var = layer.string,  attname = paste(this_layer_value), verbose = nc.verbose)))
+          else if(final_layer_name == "Unspecified")  invisible(utils::capture.output(final_layer_name <- lookupAttribute(this.nc, var = this_var_obj, attname = paste(layer.string, this_layer_value, sep = "_"), verbose = nc.verbose)))
+          else if(final_layer_name == "Unspecified") invisible(utils::capture.output(final_layer_name <- lookupAttribute(this.nc, var = this_var_obj,  attname = paste(this_layer_value), verbose = nc.verbose)))
           # if didn't find something, return to the original value 
           else if(final_layer_name == "Unspecified")  final_layer_name <- this_layer_value
           final_layer_name
@@ -858,7 +858,7 @@ getField_NetCDF <- function(source,
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
-#' @param source A \code{Source} containing the meta-data about the DGVMData source
+#' @param source A \code{Source} containing the meta-data about the NetCDF source
 #' @param names A boolean, if TRUE return a character vector of names of available quantities, if FALSE return a list of the actual Quantities.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
@@ -890,7 +890,7 @@ availableQuantities_NetCDF <- function(source, names){
 
 
 ########################################################
-########### DGVMData QUANTITIES ########################
+########### NetCDF QUANTITIES ########################
 ########################################################
 
 
