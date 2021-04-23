@@ -27,7 +27,7 @@ Since the core features of the package are now very stable recommend that you us
 If you have devtools >= 2.0.0 then run:
 
 ```S
-devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_opts = c("--no-resave-data", "--no-manual"), force=T)
+devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_opts = c("--no-resave-data", "--no-manual"), build_vignettes = TRUE, force=T)
 ```
 
 If you have devtools version 1.x.y (ie < 2.0.0) then run:
