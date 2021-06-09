@@ -261,6 +261,7 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
     # 365 day
     if(calendar == "365_day" | 
        calendar == "no_leap" |
+       calendar == "noleap" |
        (calendar == "standard" & !is.leapyear(year)) | 
        (calendar == "gregorian" & !is.leapyear(year)) | 
        (calendar == "proleptic_gregorian" & !is.leapyear(year, proleptic = TRUE))) {
@@ -269,6 +270,7 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
     # 366 day
     else if(calendar == "366_day" | 
             calendar == "all_leap" | 
+            calendar == "allleap" | 
             (calendar == "standard" & is.leapyear(year)) | 
             (calendar == "gregorian" & is.leapyear(year)) | 
             (calendar == "proleptic_gregorian" & is.leapyear(year, proleptic = TRUE))) {
@@ -280,7 +282,7 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
       temp.dt <- data.table(CumulativeDay = (1:360)+nrow(all.dates)-(start.day), Day = 1:360, Month = Month.col.360.day, Year = rep(year, 360))
     }
     else{
-      stop(paste0("Calendar", calendar, "not supported by NetCDF format in DGVMTools package"))
+      stop(paste0("Calendar ", calendar, " not supported by NetCDF format in DGVMTools package"))
     }
     
     # append to the data.table and increment years
@@ -318,6 +320,9 @@ processDailyRelativeNCAxis <- function(axis.values, start.year, start.month, sta
 #' This function processes a time axis which is assumed to be daily
 #' It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
 #' and the actual years and days corresponding to this selection.
+#' 
+#' UNUSED, and is DEPRECATED in favour of processDailyRelativeNCAxis().  However this function may yet find a use for absolute time axes.
+#' 
 #' 
 #' @keywords internal
 processDailyNCAxis <- function(axis.values, start.year, start.day, target.STAInfo,  calendar, year.offset)  {

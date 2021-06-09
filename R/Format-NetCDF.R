@@ -45,7 +45,7 @@ getField_NetCDF <- function(source,
   Lon = Lat = Year = Month = Day = Time = Temp =NULL
   
   # supported calendars
-  supported.calendars <- c("standard", "gregorian", "proleptic_gregorian", "360_day", "366_day", "365_day", "uniform30day", "no_leap", "all_leap" )
+  supported.calendars <- c("standard", "gregorian", "proleptic_gregorian", "360_day", "366_day", "365_day", "uniform30day", "no_leap", "all_leap", "noleap", "allleap")
   
   # possible dimensions names
   # TODO maybe move these to arguments for greater flexibility

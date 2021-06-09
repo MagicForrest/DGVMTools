@@ -566,27 +566,27 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   ncdf4::ncatt_put(outfile, 0, "DGVMTools_quant", quantity.id)
   # Spatio-temporal id available
   if(!missing(.sta.info) & !is.null(.sta.info)) {
-    #ncdf4::ncatt_put(outfile, 0, "DGVMTools_name", name)
-    #ncdf4::ncatt_put(outfile, 0, "DGVMTools_id", id)
+    
     if(class(.sta.info@spatial.extent) == "Extent"){
       ncdf4::ncatt_put(outfile, 0, "xmin", .sta.info@spatial.extent@xmin)
       ncdf4::ncatt_put(outfile, 0, "xmax", .sta.info@spatial.extent@xmax)
       ncdf4::ncatt_put(outfile, 0, "ymin", .sta.info@spatial.extent@ymin)
       ncdf4::ncatt_put(outfile, 0, "ymax", .sta.info@spatial.extent@ymax)
     }
-    ncdf4::ncatt_put(outfile, 0, "spatial.extent.id", .sta.info@spatial.extent.id)
-    ncdf4::ncatt_put(outfile, 0, "spatial.aggregate.method", .sta.info@spatial.aggregate.method)
-    ncdf4::ncatt_put(outfile, 0, "first.year", .sta.info@first.year)
-    ncdf4::ncatt_put(outfile, 0, "last.year", .sta.info@last.year)
-    ncdf4::ncatt_put(outfile, 0, "year.aggregate.method", .sta.info@year.aggregate.method)
-    ncdf4::ncatt_put(outfile, 0, "subannual.resolution", .sta.info@subannual.resolution)
-    ncdf4::ncatt_put(outfile, 0, "subannual.aggregate.method", .sta.info@subannual.aggregate.method)
-    ncdf4::ncatt_put(outfile, 0, "subannual.original", .sta.info@subannual.original)
+    if(!is.null(.sta.info@spatial.extent.id) && length(.sta.info@spatial.extent.id) > 0) ncdf4::ncatt_put(outfile, 0, "spatial.extent.id", .sta.info@spatial.extent.id)
+    if(!is.null(.sta.info@spatial.aggregate.method) && length(.sta.info@spatial.aggregate.method) > 0) ncdf4::ncatt_put(outfile, 0, "spatial.aggregate.method", .sta.info@spatial.aggregate.method)
+    if(!is.null(.sta.info@first.year) && length(.sta.info@first.year) > 0) ncdf4::ncatt_put(outfile, 0, "first.year", .sta.info@first.year)
+    if(!is.null(.sta.info@last.year) && length(.sta.info@last.year) > 0)ncdf4::ncatt_put(outfile, 0, "last.year", .sta.info@last.year)
+    if(!is.null(.sta.info@year.aggregate.method) && length(.sta.info@year.aggregate.method) > 0) ncdf4::ncatt_put(outfile, 0, "year.aggregate.method", .sta.info@year.aggregate.method)
+    if(!is.null(.sta.info@subannual.resolution) && length(.sta.info@subannual.resolution) > 0)ncdf4::ncatt_put(outfile, 0, "subannual.resolution", .sta.info@subannual.resolution)
+    if(!is.null(.sta.info@subannual.aggregate.method) && length(.sta.info@subannual.aggregate.method) > 0)ncdf4::ncatt_put(outfile, 0, "subannual.aggregate.method", .sta.info@subannual.aggregate.method)
+    if(!is.null(.sta.info@subannual.original) && length(.sta.info@subannual.original) > 0)ncdf4::ncatt_put(outfile, 0, "subannual.original", .sta.info@subannual.original)
   }
  
   
   # CLOSE
   ncdf4::nc_close(outfile)
   
+  if(verbose) message("Closed file.")
   
 })
