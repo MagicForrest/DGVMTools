@@ -673,7 +673,8 @@ getField_NetCDF <- function(source,
         }, finally = {
         })
         
-        # set name its final name    
+        # set name its final name (if specified, otherwise keep the original)  
+        if(final_layer_name == "Unspecified") final_layer_name <- paste0(layer.string, this_layer_value)
         setnames(this.slice.dt, paste(this_layer_value), paste(final_layer_name))
         
         # and move it to the end
