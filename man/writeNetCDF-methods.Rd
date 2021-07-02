@@ -23,6 +23,8 @@
   time.values = NULL,
   calendar = "365_day",
   global.extent = FALSE,
+  add.missing.cols = TRUE,
+  add.missing.rows = TRUE,
   .sta.info = NULL,
   ...
 )
@@ -42,6 +44,8 @@
   time.values = NULL,
   calendar = "365_day",
   global.extent = FALSE,
+  add.missing.cols = TRUE,
+  add.missing.rows = TRUE,
   .sta.info = NULL,
   ...
 )
@@ -61,6 +65,8 @@
   time.values = NULL,
   calendar = "365_day",
   global.extent = FALSE,
+  add.missing.cols = TRUE,
+  add.missing.rows = TRUE,
   .sta.info = NULL,
   ...
 )
@@ -100,6 +106,9 @@ If not supplied, data is assumed not to have a time axis. In such case if the ra
 \item{calendar}{Character, describing the calendar to be used (required for a  Raster*, optional for a Field), can currently be "standard" or "365_day" (default),}
 
 \item{global.extent}{logical, if TRUE extend the netCDF file to the entire global extent, default is FALSE.}
+
+\item{add.missing.cols, add.missing.rows}{Logical, if TRUE (default), fill missing columns of longitude/rows of latitude.  For guassian/spectral
+grids with non-equal latitude spacing, set add.missing.rows to FALSE.}
 
 \item{.sta.info}{Advanced. An object of STAInfo for tracking spatio-temporal metadata.  IGNORED for for a Field as it is handled
 automatically when writing a Field. But can be added manually for a raster if you wish.}

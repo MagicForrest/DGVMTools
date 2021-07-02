@@ -26,6 +26,8 @@
 #' @param time.dim.name Character, the time dimension name. Defaults to "time".
 #' @param time.values The values along the time dimension (in the case of Raster*, is ignored for a Field) defined as 'days since' the 'start.date' argument.
 #' If not supplied, data is assumed not to have a time axis. In such case if the raster has multiple layers they will be interpreted  
+#' @param add.missing.cols,add.missing.rows Logical, if TRUE (default), fill missing columns of longitude/rows of latitude.  For guassian/spectral
+#' grids with non-equal latitude spacing, set add.missing.rows to FALSE. 
 #' @param .sta.info Advanced. An object of STAInfo for tracking spatio-temporal metadata.  IGNORED for for a Field as it is handled
 #' automatically when writing a Field. But can be added manually for a raster if you wish.  
 #' @param ... Other arguments that can usefully be passed to ncdf4::ncvar_def, in particular:
@@ -76,6 +78,8 @@ if (!isGeneric("writeNetCDF")) {
                                      time.values = NULL, 
                                      calendar = "365_day",
                                      global.extent = FALSE,
+                                     add.missing.cols = TRUE,
+                                     add.missing.rows = TRUE,
                                      .sta.info = NULL,
                                      ...) standardGeneric("writeNetCDF"))
 }
@@ -139,7 +143,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
     message(paste0("Calling function FieldToArray() on a Field with ", nrow(x@data), " spatio-temporal data points and a total of ", length(layers(x)), " layers"))
     t1 <- Sys.time()
   }
-  array.list <- FieldToArray(x, start.date = start.date, calendar = calendar, fill.gaps = TRUE, global.extent = global.extent, verbose = verbose) 
+  array.list <- FieldToArray(x, start.date = start.date, calendar = calendar, add.missing.cols = add.missing.cols, add.missing.rows = add.missing.rows, global.extent = global.extent, verbose = verbose) 
   if(verbose) {
     t2 <- Sys.time()
     message("FieldToArray took:")

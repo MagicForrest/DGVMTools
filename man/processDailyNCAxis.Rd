@@ -17,9 +17,6 @@ processDailyNCAxis(
 )
 }
 \description{
-processDailyNCAxis
-This function processes a time axis which is assumed to be daily
-It compares the time axis to the years requested and return the start and count values for reading up the netCDF file
-and the actual years and days corresponding to this selection.
+UNUSED, and is DEPRECATED in favour of processDailyRelativeNCAxis().  However this function may yet find a use for absolute time axes.
 }
 \keyword{internal}

@@ -8,7 +8,8 @@ FieldToArray(
   x,
   start.date = NULL,
   calendar = "365_day",
-  fill.gaps = TRUE,
+  add.missing.cols = TRUE,
+  add.missing.rows = TRUE,
   global.extent = FALSE,
   cname = FALSE,
   invertlat = FALSE,
@@ -18,7 +19,9 @@ FieldToArray(
 \arguments{
 \item{x}{the data.table of a \code{\linkS4class{Field}}}
 
-\item{fill.gaps}{logical, if TRUE fill longitude and latitude gaps (must be regularly spaced grid), default is TRUE}
+\item{add.missing.cols}{logical, if TRUE fill empty longitude columns (should be regularly spaced or you'll get silliness), default is TRUE}
+
+\item{add.missing.rows}{logical, if TRUE fill empty latitude rows (should be regularly spaced or you'll get silliness), default is TRUE}
 
 \item{global.extent}{logical, if TRUE extend the array to be the entire global extent,  default is FALSE}
 
