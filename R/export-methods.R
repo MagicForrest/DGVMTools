@@ -501,60 +501,73 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", add.missing
     if(verbose) message("** Extending lons/lats to global extent as requested...")
     
     # do latitude first as it is easier
-    lat.max <- 90
-    lat.min <- -90
-    lat.diff <- unique(lat[2:length(lat)] - lat[1:(length(lat)-1)])
-    if(length(lat.diff) == 1) {
-      # extend southwards
-      while(min(lat) > lat.min) {
-        new.lower.lat <- min(lat) - lat.diff
-        if(new.lower.lat >= lat.min) lat <- append(new.lower.lat, lat)
-        else break
+    if(add.missing.rows) {
+      lat.max <- 90
+      lat.min <- -90
+      lat.diff <- unique(lat[2:length(lat)] - lat[1:(length(lat)-1)])
+      if(length(lat.diff) == 1) {
+        # extend southwards
+        while(min(lat) > lat.min) {
+          new.lower.lat <- min(lat) - lat.diff
+          if(new.lower.lat >= lat.min) lat <- append(new.lower.lat, lat)
+          else break
+        }
+        # extend northwards
+        while(max(lat) < lat.max) {
+          new.upper.lat <- max(lat) + lat.diff
+          if(new.upper.lat <= lat.max) lat <- append(lat, new.upper.lat)
+          else break
+        }
+        
       }
-      # extend northwards
-      while(max(lat) < lat.max) {
-        new.upper.lat <- max(lat) + lat.diff
-        if(new.upper.lat <= lat.max) lat <- append(lat, new.upper.lat)
-        else break
+      else {
+        if(verbose) message(" **** CANNOT extent lats to global extent as requested, as latitude spacing is not regular!  Skipping this.")
+        warning(" CANNOT extent lats to global extent as requested, as latitude spacing is not regular!  Skipping this.")
       }
-      
     }
     else {
-      if(verbose) message("** CANNOT extent lats to global extent as requested, as latitude spacing is not regular!  Skipping this.")
-      warning("** CANNOT extent lats to global extent as requested, as latitude spacing is not regular!  Skipping this.")
+      if(verbose) message(" **** NOTE: I am NOT extending lats to global extent as requested because add.missing.rows is set to FALSE. Therefore skipping this.")
+      warning(" NOTE: I am NOT extending lats to global extent as requested because add.missing.rows is set to FALSE. Therefore skipping this.")
     }
+    
+    
     
     # do longitude which is slightly trickier because they can be (-180,180) or (0, 360)
-    lon.diff <- unique(lon[2:length(lon)] - lon[1:(length(lon)-1)])
-    
-    # here check range
-    lon.min <- -180
-    lon.max <- 180
-    if(max(lon) > lon.max) {
-      lon.min <- 0
-      lon.max <- 360
-    }
-    
-    if(length(lon.diff) == 1) {
-      # extend westwards
-      while(min(lon) > lon.min) {
-        new.lower.lon <- min(lon) - lon.diff
-        if(new.lower.lon >= lon.min) lon <- append(new.lower.lon, lon)
-        else break
-      }
-      # extend eastwards
-      while(max(lon) < lon.max) {
-        new.upper.lon <- max(lon) + lon.diff
-        if(new.upper.lon <= lon.max) lon <- append(lon, new.upper.lon)
-        else break
+    if(add.missing.cols) {
+      lon.diff <- unique(lon[2:length(lon)] - lon[1:(length(lon)-1)])
+      
+      # here check range
+      lon.min <- -180
+      lon.max <- 180
+      if(max(lon) > lon.max) {
+        lon.min <- 0
+        lon.max <- 360
       }
       
+      if(length(lon.diff) == 1) {
+        # extend westwards
+        while(min(lon) > lon.min) {
+          new.lower.lon <- min(lon) - lon.diff
+          if(new.lower.lon >= lon.min) lon <- append(new.lower.lon, lon)
+          else break
+        }
+        # extend eastwards
+        while(max(lon) < lon.max) {
+          new.upper.lon <- max(lon) + lon.diff
+          if(new.upper.lon <= lon.max) lon <- append(lon, new.upper.lon)
+          else break
+        }
+        
+      }
+      else {
+        if(verbose) message(" **** CANNOT extent lons to global extent as requested, as longitude spacing is not regular!  Skipping this.")
+        warning(" CANNOT extent lons to global extent as requested, as longitude spacing is not regular!  Skipping this.")
+      }
     }
     else {
-      if(verbose) message("** CANNOT extent lons to global extent as requested, as longitude spacing is not regular!  Skipping this.")
-      warning("** CANNOT extent lons to global extent as requested, as longitude spacing is not regular!  Skipping this.")
+      if(verbose) message(" **** NOTE: I am NOT extending lons to global extent as requested because add.missing.cols is set to FALSE. Therefore skipping this.")
+      warning(" NOTE: I am NOT extending lons to global extent as requested because add.missing.cols is set to FALSE. Therefore skipping this.")
     }
-    
     if(verbose) message("** ... done.")
     
   }  
@@ -565,7 +578,7 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", add.missing
   dummy.dt <- data.table()
   
   # missing longitude columns
-  if(add.missing.cols || global.extent) {
+  if(add.missing.cols) {
     if(verbose) message("** Checking for missing longitude columns to be filled in...")
     
     # for each longitude
@@ -573,7 +586,7 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", add.missing
       # if a lon is missing add a dummy line for it
       if(!this_lon %in% lons.present) {
         
-        if(verbose) message(paste("  **** Filling in missing lon column", this_lon))
+        if(verbose) message(paste(" **** Filling in missing lon column", this_lon))
         
         temp_newrow <- d[1,]
         temp_newrow[1, Lon := this_lon]
@@ -585,9 +598,11 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", add.missing
       }
     }
   }
+  else {
+    if(verbose) message("** Not checking for missing longitude colums to be filled in.")
+  }
   
-  
-  if(add.missing.rows || global.extent) {
+  if(add.missing.rows) {
     if(verbose) message("** Checking for missing latitude rows to be filled in...")
     
     
@@ -595,7 +610,7 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", add.missing
     for(this_lat in lat) {
       # if a lat is missing
       if(!this_lat %in% lats.present) {
-        if(verbose) message(paste("  **** Filling in missing lat row", this_lat))
+        if(verbose) message(paste(" **** Filling in missing lat row", this_lat))
         temp_newrow <- d[1,]
         temp_newrow[1, Lat := this_lat]
         for(this_layer in layers(temp_newrow)) {
@@ -604,6 +619,9 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", add.missing
         dummy.dt <- rbind(dummy.dt, temp_newrow)
       }
     }
+  }
+  else {
+    if(verbose) message("** Not checking for missing latitude rows to be filled in.")
   }
   
   # if there are missing lons/lats, add 'em  and set keys again
@@ -617,7 +635,7 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", add.missing
     if(verbose) message("** ... done.")
     
   } else {
-    if(verbose) message("** ... no missing lons or lats found (or needed to be added), done.")
+    if(verbose) message("** ... no missing lons or lats found, done.")
   }
   
   

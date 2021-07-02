@@ -12,7 +12,9 @@
 #' a RasterStack or RasterBrick with a time dimension. 
 #' @param calendar Character, describing the calendar to be used (required for a  Raster*, optional for a Field), can currently be "standard" or "365_day" (default), 
 #' @param global.extent logical, if TRUE extend the netCDF file to the entire global extent, default is FALSE.
-#' @param verbose Logical, if TRUE print a bunch of progress and debug output
+#' @param verbose Logical, if TRUE print progress and debug output (from DGVMTools not from netCDF)
+#' @param nc.verbose Logical, if TRUE print progress and debug output from the NetCDF function calls.  This can be rather a lot, so is controlled 
+#' separately to the DGVMTools output.
 #' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
 #' if you want to use different meta-data for a Field just alter the Quantity object in the Field object before you call writeNetCDF)
 #' @param source A DGVMTools::Source object.  This is to provide meta-data about the source of the data (model run/dataset, climate forcing, contact person etc)
@@ -67,7 +69,7 @@ if (!isGeneric("writeNetCDF")) {
   setGeneric("writeNetCDF", function(x, 
                                      filename, 
                                      start.date = NULL, 
-                                     verbose = FALSE, 
+                                     verbose = TRUE, 
                                      quantity = NULL, 
                                      source = NULL, 
                                      layer.names = NULL,
@@ -80,6 +82,7 @@ if (!isGeneric("writeNetCDF")) {
                                      global.extent = FALSE,
                                      add.missing.cols = TRUE,
                                      add.missing.rows = TRUE,
+                                     nc.verbose = FALSE, 
                                      .sta.info = NULL,
                                      ...) standardGeneric("writeNetCDF"))
 }
@@ -161,6 +164,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   writeNetCDF(array.list, 
               filename, 
               verbose = verbose, 
+              nc.verbose = nc.verbose, 
               start.date = start.date,
               quantity = this.quant ,
               source = this.source,
@@ -362,6 +366,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
   writeNetCDF(array.list, 
               filename, 
               verbose = verbose, 
+              nc.verbose = nc.verbose,
               start.date = start.date,
               quantity = quantity,
               source = source,
@@ -513,17 +518,17 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   
   
   ### MAKE THE NETCDF FILE
-  if(verbose) print(paste("Creating the output file", filename))
-  outfile <- ncdf4::nc_create(filename, all.vars, verbose=verbose, force_v4=TRUE)
+  if(verbose) message(paste("** Creating the output file", filename))
+  outfile <- ncdf4::nc_create(filename, all.vars, verbose=nc.verbose, force_v4=TRUE)
   
   
   ### PUT EACH VARIABLE INTO THE FILE
   
   for(layer in layers) {
-    if(verbose) print(paste("Saving variable", layer, "to file",  filename, sep =" " ), quote=FALSE)
+    if(verbose) message(paste(" **** Saving variable", layer, "to file",  filename, sep = " "))
     # simple case of one variable per layer
     if(is.null(layer.dim.name)) {
-      ncdf4::ncvar_put(nc = outfile, varid = layer,  vals = x[[layer]], start=NA, count=NA, verbose=verbose)
+      ncdf4::ncvar_put(nc = outfile, varid = layer,  vals = x[[layer]], start=NA, count=NA, verbose=nc.verbose)
       ncdf4::ncatt_put(outfile, layer, "standard_name", standard_name)
 
     }
@@ -532,7 +537,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
       this.layer.index <- which(layer == layers)
       start.indices <- c(1,1,this.layer.index,1)
       count.indices <- c(-1,-1,1,-1)
-      ncdf4::ncvar_put(nc = outfile, varid = all.vars,  vals = x[[layer]], start=start.indices, count=count.indices, verbose=verbose)
+      ncdf4::ncvar_put(nc = outfile, varid = all.vars,  vals = x[[layer]], start=start.indices, count=count.indices, verbose=nc.verbose)
     }
     
   }

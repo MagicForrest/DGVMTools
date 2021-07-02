@@ -12,7 +12,7 @@
   x,
   filename,
   start.date = NULL,
-  verbose = FALSE,
+  verbose = TRUE,
   quantity = NULL,
   source = NULL,
   layer.names = NULL,
@@ -25,6 +25,7 @@
   global.extent = FALSE,
   add.missing.cols = TRUE,
   add.missing.rows = TRUE,
+  nc.verbose = FALSE,
   .sta.info = NULL,
   ...
 )
@@ -33,7 +34,7 @@
   x,
   filename,
   start.date = NULL,
-  verbose = FALSE,
+  verbose = TRUE,
   quantity = NULL,
   source = NULL,
   layer.names = NULL,
@@ -46,6 +47,7 @@
   global.extent = FALSE,
   add.missing.cols = TRUE,
   add.missing.rows = TRUE,
+  nc.verbose = FALSE,
   .sta.info = NULL,
   ...
 )
@@ -54,7 +56,7 @@
   x,
   filename,
   start.date = NULL,
-  verbose = FALSE,
+  verbose = TRUE,
   quantity = NULL,
   source = NULL,
   layer.names = NULL,
@@ -67,6 +69,7 @@
   global.extent = FALSE,
   add.missing.cols = TRUE,
   add.missing.rows = TRUE,
+  nc.verbose = FALSE,
   .sta.info = NULL,
   ...
 )
@@ -80,7 +83,7 @@ but this is more of a technical, internal use of this method.}
 \item{start.date}{A date (as a Date object) for the start of the time dimension.  Can be omitted for a Field, \emph{must} be included if you want to write 
 a RasterStack or RasterBrick with a time dimension.}
 
-\item{verbose}{Logical, if TRUE print a bunch of progress and debug output}
+\item{verbose}{Logical, if TRUE print progress and debug output (from DGVMTools not from netCDF)}
 
 \item{quantity}{A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
 if you want to use different meta-data for a Field just alter the Quantity object in the Field object before you call writeNetCDF)}
@@ -109,6 +112,9 @@ If not supplied, data is assumed not to have a time axis. In such case if the ra
 
 \item{add.missing.cols, add.missing.rows}{Logical, if TRUE (default), fill missing columns of longitude/rows of latitude.  For guassian/spectral
 grids with non-equal latitude spacing, set add.missing.rows to FALSE.}
+
+\item{nc.verbose}{Logical, if TRUE print progress and debug output from the NetCDF function calls.  This can be rather a lot, so is controlled 
+separately to the DGVMTools output.}
 
 \item{.sta.info}{Advanced. An object of STAInfo for tracking spatio-temporal metadata.  IGNORED for for a Field as it is handled
 automatically when writing a Field. But can be added manually for a raster if you wish.}
