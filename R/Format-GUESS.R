@@ -94,6 +94,10 @@ openLPJOutputFile <- function(run,
   # Prepare a list of  conditions for fast pre-selection with awk where possible
   # right now only do Year, but that will be gains enough
   awk_conditions <- list()
+  
+  print("LALALA")
+  print(first.year)
+  print(last.year)
   if(!is.null(first.year)) awk_conditions[["first_year"]] <- list(column = 3, condition = ">=", value = first.year - run@year.offset)
   if(!is.null(last.year)) awk_conditions[["last_year"]] <- list(column = 3, condition = "<=", value = last.year - run@year.offset)
   
