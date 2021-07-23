@@ -77,7 +77,7 @@ openLPJOutputFile <- function(run,
   
   # extract from the years limits target.sta
   first.year = target.sta@first.year
-  if(length(first.year)) first.year <- NULL
+  if(length(first.year) == 0) first.year <- NULL
   last.year = target.sta@last.year
   if(length(last.year) == 0) last.year <- NULL
   
