@@ -139,7 +139,7 @@ readRegularASCII <- function(file.string, verbose, header = FALSE, awk_str = cha
   # Got a non-gzipped file
   if(file.exists(file.string)){ 
     if(verbose) message(paste("Found and opening file", file.string, sep = " "))
-    if(header) this_header <- names(fread(file.string, nrows = 1, header = TRUE))
+    # if(header) this_header <- names(fread(file.string, nrows = 1, header = TRUE))
   }
   
   # Got a gzipped file
@@ -150,16 +150,16 @@ readRegularASCII <- function(file.string, verbose, header = FALSE, awk_str = cha
     file.string.gz <- paste(file.string, "gz", sep = ".")
     
     if(.Platform$OS.type == "unix") {
-      if(header) {
-        if(new.data.table.version) this_header <- names(fread(cmd = paste("gzip -d -c " ,file.string.gz ,  sep = ""), nrows = 1, header = TRUE))
-        else this_header <- names(fread(paste("gzip -d -c ", file.string.gz, sep = ""), nrows = 1), header = TRUE)
-      }
+      # if(header) {
+      #   if(new.data.table.version) this_header <- names(fread(cmd = paste("gzip -d -c " ,file.string.gz ,  sep = ""), nrows = 1, header = TRUE))
+      #   else this_header <- names(fread(paste("gzip -d -c ", file.string.gz, sep = ""), nrows = 1), header = TRUE)
+      # }
     }
     # if not unix actually unzip and rezip the file, does this also work on MAcs?
     else {
       re.zip <- TRUE
       R.utils::gunzip(file.string.gz)
-      if(header) this_header <- as.character(fread(file.string, nrows = 1))
+      #if(header) this_header <- as.character(fread(file.string, nrows = 1))
     }
   }
   
@@ -169,11 +169,11 @@ readRegularASCII <- function(file.string, verbose, header = FALSE, awk_str = cha
   }  
   
   
-  ### output header for debugging
-  if(verbose && header) {
-    message("File header is:")
-    print(paste("    ", this_header))
-  }
+  # ### output header for debugging
+  # if(verbose && header) {
+  #   message("File header is:")
+  #   print(paste("    ", this_header))
+  # }
   
   re.zip <- FALSE
   # Non gzipped case
@@ -204,7 +204,9 @@ readRegularASCII <- function(file.string, verbose, header = FALSE, awk_str = cha
   if(re.zip) R.utils::gzip(file.string)
   
   # Add the header
-  if(header) setnames(dt, this_header)
+  print(dt)
+  # if(header) setnames(dt, this_header)
+  print(dt)
   
   return(dt)
   

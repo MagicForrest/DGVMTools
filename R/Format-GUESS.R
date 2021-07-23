@@ -77,7 +77,7 @@ openLPJOutputFile <- function(run,
   
   # extract from the years limits target.sta
   first.year = target.sta@first.year
-  if(length(first.year) == 0) first.year <- NULL
+  if(length(first.year)) first.year <- NULL
   last.year = target.sta@last.year
   if(length(last.year) == 0) last.year <- NULL
   
@@ -103,15 +103,15 @@ openLPJOutputFile <- function(run,
   # build awk condition
   if(length(awk_conditions) > 0){
     
-    awk_str <- "awk '"
+    awk_str <- "awk '("
     for(this_awk_condition in awk_conditions) {
       awk_str <- paste0(awk_str, " $", this_awk_condition$column, " ", this_awk_condition$condition, " ", this_awk_condition$value, " &&"  )
     }
     # this remove the last "&&" from the string before closing it  
     awk_str <- substr(awk_str,1,nchar(awk_str)-2)
-    awk_str <- paste0(awk_str, "'")
+    awk_str <- paste0(awk_str, " ) || FNR == 1 '")
   }
-
+  
   # read the file using the handy utility function
   dt <- readRegularASCII(file.string, verbose, header = TRUE, awk_str)
   
@@ -143,8 +143,12 @@ openLPJOutputFile <- function(run,
   }
   
   # Select year
-   if(!missing(first.year) & !missing(last.year) & !is.null(first.year) & !is.null(last.year)) {
-    dt <- selectYears(dt, first.year, last.year)
+  if(!is.null(first.year) & !is.null(last.year)) {
+    # only do year selection if years are outside range
+    #all.years <- unique(dt[["Year"]])
+    #if(max(all.years) > last.year || min(all.years) < first.year) {
+      dt <- selectYears(dt, first.year, last.year)
+    #}
   }
   
   # also correct days to be 1-365 instead of 0-364, if necessary
@@ -242,7 +246,7 @@ openLPJOutputFile <- function(run,
   
   # if yearly aggregating requested, so it before melting (so save on memory)
   # first store all the years before averaging them away
-
+  
   this.year.aggregate.method <- "none"
   if(target.sta@year.aggregate.method != "none") {
     
@@ -1428,11 +1432,11 @@ GUESS.Layers <- list(
                         land.cover = "Barren")
   ),
   new("Layer",
-     id = "Total",
-     name = "Total",
-     colour = "black",
-     properties = list(type = "Sum",
-                       land.cover = "All")
+      id = "Total",
+      name = "Total",
+      colour = "black",
+      properties = list(type = "Sum",
+                        land.cover = "All")
   )
   
   
