@@ -75,9 +75,11 @@ openLPJOutputFile <- function(run,
   # To avoid annoying NOTES when R CMD check-ing
   Lon = Lat = Annual = Year = Month = Day = NULL
   
-  # extract from the target.sta
+  # extract from the years limits target.sta
   first.year = target.sta@first.year
+  if(length(first.year) == 0) first.year <- NULL
   last.year = target.sta@last.year
+  if(length(last.year) == 0) last.year <- NULL
   
   if(!data.table.only && class(quant)[1] != "Quantity") stop("Please supply a formal Quantity object as the quant argument since you are not requesting at data.table")
   
@@ -85,10 +87,36 @@ openLPJOutputFile <- function(run,
   else variable <- quant
   
   
-  # Make the filename and read the file using the handy utility function
+  # Make the filename 
   if(is.null(file.name)) file.string <- file.path(run@dir, paste(variable, ".out", sep=""))
   else file.string <- file.path(run@dir, file.name)
-  dt <- readRegularASCII(file.string, verbose)
+  
+  # Prepare a list of  conditions for fast pre-selection with awk where possible
+  # right now only do Year, but that will be gains enough
+  awk_conditions <- list()
+  if(!is.null(first.year)) awk_conditions[["first_year"]] <- list(column = 3, condition = ">=", value = first.year - run@year.offset)
+  if(!is.null(last.year)) awk_conditions[["last_year"]] <- list(column = 3, condition = "<=", value = last.year - run@year.offset)
+  
+  print(awk_conditions)
+  print(str(awk_conditions))
+  
+  # build awk condition
+  if(length(awk_conditions) > 0){
+    
+    awk_str <- "awk '"
+    for(this_awk_condition in awk_conditions) {
+      awk_str <- paste0(awk_str, " $", this_awk_condition$column, " ", this_awk_condition$condition, " ", this_awk_condition$value, " &&"  )
+    }
+    # this remove the last "&&" from the string before closing it  
+    awk_str <- substr(awk_str,1,nchar(awk_str)-2)
+    awk_str <- paste0(awk_str, "'")
+  }
+
+  # read the file using the handy utility function
+  dt <- readRegularASCII(file.string, verbose, header = TRUE, awk_str)
+  
+  print(dt)
+  #stop()
   
   # correct the dimension names if they are lower case
   dim.names <- c("Lon", "Lat", "Year", "Month", "Day")
@@ -115,9 +143,7 @@ openLPJOutputFile <- function(run,
   }
   
   # Select year
-  if(length(first.year) == 0) first.year <- NULL
-  if(length(last.year) == 0) last.year <- NULL
-  if(!missing(first.year) & !missing(last.year) & !is.null(first.year) & !is.null(last.year)) {
+   if(!missing(first.year) & !missing(last.year) & !is.null(first.year) & !is.null(last.year)) {
     dt <- selectYears(dt, first.year, last.year)
   }
   

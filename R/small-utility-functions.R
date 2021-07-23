@@ -125,36 +125,86 @@ equivalentQuantities <- function(quant1, quant2) {
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-readRegularASCII <- function(file.string, verbose) {
+readRegularASCII <- function(file.string, verbose, header = FALSE, awk_str = character(0)) {
   
   #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
   compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
   new.data.table.version <- FALSE
   if(compare.string >= 0) new.data.table.version <- TRUE
   
+  ### First check is we have a normal or gzipped file and read the header
+  gzipped <- FALSE
   re.zip <- FALSE
+  
+  # Got a non-gzipped file
   if(file.exists(file.string)){ 
     if(verbose) message(paste("Found and opening file", file.string, sep = " "))
-    dt <- fread(file.string)
+    if(header) this_header <- names(fread(file.string, nrows = 1, header = TRUE))
   }
+  
+  # Got a gzipped file
   else if(file.exists(paste(file.string, "gz", sep = "."))){
+    
     if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
+    gzipped <- TRUE
+    file.string.gz <- paste(file.string, "gz", sep = ".")
+    
     if(.Platform$OS.type == "unix") {
-      if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-      else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
+      if(header) {
+        if(new.data.table.version) this_header <- names(fread(cmd = paste("gzip -d -c " ,file.string.gz ,  sep = ""), nrows = 1, header = TRUE))
+        else this_header <- names(fread(paste("gzip -d -c ", file.string.gz, sep = ""), nrows = 1), header = TRUE)
+      }
     }
+    # if not unix actually unzip and rezip the file, does this also work on MAcs?
     else {
       re.zip <- TRUE
-      R.utils::gunzip(paste(file.string, "gz", sep = "."))
+      R.utils::gunzip(file.string.gz)
+      if(header) this_header <- as.character(fread(file.string, nrows = 1))
+    }
+  }
+  
+  # Got neither
+  else {
+    stop(paste("File (or gzipped file) not found:", file.string))
+  }  
+  
+  
+  ### output header for debugging
+  if(verbose && header) {
+    message("File header is:")
+    print(paste("    ", this_header))
+  }
+  
+  re.zip <- FALSE
+  # Non gzipped case
+  if(!gzipped){ 
+    if(.Platform$OS.type == "unix") {
+      if(new.data.table.version) dt <- fread(cmd = paste(awk_str, " < ",file.string, sep = ""))
+      else dt <- fread(paste( paste(awk_str, " < ",file.string, sep = "")))
+    }
+    else {
       dt <- fread(file.string)
     }
   }
+  # else gzipped case
   else {
-    stop(paste("File (or gzipped file) not found:", file.string))
+    if(.Platform$OS.type == "unix") {
+      print(paste("gzip -d -c " , file.string.gz, " | ", awk_str,  sep = ""))
+      if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c " , file.string.gz, " | ", awk_str,  sep = ""))
+      else dt <- fread(paste("gzip -d -c ",  " < ", file.string.gz, " | ", awk_str, sep = ""))
+    }
+    # if not unix the file have been already unzipped
+    else {
+      dt <- fread(file.string)
+    }
   }
+  
   
   # if re-zip
   if(re.zip) R.utils::gzip(file.string)
+  
+  # Add the header
+  if(header) setnames(dt, this_header)
   
   return(dt)
   
