@@ -23,6 +23,8 @@
 #' Should be length 1 or the number of layers in the input raster. 
 #' @param layer.dim.name A character string specifying the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 #' is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension. 
+#' @param layer.dim.values A named vector of numerics which will be used if writing a 'layer' dimension.  The number corresponds to the value on the dimension, the name corresponds to the layer name.
+#' Can be omitted in which case every layer will be written in the order they appear in the Field.
 #' @param lat.dim.name Character, the latitude dimension name. Defaults to "lat".  
 #' @param lon.dim.name Character, the longitude dimension name. Defaults to "lon". 
 #' @param time.dim.name Character, the time dimension name. Defaults to "time".
@@ -74,6 +76,7 @@ if (!isGeneric("writeNetCDF")) {
                                      source = NULL, 
                                      layer.names = NULL,
                                      layer.dim.name = NULL,
+                                     layer.dim.values = NULL,
                                      lat.dim.name = "lat",
                                      lon.dim.name = "lon",
                                      time.dim.name = "time",
@@ -95,7 +98,19 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   st.names <- getDimInfo(x)
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   
-
+  # If layer.dim.values provided check that each named layer is present in the Field and check that the values numeric
+  if(!missing(layer.dim.values )) {
+    if(is.null(layer.dim.name)) stop("Specifying 'layer.dim.values' only makes sense if you specify a layer.dim.name, please check nyour arguments.")
+    if(is.null(names(layer.dim.values)) || !is.numeric(layer.dim.values)) stop("If provided, the argument layer.dim.values must be a vector of numerics with uniques names (corresponding to the layer of x)")
+    for(this_name in names(layer.dim.values)) {
+      if(!this_name %in% layers(x)) stop(paste0("Layer ", this_name, " requested for writing to the NetCDF file in lay.dim.values, but no layer of that name is present in the Field to be written."))
+    }
+  }
+  # else if it wasn't provided, make one with all layers in the order that they come
+  else {
+    layer.dim.values <- 1:length(layers(x))
+    names(layer.dim.values) <- layers(x)
+  }
   
   # determine start.date if it is not specified
   if(missing(start.date)  || is.null(start.date)) {
@@ -146,7 +161,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
     message(paste0("Calling function FieldToArray() on a Field with ", nrow(x@data), " spatio-temporal data points and a total of ", length(layers(x)), " layers"))
     t1 <- Sys.time()
   }
-  array.list <- FieldToArray(x, start.date = start.date, calendar = calendar, add.missing.cols = add.missing.cols, add.missing.rows = add.missing.rows, global.extent = global.extent, verbose = verbose) 
+  array.list <- FieldToArray(x, cname = names(layer.dim.values), start.date = start.date, calendar = calendar, add.missing.cols = add.missing.cols, add.missing.rows = add.missing.rows, global.extent = global.extent, verbose = verbose) 
   if(verbose) {
     t2 <- Sys.time()
     message("FieldToArray took:")
@@ -169,6 +184,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
               quantity = this.quant ,
               source = this.source,
               layer.dim.name = layer.dim.name,
+              layer.dim.values = layer.dim.values,
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
@@ -185,6 +201,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
   if(is.null(quantity) || missing(quantity)) stop("When calling a writeNetCDF() on a raster you *need* to pass in a quantity object supply metadata. \n Fortunately the is easy to define if you don't have one, see Quantity-class")
   if(is.null(layer.names) || missing(layer.names)) stop("When calling a writeNetCDF() on a raster you *need* to provide a 'layer.names' argument to determine how to name the layers.")
   
+  if(!missing(layer.dim.values)) warning("Argument 'layer.dim.values' to writeNetCDF is ignored when writing Raster objects.")
   
   # check input arguments and the number of layers in the input raster to determine the structure of the netCDF file that we should be building
   
@@ -409,7 +426,8 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     last.dims <- dims
   }
   
-  layers <- names(x)
+  layers <- names(layer.dim.values)
+  if(layers != names(x)) stop("Something went wrong internally - names(x) doesn't match names(layer.dim.values)")
   if(length(layers) != length(x)) stop("Layers not correctly named.  The layer names are taken from the name of each element in the input list, so the elements must be named.")
   
   
@@ -422,19 +440,11 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   all.dims[["Lon"]] <- ncdf4::ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdf4::ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
 
-  # Layer - only if a layer.dim.name has been specified which mean collapse all the different layers as values along a dimension
+  # LAYER - only if a layer.dim.name has been specifed which means collapse all the different layers as values along a dimension
   if(!is.null(layer.dim.name)) {
     
     if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
-    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
-    
-  }
-  
-  # Layer - only if a layer.dim.name has been specifed which mean collapse all the different layers as values along a dimension
-  if(!is.null(layer.dim.name)) {
-    
-    if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
-    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
+    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = layer.dim.values, create_dimvar=TRUE)
     
   }
   
@@ -545,12 +555,11 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   rm(x); gc()
   
   # add meta-data if layers collapsed to a dimension
-  # put it to both the data variable and the dimension axis (not sure which is prefereable, but metadata is cheap)
+  # put it to global attribute, the data variable and the dimension axis (not sure which is preferable, but metadata is cheap)
   if(!is.null(layer.dim.name)) {
     ncdf4::ncatt_put(outfile, quantity@id, "standard_name", standard_name)
-    for(counter in 1:length(old.layers)){
-      ncdf4::ncatt_put(outfile, all.vars, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
-      ncdf4::ncatt_put(outfile, layer.dim.name, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
+    for(this_layer_name in names(layer.dim.values)){
+      ncdf4::ncatt_put(outfile, layer.dim.name, paste(layer.dim.name, layer.dim.values[this_layer_name], sep ="_"), this_layer_name)
     }
   }
   
