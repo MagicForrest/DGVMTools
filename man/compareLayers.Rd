@@ -2,7 +2,7 @@
 % Please edit documentation in R/compareLayers.R
 \name{compareLayers}
 \alias{compareLayers}
-\title{Compare single layers to each other}
+\title{Compare layers to each other}
 \usage{
 compareLayers(
   field1,
@@ -21,13 +21,15 @@ compareLayers(
 )
 }
 \arguments{
-\item{field1}{A Field from which to get the first layer for comparison. For the normalised metrics, this is the *modelled* values.}
+\item{field1}{A \code{Field} from which to get the first \code{Layer} for comparison. For the normalised metrics, this is the *modelled* values.}
 
-\item{field2}{A Field from which to get the second layer for comparison. For the normalised metrics, this is the *observed* values.}
+\item{field2}{A \code{Field} from which to get the second \code{Layer} for comparison. For the normalised metrics, this is the *observed* values.}
 
-\item{layers1}{The name of the layers to be compared from field1 (character string)}
+\item{layers1}{The name of the \code{Layer} to be compared from field1 (character string).  In general this should only be a *single* \code{Layer}, 
+only in the special case of a "relative abundance" style comparison should this be multiple layers.}
 
-\item{layers2}{The name of the layers to be compared from field2 (character string).  If not defined taken to the be the same as layers1}
+\item{layers2}{The name of the \code{Layer} to be compared from field2 (character string).  If not defined taken to the be the same as layers1. In general this should 
+only be a *single* \code{Layer}, only in the special case of a "relative abundance" style comparison should this be multiple layers.}
 
 \item{do.seasonality}{Logical, if TRUE use monthly values to calculate the seasonal concentration and phase, and then return NME/NSME of the concentration and MPD 
 (mean phase difference) on the phase.}
@@ -38,11 +40,7 @@ compareLayers(
 
 \item{override.quantity}{Logical, if TRUE ignore situation where field1 and field2 have non-identical Quantities and use the Quantity from field1 for the returned Comparison}
 
-\item{verbose}{Logical, if TRUE print some informative output
-
-The returned Comparison object can be plotted using \code{plotSpatialComparison} (to give the absolute difference, original values side-by-side and percentage difference, also the NME spatially - to be implemented)
-The stats slot (which contains list) holds information such as RSME, NME, Nash-Sutcliffe Model Efficiency, etc. between the datasets in the case of a continous data.
-In the case of comparing categorical data (ie layers of factors) it contains Cohen's Kappa.}
+\item{verbose}{Logical, if TRUE print some informative output}
 
 \item{match.NAs}{Logical, if TRUE copy NAs from one layer to the other.  This is mostly to make sure that when you later plot the data in the final Comparison side-by-side,
 that the both have 'no data' (typically grey areas) plotted on both maps.}
@@ -59,13 +57,36 @@ Default is no rounding (value is NULL) and so is fine for most regular spaced gr
 coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.}
 }
 \value{
+A \code{Comparison} object, which includes points only where *both* input \code{Field} object have data.
+
+The returned \code{Comparison} object has the same dimensions as the input \code{Fields} (if they don't have the same dimensions as each other the code will fail).  
+Depending on these dimensions, the \code{Comparison} can be plotted using \code{plotSpatialComparison} (to give the absolute difference, original values side-by-side 
+and percentage difference, also the NME spatially - to be implemented) or \code{plotTemporalComparison} (again, absolute difference, percentage difference or original values).
+The stats slot (which contains list) holds information such as RSME, NME, Nash-Sutcliffe Model Efficiency, etc. between the datasets in the case of a continuous data.
+In the case of comparing categorical data (ie \code{Layers} which hold factors) it contains Cohen's Kappa.
+
+There are two further special cases.  In the case of monthly data, one can instead compare the seasonal cycles (enable with the "\code{do.seasonality} argument). In this
+case the metrics reported are the Mean Phase Difference and the NME calculation is done on seasonal concentration (derived from the monthly values) instead of each data point.
+  
+The second special case allows comparison of the "relative abundance" of multiple layers via the Manhattan Metric or the Square Chord Difference. 
+In this case you can specify multiple layers (same number from each Field) and for each \code{Field} the provided layers should sum to 1.0  (this is not checked by 
+DGVMTools so please check this yourself).
+
+For definitions, details and applicability of metrics such as Normalised Mean Error, Manhattan Metric, Mean Phase Difference, etc. please see:
+
+ Kelley, D. I., Prentice, I. C., Harrison, S. P., Wang, H., Simard, M., Fisher, J. B., and Willis, K. O.: 
+ A comprehensive benchmarking system for evaluating global vegetation models, 
+ Biogeosciences, 10, 3313–3340, https://doi.org/10.5194/bg-10-3313-2013, 2013.
+
 A Comparison object
 }
 \description{
-Compare two layers (each from a Field) to calculated various statistic metric and also the error (at every spatial/temporal locality) which is returned as a Comparison object.
+Compare two layers (each from a \code{Field}) to calculated various statistic metric and also the error (at every spatial/temporal locality) 
+which is returned as a \code{Comparison} object. Usually this only acts on a single layer from each \code{Field}, 
+but see the special case for "relative abundance" in details  below.
 }
 \examples{
-
+#' 
 \donttest{
  
 ##### Continuous (single-layer) comparison
@@ -146,6 +167,9 @@ print(plotSpatialComparison(seasonal.comparison, type = "values"))
 
 }
 
+}
+\seealso{
+\code{\link{plotSpatialComparison}}, \code{\link{plotTemporalComparison}}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
