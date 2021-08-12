@@ -2,7 +2,7 @@
 #' writeNetCDF methods
 #' 
 #' Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes. 
-#' NOTE: when using the function on a raster::Raster object, you cannot provide both multiple variables and multiple time period, 
+#' NOTE: when using the function on a raster::Raster object, you cannot provide both multiple variables and multiple time periods, 
 #' you can only do one or the other.   
 #' 
 #'  
@@ -244,8 +244,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     stop("When calling writeNetCDF for multi-layered Rasters where each layer corresponds to one variable, the length of the layer.names argument must be the same as the number of layers in the raster.")    
     
   }
-  
-  
+ 
   
   # make a list of lons and lats
   xres <- raster::xres(x)
@@ -294,79 +293,6 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     this.array <- aperm(raster::as.array(x), c(2,1,3))
     this.array <- this.array[, dim(this.array)[2]:1, ]
     
-    # # make the time dimension values
-    # # maybe make this more vectorised and elegant
-    # time.list <- c()
-    # start.year <- as.numeric(format(start.date,"%Y"))
-    # start.day <- as.numeric(format(start.date,"%j")) 
-    # 
-    # for(counter in 1:(raster::nlayers(x))) {
-    #   
-    #   # calculate how may days since the start of the first year
-    #   ndays.since.start <- time.values[counter] + start.day
-    #   
-    #   # calculate the number of complete years and the year of this layer
-    #   # *** Assuming 365 day calendar here
-    #   year.length <- 365
-    #   nyears <- ndays.since.start %/% year.length 
-    #   final.year <- nyears + start.year
-    #   
-    #   # Calculate the number of days into that year
-    #   # the while leap calendat thing will be even more complicated here
-    #   final.day <- ndays.since.start %% year.length
-    #   
-    #   
-    #   final.date <- (final.year * 1000) + final.day
-    #   time.list <- append(time.list, as.character(final.date))
-    #   
-    # }
-    # 
-    # print(time.list)
-    # time.list2 <- c()
-    # for(counter in 1:(raster::nlayers(x))) {
-    #   
-    #   # easy, use fixed year length
-    #   if(calendar == "365_day") {
-    #     
-    #     year.length <- 365
-    #     
-    #     # calculate how may days since the start of the first year
-    #     ndays.since.start <- time.values[counter] + start.day
-    #     
-    #     # calculate the number of complete years and the year of this layer
-    #     nyears <- ndays.since.start %/% year.length 
-    #     this.year <- nyears + start.year
-    #     
-    #     # Calculate the number of days into that year
-    #     this.day.of.year <- ndays.since.start %% year.length
-    #     
-    #     
-    #     this.data.numeric_code <- (this.year * 1000) + this.day.of.year
-    #     time.list2 <- append(time.list2, as.character(this.data.numeric_code))
-    #     
-    #   }
-    #   
-    #   # easy, use standard R Date arithmetic
-    #   else if(calendar == "standard") {
-    #     
-    #     # calculate this date based on the interval
-    #     this.date <- start.date + time.values[counter]
-    #     
-    #     # calculate the numeric code by extracting the year and day of year
-    #     this.data.numeric_code <- (as.numeric(format(this.date,"%Y")) * 1000) + as.numeric(format(this.date,"%j"))
-    #     
-    #     # save to the list
-    #     time.list2 <- append(time.list2, as.character(this.data.numeric_code))
-    #   }
-    #   
-    #   else {
-    #     stop(paste0("Calendar ", calendar, " not currently supported."))
-    #   }
-    #   
-    
-    # }
-    
-    # print(time.list2)
     
     dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = time.values)
     array.list[[layer.names[1]]] <- this.array
@@ -456,58 +382,8 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
                                            create_dimvar=TRUE)
   }
   
-  # # Time - if more than two dimensions one must be time, so hand that
-  # if(length(all.dimnames) > 2 ){
-  #   if(monthly) {
-  #     if(verbose) print("Got monthly data")
-  #     
-  #     # get the year and month as a numeric code with format "Year.Month"
-  #     all.year.months <- as.numeric(all.dimnames[[3]]) / 100
-  #     all.years <- sort(unique((trunc(all.year.months))))
-  #     
-  #     # if no start date is set start at Jan 1st of the first year of data
-  #     if(is.null(start.date)) start.date <- as.Date(paste(all.years[1], "01", "01", sep = "-"))
-  #     
-  #     # make the time values, taking of the inconvenient fact that months have different numbers of days
-  #     month.cumulative.additions <- c(0)
-  #     for(month in all.months[1:11]) {
-  #       month.cumulative.additions <- append(month.cumulative.additions, month.cumulative.additions[length(month.cumulative.additions)] + month@days)
-  #     }
-  #     
-  #     time.vals <- c()
-  #     start.year <- as.numeric(format(start.date,"%Y"))
-  #     for(year.month in all.year.months) {
-  #       
-  #       year <- trunc(year.month)
-  #       month <- as.integer((year.month - year) * 100) 
-  #       time.vals <- append(time.vals, (year-start.year) * 365 + month.cumulative.additions[month+1])
-  #       
-  #     }
-  #     
-  #   }
-  #   
-  #   # else is yearly, so make annual axis of entries 365 days apart
-  #   else {
-  #     if(verbose) print("Got annual data")
-  #     
-  #     all.years <- as.numeric(all.dimnames[[3]])
-  #     
-  #     # if no start date is set start at Jan 1st of the first year of data
-  #     if(is.null(start.date)) start.date <- as.Date(paste(all.years[1], "01", "01", sep = "-"))
-  #     
-  #     time.vals <- (all.years - as.numeric(format(start.date,"%Y"))) * 365
-  #     
-  #   }
-  #   
-  #   # make start date and calendar
-  #   calendar <- "365_day" 
-  #   time.unit <- paste("days since", start.date)
-  #   
-  #   all.dims[["Time"]] <- ncdf4::ncdim_def(name = time.dim.name, units = time.unit, vals = time.vals , calendar = calendar, unlim=TRUE, create_dimvar=TRUE)
-  #   
-  # }
-  
-  ### PREPARE THE VARIABLES: ONE FOR EACH LAYER OR COMBINE THEM IF WE WANT LAYERS TO BE DEFINED ALONG A DIMENSION AXIS
+ 
+  ### DEFINE THE VARIABLES IN THE NETCDF FILE: ONE FOR EACH LAYER, OR COMBINE THEM IF WE WANT LAYERS TO BE DEFINED ALONG A DIMENSION AXIS
   all.vars <- list()
   # individual layers
   if(is.null(layer.dim.name)) {  
