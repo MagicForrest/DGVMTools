@@ -17,6 +17,7 @@
   source = NULL,
   layer.names = NULL,
   layer.dim.name = NULL,
+  layer.dim.values = NULL,
   lat.dim.name = "lat",
   lon.dim.name = "lon",
   time.dim.name = "time",
@@ -39,6 +40,7 @@
   source = NULL,
   layer.names = NULL,
   layer.dim.name = NULL,
+  layer.dim.values = NULL,
   lat.dim.name = "lat",
   lon.dim.name = "lon",
   time.dim.name = "time",
@@ -61,6 +63,7 @@
   source = NULL,
   layer.names = NULL,
   layer.dim.name = NULL,
+  layer.dim.values = NULL,
   lat.dim.name = "lat",
   lon.dim.name = "lon",
   time.dim.name = "time",
@@ -85,8 +88,9 @@ a RasterStack or RasterBrick with a time dimension.}
 
 \item{verbose}{Logical, if TRUE print progress and debug output (from DGVMTools not from netCDF)}
 
-\item{quantity}{A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
-if you want to use different meta-data for a Field just alter the Quantity object in the Field object before you call writeNetCDF)}
+\item{quantity}{A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in
+the case of a Field (but note that if you want to use different meta-data for a Field just alter the Quantity object in the Field object
+before you callwriteNetCDF)}
 
 \item{source}{A DGVMTools::Source object.  This is to provide meta-data about the source of the data (model run/dataset, climate forcing, contact person etc)
 if saving a Raster* object. It is ignored in the case of a Field (but note  that if you want to use different meta-data for a Field just alter the Source object in the Field object before you call writeNetCDF)}
@@ -96,6 +100,9 @@ Should be length 1 or the number of layers in the input raster.}
 
 \item{layer.dim.name}{A character string specifying the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension.}
+
+\item{layer.dim.values}{A named vector of numerics which will be used if writing a 'layer' dimension.  The number corresponds to the value on the dimension, the name corresponds to the layer name.
+Can be omitted in which case every layer will be written in the order they appear in the Field.}
 
 \item{lat.dim.name}{Character, the latitude dimension name. Defaults to "lat".}
 
@@ -123,8 +130,8 @@ automatically when writing a Field. But can be added manually for a raster if yo
 \itemize{
  \item{compression} {Integer to define compression level when define netCDF variables (1 = a little compression, 9 = a lot of compression). 
  Set to NA (default) for no compression.  Using compression forces netCDF version 4.}
- \item{missval} {Numeric, for the missing value.  Default is NA which gives NaN as the missing value. NULL can be used to specify ""no missing value"
- although it is not clear what that does the the resultant netcdf file in practice.  TRENDY/GCP likes -99999.0 for missing values.}
+ \item{missval} {Numeric, for the missing value.  Default is NA which gives NaN as the missing value. NULL can be used to specify "no missing value"
+ although it is not clear what that does in the resultant netcdf file in practice.  TRENDY/GCP likes -99999.0 for missing values.}
  \item{prec} {Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  
  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
  \item{shuffle} {Logical, if TRUE turn on the shuffle filter see netCDF docs and ncdf4::ncvar_def for details}
@@ -132,19 +139,18 @@ automatically when writing a Field. But can be added manually for a raster if yo
  to optimise the read and write time,  but rather advanced, see netCDF docs and ncdf4::ncvar_def for details}
  }
 
-
-
-
-These methods offers two very convenient things.  Firtsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
-convenient way to write Raster* objects as netCDF objects than writeRaster (at least in the eye's of the author).  This because is allows specifying of meta data and a time axis, 
-some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes.}
+These methods offers two very convenient things.  Firstly, it allows the exporting of a DGVMTools::Field object as a standard netCDF (CF) file. 
+Secondly, it provides a more convenient way to write Raster* objects as netCDF objects than writeRaster (at least in the eye's of the author).  
+This because is allows specification a time axis, writes additional metadata, allows some flexibility in the formatting, doesn't invert the latitudes,
+and should generally write CF-standard compliant files.}
 }
 \value{
 Nothing
 }
 \description{
-Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes.  NOTE: when using the function on a raster::Raster object,
-you cannot provide both multiple variables and multiple time period, you must do one or the other.
+Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes. 
+NOTE: when using the function on a raster::Raster object, you cannot provide both multiple variables and multiple time period, 
+you can only do one or the other.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

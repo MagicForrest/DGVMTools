@@ -1,8 +1,9 @@
 #!/usr/bin/Rscript
 #' writeNetCDF methods
 #' 
-#' Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes.  NOTE: when using the function on a raster::Raster object,
-#' you cannot provide both multiple variables and multiple time period, you must do one or the other.   
+#' Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes. 
+#' NOTE: when using the function on a raster::Raster object, you cannot provide both multiple variables and multiple time periods, 
+#' you can only do one or the other.   
 #' 
 #'  
 #' @param x A Field or Raster* object to be written as a netCDF file.  The method can also handle a list of arrays (each array in the list represents one layer)
@@ -15,14 +16,17 @@
 #' @param verbose Logical, if TRUE print progress and debug output (from DGVMTools not from netCDF)
 #' @param nc.verbose Logical, if TRUE print progress and debug output from the NetCDF function calls.  This can be rather a lot, so is controlled 
 #' separately to the DGVMTools output.
-#' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in the case of a Field (but note that
-#' if you want to use different meta-data for a Field just alter the Quantity object in the Field object before you call writeNetCDF)
+#' @param quantity A DGVMTools::Quantity object.  This is to provide meta-data (units, names) if saving a Raster* object, it is ignored in
+#' the case of a Field (but note that if you want to use different meta-data for a Field just alter the Quantity object in the Field object
+#' before you callwriteNetCDF)
 #' @param source A DGVMTools::Source object.  This is to provide meta-data about the source of the data (model run/dataset, climate forcing, contact person etc)
 #' if saving a Raster* object. It is ignored in the case of a Field (but note  that if you want to use different meta-data for a Field just alter the Source object in the Field object before you call writeNetCDF)
 #' @param layer.names A vector of characters to specify the names of the variables in the netCDF file, ignored for a Field.  
 #' Should be length 1 or the number of layers in the input raster. 
 #' @param layer.dim.name A character string specifying the name of the fourth 'layers' dimension (ie not lon, lat or time).  If not specified (or NULL) then no fourth dimension
 #' is created and each layer gets its own variable in the netCDF.  If it is specified, the layers are 'collapsed' on to elements on this fourth, layers, dimension. 
+#' @param layer.dim.values A named vector of numerics which will be used if writing a 'layer' dimension.  The number corresponds to the value on the dimension, the name corresponds to the layer name.
+#' Can be omitted in which case every layer will be written in the order they appear in the Field.
 #' @param lat.dim.name Character, the latitude dimension name. Defaults to "lat".  
 #' @param lon.dim.name Character, the longitude dimension name. Defaults to "lon". 
 #' @param time.dim.name Character, the time dimension name. Defaults to "time".
@@ -36,8 +40,8 @@
 #' \itemize{
 #'  \item{compression} {Integer to define compression level when define netCDF variables (1 = a little compression, 9 = a lot of compression). 
 #'  Set to NA (default) for no compression.  Using compression forces netCDF version 4.}
-#'  \item{missval} {Numeric, for the missing value.  Default is NA which gives NaN as the missing value. NULL can be used to specify ""no missing value"
-#'  although it is not clear what that does the the resultant netcdf file in practice.  TRENDY/GCP likes -99999.0 for missing values.}
+#'  \item{missval} {Numeric, for the missing value.  Default is NA which gives NaN as the missing value. NULL can be used to specify "no missing value"
+#'  although it is not clear what that does in the resultant netcdf file in practice.  TRENDY/GCP likes -99999.0 for missing values.}
 #'  \item{prec} {Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  
 #'  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
 #'  \item{shuffle} {Logical, if TRUE turn on the shuffle filter see netCDF docs and ncdf4::ncvar_def for details}
@@ -45,15 +49,10 @@
 #'  to optimise the read and write time,  but rather advanced, see netCDF docs and ncdf4::ncvar_def for details}
 #'  }
 #' 
-#' 
-#' 
-#' 
-#' These methods offers two very convenient things.  Firtsly, it allows the exporting of a DGVMTools::Field object as a standard netCDF file.  Secondly, it provides a more
-#' convenient way to write Raster* objects as netCDF objects than writeRaster (at least in the eye's of the author).  This because is allows specifying of meta data and a time axis, 
-#' some flexibility in the formatting, should write CF-standard compliant files and doesn't invert the latitudes. 
-#' 
-#'  
-#' 
+#' These methods offers two very convenient things.  Firstly, it allows the exporting of a DGVMTools::Field object as a standard netCDF (CF) file. 
+#' Secondly, it provides a more convenient way to write Raster* objects as netCDF objects than writeRaster (at least in the eye's of the author).  
+#' This because is allows specification a time axis, writes additional metadata, allows some flexibility in the formatting, doesn't invert the latitudes,
+#' and should generally write CF-standard compliant files.
 #' 
 #' @return Nothing
 #' @name writeNetCDF-methods
@@ -74,6 +73,7 @@ if (!isGeneric("writeNetCDF")) {
                                      source = NULL, 
                                      layer.names = NULL,
                                      layer.dim.name = NULL,
+                                     layer.dim.values = NULL,
                                      lat.dim.name = "lat",
                                      lon.dim.name = "lon",
                                      time.dim.name = "time",
@@ -95,7 +95,19 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   st.names <- getDimInfo(x)
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   
-
+  # If layer.dim.values provided check that each named layer is present in the Field and check that the values numeric
+  if(!missing(layer.dim.values )) {
+    if(is.null(layer.dim.name)) stop("Specifying 'layer.dim.values' only makes sense if you specify a layer.dim.name, please check nyour arguments.")
+    if(is.null(names(layer.dim.values)) || !is.numeric(layer.dim.values)) stop("If provided, the argument layer.dim.values must be a vector of numerics with uniques names (corresponding to the layer of x)")
+    for(this_name in names(layer.dim.values)) {
+      if(!this_name %in% layers(x)) stop(paste0("Layer ", this_name, " requested for writing to the NetCDF file in lay.dim.values, but no layer of that name is present in the Field to be written."))
+    }
+  }
+  # else if it wasn't provided, make one with all layers in the order that they come
+  else {
+    layer.dim.values <- 1:length(layers(x))
+    names(layer.dim.values) <- layers(x)
+  }
   
   # determine start.date if it is not specified
   if(missing(start.date)  || is.null(start.date)) {
@@ -146,14 +158,14 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
     message(paste0("Calling function FieldToArray() on a Field with ", nrow(x@data), " spatio-temporal data points and a total of ", length(layers(x)), " layers"))
     t1 <- Sys.time()
   }
-  array.list <- FieldToArray(x, start.date = start.date, calendar = calendar, add.missing.cols = add.missing.cols, add.missing.rows = add.missing.rows, global.extent = global.extent, verbose = verbose) 
+  array.list <- FieldToArray(x, cname = names(layer.dim.values), start.date = start.date, calendar = calendar, add.missing.cols = add.missing.cols, add.missing.rows = add.missing.rows, global.extent = global.extent, verbose = verbose) 
   if(verbose) {
     t2 <- Sys.time()
     message("FieldToArray took:")
     print(t2-t1)
   } 
- 
- 
+  
+  
   
   # grab other metadata from the Field
   this.quant <- x@quant
@@ -169,6 +181,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
               quantity = this.quant ,
               source = this.source,
               layer.dim.name = layer.dim.name,
+              layer.dim.values = layer.dim.values,
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
@@ -185,6 +198,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
   if(is.null(quantity) || missing(quantity)) stop("When calling a writeNetCDF() on a raster you *need* to pass in a quantity object supply metadata. \n Fortunately the is easy to define if you don't have one, see Quantity-class")
   if(is.null(layer.names) || missing(layer.names)) stop("When calling a writeNetCDF() on a raster you *need* to provide a 'layer.names' argument to determine how to name the layers.")
   
+  if(!missing(layer.dim.values)) warning("Argument 'layer.dim.values' to writeNetCDF is ignored when writing Raster objects.")
   
   # check input arguments and the number of layers in the input raster to determine the structure of the netCDF file that we should be building
   
@@ -230,8 +244,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     stop("When calling writeNetCDF for multi-layered Rasters where each layer corresponds to one variable, the length of the layer.names argument must be the same as the number of layers in the raster.")    
     
   }
-  
-  
+ 
   
   # make a list of lons and lats
   xres <- raster::xres(x)
@@ -276,84 +289,10 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     
     if(verbose) message("Got a start date (\'start.date\' argument) and \'monthly\' argument is TRUE so assuming that each raster layer corresponds to consecutive months, starting from the month of \'start.date\'")
     
-    
-    # what the whole raster into an array (taking care of the stupid inverted lats)
+    # whack the whole raster into an array (taking care of the stupid inverted lats)
     this.array <- aperm(raster::as.array(x), c(2,1,3))
     this.array <- this.array[, dim(this.array)[2]:1, ]
     
-    # # make the time dimension values
-    # # maybe make this more vectorised and elegant
-    # time.list <- c()
-    # start.year <- as.numeric(format(start.date,"%Y"))
-    # start.day <- as.numeric(format(start.date,"%j")) 
-    # 
-    # for(counter in 1:(raster::nlayers(x))) {
-    #   
-    #   # calculate how may days since the start of the first year
-    #   ndays.since.start <- time.values[counter] + start.day
-    #   
-    #   # calculate the number of complete years and the year of this layer
-    #   # *** Assuming 365 day calendar here
-    #   year.length <- 365
-    #   nyears <- ndays.since.start %/% year.length 
-    #   final.year <- nyears + start.year
-    #   
-    #   # Calculate the number of days into that year
-    #   # the while leap calendat thing will be even more complicated here
-    #   final.day <- ndays.since.start %% year.length
-    #   
-    #   
-    #   final.date <- (final.year * 1000) + final.day
-    #   time.list <- append(time.list, as.character(final.date))
-    #   
-    # }
-    # 
-    # print(time.list)
-    # time.list2 <- c()
-    # for(counter in 1:(raster::nlayers(x))) {
-    #   
-    #   # easy, use fixed year length
-    #   if(calendar == "365_day") {
-    #     
-    #     year.length <- 365
-    #     
-    #     # calculate how may days since the start of the first year
-    #     ndays.since.start <- time.values[counter] + start.day
-    #     
-    #     # calculate the number of complete years and the year of this layer
-    #     nyears <- ndays.since.start %/% year.length 
-    #     this.year <- nyears + start.year
-    #     
-    #     # Calculate the number of days into that year
-    #     this.day.of.year <- ndays.since.start %% year.length
-    #     
-    #     
-    #     this.data.numeric_code <- (this.year * 1000) + this.day.of.year
-    #     time.list2 <- append(time.list2, as.character(this.data.numeric_code))
-    #     
-    #   }
-    #   
-    #   # easy, use standard R Date arithmetic
-    #   else if(calendar == "standard") {
-    #     
-    #     # calculate this date based on the interval
-    #     this.date <- start.date + time.values[counter]
-    #     
-    #     # calculate the numeric code by extracting the year and day of year
-    #     this.data.numeric_code <- (as.numeric(format(this.date,"%Y")) * 1000) + as.numeric(format(this.date,"%j"))
-    #     
-    #     # save to the list
-    #     time.list2 <- append(time.list2, as.character(this.data.numeric_code))
-    #   }
-    #   
-    #   else {
-    #     stop(paste0("Calendar ", calendar, " not currently supported."))
-    #   }
-    #   
-      
-    # }
-    
-    # print(time.list2)
     
     dimnames(this.array) <- list(lon = lon.list, lat = lat.list, time = time.values)
     array.list[[layer.names[1]]] <- this.array
@@ -388,6 +327,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   if (! requireNamespace("ncdf4", quietly = TRUE))  stop("Please install ncdf4 R package and, if necessary the netCDF libraries, on your system to write netCDF files.")
   
   ### GET METADATA FROM QUANTITY IF PRESENT
+  # TODO - a quantity must be defined, so this can likely be simplified
   quantity.units <- "Not_defined"
   quantity.id <- "Not_defined"
   standard_name <- "Not_defined"
@@ -409,11 +349,12 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     last.dims <- dims
   }
   
-  layers <- names(x)
+  layers <- names(layer.dim.values)
+  if(layers != names(x)) stop("Something went wrong internally - names(x) doesn't match names(layer.dim.values)")
   if(length(layers) != length(x)) stop("Layers not correctly named.  The layer names are taken from the name of each element in the input list, so the elements must be named.")
   
   
-
+  
   ### MAKE DIMENSIONS ####
   all.dimnames <- dimnames(x[[1]])
   all.dims <- list()
@@ -421,20 +362,12 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # LON and LAT - easy-peasy
   all.dims[["Lon"]] <- ncdf4::ncdim_def(name = lon.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[1]]), unlim=FALSE, create_dimvar=TRUE)
   all.dims[["Lat"]] <- ncdf4::ncdim_def(name = lat.dim.name, units = "degrees", vals = as.numeric(all.dimnames[[2]]), unlim=FALSE, create_dimvar=TRUE)
-
-  # Layer - only if a layer.dim.name has been specified which mean collapse all the different layers as values along a dimension
-  if(!is.null(layer.dim.name)) {
-    
-    if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
-    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
-    
-  }
   
-  # Layer - only if a layer.dim.name has been specifed which mean collapse all the different layers as values along a dimension
+  # LAYER - only if a layer.dim.name has been specifed which means collapse all the different layers as values along a dimension
   if(!is.null(layer.dim.name)) {
     
     if(!is.character(layer.dim.name)) stop("layer.dim.name must be NULL or a character string (For example, \"VegType\" or \"CarbonPool\"")
-    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = 1:length(layers), create_dimvar=TRUE)
+    all.dims[[layer.dim.name]] <- ncdf4::ncdim_def(name = layer.dim.name, units = "categorical", vals = layer.dim.values, create_dimvar=TRUE)
     
   }
   
@@ -449,58 +382,8 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
                                            create_dimvar=TRUE)
   }
   
-  # # Time - if more than two dimensions one must be time, so hand that
-  # if(length(all.dimnames) > 2 ){
-  #   if(monthly) {
-  #     if(verbose) print("Got monthly data")
-  #     
-  #     # get the year and month as a numeric code with format "Year.Month"
-  #     all.year.months <- as.numeric(all.dimnames[[3]]) / 100
-  #     all.years <- sort(unique((trunc(all.year.months))))
-  #     
-  #     # if no start date is set start at Jan 1st of the first year of data
-  #     if(is.null(start.date)) start.date <- as.Date(paste(all.years[1], "01", "01", sep = "-"))
-  #     
-  #     # make the time values, taking of the inconvenient fact that months have different numbers of days
-  #     month.cumulative.additions <- c(0)
-  #     for(month in all.months[1:11]) {
-  #       month.cumulative.additions <- append(month.cumulative.additions, month.cumulative.additions[length(month.cumulative.additions)] + month@days)
-  #     }
-  #     
-  #     time.vals <- c()
-  #     start.year <- as.numeric(format(start.date,"%Y"))
-  #     for(year.month in all.year.months) {
-  #       
-  #       year <- trunc(year.month)
-  #       month <- as.integer((year.month - year) * 100) 
-  #       time.vals <- append(time.vals, (year-start.year) * 365 + month.cumulative.additions[month+1])
-  #       
-  #     }
-  #     
-  #   }
-  #   
-  #   # else is yearly, so make annual axis of entries 365 days apart
-  #   else {
-  #     if(verbose) print("Got annual data")
-  #     
-  #     all.years <- as.numeric(all.dimnames[[3]])
-  #     
-  #     # if no start date is set start at Jan 1st of the first year of data
-  #     if(is.null(start.date)) start.date <- as.Date(paste(all.years[1], "01", "01", sep = "-"))
-  #     
-  #     time.vals <- (all.years - as.numeric(format(start.date,"%Y"))) * 365
-  #     
-  #   }
-  #   
-  #   # make start date and calendar
-  #   calendar <- "365_day" 
-  #   time.unit <- paste("days since", start.date)
-  #   
-  #   all.dims[["Time"]] <- ncdf4::ncdim_def(name = time.dim.name, units = time.unit, vals = time.vals , calendar = calendar, unlim=TRUE, create_dimvar=TRUE)
-  #   
-  # }
-  
-  ### PREPARE THE VARIABLES: ONE FOR EACH LAYER OR COMBINE THEM IF WE WANT LAYERS TO BE DEFINED ALONG A DIMENSION AXIS
+ 
+  ### DEFINE THE VARIABLES IN THE NETCDF FILE: ONE FOR EACH LAYER, OR COMBINE THEM IF WE WANT LAYERS TO BE DEFINED ALONG A DIMENSION AXIS
   all.vars <- list()
   # individual layers
   if(is.null(layer.dim.name)) {  
@@ -510,10 +393,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   }
   # else turn layers into a dimension
   else {
-    
-    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long_name, ...)  # standard
-    old.layers <- layers # for storing the key from dimension values to layer
-    
+        all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long_name, ...)  # standard
   } 
   
   
@@ -530,7 +410,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     if(is.null(layer.dim.name)) {
       ncdf4::ncvar_put(nc = outfile, varid = layer,  vals = x[[layer]], start=NA, count=NA, verbose=nc.verbose)
       ncdf4::ncatt_put(outfile, layer, "standard_name", standard_name)
-
+      
     }
     # else slightly more complicated case of all layers going into one variable
     else{
@@ -544,22 +424,22 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   
   rm(x); gc()
   
-  # add meta-data if layers collapsed to a dimension
-  # put it to both the data variable and the dimension axis (not sure which is prefereable, but metadata is cheap)
+  # ADD METADATA ATTRIBUTES
+  
+  # if layers collapsed to a dimension, add the metadata (layer names) to the dimension axis
   if(!is.null(layer.dim.name)) {
+    # standard name
     ncdf4::ncatt_put(outfile, quantity@id, "standard_name", standard_name)
-    for(counter in 1:length(old.layers)){
-      ncdf4::ncatt_put(outfile, all.vars, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
-      ncdf4::ncatt_put(outfile, layer.dim.name, paste(layer.dim.name, counter, sep ="_"), old.layers[[counter]])
+    for(this_layer_name in names(layer.dim.values)){
+      ncdf4::ncatt_put(outfile, layer.dim.name, paste(layer.dim.name, layer.dim.values[this_layer_name], sep ="_"), this_layer_name)
     }
   }
+ 
   
-  
-  # STANDARD SPATIAL ATTRIBUTES
+  # standard spatial attributes
   outfile <- addStandardSpatialAttributes(outfile)
   
-  
-  # ADD GENERAL ATTRIBUTES
+  # general attributes
   ncdf4::ncatt_put(outfile, 0, "Conventions", "CF-1.6")
   if(!is.null(source)) {
     ncdf4::ncatt_put(outfile, 0, "Source_Format", source@format@id)
@@ -571,9 +451,9 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
       ncdf4::ncatt_put(outfile, 0, "Institute", source@institute)
   }
   
-  # ADD ATTRIBUTES
+  # DGVMTools attributes
   ncdf4::ncatt_put(outfile, 0, "DGVMTools_quant", quantity.id)
-  # Spatio-temporal id available
+  # Spatio-temporal iinfo if available
   if(!missing(.sta.info) & !is.null(.sta.info)) {
     
     if(class(.sta.info@spatial.extent) == "Extent"){
@@ -587,11 +467,12 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     if(!is.null(.sta.info@first.year) && length(.sta.info@first.year) > 0) ncdf4::ncatt_put(outfile, 0, "first.year", .sta.info@first.year)
     if(!is.null(.sta.info@last.year) && length(.sta.info@last.year) > 0)ncdf4::ncatt_put(outfile, 0, "last.year", .sta.info@last.year)
     if(!is.null(.sta.info@year.aggregate.method) && length(.sta.info@year.aggregate.method) > 0) ncdf4::ncatt_put(outfile, 0, "year.aggregate.method", .sta.info@year.aggregate.method)
-    if(!is.null(.sta.info@subannual.resolution) && length(.sta.info@subannual.resolution) > 0)ncdf4::ncatt_put(outfile, 0, "subannual.resolution", .sta.info@subannual.resolution)
-    if(!is.null(.sta.info@subannual.aggregate.method) && length(.sta.info@subannual.aggregate.method) > 0)ncdf4::ncatt_put(outfile, 0, "subannual.aggregate.method", .sta.info@subannual.aggregate.method)
-    if(!is.null(.sta.info@subannual.original) && length(.sta.info@subannual.original) > 0)ncdf4::ncatt_put(outfile, 0, "subannual.original", .sta.info@subannual.original)
+    if(!is.null(.sta.info@subannual.resolution) && length(.sta.info@subannual.resolution) > 0) ncdf4::ncatt_put(outfile, 0, "subannual.resolution", .sta.info@subannual.resolution)
+    if(!is.null(.sta.info@subannual.aggregate.method) && length(.sta.info@subannual.aggregate.method) > 0) ncdf4::ncatt_put(outfile, 0, "subannual.aggregate.method", .sta.info@subannual.aggregate.method)
+    if(!is.null(.sta.info@subannual.original) && length(.sta.info@subannual.original) > 0) ncdf4::ncatt_put(outfile, 0, "subannual.original", .sta.info@subannual.original)
+    
   }
- 
+  
   
   # CLOSE
   ncdf4::nc_close(outfile)
