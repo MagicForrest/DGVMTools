@@ -4,7 +4,14 @@
 \alias{continuousComparison}
 \title{Compare continuous data}
 \usage{
-continuousComparison(x, layers1, layers2, additional, verbose = TRUE)
+continuousComparison(
+  x,
+  layers1,
+  layers2,
+  additional,
+  verbose = TRUE,
+  area = TRUE
+)
 }
 \arguments{
 \item{x}{A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared}
@@ -16,6 +23,8 @@ continuousComparison(x, layers1, layers2, additional, verbose = TRUE)
 \item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
 
 \item{verbose}{A logical, if TRUE print out all the metric scores}
+
+\item{area}{A logical, if true weight the metrics by gridcell area}
 }
 \value{
 A named list of metric statistics
