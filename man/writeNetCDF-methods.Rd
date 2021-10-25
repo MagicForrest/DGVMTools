@@ -149,7 +149,7 @@ Nothing
 }
 \description{
 Methods for writing DGVMTools::Field and raster::Raster* objects to disk as netCDF files.  Uses the ncdf4 R-package behind the scenes. 
-NOTE: when using the function on a raster::Raster object, you cannot provide both multiple variables and multiple time period, 
+NOTE: when using the function on a raster::Raster object, you cannot provide both multiple variables and multiple time periods, 
 you can only do one or the other.
 }
 \author{
