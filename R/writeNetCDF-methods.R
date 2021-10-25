@@ -96,7 +96,7 @@ setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(
   if(!"Lon" %in% st.names || !"Lat" %in% st.names) stop("Don't have a Lon or Lat dimension in the field for writing netCDF.  Currently writing netCDF assumes a full Lon-Lat grid.  So failing now.  Contact the author if you want this feature implemented.")
   
   # If layer.dim.values provided check that each named layer is present in the Field and check that the values numeric
-  if(!missing(layer.dim.values )) {
+  if(!missing(layer.dim.values ) & !is.null(layer.dim.values)) {
     if(is.null(layer.dim.name)) stop("Specifying 'layer.dim.values' only makes sense if you specify a layer.dim.name, please check nyour arguments.")
     if(is.null(names(layer.dim.values)) || !is.numeric(layer.dim.values)) stop("If provided, the argument layer.dim.values must be a vector of numerics with uniques names (corresponding to the layer of x)")
     for(this_name in names(layer.dim.values)) {
@@ -350,7 +350,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   }
   
   layers <- names(layer.dim.values)
-  if(layers != names(x)) stop("Something went wrong internally - names(x) doesn't match names(layer.dim.values)")
+  if(!all.equal(layers, names(x))) stop("Something went wrong internally - names(x) doesn't match names(layer.dim.values)")
   if(length(layers) != length(x)) stop("Layers not correctly named.  The layer names are taken from the name of each element in the input list, so the elements must be named.")
   
   
