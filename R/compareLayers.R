@@ -25,6 +25,7 @@
 #' Default is no rounding (value is NULL) and so is fine for most regular spaced grids. However, setting this can be useful to force matching of 
 #' coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.
 #' @param show.stats Logical, if TRUE print the summary statistics
+#' @param area Logical, if TRUE (default) weight the comparison metrics by gridcell area (not yet implemented for seasonal, proportions or categorical comparisons)
 #' @param custom.metrics A named list of functions (defined by the user) to calculate additional custom metrics.  The functions must take a data.table and 
 #' two character vectors of layer names to be compared (in order in the case of multi-layer comparisons).  Spatial-temporal-annual column names of Lon, Lat, Year, Month and Day
 #' can be assumed in the data.table.  The name of the item in the list is used as the metric name.  
@@ -148,6 +149,7 @@ compareLayers <- function(field1,
                           verbose = FALSE, 
                           match.NAs = FALSE,
                           show.stats = TRUE,
+                          area = TRUE,
                           custom.metrics = list(),
                           tolerance = NULL){
   
@@ -283,7 +285,7 @@ compareLayers <- function(field1,
   if(type == "continuous") {
     
     new.name <- paste(source1@name, "-",  source2@name)
-    stats <- continuousComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
+    stats <- continuousComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats, area = area)
     
   }
   else if(type == "seasonal") {
@@ -291,7 +293,7 @@ compareLayers <- function(field1,
     new.name <- paste("Seasonal comparison", source1@name, "vs.",  source2@name)
     
     # special case to return a list with both the stats and the data/table with the seasonal concentration and phase
-    temp.list <- seasonalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
+    temp.list <- seasonalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats, area = TRUE)
     new.data <- temp.list[["dt"]]
     stats<- temp.list[["stats"]]
     
@@ -308,7 +310,7 @@ compareLayers <- function(field1,
   else if(type == "categorical") {
     
     new.name <- paste(source1@name, "vs.",  source2@name)
-    stats <- categoricalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats)
+    stats <- categoricalComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats, area = TRUE)
     # new.data[, "Difference" := as.character(get(new.ids.1)) == as.character(get(new.ids.2))]
     
   }

@@ -4,12 +4,14 @@
 \alias{calcNMSE}
 \title{Calculate Normalised Mean Square Error}
 \usage{
-calcNMSE(mod, obs)
+calcNMSE(mod, obs, area)
 }
 \arguments{
 \item{mod}{A numeric vector of observed values}
 
 \item{obs}{A numeric vector of modelled values (same size as mod)}
+
+\item{area}{A numeric vector of the areas by which to weight the values (same size as obs)}
 }
 \value{
 A numeric

@@ -16,6 +16,7 @@ compareLayers(
   verbose = FALSE,
   match.NAs = FALSE,
   show.stats = TRUE,
+  area = TRUE,
   custom.metrics = list(),
   tolerance = NULL
 )
@@ -46,6 +47,8 @@ only be a *single* \code{Layer}, only in the special case of a "relative abundan
 that the both have 'no data' (typically grey areas) plotted on both maps.}
 
 \item{show.stats}{Logical, if TRUE print the summary statistics}
+
+\item{area}{Logical, if TRUE (default) weight the comparison metrics by gridcell area (not yet implemented for seasonal, proportions or categorical comparisons)}
 
 \item{custom.metrics}{A named list of functions (defined by the user) to calculate additional custom metrics.  The functions must take a data.table and 
 two character vectors of layer names to be compared (in order in the case of multi-layer comparisons).  Spatial-temporal-annual column names of Lon, Lat, Year, Month and Day

@@ -28,16 +28,21 @@ lm_eqn <- function(linear.model) {
 #' 
 #' @param obs A numeric vector of observed values
 #' @param mod A numeric vector of modelled values (same size as obs)
+#' @param area A numeric vector of the areas by which to weight the values (same size as obs) 
 #' 
 #' @details  No check currently done on vector lengths
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @return A numeric
-calcNME <- function(mod, obs) {
+calcNME <- function(mod, obs, area) {
   
-   return( sum(abs(mod - obs), na.rm=TRUE) / sum(abs(obs - mean(obs)), na.rm=TRUE)) 
   
+  if(missing(area) || is.null(area))   return( sum(abs(mod - obs), na.rm=TRUE) / sum(abs(obs - mean(obs)), na.rm=TRUE)) 
+  else {
+    print("Area weighting NME")
+    return( sum(abs(mod - obs) * area, na.rm=TRUE) / (sum(abs(obs - mean(obs)), na.rm=TRUE) * sum(area)) ) 
+    }
 }
 
 
@@ -47,14 +52,18 @@ calcNME <- function(mod, obs) {
 #' 
 #' @param mod A numeric vector of observed values
 #' @param obs A numeric vector of modelled values (same size as mod)
+#' @param area A numeric vector of the areas by which to weight the values (same size as obs) 
 #' 
 #' @details  No check currently done on vector lengths
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @return A numeric
-calcNMSE <- function(mod, obs) {
-  return( sum((mod - obs)^2, na.rm=TRUE) / sum((obs - mean(obs))^2, na.rm=TRUE)) 
+calcNMSE <- function(mod, obs, area) {
+  
+  if(missing(area) || is.null(area)) return( sum((mod - obs)^2, na.rm=TRUE) / sum((obs - mean(obs))^2 , na.rm=TRUE) ) 
+  else return( sum((mod - obs)^2  * area, na.rm=TRUE) / (sum((obs - mean(obs))^2 * sum(area), na.rm=TRUE)) ) 
+  
 }
 
 
@@ -68,16 +77,36 @@ calcNMSE <- function(mod, obs) {
 #' @param layers2 A character string giving the second layer to compare (should be a column in x).  For the normalised metrics, this is the *observed* values.
 #' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
 #' @param verbose A logical, if TRUE print out all the metric scores
+#' @param area A logical, if true weight the metrics by gridcell area
 #' 
 #' @return A named list of metric statistics
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
+continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
   
   # check the layers are present
   if(!layers1 %in% layers(x)) stop("Argument layers1 is not a column in x")
   if(!layers2 %in% layers(x)) stop("Argument layers2 is not a column in x")
+  
+  # add the area if selected
+  if(area) {
+    
+    x.dims <- getDimInfo(x)
+    
+    if(!"Lon" %in% x.dims ||  !"Lat" %in% x.dims) {
+      warning("Comparison stats will not be weighted because Lon/Lat not present")
+      area.vec <- NULL
+    } 
+    else {
+      x <- addArea(x)
+      area.vec <- x[["Area"]]
+    }
+    
+    
+  }
+  else area.vec <- NULL
+  
   
   ###  STANDARD PACKAGE BENCHMARKS WHICH CAN RUN SIMPLY ON TWO VECTORS
   
@@ -134,7 +163,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   simple.regression <- stats::lm(formula = mod ~ obs, data = data.frame("mod" = vector1, "obs" = vector2))
   c <- stats::coef(simple.regression)[1]
   m <- stats::coef(simple.regression)[2]
- 
+  
   
   stats <- list("ME" = ME, 
                 "NME" = NME,
@@ -149,7 +178,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
                 "r2" = r2, 
                 "m" = m,
                 "c" = c
-                )
+  )
   
   
   ##### HERE DO CUSTOM BENCHMARKS
@@ -215,12 +244,13 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
 #' @param layers1 A vector of character strings giving the layers from the second dataset to compare (should be columns in x and sum to 1 or 100)
 #' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
 #' @param verbose A logical, if TRUE print out all the metric scores
+#' @param area A logical, if true weight the metrics by gridcell area
 #' 
 #' @return A named list of metric statistics
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
+proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
   
   # check the layers are present
   if(!sum(layers1 %in% names(x)) == length(layers1)) stop("Some of argument layers1 are not a column in x")
@@ -274,7 +304,7 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
     }
   }
   
- 
+  
   if(verbose) {
     
     print(paste("+++ Stats for", paste(layers1, sep = ","), "vs",  paste(layers2, sep = ","),  "+++", sep = " "))
@@ -319,6 +349,7 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
 #' @param layers2 A character string giving the second layer to compare (should be a column in x)
 #' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
 #' @param verbose A logical, if TRUE print out all the Kappa scores
+#' @param area A logical, if true weight the metrics by gridcell area
 #' 
 #' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are for continuous as opposed to categorical data
 #' 
@@ -326,7 +357,7 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE){
+categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE,  area = TRUE){
   
   
   dataset1 = dataset2 = code = NULL
@@ -447,7 +478,7 @@ categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE
       stat.name <- names(stats)[counter]
       
       if(length(stat.val) == 1) {
-       
+        
         # also give a little more info for the standard metrics (ie their full name) before printing
         if(stat.name == "Kappa") stat.name <- "Kappa (Overall Cohen's Kappa)"
         print(paste(stat.name,  "=", round(stat.val, 4), sep = " "))
@@ -485,14 +516,14 @@ categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
-
+  
   C_1 = C_2 = L_x_1 = L_x_2 = L_y_1 = L_y_2 = Lat = Lon = Month = P_1 = P_2 = Sigma_x_1 = Sigma_x_2 = Theta_t = NULL
   
   # get the non-monthy dimensions
   all.dims <- getDimInfo(x)
   if(!"Month" %in% all.dims) stop ("Something went wrong, seasonalComparison() was called with data  with no 'Month' dimension")
   non.month.dims <- all.dims[which(!all.dims == "Month")]
-
+  
   #### FIRST CALCULATE THE SEASONAL CONCENTRATION AND PHASE
   ##   Equations numbers refer to Kelley et al 2013 Biogeosciences
   
@@ -632,8 +663,8 @@ seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
   }
   x.summed[, P_1 :=  correctPhase(12 * P_1 / (2 * pi)), ]
   x.summed[, P_2 :=  correctPhase(12 * P_2 / (2 * pi)), ]
-
+  
   
   return(list(dt = x.summed, stats = stats))
-         
+  
 }
