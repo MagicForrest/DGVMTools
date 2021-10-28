@@ -37,11 +37,9 @@ lm_eqn <- function(linear.model) {
 #' @return A numeric
 calcNME <- function(mod, obs, area) {
   
-  
   if(missing(area) || is.null(area))   return( sum(abs(mod - obs), na.rm=TRUE) / sum(abs(obs - mean(obs)), na.rm=TRUE)) 
   else {
-    print("Area weighting NME")
-    return( sum(abs(mod - obs) * area, na.rm=TRUE) / (sum(abs(obs - mean(obs)), na.rm=TRUE) * sum(area)) ) 
+    return( sum(abs(mod - obs) * area, na.rm=TRUE) / sum(abs(obs - mean(obs)) * area, na.rm=TRUE) ) 
     }
 }
 
@@ -62,7 +60,7 @@ calcNME <- function(mod, obs, area) {
 calcNMSE <- function(mod, obs, area) {
   
   if(missing(area) || is.null(area)) return( sum((mod - obs)^2, na.rm=TRUE) / sum((obs - mean(obs))^2 , na.rm=TRUE) ) 
-  else return( sum((mod - obs)^2  * area, na.rm=TRUE) / (sum((obs - mean(obs))^2 * sum(area), na.rm=TRUE)) ) 
+  else return( sum((mod - obs)^2  * area, na.rm=TRUE) / sum((obs - mean(obs))^2 * area, na.rm=TRUE)) 
   
 }
 
@@ -99,7 +97,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
       area.vec <- NULL
     } 
     else {
-      x <- addArea(x)
+      x <- addArea(x, unit = "km^2")
       area.vec <- x[["Area"]]
     }
     
@@ -130,23 +128,23 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   RMSE <- MSE^0.5
   
   # Normalised metrics: NME and NMSE (step 1)
-  NME <- calcNME(mod = vector1, obs = vector2)
-  NMSE <- calcNMSE(mod = vector1, obs = vector2)
+  NME <- calcNME(mod = vector1, obs = vector2, area = area.vec)
+  NMSE <- calcNMSE(mod = vector1, obs = vector2, area = area.vec)
   
   # and step 2 for NME and NMSE
   vector1_step2 <- vector1 - mean(vector1)
   vector2_step2 <- vector2 - mean(vector2)
-  NME_2 <- calcNME(mod = vector1_step2, obs = vector2_step2)
-  NMSE_2 <- calcNMSE(mod = vector1_step2, obs = vector2_step2)
+  NME_2 <- calcNME(mod = vector1_step2, obs = vector2_step2, area = area.vec)
+  NMSE_2 <- calcNMSE(mod = vector1_step2, obs = vector2_step2, area = area.vec)
   
   # and step 3 for NME and NMSE
   vector1_step3_NME <- vector1_step2 / sum(abs(vector1_step2 - mean(vector1_step2)))/ length(vector1_step2)
   vector2_step3_NME <- vector2_step2 / sum(abs(vector2_step2 - mean(vector2_step2)))/ length(vector2_step2)
-  NME_3 <- calcNME(mod = vector1_step3_NME, obs = vector2_step3_NME)
+  NME_3 <- calcNME(mod = vector1_step3_NME, obs = vector2_step3_NME, area = area.vec)
   
   vector1_step3_NMSE <- vector1_step2 / stats::var(vector1_step2)
   vector2_step3_NMSE <- vector2_step2 / stats::var(vector2_step2)
-  NMSE_3 <- calcNMSE(mod = vector1_step3_NMSE, obs = vector2_step3_NMSE)
+  NMSE_3 <- calcNMSE(mod = vector1_step3_NMSE, obs = vector2_step3_NMSE, area = area.vec)
   
   
   #### MORE 'STANDARD' METRICS MORE BASED ON LINEAR REGRESSION AND NOT FOCUSSED ON MODEL-OBSERVATION COMPARISON
@@ -156,7 +154,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   
   # Pearson product moment correlation coefficient, and then R^2
   # MF: not the best thing in my opinion
-  r <- stats::cor(vector1, vector2, method = "pearson")
+  r <- stats::cor(vector1, vector2, method = "pearson", )
   r2 <- r^2
   
   # calculate a simple linear regression 
@@ -515,7 +513,7 @@ categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE){
+seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
   
   C_1 = C_2 = L_x_1 = L_x_2 = L_y_1 = L_y_2 = Lat = Lon = Month = P_1 = P_2 = Sigma_x_1 = Sigma_x_2 = Theta_t = NULL
   

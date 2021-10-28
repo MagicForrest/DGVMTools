@@ -310,6 +310,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
               quantity = quantity,
               source = source,
               layer.dim.name = layer.dim.name,
+              layer.dim.values = layer.dim.values,
               lat.dim.name = lat.dim.name,
               lon.dim.name = lon.dim.name,
               time.dim.name = time.dim.name,
@@ -349,10 +350,13 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
     last.dims <- dims
   }
   
-  layers <- names(layer.dim.values)
-  if(layers != names(x)) stop("Something went wrong internally - names(x) doesn't match names(layer.dim.values)")
-  if(length(layers) != length(x)) stop("Layers not correctly named.  The layer names are taken from the name of each element in the input list, so the elements must be named.")
+  # if layer.dim.values supplied then use them, else use the names that 
+  if(!missing(layer.dim.values) & !is.null(layer.dim.values))  layers <- names(layer.dim.values)
+  else layers <- names(x)
   
+  # sosanity checks
+  if(!identical(layers, names(x))) stop("Something went wrong - names(x) doesn't match names(layer.dim.values) but the should.  Please check you layer.dim.values argument.")
+  if(length(layers) != length(x)) stop("Layers not correctly named.  The layer names are taken from the name of each element in the input list, so the elements must be named.")
   
   
   ### MAKE DIMENSIONS ####

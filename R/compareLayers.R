@@ -258,10 +258,13 @@ compareLayers <- function(field1,
     
   }
   
+
   # match NAs if necessary
   if(match.NAs) {
     are.NAs <- which(is.na(new.data[[new.ids.1]] * new.data[[new.ids.2]]))
+    print(new.data)
     new.data[are.NAs, (c(new.ids.1, new.ids.2)) := .SD[NA], .SDcols =c(new.ids.1, new.ids.2)]
+    print(new.data)
   }
   
   ### Check we made have valid overlap and print if verbose
@@ -283,7 +286,7 @@ compareLayers <- function(field1,
   ### Calculate the approriate statistical comparisons
   
   if(type == "continuous") {
-    
+
     new.name <- paste(source1@name, "-",  source2@name)
     stats <- continuousComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats, area = area)
     
