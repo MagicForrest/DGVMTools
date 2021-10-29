@@ -21,6 +21,7 @@
 #' 
 #' @return Biomes code (1-17, ordering as in Smith et al 2014 Figure)
 #' @keywords internal
+#' @include classes.R
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 Smith2014BiomeRules <- function(x){
   

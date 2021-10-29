@@ -1,7 +1,6 @@
 #' @rdname Quantity-class
 #' @docType data
 #' @seealso \code{lookupQuantity}
-#' @include colour-palettes.R
 #' @export
 Standard.quantities <- list(
   
@@ -21,7 +20,7 @@ Standard.quantities <- list(
       id = "vegcover_std",
       name = "Area Fraction",
       units = "%",
-      colours = veg.palette, 
+      colours = grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black")), 
       format = c("Standard"),
       standard_name = "area_fraction_percent"), 
   
@@ -30,7 +29,7 @@ Standard.quantities <- list(
       id = "landcover_std",
       name = "Area Fraction",
       units = "%",
-      colours = veg.palette, 
+      colours = grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black")), 
       format = c("Standard"),
       standard_name = "area_fraction_percent"), 
   
@@ -39,7 +38,7 @@ Standard.quantities <- list(
       id = "vegC_std",
       name = "Vegetation Carbon Mass",
       units = "kg m-2",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("Standard"),
       standard_name = "vegetation_carbon_content"),
   
@@ -55,7 +54,7 @@ Standard.quantities <- list(
       id = "mGPP_std",
       name = "Monthly GPP",
       units = "kgC/m^2",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("Standard")),
   
   new("Quantity",
@@ -70,14 +69,14 @@ Standard.quantities <- list(
       id = "aNPP_std",
       name = "Annual NPP",
       units = "kgC/m^2/year",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("Standard")),
   
   new("Quantity",
       id = "canopyheight_std",
       name = "Canopy Height",
       units = "m",
-      colours = reversed.magma,
+      colours = function(n) rev(viridis::magma(n)),
       format = c("Standard"),
       standard_name = "canopy_height"),
   
@@ -85,7 +84,7 @@ Standard.quantities <- list(
       id = "burntfraction_std",
       name = "Annual Fraction Burned",
       units = "fraction of gridcell",
-      colours = reversed.fire.palette,
+      colours = function(n) rev(turbo::magma(n)),
       format = c("Standard"),
       standard_name = "burned_area_fraction"),
   
@@ -93,7 +92,7 @@ Standard.quantities <- list(
       id = "FPAR_std",
       name = "Fraction absorbed of Photosynthetically Active Radiation",
       units = "fraction",
-      colours = veg.palette,
+      colours = grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black")),
       format = c("Standard"),
       standard_name = "fraction_absorbed_of_photosynthetically_active_radiation"),
   
@@ -101,42 +100,42 @@ Standard.quantities <- list(
       id = "aNEE_std",
       name = "Annual land sink (NEE)",
       units = "GtC/year",
-      colours = veg.palette,
+      colours = grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black")),
       format = c("Standard")),
   
   new("Quantity",
       id = "mprec_std",
       name = "Monthly total precipitation",
       units = "mm/month",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("Standard")),
   
   new("Quantity",
       id = "mtemp_std",
       name = "Monthly mean temperature",
       units = "deg C",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("Standard")),
   
   new("Quantity",
       id = "minsol_std",
       name = "Monthly mean daily solar radiation",
       units = "W m-2",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("Standard")),
   
   new("Quantity",
       id = "mwetdays_std",
       name = "Wet days per month",
       units = "days/month",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("Standard")),
   
   new("Quantity",
       id = "mwetdays_3_std",
       name = "Wet days per month (3 mm threshold)",
       units = "days/month",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("Standard")),
   
   new("Quantity",

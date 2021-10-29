@@ -1072,8 +1072,6 @@ aDGVM.Layers <- list(
 #' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
-#' @include colour-palettes.R
-#' 
 #' 
 aDGVM.quantities <- list(
   
@@ -1082,7 +1080,7 @@ aDGVM.quantities <- list(
       id = "Cancov",
       name = "Canopy Cover",
       units = "%",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM"),
       standard_name = "land_area_fraction"),
   
@@ -1090,98 +1088,98 @@ aDGVM.quantities <- list(
       id = "LeafBiomass",
       name = "Leaf biomass",
       units = "tonnes/hectare",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "RootBiomass",
       name = "Root biomass",
       units = "tonnes/hectare",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "StemBiomass",
       name = "Stem biomass",
       units = "tonnes/hectare",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "DeadGrassBiomass",
       name = "Dead grass biomass",
       units = "tonnes/hectare",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "LiveGrassBiomass",
       name = "Live grass biomass",
       units = "tonnes/hectare",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "GPP",
       name = "GPP",
       units = "kgC/m2",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "NEE",
       name = "NEE",
       units = "tonnes/hectare",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "NPP",
       name = "NPP",
       units = "tonnes/hectare",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "BasalArea",
       name = "Basal Area",
       units = "m2 per hectare",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "ET",
       name = "Evapotranspiration",
       units = "mm/day",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "PopSize",
       name = "Tree population size",
       units = "number of individuals",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "C3C4_Ratio",
       name = "Ratio of C3 to C4 grass",
       units = "proportion",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "Grouped_Size_Classes",
       name = "Tree size classes",
       units = "number of individuals",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM")),
   
   new("Quantity",
       id = "FireIntensity",
       name = "Fire intensity",
       units = "W/m^2",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("aDGVM"))
 )
 
@@ -1195,7 +1193,6 @@ aDGVM.quantities <- list(
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
-#' @include colour-palettes.R
 #' @export
 #' 
 aDGVM <- new("Format",

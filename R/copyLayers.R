@@ -24,6 +24,7 @@
 #' @return A Field, Comparison or data.table comprising the 'to' object with the new layers added
 #' @import data.table
 #' @export
+#' @include classes.R
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.to = TRUE, keep.all.from = TRUE, tolerance = NULL, fill.dims = TRUE) {
   

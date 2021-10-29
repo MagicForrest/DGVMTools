@@ -7,7 +7,7 @@
 #' 
 #' @return The returned oobject will be or an updated \linkS4class{Format}/\linkS4class{Source}/\linkS4class{Field} 
 #' object if "add.to" was specified.
-#' 
+#' @include classes.R
 #' @export
 #' @seealso \linkS4class{Layer}, \linkS4class{Quantity}, \link{defineQuantity}, \link{defineLayer}
 #' @include classes.R

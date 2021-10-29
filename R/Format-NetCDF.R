@@ -25,6 +25,7 @@
 #' so it is handy to control that separately.
 #' @return A list containing firstly the data.table containing the data, and secondly the STAInfo for the data that we have
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @include classes.R
 #' @keywords internal
 getField_NetCDF <- function(source,
                             quant,
@@ -898,7 +899,6 @@ availableQuantities_NetCDF <- function(source, names){
 #' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
-#' @include colour-palettes.R
 #' 
 #' 
 NetCDF.quantities <- list(
@@ -916,7 +916,7 @@ NetCDF.quantities <- list(
       id = "vegcover_std",
       name = "Area Fraction",
       units = "%",
-      colours = veg.palette, 
+      colours = grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black")), 
       format = c("NetCDF"),
       standard_name = "area_fraction_percent"), 
   
@@ -924,7 +924,7 @@ NetCDF.quantities <- list(
       id = "landcover_std",
       name = "Area Fraction",
       units = "%",
-      colours = veg.palette, 
+      colours = grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black")), 
       format = c("NetCDF"),
       standard_name = "area_fraction_percent"), 
   
@@ -932,7 +932,7 @@ NetCDF.quantities <- list(
       id = "vegC_std",
       name = "Vegetation Carbon Mass",
       units = "kg m-2",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("NetCDF"),
       standard_name = "vegetation_carbon_content"),
   
@@ -948,7 +948,7 @@ NetCDF.quantities <- list(
       id = "mGPP_std",
       name = "Monthly GPP",
       units = "kgC/m^2",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("Standard")),
   
   new("Quantity",
@@ -963,14 +963,14 @@ NetCDF.quantities <- list(
       id = "aNPP_std",
       name = "Annual NPP",
       units = "kgC/m^2/year",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("NetCDF")),
   
   new("Quantity",
       id = "canopyheight_std",
       name = "Canopy Height",
       units = "m",
-      colours = reversed.magma,
+      colours = function(n) rev(viridis::magma(n)),
       format = c("NetCDF"),
       standard_name = "canopy_height"),
   
@@ -978,7 +978,7 @@ NetCDF.quantities <- list(
       id = "burntfraction_std",
       name = "Annual Fraction Burned",
       units = "fraction of gridcell",
-      colours = reversed.fire.palette,
+      colours = function(n) rev(viridis::turbo(n)),
       format = c("NetCDF"),
       standard_name = "burned_area_fraction"),
   
@@ -986,7 +986,7 @@ NetCDF.quantities <- list(
       id = "FPAR_std",
       name = "Fraction absorbed of Photosynthetically Active Radiation",
       units = "fraction",
-      colours = veg.palette,
+      colours = grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black")),
       format = c("NetCDF"),
       standard_name = "fraction_absorbed_of_photosynthetically_active_radiation"),
   
@@ -994,7 +994,7 @@ NetCDF.quantities <- list(
       id = "aNEE_std",
       name = "Annual land sink (NEE)",
       units = "GtC/year",
-      colours = veg.palette,
+      colours = viridis::turbo,
       format = c("NetCDF"))
   
 )
@@ -1012,7 +1012,6 @@ NetCDF.quantities <- list(
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
-#' @include colour-palettes.R
 #' @export
 NetCDF <- new("Format",
               

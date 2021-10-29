@@ -102,7 +102,7 @@ plotResidualsHisto <- function(comparisons,
   
   # if cols, fills or types no spcified, set to some defaults
   if(is.null(fills)) { fills <- rep("transparent", length(diff.layers)) }
-  if(is.null(cols)) { cols <- fields::tim.colors(length(diff.layers)) }
+  if(is.null(cols)) { cols <- viridis::turbo(length(diff.layers)) }
   if(is.null(types)) { types <- rep(1, length(diff.layers)) }
   
   # also set sensible default axis and main titles

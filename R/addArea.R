@@ -21,6 +21,7 @@
 #' @return vector of gridcell area is m^2
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
+#' @include classes.R
 #' @examples
 #' dlon <- 0.5
 #' lat <- seq(-89.75,89.75,0.5)
@@ -64,6 +65,7 @@ gridarea1d <- function (lat, dlon, scale=1.0, ellipse=FALSE) {
 #' @return data.table of gridcells with columns c("Lon", "Lat", "area")
 #' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
 #' @export
+#' @include classes.R
 #' @examples
 #' lon <- seq(- 179.75, 179.75, 0.5)
 #' lat <- seq(89.75,-89.75,-0.5) 
@@ -131,6 +133,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{aggregateSpatial} but it can
 #' be utilised by the user for any other purpose.
 #' 
+#' @include classes.R
 #' 
 #' @export
 #' @return same class as input

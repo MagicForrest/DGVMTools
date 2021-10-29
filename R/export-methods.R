@@ -15,6 +15,7 @@
 #' @param ...	Just as ... in data.frame. Usual recycling rules are applied to vectors of different lengths to create a list of equal length vectors.
 #' @name export-methods
 #' @import methods
+#' @include classes.R
 #' 
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}, Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}    

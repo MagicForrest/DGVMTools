@@ -22,7 +22,6 @@ Imports:
     sp,
     raster,
     compiler,
-    fields,
     maps,
     maptools,
     mapdata,
@@ -46,7 +45,6 @@ VignetteBuilder: knitr
 Encoding: UTF-8
 Collate:
     'classes.R'
-    'colour-palettes.R'
     'Format-GUESS.R'
     'Format-NetCDF.R'
     'Format-aDGVM.R'

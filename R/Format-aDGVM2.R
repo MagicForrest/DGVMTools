@@ -881,7 +881,6 @@ aDGVM2.Layers <- list(
 #' @format The \code{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
-#' @include colour-palettes.R
 #' 
 aDGVM2.quantities <- list(
   new("Quantity",
@@ -902,36 +901,29 @@ aDGVM2.quantities <- list(
       id = "meanheight",
       name = "Mean Canopy Height",
       units = "m",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("aDGVM2")),
   
   new("Quantity",
       id = "basalarea",
       name = "Basal Area",
       units = "m^2/ha",
-      colours = fields::tim.colors,
+      colours = viridis::turbo,
       format = c("aDGVM2")),
   
   new("Quantity",
       id = "nind",
       name = "Number of individuals",
       units = "plants",
-      colours = veg.palette,
+      colours = grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black")),
       format = c("aDGVM2")),
   
   new("Quantity",
       id = "pind",
       name = "Fraction of individuals",
       units = "",
-      colours = veg.palette,
+      colours = grDevices::colorRampPalette(c("white", "darkolivegreen1", "darkolivegreen4", "saddlebrown", "black")),
       format = c("aDGVM2"))
-  
-  #new("Quantity",
-  #    id = "firefreq",
-  #    name = "Fire Frequency",
-  #    units = "",
-  #    colours = reversed.fire.palette,
-  #    format = c("aDGVM2"))
   
   
 )
@@ -947,7 +939,6 @@ aDGVM2.quantities <- list(
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
-#' @include colour-palettes.R
 #' @export
 #' 
 aDGVM2 <- new("Format",

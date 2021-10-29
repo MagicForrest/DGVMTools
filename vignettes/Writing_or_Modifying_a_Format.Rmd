@@ -167,7 +167,7 @@ quantities_NewFormat <- list(
       id = "LAI",
       name = "LAI",
       units = "m^2/m^2",
-      colours = reversed.viridis,
+      colours = function(n) rev(viridis::viridis(n)),
       format = c("Example_Format"),
       standard_name = "leaf_area_index"),
   
@@ -189,7 +189,7 @@ for(quant in quantities_NewFormat ) {
 
 ### 4. The `determineQuantities` slot
 
-This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of Quantities available to read. The first argument should be the Source object.  The second argument "names", is logical and ff TRUE, the function should return a list of the ids of the quantities, otherwise it returns the list of DGVMTools::Quantity objects.  Additionaly arguments for Format-specific details can also be added.
+This is a function which will look at a some output files on a disk (normally output from a DGVM run) and return a list of Quantities available to read. The first argument should be the Source object.  The second argument "names", is logical and if TRUE, the function should return a list of the ids of the quantities, otherwise it returns the list of DGVMTools::Quantity objects.  Additionally arguments for Format-specific details can also be added.
 
 
 ```{r available Quantities, echo=TRUE}
