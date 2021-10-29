@@ -143,17 +143,12 @@ makePlotTitle <- function(fields){
   quants.id.vec <- unique(quants.id.vec)
   layers.vec <- unique(layers.vec)
   
-  #print(sources.vec)
-  #print(quants.vec)
-  #print(quants.id.vec)
-  #print(layers.vec)
-  
-  
+ 
   # put them all together - note that sometimes layers are the same as quant@id, we have a special cause to stop them being included in this case
   title.string <- character(0)
   if(length(subannual.period) == 1) title.string <- paste(title.string, subannual.period)
   if(length(layers.vec) == 1) {
-    if(quants.id.vec != layers.vec && layers.vec != "Value")
+    if(!identical(quants.id.vec, layers.vec) && layers.vec != "Value")
       title.string <- paste(title.string, layers.vec)
   }
   if(length(quants.vec) == 1) title.string <- paste(title.string, quants.vec)
