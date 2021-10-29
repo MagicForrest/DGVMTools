@@ -101,7 +101,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
     
   }
   # if it is map (not map should be made with fill = TRUE)
-  else if(class(gridcells) == "map") {
+  else if(class(gridcells)[1] == "map") {
     
     # convert the map to SpatialPolygons
     IDs <- sapply(strsplit(gridcells$names, ":"), function(x) x[1])

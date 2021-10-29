@@ -44,8 +44,6 @@ GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
                           dir = example.run.directory, # this would normlly just be a character string containing a path
                           format = GUESS,
                           name = "LPJ-GUESS Example Run")
-
-
 ```
 
 
@@ -315,6 +313,8 @@ biomes.source <- defineSource(id = "DataBiomes",
                               dir = system.file("extdata", "NetCDF", "HandP_PNV", "HD", package = "DGVMTools"), 
                               format = NetCDF,
                               name = "Haxeltine and Prentice Biomes")
+# note that because the dataset is already in the form of a categorical variable, applying classification is not necessary,
+# therefore we can just call with getField() instead of getScheme() 
 biomes.data <- getField(source = biomes.source, var = "Smith2014")
 print(plotSpatial(biomes.data))
 
@@ -345,7 +345,8 @@ Since the plotting functionality in DGVMTools is based entirely on ggplot2, the 
 
 #### Changing facet layouts
 
-The plotting functions always adds a column called `Facet` by which to facet the data.  Facet layout can be adjusted as follows:
+The plotting functions always adds a column called `Facet` by which to facet the data.  Hovewever, you can provide the ggplot2-style
+arguments "nrow" and "ncol" directly to plotSpatial().  You can also adjust the facetting after the fact with a ggplot2::facet_wrape() command. Facet layout can be adjusted as follows:
 
 
 ``` {r facetting, echo=TRUE}
@@ -353,8 +354,13 @@ The plotting functions always adds a column called `Facet` by which to facet the
 lifeform.plot <- plotSpatial(LAI.year.mean, layers = c("Tree", "Grass", "Total"), ylim = c(35,45))
 print(lifeform.plot)
 
-# arrange facets with three rows
-lifeform.plot <- lifeform.plot + facet_wrap(~Facet, nrow =3)
+
+# arrange facets with three rows using nrow in the plotSpatial() call
+lifeform.plot <- plotSpatial(LAI.year.mean, layers = c("Tree", "Grass", "Total"), ylim = c(35,45), nrow =3)
+print(lifeform.plot)
+
+# arrange facets into two columns with a subsequent call to facet_wrap()
+lifeform.plot <- lifeform.plot + facet_wrap(~Facet, ncol = 2)
 print(lifeform.plot)
 ````
 

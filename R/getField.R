@@ -100,7 +100,7 @@ getField <- function(source,
   }
   
   ### CONVERT STRING TO QUANTITY
-  if(class(var) == "character") {
+  if(is.character(var)) {
     
     # if no quantity it found, make a dummy quantity based on the input var
     quant <- tryCatch(
@@ -152,6 +152,7 @@ getField <- function(source,
     if(!missing(subannual.resolution)) warning("Since 'sta.info' argument has been specified, the 'subannual.resolution' argument will be ignored")
     if(!missing(subannual.aggregate.method)) warning("Since 'sta.info' argument has been specified, the 'subannual.aggregate.method' argument will be ignored")
   }
+ 
   
   
   ### CATCH AWKWARD CASE
@@ -170,8 +171,7 @@ getField <- function(source,
   if(verbose) message(paste("Seeking ModelField with id = ", target.field.id, sep = ""))
   
   
-  
-  
+ 
   ### CASE 1 - USE THE PREAVERAGED/CROPPED FIELD FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
   if(file.exists(paste(preprocessed.file.name)) & !read.full){
     
@@ -214,7 +214,7 @@ getField <- function(source,
     gc()
     
   }
-  
+ 
   
   #############################################################################################  
   #### NOTE: We don't pass this point if the correct pre-averaged data is available on disk ###
@@ -231,6 +231,7 @@ getField <- function(source,
   
   this.Field <- source@format@getField(source, quant, sta.info, file.name, verbose, ...)
   actual.sta.info <- as(this.Field, "STAInfo")
+  
   
   
   ### CROP THE SPATIAL EXTENT IF REQUESTED
@@ -260,6 +261,7 @@ getField <- function(source,
     
   }
   
+
   ### SELECT THE YEARS IF REQUESTED
   if("Year" %in% getDimInfo(this.Field)) {
     

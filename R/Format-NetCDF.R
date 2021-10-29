@@ -159,7 +159,7 @@ getField_NetCDF <- function(source,
   
   # assign each of the required dimensions to lon, lat, time or 'layer'
   for(this.dimension in all_required_dims) {
-
+    
     # pick up Lat
     if(this.dimension %in% possible.lat.dim.names) {
       lat.string <- this.dimension
@@ -197,7 +197,7 @@ getField_NetCDF <- function(source,
         1:this.nc$dim[[this.dimension]]$len
       }, finally = {
       })
-
+      
       if(verbose) message(paste0("** Confirmed layer-type dimension: '", layer.string, "', with ", length(all.layer.vals), " values."))
     }
     # If two "layer" dimensions found then fail
@@ -246,7 +246,7 @@ getField_NetCDF <- function(source,
       if(length(time.units.string.vec) > 1) {
         if(tolower(time.units.string.vec[2]) == "since"  || tolower(time.units.string.vec[2]) == "after") relative.time.axis <- TRUE
         else if(tolower(time.units.string.vec[2]) == "as") stop("Absolute time axis with 'day as ...' not currently implemented.  Contact the package author is this becomes important for you.")
-        }
+      }
     }
     # if no unit attributes make some assumptions (based on the axis name) only or fail
     else {
@@ -510,7 +510,7 @@ getField_NetCDF <- function(source,
   dt.list <- list()
   
   # keep track of all the units, long names and standard names for later
-  all.units <- c()
+  assumed.units <- c()
   all.standard_names <- c()
   all.long_names <- c()
   
@@ -567,7 +567,16 @@ getField_NetCDF <- function(source,
     if(verbose) message(paste0("Read slice of netCDF file with dimensions: ", paste(dim(this.slice), collapse = ", ")))
     if(verbose) message(paste("Setting dimension names: ", paste(names(dimension.names), collapse = ", ")))
     dimnames(this.slice) <- dimension.names
-    if(ncdf4::ncatt_get(this.nc, this_var_obj, "units")$hasatt) all.units <- append(all.units,  ncdf4::ncatt_get(this.nc, this_var_obj, "units")$value)
+    if(ncdf4::ncatt_get(this.nc, this_var_obj, "units")$hasatt) {
+      # read the units for this layer
+      these.units <- ncdf4::ncatt_get(this.nc, this_var_obj, "units")$value
+      # if first units hasn't been defined take these ones
+      if(length(assumed.units) == 0) assumed.units <- these.units
+      # else check if the next units are the same, if not issue a warnings
+      else {
+        if(!identical(these.units, assumed.units)) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", paste(assumed.units, collapse = ", "), ") and ignoring the later one (", paste(these.units, collapse = ", "), ")."))
+      }
+    }
     if(ncdf4::ncatt_get(this.nc, this_var_obj, "standard_name")$hasatt) all.standard_names <- append(all.standard_names,  ncdf4::ncatt_get(this.nc, this_var_obj, "standard_name")$value)
     if(ncdf4::ncatt_get(this.nc, this_var_obj, "long_name")$hasatt) all.long_names <- append(all.long_names,  ncdf4::ncatt_get(this.nc, this_var_obj, "long_name")$value)
     
@@ -777,23 +786,25 @@ getField_NetCDF <- function(source,
   #### PROCESS QUANTITY RELATED METADATA ####
   
   # units
-  unique.units <- unique(all.units) 
-  final.units <- unique(all.units)[1]
-  if(length(final.units) > 0) {
-    if(length(unique.units) > 1) warning(paste0("Multiple units found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.units, ")."))
-    if(final.units != quant@units & quant@units != "undefined unit"){
-      warning(paste0("Overriding requested units when reading NetCDF file ", file.name.nc, ". ", quant@units, " was specified but ", final.units, " was found (so using that)."))
-      quant@units <- final.units
+  # if units from the requested Quantity and the NetCDF file don't match
+  if(!identical(assumed.units, quant@units)) {
+    
+    # if we have valid units from the netCDF files *and* the Quantity units are NOT categorical (ie. length > 1)
+    # then take the netCDF file units
+    if(length(assumed.units) > 0 & length(quant@units) <= 1) {
+      warning(paste0("Overriding requested units when reading NetCDF file ", file.name.nc, ". '", paste(quant@units, collapse = ", "), "' was specified but '",  paste(assumed.units, collapse = ", "), "' was found (so using that).\n"))
+      quant@units <- assumed.units
     }
+    
   }
   
   # standard names (CF standard_name)
   unique.standard_name <- unique(all.standard_names) 
   final.standard_name <- unique(all.standard_names)[1]
-  if(length(final.standard_name) > 0) {
-    if(length(unique.standard_name) > 1) warning(paste0("Multiple standard_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.standard_name, ")."))
+  if(length(final.standard_name) > 0 & !identical(tolower(final.standard_name), "unknown")) {
+    if(length(unique.standard_name) > 1) warning(paste0("Multiple standard_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.standard_name, ").Overriding requested "))
     if(final.standard_name != quant@standard_name & quant@standard_name != "undefined unit"){
-      warning(paste0("Overriding requested standard_name when reading NetCDF file ", file.name.nc, ". ", quant@standard_name, " was specified but ",final.standard_name, " was found (so using that)."))
+      warning(paste0("Overriding requested standard_name when reading NetCDF file ", file.name.nc, ". '", quant@standard_name, "' was specified but '",final.standard_name, "' was found (so using that).\n"))
       quant@standard_name <- final.standard_name
     }
   }
@@ -801,10 +812,10 @@ getField_NetCDF <- function(source,
   # long names (CF long_name which is mapped to DGVMTools @name)
   unique.long_name <- unique(all.long_names) 
   final.long_name <- unique(all.long_names)[1]
-  if(length(final.long_name) > 0) {
-    if(length(unique.long_name) > 1) warning(paste0("Multiple long_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.long_name, ")."))
+  if(length(final.long_name) > 0 & !identical(tolower(final.long_name), "unknown")) {
+    if(length(unique.long_name) > 1) warning(paste0("Multiple long_name found when reading data from NetCDF file ", file.name.nc, ", using the first one (", final.long_name, ").Overriding requested "))
     if(final.long_name != quant@name & quant@name != "undefined unit"){
-      warning(paste0("Overriding requested long_name when reading NetCDF file ", file.name.nc, ". ", quant@name, " was specified but ",final.long_name, " was found (so using that)."))
+      warning(paste0("Overriding requested long_name when reading NetCDF file ", file.name.nc, ". '", quant@name, "' was specified but '",final.long_name, "' was found (so using that).\n"))
       quant@name <- final.long_name
     }
   }

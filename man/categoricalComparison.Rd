@@ -4,7 +4,14 @@
 \alias{categoricalComparison}
 \title{Comparison between two datasets of categorical variables}
 \usage{
-categoricalComparison(x, layers1, layers2, additional, verbose = TRUE)
+categoricalComparison(
+  x,
+  layers1,
+  layers2,
+  additional,
+  verbose = TRUE,
+  area = TRUE
+)
 }
 \arguments{
 \item{x}{A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared}
@@ -15,7 +22,9 @@ categoricalComparison(x, layers1, layers2, additional, verbose = TRUE)
 
 \item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
 
-\item{verbose}{A logical, if TRUE print out all the Kappa scores
+\item{verbose}{A logical, if TRUE print out all the Kappa scores}
+
+\item{area}{A logical, if true weight the metrics by gridcell area (not currently implemented)
 
 Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are for continuous as opposed to categorical data}
 }

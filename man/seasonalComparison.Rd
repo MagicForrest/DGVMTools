@@ -4,7 +4,14 @@
 \alias{seasonalComparison}
 \title{Compare seasonal data}
 \usage{
-seasonalComparison(x, layers1, layers2, additional, verbose = TRUE)
+seasonalComparison(
+  x,
+  layers1,
+  layers2,
+  additional,
+  verbose = TRUE,
+  area = TRUE
+)
 }
 \arguments{
 \item{x}{A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared}

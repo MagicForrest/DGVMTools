@@ -122,7 +122,7 @@ getScheme <- function(source,
   }
   
   ### CONVERT SCHEME ID STRING TO A CLASSIFICATION SCHEME
-  if(class(scheme) == "character") {
+  if(is.character(scheme)) {
     scheme.string <- scheme
     scheme <- byIDfromList(scheme, supported.classification.schemes)
   }
