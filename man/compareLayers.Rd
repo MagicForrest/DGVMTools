@@ -106,12 +106,15 @@ Saatchi.cmass <- getField(source = Saatchi.Source , var = "vegC_std") #'
 
 ## Calculate veg C of trees in model, compare layers, and print the statistics 
 model.cmass <- layerOp(model.cmass, "+", ".Tree", "Tree")
-vegC.comparison <- compareLayers(field1 = model.cmass, field2 = Saatchi.cmass, layers1 = "Tree")
-print(vegC.comparison@stats)
+vegC.comp <- compareLayers(field1 = model.cmass, 
+                           field2 = Saatchi.cmass, 
+                           layers1 = "Tree", 
+                           layers2 = "vegC_std")
+print(vegC.comp@stats)
 
 # plot maps with plotSpatialComparison
-print(plotSpatialComparison(vegC.comparison)) 
-print(plotSpatialComparison(vegC.comparison, type = "values"))
+print(plotSpatialComparison(vegC.comp)) 
+print(plotSpatialComparison(vegC.comp, type = "values"))
 
 ##### Categorical (single-layer) comparison
 # classification is by Smith et al 2014

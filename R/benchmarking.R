@@ -40,7 +40,7 @@ calcNME <- function(mod, obs, area) {
   if(missing(area) || is.null(area))   return( sum(abs(mod - obs), na.rm=TRUE) / sum(abs(obs - mean(obs)), na.rm=TRUE)) 
   else {
     return( sum(abs(mod - obs) * area, na.rm=TRUE) / sum(abs(obs - mean(obs)) * area, na.rm=TRUE) ) 
-    }
+  }
 }
 
 
@@ -123,8 +123,14 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   #### KELLEY ET AL 2013 METRICS
   
   # Unnormalised metrics:  ME, MSE and RSME
-  ME <- mean(abs(vector1 - vector2))
-  MSE <- mean((vector1 - vector2)^2, na.rm=TRUE)
+  if(is.null(area.vec)) {
+    ME <- mean(abs(vector1 - vector2))
+    MSE <- mean((vector1 - vector2)^2, na.rm=TRUE)
+  }
+  else {
+    ME <- sum(abs(vector1 - vector2) * area.vec, na.rm=TRUE) / sum(area.vec)
+    MSE <- sum((vector1 - vector2)^2 * area.vec, na.rm=TRUE) / sum(area.vec)
+  }
   RMSE <- MSE^0.5
   
   # Normalised metrics: NME and NMSE (step 1)
@@ -149,7 +155,13 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   
   #### MORE 'STANDARD' METRICS MORE BASED ON LINEAR REGRESSION AND NOT FOCUSSED ON MODEL-OBSERVATION COMPARISON
   
-  # r2_eff - Nash-Sutcliffe model efficiency (actually is focussed on model-obs comaprisons)
+  if(!is.null(area.vec)) {
+    message("NOTE: metrics r, r2, m, and c are NOT weighted by grdicell area, the other metrics are.")
+    warning("NOTE: metrics r, r2, m, and c are NOT weighted by grdicell area, the other metrics are.")
+    
+  }
+  
+  # r2_eff - Nash-Sutcliffe model efficiency (actually is focussed on model-obs Comparisons)
   r2_eff <- 1 - NMSE
   
   # Pearson product moment correlation coefficient, and then R^2
@@ -242,13 +254,18 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
 #' @param layers1 A vector of character strings giving the layers from the second dataset to compare (should be columns in x and sum to 1 or 100)
 #' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
 #' @param verbose A logical, if TRUE print out all the metric scores
-#' @param area A logical, if true weight the metrics by gridcell area
+#' @param area A logical, if true weight the metrics by gridcell area (not implemented)
 #' 
 #' @return A named list of metric statistics
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
+  
+  if(area) {
+    message("Gridcell area weighting not currently implemented for proportionsComparison")
+    warning("Gridcell area weighting not currently implemented for proportionsComparison")
+  }
   
   # check the layers are present
   if(!sum(layers1 %in% names(x)) == length(layers1)) stop("Some of argument layers1 are not a column in x")
@@ -347,7 +364,7 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
 #' @param layers2 A character string giving the second layer to compare (should be a column in x)
 #' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
 #' @param verbose A logical, if TRUE print out all the Kappa scores
-#' @param area A logical, if true weight the metrics by gridcell area
+#' @param area A logical, if true weight the metrics by gridcell area (not currently implemented)
 #' 
 #' Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are for continuous as opposed to categorical data
 #' 
@@ -356,6 +373,11 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE,  area = TRUE){
+  
+  if(area) {
+    message("Gridcell area weighting not currently implemented for categoricalComparison")
+    warning("Gridcell area weighting not currently implemented for categoricalComparison")
+  }
   
   
   dataset1 = dataset2 = code = NULL
@@ -514,6 +536,12 @@ categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
 seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
+  
+  if(area) {
+    message("Gridcell area weighting not currently implemented for seasonalComparison")
+    warning("Gridcell area weighting not currently implemented for seasonalComparison")
+  }
+  
   
   C_1 = C_2 = L_x_1 = L_x_2 = L_y_1 = L_y_2 = Lat = Lon = Month = P_1 = P_2 = Sigma_x_1 = Sigma_x_2 = Theta_t = NULL
   

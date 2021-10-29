@@ -24,7 +24,7 @@ categoricalComparison(
 
 \item{verbose}{A logical, if TRUE print out all the Kappa scores}
 
-\item{area}{A logical, if true weight the metrics by gridcell area
+\item{area}{A logical, if true weight the metrics by gridcell area (not currently implemented)
 
 Note that there are many other slots in a Statistics object which will not be filled in the resulting object because they are for continuous as opposed to categorical data}
 }

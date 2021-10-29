@@ -22,7 +22,7 @@ proportionsComparison(
 
 \item{verbose}{A logical, if TRUE print out all the metric scores}
 
-\item{area}{A logical, if true weight the metrics by gridcell area}
+\item{area}{A logical, if true weight the metrics by gridcell area (not implemented)}
 }
 \value{
 A named list of metric statistics

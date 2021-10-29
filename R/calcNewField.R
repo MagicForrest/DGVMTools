@@ -203,7 +203,7 @@ calcNewField <- function(x, y, op, x.col=NULL, y.col=NULL, quant=NULL, verbose=T
     val.names <- val.names[sapply(val.names, function(x) {!any(x == key.names)})]
     setnames(y.dt, val.names, paste0("y.", val.names))
     
-    if (x.col == y.col) {
+    if (identical(x.col, y.col)) {
       list.str <- paste0(x.col,"=x.",x.col, op, "y.", y.col)
     } else {
       list.str <- paste0("value=x.", x.col, op, "y.", y.col)
