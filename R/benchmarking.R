@@ -81,7 +81,7 @@ calcNMSE <- function(mod, obs, area) {
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
+continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE, tolerance = 0.01){
   
   # check the layers are present
   if(!layers1 %in% layers(x)) stop("Argument layers1 is not a column in x")
@@ -97,10 +97,11 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
       area.vec <- NULL
     } 
     else {
-      x <- addArea(x, unit = "km^2")
+      x <- addArea(x, unit = "km^2", tolerance = tolerance)
       area.vec <- x[["Area"]]
     }
     
+    print(x)
     
   }
   else area.vec <- NULL

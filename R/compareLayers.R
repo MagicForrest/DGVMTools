@@ -291,7 +291,13 @@ compareLayers <- function(field1,
   if(type == "continuous") {
 
     new.name <- paste(source1@name, "-",  source2@name)
-    stats <- continuousComparison(x = new.data, layers1 = new.ids.1, layers2 = new.ids.2, additional = custom.metrics, verbose = show.stats, area = area)
+    stats <- continuousComparison(x = new.data, 
+                                  layers1 = new.ids.1, 
+                                  layers2 = new.ids.2,
+                                  additional = custom.metrics, 
+                                  verbose = show.stats, 
+                                  area = area, 
+                                  tolerance = tolerance)
     
   }
   else if(type == "seasonal") {
