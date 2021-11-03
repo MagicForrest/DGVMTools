@@ -101,8 +101,6 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
       area.vec <- x[["Area"]]
     }
     
-    print(x)
-    
   }
   else area.vec <- NULL
   
