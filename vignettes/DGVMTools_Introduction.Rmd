@@ -142,8 +142,8 @@ And so we see a pretty straightforward times series plot of LAI averaged over th
 Note that trying to make plots of data with the incorrect dimensions should fail gracefully:
 
 ``` {r Fail plot, out.width = "95%", fig.width = 8, fig.asp = 1, echo = TRUE}
-print(plotSpatial(LAI.spatial.mean))
-print(plotTemporal(LAI.year.mean))
+attempted.spatial.plot <- plotSpatial(LAI.spatial.mean)
+attempted.temporal.plot <- plotTemporal(LAI.year.mean)
 ```
 
 
