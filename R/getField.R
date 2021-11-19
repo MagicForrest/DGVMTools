@@ -209,7 +209,14 @@ getField <- function(source,
     }  
     
     # Otherwise we must discard this Field and we need to re-average (and maybe also re-read) using the cases below 
-    message(paste("Details of the spatial extent",  sta.info@spatial.extent.id, "didn't match.  So file on disk ignored and the original data is being re-read"))
+    message(paste("Spatial extent was requested with id = ", sta.info@spatial.extent.id))
+    message(paste("and extent definition:"))
+    print(sta.info@spatial.extent)
+    message(paste("However, spatial extent found has id = ", model.field@spatial.extent.id))
+    message(paste("and extent definition:"))
+    print(model.field@spatial.extent)
+    message("I am therefore reading the entire raw data again.")
+    
     rm(model.field)
     gc()
     
