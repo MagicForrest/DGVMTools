@@ -187,10 +187,13 @@ getField <- function(source,
     # Check that the spatial extent matches before returning
     # Note that there are two cases to check here (specifically defined extents or just the same ids)
     
-    # If no spatial extent was specified (ie length of spatial.extent arguement was 0) and the spatial.extent.id of the Field that was read in is either 
-    # "Full" or "Global" (which comes some netCDF files processed by the DGVMData package) then we are sure we have got the full, original spatial extent of the dataset and can use it
+    # If no spatial extent was specified (ie length of spatial.extent arguement was 0) and the spatial.extent.id of the Field that was read in is either: 
+    # "Full" or 
+    # "Global" (which comes some netCDF files processed by the DGVMData package) or
+    # "Unspecified" (which comes from files read by the NetCDF Format of DGVMTools)
+    # then we are sure we have got the full, original spatial extent of the dataset and can use it
     full.domain.matched <- FALSE
-    if(length(sta.info@spatial.extent) == 0 && (model.field@spatial.extent.id == "Full" | model.field@spatial.extent.id == "Global")) {
+    if(length(sta.info@spatial.extent) == 0 && model.field@spatial.extent.id %in% c("Full", "Global", "Unspecified")) {
       full.domain.matched <- TRUE
       if(verbose) message("Full domain matched.")
     }
@@ -231,9 +234,9 @@ getField <- function(source,
   
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   if(verbose) {
-    if(read.full) message(paste("'read.full' argument set to TRUE, so reading full data file to create the field now.", sep = ""))
-    else if(!read.full && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", target.field.id, " not already saved, so reading full data file to create the field now.", sep = ""))
-    else message(paste("Details of the spatial extent",  sta.info@spatial.extent.id, "didn't match.  So file on disk ignored and the original data is being re-read"))
+    if(read.full) message(paste("The 'read.full' argument was set to TRUE, so reading full data file to create the Field now.", sep = ""))
+    else if(!read.full && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", target.field.id, " not already saved, so reading full data file to create the Field now.", sep = ""))
+    else message(paste("Details of the request spatial extent didn't match.  So file on disk ignored and the original data is being re-read"))
   }
   
   this.Field <- source@format@getField(source, quant, sta.info, file.name, verbose, ...)
