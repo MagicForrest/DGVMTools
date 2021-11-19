@@ -362,7 +362,7 @@ print(lifeform.plot)
 # arrange facets into two columns with a subsequent call to facet_wrap()
 lifeform.plot <- lifeform.plot + facet_wrap(~Facet, ncol = 2)
 print(lifeform.plot)
-````
+```
 
 #### Formatting legends and text
 The `theme()` and `guides()` functions are very handy.  See ggplot2 documentation for more info.

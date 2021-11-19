@@ -989,7 +989,7 @@ NetCDF.quantities <- list(
       id = "burntfraction_std",
       name = "Annual Fraction Burned",
       units = "fraction of gridcell",
-      colours = function(n) rev(viridis::turbo(n)),
+      colours = viridis::turbo,
       format = c("NetCDF"),
       standard_name = "burned_area_fraction"),
   

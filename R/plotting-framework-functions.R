@@ -16,13 +16,13 @@ santiseFieldsForPlotting <- function(fields) {
   else if(class(fields)[1] == "list") {
     for(object in fields){ 
       if(!is.Field(object)) {
-        warning("You have passed me a list of items to plot but the items are not exclusively Fields.  Returning NULL")
+        warning("You have passed me a list of items to plot but the items are not exclusively Fields.  Returning NULL.\n")
         return(NULL)
       }
     }
   }
   else{
-    warning(paste("This plot function can only handle single a Field, or a list of Fields, it can't plot an object of type", class(fields)[1], sep = " "))
+    warning(paste("This plot function can only handle single a Field, or a list of Fields, it can't plot an object of type", class(fields)[1], ".\n", sep = " "))
     return(NULL)
   }
   
@@ -50,13 +50,13 @@ santiseComparisonsForPlotting <- function(comparisons) {
   else if(class(comparisons)[1] == "list") {
     for(object in comparisons){ 
       if(!is.Comparison(object)) {
-        warning("You have passed me a list of items to plot but the items are not exclusively Comparisons.  Returning NULL")
+        warning("You have passed me a list of items to plot but the items are not exclusively Comparisons.  Returning NULL.\n")
         return(NULL)
       }
     }
   }
   else{
-    warning(paste("This plot function can only handle single a Comparison, or a list of Comparison, it can't plot an object of type", class(comparisons)[1], sep = " "))
+    warning(paste("This plot function can only handle single a Comparison, or a list of Comparison, it can't plot an object of type", class(comparisons)[1], "\n", sep = " "))
     return(NULL)
   }
   
@@ -102,20 +102,20 @@ santiseLayersForPlotting <- function(fields, layers) {
       layers.present <- intersect(names(object), layers)
       num.layers.x.fields <- num.layers.x.fields + length(layers.present)
       
-      if(length(layers.present) == 0) {warning("Some Fields to plot don't have all the layers that were requested to plot")}
+      if(length(layers.present) == 0) {warning("Some Fields to plot don't have all the layers that were requested to plot.\n")}
       layers.superset <- append(layers.superset, layers.present)
       
     } 
     
     # Return empty plot if not layers found
     if(num.layers.x.fields == 0){
-      warning("None of the specified layers found in the objects provided to plot.  Returning NULL.")
+      warning("None of the specified layers found in the objects provided to plot.  Returning NULL.\n")
       return(NULL)
     }
     
     # Also check for missing layers and given a warning
     missing.layers <- layers[!(layers %in% unique(layers.superset))]
-    if(length(missing.layers) != 0) { warning(paste("The following layers were requested to plot but not present in any of the supplied objects:", paste(missing.layers, collapse = " "), sep = " ")) }
+    if(length(missing.layers) != 0) { warning(paste("The following layers were requested to plot but not present in any of the supplied objects:", paste(missing.layers, collapse = " "), ".\n", sep = " ")) }
     
     # finally make a unique list of layers to be carried in to the actual plotting
     layers <- unique(layers.superset)
@@ -146,7 +146,7 @@ santiseDimensionsForPlotting <- function(fields, require = NULL) {
   # check Lon and Lat present
   for(required.sta in require)
   if(!required.sta %in% sta.info) {
-    warning(paste0("Dimension ", required.sta, " is missing from an input Field but is required for this plot type.  Obviously this won't work, returning NULL."))
+    warning(paste0("Dimension ", required.sta, " is missing from an input Field but is required for this plot type.  Obviously this won't work, returning NULL.\n"))
     return(NULL)
   }
   
@@ -154,7 +154,7 @@ santiseDimensionsForPlotting <- function(fields, require = NULL) {
   if(length(fields) > 1) {
     for(counter in 2:length(fields)){
       if(!identical(sta.info, getDimInfo(fields[[counter]], info = "names"))) {
-        warning(paste0("Trying to plot two Fields with different Spatial-Temporal dimensions.  One has \"", paste(sta.info, collapse = ","), "\" and the other has \"",  paste(getDimInfo(fields[[counter]], info = "names"), collapse = ","), "\".  So not plotting and returning NULL."))
+        warning(paste0("Trying to plot two Fields with different Spatial-Temporal dimensions.  One has \"", paste(sta.info, collapse = ","), "\" and the other has \"",  paste(getDimInfo(fields[[counter]], info = "names"), collapse = ","), "\".  So not plotting and returning NULL.\n"))
         return(NULL)
       }
     }
@@ -195,7 +195,7 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
     
     # input.list specified so check that they are present
     if(!is.null(input.values)) {
-      for(counter in input.values) { if(!counter %in% values.present) warning(paste0(dimension, " ", counter, " not present in Field ", object@id)) }
+      for(counter in input.values) { if(!counter %in% values.present) warning(paste0(dimension, " ", counter, " not present in Field ", object@id), ".\n") }
     }
     # else input.list not specified so make a list of unique days across all Fields
     else { all.values <- append(all.values, values.present) }
@@ -472,7 +472,7 @@ matchLayerCols <- function(values, layers, others = list(Total = "black", None =
       
       # if no colour can be found to match the value, fail gently
       if(!done && at.least.one.match) {
-        warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchLayerCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument"))
+        warning(paste0("Some value (", val, ") doesn't have a specified colour, so matchLayerCols is returning NULL. Check your inputs and note the you can provide a colour for (", val, ") using the 'others' argument.\n"))
         return(NULL)
       }  
       
@@ -501,7 +501,7 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
   
   # first check that rgeos package is installed
   if (! requireNamespace("rgeos", quietly = TRUE))  {
-    warning("Please install the rgoes R package and, if necessary the GEOS libraries, on your system to make map overlays.")
+    warning("Please install the rgoes R package and, if necessary the GEOS libraries, on your system to make map overlays.\n")
     return(NULL)
   }
   
