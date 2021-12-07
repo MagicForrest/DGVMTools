@@ -600,18 +600,17 @@ getField_NetCDF <- function(source,
     if("Lat" %in% names(this.slice.dt)) this.slice.dt[ , Lat := as.numeric(Lat)]
     if("Time" %in% names(this.slice.dt)) this.slice.dt[ , Time := as.numeric(Time)]
     if(verbose) message(paste("... done!"))
-    
-    
+  
     # clear up 
     rm(this.slice)
     gc()
     
     # if necessary dcast the Layers column back to make separate columns for each layer
     if("Layers" %in% names(this.slice.dt)) this.slice.dt <- dcast(this.slice.dt, ... ~ Layers, value.var = "value")
-    
+   
     this.slice.dt <- stats::na.omit(this.slice.dt)
     if("value" %in% names(this.slice.dt)) setnames(this.slice.dt, "value", this_var_obj$name)
-    
+  
     
     # ###  HANDLE TIME AXIS 
     if(length(all.time.intervals) > 0) {
@@ -706,16 +705,21 @@ getField_NetCDF <- function(source,
     setKeyDGVM(this.slice.dt)
     dt.list[[length(dt.list)+1]] <- this.slice.dt
     
-  }
+  } # for each var/layer to read
   
   
   # join all together and set key
   dt <- dt.list[[1]]
   if(length(dt.list) > 1) {
     for(this.dt in dt.list[2:length(dt.list)]) {
-      dt <- merge(x = dt, y = this.dt)
+      dt <- merge(x = dt, y = this.dt, all = TRUE)
     }
   }
+  
+  # Set any NAs introduced by merging process to zero
+  # This is correct (at least for the ESA Landcover CCI case) because for each gridcell any NAs introduced actually means zere
+  # fraction of this landcover.  This might not be conceptually correct for all datasets, but let's see.
+  for (j in seq_len(ncol(dt)))set(dt,which(is.na(dt[[j]])),j,0)
   
   # clean up and set key
   rm(dt.list); gc()
