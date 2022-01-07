@@ -316,7 +316,7 @@ test.SpatRaster <- terra::rast(ymin=48, ymax=59, xmin=4, xmax=17, resolution = 0
 GUESS.Field.selected.SpatRaster.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = test.SpatRaster, spatial.extent.id = "TestExtent")
 GUESS.Field.selected.SpatRaster.2 <- crop(x = GUESS.mlai.Field.full, y = test.SpatRaster, spatial.extent.id = "TestExtent")
 
-# crop by an terra::SpatExtent 
+# crop by a terra::SpatExtent 
 test.SpatExtent<- ext(test.SpatRaster)
 GUESS.Field.selected.SpatExtent.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = test.SpatExtent, spatial.extent.id = "TestExtent")
 GUESS.Field.selected.SpatExtent.2 <- crop(x = GUESS.mlai.Field.full, y = test.SpatExtent, spatial.extent.id = "TestExtent")
@@ -362,7 +362,7 @@ test_that("Selections and Cropping",{
   expect_identical(GUESS.Field.selected.extent.1,  GUESS.Field.selected.Field.1)
   expect_identical(GUESS.Field.selected.raster.1,  GUESS.Field.selected.Field.1)
   expect_identical(GUESS.Field.selected.SpatRaster.1,  GUESS.Field.selected.SpatRaster.2)
-  expect_identical(GUESS.Field.selected.SpatExtent.1,  GUESS.Field.selected.SpatExtent.2)
+  expect_identical(GUESS.Field.selected.SpatExtent.1,  GUESS.Field.selected.SpatRaster.1)
   
   
 })
