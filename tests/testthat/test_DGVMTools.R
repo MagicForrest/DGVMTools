@@ -1,7 +1,9 @@
-library(testthat)
-library(DGVMTools)
-library(stats)
-library(compiler)
+# library(testthat)
+# #library(DGVMTools)
+# library(stats)
+# library(compiler)
+# library(raster)
+# library(terra)
 
 
 
@@ -309,6 +311,16 @@ GUESS.Field.selected.extent.2 <- crop(x = GUESS.mlai.Field.full, y = test.extent
 GUESS.Field.selected.Field.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = GUESS.Field.selected.extent.1, spatial.extent.id = "TestExtent")
 GUESS.Field.selected.Field.2 <- crop(x = GUESS.mlai.Field.full, y = GUESS.Field.selected.extent.1, spatial.extent.id = "TestExtent")
 
+# crop by a terra:SpatRaster
+test.SpatRaster <- terra::rast(ymin=48, ymax=59, xmin=4, xmax=17, resolution = 0.5, vals=0)
+GUESS.Field.selected.SpatRaster.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = test.SpatRaster, spatial.extent.id = "TestExtent")
+GUESS.Field.selected.SpatRaster.2 <- crop(x = GUESS.mlai.Field.full, y = test.SpatRaster, spatial.extent.id = "TestExtent")
+
+# crop by a terra::SpatExtent 
+test.SpatExtent<- ext(test.SpatRaster)
+GUESS.Field.selected.SpatExtent.1 <- getField(GUESS.Europe.test.Source, "mlai", spatial.extent = test.SpatExtent, spatial.extent.id = "TestExtent")
+GUESS.Field.selected.SpatExtent.2 <- crop(x = GUESS.mlai.Field.full, y = test.SpatExtent, spatial.extent.id = "TestExtent")
+
 
 
 
@@ -333,7 +345,10 @@ test_that("Selections and Cropping",{
   expect_is(GUESS.Field.selected.extent.2, "Field")
   expect_is(GUESS.Field.selected.Field.1, "Field")
   expect_is(GUESS.Field.selected.Field.2, "Field")
-  
+  expect_is(GUESS.Field.selected.SpatRaster.1, "Field")
+  expect_is(GUESS.Field.selected.SpatRaster.2, "Field")
+  expect_is(GUESS.Field.selected.SpatExtent.1, "Field")
+  expect_is(GUESS.Field.selected.SpatExtent.2, "Field")
   
   # check the results are the same by two different routes
   expect_identical(GUESS.Field.selected.years.1,  GUESS.Field.selected.years.2)
@@ -346,6 +361,9 @@ test_that("Selections and Cropping",{
   expect_identical(GUESS.Field.selected.Field.1,  GUESS.Field.selected.Field.2)
   expect_identical(GUESS.Field.selected.extent.1,  GUESS.Field.selected.Field.1)
   expect_identical(GUESS.Field.selected.raster.1,  GUESS.Field.selected.Field.1)
+  expect_identical(GUESS.Field.selected.SpatRaster.1,  GUESS.Field.selected.SpatRaster.2)
+  expect_identical(GUESS.Field.selected.SpatExtent.1,  GUESS.Field.selected.SpatRaster.1)
+  
   
 })
 

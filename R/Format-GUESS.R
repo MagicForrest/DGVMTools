@@ -162,13 +162,13 @@ openLPJOutputFile <- function(run,
     if(spatial.extent.class == "SpatialPolygonsDataFrame" || spatial.extent.class == "numeric" || is.data.frame(target.sta@spatial.extent) || is.data.table(target.sta@spatial.extent)) {
       dt <- selectGridcells(x = dt, gridcells = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id, ...)
       new.extent <- target.sta@spatial.extent
-      # if new.extent is a data.frame, convery it to a data.table for consistency
+      # if new.extent is a data.frame, convert it to a data.table for consistency
       #if(is.data.frame(new.extent) & !is.data.table(new.extent)) new.extent <- as.data.table(new.extent)
     }
     
     else {
       dt <- crop(x = dt, y = target.sta@spatial.extent, spatial.extent.id = target.sta@spatial.extent.id)
-      new.extent <- extent(target.sta@spatial.extent)
+      new.extent <- extractRasterExtent(target.sta@spatial.extent)
     } 
     
   }

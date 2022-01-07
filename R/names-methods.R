@@ -1,12 +1,12 @@
 #' Layer name methods
 #' 
-#' Methods for returning the names of the layers in a Field or a Comparison.  Note, for changing the names of layers see \code{renameLayers}.
+#' Methods for returning the names of the layers in a Field, Comparison or data.able.  Note, for changing the names of layers see \code{renameLayers}.
 #' 
 #' @param x A Field or Comparison.
 #' 
 #' @details For convenience both \code{names()} and \code{layers()} are defined, but they both give the same result.  There is a logical equivalency here since 
 #' layer names in a field are actually the column names in underlying data.table.  
-#' AS such,  \code{layers()} is more consistent with the terminology and framework of DGVMTools, whereas \code{names()} is more consistent with the data.table approach.  
+#' As such,  \code{layers()} is more consistent with the terminology and framework of DGVMTools, whereas \code{names()} is more consistent with the data.table approach.  
 #' But, in the end, both of these functions return exactly the same thing via exactly the same method.
 #' 
 #' @return A vector of character strings of the names of the layers
@@ -42,9 +42,8 @@ setMethod("names", signature(x="Comparison"), function(x) {
 #' @rdname names 
 #' @name layers
 #' @exportMethod layers
-if (!isGeneric("layers")) {
-  setGeneric("layers", function(x) standardGeneric("layers"))
-}
+# first define generic (note had to remove if(!isGeneric()) statement to run unit tests outside Check)
+setGeneric("layers", function(x) standardGeneric("layers"))
 
 
 #' @rdname names 

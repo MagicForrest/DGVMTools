@@ -60,7 +60,7 @@ setAs("Comparison", "data.table", function(from) from@data)
 as.data.table.Comparison = function(x, keep.rownames, ...) as(x, "data.table") 
 
 
-############# raster
+############# Raster and Spat Raster
 
 #' @name export-methods
 setAs("Field", "Raster", function(from) {
@@ -75,6 +75,22 @@ setAs("Field", "Raster", function(from) {
   })
   
   return(field.as.raster)
+  
+})
+
+#' @name export-methods
+setAs("Field", "SpatRaster", function(from) {
+  
+  field.as.SpatRaster = tryCatch({
+    as(promoteToRaster(from@data), "SpatRaster")
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Field to a SpatRaster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  return(field.as.SpatRaster)
   
 })
 
@@ -94,6 +110,25 @@ setAs("Comparison", "Raster", function(from) {
   
 })
 
+#' @name export-methods
+setAs("Comparison", "Raster", function(from) { 
+  
+  Comparison.as.SpatRaster = tryCatch({
+    as(promoteToRaster(from@data), "SpatRaster")
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Comparison to a SpatRaster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  return(Comparison.as.SpatRaster)
+  
+})
+
+## S4
+
+# Raster
 
 #' Generic method for coercing to raster
 #' @name as.Raster
@@ -120,6 +155,7 @@ setMethod("as.Raster", signature("Field"),   function(x) {
   
 })
 
+
 #' @rdname export-methods
 #' @export
 setMethod("as.Raster", signature("Comparison"),   function(x){ 
@@ -136,6 +172,52 @@ setMethod("as.Raster", signature("Comparison"),   function(x){
   return(field.as.raster)
   
 })
+
+### SpatRaster
+
+#' Generic method for coercing to SpatRaster
+#' @name as.SpatRaster
+#' @rdname export-methods
+#' @exportMethod as.SpatRaster
+setGeneric("as.SpatRaster", function(x) {
+  standardGeneric("as.SpatRaster")
+})
+
+#' @rdname export-methods
+#' @export
+setMethod("as.SpatRaster", signature("Field"),   function(x) {
+  
+  Field.as.SpatRaster = tryCatch({
+    as(promoteToRaster(x@data), "SpatRaster")
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Field to a SpatRaster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  return(Field.as.SpatRaster)
+  
+})
+
+
+#' @rdname export-methods
+#' @export
+setMethod("as.SpatRaster", signature("Comparison"),   function(x){ 
+  
+  Comparison.as.SpatRaster = tryCatch({
+    as(promoteToRaster(x@data), "SpatRaster")
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Comparison to a SpatRaster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  return(Comparison.as.SpatRaster)
+  
+})
+
 
 #' Generic method for coercing to an array
 #' 

@@ -1,4 +1,4 @@
 library(testthat)
-library(DGVMTools)
+#library(DGVMTools)
 
 test_check("DGVMTools")
