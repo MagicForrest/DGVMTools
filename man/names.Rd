@@ -14,6 +14,8 @@
 
 \S4method{names}{Comparison}(x)
 
+layers(x)
+
 \S4method{layers}{Field}(x)
 
 \S4method{layers}{Comparison}(x)
@@ -27,12 +29,12 @@
 A vector of character strings of the names of the layers
 }
 \description{
-Methods for returning the names of the layers in a Field or a Comparison.  Note, for changing the names of layers see \code{renameLayers}.
+Methods for returning the names of the layers in a Field, Comparison or data.able.  Note, for changing the names of layers see \code{renameLayers}.
 }
 \details{
 For convenience both \code{names()} and \code{layers()} are defined, but they both give the same result.  There is a logical equivalency here since 
 layer names in a field are actually the column names in underlying data.table.  
-AS such,  \code{layers()} is more consistent with the terminology and framework of DGVMTools, whereas \code{names()} is more consistent with the data.table approach.  
+As such,  \code{layers()} is more consistent with the terminology and framework of DGVMTools, whereas \code{names()} is more consistent with the data.table approach.  
 But, in the end, both of these functions return exactly the same thing via exactly the same method.
 }
 \author{

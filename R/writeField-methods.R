@@ -9,9 +9,9 @@
 #' @aliases writeField
 #' @exportMethod writeField
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
-if (!isGeneric("writeField")) {
-  setGeneric("writeField", function(x) standardGeneric("writeField"))
-}
+
+# first define generic (note had to remove if(!isGeneric()) statement to run unit tests outside Check)
+setGeneric("writeField", function(x) standardGeneric("writeField")) 
 
 
 #' @rdname writeField-methods

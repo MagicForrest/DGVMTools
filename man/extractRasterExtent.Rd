@@ -7,7 +7,7 @@
 extractRasterExtent(y)
 }
 \arguments{
-\item{y}{Something to crop to
+\item{y}{Something to crop to  (ie the \code{y} argument of a crop command)
 
 TODO One day this should be converted to terra::SpatExtent.  Probably whenever raster is really deprecated and shall be purged from DGVMTools.}
 }
