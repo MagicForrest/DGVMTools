@@ -12,7 +12,7 @@
 #' @param x.label,y.label Character strings for the x and y axes (optional)
 #' @param col.by,linetype.by,size.by,shape.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
 #' Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". 
-#' By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
+#' NOTE SPECIAL DEFAULT CASE:  By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
 #' the data are distinguished by different facet panels.  To change this behaviour and colour the lines according to something different, set the "col.by" argument to one of the
 #' strings suggested above.
 #' @param cols,linetypes,sizes,shapes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
@@ -68,17 +68,28 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
                           alphas = NULL,
                           alpha.by = NULL,
                           alpha.labels = waiver(),
+                          line.size = 0.5,
+                          point.size = 2,
                           y.label = NULL,
                           x.label = NULL,
                           plotAverage = TRUE,
                           text.multiplier = NULL,
                           plot = TRUE,
-                          alpha = 0.2,
+                          alpha = 1.0,
                           ...) {
   
   
   Quantity = Month = Source = Value = Year = NULL
   
+  ### CHECK INPUTS AND SET A FLAG FOR THE SPECIAL CASE OF COLOURING BY YEAR
+  special_case_year_colour <- FALSE
+  if(identical(col.by,"Year")) {
+    special_case_year_colour <- TRUE
+    if(!missing(cols) || !is.null(cols)) {
+      warning("'cols' argument ignored since colouring by Year and therefore using a continuous scale")
+      cols <- NULL
+    } 
+  }
   
   
   ### SANITISE FIELDS, LAYERS AND DIMENSIONS
@@ -143,13 +154,13 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   
   ### LEGEND ENTRY ORDERING
-  ## Fix order of items in legend(s) by making them factors with levels corresponding to the order of the input fields
-  all.sources <- list()
-  # first loop across the fields
-  for(this.field in fields) {
-    all.sources <- append(all.sources, this.field@source@name)
-  }
-  if("Source" %in% names(data.toplot)) data.toplot[, Source := factor(Source, levels = unique(all.sources))]
+  # ## Fix order of items in legend(s) by making them factors with levels corresponding to the order of the input fields
+  # all.sources <- list()
+  # # first loop across the fields
+  # for(this.field in fields) {
+  #   all.sources <- append(all.sources, this.field@source@name)
+  # }
+  # if("Source" %in% names(data.toplot)) data.toplot[, Source := factor(Source, levels = unique(all.sources))]
   
   
   ### 7. MAKE THE Y-AXIS LABEL
@@ -221,59 +232,97 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   ###### MAKE THE PLOT ######
   
-  # basic plot 
-  if("Year" %in% dim.names) p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", colour = col.by, linetype = linetype.by, group = interaction("Year", col.by)), alpha = alpha)
-  else p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", colour = col.by, linetype = linetype.by, size = size.by, alpha = alpha.by, shape = shape.by), alpha = alpha) 
+  # make the tricky Interaction columns depending on the aes options
+  if(length(col.by) > 0 && length(linetype.by) > 0){
+    if(special_case_year_colour) {
+      data.toplot[, Interaction := interaction(Year,  get(linetype.by))]
+    } else {
+      data.toplot[, Interaction := interaction(Year,  get(col.by),  get(linetype.by))]
+    }
+  } else if(length(col.by) > 0){
+    if(special_case_year_colour) {
+      data.toplot[, Interaction := get(col.by)]
+    }  else {
+      data.toplot[, Interaction := interaction(Year,  get(col.by))]
+    }
+  } else if(length(linetype.by) > 0){
+    data.toplot[, Interaction := interaction(Year,  get(linetype.by))]
+  } else {
+    data.toplot[, Interaction := Year]
+  }
+  
+  # make an interaction term of everything possible for the stats
+  SDcols <- names(data.toplot) %in% c("Source", "Quantity", "Region", "Site")
+  data.toplot[, StatsInteraction := interaction(.SD), .SDcols = SDcols]
+
+  
+  # build the basic plot
+  p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", col = col.by, linetype = linetype.by, group = "Interaction"), alpha = alpha)
   
   # build arguments for 'fixed' aesthetic to geom_line
-  aes.args <- list(data = data.toplot, alpha = alpha)
-  if(!missing(sizes) && is.null(size.by)) aes.args[["size"]] <- sizes
+  aes.args <- list(data = as.data.frame(data.toplot), size = line.size, alpha = alpha)
+  #if(!missing(sizes) && is.null(size.by)) aes.args[["size"]] <- sizes
   if(!missing(cols) && is.null(col.by)) aes.args[["colour"]] <- cols
   if(!missing(alphas) && is.null(alpha.by)) aes.args[["alpha"]] <- alphas
   if(!missing(linetypes) && is.null(linetype.by)) aes.args[["linetype"]] <- linetypes
   if(!missing(shapes) && is.null(shape.by)) aes.args[["shape"]] <- shapes
   
-  # call geom_line (with fixed aesthetics define above)
-  #if(!points) 
+  # call geom_line (with fixed aesthetics defined above)
   p <- p + do.call(geom_line, aes.args)
-  #else p <- p + do.call(geom_point, aes.args)
-  
-  # lines with aesthetics 
-  #p <- p + geom_line(alpha = alpha)
   
   
-  # line formatting
-  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
+  # add scales for the defined aesthetics
+  
+  # colour scale is a special case for two reasons,
+  # 1. if col.by not variable provided, then the special case is activated and colour by year (and hence we have a continuous colour scale)
+  # 2. if no colours provided, use a viridis pallete to over-ride ggplot2 
+  if(special_case_year_colour) p <- p + viridis::scale_color_viridis(name = "Year")
+  else if (!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
+  else p <- p + viridis::scale_colour_viridis(discrete=TRUE, option = "C", end = 0.9 ) 
+  
+  # these are simply defined by the arguments, no special cases
   if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
   if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
-
- 
+  
+  
   # if colouring by Year add a continuous scale (special case)
-  if(!is.null(col.by) && col.by == "Year") {
-    p <- p + scale_color_gradientn(colours = viridis::viridis(100), name = "Year")
-    if(plotAverage) {
-      p <- p + stat_summary(aes(group=col.by, linetype = "mean year"), fun=mean, geom="line", size = 1)
-      p <- p + scale_linetype_manual(values=c("mean year"="longdash"), name = element_blank())
-    }
-  }
+  
   # else colour discretely
-  else {
-    #p <- p + labs(colour=col.by)
+  #else {
+  p <- p + theme(legend.key.size = unit(2, 'lines'))
+  #}
+  
+  if(plotAverage) {
     
-    p <- p + theme(legend.title=element_blank(), legend.key.size = unit(2, 'lines'))
-    
-    if(plotAverage) {
+    # if is the special case where we colour by year
+    if(special_case_year_colour) {
       
-      # get the colours to colour the points by
-      g <- ggplot_build(p)
-      extracted.cols <- unique(g$data[[1]][["colour"]])
+      # this works for points
+      #p <- p + stat_summary(aes(group=StatsInteraction), fun=mean, geom="point", color="black", fill = "black", shape = 21, size = 2)
+      # but prefer lines 
+      # NOTE in this case we always use black
+      p <- p + stat_summary(aes_string(group="StatsInteraction", linetype = linetype.by), fun=mean, geom="line", color="black", size = line.size * 2)
       
-      # add the mean stat and the fill scale
-      p <- p + stat_summary(aes(group=get(col.by), fill = get(col.by)), fun=mean, geom="point", color="black", shape = 21, size = 2)
-      p <- p + scale_fill_manual(values =extracted.cols, name = "Mean year", labels = col.labels)
+      # title the legend
+      p <- p + labs(linetype="Mean year") 
       
     }
+    #if *not* the special case where we could by year
+    else {
+     
+      # add the datast
+      p <- p + stat_summary(aes(group=StatsInteraction, fill = get(col.by)), fun=mean, geom="point", color="black", shape = 21, size = point.size)
+      
+      # colour the points appropriately
+      if(!is.null(cols)) p <- p + scale_fill_manual(values = cols, name = "Mean year", labels = col.labels)
+      else p <- p + viridis::scale_fill_viridis(name = "Mean year", labels = col.labels, discrete = TRUE, option = "C", end = 0.9 )
+      
+      # title the legend
+      p <- p + labs(fill="Mean year") 
+      
+    }
+    
   }
   
   
@@ -281,7 +330,6 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(subannual.dimension == "Month") p <- p + scale_x_continuous(breaks = 1:12, labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep","Oct","Nov","Dec"))
   
   # set the title
-  #p <- p + labs(title = title, subtitle = subtitle,  y = paste(quant.str, " (", unit.str, ")", sep = ""), x = subannual.dimension)
   p <- p + labs(title = title, subtitle = subtitle,  y = y.label, x = subannual.dimension)
   p <- p + theme(plot.title = element_text(hjust = 0.5),
                  plot.subtitle = element_text(hjust = 0.5))
