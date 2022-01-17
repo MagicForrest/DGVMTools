@@ -15,12 +15,14 @@
 #' NOTE SPECIAL DEFAULT CASE:  By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
 #' the data are distinguished by different facet panels.  To change this behaviour and colour the lines according to something different, set the "col.by" argument to one of the
 #' strings suggested above.
-#' @param cols,linetypes,sizes,shapes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
+#' @param cols,linetypes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
 #' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/linetype/shape/alpha values
 #' to particular Layers/Sources/Sites/Quantities.    
-#' @param col.labels,linetype.labels,size.labels,shape.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
+#' @param col.labels,linetype.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
 #' number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
-#' @param plotAverage Boolean, if TRUE plot the mean of all years
+#' @param aggregate.function A function to aggregate across year and plot on top.  Obvious choice is \code{mean}, but there is flexibility to anything that operates on 
+#' a vector of numerics. 
+#' @param aggregate.function.label An optional character string to give a pretty label to for the aggregate function legent
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param alpha A numeric (range 0-1), to give the transparency (alpha) of the annual lines
@@ -59,29 +61,25 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
                           linetypes = NULL,
                           linetype.by = NULL,
                           linetype.labels = waiver(),
-                          sizes = NULL,
-                          size.by = NULL,
-                          size.labels = waiver(),
-                          shapes = NULL,
-                          shape.by = NULL,
-                          shape.labels = waiver(),
                           alphas = NULL,
                           alpha.by = NULL,
                           alpha.labels = waiver(),
                           line.size = 0.5,
-                          point.size = 2,
+                          point.size = 3 ,
                           y.label = NULL,
                           x.label = NULL,
-                          plotAverage = TRUE,
+                          aggregate.function,
+                          aggregate.function.label = deparse(substitute(aggregate.function)),
                           text.multiplier = NULL,
                           plot = TRUE,
-                          alpha = 1.0,
                           ...) {
   
   
   Quantity = Month = Source = Value = Year = NULL
   
-  ### CHECK INPUTS AND SET A FLAG FOR THE SPECIAL CASE OF COLOURING BY YEAR
+  ### CHECK INPUTS AND HANDLE SPECIAL CASES
+  
+  # set a flag for the special case of colouring by year
   special_case_year_colour <- FALSE
   if(identical(col.by,"Year")) {
     special_case_year_colour <- TRUE
@@ -91,6 +89,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
     } 
   }
   
+
   
   ### SANITISE FIELDS, LAYERS AND DIMENSIONS
   
@@ -139,12 +138,10 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   # check the "xxx.by" arguments 
   if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring by", col.by, "requested, but that is not available, so failing."))
   if(!missing(linetype.by) && !is.null(linetype.by) && !linetype.by %in% all.columns) stop(paste("Setting linetypes by", linetype.by, "requested, but that is not available, so failing."))
-  if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting sizes by", size.by, "requested, but that is not available, so failing."))
-  if(!missing(shape.by) && !is.null(shape.by) && !shape.by %in% all.columns) stop(paste("Setting shapes by", shape.by, "requested, but that is not available, so failing."))
   if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting alphas by", alpha.by, "requested, but that is not available, so failing."))
   
   # ar first assume facetting by everything except for...
-  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by,  linetype.by, size.by, shape.by, alpha.by)
+  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by,  linetype.by, alpha.by)
   facet.vars <- all.columns[!all.columns %in% dontFacet]
   
   # then remove facets with only one unique value
@@ -232,42 +229,47 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   ###### MAKE THE PLOT ######
   
-  # make the tricky Interaction columns depending on the aes options
-  if(length(col.by) > 0 && length(linetype.by) > 0){
-    if(special_case_year_colour) {
-      data.toplot[, Interaction := interaction(Year,  get(linetype.by))]
-    } else {
-      data.toplot[, Interaction := interaction(Year,  get(col.by),  get(linetype.by))]
-    }
-  } else if(length(col.by) > 0){
-    if(special_case_year_colour) {
-      data.toplot[, Interaction := get(col.by)]
-    }  else {
-      data.toplot[, Interaction := interaction(Year,  get(col.by))]
-    }
-  } else if(length(linetype.by) > 0){
-    data.toplot[, Interaction := interaction(Year,  get(linetype.by))]
-  } else {
-    data.toplot[, Interaction := Year]
-  }
   
-  # make an interaction term of everything possible for the stats
-  SDcols <- names(data.toplot) %in% c("Source", "Quantity", "Region", "Site")
-  data.toplot[, StatsInteraction := interaction(.SD), .SDcols = SDcols]
+  ### Make the GROUPS - these are columns for ggplot which are essentially interactio terms to group the data
+  
+  
+  # The plot group 
+  
+  # include Year only if not colouring by year
+  if(special_case_year_colour) interaction_list <- c()
+  else interaction_list <- c("Year")
+
+  # include the other columns if required for an aesthetic
+  if(!is.null(col.by)) interaction_list <- append(interaction_list, col.by) # special case for col.by because if missing is taken to be "Year"
+  if(!missing(linetype.by) && !is.null(linetype.by)) interaction_list <- append(interaction_list, linetype.by)
+  if(!missing(alpha.by) && !is.null(alpha.by)) interaction_list <- append(interaction_list, alpha.by)
+  
+  # and now make the interaction colum
+  data.toplot[, PlotGroup := interaction(.SD), .SDcols = interaction_list]
+  
+  
+  # The Stats Group - this is much easier since we every possible combination must have it's own stat
+  stats_SDcols <- names(data.toplot) %in% c("Source", "Quantity", "Region", "Site")
+  data.toplot[, StatsGroup := interaction(.SD), .SDcols = stats_SDcols]
 
   
   # build the basic plot
-  p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", col = col.by, linetype = linetype.by, group = "Interaction"), alpha = alpha)
+  # p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", col = col.by, linetype = linetype.by, group = "PlotGroup"), alpha = alpha)
+  p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", col = col.by, linetype = linetype.by, alpha = alpha.by,  group = "PlotGroup"))
   
-  # build arguments for 'fixed' aesthetic to geom_line
-  aes.args <- list(data = as.data.frame(data.toplot), size = line.size, alpha = alpha)
-  #if(!missing(sizes) && is.null(size.by)) aes.args[["size"]] <- sizes
+  
+  
+  # build aesthetic arguments for geom_line
+  
+  # line size if a fixed value for all 
+  aes.args <- list(data = as.data.frame(data.toplot), size = line.size)
+  
+  # colour, alpha and linetype are determined by a column
   if(!missing(cols) && is.null(col.by)) aes.args[["colour"]] <- cols
   if(!missing(alphas) && is.null(alpha.by)) aes.args[["alpha"]] <- alphas
   if(!missing(linetypes) && is.null(linetype.by)) aes.args[["linetype"]] <- linetypes
-  if(!missing(shapes) && is.null(shape.by)) aes.args[["shape"]] <- shapes
-  
-  # call geom_line (with fixed aesthetics defined above)
+
+  # call geom_line (with aesthetics defined above) 
   p <- p + do.call(geom_line, aes.args)
   
   
@@ -282,44 +284,52 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   # these are simply defined by the arguments, no special cases
   if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
-  if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
   
-  
-  # if colouring by Year add a continuous scale (special case)
-  
-  # else colour discretely
-  #else {
+  # make scale a bit bigger - consider removing??
   p <- p + theme(legend.key.size = unit(2, 'lines'))
-  #}
   
-  if(plotAverage) {
+  
+  
+  
+  # if chosen, plot the average year
+  if(!missing(aggregate.function)) {
     
     # if is the special case where we colour by year
     if(special_case_year_colour) {
       
-      # this works for points
+      # this works for to make points 
       #p <- p + stat_summary(aes(group=StatsInteraction), fun=mean, geom="point", color="black", fill = "black", shape = 21, size = 2)
-      # but prefer lines 
+      # but actually prefer lines 
       # NOTE in this case we always use black
-      p <- p + stat_summary(aes_string(group="StatsInteraction", linetype = linetype.by), fun=mean, geom="line", color="black", size = line.size * 2)
+      p <- p + stat_summary(aes_string(group="StatsGroup", linetype = linetype.by), fun=aggregate.function, geom="line", color="black", size = line.size * 2)
       
       # title the legend
-      p <- p + labs(linetype="Mean year") 
+      p <- p + labs(linetype=aggregate.function.label) 
       
     }
     #if *not* the special case where we could by year
     else {
      
-      # add the datast
-      p <- p + stat_summary(aes(group=StatsInteraction, fill = get(col.by)), fun=mean, geom="point", color="black", shape = 21, size = point.size)
+      # add the stats
+      p <- p + stat_summary(aes(group=StatsGroup, fill = get(col.by)), fun=aggregate.function, geom="point", color="black", shape = 21, size = point.size)
       
       # colour the points appropriately
-      if(!is.null(cols)) p <- p + scale_fill_manual(values = cols, name = "Mean year", labels = col.labels)
-      else p <- p + viridis::scale_fill_viridis(name = "Mean year", labels = col.labels, discrete = TRUE, option = "C", end = 0.9 )
+      if(!is.null(cols)) p <- p + scale_fill_manual(values = cols, name = aggregate.function.label, labels = col.labels)
+      else p <- p + viridis::scale_fill_viridis(name = aggregate.function.label, labels = col.labels, discrete = TRUE, option = "C", end = 0.9 )
+      p <- p + labs(shape=aggregate.function.label ) 
+      #p <- p + labs(colour=aggregate.function.label ) 
+      
+      
+      # also add linetype if necessary
+      if(!missing(linetype.by)) {
+        p <- p + stat_summary(aes_string(group="StatsGroup", linetype = linetype.by), fun=aggregate.function, geom="line", color="black", size = line.size * 2)
+        #p <- p + labs(linetype=aggregate.function.label ) 
+        #p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
+      } 
       
       # title the legend
-      p <- p + labs(fill="Mean year") 
+      #p <- p + labs(fill=aggregate.function.label ) 
       
     }
     
