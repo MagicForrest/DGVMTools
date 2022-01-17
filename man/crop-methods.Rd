@@ -3,16 +3,16 @@
 \name{crop-methods}
 \alias{crop-methods}
 \alias{crop}
-\alias{crop,Field-method}
-\alias{crop,Comparison-method}
-\alias{crop,data.table-method}
+\alias{crop,Field,ANY-method}
+\alias{crop,Comparison,ANY-method}
+\alias{crop,data.table,ANY-method}
 \title{Crop methods}
 \usage{
-\S4method{crop}{Field}(x, y, spatial.extent.id = NULL, ...)
+\S4method{crop}{Field,ANY}(x, y, spatial.extent.id = NULL, ...)
 
-\S4method{crop}{Comparison}(x, y, spatial.extent.id = NULL, ...)
+\S4method{crop}{Comparison,ANY}(x, y, spatial.extent.id = NULL, ...)
 
-\S4method{crop}{data.table}(x, y, spatial.extent.id = NULL, ...)
+\S4method{crop}{data.table,ANY}(x, y, spatial.extent.id = NULL, ...)
 }
 \arguments{
 \item{x}{A Field or Comparison or a stand-alone data.table to be cropped}
