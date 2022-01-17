@@ -1,7 +1,9 @@
 
 #' Plots sub-annual cycles
 #' 
-#' For a list of Fields, plots the sub-annual cycles of the selected layers on on top of each other.
+#' For a list of Fields, plots the sub-annual cycles of the selected layers.  Automatically splits data into separate panels based on Source, Quantity, 
+#' Sire and/or Region, but instead these can be distinguished by aesthetics - see the \code{col.by}, \code{linetype.by} and \code{alpha.by} arguments.
+#' Summary or aggregate function can optionally be applied and plotted on top. 
 #' 
 #' @param fields The data to plot. Can be a Field or a list of Fields.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
@@ -10,22 +12,23 @@
 #' @param title A character string to override the default title.
 #' @param subtitle A character string to override the default subtitle.
 #' @param x.label,y.label Character strings for the x and y axes (optional)
-#' @param col.by,linetype.by,size.by,shape.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
-#' Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". 
-#' NOTE SPECIAL DEFAULT CASE:  By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
+#' @param col.by,linetype.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type and alpha (transparency).
+#' Can meaningfully take the values "Layer", "Source", "Site", "Region" or "Quantity". 
+#' NOTE SPECIAL DEFAULT CASE:  By default, \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
 #' the data are distinguished by different facet panels.  To change this behaviour and colour the lines according to something different, set the "col.by" argument to one of the
 #' strings suggested above.
-#' @param cols,linetypes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
-#' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/linetype/shape/alpha values
-#' to particular Layers/Sources/Sites/Quantities.    
+#' @param cols,linetypes,alphas A vector of colours, line types, or alpha values (respectively) to control the aesthetics of the lines.  
+#' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/linetype/alpha values
+#' to particular Layers/Sources/Sites/Quantities/Regions.    
 #' @param col.labels,linetype.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
-#' number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
-#' @param aggregate.function A function to aggregate across year and plot on top.  Obvious choice is \code{mean}, but there is flexibility to anything that operates on 
-#' a vector of numerics. 
-#' @param aggregate.function.label An optional character string to give a pretty label to for the aggregate function legent
+#' number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/size/alpha values to particular Layers/Sources/Sites/Quantities/Region.    
+#' @param line.size Numeric, width of the lines on the plot (note the width is doubled for the aggregate/summary line)
+#' @param point.size Numeric, size of the points for the aggregate/summary data
+#' @param summary.function A function to summarise (aggregate) across year and plot on top.  Obvious choice is \code{mean}, but there is flexibility to anything that operates on 
+#' a vector of numerics - eg median, a 95th percentile, standard deviation.
+#' @param summary.function.label An optional character string to give a pretty label to for the summary function legend.
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
-#' @param alpha A numeric (range 0-1), to give the transparency (alpha) of the annual lines
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 #' \itemize{
@@ -68,14 +71,14 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
                           point.size = 3 ,
                           y.label = NULL,
                           x.label = NULL,
-                          aggregate.function,
-                          aggregate.function.label = deparse(substitute(aggregate.function)),
+                          summary.function,
+                          summary.function.label = deparse(substitute(summary.function)),
                           text.multiplier = NULL,
                           plot = TRUE,
                           ...) {
   
   
-  Quantity = Month = Source = Value = Year = NULL
+  Quantity = Month = Source = Value = Year = PlotGroup = StatsGroup = NULL
   
   ### CHECK INPUTS AND HANDLE SPECIAL CASES
   
@@ -223,15 +226,9 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
     else if(is.null(subtitle)) subtitle <- waiver()
   }
   
-  # return the data if plot = FALSE
-  if(!plot) return(data.toplot)
+
   
-  
-  ###### MAKE THE PLOT ######
-  
-  
-  ### Make the GROUPS - these are columns for ggplot which are essentially interactio terms to group the data
-  
+  ### MAKE THE GROUPS - these are columns for ggplot which are essentially interaction terms to group the data
   
   # The plot group 
   
@@ -244,22 +241,28 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(!missing(linetype.by) && !is.null(linetype.by)) interaction_list <- append(interaction_list, linetype.by)
   if(!missing(alpha.by) && !is.null(alpha.by)) interaction_list <- append(interaction_list, alpha.by)
   
-  # and now make the interaction colum
+  # and now make the interaction column
   data.toplot[, PlotGroup := interaction(.SD), .SDcols = interaction_list]
   
   
   # The Stats Group - this is much easier since we every possible combination must have it's own stat
-  stats_SDcols <- names(data.toplot) %in% c("Source", "Quantity", "Region", "Site")
+  stats_SDcols <- names(data.toplot) %in% c("Source", "Quantity", "Layer", "Region", "Site")
   data.toplot[, StatsGroup := interaction(.SD), .SDcols = stats_SDcols]
 
   
+  
+  ###### MAKE THE PLOT #####
+  
+  # return the data if plot = FALSE
+  if(!plot) return(data.toplot)
+  
+  
   # build the basic plot
-  # p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", col = col.by, linetype = linetype.by, group = "PlotGroup"), alpha = alpha)
   p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", col = col.by, linetype = linetype.by, alpha = alpha.by,  group = "PlotGroup"))
   
   
   
-  # build aesthetic arguments for geom_line
+  # build aesthetic arguments for geom_line call
   
   # line size if a fixed value for all 
   aes.args <- list(data = as.data.frame(data.toplot), size = line.size)
@@ -286,51 +289,54 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
   
-  # make scale a bit bigger - consider removing??
+  # make scale a bit bigger - consider removing for purity??  this can easy be controlled by the user
   p <- p + theme(legend.key.size = unit(2, 'lines'))
   
   
   
   
   # if chosen, plot the average year
-  if(!missing(aggregate.function)) {
+  if(!missing(summary.function)) {
     
     # if is the special case where we colour by year
     if(special_case_year_colour) {
       
-      # this works for to make points 
-      #p <- p + stat_summary(aes(group=StatsInteraction), fun=mean, geom="point", color="black", fill = "black", shape = 21, size = 2)
-      # but actually prefer lines 
       # NOTE in this case we always use black
-      p <- p + stat_summary(aes_string(group="StatsGroup", linetype = linetype.by), fun=aggregate.function, geom="line", color="black", size = line.size * 2)
+
+      # special case to add a line type scale if it wasn't already added
+      # honestly not sure exactly why this works and many other things I tried didn't work
+      if(missing(linetype.by)) {
+        
+        p <- p + stat_summary(aes(group=col.by, linetype = "dummy string"), fun=mean, geom="line", color="black", size = line.size * 2)
+        p <- p + scale_linetype_manual(values=c("dummy string"="solid"), labels = c("dummy string" = summary.function.label), name = element_blank())
+       
+      } 
+      # if linetypes are already specified
+      else{
+        p <- p + stat_summary(aes_string(group="StatsGroup", linetype = linetype.by), fun=summary.function, geom="line", color="black", size = line.size * 2)
+        # title the legend
+        p <- p + labs(linetype=summary.function.label) 
+      }
       
-      # title the legend
-      p <- p + labs(linetype=aggregate.function.label) 
+   
       
     }
-    #if *not* the special case where we could by year
+    #if *not* the special case where we colour by year
     else {
      
       # add the stats
-      p <- p + stat_summary(aes(group=StatsGroup, fill = get(col.by)), fun=aggregate.function, geom="point", color="black", shape = 21, size = point.size)
+      p <- p + stat_summary(aes(group=StatsGroup, fill = get(col.by)), fun=summary.function, geom="point", color="black", shape = 21, size = point.size)
       
       # colour the points appropriately
-      if(!is.null(cols)) p <- p + scale_fill_manual(values = cols, name = aggregate.function.label, labels = col.labels)
-      else p <- p + viridis::scale_fill_viridis(name = aggregate.function.label, labels = col.labels, discrete = TRUE, option = "C", end = 0.9 )
-      p <- p + labs(shape=aggregate.function.label ) 
-      #p <- p + labs(colour=aggregate.function.label ) 
-      
-      
+      if(!is.null(cols)) p <- p + scale_fill_manual(values = cols, name = summary.function.label, labels = col.labels)
+      else p <- p + viridis::scale_fill_viridis(name = summary.function.label, labels = col.labels, discrete = TRUE, option = "C", end = 0.9 )
+      p <- p + labs(shape=summary.function.label ) 
+
       # also add linetype if necessary
       if(!missing(linetype.by)) {
-        p <- p + stat_summary(aes_string(group="StatsGroup", linetype = linetype.by), fun=aggregate.function, geom="line", color="black", size = line.size * 2)
-        #p <- p + labs(linetype=aggregate.function.label ) 
-        #p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
-      } 
-      
-      # title the legend
-      #p <- p + labs(fill=aggregate.function.label ) 
-      
+        p <- p + stat_summary(aes_string(group="StatsGroup", linetype = linetype.by), fun=summary.function, geom="line", color="black", size = line.size * 2)
+       } 
+    
     }
     
   }

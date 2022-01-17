@@ -282,14 +282,24 @@ London.mlai <- getField(source = GUESS.run,
                      spatial.extent.id = "London baby")
 
 
-# plot LAI
-print(plotSubannual(field = London.mlai,
-                   col.by = "Year",
-                   alpha = 0.5))
+# plot LAI not that by default the data are colour by year
+print(plotSubannual(field = London.mlai))
+
+# add the representation mean year 
+print(plotSubannual(field = London.mlai, 
+                    summary.function = mean,
+                    summary.function.label = "Mean Year"))
+
+# also avoid colouring by year by instead specifying to colour by the SOurce
+print(plotSubannual(field = London.mlai, 
+                    summary.function = mean,
+                    summary.function.label = "Mean Year",
+                    col.by = "Source"))
+
+
 
 ```
 
-Note, that since `plotSeasonal()` takes different arguments and follows a different logic to `plotSpatial()` and `plotTemporal()` it will probably be overhauled in future versions.
 
 #### Calculating biomes and categorical comparisons 
 

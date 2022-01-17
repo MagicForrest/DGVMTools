@@ -16,21 +16,17 @@ plotSubannual(
   linetypes = NULL,
   linetype.by = NULL,
   linetype.labels = waiver(),
-  sizes = NULL,
-  size.by = NULL,
-  size.labels = waiver(),
-  shapes = NULL,
-  shape.by = NULL,
-  shape.labels = waiver(),
   alphas = NULL,
   alpha.by = NULL,
   alpha.labels = waiver(),
+  line.size = 0.5,
+  point.size = 3,
   y.label = NULL,
   x.label = NULL,
-  plotAverage = TRUE,
+  summary.function,
+  summary.function.label = deparse(substitute(summary.function)),
   text.multiplier = NULL,
   plot = TRUE,
-  alpha = 0.2,
   ...
 )
 }
@@ -46,29 +42,34 @@ Leave empty or NULL to plot all gridcells (but note that if this involves too ma
 
 \item{subtitle}{A character string to override the default subtitle.}
 
-\item{cols, linetypes, sizes, shapes, alphas}{A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.
-Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/linetype/shape/alpha values
-to particular Layers/Sources/Sites/Quantities.}
+\item{cols, linetypes, alphas}{A vector of colours, line types, or alpha values (respectively) to control the aesthetics of the lines.
+Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/linetype/alpha values
+to particular Layers/Sources/Sites/Quantities/Regions.}
 
-\item{col.by, linetype.by, size.by, shape.by, alpha.by}{Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
-Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". 
-By default \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
+\item{col.by, linetype.by, alpha.by}{Character strings defining the aspects of the data which which should be used to set the colour, line type and alpha (transparency).
+Can meaningfully take the values "Layer", "Source", "Site", "Region" or "Quantity". 
+NOTE SPECIAL DEFAULT CASE:  By default, \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
 the data are distinguished by different facet panels.  To change this behaviour and colour the lines according to something different, set the "col.by" argument to one of the
 strings suggested above.}
 
-\item{col.labels, linetype.labels, size.labels, shape.labels, alpha.labels}{A vector of character strings which are used as the labels for the lines. Must have the same length as the
-number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.}
+\item{col.labels, linetype.labels, alpha.labels}{A vector of character strings which are used as the labels for the lines. Must have the same length as the
+number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/size/alpha values to particular Layers/Sources/Sites/Quantities/Region.}
+
+\item{line.size}{Numeric, width of the lines on the plot (note the width is doubled for the aggregate/summary line)}
+
+\item{point.size}{Numeric, size of the points for the aggregate/summary data}
 
 \item{x.label, y.label}{Character strings for the x and y axes (optional)}
 
-\item{plotAverage}{Boolean, if TRUE plot the mean of all years}
+\item{summary.function}{A function to summarise (aggregate) across year and plot on top.  Obvious choice is \code{mean}, but there is flexibility to anything that operates on 
+a vector of numerics - eg median, a 95th percentile, standard deviation.}
+
+\item{summary.function.label}{An optional character string to give a pretty label to for the summary function legend.}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}
 
 \item{plot}{Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
-
-\item{alpha}{A numeric (range 0-1), to give the transparency (alpha) of the annual lines}
 
 \item{...}{Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
 \itemize{
@@ -83,7 +84,9 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 Returns either a ggplot2 object or a data.table (depending on the 'plot' argument)
 }
 \description{
-For a list of Fields, plots the sub-annual cycles of the selected layers on on top of each other.
+For a list of Fields, plots the sub-annual cycles of the selected layers.  Automatically splits data into separate panels based on Source, Quantity, 
+Sire and/or Region, but instead these can be distinguished by aesthetics - see the \code{col.by}, \code{linetype.by} and \code{alpha.by} arguments.
+Summary or aggregate function can optionally be applied and plotted on top.
 }
 \details{
 Note that like all \code{DGVMTools} plotting functions, \code{plotSubannual} splits the data into separate panels using the \code{ggplot2::facet_wrap()}.  If you want to 'grid' the facets
