@@ -14,6 +14,7 @@
 #' @aliases crop
 #' @exportMethod crop
 #' @importMethodsFrom raster crop
+#' @importMethodsFrom terra ext
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 #' 
 #' 
@@ -24,9 +25,38 @@ if (!isGeneric("crop")) {
 }
 
 
-#######################################################################################
-###### Methods for cropping Fields to a raster::Extent object ####################
-#######################################################################################
+###################################################################################################################################
+######### Methods for cropping Fields to a raster::Extent object (or anything from which one may be derived) ######################
+###################################################################################################################################
+
+#' Get an extent from anything
+#' 
+#' Internal function to try to get a raster::Extent object from any potential y argument to a \code{crop} command.
+#' 
+#' @param y Something to crop to  (ie the \code{y} argument of a crop command)
+#' 
+#' TODO One day this should be converted to terra::SpatExtent.  Probably whenever raster is really deprecated and shall be purged from DGVMTools.
+#' 
+#' @return A raster::Extent object
+#' @keywords internal
+#' 
+extractRasterExtent <- function(y) {
+  
+  # get raster::Extent for cropping
+  y_extent <- try ( extent(y), silent=TRUE )
+  if (class(y_extent) == "try-error") {
+    y_SpatExtent <- try ( terra::ext(y), silent=TRUE ) 
+    if(class(y_SpatExtent) != "try-error"){
+      y_extent <- raster::extent(as.vector(y_SpatExtent)) 
+    }
+    else {
+      stop('Cannot get an raster::Extent object or terra::SpatExtent from argument y')
+    }
+  }
+  methods::validObject(y_extent)
+  return(y_extent)
+  
+}
 
 
 #' @rdname crop-methods
@@ -39,11 +69,7 @@ setMethod("crop", signature(x="Field", y = "ANY"), function(x, y, spatial.extent
   Lon = Lat = NULL
   
   # get raster::Extent for cropping
-  y <- try ( extent(y), silent=TRUE )
-  if (class(y) == "try-error") {
-    stop('Cannot get an raster::Extent object from argument y')
-  }
-  methods::validObject(y)
+  y <- extractRasterExtent(y)
  
   # crop the data and set the key 
   dt <- x@data
@@ -70,11 +96,7 @@ setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y, spatial.e
   Lon = Lat = NULL
  
   # get raster::Extent for cropping
-  y <- try ( extent(y), silent=TRUE )
-  if (class(y) == "try-error") {
-    stop('Cannot get a raster::Extent object from argument y')
-  }
-  methods::validObject(y)
+  y <- extractRasterExtent(y)
   
   # crop the data and set the key
   dt <- x@data
@@ -94,11 +116,8 @@ setMethod("crop", signature(x="Comparison", y = "ANY"), function(x, y, spatial.e
 #' @rdname crop-methods
 setMethod("crop", signature(x="data.table", y = "ANY"), function(x, y, spatial.extent.id = NULL, ...) {
   
-  y <- try ( extent(y), silent=TRUE )
-  if (class(y) == "try-error") {
-    stop('Cannot get a raster::Extent object from argument y')
-  }
-  methods::validObject(y)
+  # get raster::Extent for cropping
+  y <- extractRasterExtent(y)
   
   Lon = Lat = NULL
 

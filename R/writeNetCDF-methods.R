@@ -61,31 +61,29 @@
 #' @exportMethod writeNetCDF
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}   
 #' 
-#' 
-#' 
-# first define (redfine) the generic
-if (!isGeneric("writeNetCDF")) {
-  setGeneric("writeNetCDF", function(x, 
-                                     filename, 
-                                     start.date = NULL, 
-                                     verbose = TRUE, 
-                                     quantity = NULL, 
-                                     source = NULL, 
-                                     layer.names = NULL,
-                                     layer.dim.name = NULL,
-                                     layer.dim.values = NULL,
-                                     lat.dim.name = "lat",
-                                     lon.dim.name = "lon",
-                                     time.dim.name = "time",
-                                     time.values = NULL, 
-                                     calendar = "365_day",
-                                     global.extent = FALSE,
-                                     add.missing.cols = TRUE,
-                                     add.missing.rows = TRUE,
-                                     nc.verbose = FALSE, 
-                                     .sta.info = NULL,
-                                     ...) standardGeneric("writeNetCDF"))
-}
+#' @docType methods
+# first define generic (note had to remove if(!isGeneric()) statement to run units tests outside Check)
+setGeneric("writeNetCDF", function(x, 
+                                   filename, 
+                                   start.date = NULL, 
+                                   verbose = TRUE, 
+                                   quantity = NULL, 
+                                   source = NULL, 
+                                   layer.names = NULL,
+                                   layer.dim.name = NULL,
+                                   layer.dim.values = NULL,
+                                   lat.dim.name = "lat",
+                                   lon.dim.name = "lon",
+                                   time.dim.name = "time",
+                                   time.values = NULL, 
+                                   calendar = "365_day",
+                                   global.extent = FALSE,
+                                   add.missing.cols = TRUE,
+                                   add.missing.rows = TRUE,
+                                   nc.verbose = FALSE, 
+                                   .sta.info = NULL,
+                                   ...) standardGeneric("writeNetCDF"))
+
 
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="Field", filename = "character"), function(x, filename, ...) {
@@ -244,7 +242,7 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
     stop("When calling writeNetCDF for multi-layered Rasters where each layer corresponds to one variable, the length of the layer.names argument must be the same as the number of layers in the raster.")    
     
   }
- 
+  
   
   # make a list of lons and lats
   xres <- raster::xres(x)
@@ -320,6 +318,38 @@ setMethod("writeNetCDF", signature(x="Raster", filename = "character"), function
   
 })
 
+# Support for terra package here simply enabled by converting a terra::SpatRaster object to a raster::Raster object and proceeding from there
+# Eventually this should be replaced with a terra only pathway as raster becomes deprectaed
+#' @rdname writeNetCDF-methods
+setMethod("writeNetCDF", signature(x="SpatRaster", filename = "character"), function(x, filename, ...) {
+  
+  if(is.null(quantity) || missing(quantity)) stop("When calling a writeNetCDF() on a SpatRaster you *need* to pass in a quantity object supply metadata. \n Fortunately the is easy to define if you don't have one, see Quantity-class")
+  if(is.null(layer.names) || missing(layer.names)) stop("When calling a writeNetCDF() on a SpatRaster you *need* to provide a 'layer.names' argument to determine how to name the layers.")
+  
+  if(!missing(layer.dim.values)) warning("Argument 'layer.dim.values' to writeNetCDF is ignored when writing SpatRaster objects.")
+
+  print(x)
+  x_raster <- as(x, "Raster")
+  print(x_raster)
+  writeNetCDF(as(x, "Raster"), 
+              filename, 
+              verbose = verbose, 
+              nc.verbose = nc.verbose,
+              start.date = start.date,
+              quantity = quantity,
+              source = source,
+              layer.names = layer.names,
+              layer.dim.name = layer.dim.name,
+              layer.dim.values = layer.dim.values,
+              lat.dim.name = lat.dim.name,
+              lon.dim.name = lon.dim.name,
+              time.dim.name = time.dim.name,
+              calendar = calendar,
+              .sta.info = .sta.info,
+              ...)
+  
+})
+
 
 #' @rdname writeNetCDF-methods
 setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x, filename, ...) {
@@ -353,7 +383,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # if layer.dim.values supplied then use them, else use the names that come on the list of arrays
   if(!missing(layer.dim.values) & !is.null(layer.dim.values))  layers <- names(layer.dim.values)
   else layers <- names(x)
- 
+  
   
   ### MAKE DIMENSIONS ####
   all.dimnames <- dimnames(x[[1]])
@@ -382,7 +412,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
                                            create_dimvar=TRUE)
   }
   
- 
+  
   ### DEFINE THE VARIABLES IN THE NETCDF FILE: ONE FOR EACH LAYER, OR COMBINE THEM IF WE WANT LAYERS TO BE DEFINED ALONG A DIMENSION AXIS
   all.vars <- list()
   # individual layers
@@ -393,7 +423,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   }
   # else turn layers into a dimension
   else {
-        all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long_name, ...)  # standard
+    all.vars <- ncdf4::ncvar_def(name = quantity@id, units = quantity.units, dim = all.dims, longname = long_name, ...)  # standard
   } 
   
   
@@ -434,7 +464,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
       ncdf4::ncatt_put(outfile, layer.dim.name, paste(layer.dim.name, layer.dim.values[this_layer_name], sep ="_"), this_layer_name)
     }
   }
- 
+  
   
   # standard spatial attributes
   outfile <- addStandardSpatialAttributes(outfile)

@@ -6,6 +6,8 @@
 \alias{writeField,Field-method}
 \title{Write methods}
 \usage{
+writeField(x)
+
 \S4method{writeField}{Field}(x)
 }
 \arguments{
