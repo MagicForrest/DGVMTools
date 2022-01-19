@@ -10,8 +10,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
   
-```{r packages and setup, echo=FALSE}
-  knitr::opts_chunk$set(echo=FALSE, fig.width=8, autodep=TRUE)
+  ```{r packages and setup, echo=FALSE}
+knitr::opts_chunk$set(echo=FALSE, fig.width=8, out.width = "100%", autodep=TRUE)
 library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 
 ```
@@ -41,7 +41,7 @@ example.run.directory <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope
 print(example.run.directory)
 
 GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
-                          dir = example.run.directory, # this would normlly just be a character string containing a path
+                          dir = example.run.directory, # this would normally just be a character string containing a path
                           format = GUESS,
                           name = "LPJ-GUESS Example Run")
 ```
@@ -78,7 +78,7 @@ This is a lot output but it basically describes everything that you might ever n
 
 ###  Step 3: Aggregating Data
 
-Whilst reading in the entire data set may be useful, it is often to large and unweildy to work with or to plot.  When analysing DGVM output, one commonly aggregates the data across space or time. To get the data in a more managable form we are going to call `getField()` two more times, this time making use of its built in  __aggregation__ options.  First we open the file and simulateneously aggregate across all years using the `year.aggregate.method` (in this case we take the mean, but there are other options such as the sum or the variance)
+Whilst reading in the entire data set may be useful, it is often to large and unwieldy to work with or to plot.  When analysing DGVM output, one commonly aggregates the data across space or time. To get the data in a more manageable form we are going to call `getField()` two more times, this time making use of its built in  __aggregate__ options.  First we open the file and simultaneously aggregate across all years using the `year.aggregate.method` (in this case we take the mean, but there are other options such as the sum or the variance)
 
 ``` {r Get data with year aggregation, echo=TRUE}
 LAI.year.mean <- getField(source = GUESS.run, 
@@ -115,13 +115,19 @@ Having got some sensibly aggregated data, we can now plot it using `plotTemporal
 
 First we us `plotSpatial` to produce a map from the annually-averaged data.  Note the underlying plot system is ggplot and `plotSpatial` returns a ggplot2 object which we then need to print in order to actually see it.
 
-``` {r Spatial plot, out.width = "95%", fig.width = 8, fig.asp = 1, echo = TRUE}
+``` {r Spatial plot, fig.asp = 1, echo = TRUE}
 print(plotSpatial(LAI.year.mean))
+
+# save this plot with bigger text as an example plot for the reference publication, also omittingthe tropical layers which are all zero in europe
+spatial_example_plot <- plotSpatial(LAI.year.mean, 
+                                    layers = c("BNE", "BINE", "BNS", "IBS", "TeBS", "TeBE", "C3G", "C4G"),
+                                    text.multiplier = 2.5)
+
 
 ```
 
 By default all layers are plotted.  We can choose one (or more) using the `layers` argument.
-``` {r Spatial plot layers, out.width = "95%", fig.width = 8, fig.asp = 0.5, echo = TRUE}
+``` {r Spatial plot layers, fig.asp = 0.5, echo = TRUE}
 print(plotSpatial(LAI.year.mean, layers = c("TeBS", "Total")))
 
 ```
@@ -132,8 +138,13 @@ The `plotSpatial` function comes with a lot of arguments which provide a great d
 
 The spatially aggregated Field can be plotted as a time series using `plotTemporal`.
 
-``` {r Temporal plot, out.width = "95%", fig.width = 8, fig.asp = 1, echo = TRUE}
+``` {r Temporal plot, fig.asp = 1, echo = TRUE}
 print(plotTemporal(LAI.spatial.mean))
+
+
+# save a temporal example plot for the reference publication
+temporal_example_plot <- plotTemporal(LAI.spatial.mean, 
+                                      text.multiplier = 2.5)
 
 ```
 
@@ -141,7 +152,7 @@ And so we see a pretty straightforward times series plot of LAI averaged over th
 
 Note that trying to make plots of data with the incorrect dimensions should fail gracefully:
 
-``` {r Fail plot, out.width = "95%", fig.width = 8, fig.asp = 1, echo = TRUE}
+``` {r Fail plot, fig.asp = 1, echo = TRUE}
 attempted.spatial.plot <- plotSpatial(LAI.spatial.mean)
 attempted.temporal.plot <- plotTemporal(LAI.year.mean)
 ```
@@ -153,7 +164,7 @@ Having read, aggregated and visualised data, the next steps would likely be furt
 
 #### Combining layers using `layerOp()`
 
-The `layerOp()` function enables operations on layers, including arithmetic operations (+,-,*,/) and statistical calculations (mean, max, var).  Furthermore the `.` (dot) notation allows layers to be selected based on the properties od the corresponsing trees.  For example:
+The `layerOp()` function enables operations on layers, including arithmetic operations (+,-,*,/) and statistical calculations (mean, max, var).  Furthermore the `.` (dot) notation allows layers to be selected based on the properties defined `Layer` objects.  For example here we select all layers when have the string `"Tree"` defined in any slot of their `Layer` object:
 
 ``` {r layerOp, echo=TRUE}
 
@@ -170,7 +181,7 @@ print(plotSpatial(LAI.year.mean, c("TreeTotal1", "TreeTotal2", "TreeTotalDiff"))
 
 ```
 
-Selections can also be made on the phenology, climate zone and leaf form of PFT layers.  The shorthand `".PFT"` can also be used to select all PFT layers.  To calculate the maximum PFT in each gridcell:
+Note that to use this shorthand, the layers must be defined and present in the `defined.layers` slot of the `Source` object.  Selections can also be made on the phenology, climate zone and leaf form of PFT layers.  The shorthand `".PFT"` can also be used to select all PFT layers.  To calculate the maximum PFT in each gridcell:
 
 ``` {r layerOp max, echo=TRUE}
 
@@ -188,7 +199,7 @@ LAI.year.mean <- layerOp(LAI.year.mean, "sum", ".Grass", "Grass")
 LAI.year.mean <- layerOp(LAI.year.mean, sum, ".Tree", "Tree")
 
 
-# Calculate if trees or grasssis dominant 
+# Calculate if trees or grasss is dominant 
 LAI.year.mean <- layerOp(LAI.year.mean, "max.layer", c("Tree", "Grass"), "MaxLifeform")
 
 # plot
@@ -207,7 +218,7 @@ LAI.year.mean <- layerOp(LAI.year.mean, "/", c("Grass", "Total"), "GrassFraction
 print(plotSpatial(LAI.year.mean, c("TreeFraction", "GrassFraction")))
 ```
 
-The `layerOp()` functions is very flexible (it even works with suitable arbitrary functions), see the function documentation for further details.  Note that the "-" and "/" operations only work with exactly two input layers given inthe `layers` arguement, and like the rest of the package they follow a "one-two" convention for ordering ie. "layer one minus layer two" or "layer one over layer two".
+The `layerOp()` functions is very flexible (it even works with suitable arbitrary functions), see the function documentation for further details.  Note that the "-" and "/" operations only work with exactly two input layers given in the `layers` argument, and like the rest of the package they follow a "one-two" convention for ordering ie. "layer one minus layer two" or "layer one over layer two".
 
 #### Reading data and comparing layers
 
@@ -248,7 +259,7 @@ print(Saatchi.vegC)
 print(plotSpatial(Saatchi.vegC))
 ```
 
-Now we formally compare the layers using the `compareLayers()` function, which also gives us some comparison metrics.  The esulting `Comparison` object can be plotting with `plotSpatialComparison()` and `plotSactterComparison()`.
+Now we formally compare the layers using the `compareLayers()` function, which also gives us some comparison metrics.  The ersulting `Comparison` object can be plotting with `plotSpatialComparison()` and `plotScatterComparison()`.
 
 ``` {r comparison, fig.asp = 1, echo=TRUE}
 # compare layers to produce a Comparison object
@@ -260,6 +271,11 @@ print(vegC.comparison )
 # plot difference map
 print(plotSpatialComparison(vegC.comparison))
 
+# build a slightly reformatted version for the reference publication
+comparison_example_plot <- plotSpatialComparison(vegC.comparison, 
+                                                 text.multiplier = 2.5,
+                                                 title = "Tree C Mass Difference: LPJ-GUESS - Saatchi et al. 2011")
+
 # plot side-by-side
 print(plotSpatialComparison(vegC.comparison, type = "values"))
 
@@ -270,16 +286,16 @@ print(plotScatterComparison(vegC.comparison))
 
 #### Selecting gridcells and plotting the subannual cycle
 
-It is also possible to select gridcells using `selectGridcells()` or the `spatial.extent` argument to getField().  The `spatial.extent` can be a single gridcell (as a numeric two-vector of Lon and Lat),a data.frame or a datat.table with columns Lon and Lat or shapefile (as a SpatialPolygonDataFrame) and anything which can be coerced to a `raster:Extent`.  To select rectangular spatial extents, the `raster::crop()` method has been extended. Here we use first make a Field with only one gridcell and then use the `plotSubannual()` function to plot the seasonal cycle.  Note that to get the monthly of LAI we are using the `"mlai"` quantity instead of the `"lai"` quantity.
+It is also possible to select gridcells using `selectGridcells()` or the `spatial.extent` argument to getField().  The `spatial.extent` can be a single gridcell (as a numeric two-vector of Lon and Lat), a data.frame or a data.table with columns Lon and Lat, or shapefile (as a SpatialPolygonDataFrame) and anything which can be coerced to a `raster::Extent` or a `terra::Ext`.  To select rectangular spatial extents, the `raster::crop()` method has been extended. Here we use first make a Field with only one gridcell and then use the `plotSubannual()` function to plot the seasonal cycle.  Note that to get the monthly of LAI we are using the `"mlai"` quantity instead of the `"lai"` quantity.
 
 ``` {r select, fig.asp = 1, echo=TRUE}
 
 # define a gridecll and the get a Field of the monthly LAI for the gridcell
 gridcell <- data.frame(Lon = c(0.25), Lat = c(51.25))
 London.mlai <- getField(source = GUESS.run, 
-                     var = "mlai",
-                     spatial.extent = gridcell,
-                     spatial.extent.id = "London baby")
+                        var = "mlai",
+                        spatial.extent = gridcell,
+                        spatial.extent.id = "Approximately London")
 
 
 # plot LAI not that by default the data are colour by year
@@ -296,6 +312,13 @@ print(plotSubannual(field = London.mlai,
                     summary.function.label = "Mean Year",
                     col.by = "Source"))
 
+
+# Store example plot for reference publication
+
+subannual_example_plot <- plotSubannual(field = London.mlai, 
+                                        summary.function = mean,
+                                        summary.function.label = "Mean Year",
+                                        text.multiplier = 2.5)
 
 
 ```
@@ -372,18 +395,19 @@ print(lifeform.plot)
 # arrange facets into two columns with a subsequent call to facet_wrap()
 lifeform.plot <- lifeform.plot + facet_wrap(~Facet, ncol = 2)
 print(lifeform.plot)
+
 ```
 
 #### Formatting legends and text
 The `theme()` and `guides()` functions are very handy.  See ggplot2 documentation for more info.
 
-``` {r legends, echo=TRUE}
+``` {r legends, fig.height=8, echo=TRUE}
 
 # ove and format legends, and make the text slightly smaller
 biome.plot <- plotSpatialComparison(biome.comparison, type = "values")
 print(biome.plot)
 biome.plot <- biome.plot + theme(legend.position = "bottom", text = element_text(size = theme_get()$text$size * 0.75))
-biome.plot <- biome.plot+ guides(fill = guide_legend(ncol = 2))
+biome.plot <- biome.plot+ guides(fill = guide_legend(ncol = 4))
 print(biome.plot)
 ```
 
@@ -402,7 +426,7 @@ Many objects have an `id` which should be a unique alphanumeric character string
 
 ### Functions/methods
 
-Obviously there are quite a lot of the fuctions in the package as it aims to go from raw model output data to publication-quality plots.  Typically a script will start with calls to `defineSource()` to initialise one or more `Source` objects.  The next step might be to call `getField()` which actually extracts data from the `Source` and builds a `Field` objects.  The `getField()` function has options for selecting data in space and time, and also for aggregating it (for example to calculate the average of all years, or the total across a region).  However you can further refine the spatial-temporal dimensions of `Field` by applying the `aggregate` family of functions (`aggregateSpatial()`, `aggregateYears()` and `aggregateSubannual()`) or the `select` family of function (`selectGridcells()`, `selectMonth()`, `selectYears()`, `selectSeasons()`) and the `crop()` method (which crops the spatial extent exactly like the `raster::crop` function, indeed, it even work with raster objects).
+Obviously there are quite a lot of the fuctions in the package as it aims to go from raw model output data to publication-quality plots.  Typically a script will start with calls to `defineSource()` to initialise one or more `Source` objects.  The next step might be to call `getField()` which actually extracts data from the `Source` and builds a `Field` objects.  The `getField()` function has options for selecting data in space and time, and also for aggregating it (for example to calculate the average of all years, or the total across a region).  However you can further refine the spatial-temporal dimensions of `Field` by applying the `aggregate` family of functions (`aggregateSpatial()`, `aggregateYears()` and `aggregateSubannual()`) or the `select` family of function (`selectGridcells()`, `selectDays()`,  `selectMonths()`, `selectYears()`, `selectSeasons()`) and the `crop()` method (which crops the spatial extent exactly like the `raster::crop` function, indeed, it even work with raster and terra objects).
 
 Having sorted out the spatial and temporal dimemsions, you can then manipulation the `Field` and plot it.  Rember that data is stored as 'layers' similar to GIS and raster?  To combine layers and perform other operations one can use the `layerOp()` function which supports arithmetic operators (+,-,/,*), finding maximum and minimums of a group of layers, and the mean, standard deviation and variance across layers.  One can plot layers in spatial layers (i.e. maps) with `plotSpatial()` and temporal layers (time series) with `plotTemporal()`.  Two layers can be quickly compared with a scatter plot using `plotScatter()`.  For a more rigorous comparison, one can use `compareLayers()` to a produce a `Comparison` objects which can be plotted in a variety of ways with dedicated functions.
 
@@ -427,5 +451,37 @@ Much of the package could be utilised for any data which follows comes distribut
 * `Field` objects can be stored on disk and automatically re-read by the `getField()` function, potentionally saving a lot of time (since often the bottle neck in analysis scripts is reading the raw data from disk).
 * Plotting is done using the package ggplot which is especially useful as plots can be modified after they have been created (much more flexibly than base or lattice graphics).  This maintains relative simplicity in the DGVMTools plot function, but high levels of flexibility through subsequent modifications with ggplot2 commands.
 * Unlike raster objects, `Field`s do not need to be on grids of equally spaced longitude and latitude, or even on grids at all!  This is handy when working with sites, or with grid from climate models which often have unevenly spaced latitudes.
-* Regridding is not really supporting by DGVMTools, although there is a wrapper to the `cdo` (climate data operators package) included which handles some regridding (if `cdo` is installed).
+* Regridding is not supported by DGVMTools.
+
+
+### Example plots for publications
+
+The following code lays out the example plots for the publication describing DGVMTools
+
+
+
+``` {r Publication plots, fig.height=8, echo = TRUE}
+
+
+if(require(ggpubr)) {
+  
+  
+  combined_plot <- ggarrange(spatial_example_plot, temporal_example_plot, subannual_example_plot, comparison_example_plot, ncol = 2, nrow = 2, labels = list("(a)", "(b)", "(c)", "(d)"), font.label = list(size = 35), hjust = 0, vjust = 2.5) 
+  
+  # magicPlot(p = combined_plot, filename = file.path(plot_dir, "ERL_Fig2_combined"), dpi = 72, type = "pdf", height = 1200, width = 1000, family = "Sans")
+  
+  if(require(Cairo) & TRUE){
+    
+    Cairo::Cairo(file = "~/DGVMTools_Example_Figure.png", type = "png", width = 2000, height = 2000)
+    print(combined_plot)
+    dev.off()
+  }
+  
+  print(combined_plot)
+  
+}
+
+```
+
+
 
