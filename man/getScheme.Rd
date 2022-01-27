@@ -17,10 +17,8 @@ getScheme(
   subannual.original,
   subannual.aggregate.method,
   sta.info,
-  write = FALSE,
-  write.components = FALSE,
-  read.full = TRUE,
-  read.full.components = TRUE,
+  quick.read = FALSE,
+  quick.read.file = NULL,
   averaged.source,
   verbose = FALSE,
   ...
@@ -64,13 +62,12 @@ See \code{\link{aggregateSubannual}}}
 Can also be a Field object from which the STA info will de derived.
 If specified the following 9 arguments are ignored (with a warning).}
 
-\item{write}{If TRUE, write the data of the \code{Field} to disk as text file.}
+\item{quick.read}{If TRUE then look for pre-processed file on disk. Default is FALSE so it needs to be actively enabled by the user, but doing so
+can save a lot of time if averaged file is already saved on disk.  Note that the the quick.read.file will need to be set}
 
-\item{write.components}{If TRUE, write the data of the *component* \code{Field}s to disk as text file.}
-
-\item{read.full}{If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)}
-
-\item{read.full.components}{If TRUE ignore any pre-averaged file for the *component* variables on disk, if FALSE use them if they are there (can save a lot of time if averaged file is already saved on disk)}
+\item{quick.read.file}{A character string.  If set, the code will look for a file of this name (plus the extension ".RData") in the run directory.
+If if finds one then it reads that.  If it doesn't find the appropriate file, then it reads the raw data, performs whatever cropping and aggregating is necessary, and then saves 
+the data in a file of that name (in the run directory) for use next time.}
 
 \item{averaged.source}{If a list of \code{Source} objects have been supplied to be averaged before the classification, you must supply another \code{Source} object to store the averaged results.}
 

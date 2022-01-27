@@ -14,7 +14,7 @@
 #' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
 #' (usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
 #' standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
-#' in the same way that model output does. 
+#' in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
 #' If specified the following 9 arguments are ignored (with a warning)
@@ -33,10 +33,12 @@
 #' See \code{\link{aggregateSubannual}} 
 #' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 #' Can be "Year", "Month" or "Day".  Currently ignored.
-#' @param read.full If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)
+#' @param quick.read If TRUE then look for pre-processed file on disk. Default is FALSE so it needs to be actively enabled by the user, but doing so
+#' can save a lot of time if averaged file is already saved on disk.  Note that the the quick.read.file will need to be set
+#' @param quick.read.file A character string.  If set, the code will look for a file of this name (plus the extension ".RData") in the run directory.  
+#' If if finds one then it reads that.  If it doesn't find the appropriate file, then it reads the raw data, performs whatever cropping and aggregating is necessary, and then saves 
+#' the data in a file of that name (in the run directory) for use next time.
 #' @param verbose If TRUE give a lot of information for debugging/checking.
-#' Leave missing or set to \code{NULL} to use the standard file name for the particular Format.
-#' @param write If TRUE, write the data of the \code{Field} to disk as text file.
 #' @param ...  Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.  
 #' For all Formats, the followings arguments apply:
 #' \itemize{
@@ -85,8 +87,8 @@ getField <- function(source,
                      subannual.aggregate.method,
                      sta.info,
                      file.name = NULL,
-                     write = FALSE, 
-                     read.full = TRUE, 
+                     quick.read = FALSE, 
+                     quick.read.file = NULL, 
                      verbose = FALSE, 
                      ...){
   
@@ -96,7 +98,15 @@ getField <- function(source,
   ### CHECK ARGUEMENTS
   if(missing(file.name)) file.name <- NULL
   if(!missing(first.year) & !missing(last.year) ) {
-   if(first.year > last.year) stop("first.year cannot be greater than last.year!")
+    if(first.year > last.year) stop("first.year cannot be greater than last.year!")
+  }
+  
+  # check validity quick.read and quick.read.file argument
+  valid.quick.read.file <- !missing(quick.read.file) && !is.null(quick.read.file) && is.character(quick.read.file)  && length(quick.read.file) > 0 
+  if(quick.read && !valid.quick.read.file) {
+    message("You requested to do a quick read, but you didn't give a valid 'quick.read.file' argument, so I am not attempting to do a quick read.")
+    warning("You requested to do a quick read, but you didn't give a valid 'quick.read.file' argument, so I am not attempting to do a quick read.")
+    quick.read <- FALSE
   }
   
   ### CONVERT STRING TO QUANTITY
@@ -152,7 +162,7 @@ getField <- function(source,
     if(!missing(subannual.resolution)) warning("Since 'sta.info' argument has been specified, the 'subannual.resolution' argument will be ignored")
     if(!missing(subannual.aggregate.method)) warning("Since 'sta.info' argument has been specified, the 'subannual.aggregate.method' argument will be ignored")
   }
- 
+  
   
   
   ### CATCH AWKWARD CASE
@@ -167,64 +177,122 @@ getField <- function(source,
                                  var.string = var.string, 
                                  sta.info = sta.info)
   
-  preprocessed.file.name <- file.path(source@dir, paste(target.field.id, "RData", sep = "."))
-  if(verbose) message(paste("Seeking ModelField with id = ", target.field.id, sep = ""))
   
   
- 
-  ### CASE 1 - USE THE PREAVERAGED/CROPPED FIELD FROM DISK IF AVAILABLE (and if we are not forcing a re-read)
-  if(file.exists(paste(preprocessed.file.name)) & !read.full){
+  ### CASE 1 - CHECK FOR PREPROCESSED FIELD FROM DISK IF AVAILABLE AND OPTION ISN'T DISABLED
+  if(valid.quick.read.file) {
+    preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
     
-    # get the object from disk
-    if(verbose) {message(paste("File",  preprocessed.file.name, "found in",  source@dir, "(and read.full not selected) so reading it from disk and using that.",  sep = " "))}
-    model.field <- readRDS(preprocessed.file.name)
-    
-    # Update the source object, that might have (legitimately) changed compared to the id that was used when this model.field was created
-    # for example it might be assigned a new id.
-    model.field@source <- source
-    
-    
-    # Check that the spatial extent matches before returning
-    # Note that there are two cases to check here (specifically defined extents or just the same ids)
-    
-    # If no spatial extent was specified (ie length of spatial.extent arguement was 0) and the spatial.extent.id of the Field that was read in is either: 
-    # "Full" or 
-    # "Global" (which comes some netCDF files processed by the DGVMData package) or
-    # "Unspecified" (which comes from files read by the NetCDF Format of DGVMTools)
-    # then we are sure we have got the full, original spatial extent of the dataset and can use it
-    full.domain.matched <- FALSE
-    if(length(sta.info@spatial.extent) == 0 && model.field@spatial.extent.id %in% c("Full", "Global", "Unspecified")) {
-      full.domain.matched <- TRUE
-      if(verbose) message("Full domain matched.")
-    }
-    
-    # else, if they both have spatial extents specified, check that the actual spatial extents are the same
-    cropped.domain.matched <- FALSE
-    if(length(sta.info@spatial.extent) > 0 && length(model.field@spatial.extent)  > 0 ) {
-      if(identical(sta.info@spatial.extent, model.field@spatial.extent)){
-        cropped.domain.matched <- TRUE
-        if(verbose) message("Cropped domain matched.")
-      }
-    }
-   
-    if(full.domain.matched || cropped.domain.matched){
-      return(model.field)
-    }  
-    
-    # Otherwise we must discard this Field and we need to re-average (and maybe also re-read) using the cases below 
-    message(paste("Spatial extent was requested with id = ", sta.info@spatial.extent.id))
-    message(paste("and extent definition:"))
-    print(sta.info@spatial.extent)
-    message(paste("However, spatial extent found has id = ", model.field@spatial.extent.id))
-    message(paste("and extent definition:"))
-    print(model.field@spatial.extent)
-    message("I am therefore reading the entire raw data again.")
-    
-    rm(model.field)
-    gc()
-    
-  }
- 
+    # proceed to read file if it wasn't disabled by argument
+    if(quick.read){
+      if(verbose) message(paste0("Argument quick.read set to TRUE, so seeking file on disk for quick reading at location: ", preprocessed.file.name))
+      
+      # check for the file on disk and if found proceed
+      if(file.exists(preprocessed.file.name)) { 
+        
+        # get the object from disk
+        if(verbose) {message(paste("File",  preprocessed.file.name, "found in",  source@dir, "so reading it from disk and checking it.",  sep = " "))}    
+        # read the model data with a 
+        
+        successful.read <- FALSE
+        successful.read <- tryCatch(
+          {
+            model.field <- readRDS(preprocessed.file.name)
+            TRUE
+          },
+          error= function(cond){
+            print(cond)
+            warning(paste0("Reading of file ", preprocessed.file.name, " failed, so re-reading the raw data."))
+            FALSE
+          },
+          warning=function(cond) {
+            print(cond)
+            warning(paste0("Reading of file ", preprocessed.file.name, " gave a warning, so for peace of mind I am re-reading the raw data."))
+            FALSE
+          },
+          finally={}
+        )    
+        
+        if(successful.read) {
+          
+          # Update the source object, that might have (legitimately) changed compared to the id that was used when this model.field was created
+          # for example it might be assigned a new name.
+          model.field@source <- source
+          
+          
+          ###  Do some checks 
+          
+          # Check that the spatial extent matches before returning
+          # Note that there are two cases to check here (specifically defined extents or just the same ids)
+          
+          # SPATIAL
+          # If no spatial extent was specified (ie length of spatial.extent arguement was 0) and the spatial.extent.id of the Field that was read in is either: 
+          # "Full" or 
+          # "Global" (which comes some netCDF files processed by the DGVMData package) or
+          # "Unspecified" (which comes from files read by the NetCDF Format of DGVMTools)
+          # then we are sure we have got the full, original spatial extent of the dataset and can use it
+          full.domain.matched <- FALSE
+          if(length(sta.info@spatial.extent) == 0 && model.field@spatial.extent.id %in% c("Full", "Global", "Unspecified")) {
+            full.domain.matched <- TRUE
+            if(verbose) message("Full domain matched.")
+          }
+          
+          # else, if they both have spatial extents specified, check that the actual spatial extents are the same
+          cropped.domain.matched <- FALSE
+          if(length(sta.info@spatial.extent) > 0 && length(model.field@spatial.extent)  > 0 ) {
+            if(identical(sta.info@spatial.extent, model.field@spatial.extent)){
+              cropped.domain.matched <- TRUE
+              if(verbose) message("Cropped domain matched.")
+            }
+          }
+          
+          spatial.ok <-  full.domain.matched || cropped.domain.matched
+          if(!spatial.ok) {
+            # Otherwise we must discard this Field and we need to re-average (and maybe also re-read) using the cases below 
+            message(paste("Spatial extent was requested with id = ", sta.info@spatial.extent.id))
+            message(paste("and extent definition:"))
+            print(sta.info@spatial.extent)
+            message(paste("However, spatial extent found has id = ", model.field@spatial.extent.id))
+            message(paste("and extent definition:"))
+            print(model.field@spatial.extent)
+            message("I am therefore reading the entire raw data again.")
+          }
+          
+          
+          # YEAR
+          # check first.year (only if first.year was supplied, otherwise assume ok)
+          year.ok <- TRUE
+          if(!missing(first.year) && !is.null(first.year)) {
+            if(model.field@first.year == first.year) {
+              if(verbose)  message("First year matched.")
+              else {
+                message(paste0("First year requested (", first.year, ") does not match first year ", model.field@first.year))
+                year.ok <- FALSE
+              }
+            } 
+          }
+          else first.year.ok <- TRUE
+          # check last.year (only if last.year was supplied, otherwise assume ok)
+          if(!missing(last.year) && !is.null(last.year)) last.year.ok <- model.field@last.year == last.year
+          else last.year.ok <- TRUE
+          # check year.aggregate.method (only if year.aggregate.method was supplied, otherwise assume ok)
+          if(!missing(year.aggregate.method) && !is.null(year.aggregate.method)) year.aggregate.method.ok <- model.field@year.aggregate.method == year.aggregate.method
+          else year.aggregate.method.ok <- TRUE
+          
+          
+          year.ok <- first.year.ok &&   last.year.ok && year.aggregate.method.ok
+          if(year.ok && verbose)  message("Years matched.")
+          
+          
+          return(model.field)
+          
+          
+          
+        } # if successful read
+      } # if file processed file found on disk
+    } # if do quick.read
+  } # if got a valid quick.read.file
+  
   
   #############################################################################################  
   #### NOTE: We don't pass this point if the correct pre-averaged data is available on disk ###
@@ -234,9 +302,9 @@ getField <- function(source,
   
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   if(verbose) {
-    if(read.full) message(paste("The 'read.full' argument was set to TRUE, so reading full data file to create the Field now.", sep = ""))
-    else if(!read.full && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", target.field.id, " not already saved, so reading full data file to create the Field now.", sep = ""))
-    else message(paste("Details of the request spatial extent didn't match.  So file on disk ignored and the original data is being re-read"))
+    if(!quick.read) message(paste("The 'quick.read' argument was set to FALSE, so reading raw data to create the Field now.", sep = ""))
+    else if(quick.read && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", quick.read.file, " not already saved, so reading full data file to create the Field now.", sep = ""))
+    else message(paste("Reading of preprocessed file failed.  So file on disk ignored and the original data is being re-read and preprocessed file will be re-written."))
   }
   
   this.Field <- source@format@getField(source, quant, sta.info, file.name, verbose, ...)
@@ -271,7 +339,7 @@ getField <- function(source,
     
   }
   
-
+  
   ### SELECT THE YEARS IF REQUESTED
   if("Year" %in% getDimInfo(this.Field)) {
     
@@ -368,7 +436,7 @@ getField <- function(source,
   
   
   ### WRITE THE FIELD TO DISK AS AN RData OBJECT IF REQUESTED
-  if(write) {
+  if(valid.quick.read.file) {
     if(verbose) {message("Saving as a .RData object...")}
     saveRDS(this.Field, file = preprocessed.file.name)
     if(verbose) {message("...done.")}

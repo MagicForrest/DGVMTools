@@ -18,8 +18,8 @@ getField(
   subannual.aggregate.method,
   sta.info,
   file.name = NULL,
-  write = FALSE,
-  read.full = TRUE,
+  quick.read = FALSE,
+  quick.read.file = NULL,
   verbose = FALSE,
   ...
 )
@@ -60,14 +60,16 @@ If specified the following 9 arguments are ignored (with a warning)}
 \item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
 (usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
 standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
-in the same way that model output does.}
+in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
 
-\item{write}{If TRUE, write the data of the \code{Field} to disk as text file.}
+\item{quick.read}{If TRUE then look for pre-processed file on disk. Default is FALSE so it needs to be actively enabled by the user, but doing so
+can save a lot of time if averaged file is already saved on disk.  Note that the the quick.read.file will need to be set}
 
-\item{read.full}{If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)}
+\item{quick.read.file}{A character string.  If set, the code will look for a file of this name (plus the extension ".RData") in the run directory.
+If if finds one then it reads that.  If it doesn't find the appropriate file, then it reads the raw data, performs whatever cropping and aggregating is necessary, and then saves 
+the data in a file of that name (in the run directory) for use next time.}
 
-\item{verbose}{If TRUE give a lot of information for debugging/checking.
-Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
+\item{verbose}{If TRUE give a lot of information for debugging/checking.}
 
 \item{...}{Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.
 For all Formats, the followings arguments apply:

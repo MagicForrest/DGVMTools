@@ -36,7 +36,9 @@ Suggests:
     rmarkdown,
     ncdf4,
     rgeos,
-    testthat
+    testthat,
+    Cairo,
+    ggpubr
 License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
