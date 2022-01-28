@@ -7,6 +7,7 @@
 getField_NetCDF(
   source,
   quant,
+  layers = NULL,
   target.STAInfo,
   file.name,
   verbose = FALSE,
@@ -19,6 +20,9 @@ getField_NetCDF(
 \item{source}{A \code{Source} containing the meta-data about the NetCDF source}
 
 \item{quant}{A Quantity object to specify what quantity should be opened.}
+
+\item{layers}{A character string (or a vector of character strings) specifying which variables from the NetCDF file are to be read.
+NULL (default) means read all.}
 
 \item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated}
 

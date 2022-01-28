@@ -7,6 +7,7 @@
 openLPJOutputFile_FireMIP(
   run,
   quant,
+  layers = NULL,
   target.sta,
   file.name = file.name,
   verbose = FALSE,
@@ -18,6 +19,8 @@ openLPJOutputFile_FireMIP(
 \item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
 
 \item{quant}{A Quantity to define what output file from the LPJ-GUESS run to open.}
+
+\item{layers}{A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.}
 
 \item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
 "<quant@id>.out" (also "<quant@id>.out.gz")}

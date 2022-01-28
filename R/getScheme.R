@@ -260,7 +260,7 @@ getScheme <- function(source,
     
     # if source is a single Source the easy life
     if(is.Source(source)) {
-      this.field <- getField(source = source, var = this.quantity, sta.info = sta.info, quick.read = FALSE, ...)
+      this.field <- getField(source = source, var = this.quantity, layers = NULL, sta.info = sta.info, quick.read = FALSE, ...)
     }
     # else get a Field for each Source average
     else{

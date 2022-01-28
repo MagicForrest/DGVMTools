@@ -11,6 +11,10 @@
 #' 
 #' @param source The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
+#' @param layers A list (or vector of character) of character strings to specify which Layers should be read from the file.  
+#' If missing or NULL then all Layers are read.
+#' -NOTE- Using this arguments is not recommended for reading gzipped output with the \code{GUESS} Format since it involves gunzipping the file twice, 
+#' which likely makes it less time efficient than simply reading all the layers and then dropping the ones you don't want.   
 #' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
 #' (usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
 #' standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
@@ -76,6 +80,8 @@
 
 getField <- function(source, 
                      var, 
+                     layers = NULL,
+                     file.name = NULL,
                      first.year,
                      last.year,
                      year.aggregate.method, 
@@ -86,7 +92,6 @@ getField <- function(source,
                      subannual.original,
                      subannual.aggregate.method,
                      sta.info,
-                     file.name = NULL,
                      quick.read = FALSE, 
                      quick.read.file = NULL, 
                      verbose = FALSE, 
@@ -100,6 +105,8 @@ getField <- function(source,
   if(!missing(first.year) & !missing(last.year) ) {
     if(first.year > last.year) stop("first.year cannot be greater than last.year!")
   }
+  if(!missing(layers) && !is.character(layers) && !is.null(layers)) stop("The 'layers' argument must be a character string or a list of character strings.")
+  
   
   # check validity quick.read and quick.read.file argument
   valid.quick.read.file <- !missing(quick.read.file) && !is.null(quick.read.file) && is.character(quick.read.file)  && length(quick.read.file) > 0 
@@ -251,7 +258,7 @@ getField <- function(source,
     }
   }
   
-  this.Field <- source@format@getField(source, quant, sta.info, file.name, verbose, ...)
+  this.Field <- source@format@getField(source, quant, layers, sta.info, file.name, verbose, ...)
   actual.sta.info <- as(this.Field, "STAInfo")
   
   
