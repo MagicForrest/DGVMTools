@@ -197,7 +197,7 @@ getField <- function(source,
         successful.read <- FALSE
         successful.read <- tryCatch(
           {
-            model.field <- readRDS(preprocessed.file.name)
+            preprocessed.field <- readRDS(preprocessed.file.name)
             TRUE
           },
           error= function(cond){
@@ -215,78 +215,19 @@ getField <- function(source,
         
         if(successful.read) {
           
-          # Update the source object, that might have (legitimately) changed compared to the id that was used when this model.field was created
+          # Update the source object, that might have (legitimately) changed compared to the id that was used when this preprocessed.field was created
           # for example it might be assigned a new name.
-          model.field@source <- source
+          preprocessed.field@source <- source
           
-          
-          ###  Do some checks 
-          
-          # Check that the spatial extent matches before returning
-          # Note that there are two cases to check here (specifically defined extents or just the same ids)
-          
-          # SPATIAL
-          # If no spatial extent was specified (ie length of spatial.extent arguement was 0) and the spatial.extent.id of the Field that was read in is either: 
-          # "Full" or 
-          # "Global" (which comes some netCDF files processed by the DGVMData package) or
-          # "Unspecified" (which comes from files read by the NetCDF Format of DGVMTools)
-          # then we are sure we have got the full, original spatial extent of the dataset and can use it
-          full.domain.matched <- FALSE
-          if(length(sta.info@spatial.extent) == 0 && model.field@spatial.extent.id %in% c("Full", "Global", "Unspecified")) {
-            full.domain.matched <- TRUE
-            if(verbose) message("Full domain matched.")
+          ###  Run check function, and if passed return the preprocessed Field 
+          if(verbose) message("*** Checking dimensions of pre-processed file ***")
+          sta.info.matches <- checkSTAMatches(sta.info, as(preprocessed.field, "STAInfo"), verbose)
+          if(sta.info.matches) {
+            if(verbose) message("*** Preprocessed file matches, so using that. ***")
+            return(preprocessed.field)
           }
-          
-          # else, if they both have spatial extents specified, check that the actual spatial extents are the same
-          cropped.domain.matched <- FALSE
-          if(length(sta.info@spatial.extent) > 0 && length(model.field@spatial.extent)  > 0 ) {
-            if(identical(sta.info@spatial.extent, model.field@spatial.extent)){
-              cropped.domain.matched <- TRUE
-              if(verbose) message("Cropped domain matched.")
-            }
-          }
-          
-          spatial.ok <-  full.domain.matched || cropped.domain.matched
-          if(!spatial.ok) {
-            # Otherwise we must discard this Field and we need to re-average (and maybe also re-read) using the cases below 
-            message(paste("Spatial extent was requested with id = ", sta.info@spatial.extent.id))
-            message(paste("and extent definition:"))
-            print(sta.info@spatial.extent)
-            message(paste("However, spatial extent found has id = ", model.field@spatial.extent.id))
-            message(paste("and extent definition:"))
-            print(model.field@spatial.extent)
-            message("I am therefore reading the entire raw data again.")
-          }
-          
-          
-          # YEAR
-          # check first.year (only if first.year was supplied, otherwise assume ok)
-          year.ok <- TRUE
-          if(!missing(first.year) && !is.null(first.year)) {
-            if(model.field@first.year == first.year) {
-              if(verbose)  message("First year matched.")
-              else {
-                message(paste0("First year requested (", first.year, ") does not match first year ", model.field@first.year))
-                year.ok <- FALSE
-              }
-            } 
-          }
-          else first.year.ok <- TRUE
-          # check last.year (only if last.year was supplied, otherwise assume ok)
-          if(!missing(last.year) && !is.null(last.year)) last.year.ok <- model.field@last.year == last.year
-          else last.year.ok <- TRUE
-          # check year.aggregate.method (only if year.aggregate.method was supplied, otherwise assume ok)
-          if(!missing(year.aggregate.method) && !is.null(year.aggregate.method)) year.aggregate.method.ok <- model.field@year.aggregate.method == year.aggregate.method
-          else year.aggregate.method.ok <- TRUE
-          
-          
-          year.ok <- first.year.ok &&   last.year.ok && year.aggregate.method.ok
-          if(year.ok && verbose)  message("Years matched.")
-          
-          
-          return(model.field)
-          
-          
+          # else clean up and proceed to read the raw data
+          else rm(preprocessed.field)
           
         } # if successful read
       } # if file processed file found on disk
@@ -304,7 +245,10 @@ getField <- function(source,
   if(verbose) {
     if(!quick.read) message(paste("The 'quick.read' argument was set to FALSE, so reading raw data to create the Field now.", sep = ""))
     else if(quick.read && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", quick.read.file, " not already saved, so reading full data file to create the Field now.", sep = ""))
-    else message(paste("Reading of preprocessed file failed.  So file on disk ignored and the original data is being re-read and preprocessed file will be re-written."))
+    else {
+      message(paste("*** Reading of preprocessed file failed ***"))
+      message(paste("So file on disk ignored and the original data is being re-read and new preprocessed file will be written."))
+    }
   }
   
   this.Field <- source@format@getField(source, quant, sta.info, file.name, verbose, ...)

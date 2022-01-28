@@ -175,7 +175,7 @@ getScheme <- function(source,
                                  var.string = scheme.string, 
                                  sta.info = sta.info)
   
- 
+  
   ### CASE 1 - CHECK FOR PREPROCESSED FIELD FROM DISK IF AVAILABLE AND OPTION ISN'T DISABLED
   if(valid.quick.read.file) {
     preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
@@ -194,7 +194,7 @@ getScheme <- function(source,
         successful.read <- FALSE
         successful.read <- tryCatch(
           {
-            model.field <- readRDS(preprocessed.file.name)
+            preprocessed.field <- readRDS(preprocessed.file.name)
             TRUE
           },
           error= function(cond){
@@ -212,51 +212,19 @@ getScheme <- function(source,
         
         if(successful.read) {
           
-          # Update the source object, that might have (legitimately) changed compared to the id that was used when this model.field was created
+          # Update the source object, that might have (legitimately) changed compared to the id that was used when this preprocessed.field was created
           # for example it might be assigned a new name.
-          model.field@source <- source
+          preprocessed.field@source <- source
           
-          
-          # TODO Consider removing these checks
-          
-          # Check that the spatial extent matches before returning
-          # Note that there are two cases to check here (specifically defined extents or just the same ids)
-          
-          # If no spatial extent was specified (ie length of spatial.extent arguement was 0) and the spatial.extent.id of the Field that was read in is either: 
-          # "Full" or 
-          # "Global" (which comes some netCDF files processed by the DGVMData package) or
-          # "Unspecified" (which comes from files read by the NetCDF Format of DGVMTools)
-          # then we are sure we have got the full, original spatial extent of the dataset and can use it
-          full.domain.matched <- FALSE
-          if(length(sta.info@spatial.extent) == 0 && model.field@spatial.extent.id %in% c("Full", "Global", "Unspecified")) {
-            full.domain.matched <- TRUE
-            if(verbose) message("Full domain matched.")
+          ###  Run check function, and if passed return the preprocessed Field 
+          if(verbose) message("*** Checking dimensions of pre-processed file ***")
+          sta.info.matches <- checkSTAMatches(sta.info, as(preprocessed.field, "STAInfo"), verbose)
+          if(sta.info.matches) {
+            if(verbose) message("*** Preprocessed file matches, so using that. ***")
+            return(preprocessed.field)
           }
-          
-          # else, if they both have spatial extents specified, check that the actual spatial extents are the same
-          cropped.domain.matched <- FALSE
-          if(length(sta.info@spatial.extent) > 0 && length(model.field@spatial.extent)  > 0 ) {
-            if(identical(sta.info@spatial.extent, model.field@spatial.extent)){
-              cropped.domain.matched <- TRUE
-              if(verbose) message("Cropped domain matched.")
-            }
-          }
-          
-          if(full.domain.matched || cropped.domain.matched){
-            return(model.field)
-          }  
-          
-          # Otherwise we must discard this Field and we need to re-average (and maybe also re-read) using the cases below 
-          message(paste("Spatial extent was requested with id = ", sta.info@spatial.extent.id))
-          message(paste("and extent definition:"))
-          print(sta.info@spatial.extent)
-          message(paste("However, spatial extent found has id = ", model.field@spatial.extent.id))
-          message(paste("and extent definition:"))
-          print(model.field@spatial.extent)
-          message("I am therefore reading the entire raw data again.")
-          
-          rm(model.field)
-          gc()
+          # else clean up and proceed to read the raw data
+          else rm(preprocessed.field)
           
         } # if successful read
       } # if file processed file found on disk
@@ -274,7 +242,10 @@ getScheme <- function(source,
   if(verbose) {
     if(!quick.read) message(paste("The 'quick.read' argument was set to FALSE, so reading raw data to create the Field now.", sep = ""))
     else if(quick.read && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", quick.read.file, " not already saved, so reading full data file to create the Field now.", sep = ""))
-    else message(paste("Details of the request spatial extent didn't match.  So file on disk ignored and the original data is being re-read"))
+    else {
+      message(paste("*** Reading of preprocessed file failed ***"))
+      message(paste("So file on disk ignored and the original data is being re-read and new preprocessed file will be written."))
+    }
   }
   
   # lookup the quantities required
@@ -302,7 +273,7 @@ getScheme <- function(source,
       this.field <- averageFields(one.field.per.source, source = averaged.source)
       
     }
-      
+    
     # calculate the layers required
     for(this.layer in scheme@layers.needed){
       
@@ -346,11 +317,11 @@ getScheme <- function(source,
   
   ### BUILD THE FINAL Field
   scheme.field <- new("Field",
-                     id = makeFieldID(source = final.source, var.string = scheme@id, sta.info = final.stainfo),
-                     data = dt,
-                     quant = as(object = scheme, Class = "Quantity"),
-                     source = final.source,
-                     final.stainfo)
+                      id = makeFieldID(source = final.source, var.string = scheme@id, sta.info = final.stainfo),
+                      data = dt,
+                      quant = as(object = scheme, Class = "Quantity"),
+                      source = final.source,
+                      final.stainfo)
   
   
   ### WRITE THE FIELD TO DISK AS AN .RData OBJECT IF REQUESTED

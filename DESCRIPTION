@@ -64,6 +64,7 @@ Collate:
     'benchmarking.R'
     'byIDfromList.R'
     'calcNewField.R'
+    'checkSTAMatches.R'
     'classification-schemes.R'
     'commonSTAInfo.R'
     'compareLayers.R'
