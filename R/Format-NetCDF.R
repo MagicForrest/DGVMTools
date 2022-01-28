@@ -295,7 +295,7 @@ getField_NetCDF <- function(source,
       
       
       # if time step unit is days
-      if(timestep.unit == "days") {
+      if(timestep.unit == "days" || timestep.unit == "day") {
         
         # calculate the difference between adjacent time intervals to determine the time resolution of the data
         diff.all.time.intervals <- diff(all.time.intervals)
@@ -368,7 +368,7 @@ getField_NetCDF <- function(source,
           if(verbose) message("Processed time axis as relative time axis with units of days and daily values.")
         }
         
-      } # end if time step is days
+      } # end if time step is days/day
       
       # if time step unit is month
       else if(timestep.unit == "months") {
