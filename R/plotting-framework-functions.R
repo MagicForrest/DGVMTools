@@ -392,10 +392,9 @@ makeYAxis <- function(final.fields) {
     y.axis.label <- paste0(y.axis.label, paste0(this.tuple[1], " (", this.tuple[2], "),\n") )
   }
   y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
-  y.label <- y.axis.label
   
-  return(y.label)
-  
+  y.axis.label <- gsub(" ", "~", y.axis.label)
+ 
 }
 
 

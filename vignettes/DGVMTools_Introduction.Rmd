@@ -119,7 +119,7 @@ print(plotSpatial(LAI.year.mean))
 # save this plot with bigger text as an example plot for the reference publication, also omittingthe tropical layers which are all zero in europe
 spatial_example_plot <- plotSpatial(LAI.year.mean, 
                                     layers = c("BNE", "BINE", "BNS", "IBS", "TeBS", "TeBE", "C3G", "C4G"),
-                                    text.multiplier = 2.5)
+                                    text.multiplier = 3)
 
 
 ```
@@ -139,10 +139,12 @@ The spatially aggregated Field can be plotted as a time series using `plotTempor
 ``` {r Temporal plot, fig.asp = 1, echo = TRUE}
 print(plotTemporal(LAI.spatial.mean))
 
+# use the long
+
 
 # save a temporal example plot for the reference publication
 temporal_example_plot <- plotTemporal(LAI.spatial.mean, 
-                                      text.multiplier = 2.5)
+                                      text.multiplier = 3)
 
 ```
 
@@ -279,7 +281,7 @@ print(plotSpatialComparison(vegC.comparison,
 
 # version with the reference publication with slightly larger text size
 comparison_example_plot <- plotSpatialComparison(vegC.comparison, 
-                                                 text.multiplier = 2.5,
+                                                 text.multiplier = 3,
                                                  title = "Tree C Mass Difference: LPJ-GUESS - Saatchi et al. 2011",
                                                  #legend.title = expression(pastedelta~kgC~m^-2)
                                                  legend.title = expression(Delta~kgC~m^-2), 
@@ -327,7 +329,7 @@ print(plotSubannual(field = London.mlai,
 subannual_example_plot <- plotSubannual(field = London.mlai, 
                                         summary.function = mean,
                                         summary.function.label = "Mean Year",
-                                        text.multiplier = 2.5)
+                                        text.multiplier = 3)
 
 
 ```
@@ -468,6 +470,14 @@ Much of the package could be utilised for any data which follows comes distribut
 The following code lays out the example plots for the publication describing DGVMTools.
 
 ``` {r Publication plots, fig.height=8, echo = TRUE}
+
+
+# add a small margins to the plots before combining
+
+spatial_example_plot <- spatial_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 2.2, l = 0.2, unit = "cm"))
+temporal_example_plot <- temporal_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 2.2, l = 0.2, unit = "cm"))
+subannual_example_plot <- subannual_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 0.5, l = 0.2, unit = "cm"))
+comparison_example_plot <- comparison_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 0.5, l = 0.2, unit = "cm"))
 
 
 if(require(ggpubr, quietly = TRUE)) {

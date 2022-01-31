@@ -289,6 +289,9 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
   
+  # set the theme to theme_bw, simplest way to set the background to white
+  p <- p + theme_bw()
+  
   # make scale a bit bigger - consider removing for purity??  this can easy be controlled by the user
   p <- p + theme(legend.key.size = unit(2, 'lines'))
   
@@ -346,7 +349,8 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(subannual.dimension == "Month") p <- p + scale_x_continuous(breaks = 1:12, labels = c("Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep","Oct","Nov","Dec"))
   
   # set the title
-  p <- p + labs(title = title, subtitle = subtitle,  y = y.label, x = subannual.dimension)
+  p <- p + labs(title = title, subtitle = subtitle,  y =parse(text = y.label), x = subannual.dimension)
+  
   p <- p + theme(plot.title = element_text(hjust = 0.5),
                  plot.subtitle = element_text(hjust = 0.5))
   
