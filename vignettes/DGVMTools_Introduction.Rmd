@@ -5,52 +5,52 @@ date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 #output: pdf_document
 vignette: >
-  %\VignetteIndexEntry{Introduction to DGVMTools}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+ %\VignetteIndexEntry{Introduction to DGVMTools}
+ %\VignetteEngine{knitr::rmarkdown}
+ %\VignetteEncoding{UTF-8}
 ---
   
 ```{r packages and setup, echo=FALSE}
-  knitr::opts_chunk$set(echo=FALSE, fig.width=8, out.width = "100%", autodep=TRUE)
-  library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
+knitr::opts_chunk$set(echo=FALSE, fig.width=8, out.width = "100%", autodep=TRUE)
+library(DGVMTools, quietly = TRUE, warn.conflicts = FALSE)
 ```
-  
+
 ## Introduction
-  
-  DGVMTools is designed to provide core functionality for developing and utilising DGVMs (Dynamic Global Vegetation Models) and similar models (such as Land Surface Models). The basic motivation is that many people work with such models but there is no centralised effort to provide convenient, reliable and efficient tools to perform common tasks such as reading model data, aggregating it in space, time and across vegetation types, producing plots, comparing to standard observed datasets etc.  Instead, people develop (and possibly share) scripts on an _ad hoc_ basis, often resulting in duplicated effort and technical limitations hindering scientific analysis.  DGVMTools aims to provide a common toolbox to enable such tasks.
-  
+
+DGVMTools is designed to provide core functionality for developing and utilising DGVMs (Dynamic Global Vegetation Models) and similar models (such as Land Surface Models). The basic motivation is that many people work with such models but there is no centralised effort to provide convenient, reliable and efficient tools to perform common tasks such as reading model data, aggregating it in space, time and across vegetation types, producing plots, comparing to standard observed datasets etc.  Instead, people develop (and possibly share) scripts on an _ad hoc_ basis, often resulting in duplicated effort and technical limitations hindering scientific analysis.  DGVMTools aims to provide a common toolbox to enable such tasks.
+
 ## Tutorial
-  
-  Now we'll jump right in and start using the package to read, process and plot some DGVM output data and hopefully demonstrate the features, logic and power of the package.  This tutorial uses small LPJ-GUESS output files included in the package.
-  
+
+Now we'll jump right in and start using the package to read, process and plot some DGVM output data and hopefully demonstrate the features, logic and power of the package.  This tutorial uses small LPJ-GUESS output files included in the package.
+
 ### Step 1: Define a **`Source`**
-  
-  The first job in pretty much any analysis is to define the source (or sources) of the data to be analysed.  Here we use the `defineSource()` function to do exactly that, and it produces an object of type `Source`. To define a `Source` we need three key bits of information and these are the three essential arguments to `defineSource()` [^1].  These are:  
-  
-  1. the **`id`** argument, a unique identifier to label this source (should be alphanumeric with no spaces)
-  2. the **`dir`** argument, to specify the location of the data on disk (for the purposes of this tutorial we generate this with a function, but it is normally just a character string)
-  3. the **`format`** argument, which specifies the structure of the data on disk (ie what model did it come from)
-  
-  The `name` argument is optional and can be used to provide a more human-friendly string to identify the run.  If it is not provided, the `id` argument is used for the `name`.  It is also possible just provide a `name` argument and not an `id` argument, in which case the `id` will be derived from the `name`.
-  
+
+The first job in pretty much any analysis is to define the source (or sources) of the data to be analysed.  Here we use the `defineSource()` function to do exactly that, and it produces an object of type `Source`. To define a `Source` we need three key bits of information and these are the three essential arguments to `defineSource()` [^1].  These are:  
+
+1. the **`id`** argument, a unique identifier to label this source (should be alphanumeric with no spaces)
+2. the **`dir`** argument, to specify the location of the data on disk (for the purposes of this tutorial we generate this with a function, but it is normally just a character string)
+3. the **`format`** argument, which specifies the structure of the data on disk (ie what model did it come from)
+
+The `name` argument is optional and can be used to provide a more human-friendly string to identify the run.  If it is not provided, the `id` argument is used for the `name`.  It is also possible just provide a `name` argument and not an `id` argument, in which case the `id` will be derived from the `name`.
+
 ```{r Define source, echo=TRUE}
-  
-  # a little bit of magic to get the path to the example data included in the package on your system
-  example.run.directory <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
-  print(example.run.directory)
-  
-  GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
-  dir = example.run.directory, # this would normally just be a character string containing a path
-  format = GUESS,
-  name = "LPJ-GUESS Example Run")
+
+# a little bit of magic to get the path to the example data included in the package on your system
+example.run.directory <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
+print(example.run.directory)
+
+GUESS.run <- defineSource(id = "LPJ-GUESS_Example",
+                          dir = example.run.directory, # this would normally just be a character string containing a path
+                          format = GUESS,
+                          name = "LPJ-GUESS Example Run")
 ```
-  
+
 
 We can check the object's class take a look at it using the handy `print` function.
-  
+
 ``` {r Source info, echo=TRUE}
-  class(GUESS.run)
-  print(GUESS.run)
+class(GUESS.run)
+print(GUESS.run)
 ```
 
 That looks a little complicated, but it is mostly just meta-data designed to make things more convenient later on (or are needed for special cases such as grid cell coordinates that don't correspond to the centre of the grid cell), so we can ignore these for just now. Aside from the three obligatory things mentioned above,  the only thing that is information about the PFTs in the run, and even that is usually defined automatically in the `format` argument.  Note that at this stage we have only created a metadata object.  We actually retrieve data in the next step...
@@ -118,8 +118,8 @@ print(plotSpatial(LAI.year.mean))
 
 # save this plot with bigger text as an example plot for the reference publication, also omittingthe tropical layers which are all zero in europe
 spatial_example_plot <- plotSpatial(LAI.year.mean, 
-                                    layers = c("BNE", "BINE", "BNS", "IBS", "TeBS", "TeBE", "C3G", "C4G"),
-                                    text.multiplier = 3)
+                                    layers = c("BNE", "BINE", "BNS", "IBS", "TeBS", "TeBE", "C3G", "C4G", "Total"),
+                                    text.multiplier = 3.5)
 
 
 ```
@@ -144,7 +144,9 @@ print(plotTemporal(LAI.spatial.mean))
 
 # save a temporal example plot for the reference publication
 temporal_example_plot <- plotTemporal(LAI.spatial.mean, 
-                                      text.multiplier = 3)
+                                      text.multiplier = 3.5,
+                                      layers = c("BNE", "BINE", "BNS", "IBS", "TeBS", "TeBE", "C3G", "Total"),
+)
 
 ```
 
@@ -275,15 +277,13 @@ print(plotSpatialComparison(vegC.comparison))
 print(plotSpatialComparison(vegC.comparison, 
                             text.multiplier = 1.5,
                             title = "Tree C Mass Difference: LPJ-GUESS - Saatchi et al. 2011",
-                            #legend.title = expression(pastedelta~kgC~m^-2)
                             legend.title = expression(Delta~kgC~m^-2), 
                             map.overlay = "world"))
 
 # version with the reference publication with slightly larger text size
 comparison_example_plot <- plotSpatialComparison(vegC.comparison, 
-                                                 text.multiplier = 3,
-                                                 title = "Tree C Mass Difference: LPJ-GUESS - Saatchi et al. 2011",
-                                                 #legend.title = expression(pastedelta~kgC~m^-2)
+                                                 text.multiplier = 3.5,
+                                                 title = "Tree C Mass Difference: LPJ-GUESS - Obs.",
                                                  legend.title = expression(Delta~kgC~m^-2), 
                                                  map.overlay = "world")
 
@@ -325,11 +325,10 @@ print(plotSubannual(field = London.mlai,
 
 
 # Store example plot for reference publication
-
 subannual_example_plot <- plotSubannual(field = London.mlai, 
                                         summary.function = mean,
                                         summary.function.label = "Mean Year",
-                                        text.multiplier = 3)
+                                        text.multiplier = 3.5)
 
 
 ```
@@ -474,10 +473,10 @@ The following code lays out the example plots for the publication describing DGV
 
 # add a small margins to the plots before combining
 
-spatial_example_plot <- spatial_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 2.2, l = 0.2, unit = "cm"))
-temporal_example_plot <- temporal_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 2.2, l = 0.2, unit = "cm"))
-subannual_example_plot <- subannual_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 0.5, l = 0.2, unit = "cm"))
-comparison_example_plot <- comparison_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 0.5, l = 0.2, unit = "cm"))
+spatial_example_plot <- spatial_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 1.2, l = 0.2, unit = "cm"))
+temporal_example_plot <- temporal_example_plot + theme(plot.margin = margin(t = 0.2,  r = 0.2, b = 1.2, l = 0.2, unit = "cm"))
+subannual_example_plot <- subannual_example_plot + theme(plot.margin = margin(t = 1.2,  r = 0.2, b = 0.5, l = 0.2, unit = "cm"))
+comparison_example_plot <- comparison_example_plot + theme(plot.margin = margin(t = 1.2,  r = 0.2, b = 0.5, l = 0.2, unit = "cm"))
 
 
 if(require(ggpubr, quietly = TRUE)) {
@@ -490,9 +489,9 @@ if(require(ggpubr, quietly = TRUE)) {
                              ncol = 2, nrow = 2, 
                              labels = list("(a)", "(b)", "(c)", "(d)"), 
                              font.label = list(size = 35),
-                             hjust = 0, vjust = 2.5) 
+                             hjust = -0.4, vjust = c(1.5, 1.5, 0.3, 0.3)) 
   
- 
+  
   if(require(Cairo, quietly = TRUE)){
     
     Cairo::Cairo(file = "~/DGVMTools_Example_Figure.png", type = "png", width = 2000, height = 2000)
