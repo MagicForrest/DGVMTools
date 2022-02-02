@@ -622,41 +622,19 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   # overall text multiplier
   if(!missing(text.multiplier)) mp <- mp + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
-  # set background colour of panel
+  # set these stuff, background colour of panel etc
+  # these can all be altered after the fact with further ggplot commands
   mp <- mp + theme(
     plot.background = element_rect(fill = plot.bg.col), # bg of the plot
     panel.background = element_rect(fill = panel.bg.col), # bg of the panel
-    #panel.grid.major = element_blank(), # get rid of major grid
-    #panel.grid.minor = element_blank(), # get rid of minor grid
     legend.background = element_rect(fill = "transparent"), #, # get rid of legend bg
-    #legend.box.background = element_rect(fill = "transparent") # get rid of legend panel bg
     panel.border = element_rect(colour = "black", fill=NA),
     strip.background  = element_rect(fill=NA)
   )
   
   
-  # list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
-  #            panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
-  #            panel.background  = element_rect(fill="#cae1ff"),
-  #            panel.border      = element_rect(fill=NA, linetype = "solid", colour = "black"),
-  #            axis.line         = element_blank(),
-  #            axis.text         = element_text(size=10, colour = "black"),
-  #            axis.ticks        = element_line(size=0.1, colour = "black", linetype = "dotted"),
-  #            axis.ticks.length = unit(1.5, "points"),
-  #            axis.title        = element_blank(),
-  #            legend.text       = element_text(size=10),
-  #            legend.title      = element_blank(),
-  #            legend.position   = "bottom",
-  #            legend.key        = element_rect(colour = "black"),
-  #            legend.key.width  = unit(0.08, "npc"),
-  #            plot.background   = element_blank(),
-  #            plot.title        = element_text(size=22),
-  #            strip.background  = element_rect(fill=NA)))
-  
-  
   
   # map overlay - suppress warning about missing values
-  
   if(!is.null(map.overlay)) {
     suppressWarnings(mp <- mp + geom_path(data=map.overlay.df, size=0.1, color = "black", aes(x=long, y=lat, group = group)))
   }
