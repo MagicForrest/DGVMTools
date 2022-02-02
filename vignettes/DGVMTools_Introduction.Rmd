@@ -226,7 +226,7 @@ The `layerOp()` functions is very flexible (it even works with suitable arbitrar
 
 The package can also read netCDF files using the `NetCDF` format.  As netCDF files can be structured in myriad different ways, it is not absolutely guaranteed that all files will read correctly.  However, most files that conform closely to the CF convention should work.  There are a couple of small example netCDF files included in the package, one of which we will use here and compare to another run of LPJ-GUESS, this time cover a part of central-western Africa.  Please contact the author if you have a request to read netCDF with particular features which aren't currently supported.
 
-``` {r open data, echo=TRUE}
+``` {r open data, fig.height=8, echo=TRUE}
 
 # new Source (different model run, this time over fFrica)
 GUESS.Africa.run <- defineSource(id = "LPJ-GUESS_Example_Africa",

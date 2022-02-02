@@ -17,7 +17,7 @@
 #' to particular Layers/Sources/Sites/Quantities.    
 #' @param col.labels,linetype.labels,size.labels,shape.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
 #' number of Sources/Layers/Site/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
-#' @param x.label,y.label Character strings for the x and y axes (optional)
+#' @param x.label,y.label Character strings (or expressions) for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
 #' @param points Logical, if TRUE plot data as points (with geom_points) instead of lines (witg geom_lines).  
 #' Good for plotting time series with missing data where geom_lines joins lines over the gaps which is not helpful
@@ -309,8 +309,8 @@ plotTemporal <- function(fields,
 
   # set limits
   if(!is.null(x.lim)) p <- p + xlim(x.lim)
-  if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = parse(text = y.label))
-  else p <- p + labs(y = parse(text = y.label))
+  if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
+  else p <- p + labs(y = y.label)
   
   # facetting
   if(length(vars.facet > 0)){

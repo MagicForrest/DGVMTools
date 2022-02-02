@@ -389,11 +389,13 @@ makeYAxis <- function(final.fields) {
   # form the label string
   y.axis.label <- character(0)
   for(this.tuple in all.quant.tuples) {
-    y.axis.label <- paste0(y.axis.label, paste0(this.tuple[1], " (", this.tuple[2], "),\n") )
+    y.axis.label <- paste0(y.axis.label, paste0(this.tuple[1], " (", standardiseUnitString(this.tuple[2]), "),\n") )
   }
   y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
   
   y.axis.label <- gsub(" ", "~", y.axis.label)
+  
+  return(stringToExpression(y.axis.label))
   
 }
 
