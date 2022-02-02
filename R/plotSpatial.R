@@ -189,7 +189,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
       else quant.is.categorical <-  FALSE
       if(continuous & !quant.is.categorical) {
         if(is.null(cols)) cols <- this.field@quant@colours(20)
-        if(missing(legend.title)) legend.title <- this.field@quant@units
+        if(is.null(legend.title)) legend.title <- this.field@quant@units
       }
       
     }
@@ -203,6 +203,15 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     
   }
   
+  ### LEGEND TITLE
+
+  # attempt to convert the legend title to a string which can be evaluated as an expression using he units  package
+  # (function includes exception handling)
+  legend.title <- standardiseUnitString(legend.title)
+   
+  # convert said legend title to an expression (again includes exception handling)
+  legend.title <- stringToExpression(legend.title)
+
   
   # check the defined Layers present in the Fields and make a unique list
   # maybe also here check which one are actually in the layers to plot, since we have that information
@@ -570,7 +579,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   # colour bar
   if(continuous)  {
-    
+  
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
                                     colors = cols,
@@ -604,6 +613,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   # labels and positioning
   mp <- mp + labs(title = title, subtitle = subtitle)
   mp <- mp + labs(y = "Latitude", x = "Longitude")
+
   if(!is.null(legend.title)) {mp <- mp + labs(fill=legend.title) }
   else { mp <- mp + theme(legend.title = element_blank()) }
   mp <- mp + theme(plot.title = element_text(hjust = 0.5),

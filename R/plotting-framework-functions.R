@@ -145,10 +145,10 @@ santiseDimensionsForPlotting <- function(fields, require = NULL) {
   
   # check Lon and Lat present
   for(required.sta in require)
-  if(!required.sta %in% sta.info) {
-    warning(paste0("Dimension ", required.sta, " is missing from an input Field but is required for this plot type.  Obviously this won't work, returning NULL.\n"))
-    return(NULL)
-  }
+    if(!required.sta %in% sta.info) {
+      warning(paste0("Dimension ", required.sta, " is missing from an input Field but is required for this plot type.  Obviously this won't work, returning NULL.\n"))
+      return(NULL)
+    }
   
   # check all the same dimensions
   if(length(fields) > 1) {
@@ -230,14 +230,14 @@ checkDimensionValues <- function(fields, input.values = NULL,  dimension) {
 #' 
 #' 
 trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL, dropEmpty = FALSE) {
-
+  
   J = Year = NULL
   
   discrete <- FALSE
   continuous <- FALSE
   
   # Loop through the objects and select the layers and dimensions that we want for plotting
- 
+  
   final.fields <- list()
   
   for(object in fields){
@@ -252,7 +252,7 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
         # if dropEmpty is true check if it it non-zero before appending it
         if(dropEmpty) {
           if(!(object@data[[this.layer]][1] == 0 && all(duplicated(object@data[[this.layer]])[-1L]))){
-              layers.present <- append(layers.present, this.layer)
+            layers.present <- append(layers.present, this.layer)
           }
         }
         # else just append it
@@ -290,7 +290,7 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
       
       
       final.fields <- append(final.fields, these.layers)
-  
+      
     } # end if length(layers.present) > 0
     
   }
@@ -374,9 +374,9 @@ mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FA
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' 
-  
-makeYAxis <- function(final.fields) {
 
+makeYAxis <- function(final.fields) {
+  
   # first extract the names and units and store them in a tuples (two element vector) for the Quantity from each Field
   all.quant.tuples <- list()
   for(field in final.fields) {
@@ -394,7 +394,7 @@ makeYAxis <- function(final.fields) {
   y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
   
   y.axis.label <- gsub(" ", "~", y.axis.label)
- 
+  
 }
 
 
@@ -533,10 +533,52 @@ makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
     else {
       return(fortify(map.sp.lines.df))
     }
-
+    
   }
   else {
     stop(paste0("Can't make an overlay from type ", class(map.overlay)))
   }
+  
+}
+
+#' @keywords internal
+#' @importFrom units as_units
+
+standardiseUnitString <- function(unit.str) {
+
+  unit.str <- tryCatch(
+    {
+      as.character(units(as_units(unit.str)))
+    },
+    error= function(cond){
+      unit.str
+    },
+    warning=function(cond) {
+      unit.str
+    },
+    finally={}
+  )    
+  return(unit.str)
+  
+}
+
+#' @keywords internal
+stringToExpression <- function(x){
+  
+  if(is.character(x)) {
+    x <- tryCatch(
+      {
+        x <- parse(text = x)
+      },
+      error= function(cond){
+        x
+      },
+      warning=function(cond) {
+        x
+      },
+      finally={}
+    )
+  }
+  return(x)
   
 }
