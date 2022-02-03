@@ -277,15 +277,22 @@ print(plotSpatialComparison(vegC.comparison))
 print(plotSpatialComparison(vegC.comparison, 
                             text.multiplier = 1.5,
                             title = "Tree C Mass Difference: LPJ-GUESS - Saatchi et al. 2011",
-                            legend.title = expression(Delta~kgC~m^-2), 
                             map.overlay = "world"))
+
 
 # version with the reference publication with slightly larger text size
 comparison_example_plot <- plotSpatialComparison(vegC.comparison, 
                                                  text.multiplier = 3.5,
                                                  title = "Tree C Mass Difference: LPJ-GUESS - Obs.",
-                                                 legend.title = expression(Delta~kgC~m^-2), 
                                                  map.overlay = "world")
+
+# also percentage difference map
+print(plotSpatialComparison(vegC.comparison, 
+                            type = "percentage.difference",
+                            limits = c(-300, 300),
+                            text.multiplier = 1.5,
+                            title = "Tree C Mass Difference: LPJ-GUESS - Saatchi et al. 2011",
+                            map.overlay = "world"))
 
 # plot side-by-side
 print(plotSpatialComparison(vegC.comparison, type = "values"))
