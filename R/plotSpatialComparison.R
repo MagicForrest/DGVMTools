@@ -15,10 +15,12 @@
 #' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "percentage.difference", "values" 
 #' (actual values, side-by-side) or "nme" (for the Normalised Mean Error, not yet implemented)
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
+#' @param legend.title A character string or expression to override the default legend title. Set to NULL for no legend title.  The default legend title is the \code{units}
+#' of the \linkS4class{Quantity} of the first \linkS4class{Comparison} provided in the \code{comparisions} argument.  This argument allows general flexibility, but it is particularly handy
+#' to facilitate expressions for nicely marked up subscript and superscript. 
 #' @param panel.bg.col Colour string for the panel background, default to "white" for absolute values plots, and a grey for difference plots.
 #' @param override.cols A colour palette function to override the defaults.
 #' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)
-#' @param percentage.difference.limit If percentage difference to be plotted, what to limit the scale to.  Default is 300.
 #' @param do.phase Logical, only applies to plotting Comparison objects of type "seasonal".
 #' If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.
 #' @param ... Parameters passed to \code{plotSpatial()}
@@ -36,10 +38,10 @@
 plotSpatialComparison <- function(comparisons,
                                   type = c("difference", "percentage.difference", "values", "nme"),
                                   limits = NULL,
+                                  legend.title,
                                   panel.bg.col = "white",
                                   override.cols = NULL,
                                   symmetric.scale = TRUE,
-                                  percentage.difference.limit = 300,
                                   do.phase = FALSE,
                                   ...){
   
@@ -51,7 +53,7 @@ plotSpatialComparison <- function(comparisons,
   type <- match.arg(type)
   
   if(!missing(limits)) symmetric.scale <- FALSE
-  
+
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
   ### 1. COMPARISONS - check the input Comparison objects (and if it is a single Comparison put it into a one-item list)
@@ -138,18 +140,14 @@ plotSpatialComparison <- function(comparisons,
           }
           else {
             temp.dt[,c(difference.column.name) := get(expected.layers.1[layer.counter]) - get(expected.layers.2[layer.counter])]
+            if(type == "percentage.difference") temp.dt[,c(difference.column.name) := 100 * get(difference.column.name) / get(expected.layers.2[layer.counter])]
+
+              
           }
         }
         
       }  
-      
-      if(type == "difference") {
-        layer.to.plot <- "Difference"
-      }
-      else {
-        layer.to.plot <- "Percentage.Difference"       
-        temp.dt[ , Percentage.Difference := Difference %/0% get(layers.names[2]) * 100 ]
-      }
+    
       object@data <- temp.dt
       
       new.object <- selectLayers(object, layers.to.plot)
@@ -182,13 +180,21 @@ plotSpatialComparison <- function(comparisons,
     
     # set a symmetric scale (so zero always white/centre colour)
     if(symmetric.scale) limits <- c(-max.for.scale, max.for.scale)
+
     
     # if no panel background panel colour specified, use a non-white one
     if(missing(panel.bg.col)) panel.bg.col = "#999999"
     
+    # make a legend title if one has not been supplied
+    if(missing(legend.title)) {
+      if(type == "percentage.difference") legend.title <- expression(Delta * "%")
+      else legend.title <- stringToExpression(paste0("Delta~", standardiseUnitString(object@quant1@units)))
+    }
+
     the.plot <- plotSpatial(objects.to.plot,
                             layers = layers.to.plot,
                             cols = override.cols,
+                            legend.title = legend.title,
                             limits = limits,
                             panel.bg.col = panel.bg.col,
                             ...)
@@ -275,10 +281,15 @@ plotSpatialComparison <- function(comparisons,
       
     }
     
+    # make a legend title if one has not been supplied
+    if(missing(legend.title)) legend.title <- stringToExpression(standardiseUnitString(object@quant1@units))
+    
+    
     return(plotSpatial(objects.to.plot,
                        layers =  unique(layers.to.plot),
                        cols = override.cols,
                        limits = limits,
+                       legend.title = legend.title,
                        ...))
     
     

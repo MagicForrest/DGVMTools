@@ -189,7 +189,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
       else quant.is.categorical <-  FALSE
       if(continuous & !quant.is.categorical) {
         if(is.null(cols)) cols <- this.field@quant@colours(20)
-        if(missing(legend.title)) legend.title <- this.field@quant@units
+        if(is.null(legend.title)) legend.title <- this.field@quant@units
       }
       
     }
@@ -203,6 +203,15 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     
   }
   
+  ### LEGEND TITLE
+
+  # attempt to convert the legend title to a string which can be evaluated as an expression using he units  package
+  # (function includes exception handling)
+  legend.title <- standardiseUnitString(legend.title)
+   
+  # convert said legend title to an expression (again includes exception handling)
+  legend.title <- stringToExpression(legend.title)
+
   
   # check the defined Layers present in the Fields and make a unique list
   # maybe also here check which one are actually in the layers to plot, since we have that information
@@ -570,7 +579,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   # colour bar
   if(continuous)  {
-    
+  
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
                                     colors = cols,
@@ -604,6 +613,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   # labels and positioning
   mp <- mp + labs(title = title, subtitle = subtitle)
   mp <- mp + labs(y = "Latitude", x = "Longitude")
+
   if(!is.null(legend.title)) {mp <- mp + labs(fill=legend.title) }
   else { mp <- mp + theme(legend.title = element_blank()) }
   mp <- mp + theme(plot.title = element_text(hjust = 0.5),
@@ -612,41 +622,19 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   # overall text multiplier
   if(!missing(text.multiplier)) mp <- mp + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
-  # set background colour of panel
+  # set these stuff, background colour of panel etc
+  # these can all be altered after the fact with further ggplot commands
   mp <- mp + theme(
     plot.background = element_rect(fill = plot.bg.col), # bg of the plot
     panel.background = element_rect(fill = panel.bg.col), # bg of the panel
-    #panel.grid.major = element_blank(), # get rid of major grid
-    #panel.grid.minor = element_blank(), # get rid of minor grid
     legend.background = element_rect(fill = "transparent"), #, # get rid of legend bg
-    #legend.box.background = element_rect(fill = "transparent") # get rid of legend panel bg
     panel.border = element_rect(colour = "black", fill=NA),
     strip.background  = element_rect(fill=NA)
   )
   
   
-  # list(theme(panel.grid.minor = element_line(size=0.1, colour = "black", linetype = "dotted"),
-  #            panel.grid.major  = element_line(size=0.1, colour = "black", linetype = "dotted"),
-  #            panel.background  = element_rect(fill="#cae1ff"),
-  #            panel.border      = element_rect(fill=NA, linetype = "solid", colour = "black"),
-  #            axis.line         = element_blank(),
-  #            axis.text         = element_text(size=10, colour = "black"),
-  #            axis.ticks        = element_line(size=0.1, colour = "black", linetype = "dotted"),
-  #            axis.ticks.length = unit(1.5, "points"),
-  #            axis.title        = element_blank(),
-  #            legend.text       = element_text(size=10),
-  #            legend.title      = element_blank(),
-  #            legend.position   = "bottom",
-  #            legend.key        = element_rect(colour = "black"),
-  #            legend.key.width  = unit(0.08, "npc"),
-  #            plot.background   = element_blank(),
-  #            plot.title        = element_text(size=22),
-  #            strip.background  = element_rect(fill=NA)))
-  
-  
   
   # map overlay - suppress warning about missing values
-  
   if(!is.null(map.overlay)) {
     suppressWarnings(mp <- mp + geom_path(data=map.overlay.df, size=0.1, color = "black", aes(x=long, y=lat, group = group)))
   }

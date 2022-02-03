@@ -30,7 +30,8 @@ Imports:
     reshape2,
     viridis,
     plyr,
-    R.utils
+    R.utils,
+    units
 Suggests:
     knitr,
     rmarkdown,

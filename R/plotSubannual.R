@@ -11,7 +11,7 @@
 #' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.
 #' @param subtitle A character string to override the default subtitle.
-#' @param x.label,y.label Character strings for the x and y axes (optional)
+#' @param x.label,y.label Character strings (or expressions) for the x and y axes (optional)
 #' @param col.by,linetype.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type and alpha (transparency).
 #' Can meaningfully take the values "Layer", "Source", "Site", "Region" or "Quantity". 
 #' NOTE SPECIAL DEFAULT CASE:  By default, \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
@@ -289,6 +289,9 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
   
+  # set the theme to theme_bw, simplest way to set the background to white
+  p <- p + theme_bw()
+  
   # make scale a bit bigger - consider removing for purity??  this can easy be controlled by the user
   p <- p + theme(legend.key.size = unit(2, 'lines'))
   
@@ -347,6 +350,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   # set the title
   p <- p + labs(title = title, subtitle = subtitle,  y = y.label, x = subannual.dimension)
+  
   p <- p + theme(plot.title = element_text(hjust = 0.5),
                  plot.subtitle = element_text(hjust = 0.5))
   

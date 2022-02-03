@@ -17,7 +17,7 @@
 #' to particular Layers/Sources/Sites/Quantities.    
 #' @param col.labels,linetype.labels,size.labels,shape.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
 #' number of Sources/Layers/Site/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
-#' @param x.label,y.label Character strings for the x and y axes (optional)
+#' @param x.label,y.label Character strings (or expressions) for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
 #' @param points Logical, if TRUE plot data as points (with geom_points) instead of lines (witg geom_lines).  
 #' Good for plotting time series with missing data where geom_lines joins lines over the gaps which is not helpful
@@ -292,8 +292,13 @@ plotTemporal <- function(fields,
   if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
   
+  
+  # set the theme to theme_bw, simplest way to set the background to white
+  p <- p + theme_bw()
+  
   # labels and positioning
-  p <- p + labs(title = title, subtitle = subtitle, y = y.label)
+  p <- p + labs(title = title, subtitle = subtitle)
+  
   p <- p + theme(legend.title=element_blank())
   p <- p + theme(legend.position = legend.position, legend.key.size = unit(2, 'lines'))
   p <- p + theme(plot.title = element_text(hjust = 0.5),
@@ -301,7 +306,7 @@ plotTemporal <- function(fields,
   
   # overall text multiplier
   if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
-  
+
   # set limits
   if(!is.null(x.lim)) p <- p + xlim(x.lim)
   if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
