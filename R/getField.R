@@ -178,7 +178,7 @@ getField <- function(source,
     stop("Please specify a spatial.extent.id when specifying a spatial.extent (just a simple character string).  This is to maintain metadata integrity.")
   }
   
- 
+  
   ### CASE 1 - CHECK FOR PREPROCESSED FIELD FROM DISK IF AVAILABLE AND OPTION ISN'T DISABLED
   if(valid.quick.read.file) {
     preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
@@ -222,10 +222,32 @@ getField <- function(source,
           ###  Run check function, and if passed return the preprocessed Field 
           if(verbose) message("*** Checking dimensions of pre-processed file ***")
           sta.info.matches <- checkSTAMatches(sta.info, as(preprocessed.field, "STAInfo"), verbose)
-          if(sta.info.matches) {
-            if(verbose) message("*** Preprocessed file matches, so using that. ***")
-            return(preprocessed.field)
+          if(verbose) {
+            if(sta.info.matches) message("*** Preprocessed file matches in terms of spatial and temporal extent. ***")
+            else message("*** Preprocessed file does NOT match in terms of spatial and temporal extent. ***")
           }
+          
+          # check layers (if specified)
+          layers.match <- TRUE
+          if(!missing(layers) && !is.null(layers)) {
+            layers.match <- identical(sort(layers), sort(layers(preprocessed.field)))
+            if(verbose) {
+              if(layers.match) message("*** Preprocessed file matches in terms of layers present. ***")
+              else {
+                message("*** Preprocessed file does NOT match in terms of layers present. ***")
+                message(paste0("   -> Layers requested: ", paste0(sort(layers), collapse = ",")))
+                message(paste0("   -> Layers found: ", paste0(sort(layers(preprocessed.field)), collapse = ",")))
+              }
+            }
+          }
+          else {
+            if(verbose) message(paste0(" ** Argument layers not specified so not checked.  I found '", paste(sort(layers(preprocessed.field)), collapse = ","), "', perhaps check these are the layers you wanted."))
+            warning(paste0(" ** Argument layers not specified so not checked.  I found '", paste0(sort(layers(preprocessed.field)), collapse = ","), "', perhaps check these are the layers you wanted."))
+          }
+          
+          
+          # if all good return the pre-processed file
+          if(layers.match && sta.info.matches) return(preprocessed.field)
           # else clean up and proceed to read the raw data
           else rm(preprocessed.field)
           

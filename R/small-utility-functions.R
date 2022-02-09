@@ -147,7 +147,6 @@ readRegularASCII <- function(file.string, verbose, layers = NULL, always.read = 
     # if they are not give a warning but proceed
     selected.cols.to.read <- c()
     for(this.layer in layers) {
-      print(this.layer)
       if(this.layer %in% header) selected.cols.to.read <- append(selected.cols.to.read, this.layer)
       else {
         message(paste0("Layer '", this.layer, "' requested but not found in data."))

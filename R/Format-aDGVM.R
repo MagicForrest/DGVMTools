@@ -257,7 +257,6 @@ getYearlyField_aDGVM <- function(run,
   # Select year
   dt <- selectYears(dt, first.year, last.year)
  
-  
   # also correct days to be 1-365 instead of 0-364, if necessary
   if("Day" %in% names(dt)) {
     if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]

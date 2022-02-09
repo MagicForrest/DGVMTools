@@ -40,9 +40,9 @@ which likely makes it less time efficient than simply reading all the layers and
 standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
 in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
 
-\item{first.year}{The first year (as a numeric) of the data to be returned}
+\item{first.year}{The first year (as a numeric) of the data to be returned (if not specified or NULL start from the beginning of the data set)}
 
-\item{last.year}{The last year (as a numeric) of the data to be returned}
+\item{last.year}{The last year (as a numeric) of the data to be returned (if not specified or NULL take the data to the end of the data set)}
 
 \item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!

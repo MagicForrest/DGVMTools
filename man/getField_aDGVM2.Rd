@@ -31,8 +31,6 @@ getField_aDGVM2(
 \item{adgvm2.scheme}{A number that defines if pop-files (=1) or trait-files (=2) are used.}
 
 \item{adgvm2.daily}{A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)}
-
-\item{last.year}{The last year (as a numeric) of the data to be return}
 }
 \value{
 A list containing firstly the data.table containing the data, and secondly the STA.info
