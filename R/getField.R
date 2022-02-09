@@ -22,8 +22,8 @@
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
 #' If specified the following 9 arguments are ignored (with a warning)
-#' @param first.year The first year (as a numeric) of the data to be returned
-#' @param last.year The last year (as a numeric) of the data to be returned
+#' @param first.year The first year (as a numeric) of the data to be returned (if not specified or NULL start from the beginning of the data set)
+#' @param last.year The last year (as a numeric) of the data to be returned (if not specified or NULL take the data to the end of the data set)
 #' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' See \code{\link{aggregateYears}} 
@@ -178,14 +178,7 @@ getField <- function(source,
     stop("Please specify a spatial.extent.id when specifying a spatial.extent (just a simple character string).  This is to maintain metadata integrity.")
   }
   
-  
-  ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
-  target.field.id <- makeFieldID(source = source, 
-                                 var.string = var.string, 
-                                 sta.info = sta.info)
-  
-  
-  
+ 
   ### CASE 1 - CHECK FOR PREPROCESSED FIELD FROM DISK IF AVAILABLE AND OPTION ISN'T DISABLED
   if(valid.quick.read.file) {
     preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
