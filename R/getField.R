@@ -11,6 +11,10 @@
 #' 
 #' @param source The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.
 #' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
+#' @param layers A list (or vector of character) of character strings to specify which Layers should be read from the file.  
+#' If missing or NULL then all Layers are read.
+#' -NOTE- Using this arguments is not recommended for reading gzipped output with the \code{GUESS} Format since it involves gunzipping the file twice, 
+#' which likely makes it less time efficient than simply reading all the layers and then dropping the ones you don't want.   
 #' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
 #' (usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
 #' standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
@@ -18,8 +22,8 @@
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
 #' If specified the following 9 arguments are ignored (with a warning)
-#' @param first.year The first year (as a numeric) of the data to be returned
-#' @param last.year The last year (as a numeric) of the data to be returned
+#' @param first.year The first year (as a numeric) of the data to be returned (if not specified or NULL start from the beginning of the data set)
+#' @param last.year The last year (as a numeric) of the data to be returned (if not specified or NULL take the data to the end of the data set)
 #' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' See \code{\link{aggregateYears}} 
@@ -76,6 +80,8 @@
 
 getField <- function(source, 
                      var, 
+                     layers = NULL,
+                     file.name = NULL,
                      first.year,
                      last.year,
                      year.aggregate.method, 
@@ -86,7 +92,6 @@ getField <- function(source,
                      subannual.original,
                      subannual.aggregate.method,
                      sta.info,
-                     file.name = NULL,
                      quick.read = FALSE, 
                      quick.read.file = NULL, 
                      verbose = FALSE, 
@@ -100,6 +105,8 @@ getField <- function(source,
   if(!missing(first.year) & !missing(last.year) ) {
     if(first.year > last.year) stop("first.year cannot be greater than last.year!")
   }
+  if(!missing(layers) && !is.character(layers) && !is.null(layers)) stop("The 'layers' argument must be a character string or a list of character strings.")
+  
   
   # check validity quick.read and quick.read.file argument
   valid.quick.read.file <- !missing(quick.read.file) && !is.null(quick.read.file) && is.character(quick.read.file)  && length(quick.read.file) > 0 
@@ -172,13 +179,6 @@ getField <- function(source,
   }
   
   
-  ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
-  target.field.id <- makeFieldID(source = source, 
-                                 var.string = var.string, 
-                                 sta.info = sta.info)
-  
-  
-  
   ### CASE 1 - CHECK FOR PREPROCESSED FIELD FROM DISK IF AVAILABLE AND OPTION ISN'T DISABLED
   if(valid.quick.read.file) {
     preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
@@ -222,10 +222,32 @@ getField <- function(source,
           ###  Run check function, and if passed return the preprocessed Field 
           if(verbose) message("*** Checking dimensions of pre-processed file ***")
           sta.info.matches <- checkSTAMatches(sta.info, as(preprocessed.field, "STAInfo"), verbose)
-          if(sta.info.matches) {
-            if(verbose) message("*** Preprocessed file matches, so using that. ***")
-            return(preprocessed.field)
+          if(verbose) {
+            if(sta.info.matches) message("*** Preprocessed file matches in terms of spatial and temporal extent. ***")
+            else message("*** Preprocessed file does NOT match in terms of spatial and temporal extent. ***")
           }
+          
+          # check layers (if specified)
+          layers.match <- TRUE
+          if(!missing(layers) && !is.null(layers)) {
+            layers.match <- identical(sort(layers), sort(layers(preprocessed.field)))
+            if(verbose) {
+              if(layers.match) message("*** Preprocessed file matches in terms of layers present. ***")
+              else {
+                message("*** Preprocessed file does NOT match in terms of layers present. ***")
+                message(paste0("   -> Layers requested: ", paste0(sort(layers), collapse = ",")))
+                message(paste0("   -> Layers found: ", paste0(sort(layers(preprocessed.field)), collapse = ",")))
+              }
+            }
+          }
+          else {
+            if(verbose) message(paste0(" ** Argument layers not specified so not checked.  I found '", paste(sort(layers(preprocessed.field)), collapse = ","), "', perhaps check these are the layers you wanted."))
+            warning(paste0(" ** Argument layers not specified so not checked.  I found '", paste0(sort(layers(preprocessed.field)), collapse = ","), "', perhaps check these are the layers you wanted."))
+          }
+          
+          
+          # if all good return the pre-processed file
+          if(layers.match && sta.info.matches) return(preprocessed.field)
           # else clean up and proceed to read the raw data
           else rm(preprocessed.field)
           
@@ -251,7 +273,7 @@ getField <- function(source,
     }
   }
   
-  this.Field <- source@format@getField(source, quant, sta.info, file.name, verbose, ...)
+  this.Field <- source@format@getField(source, quant, layers, sta.info, file.name, verbose, ...)
   actual.sta.info <- as(this.Field, "STAInfo")
   
   

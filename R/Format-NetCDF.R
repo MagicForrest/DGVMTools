@@ -12,6 +12,8 @@
 #' 
 #' @param source A \code{Source} containing the meta-data about the NetCDF source
 #' @param quant A Quantity object to specify what quantity should be opened. 
+#' @param layers A character string (or a vector of character strings) specifying which variables from the NetCDF file are to be read.
+#' NULL (default) means read all.
 #' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param calendar Character string, sometimes the calendar string on the time axis can be incorrect or missing.  Here you can manually provide it.
@@ -19,7 +21,6 @@
 #' (the start of the Gregorian calendar) and it includes leap years the calendar needs to be set to "proleptic_gregorian".
 #' @param vars.to.ignore A list of character strings specifying which cvariables *not* to read.  These are typically metadata about the coordinate data
 #' (hence the defaults ""time_bnds", "lon_bnds", "lat_bnds", "lat" and "lon"), but you can also use this argument to ignore a particular data variable from a file.
-#' that typically hold coordinate metadata 
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param nc.verbose A logical, set to true to give progress/debug information from the ncdf4 package functions.  This can be a lot, 
 #' so it is handy to control that separately.
@@ -29,6 +30,7 @@
 #' @keywords internal
 getField_NetCDF <- function(source,
                             quant,
+                            layers = NULL,
                             target.STAInfo,
                             file.name,
                             verbose = FALSE,
@@ -101,18 +103,36 @@ getField_NetCDF <- function(source,
     if(this_var$ndims > 0 && !this_var$id$isdimvar) all_vars_names <- append(all_vars_names, this_var$name)
   }
   
+  # Get make a list of vars to poentially read, excluding the ones to be ignored
   if(verbose) message(paste("* NetCDF file contains potentially useful variables:", paste(all_vars_names, collapse = ", ")))
-  vars.to.read <- list()
-  if(quant@id %in% all_vars_names) {
-    vars.to.read <- quant@id
-    if(verbose) message(paste0("* Reading variable ", vars.to.read, ", which matches requested quant string or ID"))
+  vars.to.read <-  all_vars_names[!all_vars_names %in% vars.to.ignore]
+  vars.that.will.be.ignored <- all_vars_names[all_vars_names %in% vars.to.ignore]
+  if(verbose && length(vars.that.will.be.ignored) > 0) message(paste("* However at your request I am ignoring:", paste(vars.that.will.be.ignored, collapse = ", ")))
+  
+  
+ 
+  
+  #### IF SPECIFIED, SELECT ONLY THE VARIABLES REQUIRED BY THE 'layers' ARGUMENT
+  if(!is.null(layers)) {
+    
+    # first find any missing layers and warn about them
+    missing.layers <- layers[which(!layers %in% vars.to.read)] 
+    for(this.layer in missing.layers) {
+      message(paste0("Layer '", this.layer, "' requested but not found in data."))
+      warning(paste0("Layer '", this.layer, "' requested but not found in data."))
+    }
+    
+    # find the variables that match
+    vars.to.read <- layers[which(layers %in% vars.to.read)] 
+
+    # stop if no layers to read because subsequent code will probably fail
+    if(length(vars.to.read) == 0) stop("When reading netCDF file, none of the layers you requested were present and so subsequent code will almost certainly fail.")
+    
+    if(verbose) message(paste("* And I will attempt to read:", paste(vars.to.read, collapse = ", ")))
+    
   }
   else {
-    vars.to.read <- all_vars_names[!all_vars_names %in% vars.to.ignore]
-    if(verbose) {
-      message(paste0("* No variable in netCDF file matches requested quant ID (", quant@id, ") so reading *all* netCDF variables that look suitable: ", paste(vars.to.read, collapse = ", ")))
-      message(paste0("  (TIP: If you don't want to try to read all these variables (say because this function later fails) use the 'vars.to.ignore' argument in your 'getField()' call)"))
-    }
+    if(verbose) message(paste("* And I will attempt to read all of them."))
   }
   
   
@@ -124,7 +144,7 @@ getField_NetCDF <- function(source,
   # for each variable to read
   all_required_dims <- list()
   for(this_var in vars.to.read) {
-    
+
     # find the "var" object corresponding to it
     for(this_var_obj in this.nc$var) {
       if(this_var_obj$name == this_var) break
@@ -275,7 +295,7 @@ getField_NetCDF <- function(source,
       
       
       # if time step unit is days
-      if(timestep.unit == "days") {
+      if(timestep.unit == "days" || timestep.unit == "day") {
         
         # calculate the difference between adjacent time intervals to determine the time resolution of the data
         diff.all.time.intervals <- diff(all.time.intervals)
@@ -321,7 +341,7 @@ getField_NetCDF <- function(source,
         if(verbose) {
           message("Time axis information table:") 
           print(axis.info.dt)      
-          message("You can compare the above to the netCDF time axis in your file to check everything alighns as expected.")  
+          message("You can compare the above to the netCDF time axis in your file to check everything aligns as expected.")  
           message("(The cdo command 'showdate' and ncdump with the option '-c' are very useful in this regard.)")
         }
         
@@ -348,7 +368,7 @@ getField_NetCDF <- function(source,
           if(verbose) message("Processed time axis as relative time axis with units of days and daily values.")
         }
         
-      } # end if time step is days
+      } # end if time step is days/day
       
       # if time step unit is month
       else if(timestep.unit == "months") {

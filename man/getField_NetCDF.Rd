@@ -7,6 +7,7 @@
 getField_NetCDF(
   source,
   quant,
+  layers = NULL,
   target.STAInfo,
   file.name,
   verbose = FALSE,
@@ -20,6 +21,9 @@ getField_NetCDF(
 
 \item{quant}{A Quantity object to specify what quantity should be opened.}
 
+\item{layers}{A character string (or a vector of character strings) specifying which variables from the NetCDF file are to be read.
+NULL (default) means read all.}
+
 \item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
@@ -28,8 +32,7 @@ getField_NetCDF(
 so it is handy to control that separately.}
 
 \item{vars.to.ignore}{A list of character strings specifying which cvariables *not* to read.  These are typically metadata about the coordinate data
-(hence the defaults ""time_bnds", "lon_bnds", "lat_bnds", "lat" and "lon"), but you can also use this argument to ignore a particular data variable from a file.
-that typically hold coordinate metadata}
+(hence the defaults ""time_bnds", "lon_bnds", "lat_bnds", "lat" and "lon"), but you can also use this argument to ignore a particular data variable from a file.}
 
 \item{calendar}{Character string, sometimes the calendar string on the time axis can be incorrect or missing.  Here you can manually provide it.
 Note: A common error in paleo files is "standard" instead of "proleptic_gregorian". Specifically, if you have dates with years 1582 

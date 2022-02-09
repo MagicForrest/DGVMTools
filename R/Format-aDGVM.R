@@ -10,6 +10,7 @@
 #' 
 #' @param source A \code{Source} containing the meta-data about the aDGVM run
 #' @param quant A string the define what output file from the aDGVM run to open, for example "anpp" opens and read the "anpp.out" file 
+#' @param layers Ignored for aDGVM
 #' @param target.STAInfo The spatial-temporal target domain
 #' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
 #' This can be left blank, in which case the file name is automatically generated.
@@ -20,11 +21,17 @@
 #' @keywords internal
 getField_aDGVM <- function(source,
                            quant,
+                           layers = NULL,
                            target.STAInfo,
                            file.name,
                            verbose,
                            adgvm.file.type = "Yearly",
                            ...) {
+  
+  if(!is.null(layers)) {
+    message("Ignoring 'layers' argument for aDGVM")
+    warning("Ignoring 'layers' argument for aDGVM")
+  }
   
   # aDGVM yearly quantities
   if("aDGVM" %in% quant@format 
@@ -248,12 +255,8 @@ getYearlyField_aDGVM <- function(run,
   }
   
   # Select year
-  if(length(first.year) == 0) first.year <- NULL
-  if(length(last.year) == 0) last.year <- NULL
-  if(!missing(first.year) & !missing(last.year) & !is.null(first.year) & !is.null(last.year)) {
-    dt <- selectYears(dt, first.year, last.year)
-  }
-  
+  dt <- selectYears(dt, first.year, last.year)
+ 
   # also correct days to be 1-365 instead of 0-364, if necessary
   if("Day" %in% names(dt)) {
     if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]

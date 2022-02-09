@@ -7,6 +7,7 @@
 getField_aDGVM2(
   source,
   quant,
+  layers = NULL,
   target.STAInfo,
   file.name,
   verbose,
@@ -15,7 +16,11 @@ getField_aDGVM2(
 )
 }
 \arguments{
+\item{source}{A \code{source} containing the meta-data about the aDGVM2 run}
+
 \item{quant}{A Quantity object to define what quantity from the aDGVM2 run to extract}
+
+\item{layers}{Ignored for aDGVM}
 
 \item{target.STAInfo}{STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/}
 
@@ -26,10 +31,6 @@ getField_aDGVM2(
 \item{adgvm2.scheme}{A number that defines if pop-files (=1) or trait-files (=2) are used.}
 
 \item{adgvm2.daily}{A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)}
-
-\item{run}{A \code{source} containing the meta-data about the aDGVM2 run}
-
-\item{last.year}{The last year (as a numeric) of the data to be return}
 }
 \value{
 A list containing firstly the data.table containing the data, and secondly the STA.info

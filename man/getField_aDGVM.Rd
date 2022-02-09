@@ -7,6 +7,7 @@
 getField_aDGVM(
   source,
   quant,
+  layers = NULL,
   target.STAInfo,
   file.name,
   verbose,
@@ -18,6 +19,8 @@ getField_aDGVM(
 \item{source}{A \code{Source} containing the meta-data about the aDGVM run}
 
 \item{quant}{A string the define what output file from the aDGVM run to open, for example "anpp" opens and read the "anpp.out" file}
+
+\item{layers}{Ignored for aDGVM}
 
 \item{target.STAInfo}{The spatial-temporal target domain}
 

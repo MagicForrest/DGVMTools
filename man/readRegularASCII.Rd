@@ -4,21 +4,23 @@
 \alias{readRegularASCII}
 \title{Read ASCII table}
 \usage{
-readRegularASCII(file.string, verbose)
+readRegularASCII(file.string, verbose, layers = NULL, always.read = NULL)
 }
 \arguments{
 \item{file.string}{Character string of the full file path.}
 
-\item{verbose}{If TRUE give extra output
-Also checks for the file on file systems, fails if not present, and gunzips and zips the file if necessary.
-Note also some shenangigans for data.table package versions as earlier versions have a security risk.}
+\item{verbose}{If TRUE give extra output}
+
+\item{layers}{A character string (or a vector of character strings) specifying which optional columns to be read .  NULL (default) means read all.}
+
+\item{always.read}{A character string (or a vector of character strings) specifying which columns should always be read (ie "Lon", "Lat", etc) 
+Can directly read gzipped files (.gz) is they are present.}
 }
 \value{
 A data.table
 }
 \description{
-Reads a regular ASCII table using data.table:fread.  Regular means file must have the same number of
-columns on each line.
+Reads a regular ASCII table using data.table:fread.  Regular means file must have the same number of columns on each line.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

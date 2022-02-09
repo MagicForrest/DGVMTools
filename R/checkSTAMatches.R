@@ -58,7 +58,7 @@ checkSTAMatches <- function(sta.requested, sta.found, verbose) {
     } 
   }
   else{
-    if(verbose) message(paste0(" ** Argument first.year not specified so not checked.  I found ", sta.found@first.year, ", perhaps check this is what you wanted."))
+    if(verbose) message(paste0(" ** Argument first.year not specified so not checked.  I found '", sta.found@first.year, "', perhaps check this is what you wanted."))
   }
   # check last.year (only if last.year was supplied, otherwise assume ok)
   if(length(sta.requested@first.year) > 0 && !is.null(sta.requested@last.year)) {
@@ -69,7 +69,7 @@ checkSTAMatches <- function(sta.requested, sta.found, verbose) {
     } 
   }
   else{
-    if(verbose) message(paste0(" ** Argument last.year not specified so not checked.  I found ", sta.found@last.year, ", perhaps check this is what you wanted."))
+    if(verbose) message(paste0(" ** Argument last.year not specified so not checked.  I found '", sta.found@last.year, "', perhaps check this is what you wanted."))
   }
   # check year.aggregate.method (only if last.year was supplied, otherwise assume ok)
   if(!length(sta.requested@year.aggregate.method) && !is.null(sta.requested@year.aggregate.method)) {
@@ -80,7 +80,7 @@ checkSTAMatches <- function(sta.requested, sta.found, verbose) {
     } 
   }
   else{
-    if(verbose) message(paste0(" ** Argument year.aggregate.method not specified so not checked.  I found ", sta.found@year.aggregate.method, ", perhaps check this is what you wanted."))
+    if(verbose) message(paste0(" ** Argument year.aggregate.method not specified so not checked.  I found '", sta.found@year.aggregate.method, "', perhaps check this is what you wanted."))
   }
   if(verbose)  message("* Year matched.")
   

@@ -115,47 +115,58 @@ equivalentQuantities <- function(quant1, quant2) {
 
 #' Read ASCII table
 #' 
-#' Reads a regular ASCII table using data.table:fread.  Regular means file must have the same number of
-#' columns on each line.
+#' Reads a regular ASCII table using data.table:fread.  Regular means file must have the same number of columns on each line.
 #' @param file.string Character string of the full file path.
 #' @param verbose If TRUE give extra output
-#' Also checks for the file on file systems, fails if not present, and gunzips and zips the file if necessary.
-#' Note also some shenangigans for data.table package versions as earlier versions have a security risk.
+#' @param layers A character string (or a vector of character strings) specifying which optional columns to be read .  NULL (default) means read all.
+#' @param always.read A character string (or a vector of character strings) specifying which columns should always be read (ie "Lon", "Lat", etc) 
+#' Can directly read gzipped files (.gz) is they are present.
 #' @return A data.table
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
-readRegularASCII <- function(file.string, verbose) {
+readRegularASCII <- function(file.string, verbose, layers = NULL, always.read = NULL) {
   
-  #### !!! Check data.table package version (see data.table NEWS file for v1.11.6 point #5)
-  compare.string <- utils::compareVersion(a = as.character(utils::packageVersion("data.table")), b = "1.11.6")
-  new.data.table.version <- FALSE
-  if(compare.string >= 0) new.data.table.version <- TRUE
   
-  re.zip <- FALSE
-  if(file.exists(file.string)){ 
-    if(verbose) message(paste("Found and opening file", file.string, sep = " "))
+  # check for file or gzipped file
+  if(file.exists(file.string))  { if(verbose) message(paste("Found and opening file", file.string, sep = " ")) }
+  else if(file.exists(paste(file.string, "gz", sep = "."))) file.string <- paste(file.string, "gz", sep = ".")
+  else stop(paste("File (or gzipped file) not found:", file.string))
+  
+  # if specific layers requested then read only those layers
+  if(!is.null(layers)) {
+    
+    # get the header of the file - this is potentially a bottleneck as it seems to decompress and the the whole file just to get
+    # the head but I don't see a way around it right now
+    header <- names(fread(file.string, nrows = 0, header = TRUE))
+    
+    # Find columns which are always to be read (ie. Lon, Lat, Year, etc for LPJ-GUESS) and store them a vector
+    standard.cols.to.read <- header[which(header %in% always.read)] 
+    
+    # Now loop over the request layers, check they are present and add them to list of columns to read
+    # if they are not give a warning but proceed
+    selected.cols.to.read <- c()
+    for(this.layer in layers) {
+      if(this.layer %in% header) selected.cols.to.read <- append(selected.cols.to.read, this.layer)
+      else {
+        message(paste0("Layer '", this.layer, "' requested but not found in data."))
+        warning(paste0("Layer '", this.layer, "' requested but not found in data."))
+      }
+    }
+    
+    if(length(selected.cols.to.read) == 0){
+      message("Not reading any layers as none of your requested layers were in the file, is this really what you wanted to do?  Subsequent code will likely fail.")
+      warning("Not reading any layers as none of your requested layers were in the file, is this really what you wanted to do?  Subsequent code will likely fail.")
+    }
+    
+    dt <- fread(file.string, select = append(standard.cols.to.read, selected.cols.to.read))
+    
+  }
+  #else read 'em all
+  else {
     dt <- fread(file.string)
   }
-  else if(file.exists(paste(file.string, "gz", sep = "."))){
-    if(verbose) message(paste("File", file.string, "not found, but gzipped file present so using that", sep = " "))
-    if(.Platform$OS.type == "unix") {
-      if(new.data.table.version) dt <- fread(cmd = paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-      else dt <- fread(paste("gzip -d -c < ", paste(file.string, "gz", sep = "."), sep = ""))
-    }
-    else {
-      re.zip <- TRUE
-      R.utils::gunzip(paste(file.string, "gz", sep = "."))
-      dt <- fread(file.string)
-    }
-  }
-  else {
-    stop(paste("File (or gzipped file) not found:", file.string))
-  }
-  
-  # if re-zip
-  if(re.zip) R.utils::gzip(file.string)
   
   return(dt)
-  
+ 
 }

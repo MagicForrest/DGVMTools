@@ -7,6 +7,8 @@
 getField(
   source,
   var,
+  layers = NULL,
+  file.name = NULL,
   first.year,
   last.year,
   year.aggregate.method,
@@ -17,7 +19,6 @@ getField(
   subannual.original,
   subannual.aggregate.method,
   sta.info,
-  file.name = NULL,
   quick.read = FALSE,
   quick.read.file = NULL,
   verbose = FALSE,
@@ -29,9 +30,19 @@ getField(
 
 \item{var}{The quantity (either a \code{Quantity} or a string containing its \code{id})}
 
-\item{first.year}{The first year (as a numeric) of the data to be returned}
+\item{layers}{A list (or vector of character) of character strings to specify which Layers should be read from the file.
+If missing or NULL then all Layers are read.
+-NOTE- Using this arguments is not recommended for reading gzipped output with the \code{GUESS} Format since it involves gunzipping the file twice, 
+which likely makes it less time efficient than simply reading all the layers and then dropping the ones you don't want.}
 
-\item{last.year}{The last year (as a numeric) of the data to be returned}
+\item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
+(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
+standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
+in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
+
+\item{first.year}{The first year (as a numeric) of the data to be returned (if not specified or NULL start from the beginning of the data set)}
+
+\item{last.year}{The last year (as a numeric) of the data to be returned (if not specified or NULL take the data to the end of the data set)}
 
 \item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
@@ -56,11 +67,6 @@ See \code{\link{aggregateSubannual}}}
 \item{sta.info}{Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.
 Can also be a Field object from which the STA info will de derived.
 If specified the following 9 arguments are ignored (with a warning)}
-
-\item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
-(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
-standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
-in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
 
 \item{quick.read}{If TRUE then look for pre-processed file on disk. Default is FALSE so it needs to be actively enabled by the user, but doing so
 can save a lot of time if averaged file is already saved on disk.  Note that the the quick.read.file will need to be set}
