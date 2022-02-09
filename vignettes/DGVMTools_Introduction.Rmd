@@ -145,8 +145,10 @@ print(plotTemporal(LAI.spatial.mean))
 # save a temporal example plot for the reference publication
 temporal_example_plot <- plotTemporal(LAI.spatial.mean, 
                                       text.multiplier = 3.5,
-                                      layers = c("BNE", "BINE", "BNS", "IBS", "TeBS", "TeBE", "C3G", "Total"),
-)
+                                      layers = c("BNE", "BINE", "BNS", "IBS", "TeBS", "TeBE", "C3G", "Total"))
+
+
+print(temporal_example_plot)
 
 ```
 
@@ -284,7 +286,9 @@ print(plotSpatialComparison(vegC.comparison,
 comparison_example_plot <- plotSpatialComparison(vegC.comparison, 
                                                  text.multiplier = 3.5,
                                                  title = "Tree C Mass Difference: LPJ-GUESS - Obs.",
+                                                 subtitle = "Western Central Africa",
                                                  map.overlay = "world")
+
 
 # also percentage difference map
 print(plotSpatialComparison(vegC.comparison, 

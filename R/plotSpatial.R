@@ -636,7 +636,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   # map overlay - suppress warning about missing values
   if(!is.null(map.overlay)) {
-    suppressWarnings(mp <- mp + geom_path(data=map.overlay.df, size=0.1, color = "black", aes(x=long, y=lat, group = group)))
+    suppressWarnings(mp <- mp + geom_path(data=map.overlay.df, size=0.2, color = "black", aes(x=long, y=lat, group = group)))
   }
   
   return(mp)
