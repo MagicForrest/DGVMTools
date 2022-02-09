@@ -12,7 +12,6 @@
 #' @param quant A Quantity object to define what quantity from the aDGVM2 run to extract
 #' @param layers Ignored for aDGVM
 #' @param target.STAInfo STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/
-#' @param last.year The last year (as a numeric) of the data to be return
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param adgvm2.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
