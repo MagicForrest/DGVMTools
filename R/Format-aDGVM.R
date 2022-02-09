@@ -255,11 +255,8 @@ getYearlyField_aDGVM <- function(run,
   }
   
   # Select year
-  if(length(first.year) == 0) first.year <- NULL
-  if(length(last.year) == 0) last.year <- NULL
-  if(!missing(first.year) & !missing(last.year) & !is.null(first.year) & !is.null(last.year)) {
-    dt <- selectYears(dt, first.year, last.year)
-  }
+  dt <- selectYears(dt, first.year, last.year)
+ 
   
   # also correct days to be 1-365 instead of 0-364, if necessary
   if("Day" %in% names(dt)) {
