@@ -488,7 +488,7 @@ test_that("Categorical Comparisons and Benchmarks", {
   # plot said categorical Comparison
   expect_is(plotSpatialComparison(Biomes.comparison), "ggplot")
   expect_is(plotSpatialComparison(Biomes.comparison, type = "difference"), "ggplot")
-  expect_warning(plotSpatialComparison(Biomes.comparison, type = "percentage.difference"))
+  expect_is(plotSpatialComparison(Biomes.comparison, type = "percentage.difference"), "ggplot")
   expect_is(plotSpatialComparison(Biomes.comparison, type = "values"), "ggplot")
 
   # test with a dummy benchmark

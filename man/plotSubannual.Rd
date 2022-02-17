@@ -59,7 +59,7 @@ number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should b
 
 \item{point.size}{Numeric, size of the points for the aggregate/summary data}
 
-\item{x.label, y.label}{Character strings for the x and y axes (optional)}
+\item{x.label, y.label}{Character strings (or expressions) for the x and y axes (optional)}
 
 \item{summary.function}{A function to summarise (aggregate) across year and plot on top.  Obvious choice is \code{mean}, but there is flexibility to anything that operates on 
 a vector of numerics - eg median, a 95th percentile, standard deviation.}
