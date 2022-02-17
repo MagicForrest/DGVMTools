@@ -85,14 +85,14 @@ plotSpatialComparison <- function(comparisons,
         if(do.phase){
           object@layers1 <- c("Seasonal Phase")
           object@layers2 <- c("Seasonal Phase")
-          object@quant1@units <- "\u0394month"
-          object@quant2@units <- "\u0394month"
+          object@quant1@units <- "Month"
+          object@quant2@units <- "Month"
         }
         else {
           object@layers1 <- c("Seasonal Concentration")
           object@layers2 <- c("Seasonal Concentration")
-          object@quant1@units <- "\u0394concentration"
-          object@quant2@units <- "\u0394concentration"
+          object@quant1@units <- "Concentration"
+          object@quant2@units <- "Concentration"
         }
       }
       
@@ -222,7 +222,7 @@ plotSpatialComparison <- function(comparisons,
           object@layers2 <- c("Seasonal Phase")
           object@quant1@units <- "month"
           object@quant2@units <- "month"
-          if(missing(limits)) limits <- c(1,12)
+          if(missing(limits)) limits <- c(0,12)
         }
         else {
           object@layers1 <- c("Seasonal Concentration")
@@ -283,7 +283,6 @@ plotSpatialComparison <- function(comparisons,
     
     # make a legend title if one has not been supplied
     if(missing(legend.title)) legend.title <- stringToExpression(standardiseUnitString(object@quant1@units))
-    
     
     return(plotSpatial(objects.to.plot,
                        layers =  unique(layers.to.plot),

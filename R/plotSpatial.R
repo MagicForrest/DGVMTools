@@ -115,7 +115,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   ### SANITISE FIELDS, LAYERS AND STINFO
   
   ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
-  
+ 
   fields <- santiseFieldsForPlotting(fields)
   if(is.null(fields)) return(NULL)
   
@@ -167,9 +167,9 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   if(length(final.fields) > 1){
     for(field.index.1 in 1:(length(final.fields)-1)){
       for(field.index.2 in (field.index.1+1):length(final.fields)){
-        if(final.fields[[field.index.1]]@source@name == final.fields[[field.index.2]]@source@name
-           && (final.fields[[field.index.1]]@first.year != final.fields[[field.index.2]]@first.year
-               || final.fields[[field.index.1]]@last.year != final.fields[[field.index.2]]@last.year)){
+         if(identical(final.fields[[field.index.1]]@source@name, final.fields[[field.index.2]]@source@name)
+           && (!identical(final.fields[[field.index.1]]@first.year, final.fields[[field.index.2]]@first.year)
+               || !identical(final.fields[[field.index.1]]@last.year, final.fields[[field.index.2]]@last.year))){
           add.Years= TRUE
         }
       }
