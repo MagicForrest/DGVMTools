@@ -27,7 +27,7 @@
 For various reasons the old behaviour for saving and re-reading processed Fields (with the 'write' and 'read.full' arguments) was becoming restrictive and not safe against unexpected behaviour.  However, it is still extremely advantageous to be able to conveniently save Fields after they have been read and processed for quicker rereading later.  To facilitate this, new functionality has been implemented and behaves as follows:
 
 1. As before, no automatic saving and reading of processed files is done.  Unless the functionality is explicitly enabled, the raw data is re-read every time.
-1. To enable the functionality, both the _quick.read_ and _quick.read.file_ must be specified.
+1. To enable the functionality, both _quick.read_ must be set to TRUE and _quick.read.file_ must be specified.
 1. The _quick.read.file_ specifies the name of the file to be written and re-read.  Note that since this is under the user's control they are responsible for making sure it is 
 specified appropriately. 
 1. If _quick.read_ is set to TRUE then one of two things will happen.  If the file _quick.read.file_ exists on disk it will be read and checked, and it will be used if the layers and dimensions match.  If it doesn't exist, or the layers and dimensions don't match, the raw data will be read and the result saved as _quick.read.file_. 
