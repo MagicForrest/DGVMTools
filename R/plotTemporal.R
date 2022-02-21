@@ -139,7 +139,7 @@ plotTemporal <- function(fields,
   
   ### 7. MAKE THE Y-AXIS LABEL
   if(is.null(y.label)) {
-    y.label <- makeYAxis(final.fields)
+    y.label <- stringToExpression(makeYAxis(final.fields))
   }
   
   # check the defined Layers present in the Fields and make a unique list
@@ -222,7 +222,7 @@ plotTemporal <- function(fields,
   
   # all column names, used a lot below 
   all.columns <- names(data.toplot)
-  
+
   # check the "xxx.by" arguments 
   if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring by", col.by, "requested, but that is not available, so failing."))
   if(!missing(linetype.by) && !is.null(linetype.by) && !linetype.by %in% all.columns) stop(paste("Setting linetypes by", linetype.by, "requested, but that is not available, so failing."))
@@ -238,6 +238,9 @@ plotTemporal <- function(fields,
   for(this.facet in vars.facet) {
     if(length(unique(data.toplot[[this.facet]])) == 1) vars.facet <- vars.facet[!vars.facet == this.facet]
   }
+  
+  
+  
   
   ### LINE COLOURS
   

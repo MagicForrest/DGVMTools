@@ -89,7 +89,6 @@ Collate:
     'periods.R'
     'plotResidualHisto.R'
     'plotScatter.R'
-    'plotScatterComparison.R'
     'plotSeasonal.R'
     'plotSpatial.R'
     'plotSpatialComparison.R'

@@ -56,8 +56,8 @@ plotScatter <- function(x, y = x, layer.x, layer.y = layer.x, alpha = 1, text.mu
   
   # remove spaces and -" "from column names otherwise ggplot2 goes a bit flooby (although check out 'tidyevaluation' to maybe do this nicer)
   for(this.character in c(" ", "-")) {
-   x.new <- gsub(x = layer.x, pattern = this.character, replacement = "_")
-   y.new <- gsub(x = layer.y, pattern = this.character, replacement = "_")
+    x.new <- gsub(x = layer.x, pattern = this.character, replacement = "_")
+    y.new <- gsub(x = layer.y, pattern = this.character, replacement = "_")
   }
   setnames(to.plot, c(layer.x, layer.y), c(x.new, y.new))
   
@@ -68,8 +68,8 @@ plotScatter <- function(x, y = x, layer.x, layer.y = layer.x, alpha = 1, text.mu
   
   # labels depending on input type
   if(is.Field(x) && is.Field(y))  { 
-     scatter.plot <- scatter.plot + labs(y = paste0(old.layer.y, " ", y@source@name, "(", y@quant@units, ")"),
-                        x = paste0(old.layer.x, " ", x@source@name, "(", x@quant@units, ")"))
+    scatter.plot <- scatter.plot + labs(y = stringToExpression(paste0(old.layer.y, " ", y@source@name,  " ", y@quant@name, " (", standardiseUnitString(y@quant@units), ")")),
+                                        x = stringToExpression(paste0(old.layer.x, " ", x@source@name,  " ", x@quant@name, " (", standardiseUnitString(x@quant@units), ")")))
   }
   else scatter.plot <- scatter.plot + labs(y = layer.y, x = layer.x)
   

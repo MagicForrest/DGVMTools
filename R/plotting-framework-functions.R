@@ -393,8 +393,6 @@ makeYAxis <- function(final.fields) {
   }
   y.axis.label <- substr(y.axis.label,  1, nchar(y.axis.label) - 2)
   
-  y.axis.label <- gsub(" ", "~", y.axis.label)
-  
   return(stringToExpression(y.axis.label))
   
 }
@@ -570,7 +568,7 @@ stringToExpression <- function(x){
   if(is.character(x)) {
     x <- tryCatch(
       {
-        x <- parse(text = x)
+        x <- parse(text = gsub(" ", "~", x))
       },
       error= function(cond){
         x
