@@ -263,7 +263,7 @@ print(Saatchi.vegC)
 print(plotSpatial(Saatchi.vegC))
 ```
 
-Now we formally compare the layers using the `compareLayers()` function, which also gives us some comparison metrics.  The resulting `Comparison` object can be plotting with `plotSpatialComparison()` and `plotScatterComparison()`.
+Now we formally compare the layers using the `compareLayers()` function, which also gives us some comparison metrics.  The resulting `Comparison` object can be plotting with `plotSpatialComparison()`.
 
 ``` {r comparison, fig.asp = 1, echo=TRUE}
 # compare layers to produce a Comparison object
@@ -301,8 +301,6 @@ print(plotSpatialComparison(vegC.comparison,
 # plot side-by-side
 print(plotSpatialComparison(vegC.comparison, type = "values"))
 
-# make scatter plot
-print(plotScatterComparison(vegC.comparison))
 
 ```
 
