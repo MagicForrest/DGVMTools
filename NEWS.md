@@ -10,9 +10,9 @@
 * 'Quick read functionality'- getField()/getScheme() arguments 'write' and 'read.full' have been replace with 'quick.read' and 'quick.read.file' (details below)
 * Spatial benchmark scores are now area-weighted where possible.
 * Argument name consistency in getField() ("var" became "quant").
-* Improvements to writeCFD() allowing filling in of missing longitude/latitudes and customisation.
-* Units superscripts now rendered properly in plots.
-* It is now possible to supply only one of first.year and last.year arguments to getField() and selectYears().
+* Improvements to writeCFD() allowing filling in of missing longitude/latitude bands and customisation of layer axis.
+* Units superscripts now rendered properly in plot labels.
+* It is now possible to supply only one of first.year and last.year arguments to getField() and selectYears() (as opposed to both or neither).
 * Colour palettes are now almost exclusively from viridis (the old fields::tim.colours palette has been purged)
 * Automatic legend title in plotSpatial() and plotSpatialComparison().
 
@@ -24,18 +24,19 @@
 
 ## Quick Read Functionality in getField() and getScheme()
 
-For various reasons the old behaviour for saving and re-reading processed Fields (with the 'write' and 'read.full' arguments) was becoming restrictive and not safe against unexpected behaviour.  However, it is still extremely advantageous to be able to conveniently save Fields after they have been read and processed for quicker rereading later.  To facilitate the new functrionality behaves as follows:
+For various reasons the old behaviour for saving and re-reading processed Fields (with the 'write' and 'read.full' arguments) was becoming restrictive and not safe against unexpected behaviour.  However, it is still extremely advantageous to be able to conveniently save Fields after they have been read and processed for quicker rereading later.  To facilitate this, new functionality has been implemented and behaves as follows:
 
 1. As before, no automatic saving and reading of processed files is done.  Unless the functionality is explicitly enabled, the raw data is re-read every time.
 1. To enable the functionality, both the _quick.read_ and _quick.read.file_ must be specified.
 1. The _quick.read.file_ specifies the name of the file to be written and re-read.  Note that since this is under the user's control they are responsible for making sure it is 
 specified appropriately. 
-1. If _quick.read_ is set to TRUE then one of two things will happen.  If the file _quick.read.file_ exists on disk it will be read and checked, and it will be used if the layers and dimensions match.  If it doesn't exist, the raw data will be read and the result saved as _quick.read.file_. 
+1. If _quick.read_ is set to TRUE then one of two things will happen.  If the file _quick.read.file_ exists on disk it will be read and checked, and it will be used if the layers and dimensions match.  If it doesn't exist, or the layers and dimensions don't match, the raw data will be read and the result saved as _quick.read.file_. 
 
 ## Behind-the-scenes
 
 * fields package no longer required
 * units package required
+
 
 #  DGVMTools v0.10.0 (2021-04-09) 
 

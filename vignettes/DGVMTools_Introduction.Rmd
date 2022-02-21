@@ -21,7 +21,7 @@ DGVMTools is designed to provide core functionality for developing and utilising
 
 ## Tutorial
 
-Now we'll jump right in and start using the package to read, process and plot some DGVM output data and hopefully demonstrate the features, logic and power of the package.  This tutorial uses small LPJ-GUESS output files included in the package.
+Now we'll jump right in and start using the package to read, process and plot some DGVM output data and hopefully demonstrate the features, logic and power of the package.  This tutorial uses small LPJ-GUESS output files included in the package.  There is a more detailed description of the package (including implementation details) after the tutorial.
 
 ### Step 1: Define a **`Source`**
 
@@ -29,7 +29,7 @@ The first job in pretty much any analysis is to define the source (or sources) o
 
 1. the **`id`** argument, a unique identifier to label this source (should be alphanumeric with no spaces)
 2. the **`dir`** argument, to specify the location of the data on disk (for the purposes of this tutorial we generate this with a function, but it is normally just a character string)
-3. the **`format`** argument, which specifies the structure of the data on disk (ie what model did it come from)
+3. the **`format`** argument, which specifies the structure of the data on disk (ie what model did it come from or is it netCDF data)
 
 The `name` argument is optional and can be used to provide a more human-friendly string to identify the run.  If it is not provided, the `id` argument is used for the `name`.  It is also possible just provide a `name` argument and not an `id` argument, in which case the `id` will be derived from the `name`.
 
@@ -147,9 +147,6 @@ temporal_example_plot <- plotTemporal(LAI.spatial.mean,
                                       text.multiplier = 3.5,
                                       layers = c("BNE", "BINE", "BNS", "IBS", "TeBS", "TeBE", "C3G", "Total"))
 
-
-print(temporal_example_plot)
-
 ```
 
 And so we see a pretty straightforward times series plot of LAI averaged over the simulated area.
@@ -203,7 +200,7 @@ LAI.year.mean <- layerOp(LAI.year.mean, "sum", ".Grass", "Grass")
 LAI.year.mean <- layerOp(LAI.year.mean, sum, ".Tree", "Tree")
 
 
-# Calculate if trees or grasss is dominant 
+# Calculate if trees or grasses are dominant 
 LAI.year.mean <- layerOp(LAI.year.mean, "max.layer", c("Tree", "Grass"), "MaxLifeform")
 
 # plot
@@ -250,13 +247,15 @@ print(plotSpatial(GUESS.vegC, "Tree"))
 
 # define the data Source (Saatchi biomass data @ HD)
 Saatchi.dataset <- defineSource(id = "Saatch2011",
-                                name = "Saatchi et al. 2011 tropical biomass",
+                                name = "Saatchi et al. 2011 biomass",
                                 format = NetCDF,
                                 dir = system.file("extdata", "NetCDF", "Saatchi2011", "HD", package = "DGVMTools"))
 
 # get the data field
 Saatchi.vegC <- getField(source = Saatchi.dataset,
                          quant = "vegC_std")
+
+# NOTE: the metadata from the netCDF file always over-writes the specified `Quantity` data with a warning (as you can see above).
 
 # have a look and plot
 print(Saatchi.vegC)
@@ -306,7 +305,7 @@ print(plotSpatialComparison(vegC.comparison, type = "values"))
 
 #### Selecting gridcells and plotting the subannual cycle
 
-It is also possible to select gridcells using `selectGridcells()` or the `spatial.extent` argument to getField().  The `spatial.extent` can be a single gridcell (as a numeric two-vector of Lon and Lat), a data.frame or a data.table with columns Lon and Lat, or shapefile (as a SpatialPolygonDataFrame) and anything which can be coerced to a `raster::Extent` or a `terra::Ext`.  To select rectangular spatial extents, the `raster::crop()` method has been extended. Here we use first make a Field with only one gridcell and then use the `plotSubannual()` function to plot the seasonal cycle.  Note that to get the monthly of LAI we are using the `"mlai"` quantity instead of the `"lai"` quantity.
+It is also possible to select gridcells using `selectGridcells()` or the `spatial.extent` argument to getField().  The `spatial.extent` can be a single gridcell (as a numeric two-vector of Lon and Lat), a data.frame or a data.table with columns Lon and Lat, or shapefile (as a SpatialPolygonDataFrame) and anything which can be coerced to a `raster::Extent` or a `terra::Ext`.  To select rectangular spatial extents, the `raster::crop()` method has been extended. Here we first read a Field with only one gridcell and then use the `plotSubannual()` function to plot the seasonal cycle.  Note that to get the monthly of LAI we are using the `"mlai"` quantity instead of the `"lai"` quantity.
 
 ``` {r select, fig.asp = 1, echo=TRUE}
 
@@ -356,7 +355,7 @@ biomes.model <- getScheme(GUESS.run, Smith2014BiomeScheme, year.aggregate.method
 print(plotSpatial(biomes.model))
 ```
 
-There is also a global map on potential natural vegetation (PNV) biomes available.
+There is also a global map on potential natural vegetation (PNV) biomes available in the package that can be compared to the model output.  First we define the data as a `Source` and read it.
 
 ``` {r data biomes, echo=TRUE}
 
@@ -372,7 +371,7 @@ print(plotSpatial(biomes.data))
 
 ```
 
-The `compareLayers()` function automatically detects categorical quantities such as biomes and treats them accordingly.
+Then we can compare.  Note that `compareLayers()` function automatically detects categorical quantities (such as the biomes in this case) and treats them accordingly.
 
 ``` {r biomes comparison, echo=TRUE}
 
@@ -397,8 +396,7 @@ Since the plotting functionality in DGVMTools is based entirely on ggplot2, the 
 
 #### Changing facet layouts
 
-The plotting functions always adds a column called `Facet` by which to facet the data.  Hovewever, you can provide the ggplot2-style
-arguments "nrow" and "ncol" directly to plotSpatial().  You can also adjust the facetting after the fact with a ggplot2::facet_wrape() command. Facet layout can be adjusted as follows:
+You can provide the ggplot2-style arguments "nrow" and "ncol" directly to all the plot functions. Additionally,  `plotSpatial` adds a column called `Facet` by which to facet the data so you can also adjust the facetting after the fact with a ggplot2::facet_wrap() command. Examples follow:
 
 
 ``` {r facetting, echo=TRUE}
@@ -418,13 +416,16 @@ print(lifeform.plot)
 ```
 
 #### Formatting legends and text
-The `theme()` and `guides()` functions are very handy.  See ggplot2 documentation for more info.
+The `theme()` and `guides()` functions are very handy.  See ggplot2 documentation for more info, and here is an example:
 
-``` {r legends, fig.height=8, echo=TRUE}
+``` {r legends, fig.height=6, echo=TRUE}
 
-# ove and format legends, and make the text slightly smaller
+
+# a make and view the base lot
 biome.plot <- plotSpatialComparison(biome.comparison, type = "values")
 print(biome.plot)
+
+# move and format legend, and make the text slightly smaller
 biome.plot <- biome.plot + theme(legend.position = "bottom", text = element_text(size = theme_get()$text$size * 0.75))
 biome.plot <- biome.plot+ guides(fill = guide_legend(ncol = 4))
 print(biome.plot)
@@ -433,15 +434,15 @@ print(biome.plot)
 
 
 ## Further Details
-Whilst the tutorial above will get you started with the package, the following will give you further information and a deeper understanding of the package and is recommended reading.
+Whilst the tutorial above will get you started with the package, the following will give you further information and a deeper understanding of the package and is therefore recommended reading.
 
 ### Objects/classes
 
 Concepts in a typical DGVM workflow are encapsulated into objects (technically these are S4 classes).  For example, data always orginate from a particular source, typically a model simulation or a dataset.  This is represented as a `Source` object, which includes the location of the data on disk, an identifying string and other pertinent pieces of information.  Once a `Source` has been defined, data can be extracted from it which will be stored as a `Field` object.  Conceptually, a `Field` is the data of one particular variable (say biomass) over a period of time and an extent in space (say monthly over the whole globe for the years 1961 to 1990).  `Fields` are the most important objects in DGVMTools because they are manipulated by the users and they contain data (most other classes are metadata). One can think of a `Field` as being similar to raster Stacks or Bricks, but with more metadata and implicit temporal information.  Like Stacks/Bricks, they also have layers, for example one layer per PFT.  These layers can be operated upon, for example to find the total of all of the layers, or the fraction of one layer divided another, or many other operations.  They can also be plotted, and two `Field` objects can be compared to produce a `Comparison` object which has data on the difference between the two fields and statistical summary metrics.
 
-Apart from the all-important `Field`and `Source` (and `Comparison`) objects, there are a few other objects defined in DGVMTools.  Each `Source` object includes `Format` object which describes the format of that data on disk - i.e. how to read data from it, which PFTs one might expect to find in a simulation etc.  Different physical quantities are described by `Quantity` objects which include units, a long name and a default colour scale for plotting. A `Layer` object contains metadata about a component of a `Field`, for example a particular plant functional type or C pool.  It can include metadata such as its growth form, phenology, leaf type or climate zone, but also a default colour for consistency across plots.  The `Period` class contains information about sub-annual time periods such as months or seasons.  Users can also define custom periods to define special growing seasons, or 8-day MODIS intervals, or whatever.  The `BiomeScheme` class contains data about different discrete biome classifications (including rules for how to derive biomes from model output).  Oh yeah, spatial-temporal-annual information is encapsulated in an `STAInfo` meta-data object but this mostly is used behind the scenes.
+Apart from the all-important `Field`and `Source` (and `Comparison`) objects, there are a few other objects defined in DGVMTools.  Each `Source` object includes `Format` object which describes the format of that data on disk - i.e. how to read data from it, which PFTs one might expect to find in a simulation etc.  Different physical quantities are described by `Quantity` objects which include units, a long name and a default colour scale for plotting. A `Layer` object contains metadata about a component of a `Field`, for example a particular plant functional type or C pool.  It can include metadata such as its growth form, phenology, leaf type or climate zone, but also a default colour for consistency across plots.  The `Period` class contains information about sub-annual time periods such as months or seasons.  Users can also define custom periods to define special growing seasons, or 8-day MODIS intervals, or whatever.  The `BiomeScheme` class contains data about different discrete biome classifications (including rules for how to derive biomes from model output).  Also, spatial-temporal-annual information is encapsulated in an `STAInfo` meta-data object but this mostly is used behind the scenes.
 
-Many objects have an `id` which should be a unique alphanumeric character string, typically used for making filenames, and a `name` character string which can be formatted more prettily for use on graphics (although it should also be unique within one analysis).  Examples of most of these objects will follow in the subsequent tutorial.
+Many objects have an `id` which should be a unique alphanumeric character string, typically used for making filenames, and a `name` character string which can be formatted more prettily for use on graphics (although it should also be unique within one analysis).
 
 ### Functions/methods
 
@@ -466,9 +467,8 @@ Much of the package could be utilised for any data which follows comes distribut
 
 * DGVMTools objects can be really easily converted into rasters or data.frames, so you can mix and match the functionality you want and integrate DGVMTools into existing scripts.
 * For speed, the data is stored internally as `data.table` objects which are similar to `data.frames` but faster.
-* Although the concept of a 'layer' is important in `DGVMTools`, they are not represented by a class. Rather they are column in a `data.table`.  Normally this technical detail is not apparent or important because the columns/layers are manipulated using the functions in the package without handling the `data.tables` directly.
 * `Field` objects can be stored on disk and automatically re-read by the `getField()` function, potentionally saving a lot of time (since often the bottle neck in analysis scripts is reading the raw data from disk).
-* Plotting is done using the package ggplot which is especially useful as plots can be modified after they have been created (much more flexibly than base or lattice graphics).  This maintains relative simplicity in the DGVMTools plot function, but high levels of flexibility through subsequent modifications with ggplot2 commands.
+* Plotting is done using the package ggplot2 which is especially useful as plots can be modified after they have been created (much more flexibly than base or lattice graphics).  This maintains relative simplicity in the DGVMTools plot function, but high levels of flexibility through subsequent modifications with ggplot2 commands.
 * Unlike raster objects, `Field`s do not need to be on grids of equally spaced longitude and latitude, or even on grids at all!  This is handy when working with sites, or with grid from climate models which often have unevenly spaced latitudes.
 * Regridding is not supported by DGVMTools.
 
