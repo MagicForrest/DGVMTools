@@ -1,6 +1,45 @@
+#  DGVMTools v1.0.0 release (2022-02-22)
+
+"Version 1.0 release" - no major features, but many refinements and improvements.  Some potentially breaking changes, see below.
+
+## Improvements and Refinements
+
+* plotSubannual() function has been re-worked for increased flexibility and interface consistency with plotTemporal().
+* Support for terra package objects (converting to and from).
+* Layers may now be selected in getField() calls (potentially saving both time and memory).
+* 'Quick read functionality'- getField()/getScheme() arguments 'write' and 'read.full' have been replace with 'quick.read' and 'quick.read.file' (details below)
+* Spatial benchmark scores are now area-weighted where possible.
+* Argument name consistency in getField() ("var" became "quant").
+* Improvements to writeCFD() allowing filling in of missing longitude/latitudes and customisation.
+* Units superscripts now rendered properly in plots.
+* It is now possible to supply only one of first.year and last.year arguments to getField() and selectYears().
+* Colour palettes are now almost exclusively from viridis (the old fields::tim.colours palette has been purged)
+* Automatic legend title in plotSpatial() and plotSpatialComparison().
+
+## Breaking Changes
+
+* Arguments to getField().  Sorry, this is annoying but had to be done.  Firstly, "var" was changed to "quant" to be consistent with everywhere else. Secondly, 'write' and 'read.full' have been replace with 'quick.read' and 'quick.read.file' (also for getScheme(), usage details below).  
+* Functions plotResidualHistos() and plotScatterComparison() were removed as they are not up to standard for a v1.0 release.  They may be reinstated in an improved form at a later date.  If you need these functions, please raise an issue on Github.
+* plotSeasonal() was removed, functionality has been fully superseded by plotSubannual()
+
+## Quick Read Functionality in getField() and getScheme()
+
+For various reasons the old behaviour for saving and re-reading processed Fields (with the 'write' and 'read.full' arguments) was becoming restrictive and not safe against unexpected behaviour.  However, it is still extremely advantageous to be able to conveniently save Fields after they have been read and processed for quicker rereading later.  To facilitate the new functrionality behaves as follows:
+
+1. As before, no automatic saving and reading of processed files is done.  Unless the functionality is explicitly enabled, the raw data is re-read every time.
+1. To enable the functionality, both the _quick.read_ and _quick.read.file_ must be specified.
+1. The _quick.read.file_ specifies the name of the file to be written and re-read.  Note that since this is under the user's control they are responsible for making sure it is 
+specified appropriately. 
+1. If _quick.read_ is set to TRUE then one of two things will happen.  If the file _quick.read.file_ exists on disk it will be read and checked, and it will be used if the layers and dimensions match.  If it doesn't exist, the raw data will be read and the result saved as _quick.read.file_. 
+
+## Behind-the-scenes
+
+* fields package no longer required
+* units package required
+
 #  DGVMTools v0.10.0 (2021-04-09) 
 
-Feature release, and a good one!  A new flexible netCDF file reader is now included! This completely supersedes the previous "DGVMData"" Format (which has been removed), please now use the "NetCDF"" Format instead (it should also read any old DGVMData file without problems). For further details of this and other features and bugfixes, see below.
+Feature release, and a good one!  A new flexible netCDF file reader is now included! This completely supersedes the previous "DGVMData"" Format (which has been removed), please now use the "NetCDF"" Format instead (it should also read any old DGVMData files without problems). For further details of this and other features and bugfixes, see below.
 
 ## Main Feature
 
