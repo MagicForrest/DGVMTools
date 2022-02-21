@@ -504,8 +504,8 @@ context("Seasonal Comparisons and Benchmarks")
 
 test_that("Seasonal Comparisons and Benchmarks", {
   
-  test.Field.2000_2005 <-  getField(source = GUESS.Europe.test.Source, var = "mlai", year.aggregate.method = "mean", first.year = 2000, last.year = 2005)
-  test.Field.2006_2010 <-  getField(source = GUESS.Europe.test.Source, var = "mlai", year.aggregate.method = "mean", first.year = 2006, last.year = 2010)
+  test.Field.2000_2005 <-  getField(source = GUESS.Europe.test.Source, quant = "mlai", year.aggregate.method = "mean", first.year = 2000, last.year = 2005)
+  test.Field.2006_2010 <-  getField(source = GUESS.Europe.test.Source, quant = "mlai", year.aggregate.method = "mean", first.year = 2006, last.year = 2010)
   
   # build and test a seasonal Comparison
   Seasonal.comparison <- compareLayers(test.Field.2000_2005, test.Field.2006_2010, layers1 = "mlai", do.seasonality = TRUE, verbose = FALSE, show.stats = FALSE)

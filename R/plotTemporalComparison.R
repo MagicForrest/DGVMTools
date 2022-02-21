@@ -90,8 +90,8 @@ plotTemporalComparison <- function(comparisons,
       
       # first make a list of the layers that we expect to be present in the data.table, based on the meta-data in the Comparison object
       layers.names <- names(object)
-      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, var.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
-      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, var.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
+      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, quant.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
+      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, quant.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
     
       # check the layers
       for(this.layer in expected.layers.1) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))
@@ -210,8 +210,8 @@ plotTemporalComparison <- function(comparisons,
       
       # first make a list of the layers that we expect to be present in the data.table, based on the meta-data in the Comparison object
       layers.names <- names(object)
-      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, var.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
-      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, var.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
+      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, quant.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
+      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, quant.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
       
       # check the layers
       for(this.layer in expected.layers.1) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))

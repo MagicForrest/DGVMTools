@@ -278,7 +278,7 @@ aggregateSubannual.uncompiled <- function(x,
     x@subannual.original <- initial.subannual
     x@subannual.resolution  <- target
     x@id <- makeFieldID(source = x@source,
-                                var.string = x@quant@id, 
+                                quant.string = x@quant@id, 
                                 sta.info = as(x, "STAInfo"))
     return(x)
   }

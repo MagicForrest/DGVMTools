@@ -304,7 +304,7 @@ openLPJOutputFile <- function(run,
   else {
     
     # make the ID and then make and return Field
-    field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
+    field.id <- makeFieldID(source = run, quant.string = variable, sta.info = sta.info)
     
     return(
       
@@ -702,7 +702,7 @@ openLPJOutputFile_FireMIP <- function(run,
   
   
   # make the ID and then make and return Field
-  field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
+  field.id <- makeFieldID(source = run, quant.string = variable, sta.info = sta.info)
   
   
   return(
@@ -932,7 +932,7 @@ getStandardQuantity_LPJ <- function(run,
   
   # Update the Field with the 'standard' Quantity (also Field id) and return
   this.Field@quant <- quant
-  this.Field@id <- makeFieldID(source = this.Field@source, var.string = quant@id, sta.info = as(object = this.Field, Class = "STAInfo"))
+  this.Field@id <- makeFieldID(source = this.Field@source, quant.string = quant@id, sta.info = as(object = this.Field, Class = "STAInfo"))
   return(this.Field)
   
 }

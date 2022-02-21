@@ -354,7 +354,7 @@ getYearlyField_aDGVM <- function(run,
   else {
     
     # make the ID and then make and return Field
-    field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
+    field.id <- makeFieldID(source = run, quant.string = variable, sta.info = sta.info)
     
     return(
       
@@ -771,7 +771,7 @@ getDailyField_aDGVM <- function(run,
   else {
     
     # make the ID and then make and return Field
-    field.id <- makeFieldID(source = run, var.string = variable, sta.info = sta.info)
+    field.id <- makeFieldID(source = run, quant.string = variable, sta.info = sta.info)
     
     return(
       
@@ -860,7 +860,7 @@ getStandardQuantity_aDGVM <- function(run,
     
     # make the ID and then make and return Field
     sta.info <- as(object = stem, Class = "STAInfo")
-    field.id <- makeFieldID(source = run, var.string = quant@id, sta.info = sta.info)
+    field.id <- makeFieldID(source = run, quant.string = quant@id, sta.info = sta.info)
     
     return(
       

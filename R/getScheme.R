@@ -172,7 +172,7 @@ getScheme <- function(source,
   
   ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
   target.field.id <- makeFieldID(source = final.source, 
-                                 var.string = scheme.string, 
+                                 quant.string = scheme.string, 
                                  sta.info = sta.info)
   
   
@@ -260,14 +260,14 @@ getScheme <- function(source,
     
     # if source is a single Source the easy life
     if(is.Source(source)) {
-      this.field <- getField(source = source, var = this.quantity, layers = NULL, sta.info = sta.info, quick.read = FALSE, ...)
+      this.field <- getField(source = source, quant = this.quantity, layers = NULL, sta.info = sta.info, quick.read = FALSE, ...)
     }
     # else get a Field for each Source average
     else{
       
       one.field.per.source <- list()
       for(this.source in source){
-        one.field.per.source[[length(one.field.per.source) +1]] <- getField(source = this.source, var = this.quantity, sta.info = sta.info, quick.read = FALSE, ...)
+        one.field.per.source[[length(one.field.per.source) +1]] <- getField(source = this.source, quant = this.quantity, sta.info = sta.info, quick.read = FALSE, ...)
       }
       
       this.field <- averageFields(one.field.per.source, source = averaged.source)
@@ -317,7 +317,7 @@ getScheme <- function(source,
   
   ### BUILD THE FINAL Field
   scheme.field <- new("Field",
-                      id = makeFieldID(source = final.source, var.string = scheme@id, sta.info = final.stainfo),
+                      id = makeFieldID(source = final.source, quant.string = scheme@id, sta.info = final.stainfo),
                       data = dt,
                       quant = as(object = scheme, Class = "Quantity"),
                       source = final.source,
