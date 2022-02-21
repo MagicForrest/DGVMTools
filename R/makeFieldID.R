@@ -7,8 +7,7 @@
 #' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
 #' for use in the \code{id} slot of a \code{Field} and for filenames etc.
 #' 
-#' @param var.string Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"
-#' @param unit.string Character string to describe the units in which the data are measured
+#' @param quant.string Character string to describe the \code{Quantity}, eg "lai" or "corrected.cmass" or "npp.diff"
 #' @param first.year The first year if it has been cropped from the orginal duration, otherwise NULL
 #' @param last.year The first year if it has been cropped from the orginal duration, otherwise NULL
 #' @param year.aggregate.method Character, method by which this Field was temporally aggregated (if not temporally averaged leave blank of use "none")
@@ -22,7 +21,7 @@
 
 makeFieldID <- function(field,
                         source,
-                        var.string,
+                        quant.string,
                         sta.info,
                         first.year,
                         last.year,
@@ -41,7 +40,7 @@ makeFieldID <- function(field,
   if(!missing(field)  && !is.null(field)) {
     
     this.id <- makeFieldID(source = field@source,
-                           var.string = field@quant@id, 
+                           quant.string = field@quant@id, 
                            sta.info = as(field, "STAInfo"))
     return(this.id)
     
@@ -76,7 +75,7 @@ makeFieldID <- function(field,
   
   
   # from source and quantity make leading part of the id
-  field.id <- paste(source@id, var.string, sep = sep)
+  field.id <- paste(source@id, quant.string, sep = sep)
   
  
   # spatial extent and aggregation

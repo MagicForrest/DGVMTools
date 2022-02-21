@@ -10,15 +10,17 @@
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
 #' @param source The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.
-#' @param var The quantity (either a \code{Quantity} or a string containing its \code{id}) 
+#' @param quant The \code{Quantity} to be read - either a \code{Quantity} object or a string containing its \code{id}.  If it is a character string it will be checked
+#' against the predefined \code{Quantities} in the \code{Source} object and failing that a simple dummy \code{Quantity} will be be made.  For the \code{NetCDF Format}
+#' most \code{Quantity} metadata will be taken from the NetCDF file where possible (thus overriding this option).
 #' @param layers A list (or vector of character) of character strings to specify which Layers should be read from the file.  
 #' If missing or NULL then all Layers are read.
 #' -NOTE- Using this arguments is not recommended for reading gzipped output with the \code{GUESS} Format since it involves gunzipping the file twice, 
 #' which likely makes it less time efficient than simply reading all the layers and then dropping the ones you don't want.   
-#' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
-#' (usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
-#' standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
-#' in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.
+#' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored.
+#' For the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats this is optional under normal circumstances this is optional since the file names are normally 
+#' standardised (although they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have 
+#' standardised file names in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
 #' If specified the following 9 arguments are ignored (with a warning)
@@ -79,7 +81,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
 getField <- function(source, 
-                     var, 
+                     quant, 
                      layers = NULL,
                      file.name = NULL,
                      first.year,
@@ -117,32 +119,31 @@ getField <- function(source,
   }
   
   ### CONVERT STRING TO QUANTITY
-  if(is.character(var)) {
+  if(is.character(quant)) {
+    
+    quant.id <- quant
     
     # if no quantity it found, make a dummy quantity based on the input var
     quant <- tryCatch(
       {
-        lookupQuantity(var, source@format)
+        lookupQuantity(quant.id, source@format)
       },
       error= function(cond){
         new("Quantity",
-            id = var,
-            name = var,
+            id = quant.id,
+            name = quant.id,
             units = "undefined unit",
             colours = viridis::viridis,
             format = c(source@format@id),
-            standard_name = var)
+            standard_name = quant.id)
       },
       warning=function(cond) {
       },
       finally={}
     )    
-    var.string <- var
+   
   }
-  else {
-    quant <- var
-    var.string <- quant@id
-  }
+ 
   
   ### TIDY THE RELEVANT STA ARGUMENTS INTO THE TARGET STA OBJECT
   if(missing(sta.info)) {

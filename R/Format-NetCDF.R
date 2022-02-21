@@ -867,7 +867,7 @@ getField_NetCDF <- function(source,
   }
   
   # make the ID and then make and return Field
-  field.id <- makeFieldID(source = source, var.string = quant@id, sta.info = sta.info)
+  field.id <- makeFieldID(source = source, quant.string = quant@id, sta.info = sta.info)
   message(paste0("Reading of NetCDF file ", file.name.nc, " sucessful!"))
   if(verbose) {
     message("Reading of file took:")

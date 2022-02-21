@@ -181,7 +181,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
     x@spatial.extent.id <- spatial.extent.id
     x@spatial.extent <- gridcells
     x@id <- makeFieldID(source = x@source,
-                        var.string = x@quant@id, 
+                        quant.string = x@quant@id, 
                         sta.info = as(x, "STAInfo"))
     return(x)
   }

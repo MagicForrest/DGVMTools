@@ -50,7 +50,7 @@ selectYears <- function(x, first, last){
     x@first.year <- years.range[1]
     x@last.year <- years.range[2]
     x@id <- makeFieldID(source = x@source,
-                        var.string = x@quant@id, 
+                        quant.string = x@quant@id, 
                         sta.info = as(x, "STAInfo"))
     return(x)
   }

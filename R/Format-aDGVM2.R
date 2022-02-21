@@ -314,7 +314,7 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
   }
   
   # make the ID and then make and return Field
-  field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)
+  field.id <- makeFieldID(source = run, quant.string = variable@id, sta.info = actual.sta.info)
   
   return(
     
@@ -691,7 +691,7 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
   }
   
   # make the ID and then make and return Field
-  field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)
+  field.id <- makeFieldID(source = run, quant.string = variable@id, sta.info = actual.sta.info)
   
   return(
     

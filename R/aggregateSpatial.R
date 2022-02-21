@@ -126,7 +126,7 @@ aggregateSpatial.uncompiled <- function(x,
     if(method == "cv") x@quant@units = "fraction"
     if(method == "var") x@quant@units = paste0("(", x@quant@units, ")^2")
     x@id <- makeFieldID(source = x@source,
-                                var.string = x@quant@id, 
+                                quant.string = x@quant@id, 
                                 sta.info = as(x, "STAInfo"))
     return(x)
   }

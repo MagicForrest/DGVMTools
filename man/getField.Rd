@@ -6,7 +6,7 @@
 \usage{
 getField(
   source,
-  var,
+  quant,
   layers = NULL,
   file.name = NULL,
   first.year,
@@ -28,17 +28,19 @@ getField(
 \arguments{
 \item{source}{The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.}
 
-\item{var}{The quantity (either a \code{Quantity} or a string containing its \code{id})}
+\item{quant}{The \code{Quantity} to be read - either a \code{Quantity} object or a string containing its \code{id}.  If it is a character string it will be checked
+against the predefined \code{Quantities} in the \code{Source} object and failing that a simple dummy \code{Quantity} will be be made.  For the \code{NetCDF Format}
+most \code{Quantity} metadata will be taken from the NetCDF file where possible (thus overriding this option).}
 
 \item{layers}{A list (or vector of character) of character strings to specify which Layers should be read from the file.
 If missing or NULL then all Layers are read.
 -NOTE- Using this arguments is not recommended for reading gzipped output with the \code{GUESS} Format since it involves gunzipping the file twice, 
 which likely makes it less time efficient than simply reading all the layers and then dropping the ones you don't want.}
 
-\item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
-(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
-standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
-in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
+\item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored.
+For the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats this is optional under normal circumstances this is optional since the file names are normally 
+standardised (although they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have 
+standardised file names in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
 
 \item{first.year}{The first year (as a numeric) of the data to be returned (if not specified or NULL start from the beginning of the data set)}
 
