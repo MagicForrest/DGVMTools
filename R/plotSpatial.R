@@ -432,7 +432,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   }
   
   # if at least one facet variable make a "Facet" column of a specially ordered factor to control the facettigng  
-  if(length(facet.vars > 0)) {
+  if(length(facet.vars) > 0) {
     
     
     # First, re-order so that Layer comes first and Day, Month, Season, Year, Years come at the end (in that order)
