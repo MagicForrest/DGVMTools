@@ -34,11 +34,12 @@
 #' See \code{\link{aggregateSubannual}} 
 #' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 #' Can be "Year", "Month" or "Day".  Currently ignored.
-#' @param quick.read If TRUE then look for pre-processed file on disk. Default is FALSE so it needs to be actively enabled by the user, but doing so
-#' can save a lot of time if averaged file is already saved on disk.  Note that the the quick.read.file will need to be set
-#' @param quick.read.file A character string.  If set, the code will look for a file of this name (plus the extension ".RData") in the run directory.  
-#' If if finds one then it reads that.  If it doesn't find the appropriate file, then it reads the raw data, performs whatever cropping and aggregating is necessary, and then saves 
-#' the data in a file of that name (in the run directory) for use next time.
+#' @param quick.read.file A character string.  If set, the function will look for a file of this name (plus the extension ".RData") in the run directory.  
+#' If if finds one then it reads that.  If it doesn't find the appropriate file, then it reads the raw data, performs whatever cropping and aggregating is necessary,
+#' and then saves the data in a file of that name (in the run directory) for use next time.  (Note: the function also checks that the specified layers, cropping and aggregating 
+#' found in the file match that which was requested by the arguments here).
+#' @param quick.read.autodelete If TRUE then the file specified by the above "quick.read.file" argument will be deleted, thus ensuring that the raw data will be read afresh 
+#' (and saved again).  Ignored if valid "quick.read.file" argument not supplied.
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param averaged.source If a list of \code{Source} objects have been supplied to be averaged before the classification, you must supply another \code{Source} object to store the averaged results.
 #' @param ...  Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.  
@@ -99,8 +100,8 @@ getScheme <- function(source,
                       subannual.original,
                       subannual.aggregate.method,
                       sta.info,
-                      quick.read = FALSE,
                       quick.read.file = NULL, 
+                      quick.read.autodelete = FALSE,  
                       averaged.source, 
                       verbose = FALSE, 
                       ...){
@@ -109,12 +110,23 @@ getScheme <- function(source,
   Lon = Lat = Year = NULL  
   
   ### CHECK ARGUEMENTS
-  
-  # check validity quick.read and quick.read.file argument
-  valid.quick.read.file <- !missing(quick.read.file) && !is.null(quick.read.file) && is.character(quick.read.file)  && length(quick.read.file) > 0 
-  if(quick.read && !valid.quick.read.file) {
-    warning("You requested to do a quick read, but you didn't give a valid quick.read.file, so I am not attempting to do a quick read.")
-    quick.read <- FALSE
+  if(!missing(first.year) & !missing(last.year) ) {
+    if(first.year > last.year) stop("first.year cannot be greater than last.year!")
+  }
+
+  ## QUICK READ ARGUMENTS AND AUTODELETE
+  # check validity of quick.read.file argument
+  valid.quick.read.file <- !is.null(quick.read.file) && is.character(quick.read.file)  && length(quick.read.file) > 0 && !identical(quick.read.file, "")
+  if(!valid.quick.read.file && !is.null(quick.read.file)) {
+    warning("Invalid 'quick.read.file' file argument specified, quick reading (or saving of file) will not be done,")
+  }
+  # if valid file then make the preprocessed file name and do autodelete (if specified)
+  if(valid.quick.read.file) {
+    preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
+    if(quick.read.autodelete && file.exists(reprocessed.file.name))  {
+      if(verbose) message(paste("Auto-deleting file"), preprocessed.file.name)
+      file.remove(preprocessed.file.name)
+    }
   }
   
   ### IF A LIST OF SOURCES PROVIDED, CHECK FOR THE averaged.source SOURCE AND SET THE final.source APPROPRIATELY
@@ -169,66 +181,56 @@ getScheme <- function(source,
     stop("Please specify a spatial.extent.id when specifying a spatial.extent (just a simple character string).  This is to maintain metadata integrity.")
   }
   
-  
-  ### MAKE UNIQUE IDENTIFIER OF THIS FIELD VARIABLE AND FILENAME - this describes completely whether we want the files spatially, yearly or subanually aggregated and reduced in extent
-  target.field.id <- makeFieldID(source = final.source, 
-                                 quant.string = scheme.string, 
-                                 sta.info = sta.info)
-  
-  
+ 
   ### CASE 1 - CHECK FOR PREPROCESSED FIELD FROM DISK IF AVAILABLE AND OPTION ISN'T DISABLED
   if(valid.quick.read.file) {
-    preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
     
-    # proceed to read file if it wasn't disabled by argument
-    if(quick.read){
-      if(verbose) message(paste0("Argument quick.read set to TRUE, so seeking file on disk for quick reading at location: ", preprocessed.file.name))
+    if(verbose) message(paste0("Seeking file on disk for quick reading at location: ", preprocessed.file.name))
+    
+    # check for the file on disk and if found proceed
+    if(file.exists(preprocessed.file.name)) { 
       
-      # check for the file on disk and if found proceed
-      if(file.exists(preprocessed.file.name)) { 
+      # get the object from disk
+      if(verbose) {message(paste("File",  preprocessed.file.name, "found in",  source@dir, "so reading it from disk and checking it.",  sep = " "))}
+      
+      # read the model data with a 
+      successful.read <- FALSE
+      successful.read <- tryCatch(
+        {
+          preprocessed.field <- readRDS(preprocessed.file.name)
+          TRUE
+        },
+        error= function(cond){
+          print(cond)
+          warning(paste0("Reading of file ", preprocessed.file.name, " failed, so re-reading the raw data."))
+          FALSE
+        },
+        warning=function(cond) {
+          print(cond)
+          warning(paste0("Reading of file ", preprocessed.file.name, " gave a warning, so for peace of mind I am re-reading the raw data."))
+          FALSE
+        },
+        finally={}
+      )     
+      
+      if(successful.read) {
         
-        # get the object from disk
-        if(verbose) {message(paste("File",  preprocessed.file.name, "found in",  source@dir, "so reading it from disk and checking it.",  sep = " "))}
+        # Update the source object, that might have (legitimately) changed compared to the id that was used when this preprocessed.field was created
+        # for example it might be assigned a new name.
+        preprocessed.field@source <- source
         
-        # read the model data with a 
-        successful.read <- FALSE
-        successful.read <- tryCatch(
-          {
-            preprocessed.field <- readRDS(preprocessed.file.name)
-            TRUE
-          },
-          error= function(cond){
-            print(cond)
-            warning(paste0("Reading of file ", preprocessed.file.name, " failed, so re-reading the raw data."))
-            FALSE
-          },
-          warning=function(cond) {
-            print(cond)
-            warning(paste0("Reading of file ", preprocessed.file.name, " gave a warning, so for peace of mind I am re-reading the raw data."))
-            FALSE
-          },
-          finally={}
-        )     
+        ###  Run check function, and if passed return the preprocessed Field 
+        if(verbose) message("*** Checking dimensions of pre-processed file ***")
+        sta.info.matches <- checkSTAMatches(sta.info, as(preprocessed.field, "STAInfo"), verbose)
+        if(sta.info.matches) {
+          if(verbose) message("*** Preprocessed file matches, so using that. ***")
+          return(preprocessed.field)
+        }
+        # else clean up and proceed to read the raw data
+        else rm(preprocessed.field)
         
-        if(successful.read) {
-          
-          # Update the source object, that might have (legitimately) changed compared to the id that was used when this preprocessed.field was created
-          # for example it might be assigned a new name.
-          preprocessed.field@source <- source
-          
-          ###  Run check function, and if passed return the preprocessed Field 
-          if(verbose) message("*** Checking dimensions of pre-processed file ***")
-          sta.info.matches <- checkSTAMatches(sta.info, as(preprocessed.field, "STAInfo"), verbose)
-          if(sta.info.matches) {
-            if(verbose) message("*** Preprocessed file matches, so using that. ***")
-            return(preprocessed.field)
-          }
-          # else clean up and proceed to read the raw data
-          else rm(preprocessed.field)
-          
-        } # if successful read
-      } # if file processed file found on disk
-    } # if try to quick.read
+      } # if successful read
+    } # if file processed file found on disk
   } # if got a valid quick.read.file
   
   
@@ -240,8 +242,8 @@ getScheme <- function(source,
   
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   if(verbose) {
-    if(!quick.read) message(paste("The 'quick.read' argument was set to FALSE, so reading raw data to create the Field now.", sep = ""))
-    else if(quick.read && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", quick.read.file, " not already saved, so reading full data file to create the Field now.", sep = ""))
+    if(is.null(quick.read.file)) message(paste("The 'quick.read.file' argument was set to not set, so reading raw data to create the Field now.", sep = ""))
+    else if(!is.null(quick.read.file) && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", quick.read.file, " not already saved, so reading full data file to create the Field now.", sep = ""))
     else {
       message(paste("*** Reading of preprocessed file failed ***"))
       message(paste("So file on disk ignored and the original data is being re-read and new preprocessed file will be written."))
@@ -260,14 +262,14 @@ getScheme <- function(source,
     
     # if source is a single Source the easy life
     if(is.Source(source)) {
-      this.field <- getField(source = source, quant = this.quantity, layers = NULL, sta.info = sta.info, quick.read = FALSE, ...)
+      this.field <- getField(source = source, quant = this.quantity, layers = NULL, sta.info = sta.info, ...)
     }
     # else get a Field for each Source average
     else{
       
       one.field.per.source <- list()
       for(this.source in source){
-        one.field.per.source[[length(one.field.per.source) +1]] <- getField(source = this.source, quant = this.quantity, sta.info = sta.info, quick.read = FALSE, ...)
+        one.field.per.source[[length(one.field.per.source) +1]] <- getField(source = this.source, quant = this.quantity, sta.info = sta.info, ...)
       }
       
       this.field <- averageFields(one.field.per.source, source = averaged.source)

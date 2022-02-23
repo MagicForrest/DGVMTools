@@ -18,19 +18,20 @@
 
 ## Breaking Changes
 
-* Arguments to getField().  Sorry, this is annoying but had to be done.  Firstly, "var" was changed to "quant" to be consistent with everywhere else. Secondly, 'write' and 'read.full' have been replace with 'quick.read' and 'quick.read.file' (also for getScheme(), usage details below).  
+* Arguments to getField().  Sorry, this is annoying but had to be done.  Firstly, "var" was changed to "quant" to be consistent with everywhere else. Secondly, 'write' and 'read.full' have been replace with 'quick.read.file' and 'quick.read.autodelete' (also for getScheme(), usage details below).  
 * Functions plotResidualHistos() and plotScatterComparison() were removed as they are not up to standard for a v1.0 release.  They may be reinstated in an improved form at a later date.  If you need these functions, please raise an issue on Github.
 * plotSeasonal() was removed, functionality has been fully superseded by plotSubannual()
 
 ## Quick Read Functionality in getField() and getScheme()
 
-For various reasons the old behaviour for saving and re-reading processed Fields (with the 'write' and 'read.full' arguments) was becoming restrictive and not safe against unexpected behaviour.  However, it is still extremely advantageous to be able to conveniently save Fields after they have been read and processed for quicker rereading later.  To facilitate this, new functionality has been implemented and behaves as follows:
+For various reasons the old behaviour for saving and rereading processed Fields (with the 'write' and 'read.full' arguments) was becoming restrictive and not safe against unexpected behaviour.  However, it is still extremely advantageous to be able to conveniently save Fields after they have been read and processed for quicker rereading later.  To facilitate this, new functionality has been implemented and behaves as follows:
 
-1. As before, no automatic saving and reading of processed files is done.  Unless the functionality is explicitly enabled, the raw data is re-read every time.
-1. To enable the functionality, both _quick.read_ must be set to TRUE and _quick.read.file_ must be specified.
+1. As before, no automatic saving and reading of processed files is done.  Unless the functionality is explicitly enabled, the raw data is reread every time.
+1. To enable the functionality, the _quick.read.file_ (character string) must be specified.  The extension ".RData" will be automatically added.
 1. The _quick.read.file_ specifies the name of the file to be written and re-read.  Note that since this is under the user's control they are responsible for making sure it is 
 specified appropriately. 
-1. If _quick.read_ is set to TRUE then one of two things will happen.  If the file _quick.read.file_ exists on disk it will be read and checked, and it will be used if the layers and dimensions match.  If it doesn't exist, or the layers and dimensions don't match, the raw data will be read and the result saved as _quick.read.file_. 
+1. If _quick.read.file_ is set to TRUE then one of two things will happen.  If a file with a matching nameexists on disk it will be read and checked, and it will be used if the layers and dimensions match.  If it doesn't exist, or the layers and dimensions don't match, the raw data will be read and the result saved as _quick.read.file_. 
+1.The _quick.read.autodelete_ argument can be set to TRUE to delete any existing file with name _quick.read.file_, thus ensuring that the sata will be read (and saved) afresh.
 
 ## Behind-the-scenes
 

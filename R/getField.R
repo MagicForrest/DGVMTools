@@ -39,11 +39,12 @@
 #' See \code{\link{aggregateSubannual}} 
 #' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
 #' Can be "Year", "Month" or "Day".  Currently ignored.
-#' @param quick.read If TRUE then look for pre-processed file on disk. Default is FALSE so it needs to be actively enabled by the user, but doing so
-#' can save a lot of time if averaged file is already saved on disk.  Note that the the quick.read.file will need to be set
-#' @param quick.read.file A character string.  If set, the code will look for a file of this name (plus the extension ".RData") in the run directory.  
-#' If if finds one then it reads that.  If it doesn't find the appropriate file, then it reads the raw data, performs whatever cropping and aggregating is necessary, and then saves 
-#' the data in a file of that name (in the run directory) for use next time.
+#' @param quick.read.file A character string.  If set, the function will look for a file of this name (plus the extension ".RData") in the run directory.  
+#' If if finds one then it reads that.  If it doesn't find the appropriate file, then it reads the raw data, performs whatever cropping and aggregating is necessary,
+#' and then saves the data in a file of that name (in the run directory) for use next time.  (Note: the function also checks that the specified layers, cropping and aggregating 
+#' found in the file match that which was requested by the arguments here).
+#' @param quick.read.autodelete If TRUE then the file specified by the above "quick.read.file" argument will be deleted, thus ensuring that the raw data will be read afresh 
+#' (and saved again).  Ignored if valid "quick.read.file" argument not supplied.
 #' @param verbose If TRUE give a lot of information for debugging/checking.
 #' @param ...  Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.  
 #' For all Formats, the followings arguments apply:
@@ -94,8 +95,8 @@ getField <- function(source,
                      subannual.original,
                      subannual.aggregate.method,
                      sta.info,
-                     quick.read = FALSE, 
                      quick.read.file = NULL, 
+                     quick.read.autodelete = FALSE, 
                      verbose = FALSE, 
                      ...){
   
@@ -103,19 +104,25 @@ getField <- function(source,
   Lon = Lat = Year = NULL  
   
   ### CHECK ARGUEMENTS
-  if(missing(file.name)) file.name <- NULL
   if(!missing(first.year) & !missing(last.year) ) {
     if(first.year > last.year) stop("first.year cannot be greater than last.year!")
   }
   if(!missing(layers) && !is.character(layers) && !is.null(layers)) stop("The 'layers' argument must be a character string or a list of character strings.")
   
   
-  # check validity quick.read and quick.read.file argument
-  valid.quick.read.file <- !missing(quick.read.file) && !is.null(quick.read.file) && is.character(quick.read.file)  && length(quick.read.file) > 0 
-  if(quick.read && !valid.quick.read.file) {
-    message("You requested to do a quick read, but you didn't give a valid 'quick.read.file' argument, so I am not attempting to do a quick read.")
-    warning("You requested to do a quick read, but you didn't give a valid 'quick.read.file' argument, so I am not attempting to do a quick read.")
-    quick.read <- FALSE
+  ## QUICK READ ARGUMENTS AND AUTODELETE
+  # check validity of quick.read.file argument
+  valid.quick.read.file <- !is.null(quick.read.file) && is.character(quick.read.file)  && length(quick.read.file) > 0 && !identical(quick.read.file, "")
+  if(!valid.quick.read.file && !is.null(quick.read.file)) {
+    warning("Invalid 'quick.read.file' file argument specified, quick reading (or saving of file) will not be done,")
+  }
+  # if vali file then make the preprocessed file name and do autodelete (if specified)
+  if(valid.quick.read.file) {
+    preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
+    if(quick.read.autodelete && file.exists(preprocessed.file.name))  {
+      if(verbose) message(paste("Auto-deleting file"), preprocessed.file.name)
+      file.remove(preprocessed.file.name)
+    }
   }
   
   ### CONVERT STRING TO QUANTITY
@@ -141,9 +148,9 @@ getField <- function(source,
       },
       finally={}
     )    
-   
+    
   }
- 
+  
   
   ### TIDY THE RELEVANT STA ARGUMENTS INTO THE TARGET STA OBJECT
   if(missing(sta.info)) {
@@ -182,79 +189,75 @@ getField <- function(source,
   
   ### CASE 1 - CHECK FOR PREPROCESSED FIELD FROM DISK IF AVAILABLE AND OPTION ISN'T DISABLED
   if(valid.quick.read.file) {
-    preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
     
-    # proceed to read file if it wasn't disabled by argument
-    if(quick.read){
-      if(verbose) message(paste0("Argument quick.read set to TRUE, so seeking file on disk for quick reading at location: ", preprocessed.file.name))
+    if(verbose) message(paste0("Seeking file on disk for quick reading at location: ", preprocessed.file.name))
+    
+    # check for the file on disk and if found proceed
+    if(file.exists(preprocessed.file.name)) { 
       
-      # check for the file on disk and if found proceed
-      if(file.exists(preprocessed.file.name)) { 
+      # get the object from disk
+      if(verbose) {message(paste("File",  preprocessed.file.name, "found in",  source@dir, "so reading it from disk and checking it.",  sep = " "))}    
+      # read the model data with a 
+      
+      successful.read <- FALSE
+      successful.read <- tryCatch(
+        {
+          preprocessed.field <- readRDS(preprocessed.file.name)
+          TRUE
+        },
+        error= function(cond){
+          print(cond)
+          warning(paste0("Reading of file ", preprocessed.file.name, " failed, so re-reading the raw data."))
+          FALSE
+        },
+        warning=function(cond) {
+          print(cond)
+          warning(paste0("Reading of file ", preprocessed.file.name, " gave a warning, so for peace of mind I am re-reading the raw data."))
+          FALSE
+        },
+        finally={}
+      )    
+      
+      if(successful.read) {
         
-        # get the object from disk
-        if(verbose) {message(paste("File",  preprocessed.file.name, "found in",  source@dir, "so reading it from disk and checking it.",  sep = " "))}    
-        # read the model data with a 
+        # Update the source object, that might have (legitimately) changed compared to the id that was used when this preprocessed.field was created
+        # for example it might be assigned a new name.
+        preprocessed.field@source <- source
         
-        successful.read <- FALSE
-        successful.read <- tryCatch(
-          {
-            preprocessed.field <- readRDS(preprocessed.file.name)
-            TRUE
-          },
-          error= function(cond){
-            print(cond)
-            warning(paste0("Reading of file ", preprocessed.file.name, " failed, so re-reading the raw data."))
-            FALSE
-          },
-          warning=function(cond) {
-            print(cond)
-            warning(paste0("Reading of file ", preprocessed.file.name, " gave a warning, so for peace of mind I am re-reading the raw data."))
-            FALSE
-          },
-          finally={}
-        )    
+        ###  Run check function, and if passed return the preprocessed Field 
+        if(verbose) message("*** Checking dimensions of pre-processed file ***")
+        sta.info.matches <- checkSTAMatches(sta.info, as(preprocessed.field, "STAInfo"), verbose)
+        if(verbose) {
+          if(sta.info.matches) message("*** Preprocessed file matches in terms of spatial and temporal extent. ***")
+          else message("*** Preprocessed file does NOT match in terms of spatial and temporal extent. ***")
+        }
         
-        if(successful.read) {
-          
-          # Update the source object, that might have (legitimately) changed compared to the id that was used when this preprocessed.field was created
-          # for example it might be assigned a new name.
-          preprocessed.field@source <- source
-          
-          ###  Run check function, and if passed return the preprocessed Field 
-          if(verbose) message("*** Checking dimensions of pre-processed file ***")
-          sta.info.matches <- checkSTAMatches(sta.info, as(preprocessed.field, "STAInfo"), verbose)
+        # check layers (if specified)
+        layers.match <- TRUE
+        if(!missing(layers) && !is.null(layers)) {
+          layers.match <- identical(sort(layers), sort(layers(preprocessed.field)))
           if(verbose) {
-            if(sta.info.matches) message("*** Preprocessed file matches in terms of spatial and temporal extent. ***")
-            else message("*** Preprocessed file does NOT match in terms of spatial and temporal extent. ***")
-          }
-          
-          # check layers (if specified)
-          layers.match <- TRUE
-          if(!missing(layers) && !is.null(layers)) {
-            layers.match <- identical(sort(layers), sort(layers(preprocessed.field)))
-            if(verbose) {
-              if(layers.match) message("*** Preprocessed file matches in terms of layers present. ***")
-              else {
-                message("*** Preprocessed file does NOT match in terms of layers present. ***")
-                message(paste0("   -> Layers requested: ", paste0(sort(layers), collapse = ",")))
-                message(paste0("   -> Layers found: ", paste0(sort(layers(preprocessed.field)), collapse = ",")))
-              }
+            if(layers.match) message("*** Preprocessed file matches in terms of layers present. ***")
+            else {
+              message("*** Preprocessed file does NOT match in terms of layers present. ***")
+              message(paste0("   -> Layers requested: ", paste0(sort(layers), collapse = ",")))
+              message(paste0("   -> Layers found: ", paste0(sort(layers(preprocessed.field)), collapse = ",")))
             }
           }
-          else {
-            if(verbose) message(paste0(" ** Argument layers not specified so not checked.  I found '", paste(sort(layers(preprocessed.field)), collapse = ","), "', perhaps check these are the layers you wanted."))
-            warning(paste0(" ** Argument layers not specified so not checked.  I found '", paste0(sort(layers(preprocessed.field)), collapse = ","), "', perhaps check these are the layers you wanted."))
-          }
-          
-          
-          # if all good return the pre-processed file
-          if(layers.match && sta.info.matches) return(preprocessed.field)
-          # else clean up and proceed to read the raw data
-          else rm(preprocessed.field)
-          
-        } # if successful read
-      } # if file processed file found on disk
-    } # if do quick.read
+        }
+        else {
+          if(verbose) message(paste0(" ** Argument layers not specified so not checked.  I found '", paste(sort(layers(preprocessed.field)), collapse = ","), "', perhaps check these are the layers you wanted."))
+          warning(paste0(" ** Argument layers not specified so not checked.  I found '", paste0(sort(layers(preprocessed.field)), collapse = ","), "', perhaps check these are the layers you wanted."))
+        }
+        
+        
+        # if all good return the pre-processed file
+        if(layers.match && sta.info.matches) return(preprocessed.field)
+        # else clean up and proceed to read the raw data
+        else rm(preprocessed.field)
+        
+      } # if successful read
+    } # if file processed file found on disk
   } # if got a valid quick.read.file
   
   
@@ -266,8 +269,8 @@ getField <- function(source,
   
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   if(verbose) {
-    if(!quick.read) message(paste("The 'quick.read' argument was set to FALSE, so reading raw data to create the Field now.", sep = ""))
-    else if(quick.read && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", quick.read.file, " not already saved, so reading full data file to create the Field now.", sep = ""))
+    if(is.null(quick.read.file)) message(paste("The 'quick.read.file' argument was set to not set, so reading raw data to create the Field now.", sep = ""))
+    else if(!is.null(quick.read.file) && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", quick.read.file, " not already saved, so reading full data file to create the Field now.", sep = ""))
     else {
       message(paste("*** Reading of preprocessed file failed ***"))
       message(paste("So file on disk ignored and the original data is being re-read and new preprocessed file will be written."))
