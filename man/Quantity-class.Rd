@@ -11,13 +11,13 @@
 \alias{Standard.quantities}
 \title{Class to hold meta-data for a vegetation quantity}
 \format{
-The \code{Quantity} class is an S4 class with the slots defined below
+The \code{\linkS4class{Quantity}} class is an S4 class with the slots defined below
 
-The \code{Quantity} class is an S4 class with the slots defined below
+The \code{\linkS4class{Quantity}} class is an S4 class with the slots defined below
 
-The \code{Quantity} class is an S4 class with the slots defined below
+The \code{\linkS4class{Quantity}} class is an S4 class with the slots defined below
 
-The \code{Quantity} class is an S4 class with the slots defined below
+The \code{\linkS4class{Quantity}} class is an S4 class with the slots defined below
 
 An object of class \code{list} of length 23.
 }
@@ -34,7 +34,8 @@ Standard.quantities
 }
 \description{
 This class hold meta-data for specific vegetation or land surface quantities like "lai" (LAI) or "mwcont_upper" (mean monthly water).  
-Includes metadata about the quantity (the units it is measured in for example), values for default plot proprties (color scales, plot ranges) and the aggragating method - ie whether the quantity shoudd generally be summed (for example monthly burnt area or C mass per PFT) or averaged (for example monthly soil water content).
+Includes the units it is measured, different identifiers/labels, the \linkS4class{Format} object the \linkS4class{Quantity} is associated with and 
+a default colour scheme for plotting it,
 See the 'Slots' documentation below.
 Note that for some analyses  user will probably need to define their own, and modify these for their own analysis and plots.  However the standard quantities 
 that one expects to be available from different models are listed below in the 'Usage' section.
@@ -45,12 +46,12 @@ Note that quantities in the \code{Standard.quantities} list should ideally be de
 \section{Slots}{
 
 \describe{
-\item{\code{id}}{A unique character string to identify this particular vegetation quantity.  This will be interpreted for an output-format specific fucntion, but should
+\item{\code{id}}{A unique character string to identify this particular vegetation quantity.  This will be interpreted for an output-format specific function, but should
 ideally match with the name of a particular model output/dataset variable.  Recommended to be alphanumeric because it is used to construct file names.}
 
 \item{\code{name}}{A longer character string to provide a more complete description of this quantity}
 
-\item{\code{units}}{A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?}
+\item{\code{units}}{A character string defining the units this quantity is defined in.}
 
 \item{\code{colours}}{A function that returns a colour scale suited for plotting this quantity.}
 
@@ -61,7 +62,7 @@ but it makes sense to use this where possible.}
 }}
 
 \seealso{
-\code{lookupQuantity}
+\link{lookupQuantity}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

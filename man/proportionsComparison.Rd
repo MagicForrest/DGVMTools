@@ -14,11 +14,11 @@ proportionsComparison(
 )
 }
 \arguments{
-\item{x}{A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared}
+\item{x}{A data.table containing the spatial-temporal-annual columns and two columns containing the data to be compared}
 
 \item{layers1}{A vector of character strings giving the layers from the second dataset to compare (should be columns in x and sum to 1 or 100)}
 
-\item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
+\item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{\link{compareLayers}}}
 
 \item{verbose}{A logical, if TRUE print out all the metric scores}
 

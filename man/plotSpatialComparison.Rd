@@ -37,7 +37,7 @@ to facilitate expressions for nicely marked up subscript and superscript.}
 \item{do.phase}{Logical, only applies to plotting Comparison objects of type "seasonal".
 If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.}
 
-\item{...}{Parameters passed to \code{plotSpatial()}}
+\item{...}{Parameters passed to \link{plotSpatial}}
 }
 \value{
 Returns a ggplot object
@@ -47,10 +47,10 @@ This function is for plotting maps from Comparison objects (or a list of those C
 a difference map; "values" - the absolute values plotted in panels and "percentage.difference" - the percentage differences.
 }
 \details{
-A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  Extra arguments to \code{plotSpatial} can also be specified.
+A wrapper for around \link{plotSpatial} to plot the spatial Comparisons as maps.  Extra arguments to \link{plotSpatial} can also be specified.
 }
 \seealso{
-\code{plotSpatial},  \code{compareLayers}
+\link{plotSpatial},  \link{compareLayers}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

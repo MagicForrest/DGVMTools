@@ -17,7 +17,7 @@ getField_NetCDF(
 )
 }
 \arguments{
-\item{source}{A \code{Source} containing the meta-data about the NetCDF source}
+\item{source}{A \linkS4class{Source} containing the meta-data about the NetCDF source}
 
 \item{quant}{A Quantity object to specify what quantity should be opened.}
 

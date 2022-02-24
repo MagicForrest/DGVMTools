@@ -18,7 +18,7 @@ getYearlyField_aDGVM(
 )
 }
 \arguments{
-\item{run}{A \code{Source} containing the meta-data about the aDGVM run}
+\item{run}{A \code{\linkS4class{Source}} containing the meta-data about the aDGVM run}
 
 \item{quant}{A Quant to define what output file from the aDGVM run to open, 
 can also be a simple string defining the aDGVM output file if the \code{return.data.table} argument is TRUE}
@@ -39,7 +39,7 @@ a data.table (with the correct tear offset and lon-lat offsets applied)
 }
 \description{
 \code{getYearlyField_aDGVM} returns a data.table object given a string defining a vegetation quantity 
-from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
+from the run (eg. "lai", to read the file "lai.out") and  \code{\linkS4class{Source}} object which defines where the run is on disk and the offsets to apply
 }
 \details{
 Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.

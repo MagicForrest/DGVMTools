@@ -70,10 +70,10 @@ calcNMSE <- function(mod, obs, area) {
 #' 
 #' Compares two datasets of continuous data. Specifically calculates and returns a Statistics object (which contains many metrics) given numeric two vectors of equal size 
 #' 
-#' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
+#' @param x A data.table containing the spatial-temporal-annual columns and two columns containing the data to be compared
 #' @param layers1 A character string giving the first layer to compare (should be a column in x).  For the normalised metrics, this is the *modelled* values.
 #' @param layers2 A character string giving the second layer to compare (should be a column in x).  For the normalised metrics, this is the *observed* values.
-#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
+#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{\link{compareLayers}}
 #' @param verbose A logical, if TRUE print out all the metric scores
 #' @param area A logical, if true weight the metrics by gridcell area
 #' 
@@ -248,10 +248,10 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
 #' Compares two datasets of relative proportions of multiple classes (sum of classes equals one at each point) where the total for each  data where the totally value for each. 
 #' Specifically calculates and returns a list with the Manhattan Metric (MM) and Square Chord Distance (SCD).
 #' 
-#' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
+#' @param x A data.table containing the spatial-temporal-annual columns and two columns containing the data to be compared
 #' @param layers1 A vector of character strings giving the layers from the first dataset to compare (should be columns in x and sum to 1 or 100)
 #' @param layers1 A vector of character strings giving the layers from the second dataset to compare (should be columns in x and sum to 1 or 100)
-#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
+#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{\link{compareLayers}}
 #' @param verbose A logical, if TRUE print out all the metric scores
 #' @param area A logical, if true weight the metrics by gridcell area (not implemented)
 #' 
@@ -361,7 +361,7 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
 #' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
 #' @param layers1 A character string giving the first layer to compare (should be a column in x)
 #' @param layers2 A character string giving the second layer to compare (should be a column in x)
-#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
+#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{\link{compareLayers}}
 #' @param verbose A logical, if TRUE print out all the Kappa scores
 #' @param area A logical, if true weight the metrics by gridcell area (not currently implemented)
 #' 
@@ -524,10 +524,10 @@ categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE
 #' 
 #' Compares two datasets of monthly continuous data. Specifically calculates and returns a Statistics object (which contains many metrics) given numeric two vectors of equal size 
 #' 
-#' @param x A data.table containing the spatial-temporal-annual columns and two columns containg the data to be compared
+#' @param x A data.table containing the spatial-temporal-annual columns and two columns containing the data to be compared
 #' @param layers1 A character string giving the first layer to compare (should be a column in x).  For the normalised metrics, this is the *modelled* values.
 #' @param layers2 A character string giving the second layer to compare (should be a column in x).  For the normalised metrics, this is the *observed* values.
-#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}
+#' @param additional A list of functions define additions metrics, see the custom.metrics argument of \code{\link{compareLayers}}
 #' @param verbose A logical, if TRUE print out all the metric scores
 #' 
 #' @return A named list of metric statistics

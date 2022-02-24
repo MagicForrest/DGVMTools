@@ -3,22 +3,23 @@
 
 #' Format class
 #'
-#' This class encapsulates all the specific details of a supported model or dataset.  Thiis comprises functions to read the data off the disk, and metadata
-#' describing certain properties of the vegetation. From a user-perspective, these are used as the \code{format} argument to \link{defineSource} function.
+#' This class encapsulates all the specific details of a supported model or dataset.  This comprises functions to read the data off the disk, 
+#' and metadata describing certain pre-defined \code{\linkS4class{Quantity}} and \code{\linkS4class{Layer}} objects. From a user-perspective, these are used as the \code{\linkS4class{Format}} argument to
+#' \code{\link{defineSource}} function.
 #' 
 #'  Format objects which are included in the package are listed below:
 #'
 #' @slot id Simple character string to gave an uniquely identify this format
-#' @slot predefined.layers 'Standard' Layer type that this format uses, as a list of DGVMTools::\linkS4class{Layer} objects.  
-#' This is most likely applicable to formats decsribing DGVM output, but also for some data sets.  
-#' This is just a default Layer set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).
-#' @slot quantities 'Standard' quantities (as a list of DGVMTools::\linkS4class{Quantity} objects) which might be availably from the model output or dataset.
+#' @slot predefined.layers 'Standard' Layer type that this format uses, as a list of \code{\linkS4class{Layer}} objects.  
+#' This is most likely applicable to formats describing DGVM output, but also for some data sets.  
+#' This is just a default Layer set available for convenience, can be easily over-ridden when defining a Source object (see \code{\link{defineSource}}).
+#' @slot quantities 'Standard' quantities (as a list of \code{\linkS4class{Quantity}} objects) which might be availably from the model output or dataset.
 #' @slot availableQuantities A function to determine which quantities \emph{are actually available} from the model run or dataset.
 #' @slot getField A function to retrieve actually data from the model output or dataset.  This is likely to be a fairly complex function, and really depends on the specifics 
 #' and idiosynchrasies of the model output format or dataset.
 #' 
 #' @details For DGVMTools to support a particular model or dataset, this is the object that needs to be defined.  But normally a user won't need to deal with this 
-#' class since it defines model/dataset spcific metadata and functions which should be defined once and then 'just work' (haha) in the future. 
+#' class since it defines model/dataset specific metadata and functions which should be defined once and then 'just work' (haha) in the future. 
 #' If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
 #' 
 #' Note that the 'predefined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
@@ -81,7 +82,7 @@ setClass("Period",
 
 #' STAInfo class
 #'
-#' This class encapsulations all the Spatial (the 'S', longitude and latidude), Temporal (the 'T', monthly, daily etc.) and Annual (the 'A', years included) 
+#' This class encapsulations all the Spatial (the 'S', longitude and latitude), Temporal (the 'T', monthly, daily etc.) and Annual (the 'A', years included) 
 #' Information  (hence the name 'STAInfo') about a particular DGVMTools::Field.  Normally the user won't have to deal with this (it is mostly used internally),
 #' but it can be handy, for example to extract the STAInfo from one Field, and use it extract another field with the same dimensions. 
 #'     
@@ -95,10 +96,10 @@ setClass("Period",
 #' see aggregateSpatial.  If no spatial aggregation has been applied it should be NULL.
 #' @param subannual.original A character string specifying the original sub-annual resolution of this data, eg. "Year", Month", "Day"
 #' @param subannual.resolution A character string specifying the current sub-annual resolution of this data, eg. "Year", Month", "Day"
-#' @param subannual.aggregate.method A character specifying how the subannual perods have been aggregated, for example "mean", "max", "sum" or "var". 
+#' @param subannual.aggregate.method A character specifying how the subannual periods have been aggregated, for example "mean", "max", "sum" or "var". 
 #' See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.
 #' 
-#' @details This is mostly a behind-the-scenes class which is partly just created to bundle together a lot of dimension information in a tidy form. 
+#' @details This is mostly a behind-the-scenes class which bundles together a lot of dimension information in a tidy form. 
 #' 
 #' @name STAInfo-class
 #' @rdname STAInfo-class
@@ -135,7 +136,7 @@ setClass("STAInfo",
 #' @description   This is a class to hold meta-data about a Layer.  A Layer is a component of a Field, for example a Field might have a Layer for each PFT, or each soil carbon pool.  
 #' As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, a default plot colour and a list of properties.
 #' It is this list of properties that allows DGVMTools to automatically select groups of layer for aggregating or other operations.
-#' These are defined in lists for the default Layers for supported model format (see'Usage' below). 
+#' These are defined in lists for the default Layers for supported model format (see 'Usage' below). 
 #' 
 #' @slot id A unique character string to identify this particular Layer.  This should match the column names in the @data slot of 
 #' the appropriate Field object.  It might correspond to, for example, the abbreviation used for a PFT.
@@ -143,14 +144,14 @@ setClass("STAInfo",
 #' @slot colour A string defining a preferred R colour to plot this PFT (for line graphs etc)
 #' @slot properties A list with named items containing metadata describing the Layer.  These are used with the \link{whichLayers} and \link{layerOp}
 #' functions to automagically select layers.  There is a lot of flexibility here, but it is recommended that the list includes at least an
-#'  element called "type", and then ideally all the proprties required to describe the layer.  An examble for a broadleaved summergreen tree PFT could look like: \cr
+#'  element called "type", and then ideally all the properties required to describe the layer.  An example for a broadleaved summergreen tree PFT could look like: \cr
 #' \code{properties = list(type = "PFT", growth.form = "Tree", phenology = "Summergreen")}.  \cr 
 #' A slow litter soil carbon pool could look like: \cr \cr
 #' \code{properties = list(type = "CPool", speed = "Slow", zone = "Soil", comprises = "Litter")}. 
 #' 
 #' @details The \code{Layer-class} is only meta-data and does not \emph{need} to be defined for every layer.  However is very useful as it allows users to conveniently aggregate or process the data 
 #' corresponding to, for example, all trees with simple command. 
-#' The standard Layers for some models are included (see above), but if you have other Layers then you simply need define them (see funtion \code{XXXXX}).  You then combine the
+#' The standard Layers for some models are included (see above), but if you have other Layers then you simply need define them (see function \code{XXXXX}).  You then combine the
 #' existing Layers into an R list and then provide them as the 'default.layers' argument to the \link{defineSource} call and bingo! you are using your custom Layers. 
 #' 
 
@@ -170,12 +171,12 @@ setClass("Layer",
 
 ########### Source - class to hold the metadata for an LPJ-GUESS run
 
-#' Checks validity of a \code{Source}.
+#' Checks validity of a \code{\linkS4class{Source}}.
 #' 
-#' Called internally as the validity slot of the \code{Source}.  It checks that the essential slots are filled with sensible values ie a dir that
+#' Called internally as the validity slot of the \code{\linkS4class{Source}}.  It checks that the essential slots are filled with sensible values ie a dir that
 #' exists on the file system; the format type is specified and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
 #' 
-#' @param object The \code{Source} object to check for vailidity.
+#' @param object The \code{\linkS4class{Source}} object to check for validity.
 #' @return Empty string if the essential slots are fine, a string containing an error message if not.
 #' @keywords internal
 #'    
@@ -221,16 +222,17 @@ checkSource <- function(object){
 
 #' Metadata for a data source
 #' 
-#' This class describes a data source, including its location on disk, the format (ie what model or dataset it cam from), the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
-#' It is not primarily intended to be used by itself. Instead it is inherited by \code{Source} object (due to this inheritance the slots can be accessed directly)
-#' and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
+#' This class describes a data source, including its location on disk, the format (ie from which model or dataset it came), the PFT set used, 
+#' an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
+#' It is not primarily intended to be used by itself. Instead it is inherited by\code{\linkS4class{Source}} object (due to this inheritance the slots can 
+#' be accessed directly) and included in a \linkS4class{Field} in the \code{@@source} slot (not inherited, so needs to be access be \code{@@source}).
 #' 
 #'  
-#' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
+#' Slots can be accessed and modified by the user directly, but also by functions \link{defineQuantity} and \link{defineLayer} with the \code{add.to} argument.
 #' 
 #' @slot id A unique character string to identify this particular data source.  Recommended to be alphanumeric because it is used to construct file names. (Mandatory)
 #' @slot dir The location of this run on the file system (Mandatory)
-#' @slot format A character string or a DGVMTools::Format pbject to describe how this data is stored on disk.  This will depend on either the model 
+#' @slot format A character string or a \linkS4class{Format} object to describe how this data is stored on disk.  This will depend on either the model 
 #' that was used to produce it or the dataset type.  Currently defined Format objects are \code{GUESS}, \code{aDGVM}, \code{aDGVM2} and \code{NetCDF}. (Mandatory)
 #' @slot defined.layers A list of \linkS4class{Layer} objects to describe the Layers, includes the PFTs, included in this model run/dataset.
 #' @slot name A character string describing this data source, ie. "LPJ-GUESS v3.1" (can be omitted, in which case the id will be used instead)
@@ -239,7 +241,7 @@ checkSource <- function(object){
 #' @slot year.offset A numeric of length 1 to match be added to the simulation years to convert them to calendar years
 #' @slot london.centre If TRUE, ensure that the longitudes are (-180,180) instead of (0,360) 
 #' @slot land.use.included If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.
-#' @slot contact Name and email address of responsible person (default to OS username).
+#' @slot contact Name and email address of responsible person.
 #' @slot institute Name of the institute (default "none").
 #' @exportClass Source
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -276,15 +278,16 @@ setClass("Source",
 #' Class to hold meta-data for a vegetation quantity
 #' 
 #' This class hold meta-data for specific vegetation or land surface quantities like "lai" (LAI) or "mwcont_upper" (mean monthly water).  
-#' Includes metadata about the quantity (the units it is measured in for example), values for default plot proprties (color scales, plot ranges) and the aggragating method - ie whether the quantity shoudd generally be summed (for example monthly burnt area or C mass per PFT) or averaged (for example monthly soil water content).
+#' Includes the units it is measured, different identifiers/labels, the \linkS4class{Format} object the \linkS4class{Quantity} is associated with and 
+#' a default colour scheme for plotting it,
 #' See the 'Slots' documentation below.
 #' Note that for some analyses  user will probably need to define their own, and modify these for their own analysis and plots.  However the standard quantities 
 #' that one expects to be available from different models are listed below in the 'Usage' section.
 #' 
-#' @slot id A unique character string to identify this particular vegetation quantity.  This will be interpreted for an output-format specific fucntion, but should
+#' @slot id A unique character string to identify this particular vegetation quantity.  This will be interpreted for an output-format specific function, but should
 #' ideally match with the name of a particular model output/dataset variable.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A longer character string to provide a more complete description of this quantity
-#' @slot units A character string defining the units this quantity is defined in.  Possibly formally link to udunits2?
+#' @slot units A character string defining the units this quantity is defined in.  
 #' @slot colours A function that returns a colour scale suited for plotting this quantity.
 #' @slot format Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.
 #' @slot standard_name A character string for the "standard_name" or "long_name" attribute for a CF-compliant netCDF file.  Won't make sense for all variables (not all DGVM quantities have a CF defined variable),
@@ -316,18 +319,18 @@ setClass("Quantity",
 
 #' Contains a comparison between two layers 
 #' 
-#' This object is produced as the result of a call to the functions \code{compareLayers()} and shouldn't be directly created by a user.
+#' This object is produced as the result of a call to the functions \link{compareLayers} and shouldn't be directly created by a user.
 #'  
-#' It contains a data slot with each of the compared layers, a lsit containing  various statistical metric, 
+#' It contains a data slot with each of the compared layers, a list containing  various statistical metrics, 
 #' meta-data about the source of the two compared layers and spatio-temporal meta-data describing where the comparison is valid.
 #' 
-#' It can be plotted by functions like   
+#' It can be plotted by functions \link{plotSpatialComparison} and \link{plotTemporalComparison}.
 #'    
-#' Generally these are not created directly by the user, but rather by the function \code{compareLayers()}.
+#' Generally these are not created directly by the user, but rather by the function \link{compareLayers}.
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string describing this comparison layer, is automatically generated
-#' @slot type A character string describing what type of comparisos this is (auromatically determined).  Can be
+#' @slot type A character string describing what type of comparisons this is (automatically determined).  Can be
 #' \itemize{
 #'  \item{"continuous"}{A comparison of two continous, numerical layers.}
 #'  \item{"categorical"}{A comparison of two categorical layers.}
@@ -335,16 +338,16 @@ setClass("Quantity",
 #'  \item{"seasonal"} {A comparison of the seasonal concentration and phase calculated from two numerical layers which have monthly data.}
 #' }
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
-#' @slot quant1 A Quantity object to define what quantity the data from first field represents
-#' @slot quant2 A Quantity object to define what quantity the data from second field represents
+#' @slot quant1 A \linkS4class{Quantity} object to define what quantity the data from first field represents
+#' @slot quant2 A \linkS4class{Quantity} object to define what quantity the data from second field represents
 #' @slot layers1 A character string (or vector thereof) of the layer(s) from the first field that were compared
 #' @slot layers2 A character string (or vector thereof) of the layer(s) from the second field that were compared
 #' @slot stats A simple R list containing the (named) statistics produced by the comparison (very flexible, items will depend on the type of comparison done and
 #'  can even be a another list)
-#' @slot source1 A Source object describing the source of the first layer in the comparison
-#' @slot source2 A Source object describing the source of the second layer in the comparison
-#' @slot sta.info1 The STAInfo object for the first field
-#' @slot sta.info2 The STAInfo object for the second field
+#' @slot source1 A \linkS4class{Source} object describing the source of the first layer in the comparison
+#' @slot source2 A \linkS4class{Source} object describing the source of the second layer in the comparison
+#' @slot sta.info1 The \linkS4class{STAInfo} object for the first field
+#' @slot sta.info2 The \linkS4class{STAInfo} object for the second field
 #' @exportClass Comparison
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -363,16 +366,15 @@ setClass("Comparison",
                    sta.info2 = "STAInfo",
                    stats = "list"
                    
-         )#,
-         #validity = checkComparison
+         )
 )
 
 
 
 
-##########################################################################################
+####################################################################################
 ########  CLASSIFICATION AND COMPARISON CLASSES ####################################
-##########################################################################################
+####################################################################################
 
 
 ########## CLASSIFICATION SCHEME
@@ -383,13 +385,13 @@ setClass("Comparison",
 #' It describes what how the model output (in the form of a data.table) must be prepared, and then the rules which are used to do the classification.
 #' 
 #' @slot id A unique character string to identify this particular classification scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")
-#' @slot name A character string that can be more descriptive of the classification scheme. (Inherited from Quantity via "contains")
-#' @slot units A list of character strings giving the names of categories. (Inherited from Quantity via "contains")
-#' @slot colours A function that returns the colour scale for this Scheme. (Inherited from Quantity via "contains")
+#' @slot name A character string that can be more descriptive of the classification scheme. (Inherited from \code{\linkS4class{Quantity}} via "contains")
+#' @slot units A list of character strings giving the names of categories. (Inherited from \code{\linkS4class{Quantity}} via "contains")
+#' @slot colours A function that returns the colour scale for this Scheme. (Inherited from \code{\linkS4class{Quantity}} via "contains")
 #' @slot format Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.
 #' @slot rules A function which is applied to every row of the data.table and describes the classification rules.
-#' @slot layers.needed List of vegetation layers needed to perform the classification and the name of the new layer, to be interpreted by layerOp(), specifified as a list of three- or four-item list 
-#' whose elements first element id the id of a DGVMTools::Quantity and whose other elements are passed as arguements to the layerOp() function.  
+#' @slot layers.needed List of vegetation layers needed to perform the classification and the name of the new layer, to be interpreted by \code{\link{layerOp}}, specified as a list of three- or four-item list 
+#' whose elements first element id the id of a \code{\linkS4class{Quantity}} and whose other elements are passed as arguments to the \code{\link{layerOp}} function.  
 #' For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
 #' which would make a layer called "Woody" which would be the sum of all LAI trees and shrubs.
 #' @slot data.reference Character string giving a reference where the data for this classification scheme comes from
@@ -411,23 +413,23 @@ setClass("Scheme",
 
 
 
-#' Field-class containsdata
+#' Field-class contains data
 #' 
-#' Field is a key class of the package as it actually holds the data (most other classes are for metadata).  A \code{Field} stores the data and metadata for one quantity
-#' that comes from a dataset or vegetation model run (including information about the run iself). For example LAI (Leaf Area Index), or evapotranspiration. 
-#' The data can be aggragted across space, and across and within years, and manipulated and plotted by mayn funtions in this package.
+#' Field is a key class of the package as it actually holds the data (most other classes are for metadata).  A \code{\linkS4class{Field}} stores the data and metadata for one quantity
+#' that comes from a dataset or vegetation model run (including information about the run itself). For example LAI (Leaf Area Index), or evapotranspiration. 
+#' The data can be aggregated across space, and across and within years, and manipulated and plotted by many functions in this package.
 #' 
-#' Generally these are not created directly by the user, but rather by functions like \link{getField}.
+#' Generally these are not created directly by the user, but rather by functions like \code{\link{getField}}.
 #' 
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant A Quantity object to define what output this Field contains
 #' @slot first.year The first year of data
 #' @slot last.year The last year of data
-#' @slot year.aggregate.method A charecter string describing the method by which the years have been aggregated.  Will be the zero character ("character(0)") if data it not 
-#' yearly aggreagted
-#' @slot spatial.extent An object which can be used to crop or subselect gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
-#' used) or a list of gridcells used by DGVMTools::selectGridcels (see that documentation for how to format the gridcell list).
+#' @slot year.aggregate.method A character string describing the method by which the years have been aggregated.  Will be the zero character ("character(0)") if data it not 
+#' yearly aggregated
+#' @slot spatial.extent An object which can be used to crop or select gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
+#' used) or a list of gridcells used by \code{\link{selectGridcells}} (see that documentation for how to format the gridcell list).
 #' @slot spatial.extent.id A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever
 #' @slot spatial.aggregate.method Set to TRUE is this.Field has been spatially averaged
 #' @slot subannual.aggregate.method Method by which this Field has been subannually aggregated

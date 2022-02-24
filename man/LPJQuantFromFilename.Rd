@@ -10,7 +10,7 @@ LPJQuantFromFilename(var.filename)
 \item{var.filename}{The string of the filename to be raster::trimmed}
 }
 \value{
-A string less the last fou.
+A string less the last four letters.
 }
 \description{
 Returns NULL if the last characters are not ".out" or ".out.gz

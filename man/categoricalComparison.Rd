@@ -20,7 +20,7 @@ categoricalComparison(
 
 \item{layers2}{A character string giving the second layer to compare (should be a column in x)}
 
-\item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{compareLayers()}}
+\item{additional}{A list of functions define additions metrics, see the custom.metrics argument of \code{\link{compareLayers}}}
 
 \item{verbose}{A logical, if TRUE print out all the Kappa scores}
 

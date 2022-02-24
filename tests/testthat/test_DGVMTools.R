@@ -60,10 +60,10 @@ test_that("Quantity",{
   expect_is(availableQuantities(GUESS.Europe.test.Source, names = FALSE), "list")
   expect_is(availableQuantities(GUESS.Africa.test.Source, names = TRUE), "character")
   expect_is(availableQuantities(GUESS.Africa.test.Source, names = FALSE), "list")
-  expect_is(availableQuantities(NetCDF.SaatchiBiomass.test.Source, names = TRUE), "character")
-  expect_is(availableQuantities(NetCDF.SaatchiBiomass.test.Source, names = FALSE), "list")
-  expect_is(availableQuantities(NetCDF.PNVBiomes.test.Source, names = TRUE), "character")
-  expect_is(availableQuantities(NetCDF.PNVBiomes.test.Source, names = FALSE), "list")
+  expect_warning(availableQuantities(NetCDF.SaatchiBiomass.test.Source, names = TRUE))
+  expect_warning(availableQuantities(NetCDF.SaatchiBiomass.test.Source, names = FALSE))
+  expect_warning(availableQuantities(NetCDF.PNVBiomes.test.Source, names = TRUE))
+  expect_warning(availableQuantities(NetCDF.PNVBiomes.test.Source, names = FALSE))
   
   # test result from defineQuantity
   expect_is(new.Quantity , "Quantity")
@@ -89,7 +89,7 @@ GUESS.mlai.Field.full <- getField(GUESS.Europe.test.Source, "mlai")
 GUESS.lai.Field.full <- getField(GUESS.Europe.test.Source, "lai")
 GUESS.cmass.Field.full <- getField(GUESS.Africa.test.Source, "cmass")
 GUESS.vegC_std.Field.full <- getField(GUESS.Africa.test.Source, vegC_std.Quantity)
-Saatchi.Field.full <- getField(NetCDF.SaatchiBiomass.test.Source, vegC_std.Quantity)
+suppressWarnings(Saatchi.Field.full <- getField(NetCDF.SaatchiBiomass.test.Source, vegC_std.Quantity))
 Biomes.Field.full <- getField(NetCDF.PNVBiomes.test.Source, "Smith2014")
 
 
@@ -405,19 +405,18 @@ test_that("Numeric Comparisons and Benchmarks", {
   GUESS.Field.vegC_std.annual <- aggregateYears(GUESS.vegC_std.Field.full, "mean")
   GUESS.Field.vegC_std.annual <- layerOp(GUESS.Field.vegC_std.annual, "+", ".Tree", "Tree")
   expect_is(GUESS.Field.vegC_std.annual, "Field")
-  Saatchi.comparison <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", layers2 = "vegC_std", verbose = FALSE, show.stats = FALSE, override.quantity = TRUE)
+  suppressWarnings(Saatchi.comparison <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", layers2 = "vegC_std", verbose = FALSE, show.stats = FALSE, override.quantity = TRUE))
   expect_is(Saatchi.comparison, "Comparison")
   
   # plot said numeric Comparison
   expect_is(plotSpatialComparison(Saatchi.comparison), "ggplot")
   expect_is(plotSpatialComparison(Saatchi.comparison, type = "difference"), "ggplot")
   expect_is(plotSpatialComparison(Saatchi.comparison, type = "percentage.difference"), "ggplot")
-  expect_is(plotSpatialComparison(Saatchi.comparison, type = "values"), "ggplot")
-  # expect_is(plotSpatialComparison(Saatchi.comparison, type = "nme"), "ggplot")
-  
+  expect_warning(plotSpatialComparison(Saatchi.comparison, type = "values"))
+
   # test with a dummy benchmark
   dummy.benchmark <- function(x, layer1, layer2) { return(1)}
-  Saatchi.comparison.with.dummy.benchmark <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", layers2 = "vegC_std", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE, override.quantity = TRUE)
+  suppressWarnings(Saatchi.comparison.with.dummy.benchmark <- compareLayers(GUESS.Field.vegC_std.annual, Saatchi.Field.full, layers1 = "Tree", layers2 = "vegC_std", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE, override.quantity = TRUE))
   expect_is(Saatchi.comparison.with.dummy.benchmark, "Comparison")
   
   # can possible place extra tests on metrics here
@@ -482,7 +481,7 @@ context("Categorical Comparisons and Benchmarks")
 test_that("Categorical Comparisons and Benchmarks", {
   
   # build and test a categorical Comparison
-  Biomes.comparison <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, show.stats = FALSE, override.quantity = TRUE)
+  suppressWarnings(Biomes.comparison <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, show.stats = FALSE, override.quantity = TRUE))
   expect_is(Biomes.comparison, "Comparison")
   
   # plot said categorical Comparison
@@ -493,7 +492,7 @@ test_that("Categorical Comparisons and Benchmarks", {
 
   # test with a dummy benchmark
   dummy.benchmark <- function(x, layer1, layer2) { return(1)}
-  Biomes.comparison.with.dummy.benchmark <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE, override.quantity = TRUE)
+  suppressWarnings(Biomes.comparison.with.dummy.benchmark <- compareLayers(GUESS.Smith2014.Biomes, Biomes.Field.full, layers1 = "Smith2014", verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE, override.quantity = TRUE))
   expect_is(Biomes.comparison.with.dummy.benchmark, "Comparison")
   
 })
@@ -508,7 +507,7 @@ test_that("Seasonal Comparisons and Benchmarks", {
   test.Field.2006_2010 <-  getField(source = GUESS.Europe.test.Source, quant = "mlai", year.aggregate.method = "mean", first.year = 2006, last.year = 2010)
   
   # build and test a seasonal Comparison
-  Seasonal.comparison <- compareLayers(test.Field.2000_2005, test.Field.2006_2010, layers1 = "mlai", do.seasonality = TRUE, verbose = FALSE, show.stats = FALSE)
+  suppressWarnings(Seasonal.comparison <- compareLayers(test.Field.2000_2005, test.Field.2006_2010, layers1 = "mlai", do.seasonality = TRUE, verbose = FALSE, show.stats = FALSE))
   expect_is(Seasonal.comparison, "Comparison")
   
   # plot said seasonal Comparison
@@ -520,7 +519,7 @@ test_that("Seasonal Comparisons and Benchmarks", {
   
   # test with a dummy benchmark
   dummy.benchmark <- function(x, layer1, layer2) { return(1) }
-  Seasonal.comparison.with.dummy.benchmark <- compareLayers(test.Field.2000_2005, test.Field.2006_2010, layers1 = "mlai", do.seasonality = TRUE, verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE)
+  suppressWarnings(Seasonal.comparison.with.dummy.benchmark <- compareLayers(test.Field.2000_2005, test.Field.2006_2010, layers1 = "mlai", do.seasonality = TRUE, verbose = FALSE, custom.metrics = list("Dummy" = dummy.benchmark), show.stats = FALSE))
   expect_is(Seasonal.comparison.with.dummy.benchmark, "Comparison")
   
 })

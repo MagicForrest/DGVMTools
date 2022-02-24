@@ -16,7 +16,7 @@ getField_aDGVM(
 )
 }
 \arguments{
-\item{source}{A \code{Source} containing the meta-data about the aDGVM run}
+\item{source}{A \code{\linkS4class{Source}} class containing the meta-data about the aDGVM run}
 
 \item{quant}{A string the define what output file from the aDGVM run to open, for example "anpp" opens and read the "anpp.out" file}
 

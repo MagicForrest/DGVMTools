@@ -2,7 +2,7 @@
 % Please edit documentation in R/makeFieldID.R
 \name{makeFieldID}
 \alias{makeFieldID}
-\title{Make an ID string for a \code{Field}}
+\title{Make an ID string for a \code{\linkS4class{Field}}}
 \usage{
 makeFieldID(
   field,
@@ -20,11 +20,11 @@ makeFieldID(
 )
 }
 \arguments{
-\item{quant.string}{Character string to describe the \code{Quantity}, eg "lai" or "corrected.cmass" or "npp.diff"}
+\item{quant.string}{Character string to describe the \code{\linkS4class{Quantity}}, eg "lai" or "corrected.cmass" or "npp.diff"}
 
-\item{first.year}{The first year if it has been cropped from the orginal duration, otherwise NULL}
+\item{first.year}{The first year if it has been cropped from the original duration, otherwise NULL}
 
-\item{last.year}{The first year if it has been cropped from the orginal duration, otherwise NULL}
+\item{last.year}{The first year if it has been cropped from the original duration, otherwise NULL}
 
 \item{year.aggregate.method}{Character, method by which this Field was temporally aggregated (if not temporally averaged leave blank of use "none")}
 
@@ -37,7 +37,7 @@ A character string
 }
 \description{
 Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-for use in the \code{id} slot of a \code{Field} and for filenames etc.
+for use in the \code{id} slot of a \code{\linkS4class{Field}}and for filenames etc.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

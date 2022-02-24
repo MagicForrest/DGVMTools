@@ -123,14 +123,14 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' @param input a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.
 #' @param unit area unit. Default "m^2", can also be "km^2" and "ha"
 #' @param ellipse If the eath should be assumed to be a ellipsoid instead of a sphere.
-#' @param tolerance Numeric, passed to \link{copyLayers}. Defines how close the longitudes and latitudes of the gridcells in \code{input} and the internally calculated
+#' @param tolerance Numeric, passed to \code{\link{copyLayers}}. Defines how close the longitudes and latitudes of the gridcells in \code{input} and the internally calculated
 #' \code{area} data.table  need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance for both lon and lat) or a vector 
 #' of two numerics (for lon and lat separately).
 #' #' Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  
 #' This is a technical detail, you only need to use it if you have troubles because of coordinates with a few decimal places.
 #' @param verbose print some information.
 #' 
-#' The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{aggregateSpatial} but it can
+#' The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{\link{aggregateSpatial}} but it can
 #' be utilised by the user for any other purpose.
 #' 
 #' @include classes.R

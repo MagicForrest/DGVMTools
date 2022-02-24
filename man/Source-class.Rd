@@ -5,12 +5,13 @@
 \alias{Source-class}
 \title{Metadata for a data source}
 \description{
-This class describes a data source, including its location on disk, the format (ie what model or dataset it cam from), the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
-It is not primarily intended to be used by itself. Instead it is inherited by \code{Source} object (due to this inheritance the slots can be accessed directly)
-and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@source}).
+This class describes a data source, including its location on disk, the format (ie from which model or dataset it came), the PFT set used, 
+an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
+It is not primarily intended to be used by itself. Instead it is inherited by\code{\linkS4class{Source}} object (due to this inheritance the slots can 
+be accessed directly) and included in a \linkS4class{Field} in the \code{@source} slot (not inherited, so needs to be access be \code{@source}).
 }
 \details{
-Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
+Slots can be accessed and modified by the user directly, but also by functions \link{defineQuantity} and \link{defineLayer} with the \code{add.to} argument.
 }
 \section{Slots}{
 
@@ -19,7 +20,7 @@ Slots can be accessed by user directly, but more easily and usefully by function
 
 \item{\code{dir}}{The location of this run on the file system (Mandatory)}
 
-\item{\code{format}}{A character string or a DGVMTools::Format pbject to describe how this data is stored on disk.  This will depend on either the model 
+\item{\code{format}}{A character string or a \linkS4class{Format} object to describe how this data is stored on disk.  This will depend on either the model 
 that was used to produce it or the dataset type.  Currently defined Format objects are \code{GUESS}, \code{aDGVM}, \code{aDGVM2} and \code{NetCDF}. (Mandatory)}
 
 \item{\code{defined.layers}}{A list of \linkS4class{Layer} objects to describe the Layers, includes the PFTs, included in this model run/dataset.}
@@ -36,7 +37,7 @@ that was used to produce it or the dataset type.  Currently defined Format objec
 
 \item{\code{land.use.included}}{If TRUE it can be assumed that land use has been simulated for this run and so no correction for land use need be applied before benchmarking.}
 
-\item{\code{contact}}{Name and email address of responsible person (default to OS username).}
+\item{\code{contact}}{Name and email address of responsible person.}
 
 \item{\code{institute}}{Name of the institute (default "none").}
 }}

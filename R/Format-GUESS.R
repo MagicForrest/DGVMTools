@@ -6,16 +6,17 @@
 
 #' Get a Field for LPJ-GUESS
 #' 
-#' An internal function that reads data from an LPJ-GUESS run.  It actually call one of three other functions depending on the type of quantity specified.   
+#' An internal function that reads data from an LPJ-GUESS run.  
+#' It actually calls one of three other functions depending on the type of quantity specified.   
 #' 
-#' @param source A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param source A \code{\linkS4class{Source}} containing the meta-data about the LPJ-GUESS run
 #' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param layers A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.
 #' @param target.STAInfo The spatial-temporal target domain
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
 #' "<quant@id>.out" (also "<quant@id>.out.gz")
 #' @param verbose A logical, set to true to give progress/debug information
-#' @return A list containing firstly the data.tabel containing the data, and secondly the STA.info 
+#' @return A list containing firstly the data.table containing the data, and secondly the STA.info 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @include classes.R
@@ -50,16 +51,15 @@ getField_GUESS <- function(source,
 #' Open an LPJ-GUESS .out file
 #'
 #' \code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity 
-#' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
+#' from the run (eg. "lai", to read the file "lai.out") and  \code{\linkS4class{Source}} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param run A \code{\linkS4class{Source}} containing the meta-data about the LPJ-GUESS run
 #' @param quant A Quant to define what output file from the LPJ-GUESS run to open, 
 #' @param layers A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.
 #' can also be a simple string defining the LPJ-GUESS output file if the \code{return.data.table} argument is TRUE
-#' @param first.year The first year (as a numeric) of the data to be return
-#' @param last.year The last year (as a numeric) of the data to be return
+#' @param target.sta An STAInfo object describing the target STA
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
 #' "<quant@id>.out" (also "<quant@id>.out.gz")
@@ -102,7 +102,7 @@ openLPJOutputFile <- function(run,
   dim.names <- c("Lon", "Lat", "Year", "Month", "Day")
   dt.header <- names(dt)
   for(dim.name in dim.names) {
-    if(tolower(dim.name) %in% tolower(dt.header)) {
+    if(tolower(dim.name) %in% tolower(dt.header) && !identical(dim.name, dt.header[which(tolower(dim.name) == tolower(dt.header))])) {
       if(verbose) message(paste("Correcting column name", dt.header[which(tolower(dim.name) == tolower(dt.header))], "to", dim.name))
       setnames(dt, dt.header[which(tolower(dim.name) == tolower(dt.header))], dim.name)
     }
@@ -122,13 +122,36 @@ openLPJOutputFile <- function(run,
     if(verbose) message("Correcting year with offset.")
   }
   
-  # Select year
-  if(length(first.year) == 0) first.year <- NULL
-  if(length(last.year) == 0) last.year <- NULL
-  if(!missing(first.year) & !missing(last.year) & !is.null(first.year) & !is.null(last.year)) {
-    dt <- selectYears(dt, first.year, last.year)
+  # Select year if necessary
+  call.selectYear <- FALSE
+ 
+  actual.first.year <- min(dt[["Year"]])
+  actual.last.year <- max(dt[["Year"]])
+  
+  # check if cropping needs to be done based on first year
+  if(length(target.sta@first.year) == 1 && target.sta@first.year != actual.first.year) {
+    call.selectYear <- TRUE
+    first.year <- target.sta@first.year
+  }
+  else first.year <- actual.first.year
+  
+  # check if cropping needs to be done based on last year
+  if(length(target.sta@last.year) == 1 && target.sta@last.year != actual.last.year) {
+    call.selectYear <- TRUE
+    last.year <- target.sta@last.year
+  }
+  else last.year <- actual.last.year
+  
+  # 
+  if(call.selectYear) {
+    if(verbose) message(paste("Selecting years from", first.year, "to", last.year, "in LPJ-GUESS table.", sep = " "))
+    this.Field <- selectYears(dt, first = first.year, last = last.year) 
+  }
+  else{
+    if(verbose) message("No year selection being applied to LPJ-GUESS table.")
   }
   
+ 
   # also correct days to be 1-365 instead of 0-364, if necessary
   if("Day" %in% names(dt)) {
     if(0 %in% unique(dt[["Day"]])) dt[, Day := Day+1]
@@ -328,11 +351,11 @@ openLPJOutputFile <- function(run,
 #' Open an LPJ-GUESS .out file
 #'
 #' \code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity 
-#' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
+#' from the run (eg. "lai", to read the file "lai.out") and \code{\linkS4class{Source}} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param run A \code{\linkS4class{Source}}  containing the meta-data about the LPJ-GUESS run
 #' @param quant A Quantity to define what output file from the LPJ-GUESS run to open.
 #' @param layers A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.
 #' @param first.year The first year (as a numeric) of the data to be return
@@ -725,15 +748,15 @@ openLPJOutputFile_FireMIP <- function(run,
 #' Returns the data from one LPJ-GUESS output variable as a \code{data.table}.   
 #'
 #' 
-#' This funtion can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
+#' This function can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
 #' to compare to other models and to data.  This must be implemented for each and every Standard quantity 
 #' for each and every model to to ensure completeness.
 #' 
 #' 
 #' output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
-#' \code{Source} object, it will return that to save time.
+#' \code{\linkS4class{Source}} object, it will return that to save time.
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
+#' @param run A \code{\linkS4class{Source}} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param quant A Quantity to define what output file from the LPJ-GUESS run to open
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
@@ -1005,7 +1028,7 @@ availableQuantities_GUESS <- function(source, names = TRUE, verbose = FALSE){
 #' Returns NULL if the last characters are not ".out" or ".out.gz
 #'
 #' @param var.filename The string of the filename to be raster::trimmed
-#' @return A string less the last fou.
+#' @return A string less the last four letters.
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 
@@ -1442,7 +1465,7 @@ GUESS.Layers <- list(
 #####################################################################
 
 
-#' @format The \code{Quantity} class is an S4 class with the slots defined below
+#' @format The \code{\linkS4class{Quantity}} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
 #' 
@@ -2242,7 +2265,7 @@ GUESS.quantities <- list(
 
 #' @description \code{GUESS} - a Format for reading standard LPJ-GUESS(-SPITFIRE) model output
 #' 
-#' @format A \code{Quantity} object is an S4 class.
+#' @format A \code{\linkS4class{Format}} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets

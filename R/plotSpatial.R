@@ -6,11 +6,11 @@
 #########################################################################################################################################
 
 
-#' Plot maps from a \code{Field} or a lists of \code{Field}.
+#' Plot maps from a \code{\linkS4class{Field}} or a lists of \code{\linkS4class{Field}}
 #' 
 #' This is a heavy lifting function for plotting maps from Fields with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  
-#' In principle you can supply only the Fields and it will plot something sensible. It extracts the relevent data from the Fields, bashes it into
+#' In principle you can supply only the Fields and it will plot something sensible. It extracts the relevant data from the Fields, bashes it into
 #' a data.table then calls ggplot2 function geom_raster() and it returns a ggplot object, which will need to be displayed using a \code{print()} command.  Note that this object can be firther modified 
 #' using further ggplot2 commands. 
 #'
@@ -19,10 +19,10 @@
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
 #' @param legend.title A character string or expression to override the default legend title. Set to NULL for no legend title.  The default legend title is the \code{units}
-#' of the \linkS4class{Quantity} of the first \linkS4class{Field} provided in the \code{field} argument.  This argument allows general flexibility, but it is particularly handy
+#' of the \code{\linkS4class{Quantity}} of the first \code{\linkS4class{Field}} provided in the \code{field} argument.  This argument allows general flexibility, but it is particularly handy
 #' to facilitate expressions for nicely marked up subscript and superscript. 
 #' @param facet.order A vector of the characters that, if supplied, control the order of the facets.  To see what these values are you can call this funtion with "plot=FALSE"
-#' and check the values of the Facet column.  But generally they will be the values of the @names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
+#' and check the values of the Facet column.  But generally they will be the values of the @@names slots of the Data/Fields and/or the layers (as layers plotted as defined by the layers arguments 
 #' in this function). 
 #' @param plot.bg.col Colour string for the plot background, default "white".
 #' @param panel.bg.col Colour string for the panel background, default "white".
@@ -46,7 +46,7 @@
 #' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
 #' Other things can be overlain on the resulting plot with further ggplot2 commands.
 #' @param tile Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
-#' for example, be plotted on ploar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.
+#' for example, be plotted on polar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.
 #' @param pixel.size Numeric, allows you to alter the plotted pixel size (height and width simultaneously using the same value).  This is useful 
 #' if you are plotting a collection of individual sites which do not have regular spacing.  Note the "tile = TRUE" (see above) will automatically set if you haven't done it manually.
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.

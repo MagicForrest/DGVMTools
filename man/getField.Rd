@@ -2,7 +2,7 @@
 % Please edit documentation in R/getField.R
 \name{getField}
 \alias{getField}
-\title{Get a \code{Field} from a \code{Source}}
+\title{Get a \code{\linkS4class{Field}} from a \code{\linkS4class{Source}}}
 \usage{
 getField(
   source,
@@ -26,11 +26,11 @@ getField(
 )
 }
 \arguments{
-\item{source}{The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.}
+\item{source}{The \code{\linkS4class{Source}} object for which the \code{\linkS4class{Field}} should be built, typically a model run or a dataset.}
 
-\item{quant}{The \code{Quantity} to be read - either a \code{Quantity} object or a string containing its \code{id}.  If it is a character string it will be checked
-against the predefined \code{Quantities} in the \code{Source} object and failing that a simple dummy \code{Quantity} will be be made.  For the \code{NetCDF Format}
-most \code{Quantity} metadata will be taken from the NetCDF file where possible (thus overriding this option).}
+\item{quant}{The \\code{\linkS4class{Quantity}} to be read - either a \code{\linkS4class{Quantity}} object or a string containing its \code{id}.  If it is a character string it will be checked
+against the predefined \code{Quantities} in the \code{\linkS4class{Source}} object and failing that a simple dummy \code{\linkS4class{Quantity}} will be be made.  For the \code{NetCDF Format}
+most \code{\linkS4class{Quantity}} metadata will be taken from the NetCDF file where possible (thus overriding this option).}
 
 \item{layers}{A list (or vector of character) of character strings to specify which Layers should be read from the file.
 If missing or NULL then all Layers are read.
@@ -52,7 +52,7 @@ See \code{\link{aggregateYears}}}
 
 \item{spatial.extent}{An extent in space to which this Field should be cropped, supplied as a raster::extent object or an object from which a raster::extent object can be derived - eg. a Raster* object or another Field object.}
 
-\item{spatial.extent.id}{A character string to give an identifier for the spatial extent this ModelField covers.}
+\item{spatial.extent.id}{A character string to give an identifier for the spatial extent this Field covers.}
 
 \item{spatial.aggregate.method}{A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatial aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
 "weighted.sum"/"w.sum", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
@@ -66,7 +66,7 @@ Can be "Year", "Month" or "Day".  Currently ignored.}
 \item{subannual.aggregate.method}{A character string specifying the method by which to aggregate the data subannually,  can be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean)
 See \code{\link{aggregateSubannual}}}
 
-\item{sta.info}{Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.
+\item{sta.info}{Optionally an \code{\linkS4class{STAInfo}} object defining the exact spatial-temporal-annual domain over which the data should be retrieved.
 Can also be a Field object from which the STA info will de derived.
 If specified the following 9 arguments are ignored (with a warning)}
 
@@ -93,7 +93,7 @@ For the aDGVM(1) Format, the following arguments apply:
  \item{\code{adgvm.fire}}  This numeric argument (taking values 0 or 1) specifies to take a run with fire on (1) or off (0). Default is 1.
  \item{\code{adgvm.climate}}   This numeric argument (taking values 0 or 1) specifies to take a run with constant (0) or transient (1) climate.  Default is 0.
  \item{\code{adgvm.header}} If your aDGVM run has been has extra columns added to the output tables, use this argument
- to specify the column names.  For the default column names see the source file \code{aDGVM1-Format}.
+ to specify the column names.  For the default column names see the source file \code{aDGVM-Format.R}.
 }
 For the aDGVM2 Format, the following arguments apply:
 \itemize{
@@ -110,14 +110,14 @@ Note: A common error in paleo files is "standard" instead of "proleptic_gregoria
 }}
 }
 \value{
-A \code{Field}.
+A \code{\linkS4class{Field}}.
 }
 \description{
-Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object, optionally including
+Given a \code{\linkS4class{Source}} object and a \code{\linkS4class{Quantity}} object, return an appropriate spatially/temporal/annually-aggregated \code{\linkS4class{Field}} object, optionally including
 spatial, temporal and annual cropping.
 }
 \details{
-Note that because there are three types of aggregating available, the resulting \code{Field} object can have a wide select of spatio-temporal dimensions.
+Note that because there are three types of aggregating available, the resulting \code{\linkS4class{Field}} object can have a wide select of spatio-temporal dimensions.
 To check what dimensions you have you can use \code{\link{getDimInfo}}
 }
 \seealso{

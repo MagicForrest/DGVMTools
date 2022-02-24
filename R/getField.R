@@ -1,27 +1,27 @@
 #!/usr/bin/Rscript
 
 #
-#' Get a \code{Field} from a \code{Source}
+#' Get a \code{\linkS4class{Field}} from a \code{\linkS4class{Source}}
 #' 
-#' Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object, optionally including
+#' Given a \code{\linkS4class{Source}} object and a \code{\linkS4class{Quantity}} object, return an appropriate spatially/temporal/annually-aggregated \code{\linkS4class{Field}} object, optionally including
 #' spatial, temporal and annual cropping.
 #' 
-#' Note that because there are three types of aggregating available, the resulting \code{Field} object can have a wide select of spatio-temporal dimensions.
+#' Note that because there are three types of aggregating available, the resulting \code{\linkS4class{Field}} object can have a wide select of spatio-temporal dimensions.
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
-#' @param source The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.
-#' @param quant The \code{Quantity} to be read - either a \code{Quantity} object or a string containing its \code{id}.  If it is a character string it will be checked
-#' against the predefined \code{Quantities} in the \code{Source} object and failing that a simple dummy \code{Quantity} will be be made.  For the \code{NetCDF Format}
-#' most \code{Quantity} metadata will be taken from the NetCDF file where possible (thus overriding this option).
+#' @param source The \code{\linkS4class{Source}} object for which the \code{\linkS4class{Field}} should be built, typically a model run or a dataset.
+#' @param quant The \\code{\linkS4class{Quantity}} to be read - either a \code{\linkS4class{Quantity}} object or a string containing its \code{id}.  If it is a character string it will be checked
+#' against the predefined \code{Quantities} in the \code{\linkS4class{Source}} object and failing that a simple dummy \code{\linkS4class{Quantity}} will be be made.  For the \code{NetCDF Format}
+#' most \code{\linkS4class{Quantity}} metadata will be taken from the NetCDF file where possible (thus overriding this option).
 #' @param layers A list (or vector of character) of character strings to specify which Layers should be read from the file.  
 #' If missing or NULL then all Layers are read.
 #' -NOTE- Using this arguments is not recommended for reading gzipped output with the \code{GUESS} Format since it involves gunzipping the file twice, 
 #' which likely makes it less time efficient than simply reading all the layers and then dropping the ones you don't want.   
-#' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored.
+#' @param file.name Character string specifying the file name (not the full path, just the file name, or the file name relative to source@@dir) where the data is stored.
 #' For the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats this is optional under normal circumstances this is optional since the file names are normally 
 #' standardised (although they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have 
 #' standardised file names in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.
-#' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
+#' @param sta.info Optionally an \code{\linkS4class{STAInfo}} object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
 #' If specified the following 9 arguments are ignored (with a warning)
 #' @param first.year The first year (as a numeric) of the data to be returned (if not specified or NULL start from the beginning of the data set)
@@ -30,7 +30,7 @@
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' See \code{\link{aggregateYears}} 
 #' @param spatial.extent An extent in space to which this Field should be cropped, supplied as a raster::extent object or an object from which a raster::extent object can be derived - eg. a Raster* object or another Field object.
-#' @param spatial.extent.id A character string to give an identifier for the spatial extent this ModelField covers.
+#' @param spatial.extent.id A character string to give an identifier for the spatial extent this Field covers.
 #' @param spatial.aggregate.method  A character string describing the method by which to spatially aggregate the data.  Leave blank to apply no spatial aggregation. Can currently be "weighted.mean"/"w.mean", "mean", 
 #' "weighted.sum"/"w.sum", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).  For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' See \code{\link{aggregateSpatial}} 
@@ -59,7 +59,7 @@
 #'  \item{\code{adgvm.fire}}  This numeric argument (taking values 0 or 1) specifies to take a run with fire on (1) or off (0). Default is 1.
 #'  \item{\code{adgvm.climate}}   This numeric argument (taking values 0 or 1) specifies to take a run with constant (0) or transient (1) climate.  Default is 0.
 #'  \item{\code{adgvm.header}} If your aDGVM run has been has extra columns added to the output tables, use this argument
-#'  to specify the column names.  For the default column names see the source file \code{aDGVM1-Format}.
+#'  to specify the column names.  For the default column names see the source file \code{aDGVM-Format.R}.
 #' }
 #' For the aDGVM2 Format, the following arguments apply:
 #' \itemize{
@@ -75,7 +75,7 @@
 #' (the start of the Gregorian calendar) and it includes leap years the calendar needs to be set to "proleptic_gregorian".
 #' }
 #'  
-#' @return A \code{Field}. 
+#' @return A \code{\linkS4class{Field}}. 
 #' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}}   
 #' @include classes.R
 #' @export
@@ -270,7 +270,7 @@ getField <- function(source,
   ### CASE 2 - ELSE CALL THE MODEL SPECIFIC FUNCTIONS TO READ THE RAW MODEL OUTPUT AND THEN AVERAGE IT BELOW 
   if(verbose) {
     if(is.null(quick.read.file)) message(paste("The 'quick.read.file' argument was set to not set, so reading raw data to create the Field now.", sep = ""))
-    else if(!is.null(quick.read.file) && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", quick.read.file, " not already saved, so reading full data file to create the Field now.", sep = ""))
+    else if(!is.null(quick.read.file) && !file.exists(paste(preprocessed.file.name))) message(paste("Field ", quick.read.file, " not present, so reading full data file to create the Field now.", sep = ""))
     else {
       message(paste("*** Reading of preprocessed file failed ***"))
       message(paste("So file on disk ignored and the original data is being re-read and new preprocessed file will be written."))
@@ -313,40 +313,28 @@ getField <- function(source,
   ### SELECT THE YEARS IF REQUESTED
   if("Year" %in% getDimInfo(this.Field)) {
     
-    crop.first <- FALSE
-    if(length(sta.info@first.year) == 1) {
-      if(sta.info@first.year != actual.sta.info@first.year) {
+    call.selectYear <- FALSE
+    
+    # check if cropping needs to be done based on first year
+    if(length(sta.info@first.year) == 1 && sta.info@first.year != actual.sta.info@first.year) {
+        call.selectYear <- TRUE
         first.year <- sta.info@first.year
-        crop.first <- TRUE
-      }
-      else {
-        first.year <- actual.sta.info@first.year
-        crop.first <- FALSE
-      }
     }
+    else first.year <- actual.sta.info@first.year
     
-    crop.last <- FALSE
-    if(length(sta.info@last.year) == 1) {
-      if(sta.info@last.year != actual.sta.info@last.year) {
-        last.year <- sta.info@last.year
-        crop.last <- TRUE
-      }
-      else {
-        last.year <- actual.sta.info@last.year
-        crop.last <- FALSE
-      }
+    # check if cropping needs to be done based on last year
+    if(length(sta.info@last.year) == 1 && sta.info@last.year != actual.sta.info@last.year) {
+      call.selectYear <- TRUE
+      last.year <- sta.info@last.year
     }
-    
-    if(crop.first || crop.last) {
-      
+    else last.year <- actual.sta.info@last.year
+  
+    # 
+    if(call.selectYear) {
       if(verbose) message(paste("Selecting years from", first.year, "to", last.year, sep = " "))
       this.Field <- selectYears(this.Field, first = first.year, last = last.year) 
-      
     }
-    else {
-      if(verbose) message("No year selection being applied")
-    }
-    
+
   }
   
   ### CHECK THAT WE HAVE A VALID DATA.TABLE
@@ -356,6 +344,8 @@ getField <- function(source,
   if(sta.info@spatial.aggregate.method != "none") {
     
     if(sta.info@spatial.aggregate.method != actual.sta.info@spatial.aggregate.method){
+      
+      if(verbose) message(paste("Spatially aggregating by method" , sta.info@spatial.aggregate.method, sep = " "))
       
       this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose)
       

@@ -26,12 +26,12 @@ aDGVM2.Layers
 This is a class to hold meta-data about a Layer.  A Layer is a component of a Field, for example a Field might have a Layer for each PFT, or each soil carbon pool.  
 As detailed in the 'Slots' section below, this includes an id (should be unique) and a name, a default plot colour and a list of properties.
 It is this list of properties that allows DGVMTools to automatically select groups of layer for aggregating or other operations.
-These are defined in lists for the default Layers for supported model format (see'Usage' below).
+These are defined in lists for the default Layers for supported model format (see 'Usage' below).
 }
 \details{
 The \code{Layer-class} is only meta-data and does not \emph{need} to be defined for every layer.  However is very useful as it allows users to conveniently aggregate or process the data 
 corresponding to, for example, all trees with simple command. 
-The standard Layers for some models are included (see above), but if you have other Layers then you simply need define them (see funtion \code{XXXXX}).  You then combine the
+The standard Layers for some models are included (see above), but if you have other Layers then you simply need define them (see function \code{XXXXX}).  You then combine the
 existing Layers into an R list and then provide them as the 'default.layers' argument to the \link{defineSource} call and bingo! you are using your custom Layers.
 }
 \section{Slots}{
@@ -46,7 +46,7 @@ the appropriate Field object.  It might correspond to, for example, the abbrevia
 
 \item{\code{properties}}{A list with named items containing metadata describing the Layer.  These are used with the \link{whichLayers} and \link{layerOp}
 functions to automagically select layers.  There is a lot of flexibility here, but it is recommended that the list includes at least an
- element called "type", and then ideally all the proprties required to describe the layer.  An examble for a broadleaved summergreen tree PFT could look like: \cr
+ element called "type", and then ideally all the properties required to describe the layer.  An example for a broadleaved summergreen tree PFT could look like: \cr
 \code{properties = list(type = "PFT", growth.form = "Tree", phenology = "Summergreen")}.  \cr 
 A slow litter soil carbon pool could look like: \cr \cr
 \code{properties = list(type = "CPool", speed = "Slow", zone = "Soil", comprises = "Litter")}.}
