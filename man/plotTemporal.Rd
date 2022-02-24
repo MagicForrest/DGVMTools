@@ -61,7 +61,7 @@ distinguished by different facet panels.  Thus the standard behaviour the that d
 \item{col.labels, linetype.labels, size.labels, shape.labels, alpha.labels}{A vector of character strings which are used as the labels for the lines. Must have the same length as the
 number of Sources/Layers/Site/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.}
 
-\item{x.label, y.label}{Character strings for the x and y axes (optional)}
+\item{x.label, y.label}{Character strings (or expressions) for the x and y axes (optional)}
 
 \item{x.lim, y.lim}{Limits for the x and y axes (each a two-element numeric, optional)}
 

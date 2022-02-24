@@ -7,7 +7,7 @@
 makeFieldID(
   field,
   source,
-  var.string,
+  quant.string,
   sta.info,
   first.year,
   last.year,
@@ -20,7 +20,7 @@ makeFieldID(
 )
 }
 \arguments{
-\item{var.string}{Character string to describe the variable, eg "lai" or "corrected.cmass" or "npp.diff"}
+\item{quant.string}{Character string to describe the \code{Quantity}, eg "lai" or "corrected.cmass" or "npp.diff"}
 
 \item{first.year}{The first year if it has been cropped from the orginal duration, otherwise NULL}
 
@@ -31,8 +31,6 @@ makeFieldID(
 \item{spatial.aggregate.method}{Character, method by which this Field was spatially aggregated (if not spatially averaged leave blank of use "none")}
 
 \item{spatial.extent.id}{The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL}
-
-\item{unit.string}{Character string to describe the units in which the data are measured}
 }
 \value{
 A character string

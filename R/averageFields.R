@@ -100,7 +100,7 @@ averageFields <- function(list.of.fields, method = mean, source = NULL) {
   
   # make and return a new Field 
   return(new("Field",
-             id = makeFieldID(source = source, var.string = list.of.fields[[1]]@quant@id, sta.info = as(list.of.fields[[1]], "STAInfo")),
+             id = makeFieldID(source = source, quant.string = list.of.fields[[1]]@quant@id, sta.info = as(list.of.fields[[1]], "STAInfo")),
              data = output.dt,
              quant = list.of.fields[[1]]@quant,
              source = source))

@@ -115,7 +115,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   ### SANITISE FIELDS, LAYERS AND STINFO
   
   ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
-  
+ 
   fields <- santiseFieldsForPlotting(fields)
   if(is.null(fields)) return(NULL)
   
@@ -167,9 +167,9 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   if(length(final.fields) > 1){
     for(field.index.1 in 1:(length(final.fields)-1)){
       for(field.index.2 in (field.index.1+1):length(final.fields)){
-        if(final.fields[[field.index.1]]@source@name == final.fields[[field.index.2]]@source@name
-           && (final.fields[[field.index.1]]@first.year != final.fields[[field.index.2]]@first.year
-               || final.fields[[field.index.1]]@last.year != final.fields[[field.index.2]]@last.year)){
+         if(identical(final.fields[[field.index.1]]@source@name, final.fields[[field.index.2]]@source@name)
+           && (!identical(final.fields[[field.index.1]]@first.year, final.fields[[field.index.2]]@first.year)
+               || !identical(final.fields[[field.index.1]]@last.year, final.fields[[field.index.2]]@last.year))){
           add.Years= TRUE
         }
       }
@@ -432,7 +432,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   }
   
   # if at least one facet variable make a "Facet" column of a specially ordered factor to control the facettigng  
-  if(length(facet.vars > 0)) {
+  if(length(facet.vars) > 0) {
     
     
     # First, re-order so that Layer comes first and Day, Month, Season, Year, Years come at the end (in that order)
@@ -636,7 +636,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   # map overlay - suppress warning about missing values
   if(!is.null(map.overlay)) {
-    suppressWarnings(mp <- mp + geom_path(data=map.overlay.df, size=0.1, color = "black", aes(x=long, y=lat, group = group)))
+    suppressWarnings(mp <- mp + geom_path(data=map.overlay.df, size=0.2, color = "black", aes(x=long, y=lat, group = group)))
   }
   
   return(mp)

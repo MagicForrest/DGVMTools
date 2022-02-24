@@ -85,21 +85,21 @@ plotSpatialComparison <- function(comparisons,
         if(do.phase){
           object@layers1 <- c("Seasonal Phase")
           object@layers2 <- c("Seasonal Phase")
-          object@quant1@units <- "\u0394month"
-          object@quant2@units <- "\u0394month"
+          object@quant1@units <- "Month"
+          object@quant2@units <- "Month"
         }
         else {
           object@layers1 <- c("Seasonal Concentration")
           object@layers2 <- c("Seasonal Concentration")
-          object@quant1@units <- "\u0394concentration"
-          object@quant2@units <- "\u0394concentration"
+          object@quant1@units <- "Concentration"
+          object@quant2@units <- "Concentration"
         }
       }
       
       # first make a list of the layers that we expect to be present in the data.table, based on the meta-data in the Comparison object
       layers.names <- names(object)
-      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, var.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
-      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, var.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
+      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, quant.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
+      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, quant.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
     
       # check the layers
       for(this.layer in expected.layers.1) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))
@@ -222,7 +222,7 @@ plotSpatialComparison <- function(comparisons,
           object@layers2 <- c("Seasonal Phase")
           object@quant1@units <- "month"
           object@quant2@units <- "month"
-          if(missing(limits)) limits <- c(1,12)
+          if(missing(limits)) limits <- c(0,12)
         }
         else {
           object@layers1 <- c("Seasonal Concentration")
@@ -235,8 +235,8 @@ plotSpatialComparison <- function(comparisons,
       
       # first make a list of the layers that we expect to be present in the data.table, based on the meta-data in the Comparison object
       layers.names <- names(object)
-      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, var.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
-      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, var.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
+      expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, quant.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
+      expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, quant.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
       
       # check the layers
       for(this.layer in expected.layers.1) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))
@@ -283,7 +283,6 @@ plotSpatialComparison <- function(comparisons,
     
     # make a legend title if one has not been supplied
     if(missing(legend.title)) legend.title <- stringToExpression(standardiseUnitString(object@quant1@units))
-    
     
     return(plotSpatial(objects.to.plot,
                        layers =  unique(layers.to.plot),

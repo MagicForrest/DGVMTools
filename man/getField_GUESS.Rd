@@ -4,12 +4,22 @@
 \alias{getField_GUESS}
 \title{Get a Field for LPJ-GUESS}
 \usage{
-getField_GUESS(source, quant, target.STAInfo, file.name, verbose, ...)
+getField_GUESS(
+  source,
+  quant,
+  layers = NULL,
+  target.STAInfo,
+  file.name,
+  verbose,
+  ...
+)
 }
 \arguments{
 \item{source}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
 
 \item{quant}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
+
+\item{layers}{A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.}
 
 \item{target.STAInfo}{The spatial-temporal target domain}
 

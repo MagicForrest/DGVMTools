@@ -6,7 +6,9 @@
 \usage{
 getField(
   source,
-  var,
+  quant,
+  layers = NULL,
+  file.name = NULL,
   first.year,
   last.year,
   year.aggregate.method,
@@ -17,9 +19,8 @@ getField(
   subannual.original,
   subannual.aggregate.method,
   sta.info,
-  file.name = NULL,
-  write = FALSE,
-  read.full = TRUE,
+  quick.read.file = NULL,
+  quick.read.autodelete = FALSE,
   verbose = FALSE,
   ...
 )
@@ -27,11 +28,23 @@ getField(
 \arguments{
 \item{source}{The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.}
 
-\item{var}{The quantity (either a \code{Quantity} or a string containing its \code{id})}
+\item{quant}{The \code{Quantity} to be read - either a \code{Quantity} object or a string containing its \code{id}.  If it is a character string it will be checked
+against the predefined \code{Quantities} in the \code{Source} object and failing that a simple dummy \code{Quantity} will be be made.  For the \code{NetCDF Format}
+most \code{Quantity} metadata will be taken from the NetCDF file where possible (thus overriding this option).}
 
-\item{first.year}{The first year (as a numeric) of the data to be returned}
+\item{layers}{A list (or vector of character) of character strings to specify which Layers should be read from the file.
+If missing or NULL then all Layers are read.
+-NOTE- Using this arguments is not recommended for reading gzipped output with the \code{GUESS} Format since it involves gunzipping the file twice, 
+which likely makes it less time efficient than simply reading all the layers and then dropping the ones you don't want.}
 
-\item{last.year}{The last year (as a numeric) of the data to be returned}
+\item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored.
+For the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats this is optional under normal circumstances this is optional since the file names are normally 
+standardised (although they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have 
+standardised file names in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
+
+\item{first.year}{The first year (as a numeric) of the data to be returned (if not specified or NULL start from the beginning of the data set)}
+
+\item{last.year}{The last year (as a numeric) of the data to be returned (if not specified or NULL take the data to the end of the data set)}
 
 \item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
@@ -57,17 +70,15 @@ See \code{\link{aggregateSubannual}}}
 Can also be a Field object from which the STA info will de derived.
 If specified the following 9 arguments are ignored (with a warning)}
 
-\item{file.name}{Character string specifying the file name (not the full path, just the file name, or the file name relative to source@dir) where the data is stored 
-(usually optional). Under normal circumstances this is optional for the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats since the file names are normally 
-standardised (however, in the case that they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have standardised file names
-in the same way that model output does.}
+\item{quick.read.file}{A character string.  If set, the function will look for a file of this name (plus the extension ".RData") in the run directory.
+If if finds one then it reads that.  If it doesn't find the appropriate file, then it reads the raw data, performs whatever cropping and aggregating is necessary,
+and then saves the data in a file of that name (in the run directory) for use next time.  (Note: the function also checks that the specified layers, cropping and aggregating 
+found in the file match that which was requested by the arguments here).}
 
-\item{write}{If TRUE, write the data of the \code{Field} to disk as text file.}
+\item{quick.read.autodelete}{If TRUE then the file specified by the above "quick.read.file" argument will be deleted, thus ensuring that the raw data will be read afresh 
+(and saved again).  Ignored if valid "quick.read.file" argument not supplied.}
 
-\item{read.full}{If TRUE ignore any pre-averaged file on disk, if FALSE use one if it is there (can save a lot of time if averaged file is already saved on disk)}
-
-\item{verbose}{If TRUE give a lot of information for debugging/checking.
-Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
+\item{verbose}{If TRUE give a lot of information for debugging/checking.}
 
 \item{...}{Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.
 For all Formats, the followings arguments apply:

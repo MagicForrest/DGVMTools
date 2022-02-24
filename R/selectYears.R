@@ -15,22 +15,24 @@ selectYears <- function(x, first, last){
   # To stop compiler NOTES
   Year = NULL
   
-  
-  
-  # check input class
+  # check input class and argements
   if(is.Field(x)) input.dt <- x@data 
   else if(is.data.table(x))  input.dt <- x
   else stop("Called for an object which is not a Field or a data.table.  Exiting...")
-
-  # 
+  if(missing(first) && missing(last)){
+    warning("You must supply either 'first' or 'last' to selectYears, no year selection done")
+    return(x)
+  }
+  
+  # take care of missing or undefined first or last arguments and check
+  years.present <- unique(input.dt[["Year"]])
+  if(missing(first) || is.null(first) || length(first) == 0) first <- years.present[1]
+  if(missing(last) || is.null(last) || length(last) == 0) last <- years.present[length(years.present)] 
   if(first > last) stop("Error, first year must be smaller or equal to the last year!")
   
   
-  # Warning if a certain year is not present
-  years.present <- unique(input.dt[["Year"]])
+  # Find years needed and warn if a certain year is not present
   years.needed <- first:last
-
-  
   for(year in years.needed){
     if(!(year %in% years.present)) warning(paste("Year", year, "requested, but it is not in the data!", sep = " "))
   }
@@ -48,7 +50,7 @@ selectYears <- function(x, first, last){
     x@first.year <- years.range[1]
     x@last.year <- years.range[2]
     x@id <- makeFieldID(source = x@source,
-                        var.string = x@quant@id, 
+                        quant.string = x@quant@id, 
                         sta.info = as(x, "STAInfo"))
     return(x)
   }

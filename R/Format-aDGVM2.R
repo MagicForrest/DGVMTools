@@ -8,10 +8,10 @@
 #' 
 #' An internal function that reads data from an aDGVM2 run. It actually calls one of two other functions depending on the type of quantity specified.   
 #' 
-#' @param run A \code{source} containing the meta-data about the aDGVM2 run
+#' @param source A \code{source} containing the meta-data about the aDGVM2 run
 #' @param quant A Quantity object to define what quantity from the aDGVM2 run to extract
+#' @param layers Ignored for aDGVM
 #' @param target.STAInfo STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/
-#' @param last.year The last year (as a numeric) of the data to be return
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param adgvm2.scheme A number that defines if pop-files (=1) or trait-files (=2) are used.
@@ -22,6 +22,7 @@
 #' @seealso \code{\link{getQuantity_aDGVM2_Scheme1}, \link{getQuantity_aDGVM2_Scheme2}}
 getField_aDGVM2 <- function(source,
                             quant,
+                            layers = NULL,
                             target.STAInfo,
                             file.name,
                             verbose,
@@ -33,6 +34,11 @@ getField_aDGVM2 <- function(source,
   
   if(missing(adgvm2.scheme)) adgvm2.scheme <- 1
   if(missing(adgvm2.daily)) adgvm2.daily <- FALSE
+  
+  if(!is.null(layers)) {
+    message("Ignoring 'layers' argument for aDGVM2")
+    warning("Ignoring 'layers' argument for aDGVM2")
+  }
   
   if("aDGVM2" %in% quant@format | "Standard" %in% quant@format) {
     
@@ -308,7 +314,7 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
   }
   
   # make the ID and then make and return Field
-  field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)
+  field.id <- makeFieldID(source = run, quant.string = variable@id, sta.info = actual.sta.info)
   
   return(
     
@@ -685,7 +691,7 @@ getQuantity_aDGVM2_Scheme2 <- function(run, variable, target.sta, file.name = fi
   }
   
   # make the ID and then make and return Field
-  field.id <- makeFieldID(source = run, var.string = variable@id, sta.info = actual.sta.info)
+  field.id <- makeFieldID(source = run, quant.string = variable@id, sta.info = actual.sta.info)
   
   return(
     

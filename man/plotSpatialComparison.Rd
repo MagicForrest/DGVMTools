@@ -8,10 +8,10 @@ plotSpatialComparison(
   comparisons,
   type = c("difference", "percentage.difference", "values", "nme"),
   limits = NULL,
+  legend.title,
   panel.bg.col = "white",
   override.cols = NULL,
   symmetric.scale = TRUE,
-  percentage.difference.limit = 300,
   do.phase = FALSE,
   ...
 )
@@ -24,13 +24,15 @@ plotSpatialComparison(
 
 \item{limits}{A numeric vector with two members (lower and upper limit) to limit the plotted values.}
 
+\item{legend.title}{A character string or expression to override the default legend title. Set to NULL for no legend title.  The default legend title is the \code{units}
+of the \linkS4class{Quantity} of the first \linkS4class{Comparison} provided in the \code{comparisions} argument.  This argument allows general flexibility, but it is particularly handy
+to facilitate expressions for nicely marked up subscript and superscript.}
+
 \item{panel.bg.col}{Colour string for the panel background, default to "white" for absolute values plots, and a grey for difference plots.}
 
 \item{override.cols}{A colour palette function to override the defaults.}
 
 \item{symmetric.scale}{If plotting a differences, make the scale symmetric around zero (default is TRUE)}
-
-\item{percentage.difference.limit}{If percentage difference to be plotted, what to limit the scale to.  Default is 300.}
 
 \item{do.phase}{Logical, only applies to plotting Comparison objects of type "seasonal".
 If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.}
