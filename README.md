@@ -21,7 +21,7 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 
 ### Installation
 
-Since the core features of the package are now very stable recommend that you use the master branch.  We will pull small bug fixes and small non-breaking feature improvements frequently into the master for small incremental releases, so hopefully that master is never to far behind. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package is currently undergoing reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
+Since the core features of the package are now very stable recommend that you use the master branch.  We will pull small bug fixes and small non-breaking feature improvements frequently into the master for small incremental releases, so hopefully that master is never to far behind. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package underwent reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
 
 
 If you have devtools >= 2.0.0 then run:
@@ -38,7 +38,6 @@ devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies 
 
 (thanks to Peter Anthoni for reporting)
 
-Eventually release on CRAN is anticipated.
 
 
 #### Installation troubleshooting
@@ -49,7 +48,8 @@ Eventually release on CRAN is anticipated.
 
 ### News and Releases
 
-Current release is v0.10.0.  See [NEWS.md](NEWS.md).
+Current release is v1.0.0.  See [NEWS.md](NEWS.md).
+A description paper is currently being prepared for peer-review and eventually release on CRAN is anticipated.
 
 ---
 
