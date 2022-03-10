@@ -122,13 +122,13 @@ copyLayers <- function(from, to, layer.names, new.layer.names = NULL, keep.all.t
     # set key and merge
     setKeyDGVM(to.dt)
     setKeyDGVM(layers.to.add.dt)
-    Temp.dt <- merge(x = to.dt, y = layers.to.add.dt,  all.y = keep.all.from, all.x = keep.all.to)
+    Temp.dt <- merge.data.table(x = to.dt, y = layers.to.add.dt,  all.y = keep.all.from, all.x = keep.all.to)
     
   }
   else {
     
     setKeyDGVM(to.dt)
-    Temp.dt <- merge(x = to.dt, y = layers.to.add.dt, all.y = keep.all.from, all.x = keep.all.to)
+    Temp.dt <- merge.data.table(x = to.dt, y = layers.to.add.dt, all.y = keep.all.from, all.x = keep.all.to)
     
   }
   

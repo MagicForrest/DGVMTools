@@ -84,6 +84,7 @@ Collate:
     'lookupQuantity.R'
     'makeFieldID.R'
     'makePlotTitle.R'
+    'merge-methods.R'
     'names-methods.R'
     'package-documentation.R'
     'periods.R'
