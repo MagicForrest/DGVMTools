@@ -155,8 +155,8 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   #### MORE 'STANDARD' METRICS MORE BASED ON LINEAR REGRESSION AND NOT FOCUSSED ON MODEL-OBSERVATION COMPARISON
   
   if(!is.null(area.vec)) {
-    message("NOTE: metrics r, r2, m, and c are NOT weighted by grdicell area, the other metrics are.")
-    warning("NOTE: metrics r, r2, m, and c are NOT weighted by grdicell area, the other metrics are.")
+    if(verbose) message("NOTE: metrics r, r2, m, and c are NOT weighted by gridcell area, the other metrics are.")
+    warning("NOTE: metrics r, r2, m, and c are NOT weighted by gridcell area, the other metrics are.")
     
   }
   
@@ -262,7 +262,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
 proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
   
   if(area) {
-    message("Gridcell area weighting not currently implemented for proportionsComparison")
+    if(verbose) message("Gridcell area weighting not currently implemented for proportionsComparison")
     warning("Gridcell area weighting not currently implemented for proportionsComparison")
   }
   
@@ -374,7 +374,7 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
 categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE,  area = TRUE){
   
   if(area) {
-    message("Gridcell area weighting not currently implemented for categoricalComparison")
+    if(verbose) message("Gridcell area weighting not currently implemented for categoricalComparison")
     warning("Gridcell area weighting not currently implemented for categoricalComparison")
   }
   
@@ -537,7 +537,7 @@ categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE
 seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
   
   if(area) {
-    message("Gridcell area weighting not currently implemented for seasonalComparison")
+    if(verbose)  message("Gridcell area weighting not currently implemented for seasonalComparison")
     warning("Gridcell area weighting not currently implemented for seasonalComparison")
   }
   

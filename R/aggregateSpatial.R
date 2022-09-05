@@ -68,7 +68,7 @@ aggregateSpatial.uncompiled <- function(x,
   if (method == "w.mean") {
     if (!any(colnames(input.dt)=="Area")) {
       if (verbose) message("Add column area.")
-      input.dt <- addArea(input.dt, verbose=FALSE, ...)
+      input.dt <- addArea(input.dt, verbose = verbose, ...)
     }
     if(verbose) message(paste("Spatially averaging (with area weighting) ...", sep = ""))
     
@@ -79,7 +79,7 @@ aggregateSpatial.uncompiled <- function(x,
   else if (method == "w.sum") {
     if (!any(colnames(input.dt)=="Area")) {
       if (verbose) message("Add column area.")
-      input.dt <- addArea(input.dt, verbose=FALSE, ...)
+      input.dt <- addArea(input.dt, verbose = verbose, ...)
     }
     if(verbose) message(paste("Spatially summing (with area weighting) ...", sep = ""))
     
