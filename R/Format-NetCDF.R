@@ -309,7 +309,7 @@ getField_NetCDF <- function(source,
         # if the mean is between 359 and 367 (inclusive) assume yearly  
         else if(mean.timestep.differences >= 360 & mean.timestep.differences <= 367 ) time.res <- "Year"   
         # if all the time steps are integer values, assume daily (but potentially with missing days) 
-        else if(isTRUE(all(diff.all.time.intervals == floor(diff.all.time.intervals))) || mean.timestep.differences == 1) time.res <- "Day"
+        else if(isTRUE(all(diff.all.time.intervals == floor(diff.all.time.intervals))) || abs(mean.timestep.differences - 1) < 0.00001) time.res <- "Day"
         else stop("Data doesn't appear to be on daily, monthly, or yearly timesteps.  Other options are not currently supported by the DGVMTools, but could potentially be.  So if you need this please contact the author.")
         
         
