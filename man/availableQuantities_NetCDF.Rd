@@ -7,9 +7,9 @@
 availableQuantities_NetCDF(source, names)
 }
 \arguments{
-\item{source}{A \linkS4class{Source} containing the meta-data about the NetCDF source}
+\item{source}{A \code{\linkS4class{Source}} containing the meta-data about the NetCDF source}
 
-\item{names}{A boolean, if TRUE return a character vector of names of available quantities, if FALSE return a list of the actual Quantities.}
+\item{names}{Logical, if TRUE return a character vector of names of available quantities, if FALSE return a list of the actual Quantities.}
 }
 \value{
 A list of all the .out files present, with the ".out" removed.
