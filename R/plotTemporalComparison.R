@@ -19,7 +19,7 @@
 #' If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.
 #' @param ... Parameters passed to \code{plotTemporal()}
 #' 
-#' @details  A wrapper for around \code{plotTemporal()} to plot the temporal Comparisons as maps.  Extra arguments to \code{plotTemporal} can also be specified. 
+#' @details  A wrapper for around \code{plotTemporal()} to plot the temporal Comparisons as maps.  Extra arguments to \link{plotTemporal} can also be specified. 
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -27,7 +27,7 @@
 #' @import ggplot2 data.table
 #' 
 #' @export 
-#' @seealso \code{plotTemporal},  \code{compareLayers}
+#' @seealso \link{plotTemporal},  \code{compareLayers}
 
 plotTemporalComparison <- function(comparisons,
                                   type = c("difference", "percentage.difference", "values", "nme"),

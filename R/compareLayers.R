@@ -2,13 +2,13 @@
 
 #' Compare layers to each other
 #' 
-#' Compare two layers (each from a \code{Field}) to calculated various statistic metric and also the error (at every spatial/temporal locality) 
-#' which is returned as a \code{Comparison} object. Usually this only acts on a single layer from each \code{Field}, 
+#' Compare two layers (each from a \link{Field}) to calculated various statistic metric and also the error (at every spatial/temporal locality) 
+#' which is returned as a \code{Comparison} object. Usually this only acts on a single layer from each \link{Field}, 
 #' but see the special case for "relative abundance" in details  below. 
 #'
 #' 
-#' @param field1 A \code{Field} from which to get the first \code{Layer} for comparison. For the normalised metrics, this is the *modelled* values.
-#' @param field2 A \code{Field} from which to get the second \code{Layer} for comparison. For the normalised metrics, this is the *observed* values.
+#' @param field1 A \link{Field} from which to get the first \code{Layer} for comparison. For the normalised metrics, this is the *modelled* values.
+#' @param field2 A \link{Field} from which to get the second \code{Layer} for comparison. For the normalised metrics, this is the *observed* values.
 #' @param layers1 The name of the \code{Layer} to be compared from field1 (character string).  In general this should only be a *single* \code{Layer}, 
 #' only in the special case of a "relative abundance" style comparison should this be multiple layers.
 #' @param layers2 The name of the \code{Layer} to be compared from field2 (character string).  If not defined taken to the be the same as layers1. In general this should 
@@ -31,7 +31,7 @@
 #' can be assumed in the data.table.  The name of the item in the list is used as the metric name.  
 #' @param verbose Logical, if TRUE print some informative output
 #' 
-#' @returns A \code{Comparison} object, which includes points only where *both* input \code{Field} object have data.
+#' @returns A \code{Comparison} object, which includes points only where *both* input \link{Field} object have data.
 #' 
 #' The returned \code{Comparison} object has the same dimensions as the input \code{Fields} (if they don't have the same dimensions as each other the code will fail).  
 #' Depending on these dimensions, the \code{Comparison} can be plotted using \code{plotSpatialComparison} (to give the absolute difference, original values side-by-side 
@@ -43,7 +43,7 @@
 #' case the metrics reported are the Mean Phase Difference and the NME calculation is done on seasonal concentration (derived from the monthly values) instead of each data point.
 #'   
 #' The second special case allows comparison of the "relative abundance" of multiple layers via the Manhattan Metric or the Square Chord Difference. 
-#' In this case you can specify multiple layers (same number from each Field) and for each \code{Field} the provided layers should sum to 1.0  (this is not checked by 
+#' In this case you can specify multiple layers (same number from each Field) and for each \link{Field} the provided layers should sum to 1.0  (this is not checked by 
 #' DGVMTools so please check this yourself).
 #' 
 #' For definitions, details and applicability of metrics such as Normalised Mean Error, Manhattan Metric, Mean Phase Difference, etc. please see:

@@ -1,18 +1,18 @@
 #!/usr/bin/Rscript
 
 #
-#' Get a \code{Field} from a \code{Source}
+#' Get a \link{Field} from a \link{Source}
 #' 
-#' Given a \code{Source} object and a \code{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object, optionally including
+#' Given a \link{Source} object and a \link{Quantity} object, return an appropriate spatially/temporal/annually-aggregated \link{Field} object, optionally including
 #' spatial, temporal and annual cropping.
 #' 
-#' Note that because there are three types of aggregating available, the resulting \code{Field} object can have a wide select of spatio-temporal dimensions.
+#' Note that because there are three types of aggregating available, the resulting \link{Field} object can have a wide select of spatio-temporal dimensions.
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
-#' @param source The \code{Source} object for which the \code{Field} should be built, typically a model run or a datatset.
-#' @param quant The \code{Quantity} to be read - either a \code{Quantity} object or a string containing its \code{id}.  If it is a character string it will be checked
-#' against the predefined \code{Quantities} in the \code{Source} object and failing that a simple dummy \code{Quantity} will be be made.  For the \code{NetCDF Format}
-#' most \code{Quantity} metadata will be taken from the NetCDF file where possible (thus overriding this option).
+#' @param source The \link{Source} object for which the \link{Field} should be built, typically a model run or a datatset.
+#' @param quant The \link{Quantity} to be read - either a \link{Quantity} object or a string containing its \code{id}.  If it is a character string it will be checked
+#' against the predefined \code{Quantities} in the \link{Source} object and failing that a simple dummy \link{Quantity} will be be made.  For the \code{NetCDF Format}
+#' most \link{Quantity} metadata will be taken from the NetCDF file where possible (thus overriding this option).
 #' @param layers A list (or vector of character) of character strings to specify which Layers should be read from the file.  
 #' If missing or NULL then all Layers are read.
 #' -NOTE- Using this arguments is not recommended for reading gzipped output with the \code{GUESS} Format since it involves gunzipping the file twice, 
@@ -75,7 +75,7 @@
 #' (the start of the Gregorian calendar) and it includes leap years the calendar needs to be set to "proleptic_gregorian".
 #' }
 #'  
-#' @return A \code{Field}. 
+#' @return A \link{Field}. 
 #' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}}   
 #' @include classes.R
 #' @export

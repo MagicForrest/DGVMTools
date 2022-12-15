@@ -1,17 +1,17 @@
 #!/usr/bin/Rscript
 
 #
-#' Get a Classification \code{Field} from a \code{Source}
+#' Get a Classification \link{Field} from a \link{Source}
 #' 
-#' Given a \code{Source} object and a \code{Scheme} object, return an appropriate spatially/temporal/annually-aggregated \code{Field} object with categorical values u based on the 
+#' Given a \link{Source} object and a \code{Scheme} object, return an appropriate spatially/temporal/annually-aggregated \link{Field} object with categorical values u based on the 
 #' classification contained in the \code{Scheme}, optionally including spatial, temporal and annual cropping.
 #' 
-#' Note that because there are three types of aggregating available, the resulting \code{Field} object can a wide select of spatio-temporal dimensions.
+#' Note that because there are three types of aggregating available, the resulting \link{Field} object can a wide select of spatio-temporal dimensions.
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
-#' @param source The \code{Source} object for which the Classification \code{Field} should be built. A list of \code{Source} objects can also be provided, in which case 
-#' the required \code{Field} object derived from each \code{Source} in the list (for example LAI or fractional cover) are first averaged, and then do the biome 
-#' classification. In the case of a list of \code{Source} objects, the \code{averaged.source} arguments (see below) must also be supplied so that the averaged 
+#' @param source The \link{Source} object for which the Classification \link{Field} should be built. A list of \link{Source} objects can also be provided, in which case 
+#' the required \link{Field} object derived from each \link{Source} in the list (for example LAI or fractional cover) are first averaged, and then do the biome 
+#' classification. In the case of a list of \link{Source} objects, the \code{averaged.source} arguments (see below) must also be supplied so that the averaged 
 #' data can be written to/read from disk.
 #' @param scheme The classification scheme to be used as \code{Scheme} object, or the id of a \code{Scheme} defined in the package, as a character string.
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
@@ -41,7 +41,7 @@
 #' @param quick.read.autodelete If TRUE then the file specified by the above "quick.read.file" argument will be deleted, thus ensuring that the raw data will be read afresh 
 #' (and saved again).  Ignored if valid "quick.read.file" argument not supplied.
 #' @param verbose If TRUE give a lot of information for debugging/checking.
-#' @param averaged.source If a list of \code{Source} objects have been supplied to be averaged before the classification, you must supply another \code{Source} object to store the averaged results.
+#' @param averaged.source If a list of \link{Source} objects have been supplied to be averaged before the classification, you must supply another \link{Source} object to store the averaged results.
 #' @param ...  Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.  
 #' For all Formats, the followings arguments apply:
 #' \itemize{
@@ -62,7 +62,7 @@
 #'  \item{\code{adgvm2.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
 #'  \item{\code{adgvm2.daily}}  A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)
 #' }
-#' @return A \code{Field}. 
+#' @return A \link{Field}. 
 #' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}},  \code{\link{getField}}    
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}

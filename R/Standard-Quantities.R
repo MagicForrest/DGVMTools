@@ -1,6 +1,6 @@
 #' @rdname Quantity-class
 #' @docType data
-#' @seealso \code{lookupQuantity}
+#' @seealso \link{lookupQuantity}
 #' @export
 Standard.quantities <- list(
   

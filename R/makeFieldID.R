@@ -2,12 +2,12 @@
 
 ############################## MAKE THE 'id' STRING FOR A FIELD
 #
-#' Make an ID string for a \code{Field}
+#' Make an ID string for a \link{Field}
 #' 
 #' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-#' for use in the \code{id} slot of a \code{Field} and for filenames etc.
+#' for use in the \code{id} slot of a \link{Field} and for filenames etc.
 #' 
-#' @param quant.string Character string to describe the \code{Quantity}, eg "lai" or "corrected.cmass" or "npp.diff"
+#' @param quant.string Character string to describe the \link{Quantity}, eg "lai" or "corrected.cmass" or "npp.diff"
 #' @param first.year The first year if it has been cropped from the orginal duration, otherwise NULL
 #' @param last.year The first year if it has been cropped from the orginal duration, otherwise NULL
 #' @param year.aggregate.method Character, method by which this Field was temporally aggregated (if not temporally averaged leave blank of use "none")

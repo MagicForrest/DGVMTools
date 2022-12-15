@@ -6,7 +6,7 @@
 #########################################################################################################################################
 
 
-#' Plot maps from a \code{Field} or a lists of \code{Field}.
+#' Plot maps from a \link{Field} or a lists of \link{Field}.
 #' 
 #' This is a heavy lifting function for plotting maps from Fields with flexibility, but also with a high degree of automation. 
 #' As a consequence, it has a really large amount of parameters for a huge amount of flexibility.  However they are all set to sensible defaults.  

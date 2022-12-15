@@ -25,7 +25,7 @@
 #' If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.
 #' @param ... Parameters passed to \code{plotSpatial()}
 #' 
-#' @details  A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  Extra arguments to \code{plotSpatial} can also be specified. 
+#' @details  A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  Extra arguments to \link{plotSpatial} can also be specified. 
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -33,7 +33,7 @@
 #' @import ggplot2 data.table
 #' 
 #' @export 
-#' @seealso \code{plotSpatial},  \code{compareLayers}
+#' @seealso \link{plotSpatial},  \code{compareLayers}
 
 plotSpatialComparison <- function(comparisons,
                                   type = c("difference", "percentage.difference", "values", "nme"),

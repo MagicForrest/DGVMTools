@@ -170,12 +170,12 @@ setClass("Layer",
 
 ########### Source - class to hold the metadata for an LPJ-GUESS run
 
-#' Checks validity of a \code{Source}.
+#' Checks validity of a \link{Source}.
 #' 
-#' Called internally as the validity slot of the \code{Source}.  It checks that the essential slots are filled with sensible values ie a dir that
+#' Called internally as the validity slot of the \link{Source}.  It checks that the essential slots are filled with sensible values ie a dir that
 #' exists on the file system; the format type is specified and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
 #' 
-#' @param object The \code{Source} object to check for vailidity.
+#' @param object The \link{Source} object to check for vailidity.
 #' @return Empty string if the essential slots are fine, a string containing an error message if not.
 #' @keywords internal
 #'    
@@ -222,8 +222,8 @@ checkSource <- function(object){
 #' Metadata for a data source
 #' 
 #' This class describes a data source, including its location on disk, the format (ie what model or dataset it cam from), the PFT set used, an unique id and a description, offsets to apply to the longitudes and latitudes to make the co-rordinates gridcell centered and so on.
-#' It is not primarily intended to be used by itself. Instead it is inherited by \code{Source} object (due to this inheritance the slots can be accessed directly)
-#' and included in a \code{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
+#' It is not primarily intended to be used by itself. Instead it is inherited by \link{Source} object (due to this inheritance the slots can be accessed directly)
+#' and included in a \link{Field} in the \code{run} slot (not inherited, so needs to be access be \code{@@source}).
 #' 
 #'  
 #' Slots can be accessed by user directly, but more easily and usefully by functions \code{XXXX}
@@ -413,7 +413,7 @@ setClass("Scheme",
 
 #' Field-class containsdata
 #' 
-#' Field is a key class of the package as it actually holds the data (most other classes are for metadata).  A \code{Field} stores the data and metadata for one quantity
+#' Field is a key class of the package as it actually holds the data (most other classes are for metadata).  A \link{Field} stores the data and metadata for one quantity
 #' that comes from a dataset or vegetation model run (including information about the run iself). For example LAI (Leaf Area Index), or evapotranspiration. 
 #' The data can be aggragted across space, and across and within years, and manipulated and plotted by mayn funtions in this package.
 #' 
