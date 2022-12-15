@@ -10,7 +10,7 @@
 #' 
 #' An internal function that reads data from an NetCDF .nc file.  
 #' 
-#' @param source A \code{Source} containing the meta-data about the NetCDF source
+#' @param source A \link{Source} containing the meta-data about the NetCDF source
 #' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param layers A character string (or a vector of character strings) specifying which variables from the NetCDF file are to be read.
 #' NULL (default) means read all.
@@ -895,7 +895,7 @@ getField_NetCDF <- function(source,
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
-#' @param source A \code{Source} containing the meta-data about the NetCDF source
+#' @param source A \link{Source} containing the meta-data about the NetCDF source
 #' @param names A boolean, if TRUE return a character vector of names of available quantities, if FALSE return a list of the actual Quantities.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
@@ -931,7 +931,7 @@ availableQuantities_NetCDF <- function(source, names){
 ########################################################
 
 
-#' @format The \code{Quantity} class is an S4 class with the slots defined below
+#' @format The \link{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
 #' 

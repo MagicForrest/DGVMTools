@@ -8,7 +8,7 @@
 #' 
 #' An internal function that reads data from an LPJ-GUESS run.  It actually call one of three other functions depending on the type of quantity specified.   
 #' 
-#' @param source A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param source A \link{Source} containing the meta-data about the LPJ-GUESS run
 #' @param quant A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param layers A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.
 #' @param target.STAInfo The spatial-temporal target domain
@@ -50,11 +50,11 @@ getField_GUESS <- function(source,
 #' Open an LPJ-GUESS .out file
 #'
 #' \code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity 
-#' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
+#' from the run (eg. "lai", to read the file "lai.out") and  \link{Source} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param run A \link{Source} containing the meta-data about the LPJ-GUESS run
 #' @param quant A Quant to define what output file from the LPJ-GUESS run to open, 
 #' @param layers A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.
 #' can also be a simple string defining the LPJ-GUESS output file if the \code{return.data.table} argument is TRUE
@@ -328,11 +328,11 @@ openLPJOutputFile <- function(run,
 #' Open an LPJ-GUESS .out file
 #'
 #' \code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity 
-#' from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
+#' from the run (eg. "lai", to read the file "lai.out") and  \link{Source} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run
+#' @param run A \link{Source} containing the meta-data about the LPJ-GUESS run
 #' @param quant A Quantity to define what output file from the LPJ-GUESS run to open.
 #' @param layers A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.
 #' @param first.year The first year (as a numeric) of the data to be return
@@ -731,9 +731,9 @@ openLPJOutputFile_FireMIP <- function(run,
 #' 
 #' 
 #' output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
-#' \code{Source} object, it will return that to save time.
+#' \link{Source} object, it will return that to save time.
 #' 
-#' @param run A \code{Source} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
+#' @param run A \link{Source} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param quant A Quantity to define what output file from the LPJ-GUESS run to open
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
@@ -1442,7 +1442,7 @@ GUESS.Layers <- list(
 #####################################################################
 
 
-#' @format The \code{Quantity} class is an S4 class with the slots defined below
+#' @format The \link{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
 #' 
@@ -2242,7 +2242,7 @@ GUESS.quantities <- list(
 
 #' @description \code{GUESS} - a Format for reading standard LPJ-GUESS(-SPITFIRE) model output
 #' 
-#' @format A \code{Quantity} object is an S4 class.
+#' @format A \link{Quantity} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets

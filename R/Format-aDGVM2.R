@@ -884,7 +884,7 @@ aDGVM2.Layers <- list(
 #####################################################
 
 
-#' @format The \code{Quantity} class is an S4 class with the slots defined below
+#' @format The \link{Quantity} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
 #' 
@@ -941,7 +941,7 @@ aDGVM2.quantities <- list(
 
 #' @description \code{aDGVM2} - a Format for reading aDGVM2 model output
 #' 
-#' @format A \code{Quantity} object is an S4 class.
+#' @format A \link{Quantity} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets
