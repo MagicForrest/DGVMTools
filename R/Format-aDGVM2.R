@@ -8,7 +8,7 @@
 #' 
 #' An internal function that reads data from an aDGVM2 run. It actually calls one of two other functions depending on the type of quantity specified.   
 #' 
-#' @param source A \code{source} containing the meta-data about the aDGVM2 run
+#' @param source A  \code{\linkS4class{Source}} containing the meta-data about the aDGVM2 run
 #' @param quant A Quantity object to define what quantity from the aDGVM2 run to extract
 #' @param layers Ignored for aDGVM
 #' @param target.STAInfo STAInfo object specifying the spatial-temporal-annual extent required.  Note that at this stage only the years are selected/
@@ -64,7 +64,7 @@ getField_aDGVM2 <- function(source,
 #' 
 #' An internal function to read quantities from aDGVM2 pop files. Quantities are provided for trees, C4 grasses and C3 grasses. Trait files are not opened
 #' 
-#' @param run A \code{source} containing the meta-data about the aDGVM2 run
+#' @param run A  \code{\linkS4class{Source}} containing the meta-data about the aDGVM2 run
 #' @param target.sta STAInfo object containing the space-time-annual extent required.
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, meanheight“, "nind“, "pind“, "vegC_std“, "vegcover_std"
@@ -336,7 +336,7 @@ getQuantity_aDGVM2_Scheme1 <- function(run, variable, target.sta, file.name = fi
 #' 
 #' An internal function to read quantities from aDGVM2 trait files. Quantities are currently provided for raingreen trees, evergreen trees, raingreen shrubs, evergreen shrubs, C4 grasses and C3 grasses. Pop files are not opened.
 #' 
-#' @param run A \code{source} containing the meta-data about the aDGVM2 run
+#' @param run A  \code{\linkS4class{Source}} containing the meta-data about the aDGVM2 run
 #' @param target.sta STAInfo object containing the space-time-annual extent required.
 #' @param variable A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, "nind“, "meanheight“, "pind“, "vegC_std“, "vegcover_std"
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
@@ -884,7 +884,8 @@ aDGVM2.Layers <- list(
 #####################################################
 
 
-#' @format The \link{Quantity} class is an S4 class with the slots defined below
+
+#' @format The \code{\linkS4class{Quantity}} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
 #' 
@@ -941,7 +942,7 @@ aDGVM2.quantities <- list(
 
 #' @description \code{aDGVM2} - a Format for reading aDGVM2 model output
 #' 
-#' @format A \link{Quantity} object is an S4 class.
+#' @format A \code{\linkS4class{Format}} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets

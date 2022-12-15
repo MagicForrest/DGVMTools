@@ -10,7 +10,7 @@
 #' 
 #' An internal function that reads data from an NetCDF .nc file.  
 #' 
-#' @param source A \link{Source} containing the meta-data about the NetCDF source
+#' @param source A \linkS4class{Source} containing the meta-data about the NetCDF source
 #' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param layers A character string (or a vector of character strings) specifying which variables from the NetCDF file are to be read.
 #' NULL (default) means read all.
@@ -309,7 +309,7 @@ getField_NetCDF <- function(source,
         # if the mean is between 359 and 367 (inclusive) assume yearly  
         else if(mean.timestep.differences >= 360 & mean.timestep.differences <= 367 ) time.res <- "Year"   
         # if all the time steps are integer values, assume daily (but potentially with missing days) 
-        else if(isTRUE(all(diff.all.time.intervals == floor(diff.all.time.intervals))) || mean.timestep.differences == 1) time.res <- "Day"
+        else if(isTRUE(all(diff.all.time.intervals == floor(diff.all.time.intervals))) || abs(mean.timestep.differences - 1) < 0.00001) time.res <- "Day"
         else stop("Data doesn't appear to be on daily, monthly, or yearly timesteps.  Other options are not currently supported by the DGVMTools, but could potentially be.  So if you need this please contact the author.")
         
         
@@ -895,8 +895,8 @@ getField_NetCDF <- function(source,
 #' Simply lists all LPJ-GUESS output variables (stored as .out files) available in a directory. 
 #' Also ignores some common red herrings like "guess.out" and "*.out" 
 #' 
-#' @param source A \link{Source} containing the meta-data about the NetCDF source
-#' @param names A boolean, if TRUE return a character vector of names of available quantities, if FALSE return a list of the actual Quantities.
+#' @param source A \code{\linkS4class{Source}} containing the meta-data about the NetCDF source
+#' @param names Logical, if TRUE return a character vector of names of available quantities, if FALSE return a list of the actual Quantities.
 #' @return A list of all the .out files present, with the ".out" removed. 
 #' 
 #' @keywords internal
@@ -905,23 +905,10 @@ getField_NetCDF <- function(source,
 
 availableQuantities_NetCDF <- function(source, names){
   
-  # First get the list of *.out files present
-  files.present <- list.files(source@dir, "*.nc")
-  
-  if(!names) quantities.present <- list()
-  else quantities.present <- c()
-  for(file in files.present) {
-    
-    # check if file contains paste(".", source@id, ".nc")
-    # and if so, get the part before it
-    this.quantity <- "lsls" # TODO
-    quantities.present <- append(quantities.present, this.quantity)
-    
-    
-  }
-  
-  return(quantities.present)
-  
+  warning("availableQuantity() functionality not implemented for NetCDF Format because this format is too flexible to clearly identify them.")
+  message("availableQuantity() functionality not implemented for NetCDF Format because this format is too flexible to clearly identify them.")
+  if(names) return(character(0))
+  else return(list())
 }
 
 
@@ -930,8 +917,7 @@ availableQuantities_NetCDF <- function(source, names){
 ########### NetCDF QUANTITIES ########################
 ########################################################
 
-
-#' @format The \link{Quantity} class is an S4 class with the slots defined below
+#' @format The \code{\linkS4class{Quantity}} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
 #' 
@@ -1043,7 +1029,7 @@ NetCDF.quantities <- list(
 #' @description \code{NetCDF} - a Format object defined here for reading NetCDF files.
 #' It is essentially CF-compliant netCDF with a couple of extra attributes defined. 
 #' 
-#' @format A \code{Format} object is an S4 class.
+#' @format A \code{\linkS4class{Format}} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets

@@ -10,13 +10,13 @@
 \alias{aDGVM2}
 \title{Format class}
 \format{
-A \code{Quantity} object is an S4 class.
+A \code{\linkS4class{Format}} object is an S4 class.
 
-A \code{Format} object is an S4 class.
+A \code{\linkS4class{Format}} object is an S4 class.
 
-A \code{Quantity} object is an S4 class.
+A \code{\linkS4class{Format}} object is an S4 class.
 
-A \code{Quantity} object is an S4 class.
+A \code{\linkS4class{Format}} object is an S4 class.
 }
 \usage{
 GUESS
@@ -28,8 +28,9 @@ aDGVM
 aDGVM2
 }
 \description{
-This class encapsulates all the specific details of a supported model or dataset.  Thiis comprises functions to read the data off the disk, and metadata
-describing certain properties of the vegetation. From a user-perspective, these are used as the \code{format} argument to \link{defineSource} function.
+This class encapsulates all the specific details of a supported model or dataset.  This comprises functions to read the data off the disk, 
+and metadata describing certain pre-defined \code{\linkS4class{Quantity}} and \code{\linkS4class{Layer}} objects. From a user-perspective, these are used as the \code{\linkS4class{Format}} argument to
+\code{\link{defineSource}} function.
 
 \code{GUESS} - a Format for reading standard LPJ-GUESS(-SPITFIRE) model output
 
@@ -44,7 +45,7 @@ It is essentially CF-compliant netCDF with a couple of extra attributes defined.
 Format objects which are included in the package are listed below:
 
 For DGVMTools to support a particular model or dataset, this is the object that needs to be defined.  But normally a user won't need to deal with this 
-class since it defines model/dataset spcific metadata and functions which should be defined once and then 'just work' (haha) in the future. 
+class since it defines model/dataset specific metadata and functions which should be defined once and then 'just work' (haha) in the future. 
 If someone wants their model to be supported by DGVMTools then this is the object that needs to be defined correctly.
 
 Note that the 'predefined.layers' and  'quantities' arguments are just default values, it is easy to add new ones.  Equally they don't all need
@@ -55,11 +56,11 @@ to be available for a particular run or dataset.  You can define your own for yo
 \describe{
 \item{\code{id}}{Simple character string to gave an uniquely identify this format}
 
-\item{\code{predefined.layers}}{'Standard' Layer type that this format uses, as a list of DGVMTools::\linkS4class{Layer} objects.
-This is most likely applicable to formats decsribing DGVM output, but also for some data sets.  
-This is just a default Layer set available for convenience, can be easily over-ridden when defining a Source object (see defineSource()).}
+\item{\code{predefined.layers}}{'Standard' Layer type that this format uses, as a list of \code{\linkS4class{Layer}} objects.
+This is most likely applicable to formats describing DGVM output, but also for some data sets.  
+This is just a default Layer set available for convenience, can be easily over-ridden when defining a Source object (see \code{\link{defineSource}}).}
 
-\item{\code{quantities}}{'Standard' quantities (as a list of DGVMTools::\linkS4class{Quantity} objects) which might be availably from the model output or dataset.}
+\item{\code{quantities}}{'Standard' quantities (as a list of \code{\linkS4class{Quantity}} objects) which might be availably from the model output or dataset.}
 
 \item{\code{availableQuantities}}{A function to determine which quantities \emph{are actually available} from the model run or dataset.}
 

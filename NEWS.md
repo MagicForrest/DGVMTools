@@ -1,4 +1,4 @@
-#  DGVMTools v1.0.0 release (2022-02-22)
+#  DGVMTools v1.0.0 release (2022-02-25)
 
 "Version 1.0 release" - no major features, but many refinements and improvements.  Some potentially breaking changes, see below.
 

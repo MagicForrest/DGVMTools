@@ -2,14 +2,14 @@
 
 ############################## MAKE THE 'id' STRING FOR A FIELD
 #
-#' Make an ID string for a \link{Field}
+#' Make an ID string for a \code{\linkS4class{Field}}
 #' 
 #' Given a string for the quantity and temporal and spatial extents and averaging flags, build an appropriate (and unique) ID string
-#' for use in the \code{id} slot of a \link{Field} and for filenames etc.
+#' for use in the \code{id} slot of a \code{\linkS4class{Field}}and for filenames etc.
 #' 
-#' @param quant.string Character string to describe the \link{Quantity}, eg "lai" or "corrected.cmass" or "npp.diff"
-#' @param first.year The first year if it has been cropped from the orginal duration, otherwise NULL
-#' @param last.year The first year if it has been cropped from the orginal duration, otherwise NULL
+#' @param quant.string Character string to describe the \code{\linkS4class{Quantity}}, eg "lai" or "corrected.cmass" or "npp.diff"
+#' @param first.year The first year if it has been cropped from the original duration, otherwise NULL
+#' @param last.year The first year if it has been cropped from the original duration, otherwise NULL
 #' @param year.aggregate.method Character, method by which this Field was temporally aggregated (if not temporally averaged leave blank of use "none")
 #' @param spatial.extent.id The spatial extent of this object if it has been cropped from the orginal simulation extent, otherwise NULL
 #' @param spatial.aggregate.method Character, method by which this Field was spatially aggregated (if not spatially averaged leave blank of use "none")

@@ -16,7 +16,7 @@ plotTemporalComparison(
 )
 }
 \arguments{
-\item{comparisons}{The data to plot, must be a Comparison or a list of Comparisons}
+\item{comparisons}{The data to plot, must be a \code{\linkS4class{Comparison}} or a list of Comparisons}
 
 \item{type}{A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "
 percentage.difference", "values" (actual values, side-by-side).}
@@ -32,20 +32,20 @@ percentage.difference", "values" (actual values, side-by-side).}
 \item{plot.zero.line}{Logical, if TRUE (default) plot a black line at y=0 in difference plots to better guide the eye for 
 If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.}
 
-\item{...}{Parameters passed to \code{plotTemporal()}}
+\item{...}{Parameters passed to \code{\link{plotTemporal}}}
 }
 \value{
 Returns a ggplot object
 }
 \description{
-This function is for plotting maps from Comparison objects (or a list of those Comparisons).  Three types of comparisons plots are supported: 'difference' - 
+This function is for plotting maps from \code{\linkS4class{Comparison}} objects (or a list of those Comparisons).  Three types of comparisons plots are supported: 'difference' - 
 a difference map; "values" - the absolute values plotted in panels and "percentage.difference" - the percentage differences.
 }
 \details{
-A wrapper for around \code{plotTemporal()} to plot the temporal Comparisons as maps.  Extra arguments to \code{plotTemporal} can also be specified.
+A wrapper for around \code{\link{plotTemporal}} to plot the temporal Comparisons as maps.  Extra arguments to \code{\link{plotTemporal}} can also be specified.
 }
 \seealso{
-\code{plotTemporal},  \code{compareLayers}
+\code{\link{plotTemporal}},  \code{\link{compareLayers}}
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

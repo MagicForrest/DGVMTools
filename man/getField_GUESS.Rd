@@ -15,7 +15,7 @@ getField_GUESS(
 )
 }
 \arguments{
-\item{source}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
+\item{source}{A \code{\linkS4class{Source}} containing the meta-data about the LPJ-GUESS run}
 
 \item{quant}{A string the define what output file from the LPJ-GUESS run to open, for example "anpp" opens and read the "anpp.out" file}
 
@@ -29,10 +29,11 @@ getField_GUESS(
 \item{verbose}{A logical, set to true to give progress/debug information}
 }
 \value{
-A list containing firstly the data.tabel containing the data, and secondly the STA.info
+A list containing firstly the data.table containing the data, and secondly the STA.info
 }
 \description{
-An internal function that reads data from an LPJ-GUESS run.  It actually call one of three other functions depending on the type of quantity specified.
+An internal function that reads data from an LPJ-GUESS run.  
+It actually calls one of three other functions depending on the type of quantity specified.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

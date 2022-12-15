@@ -20,7 +20,7 @@
 \item{y}{Anything from which raster::Extent object can be derived}
 
 \item{spatial.extent.id}{A character string to describe the spatial extent (y) required for meta-data consistency.
-Must be provided when cropping \code{Fields} or \code{Comparisons}.}
+Must be provided when cropping \code{\linkS4class{Field}} or \code{\linkS4class{Comparison}} objects}
 
 \item{...}{Other arguments, not currently used}
 }

@@ -5,10 +5,10 @@
 
 #' Plot a comparison between two Temporal layers
 #' 
-#' This function is for plotting maps from Comparison objects (or a list of those Comparisons).  Three types of comparisons plots are supported: 'difference' - 
+#' This function is for plotting maps from \code{\linkS4class{Comparison}} objects (or a list of those Comparisons).  Three types of comparisons plots are supported: 'difference' - 
 #' a difference map; "values" - the absolute values plotted in panels and "percentage.difference" - the percentage differences.  
 #' 
-#' @param comparisons The data to plot, must be a Comparison or a list of Comparisons
+#' @param comparisons The data to plot, must be a \code{\linkS4class{Comparison}} or a list of Comparisons
 #' @param type A character specifying what type of plot to make. Can be "difference" (default, for a difference plot), "
 #' percentage.difference", "values" (actual values, side-by-side).
 #' @param limits A numeric vector with two members (lower and upper limit) to limit the plotted values.
@@ -17,9 +17,8 @@
 #' @param do.phase Logical, only applies to plotting Comparison objects of type "seasonal".
 #' @param plot.zero.line Logical, if TRUE (default) plot a black line at y=0 in difference plots to better guide the eye for 
 #' If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.
-#' @param ... Parameters passed to \code{plotTemporal()}
-#' 
-#' @details  A wrapper for around \code{plotTemporal()} to plot the temporal Comparisons as maps.  Extra arguments to \link{plotTemporal} can also be specified. 
+#' @param ... Parameters passed to \code{\link{plotTemporal}}
+#' @details  A wrapper for around \code{\link{plotTemporal}} to plot the temporal Comparisons as maps.  Extra arguments to \code{\link{plotTemporal}} can also be specified. 
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -27,7 +26,7 @@
 #' @import ggplot2 data.table
 #' 
 #' @export 
-#' @seealso \link{plotTemporal},  \code{compareLayers}
+#' @seealso \code{\link{plotTemporal}},  \code{\link{compareLayers}}
 
 plotTemporalComparison <- function(comparisons,
                                   type = c("difference", "percentage.difference", "values", "nme"),

@@ -16,7 +16,7 @@ getField_aDGVM2(
 )
 }
 \arguments{
-\item{source}{A \code{source} containing the meta-data about the aDGVM2 run}
+\item{source}{A  \code{\linkS4class{Source}} containing the meta-data about the aDGVM2 run}
 
 \item{quant}{A Quantity object to define what quantity from the aDGVM2 run to extract}
 

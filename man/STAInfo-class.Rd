@@ -22,16 +22,16 @@ see aggregateSpatial.  If no spatial aggregation has been applied it should be N
 
 \item{subannual.resolution}{A character string specifying the current sub-annual resolution of this data, eg. "Year", Month", "Day"}
 
-\item{subannual.aggregate.method}{A character specifying how the subannual perods have been aggregated, for example "mean", "max", "sum" or "var". 
+\item{subannual.aggregate.method}{A character specifying how the subannual periods have been aggregated, for example "mean", "max", "sum" or "var". 
 See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.}
 }
 \description{
-This class encapsulations all the Spatial (the 'S', longitude and latidude), Temporal (the 'T', monthly, daily etc.) and Annual (the 'A', years included) 
+This class encapsulations all the Spatial (the 'S', longitude and latitude), Temporal (the 'T', monthly, daily etc.) and Annual (the 'A', years included) 
 Information  (hence the name 'STAInfo') about a particular DGVMTools::Field.  Normally the user won't have to deal with this (it is mostly used internally),
 but it can be handy, for example to extract the STAInfo from one Field, and use it extract another field with the same dimensions.
 }
 \details{
-This is mostly a behind-the-scenes class which is partly just created to bundle together a lot of dimension information in a tidy form.
+This is mostly a behind-the-scenes class which bundles together a lot of dimension information in a tidy form.
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}

@@ -429,7 +429,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   
   ### MAKE THE NETCDF FILE
   if(verbose) message(paste("** Creating the output file", filename))
-  outfile <- ncdf4::nc_create(filename, all.vars, verbose=nc.verbose, force_v4=TRUE)
+  outfile <- ncdf4::nc_create(filename, all.vars, verbose=nc.verbose, force_v4=FALSE)
   
   
   ### PUT EACH VARIABLE INTO THE FILE

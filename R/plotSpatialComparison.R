@@ -23,9 +23,9 @@
 #' @param symmetric.scale If plotting a differences, make the scale symmetric around zero (default is TRUE)
 #' @param do.phase Logical, only applies to plotting Comparison objects of type "seasonal".
 #' If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.
-#' @param ... Parameters passed to \code{plotSpatial()}
+#' @param ... Parameters passed to \link{plotSpatial}
 #' 
-#' @details  A wrapper for around \code{plotSpatial()} to plot the spatial Comparisons as maps.  Extra arguments to \link{plotSpatial} can also be specified. 
+#' @details  A wrapper for around \link{plotSpatial} to plot the spatial Comparisons as maps.  Extra arguments to \link{plotSpatial} can also be specified. 
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -33,7 +33,7 @@
 #' @import ggplot2 data.table
 #' 
 #' @export 
-#' @seealso \link{plotSpatial},  \code{compareLayers}
+#' @seealso \link{plotSpatial},  \link{compareLayers}
 
 plotSpatialComparison <- function(comparisons,
                                   type = c("difference", "percentage.difference", "values", "nme"),

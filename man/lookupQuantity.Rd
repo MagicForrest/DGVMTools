@@ -7,7 +7,7 @@
 lookupQuantity(quant.id, context = Standard.quantities, verbose = TRUE)
 }
 \arguments{
-\item{quant.id}{String holding the id of the \code{Quantity} you want}
+\item{quant.id}{String holding the id of the \code{\linkS4class{Quantity}} you want}
 
 \item{context}{The context in which to look up the Quantity.  Can be a Format object, Source object or a list (of Quantity objects). 
 Leave blank to lookup from the Standard.quantities list.}
@@ -15,7 +15,7 @@ Leave blank to lookup from the Standard.quantities list.}
 \item{verbose}{Logical, if TRUE (default) give some extra information}
 }
 \value{
-A \code{Quantity} object if it finds the right one.  Otherwise the code halts.
+A \code{\linkS4class{Quantity}} object if it finds the right one.  Otherwise the code halts.
 }
 \description{
 Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties) from the standard \code{dgvm.quantities} list

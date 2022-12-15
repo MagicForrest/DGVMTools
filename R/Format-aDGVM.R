@@ -8,7 +8,7 @@
 #' 
 #' An internal function that reads data from an aDGVM run.  It actually call one of three other functions depending on the type of quantity specified.   
 #' 
-#' @param source A \link{Source} containing the meta-data about the aDGVM run
+#' @param source A \code{\linkS4class{Source}} class containing the meta-data about the aDGVM run
 #' @param quant A string the define what output file from the aDGVM run to open, for example "anpp" opens and read the "anpp.out" file 
 #' @param layers Ignored for aDGVM
 #' @param target.STAInfo The spatial-temporal target domain
@@ -57,12 +57,12 @@ getField_aDGVM <- function(source,
 
 #' Get a yearly aDGVM Field
 #'
-#' \code{getYearlyField_aDGVM} returns a data.table object given a string defining a vegetation quantity 
-#' from the run (eg. "lai", to read the file "lai.out") and  \link{Source} object which defines where the run is on disk and the offsets to apply
+#
+#' from the run (eg. "lai", to read the file "lai.out") and  \code{\linkS4class{Source}} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \link{Source} containing the meta-data about the aDGVM run
+#' @param run A \code{\linkS4class{Source}} containing the meta-data about the aDGVM run
 #' @param quant A Quant to define what output file from the aDGVM run to open, 
 #' can also be a simple string defining the aDGVM output file if the \code{return.data.table} argument is TRUE
 #' @param first.year The first year (as a numeric) of the data to be return
@@ -375,11 +375,12 @@ getYearlyField_aDGVM <- function(run,
 #' Get a 'daily' aDGVM Field
 #'
 #' \code{getYearlyField_aDGVM} returns a data.table object given a string defining a vegetation quantity 
-#' from the run (eg. "lai", to read the file "lai.out") and  \link{Source} object which defines where the run is on disk and the offsets to apply
+
+#' from the run (eg. "lai", to read the file "lai.out") and  \code{\linkS4class{Source}} object which defines where the run is on disk and the offsets to apply
 #'
 #' Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.
 #' 
-#' @param run A \link{Source} containing the meta-data about the aDGVM run
+#' @param run A \code{\linkS4class{Source}} containing the meta-data about the aDGVM run
 #' @param quant A Quant to define what output file from the aDGVM run to open, 
 #' can also be a simple string defining the aDGVM output file if the \code{return.data.table} argument is TRUE
 #' @param first.year The first year (as a numeric) of the data to be return
@@ -793,15 +794,10 @@ getDailyField_aDGVM <- function(run,
 #' Returns the data from one aDGVM output variable as a \code{data.table}.   
 #'
 #' 
-#' This funtion can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
+#' This function can retrieve a 'Standard' vegetation quantity (returned as a data.table) with standard definition and units
 #' to compare to other models and to data.  This must be implemented for each and every Standard quantity 
-#' for each and every model to to ensure completeness.
-#' 
-#' 
-#' output variable.  Normally it will read the file from disk, but if that has already been done, and the \code{data.table} has been saved to the 
-#' \link{Source} object, it will return that to save time.
-#' 
-#' @param run A \link{Source} containing the meta-data about the aDGVM run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
+#' for each and every model to ensure completeness.
+#' @param run A \code{\linkS4class{Source}} containing the meta-data about the aDGVM run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param quant A Quantity to define what output file from the aDGVM run to open
 #' @param first.year The first year (as a numeric) of the data to be return
 #' @param last.year The last year (as a numeric) of the data to be return
@@ -1072,7 +1068,7 @@ aDGVM.Layers <- list(
 #####################################################################
 
 
-#' @format The \link{Quantity} class is an S4 class with the slots defined below
+#' @format The \code{\linkS4class{Quantity}} class is an S4 class with the slots defined below
 #' @rdname Quantity-class
 #' @keywords datasets
 #' 
@@ -1192,7 +1188,7 @@ aDGVM.quantities <- list(
 
 #' @description \code{aDGVM} - a Format for reading standard aDGVM model output
 #' 
-#' @format A \link{Quantity} object is an S4 class.
+#' @format A \code{\linkS4class{Format}} object is an S4 class.
 #' @aliases Format-class
 #' @rdname Format-class
 #' @keywords datasets

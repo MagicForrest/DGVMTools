@@ -5,15 +5,15 @@
 \alias{Comparison-class}
 \title{Contains a comparison between two layers}
 \description{
-This object is produced as the result of a call to the functions \code{compareLayers()} and shouldn't be directly created by a user.
+This object is produced as the result of a call to the functions \link{compareLayers} and shouldn't be directly created by a user.
  
-It contains a data slot with each of the compared layers, a lsit containing  various statistical metric, 
+It contains a data slot with each of the compared layers, a list containing  various statistical metrics, 
 meta-data about the source of the two compared layers and spatio-temporal meta-data describing where the comparison is valid.
 }
 \details{
-It can be plotted by functions like   
+It can be plotted by functions \link{plotSpatialComparison} and \link{plotTemporalComparison}.
    
-Generally these are not created directly by the user, but rather by the function \code{compareLayers()}.
+Generally these are not created directly by the user, but rather by the function \link{compareLayers}.
 }
 \section{Slots}{
 
@@ -22,7 +22,7 @@ Generally these are not created directly by the user, but rather by the function
 
 \item{\code{name}}{A character string describing this comparison layer, is automatically generated}
 
-\item{\code{type}}{A character string describing what type of comparisos this is (auromatically determined).  Can be
+\item{\code{type}}{A character string describing what type of comparisons this is (automatically determined).  Can be
 \itemize{
  \item{"continuous"}{A comparison of two continous, numerical layers.}
  \item{"categorical"}{A comparison of two categorical layers.}
@@ -32,9 +32,9 @@ Generally these are not created directly by the user, but rather by the function
 
 \item{\code{data}}{A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.}
 
-\item{\code{quant1}}{A Quantity object to define what quantity the data from first field represents}
+\item{\code{quant1}}{A \linkS4class{Quantity} object to define what quantity the data from first field represents}
 
-\item{\code{quant2}}{A Quantity object to define what quantity the data from second field represents}
+\item{\code{quant2}}{A \linkS4class{Quantity} object to define what quantity the data from second field represents}
 
 \item{\code{layers1}}{A character string (or vector thereof) of the layer(s) from the first field that were compared}
 
@@ -43,13 +43,13 @@ Generally these are not created directly by the user, but rather by the function
 \item{\code{stats}}{A simple R list containing the (named) statistics produced by the comparison (very flexible, items will depend on the type of comparison done and
 can even be a another list)}
 
-\item{\code{source1}}{A Source object describing the source of the first layer in the comparison}
+\item{\code{source1}}{A \linkS4class{Source} object describing the source of the first layer in the comparison}
 
-\item{\code{source2}}{A Source object describing the source of the second layer in the comparison}
+\item{\code{source2}}{A \linkS4class{Source} object describing the source of the second layer in the comparison}
 
-\item{\code{sta.info1}}{The STAInfo object for the first field}
+\item{\code{sta.info1}}{The \linkS4class{STAInfo} object for the first field}
 
-\item{\code{sta.info2}}{The STAInfo object for the second field}
+\item{\code{sta.info2}}{The \linkS4class{STAInfo} object for the second field}
 }}
 
 \author{

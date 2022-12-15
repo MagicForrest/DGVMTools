@@ -3,14 +3,14 @@
 \docType{class}
 \name{Field-class}
 \alias{Field-class}
-\title{Field-class containsdata}
+\title{Field-class contains data}
 \description{
-Field is a key class of the package as it actually holds the data (most other classes are for metadata).  A \code{Field} stores the data and metadata for one quantity
-that comes from a dataset or vegetation model run (including information about the run iself). For example LAI (Leaf Area Index), or evapotranspiration. 
-The data can be aggragted across space, and across and within years, and manipulated and plotted by mayn funtions in this package.
+Field is a key class of the package as it actually holds the data (most other classes are for metadata).  A \code{\linkS4class{Field}} stores the data and metadata for one quantity
+that comes from a dataset or vegetation model run (including information about the run itself). For example LAI (Leaf Area Index), or evapotranspiration. 
+The data can be aggregated across space, and across and within years, and manipulated and plotted by many functions in this package.
 }
 \details{
-Generally these are not created directly by the user, but rather by functions like \link{getField}.
+Generally these are not created directly by the user, but rather by functions like \code{\link{getField}}.
 }
 \section{Slots}{
 
@@ -25,11 +25,11 @@ Generally these are not created directly by the user, but rather by functions li
 
 \item{\code{last.year}}{The last year of data}
 
-\item{\code{year.aggregate.method}}{A charecter string describing the method by which the years have been aggregated.  Will be the zero character ("character(0)") if data it not 
-yearly aggreagted}
+\item{\code{year.aggregate.method}}{A character string describing the method by which the years have been aggregated.  Will be the zero character ("character(0)") if data it not 
+yearly aggregated}
 
-\item{\code{spatial.extent}}{An object which can be used to crop or subselect gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
-used) or a list of gridcells used by DGVMTools::selectGridcels (see that documentation for how to format the gridcell list).}
+\item{\code{spatial.extent}}{An object which can be used to crop or select gridcells.  Can be anything from which a raster::extent can be derived (in which case raster::crop is 
+used) or a list of gridcells used by \code{\link{selectGridcells}} (see that documentation for how to format the gridcell list).}
 
 \item{\code{spatial.extent.id}}{A character id to handily record this spatial domain if some spatial subselection has been called, for example "Europe" or "Duke_Forest" or whatever}
 

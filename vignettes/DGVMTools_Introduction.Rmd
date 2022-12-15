@@ -227,7 +227,7 @@ The package can also read netCDF files using the `NetCDF` format.  As netCDF fil
 
 ``` {r open data, fig.height=8, echo=TRUE}
 
-# new Source (different model run, this time over fFrica)
+# new Source (different model run, this time over Africa)
 GUESS.Africa.run <- defineSource(id = "LPJ-GUESS_Example_Africa",
                                  dir = system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools"), 
                                  format = GUESS,
@@ -309,7 +309,7 @@ It is also possible to select gridcells using `selectGridcells()` or the `spatia
 
 ``` {r select, fig.asp = 1, echo=TRUE}
 
-# define a gridecll and the get a Field of the monthly LAI for the gridcell
+# define a gridcell and the get a Field of the monthly LAI for the gridcell
 gridcell <- data.frame(Lon = c(0.25), Lat = c(51.25))
 London.mlai <- getField(source = GUESS.run, 
                         quant = "mlai",

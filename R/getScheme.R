@@ -1,19 +1,19 @@
 #!/usr/bin/Rscript
 
-#
-#' Get a Classification \link{Field} from a \link{Source}
+
+#' Get a Classification  \code{\linkS4class{Field}} from a \code{\linkS4class{Source}}
 #' 
-#' Given a \link{Source} object and a \code{Scheme} object, return an appropriate spatially/temporal/annually-aggregated \link{Field} object with categorical values u based on the 
-#' classification contained in the \code{Scheme}, optionally including spatial, temporal and annual cropping.
+#' Given a \code{\linkS4class{Source}} object and a \code{\linkS4class{Scheme}} object, return an appropriate spatially/temporal/annually-aggregated \code{\linkS4class{Field}} object with categorical values u based on the 
+#' classification contained in the \code{\linkS4class{Scheme}}, optionally including spatial, temporal and annual cropping.
 #' 
-#' Note that because there are three types of aggregating available, the resulting \link{Field} object can a wide select of spatio-temporal dimensions.
+#' Note that because there are three types of aggregating available, the resulting \code{\linkS4class{Field}} object can a wide select of spatio-temporal dimensions.
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
-#' @param source The \link{Source} object for which the Classification \link{Field} should be built. A list of \link{Source} objects can also be provided, in which case 
-#' the required \link{Field} object derived from each \link{Source} in the list (for example LAI or fractional cover) are first averaged, and then do the biome 
-#' classification. In the case of a list of \link{Source} objects, the \code{averaged.source} arguments (see below) must also be supplied so that the averaged 
+#' @param source The \code{\linkS4class{Source}} object for which the Classification \code{\linkS4class{Field}} should be built. A list of \code{\linkS4class{Source}} objects can also be provided, in which case 
+#' the required \code{\linkS4class{Field}} object derived from each \code{\linkS4class{Source}} in the list (for example LAI or fractional cover) are first averaged, and then do the biome 
+#' classification. In the case of a list of\code{\linkS4class{Source}} objects, the \code{averaged.source} arguments (see below) must also be supplied so that the averaged 
 #' data can be written to/read from disk.
-#' @param scheme The classification scheme to be used as \code{Scheme} object, or the id of a \code{Scheme} defined in the package, as a character string.
+#' @param scheme The classification scheme to be used as \code{\linkS4class{Scheme}} object, or the id of a \code{\linkS4class{Scheme}} defined in the package, as a character string.
 #' @param sta.info Optionally an STAInfo object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
 #' If specified the following 9 arguments are ignored (with a warning).
@@ -29,7 +29,7 @@
 #' Note that this aggregation is done before the Scheme is calculated.
 #' See \code{\link{aggregateSpatial}} 
 #' @param subannual.resolution A character string specifying the subannual resolution that you want to the data on.  Can be "Year", "Month" or "Day".
-#' @param subannual.aggregate.method A character string specifying the method by which to aggragte the data subannually,  can be "mean", "sum", "max", "min", "mode", "median", "sd" or "var".
+#' @param subannual.aggregate.method A character string specifying the method by which to aggregagte the data subannually,  can be "mean", "sum", "max", "min", "mode", "median", "sd" or "var".
 #' Note that this aggregation is done before the Scheme is calculated.
 #' See \code{\link{aggregateSubannual}} 
 #' @param subannual.original A character string specifying the subannual you want the data to be on before applying the subannual.aggregate.method. 
@@ -41,11 +41,11 @@
 #' @param quick.read.autodelete If TRUE then the file specified by the above "quick.read.file" argument will be deleted, thus ensuring that the raw data will be read afresh 
 #' (and saved again).  Ignored if valid "quick.read.file" argument not supplied.
 #' @param verbose If TRUE give a lot of information for debugging/checking.
-#' @param averaged.source If a list of \link{Source} objects have been supplied to be averaged before the classification, you must supply another \link{Source} object to store the averaged results.
+#' @param averaged.source If a list of \code{\linkS4class{Source}} objects have been supplied to be averaged before the classification, you must supply another \code{\linkS4class{Source}} object to store the averaged results.
 #' @param ...  Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.  
 #' For all Formats, the followings arguments apply:
 #' \itemize{
-#'  \item{\code{cover.fraction}}  When selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, this optional arguement determines 
+#'  \item{\code{cover.fraction}}  When selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, this optional argument determines 
 #'  how much of the gridcell needs to be in the the polygon for it to be selected. Should be between 0 and 1.
 #' }
 #' For the aDGVM(1) Format, the following arguments apply:
@@ -62,7 +62,8 @@
 #'  \item{\code{adgvm2.scheme}}  This numeric argument defines the aDGVM PFT scheme which can be 1 or 2.
 #'  \item{\code{adgvm2.daily}}  A logical, set to true to read daily data (only for \code{adgvm2.scheme=1} and if daily data are provided in pop file)
 #' }
-#' @return A \link{Field}. 
+#' 
+#' @return A \code{\linkS4class{Field}}.
 #' @seealso \code{\link{aggregateSubannual}}, \code{\link{aggregateSpatial}}, \code{\link{aggregateYears}}, \code{\link{getDimInfo}},  \code{\link{getField}}    
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -123,7 +124,7 @@ getScheme <- function(source,
   # if valid file then make the preprocessed file name and do autodelete (if specified)
   if(valid.quick.read.file) {
     preprocessed.file.name <- file.path(source@dir, paste(quick.read.file, "RData", sep = "."))
-    if(quick.read.autodelete && file.exists(reprocessed.file.name))  {
+    if(quick.read.autodelete && file.exists(preprocessed.file.name))  {
       if(verbose) message(paste("Auto-deleting file"), preprocessed.file.name)
       file.remove(preprocessed.file.name)
     }

@@ -13,18 +13,18 @@ It describes what how the model output (in the form of a data.table) must be pre
 \describe{
 \item{\code{id}}{A unique character string to identify this particular classification scheme.  Recommended to be alphanumeric because it is used to construct file names. (Inherited from Quantity via "contains")}
 
-\item{\code{name}}{A character string that can be more descriptive of the classification scheme. (Inherited from Quantity via "contains")}
+\item{\code{name}}{A character string that can be more descriptive of the classification scheme. (Inherited from \code{\linkS4class{Quantity}} via "contains")}
 
-\item{\code{units}}{A list of character strings giving the names of categories. (Inherited from Quantity via "contains")}
+\item{\code{units}}{A list of character strings giving the names of categories. (Inherited from \code{\linkS4class{Quantity}} via "contains")}
 
-\item{\code{colours}}{A function that returns the colour scale for this Scheme. (Inherited from Quantity via "contains")}
+\item{\code{colours}}{A function that returns the colour scale for this Scheme. (Inherited from \code{\linkS4class{Quantity}} via "contains")}
 
 \item{\code{format}}{Either a the string "Standard" to denote that this is a standard quantity to be compared across all model and data, the id of the Format object with which this Quantity is associated.}
 
 \item{\code{rules}}{A function which is applied to every row of the data.table and describes the classification rules.}
 
-\item{\code{layers.needed}}{List of vegetation layers needed to perform the classification and the name of the new layer, to be interpreted by layerOp(), specifified as a list of three- or four-item list 
-whose elements first element id the id of a DGVMTools::Quantity and whose other elements are passed as arguements to the layerOp() function.  
+\item{\code{layers.needed}}{List of vegetation layers needed to perform the classification and the name of the new layer, to be interpreted by \code{\link{layerOp}}, specified as a list of three- or four-item list 
+whose elements first element id the id of a \code{\linkS4class{Quantity}} and whose other elements are passed as arguments to the \code{\link{layerOp}} function.  
 For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
 which would make a layer called "Woody" which would be the sum of all LAI trees and shrubs.}
 

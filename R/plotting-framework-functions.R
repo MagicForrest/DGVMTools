@@ -563,6 +563,7 @@ standardiseUnitString <- function(unit.str) {
 }
 
 #' @keywords internal
+#' @export
 stringToExpression <- function(x){
   
   if(is.character(x)) {

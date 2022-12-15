@@ -4,12 +4,13 @@
 #'
 #' Function to get an Quantity based on an ID string *and* the scope (i.e. a particular model or the 'Standard' properties) from the standard \code{dgvm.quantities} list
 #' 
-#' @param quant.id String holding the id of the \link{Quantity} you want
+#' @param quant.id String holding the id of the \code{\linkS4class{Quantity}} you want
 #' @param context The context in which to look up the Quantity.  Can be a Format object, Source object or a list (of Quantity objects). 
 #' Leave blank to lookup from the Standard.quantities list.  
 #' @param verbose Logical, if TRUE (default) give some extra information
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @return A \link{Quantity} object if it finds the right one.  Otherwise the code halts.
+#' 
+#' @return A \code{\linkS4class{Quantity}} object if it finds the right one.  Otherwise the code halts.
 #' @export
 lookupQuantity <- function(quant.id, context = Standard.quantities, verbose = TRUE){
   

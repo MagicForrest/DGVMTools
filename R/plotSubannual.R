@@ -132,12 +132,18 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   # MF TODO: Consider adding add.TimePeriod?
   data.toplot <- mergeFieldsForPlotting(final.fields, add.Quantity = TRUE, add.Site = add.Site, add.Region = TRUE)
   
+  ### CHECK IS YEAR IS PRESENT 
+  if(!("Year" %in% names(data.toplot))) {
+    special_case_year_colour <- FALSE
+    if(missing(col.by)) col.by = NULL
+  }
+  
+  
   ### XX. FACETTING
   
   # all column names, used a lot below 
   all.columns <- names(data.toplot)
   
-  # check the col.by arguments 
   # check the "xxx.by" arguments 
   if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring by", col.by, "requested, but that is not available, so failing."))
   if(!missing(linetype.by) && !is.null(linetype.by) && !linetype.by %in% all.columns) stop(paste("Setting linetypes by", linetype.by, "requested, but that is not available, so failing."))
@@ -234,10 +240,16 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   # include Year only if not colouring by year
   if(special_case_year_colour) interaction_list <- c()
-  else interaction_list <- c("Year")
-
+  else {
+    if("Year" %in% names(data.toplot))  interaction_list <- c("Year")
+    else  interaction_list <- c()
+  }
+  
   # include the other columns if required for an aesthetic
-  if(!is.null(col.by)) interaction_list <- append(interaction_list, col.by) # special case for col.by because if missing is taken to be "Year"
+  if(!is.null(col.by)) {
+    print(col.by) 
+    interaction_list <- append(interaction_list, col.by) # special case for col.by because if missing is taken to be "Year"
+  }
   if(!missing(linetype.by) && !is.null(linetype.by)) interaction_list <- append(interaction_list, linetype.by)
   if(!missing(alpha.by) && !is.null(alpha.by)) interaction_list <- append(interaction_list, alpha.by)
   

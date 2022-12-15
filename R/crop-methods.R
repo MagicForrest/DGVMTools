@@ -6,7 +6,7 @@
 #' @param x A Field or Comparison or a stand-alone data.table to be cropped
 #' @param y Anything from which raster::Extent object can be derived
 #' @param spatial.extent.id A character string to describe the spatial extent (y) required for meta-data consistency.
-#' Must be provided when cropping \code{Fields} or \code{Comparisons}.
+#' Must be provided when cropping \code{\linkS4class{Field}} or \code{\linkS4class{Comparison}} objects
 #' @param ... Other arguments, not currently used
 #' @return A spatially cropped object
 #' @name crop-methods

@@ -16,12 +16,14 @@ openLPJOutputFile(
 )
 }
 \arguments{
-\item{run}{A \code{Source} containing the meta-data about the LPJ-GUESS run}
+\item{run}{A \code{\linkS4class{Source}} containing the meta-data about the LPJ-GUESS run}
 
 \item{quant}{A Quant to define what output file from the LPJ-GUESS run to open,}
 
 \item{layers}{A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.
 can also be a simple string defining the LPJ-GUESS output file if the \code{return.data.table} argument is TRUE}
+
+\item{target.sta}{An STAInfo object describing the target STA}
 
 \item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
 "<quant@id>.out" (also "<quant@id>.out.gz")}
@@ -29,17 +31,13 @@ can also be a simple string defining the LPJ-GUESS output file if the \code{retu
 \item{verbose}{A logical, set to true to give progress/debug information}
 
 \item{data.table.only}{A logical, if TRUE return a data.table and not a Field}
-
-\item{first.year}{The first year (as a numeric) of the data to be return}
-
-\item{last.year}{The last year (as a numeric) of the data to be return}
 }
 \value{
 a data.table (with the correct tear offset and lon-lat offsets applied)
 }
 \description{
-\code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity 
-from the run (eg. "lai", to read the file "lai.out") and  \code{Source} object which defines where the run is on disk and the offsets to apply
+\code{openLPJOutputFile} returns a data.table object given a string defining a vegetation quantity  from the run (eg. "lai", to read the file "lai.out") 
+or a \code{\linkS4class{Quantity}} object, and a \code{\linkS4class{Source}} object which defines where the run is on disk.
 }
 \details{
 Note that the files can be gzipped on UNIX systems, but this might fail on windows systems.

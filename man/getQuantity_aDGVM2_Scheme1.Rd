@@ -13,7 +13,7 @@ getQuantity_aDGVM2_Scheme1(
 )
 }
 \arguments{
-\item{run}{A \code{source} containing the meta-data about the aDGVM2 run}
+\item{run}{A  \code{\linkS4class{Source}} containing the meta-data about the aDGVM2 run}
 
 \item{variable}{A character string specifying which variable/quantity to get, can be "agb“, "aGPP_std“, "basalarea“, "bgb“, "canopyheight_std“, "LAI_std“, meanheight“, "nind“, "pind“, "vegC_std“, "vegcover_std"}
 

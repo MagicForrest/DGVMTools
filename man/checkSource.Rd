@@ -2,18 +2,18 @@
 % Please edit documentation in R/classes.R
 \name{checkSource}
 \alias{checkSource}
-\title{Checks validity of a \code{Source}.}
+\title{Checks validity of a \code{\linkS4class{Source}}.}
 \usage{
 checkSource(object)
 }
 \arguments{
-\item{object}{The \code{Source} object to check for vailidity.}
+\item{object}{The \code{\linkS4class{Source}} object to check for validity.}
 }
 \value{
 Empty string if the essential slots are fine, a string containing an error message if not.
 }
 \description{
-Called internally as the validity slot of the \code{Source}.  It checks that the essential slots are filled with sensible values ie a dir that
+Called internally as the validity slot of the \code{\linkS4class{Source}}.  It checks that the essential slots are filled with sensible values ie a dir that
 exists on the file system; the format type is specified and an \code{id} that is a non-empty character string.  It doesn't check that this is alphanumeric, this would be a useful addition.
 }
 \author{
