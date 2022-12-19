@@ -398,33 +398,6 @@ makeYAxis <- function(final.fields) {
 }
 
 
-#####################################################################################################################
-################ CORRECTS AN ARTEFACT FROM MAPS PACKAGE WHERE EASTERN ASIA IS WRONGLY PLACED ########################
-#####################################################################################################################
-
-#' 
-#' Fixes a spatial lines object where some of eastern Russia transposed to the other side of the world
-#' 
-#' 
-#' @param spl SpatialLines object to fix
-#' @return a the SpatialLines object 
-#' @author Joerg Steinkamp \email{joerg.steinkamp@@senckenberg.de}
-#' @keywords internal
-correct.map.offset <- function(spl) {
-  
-  we <- raster::crop(spl, raster::extent(-180, 180, -90, 90))
-  ww <- raster::crop(spl, raster::extent(179.999, 200, -90, 90))
-  
-  if(!is.null(ww) & !is.null(we)) {
-    
-    ww <- raster::shift(ww, -360)
-    spl <- raster::bind(we, ww)  
-    
-  }
-  return(spl)
-}
-
-
 
 #' Make a LAyer colour list
 #' 
@@ -484,68 +457,49 @@ matchLayerCols <- function(values, layers, others = list(Total = "black", None =
   
 }
 
+
 #' Make a map overlay for ggplot2
 #' 
-#' Take a string and derives an approriate data.frame that can be used to add a map overlay 
-#' (eg coast or country lines from the maps and mapdata packages) with the ggplot::geom_path function.
+#' Reads coastlines or country boundaries from the rnaturalearth package (rnaturalearthdata for the coastlines) and adds it to a ggplot.
 #' 
-#' @param map.overlay A character string specifying the overlay to be used a string matching maps package dataset
-#' @param all.lons A numeric vector of all the longitudes to be plotted, this is used to determine if it the over lay should be on longitues (-180,180) or (0,360).
-#' @param interior.lines A logical, if TRUE include the internal country lines
-#' @param xlim A numeric vector of length 2 to giving the longitude window that the overlay should cover
-#' @param ylim A numeric vector of length 2 to giving the latitide window that the overlay should cover
+#' @param map_plot  The ggplot to which the map overlay should be addeded
+#' @param map_overlay A character string specifying the overlay to be used a string matching maps package dataset
+
 #' @return Returns data.frame suitable for plotting with ggplot::geom_path
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
-makeMapOverlay <- function(map.overlay, all.lons, interior.lines, xlim, ylim) {
+#' 
+addMapOverlay <- function(map_plot, map_overlay) {
   
-  # first check that rgeos package is installed
-  if (! requireNamespace("rgeos", quietly = TRUE))  {
-    warning("Please install the rgoes R package and, if necessary the GEOS libraries, on your system to make map overlays.\n")
-    return(NULL)
-  }
+  # check and autocomplete argument
+  country_strings <- c("world", "countries", "ne_countries")
+  coastline_strings <- c("coastlines", "ne_coastlines")
+  completed_arg <- match.arg(tolower(map_overlay), c(country_strings, coastline_strings))
   
+  # add the country lines
+  if(completed_arg %in% country_strings) {
+    map_plot <- map_plot + geom_sf(data=rnaturalearth::ne_countries(returnclass = "sf"), 
+                                   fill = "transparent", 
+                                   linewidth = 0.1,
+                                   colour= "black")
+  }
+  # add the the coastlines
+  # NOTE: we are adding deliberatealy adding these on top of the country lines because ggplat draw the coastlines fainter than the country lines in the 
+  # command above.  Don't why this is, but will maybe report it.
+  map_plot <- map_plot + geom_sf(data=rnaturalearth::ne_coastline(returnclass = "sf"), 
+                                 fill = "transparent", 
+                                 linewidth = 0.2,
+                                 colour= "black")
   
-  ### PREPARE THE MAP OVERLAY
-  if(is.character("character")){
-    
-    # determine if london centered (if not call "maps2" for Pacific centered versions)
-    gt.180 <- FALSE
-    for(lon in all.lons) {
-      if(lon > 180) gt.180 <- TRUE
-    }
-    
-    if(map.overlay=="world" && gt.180) map.overlay <- "worldLowres2"
-    else if(map.overlay=="worldHires" && gt.180) map.overlay <- "worldHires2"
-    else if(map.overlay=="world2" && !gt.180) map.overlay <- "worldLowres"
-    else if(map.overlay=="world2Hires" && !gt.180) map.overlay <- "worldHires"
-    
-    # Convert map to SpatialLinesDataFrame, perform the 'Russian Correction' and then fortify() for ggplot2
-    proj4str <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0 +no_defs"
-    map.sp.lines <- maptools::map2SpatialLines(maps::map(map.overlay, plot = FALSE, interior = interior.lines, xlim=xlim, ylim=ylim, fill=TRUE), proj4string = sp::CRS(proj4str))
-    suppressWarnings(df <- data.frame(len = sapply(1:length(map.sp.lines), function(i) rgeos::gLength(map.sp.lines[i, ]))))
-    rownames(df) <- sapply(1:length(map.sp.lines), function(i) map.sp.lines@lines[[i]]@ID)
-    map.sp.lines.df <- sp::SpatialLinesDataFrame(map.sp.lines, data = df)
-    map.sp.lines.df.copy <- map.sp.lines.df 
-    if(!gt.180) map.sp.lines.df <- try ( correct.map.offset(map.sp.lines.df), silent=TRUE )
-    if (class(map.sp.lines.df) == "try-error") {
-      return(fortify(map.sp.lines.df.copy))
-    }
-    else {
-      return(fortify(map.sp.lines.df))
-    }
-    
-  }
-  else {
-    stop(paste0("Can't make an overlay from type ", class(map.overlay)))
-  }
+  return(map_plot)
   
 }
+
 
 #' @keywords internal
 #' @importFrom units as_units
 
 standardiseUnitString <- function(unit.str) {
-
+  
   unit.str <- tryCatch(
     {
       as.character(units(as_units(unit.str)))

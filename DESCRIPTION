@@ -24,7 +24,8 @@ Imports:
     compiler,
     maps,
     maptools,
-    mapdata,
+    rnaturalearth,
+    rnaturalearthdata,
     RColorBrewer,
     reshape2,
     viridis,
@@ -35,7 +36,6 @@ Suggests:
     knitr,
     rmarkdown,
     ncdf4,
-    rgeos,
     testthat,
     Cairo,
     ggpubr
