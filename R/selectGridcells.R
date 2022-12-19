@@ -10,6 +10,9 @@
 #'  \item{A data.frame or data.table in which the first two columns are assumed to be longitude and latitude.}
 #'  \item{An sp::SpatialPolygonsDataFrame.  By default points will be selected that lie under a polygon (feature), 
 #'  but see the argument \code{cover.threshold} to select based on an overlap threshold.}
+#'  \item{An sf:sf object.  As with the sp::SpatialPolygonsDataFrame, By default points will be selected that lie under a polygon (feature), 
+#'  but see the argument \code{cover.threshold} to select based on an overlap threshold.  Note also that is very easy to get sf objects representing countries 
+#'  from the rnaturalearth package.}
 #'  \item{An object of type \code{map} as provided by the maps package \emph{provided they are created with fill = TRUE}.  Note the handy \code{region}
 #'  argument to the maps::map function with allows one to pull out the data for one country.}
 #' }
@@ -80,7 +83,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
     # if no threshold apply raster::rasterize() with getCover = FALSE and get a list of gridcells
     # note that this is a bit more code than just using the case below but it should be faster that with getCover == TRUE
     if(is.null(cover.threshold)) {
-
+      
       gridcells_rasterised <- raster::rasterize(x = gridcells, y = x_grid)
       gridcells_dt <- as.data.table(raster::as.data.frame(gridcells_rasterised, xy = TRUE))
       setnames(gridcells_dt, c("x", "y"), c("Lon", "Lat"))
@@ -90,7 +93,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
     
     # else rasterise with getCover = TRUE and apply the cover.threshold and get the list of gridcells
     else {
-
+      
       gridcells_rasterised <- raster::rasterize(x = gridcells, y = x_grid, getCover = TRUE)
       gridcells_dt <- as.data.table(raster::as.data.frame(gridcells_rasterised, xy = TRUE))
       setnames(gridcells_dt, c("Lon", "Lat", "SLM"))
@@ -114,6 +117,30 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
     names(gridcells_df) <- c("Lon", "Lat", "Dummy")
     selection.dt <- stats::na.omit(as.data.table(gridcells_df))[, c("Lon", "Lat")]
     
+  }
+  
+  # if it is an sf
+  else if("sf" %in% class(gridcells)) {
+    
+    # first make a SpatRast from the input object so that so that we can rasterise the sf object
+    all.dims <- getDimInfo(x= dt, info = "full")
+    all.unique.lonlats <- unique(all.dims[, c("Lon","Lat")])
+    all.unique.lonlats[, Dummy := 1]
+    x_grid <- rast(all.unique.lonlats)
+    
+    # rasterise the sf to a SpatRast (with cover fraction if requested)
+    cover_arg <- TRUE
+    if(is.null(cover.threshold)) {
+      cover_arg <- FALSE
+      cover.threshold <- 0
+    }
+    gridcells_spatrast <- terra::rasterize(gridcells, x_grid, cover = cover_arg)
+    
+    # convert back to a data.table to produce the selection.dt
+    gridcells_dt <- as.data.table(terra::as.data.frame(gridcells_spatrast, xy = TRUE))
+    selection.dt <- gridcells_dt[layer >= cover.threshold,][, c("x", "y")]
+    setnames(selection.dt, c("Lon", "Lat"))
+
   }
   
   else if(!(is.data.table(gridcells) || is.data.frame(gridcells))) {
@@ -158,6 +185,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
   
   # CASE 2: Inexact matching - much less efficient
   else if(is.numeric(tolerance) && length(tolerance) == 1) {
+    stop("tolerance argument not implemented yet in selectGridcell(), sorry...")
     #final.dt <- dt[abs(dt[["Lon"]] - lon) < tolerance & abs(dt[["Lat"]]- lat) < tolerence,]
   }
   
