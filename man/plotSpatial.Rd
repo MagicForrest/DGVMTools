@@ -27,7 +27,6 @@ plotSpatial(
   drop.cuts = TRUE,
   map.overlay = NULL,
   plot = TRUE,
-  interior.lines = TRUE,
   tile = FALSE,
   pixel.size = NULL,
   ...

@@ -146,7 +146,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' # Get an example Field
 #' africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools")
 #' africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
-#' field <- getField(source = africa.Source, var = "cmass", year.aggregate.method="mean")
+#' field <- getField(source = africa.Source, quant = "cmass", year.aggregate.method="mean")
 #' 
 #' # add area in m^2 - note "Area" column follows immediately after Lon and Lat
 #' field.m2 <- addArea(input = field, unit = "m^2")

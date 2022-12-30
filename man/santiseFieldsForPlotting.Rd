@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting-framework-functions.R
 \name{santiseFieldsForPlotting}
 \alias{santiseFieldsForPlotting}
-\title{Sanitise input Fields for plotting}
+\title{This is an internal helper function which checks the inputs to a plotXXXX function (which should be a single Field or a list of Fields) and returns a list of Fields}
 \usage{
 santiseFieldsForPlotting(fields)
 }

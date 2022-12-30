@@ -29,7 +29,6 @@ Imports:
     RColorBrewer,
     reshape2,
     viridis,
-    plyr,
     R.utils,
     units
 Suggests:

@@ -29,6 +29,7 @@
 #' 
 #' @return A Field, data.table or data.frame depending on the type of the input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @import maps maptools
 #' @export
 
 selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = NULL, decimal.places = NULL, cover.threshold = NULL, ...) {
@@ -128,7 +129,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
     all.dims <- getDimInfo(x= dt, info = "full")
     all.unique.lonlats <- unique(all.dims[, c("Lon","Lat")])
     all.unique.lonlats[, Dummy := 1]
-    x_grid <- rast(all.unique.lonlats)
+    x_grid <- terra::rast(all.unique.lonlats)
     
     # rasterise the sf to a SpatRast (with cover fraction if requested)
     cover_arg <- TRUE

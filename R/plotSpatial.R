@@ -94,7 +94,6 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
                         drop.cuts = TRUE,
                         map.overlay = NULL,
                         plot = TRUE,
-                        interior.lines = TRUE,
                         tile = FALSE,
                         pixel.size = NULL,
                         ...){
@@ -152,8 +151,8 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   continuous <- FALSE
   for(this.field in final.fields) {
     for(layer in layers(this.field)) {
-      if(class(this.field@data[[layer]]) == "factor" || class(this.field@data[[layer]]) == "logical" || class(this.field@data[[layer]]) == "ordered") discrete <- TRUE
-      if(class(this.field@data[[layer]]) == "numeric" || class(this.field@data[[layer]]) == "integer" ) continuous <- TRUE
+      if(is(this.field@data[[layer]], "factor") || is(this.field@data[[layer]], "logical") || is(this.field@data[[layer]], "ordered")) discrete <- TRUE
+      if(is(this.field@data[[layer]], "numeric") || is(this.field@data[[layer]], "integer" )) continuous <- TRUE
     }
     if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers") 
     if(!discrete & !continuous) stop("plotSpatial can only plot 'numeric', 'integer', 'factor' or 'logical' layers, check your layers")  

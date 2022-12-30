@@ -1,4 +1,3 @@
-#' Sanitise input Fields for plotting
 #' 
 #' This is an internal helper function which checks the inputs to a plotXXXX function (which should be a single Field or a list of Fields) and returns a list of Fields
 #' 
@@ -13,7 +12,7 @@ santiseFieldsForPlotting <- function(fields) {
   if(is.Field(fields)) {
     fields <- list(fields)
   }
-  else if(class(fields)[1] == "list") {
+  else if(is(fields, "list")) {
     for(object in fields){ 
       if(!is.Field(object)) {
         warning("You have passed me a list of items to plot but the items are not exclusively Fields.  Returning NULL.\n")
@@ -47,7 +46,7 @@ santiseComparisonsForPlotting <- function(comparisons) {
   if(is.Comparison(comparisons)) {
     comparisons <- list(comparisons)
   }
-  else if(class(comparisons)[1] == "list") {
+  else if(is(comparisons[1], "list")) {
     for(object in comparisons){ 
       if(!is.Comparison(object)) {
         warning("You have passed me a list of items to plot but the items are not exclusively Comparisons.  Returning NULL.\n")
@@ -282,8 +281,8 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
       
       # check if layers are all continuous or discrete
       for(layer in layers.present) {
-        if(class(object@data[[layer]]) == "factor" || class(object@data[[layer]]) == "logical" || class(object@data[[layer]]) == "ordered") discrete <- TRUE
-        if(class(object@data[[layer]]) == "numeric" || class(object@data[[layer]]) == "integer" ) continuous <- TRUE
+        if(is(object@data[[layer]], "factor") || is(object@data[[layer]], "logical") || is(object@data[[layer]], "ordered")) discrete <- TRUE
+        if(is(object@data[[layer]], "numeric") || is(object@data[[layer]],"integer" )) continuous <- TRUE
       }
       if(discrete & continuous) stop("Cannot simultaneously plot discrete and continuous layers, check your layers") 
       if(!discrete & !continuous) stop("Can only plot 'numeric', 'integer', 'factor', 'ordered' or 'logical' layers, check your layers")   
@@ -464,7 +463,7 @@ matchLayerCols <- function(values, layers, others = list(Total = "black", None =
 #' 
 #' @param map_plot  The ggplot to which the map overlay should be addeded
 #' @param map_overlay A character string specifying the overlay to be used a string matching maps package dataset
-
+#' @import rnaturalearth rnaturalearthdata
 #' @return Returns data.frame suitable for plotting with ggplot::geom_path
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de} 
 #' 
@@ -517,7 +516,6 @@ standardiseUnitString <- function(unit.str) {
 }
 
 #' @keywords internal
-#' @export
 stringToExpression <- function(x){
   
   if(is.character(x)) {

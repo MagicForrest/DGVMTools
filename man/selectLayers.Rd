@@ -2,20 +2,20 @@
 % Please edit documentation in R/selectLayers.R
 \name{selectLayers}
 \alias{selectLayers}
-\title{Select a subset of layers from a Field}
+\title{Select layers}
 \usage{
 selectLayers(x, layers)
 }
 \arguments{
-\item{x}{A Field}
+\item{x}{A Field (or data.table)}
 
 \item{layers}{A vector of characters strings specifying the layers to be selected}
 }
 \value{
-A Field
+A Field (or data.table)
 }
 \description{
-This function returns a copy of a Field containing only a selected subset of layers
+This function returns a copy of a Field (or data.table) containing only a selected subset of layers
 }
 \author{
 Matthew Forrest \email{matthew.forrest@senckenberg.de}
