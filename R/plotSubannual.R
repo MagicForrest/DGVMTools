@@ -322,7 +322,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
       # honestly not sure exactly why this works and many other things I tried didn't work
       if(missing(linetype.by)) {
         
-        p <- p + stat_summary(aes(group=col.by, linetype = "dummy string"), fun=mean, geom="line", color="black", size = line.size * 2)
+        p <- p + stat_summary(aes(group=col.by, linetype = "dummy string"), fun=summary.function, geom="line", color="black", size = line.size * 2)
         p <- p + scale_linetype_manual(values=c("dummy string"="solid"), labels = c("dummy string" = summary.function.label), name = element_blank())
        
       } 
