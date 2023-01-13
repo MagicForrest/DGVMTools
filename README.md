@@ -21,23 +21,27 @@ DGVMTools is a high-level framework for analysing DGVM data output.  The framewo
 
 ### Installation
 
-Since the core features of the package are now very stable recommend that you use the master branch.  We will pull small bug fixes and small non-breaking feature improvements frequently into the master for small incremental releases, so hopefully that master is never to far behind. First install **[devtools](https://cran.r-project.org/package=devtools)**. Inconveniently, the devtools package underwent reorganisation which means the depending on the version that is installed, you now have one of two possibilities:
+Since the core features of the package are now very stable, it is recommend that you use the master branch.  Small bug fixes and non-breaking feature improvements will be pulled frequently into the master for small incremental releases.  There are three ways to install DGVMTools (it isn't on CRAN).
 
+#### Method 1: (devtools >= 2.0.0)
 
-If you have devtools >= 2.0.0 then run:
+This is the easiest method, but you need to you have devtools >= 2.0.0 installed.  Simply run:
 
 ```S
 devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_opts = c("--no-resave-data", "--no-manual"), build_vignettes = TRUE, force=T)
 ```
 
-If you have devtools version 1.x.y (ie < 2.0.0) then run:
+#### Method 2: (devtools < 2.0.0)
+
+For older versions of devtools runs: 
 
 ```S
 devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies = TRUE, build_vignettes = TRUE)
 ```
 
-(thanks to Peter Anthoni for reporting)
+#### Method 3: Download package file and install through R
 
+If you can't install any version of devtools, you can download the source code and install it via the "Packages" panel in RStudio.  For Linux/Mac use the .tar.gz file available [here](https://github.com/MagicForrest/DGVMTools/archive/refs/tags/v1.0.0.tar.gz), for Windows use the .zip file from [here](https://github.com/MagicForrest/DGVMTools/archive/refs/tags/v1.0.0.zip).
 
 
 #### Installation troubleshooting
