@@ -347,7 +347,7 @@ getField <- function(source,
       
       if(verbose) message(paste("Spatially aggregating by method" , sta.info@spatial.aggregate.method, sep = " "))
       
-      this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose)
+      this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose, ...)
       
       if(verbose) {
         message("Head of spatially aggregated data.table:")
