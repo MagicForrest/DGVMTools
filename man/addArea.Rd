@@ -4,7 +4,15 @@
 \alias{addArea}
 \title{Adds the gridcell area to a spatial Field or data.table/data.frame}
 \usage{
-addArea(input, unit = "m^2", ellipse = FALSE, verbose = TRUE, tolerance = NULL)
+addArea(
+  input,
+  unit = "m^2",
+  ellipse = FALSE,
+  verbose = TRUE,
+  tolerance = NULL,
+  lon_centres = NULL,
+  lat_centres = NULL
+)
 }
 \arguments{
 \item{input}{a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.}
