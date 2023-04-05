@@ -34,7 +34,7 @@ gridcell area.
 # Get an example Field
 africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools")
 africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
-field <- getField(source = africa.Source, var = "cmass")
+field <- getField(source = africa.Source, quant = "cmass")
 
 # calculate mean over gridcells and look at the resulting data table
 spatial.mean <- aggregateSpatial(x = field, method = "mean", verbose = TRUE)

@@ -31,9 +31,9 @@
 #' # Get two example Fields (which will contain the same data but different meta-data)
 #' test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 #' test.Source1 <- defineSource(name = "LPJ-GUESS run 1", dir = test.dir,  format = GUESS)
-#' field1 <- getField(source = test.Source1, var = "lai", year.aggregate.method = "mean")
+#' field1 <- getField(source = test.Source1, quant = "lai", year.aggregate.method = "mean")
 #' test.Source2 <- defineSource(name = "LPJ-GUESS run 2", dir = test.dir,  format = GUESS)
-#' field2 <- getField(source = test.Source2, var = "lai", year.aggregate.method = "mean")
+#' field2 <- getField(source = test.Source2, quant = "lai", year.aggregate.method = "mean")
 #'
 #' # Average these two fields, specifically take the mean
 #' field.mean <- averageFields(list(field1, field2))

@@ -26,7 +26,7 @@ Aggregated all available years in a Field or a data.table object (with years den
 # Get an example Field
 test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 test.Source <- defineSource(name = "LPJ-GUESS", dir = test.dir,  format = GUESS)
-field <- getField(source = test.Source, var = "lai")
+field <- getField(source = test.Source, quant = "lai")
 
 # calculate of mean of all years
 mean.allyears <- aggregateYears(x = field, method = "mean", verbose = TRUE)

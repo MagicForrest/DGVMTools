@@ -10,8 +10,10 @@
 \alias{as.Raster,Field-method}
 \alias{as.Raster,Comparison-method}
 \alias{as.SpatRaster}
+\alias{as.SpatRasterDataset}
 \alias{as.SpatRaster,Field-method}
-\alias{as.SpatRaster,Comparison-method}
+\alias{as.SpatRasterDataset,Field-method}
+\alias{as.SpatRasterDataset,Comparison-method}
 \alias{as.array}
 \alias{as.array,Field-method}
 \title{Coerce from Fields and Comparisons}
@@ -32,9 +34,13 @@ as.Raster(x)
 
 as.SpatRaster(x)
 
+as.SpatRasterDataset(x)
+
 \S4method{as.SpatRaster}{Field}(x)
 
-\S4method{as.SpatRaster}{Comparison}(x)
+\S4method{as.SpatRasterDataset}{Field}(x)
+
+\S4method{as.SpatRasterDataset}{Comparison}(x)
 
 as.array(x, ...)
 

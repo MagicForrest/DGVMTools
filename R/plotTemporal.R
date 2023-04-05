@@ -119,7 +119,7 @@ plotTemporal <- function(fields,
   ### 5. CHECK IF ALL LAYERS ARE CONTINOUS - if not fail
   for(this.field in final.fields) {
     for(layer in layers(this.field)) {
-      if(!(class(this.field@data[[layer]]) == "numeric" || class(this.field@data[[layer]]) == "integer" )) {
+      if(!(is(this.field@data[[layer]], "numeric") || is(this.field@data[[layer]], "integer" ))) {
         stop("plotTemoral can only plot continuous layers ie. 'integer' or 'numeric' types, not 'logical' or 'factor' data.")
       }
     }

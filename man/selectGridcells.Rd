@@ -24,6 +24,9 @@ should have columns "Lon" and "Lat" included.}
  \item{A data.frame or data.table in which the first two columns are assumed to be longitude and latitude.}
  \item{An sp::SpatialPolygonsDataFrame.  By default points will be selected that lie under a polygon (feature), 
  but see the argument \code{cover.threshold} to select based on an overlap threshold.}
+ \item{An sf:sf object.  As with the sp::SpatialPolygonsDataFrame above, by default points will be selected that lie under a polygon (feature), 
+ but the argument \code{cover.threshold} allows selection based on an overlap threshold.  Note also that is very easy to get sf objects 
+ representing countries from the rnaturalearth package, which, in combination with this function, provides a very easy way to subset by country.}
  \item{An object of type \code{map} as provided by the maps package \emph{provided they are created with fill = TRUE}.  Note the handy \code{region}
  argument to the maps::map function with allows one to pull out the data for one country.}
 }}

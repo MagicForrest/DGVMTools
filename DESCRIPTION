@@ -24,18 +24,17 @@ Imports:
     compiler,
     maps,
     maptools,
-    mapdata,
+    rnaturalearth,
+    rnaturalearthdata,
     RColorBrewer,
     reshape2,
     viridis,
-    plyr,
     R.utils,
     units
 Suggests:
     knitr,
     rmarkdown,
     ncdf4,
-    rgeos,
     testthat,
     Cairo,
     ggpubr

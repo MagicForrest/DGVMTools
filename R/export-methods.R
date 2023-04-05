@@ -23,7 +23,7 @@
 NULL
 
 
-###############    data.frame
+############### data.frame - S3 objects so pretty simple (only S3 methods needed)
 
 #' @name export-methods
 setAs("Field", "data.frame", function(from) as.data.frame(from@data))
@@ -43,7 +43,7 @@ setAs("Comparison", "data.frame", function(from) as.data.frame(from@data))
 as.data.frame.Comparison = function(x, row.names, optional, ...) as(x, "data.frame") 
 
 
-#############  data.table
+#############  data.table - S3 objects so pretty simple (only S3 methods needed)
 
 #' @name export-methods
 setAs("Field", "data.table", function(from) from@data)
@@ -60,10 +60,14 @@ setAs("Comparison", "data.table", function(from) from@data)
 as.data.table.Comparison = function(x, keep.rownames, ...) as(x, "data.table") 
 
 
-############# Raster and Spat Raster
+############# Raster - need S3 and S4 methods 
+
+### S3 methods
 
 #' @name export-methods
 setAs("Field", "Raster", function(from) {
+  
+  warning("Export of raster package objects is now soft deprecated and will be removed in a future release.  Please switch to terra.")
   
   field.as.raster = tryCatch({
     promoteToRaster(from@data)
@@ -79,23 +83,9 @@ setAs("Field", "Raster", function(from) {
 })
 
 #' @name export-methods
-setAs("Field", "SpatRaster", function(from) {
-  
-  field.as.SpatRaster = tryCatch({
-    as(promoteToRaster(from@data), "SpatRaster")
-  },  warning = function(w) {
-    #warning(w)
-  }, error = function(e) {
-    stop("Can't convert the Field to a SpatRaster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
-  }, finally = {
-  })
-  
-  return(field.as.SpatRaster)
-  
-})
-
-#' @name export-methods
 setAs("Comparison", "Raster", function(from) { 
+  
+  warning("Export of raster package objects is now soft deprecated and will be removed in a future release.  Please switch to terra.")
   
   field.as.raster = tryCatch({
     promoteToRaster(from@data)
@@ -110,25 +100,8 @@ setAs("Comparison", "Raster", function(from) {
   
 })
 
-#' @name export-methods
-setAs("Comparison", "Raster", function(from) { 
-  
-  Comparison.as.SpatRaster = tryCatch({
-    as(promoteToRaster(from@data), "SpatRaster")
-  },  warning = function(w) {
-    #warning(w)
-  }, error = function(e) {
-    stop("Can't convert the Comparison to a SpatRaster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
-  }, finally = {
-  })
-  
-  return(Comparison.as.SpatRaster)
-  
-})
 
-## S4
-
-# Raster
+### S4 methods
 
 #' Generic method for coercing to raster
 #' @name as.Raster
@@ -142,6 +115,8 @@ setGeneric("as.Raster", function(x) {
 #' @export
 setMethod("as.Raster", signature("Field"),   function(x) {
   
+  warning("Export of raster package objects is now soft deprecated and will be removed in a future release.  Please switch to terra.")
+  
   field.as.raster = tryCatch({
     promoteToRaster(x@data)
   },  warning = function(w) {
@@ -150,7 +125,7 @@ setMethod("as.Raster", signature("Field"),   function(x) {
     stop("Can't convert the Field to a Raster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
   }, finally = {
   })
-  
+  print("woopwoop")
   return(field.as.raster)
   
 })
@@ -159,6 +134,8 @@ setMethod("as.Raster", signature("Field"),   function(x) {
 #' @rdname export-methods
 #' @export
 setMethod("as.Raster", signature("Comparison"),   function(x){ 
+  
+  warning("Export of raster package objects is now soft deprecated and will be removed in a future release.  Please switch to terra.")
   
   field.as.raster = tryCatch({
     promoteToRaster(x@data)
@@ -173,7 +150,62 @@ setMethod("as.Raster", signature("Comparison"),   function(x){
   
 })
 
-### SpatRaster
+######## SpatRaster and SpatRasterDataset - again S3 and S4 methods
+
+### S3 methods
+
+#' @name export-methods
+setAs("Field", "SpatRaster", function(from) {
+  
+  field.as.Spat = tryCatch({
+    terrarize(from)
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Field to a SpatRaster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  if(inherits(field.as.Spat, "SpatRaster")) return(field.as.Spat)
+  else return(terra::rast(field.as.Spat))
+  
+})
+
+#' @name export-methods
+setAs("Field", "SpatRasterDataset", function(from) {
+  
+  field.as.Spat = tryCatch({
+    terrarize(from)
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Field to a SpatRasterDataset object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  if(inherits(field.as.Spat, "SpatRasterDataset")) return(field.as.Spat)
+  else return(terra::sds(field.as.Spat))
+  
+})
+
+
+#' @name export-methods
+setAs("Comparison", "SpatRasterDataset", function(from) { 
+  
+  Comparison.as.SpatRasterDataset = tryCatch({
+    terrarize(from)
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Comparison to a SpatRasterDataset object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  return(Comparison.as.SpatRasterDataset)
+  
+})
+
+### S4
 
 #' Generic method for coercing to SpatRaster
 #' @name as.SpatRaster
@@ -183,12 +215,22 @@ setGeneric("as.SpatRaster", function(x) {
   standardGeneric("as.SpatRaster")
 })
 
+
+#' Generic method for coercing to SpatRasterDataset
+#' @name as.SpatRasterDataset
+#' @rdname export-methods
+#' @exportMethod as.SpatRasterDataset
+setGeneric("as.SpatRasterDataset", function(x) {
+  standardGeneric("as.SpatRasterDataset")
+})
+
+
 #' @rdname export-methods
 #' @export
 setMethod("as.SpatRaster", signature("Field"),   function(x) {
   
-  Field.as.SpatRaster = tryCatch({
-    as(promoteToRaster(x@data), "SpatRaster")
+  field.as.Spat = tryCatch({
+    terrarize(x)
   },  warning = function(w) {
     #warning(w)
   }, error = function(e) {
@@ -196,25 +238,44 @@ setMethod("as.SpatRaster", signature("Field"),   function(x) {
   }, finally = {
   })
   
-  return(Field.as.SpatRaster)
+  if(inherits(field.as.Spat, "SpatRaster")) return(field.as.Spat)
+  else return(terra::rast(field.as.Spat))
+  
+})
+
+#' @rdname export-methods
+#' @export
+setMethod("as.SpatRasterDataset", signature("Field"),   function(x) {
+  
+  field.as.Spat = tryCatch({
+    terrarize(x)
+  },  warning = function(w) {
+    #warning(w)
+  }, error = function(e) {
+    stop("Can't convert the Field to a SpatRasterDataset object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+  }, finally = {
+  })
+  
+  if(inherits(field.as.Spat, "SpatRasterDataset")) return(field.as.Spat)
+  else return(terra::sds(field.as.Spat))
   
 })
 
 
 #' @rdname export-methods
 #' @export
-setMethod("as.SpatRaster", signature("Comparison"),   function(x){ 
+setMethod("as.SpatRasterDataset", signature("Comparison"),   function(x){ 
   
-  Comparison.as.SpatRaster = tryCatch({
-    as(promoteToRaster(x@data), "SpatRaster")
+  Comparison.as.SpatRasterDataset = tryCatch({
+    terrarize(x)
   },  warning = function(w) {
     #warning(w)
   }, error = function(e) {
-    stop("Can't convert the Comparison to a SpatRaster object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
+    stop("Can't convert the Comparison to a SpatRasterDataset object, probably because you have uneven coordinate spacings (perhaps a gaussian grid?) which exceed the default tolerance of 0.1.\n  To force on to an evenly spaced Raster grid try the promoteToRaster() function and specify the tolerance argument.")
   }, finally = {
   })
   
-  return(Comparison.as.SpatRaster)
+  return(Comparison.as.SpatRasterDataset)
   
 })
 
@@ -755,5 +816,89 @@ FieldToArray <- function(x, start.date = NULL, calendar = "365_day", add.missing
   names(rv) <- cname
   rm(d);gc()
   return(rv)
+  
+}
+
+
+makeTimeColumn <- function(x) {
+  
+  Year = DOM = Day = Month = Season = Time = NULL 
+  
+  dims_present <- getDimInfo(x)
+  
+  # handle year axis
+  if(!"Year" %in% dims_present) x[, Year := "0000"]
+  
+  # handle subannual 
+  if("Day" %in% dims_present) {
+    x[, DOM := mday(Day)]
+    x[, Month := month(Day)]
+  }
+  else if("Month" %in% dims_present) {
+    x[, DOM := 15]
+  }
+  else if("Season" %in% dims_present) {
+    # convert Season to Month (the center month of the season)
+    x[, Month := as.integer(factor(Season, levels = c("DJF", "2", "3", "MAM", "5", "6", "JJA", "8", "9", "SON", "11", "12"), labels = paste(1:12)))]
+    x[, DOM := 15]
+  }
+  else{
+    x[, Month := 7]
+    x[, DOM := 2]
+  }
+  
+  # convert to IDate
+  x[, Time := as.IDate(paste(Year, Month, DOM, sep = "-"))]
+  
+  # tidy by deleting extra columns
+  x[, DOM := NULL]
+  if(!"Year" %in% dims_present) x[, Year := NULL]
+  if(!"Month" %in% dims_present) x[, Month := NULL]
+  
+  return(x)
+  
+}
+
+
+terrarize <- function(x) {
+  
+  all_dims <- getDimInfo(x)
+  this_dt <- copy(x@data)
+  this_dt <- makeTimeColumn(this_dt)
+  all_times <- sort(unique(this_dt[["Time"]]))
+  for(this_time_var in c("Year", "Month", "Day", "Season")) {
+    if(this_time_var %in% getDimInfo(this_dt)) this_dt[, (this_time_var) := NULL]
+  }
+  
+  # for each layer make SpatRaster and save it to a list
+  all_rst_list <- list()   
+  for(this_layer in layers(x)) {
+    
+    # select the layer, reshape and make SpatRast (including times)
+    this_layer_dt <- selectLayers(this_dt, c(this_layer, "Time"))
+    this_layer_dt_reshaped <- data.table::dcast(this_layer_dt, Lon + Lat ~ Time, value.var = this_layer)
+    this_rst <- terra::rast(this_layer_dt_reshaped)
+    terra::time(this_rst) <- all_times
+    
+    # make and set appropriate layer names
+    # year
+    if("Year" %in% all_dims)  year_strings <- year(as.IDate(all_times))
+    # subannual
+    if("Month" %in% all_dims)  subannual_strings <- month(as.IDate(all_times))
+    else if("Day" %in% all_dims)  subannual_strings <- yday(as.IDate(all_times))
+    else if("Season" %in% all_dims)  subannual_strings <- c("DJF", "MAM", "JJA", "SON")[quarter(as.IDate(all_times))]
+    # build and set names
+    if(exists("year_strings") && exists("subannual_strings")) name_strings <- paste(year_strings, subannual_strings, sep = "_")
+    else if(exists("year_strings"))  name_strings <- year_strings
+    else if(exists("subannual_strings"))  name_strings <- subannual_strings
+    else name_strings <- rep(this_layer, length(all_times))
+    names(this_rst) <- name_strings
+    all_rst_list[[this_layer]] <- this_rst
+    
+  }
+  
+  # return either a SpatRaster or SpatRasterDataset depending on the number of layers 
+  if(length(all_rst_list) == 1) return(unlist(all_rst_list[[this_layer]]))
+  else return(terra::sds(all_rst_list))
   
 }
