@@ -15,7 +15,8 @@
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "mode", "median", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @param ... Extra arguments passed to addArea function if a weighted method is being used.
+#' @param ... Extra arguments passed to addArea function if a weighted method is being used. Note in particular the lon_centres and lat_centres arguments
+#' if you are using a regular but sparsely populated grid.
 #' @return A Field or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
