@@ -174,7 +174,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' print(p)
 #' 
 #' }
-addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = NULL) {
+addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = NULL, lon_centres = NULL, lat_centres = NULL) {
   ## to avoid "no visible binding for global variable" during check
   Lat = Lon = Area = NULL
   if (is.na(unit))
@@ -185,20 +185,36 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = 
     ellipse=FALSE
   }
   
+  
+  # determine input data types and extract the input lons
   if (is.data.table(input) || is.data.frame(input)) {
-    if (verbose)
-      message("Input is a data.table or data.frame.")
-    lon <- extract.seq(input$Lon)
-    lat <- extract.seq(input$Lat)
+    if (verbose)  message("Input is a data.table or data.frame.")
+    lon_input <- extract.seq(input$Lon)
+    lat_input <- extract.seq(input$Lat)
   } else if (is.Field(input, spatial=TRUE)) {
-    if (verbose)
-      message("Input is a spatial Field.")
-    lon <- extract.seq(input@data$Lon)
-    lat <- extract.seq(input@data$Lat)
+    if (verbose) message("Input is a spatial Field.")
+    lon_input <- extract.seq(input@data$Lon)
+    lat_input <- extract.seq(input@data$Lat)
   } else {
     stop(paste("addArea: Don't know what to to with class", class(input)))
   }
   
+  # check and use lon and lat from argument (if defined)
+  if(missing(lon_centres) | is.null(lon_centres)) lon <- lon_input
+  else {
+    # check that the lons are actually in the arguments, and proceed if yes
+    if(!all(lon_input %in% lon_centres)) stop("In addArea(), not all longitudes in the data are present in the supplied in the 'longitude_centres' argument.")
+    else lon <- lon_centres
+  }
+  if(missing(lat_centres) | is.null(lat_centres)) lat <- lat_input
+  else {
+    # check that the lons are actually in the arguments, and proceed if yes
+    if(!all(lat_input %in% lat_centres)) stop("In addArea(), not all latitudes in the data are present in the supplied in the 'latitude_centres' argument.")
+    else lat <- lat_centres
+  }
+  
+  
+  # calculate the area based on the lons and lats
   area <- gridarea2d(lon, lat, ellipse=ellipse)
   
   if (is.data.table(input) || is.Field(input)) {
