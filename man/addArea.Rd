@@ -21,16 +21,21 @@ addArea(
 
 \item{ellipse}{If the eath should be assumed to be a ellipsoid instead of a sphere.}
 
-\item{verbose}{print some information.
-
-The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{\link{aggregateSpatial}} but it can
-be utilised by the user for any other purpose.}
+\item{verbose}{print some information.}
 
 \item{tolerance}{Numeric, passed to \code{\link{copyLayers}}. Defines how close the longitudes and latitudes of the gridcells in \code{input} and the internally calculated
 \code{area} data.table  need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance for both lon and lat) or a vector 
 of two numerics (for lon and lat separately).
 #' Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  
 This is a technical detail, you only need to use it if you have troubles because of coordinates with a few decimal places.}
+
+\item{lon.centres}{Optional, a numeric vector of the longitudes of the centres of the full grid.  This is useful for calculating gridcell areas on a regular but sparsely populated grid.}
+
+\item{lat.centres}{Optional, a numeric vector of the latitudes of the centres of the full grid.  This is useful for calculating gridcell areas on a regular but sparsely populated grid.
+ 
+
+The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{\link{aggregateSpatial}} but it can
+be utilised by the user for any other purpose.}
 }
 \value{
 same class as input
