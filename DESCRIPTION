@@ -1,8 +1,8 @@
 Package: DGVMTools
 Type: Package
-Version: 1.0.0
+Version: 1.1.0
 Title: DGVM Processing, Analysis and Plotting Tools
-Date: 2019-11-01
+Date: 2023-04-13
 Authors@R: c(person("Matthew", "Forrest", role=c("aut", "cre"), email="matthew.forrest@senckenberg.de"),
              person("Simon", "Scheiter", role=c("aut"), email="simon.scheiter@senckenberg.de"),
              person("Joerg", "Steinkamp", role=c("aut"), email="joerg.steinkamp@senckenberg.de"),
