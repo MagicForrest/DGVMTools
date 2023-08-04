@@ -308,7 +308,7 @@ plotTemporal <- function(fields,
                  plot.subtitle = element_text(hjust = 0.5))
   
   # overall text multiplier
-  if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
+  if(!is.null(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
 
   # set limits
   if(!is.null(x.lim)) p <- p + xlim(x.lim)
