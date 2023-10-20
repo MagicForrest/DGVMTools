@@ -22,8 +22,6 @@ Imports:
     raster,
     terra,
     compiler,
-    maps,
-    maptools,
     rnaturalearth,
     rnaturalearthdata,
     RColorBrewer,
