@@ -22,20 +22,25 @@
 #' 
 #' 
 #' 
-#' @details There is obviously some overlap in functionality with the raster and sp R packages.  Indeed this package builds on raster and sp functionality.  The advantages of DGVMTools 
-#' over only raster and sp for analysing DGVM output are two-fold.  Firstly, it is tailored for a typical DGVM analysis workflow.  Concepts like 'model runs' and 'plant functional types' 
-#' are explicit objects with their own meta-data (if you don't know what these concepts are then this package probably isn't for you).  Once these objects are correctly defined (which is not difficult), 
-#' analysis is very convenient.  Many common tasks are already coded efficiently into functions, and because of the meta-data attached to the objects, these functions can do a lot of 'sensible and standard'
-#' stuff without too much direction from the user. Secondly, the data is stored internally as a data.table (as opposed to a data.frame).  
+#' @details There is obviously some overlap in functionality with the terra, sf and stars R packages.  Indeed this package builds uses some functions from terra and sf, and exports its native Fields objects
+#' to terra::SpatRast objects.  The advantages of DGVMTools over these other packages for analysing DGVM output are two-fold. 
+#' Firstly, it is tailored for a typical DGVM analysis workflow.  Concepts like 'data sources' and 'plant functional types' 
+#' are explicit objects with their own meta-data (if you don't know what these concepts are then this package probably isn't for you).  
+#' Once these objects are correctly defined (which is not difficult),  analysis is very convenient.  
+#' Many common tasks are already coded efficiently into functions, and because of the meta-data attached to the objects,
+#' These functions can do a lot of 'sensible and standard'stuff without too much direction from the user.
+#' Secondly, the data is stored internally as a data.table (as opposed to a data.frame).  
 #' The advantage of this is that data.tables are very, very much faster than data.frames for many operations (check out the data.table package 
-#' documentation and webpage for more info).  This is obviously a great advantage when working with very large spatial-temporal datasets.  
-#' 
-#' Furthermore, the objects defined in DGVMTools can be very easily 
-#' converted into rasters or data.frames, and so can fit directly back into any existing R code, packages or other machinery.  Thus the transition to using DGVMTools is very smooth.
-#' DGVMTools can be used to read the data and perform standard operations, but then data can be converted to a raster or data.frame for more specific or idosyncratic R scripts or functions.
-#' However, DGVMTools is intended to be a reasonably complete analysis environment in itself.  It should be possible to go from model output all the way to results and publication
-#' quality plots using only DGVMTools and some base R functionality for other tasks.  
+#' documentation and webpage for more info).  This is obviously a great advantage when working with very large spatial-temporal datasets. 
+#' It should be noted that this advantage was very important compared to the now outdated raster package.  The replacement for raster (terra) is faster so this 
+#' advantage is not as large.
 #' 
 #' 
+#' Furthermore, the objects defined in DGVMTools can be very easily  converted into terra objects or data.frames, and so can fit directly back
+#' into any existing R code, packages or other machinery.  Thus the transition to using DGVMTools is very smooth.  DGVMTools can be used to read the 
+#' data and perform standard operations, but then data can be converted to a raster or data.frame for more specific or idiosyncratic R scripts or 
+#' functions. However, DGVMTools is intended to be a reasonably complete analysis environment in itself.  It should be possible to go from model output
+#'all the way to results and publication quality plots using only DGVMTools and some base R functionality for other tasks.  
 #' 
+
 NULL
