@@ -52,7 +52,7 @@ If you can't install any version of devtools, you can download the source code a
 
 ### News and Releases
 
-Current release is v1.0.0.  See [NEWS.md](NEWS.md).
+Current release is v1.1.0.  See [NEWS.md](NEWS.md).
 A description paper is currently being prepared for peer-review and eventually release on CRAN is anticipated.
 
 ---
