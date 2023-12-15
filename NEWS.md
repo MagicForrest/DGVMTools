@@ -1,3 +1,33 @@
+
+# DGVMTools v1.1.0 release (2023-12-15)
+
+The primary purpose of this release is to ditch the dependencies on removed or deprecated functionality from other packages.  In particular dropping `maps`, `maptools` and `mapdata` packages and replacing them with `rnaturalearth` and `rnaturalearthdata`.  There are other bugfixes and changes, see below.
+
+## Modernization
+* The `maps`, `maptools` and `mapdata` packages have been replaced with `rnaturalearth` and `rnaturalearthdata` (also removing the dependency on `rgeos`) for building country and continental outlines.   The options available for the `map.overlay` argument are now  "world", "countries" or "ne_countries" for full country outlines (all equivalent) or "coastlines" or "ne_coastlines" for coastlines only (both equivalent).  Note these packages also have lots of other nice things what you can you on your plots (using `sf` and `ggplot2`)
+* In a similar vein, `selectGridcells()` (and therefore `getField()`) can now read take `sf` objects (but no longer `maps`) objects. 
+* `SpatRast` objects from `terra` are now handled without conversion to `raster`.
+* `raster` and `sp` are still used in the package but only for exporting objects of those packages.  Overall,  the functionality of `DGVMTools` doesn't depend on `sp` or `raster` so they can be easily deprecated and removed in future releases.
+* Plotting arguments are more consistent with `ggplot2`, with `linewidth` replacing `size` for `geom_line` 
+* The deprecated `aes_string()` function has been removed (behind the scenes only)
+
+## Breaking changes
+* The `map.overlay` argument now takes strings based on `rnaturalearth` rather than `maps`  (see above).
+* `selectGridcels()` now takes `sf` objects instead of `maps` objects.  The  `rnaturalearth`  package is a good place to get country outlines to use here, it is a great replacement for `maps`.
+* The `plotSubannual()`  function now has arguments `size` and `linewidth` instead of `point.size` and `line.width` respectively.  
+
+##  Other improvements 
+*  Can now specify lons and lats to function addArea() which is useful for area calculations in sparse grids.
+
+## Bugfixes
+* Argument `text.multiplier` now handled properly in `plotSubannual()`.  Thanks Drew! 
+* Bugfix when first.year/last.year is NULL
+* Bugfix in `plotSubannual()` to use the specified summary function and not always the mean.
+
+
+
+
+
 #  DGVMTools v1.0.0 release (2022-02-25)
 
 "Version 1.0 release" - no major features, but many refinements and improvements.  Some potentially breaking changes, see below.
