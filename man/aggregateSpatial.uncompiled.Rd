@@ -14,7 +14,8 @@ aggregateSpatial.uncompiled(x, method = "mean", verbose = FALSE, ...)
 
 \item{verbose}{If TRUE give some progress update about the averaging.}
 
-\item{...}{Extra arguments passed to addArea function if a weighted method is being used.}
+\item{...}{Extra arguments passed to addArea function if a weighted method is being used. Note in particular the lon_centres and lat_centres arguments
+if you are using a regular but sparsely populated grid.}
 }
 \value{
 A Field or data.table depending on the input object

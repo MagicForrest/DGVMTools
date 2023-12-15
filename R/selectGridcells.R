@@ -8,10 +8,9 @@
 #' \itemize{
 #'  \item{A simple two-element numeric to pull out one gridcell (ordering is lon, lat)} 
 #'  \item{A data.frame or data.table in which the first two columns are assumed to be longitude and latitude.}
-#'  \item{An sp::SpatialPolygonsDataFrame.  By default points will be selected that lie under a polygon (feature), 
-#'  but see the argument \code{cover.threshold} to select based on an overlap threshold.}
-#'  \item{An object of type \code{map} as provided by the maps package \emph{provided they are created with fill = TRUE}.  Note the handy \code{region}
-#'  argument to the maps::map function with allows one to pull out the data for one country.}
+#'  \item{An sf:sf object.  By default points will be selected that lie under a polygon (feature), but see the argument \code{cover.threshold} to 
+#'  select based on an overlap threshold.  Note also that is very easy to get sf objects representing countries from the rnaturalearth package,
+#'  which, in combination with this function, provides a very easy way to subset by country.}
 #' }
 #' @param spatial.extent.id A character string to describe the gridcells selected.  When selecting gridcells from a Field you *must* specify 
 #' a \code{spatial.extent.id} for meta-data consistency (you have free choice here, but avoid spaces).
@@ -24,7 +23,7 @@
 #' fractions 
 #' @param ... Further arguments.  Currently not used.
 #' 
-#' @return A Field, data.table or data.frame depending on the type of the input x.
+#' @return A Field, data.frame or data.table depending on the class of the main input x.
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export
 
@@ -56,7 +55,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
   if(!("Lon" %in% all.dim.names && "Lat" %in% all.dim.names)) stop("Argument x to function selectGridcells doesn't seem to have both Lon and Lat info")
   
   
-  ### check class  of gridcells
+  ### check class of gridcells and proceed accordingly
   
   # if numeric
   if(is.numeric(gridcells)){
@@ -67,55 +66,32 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
       stop("Got a numeric vector but it doesn't have two elements (ie first longitude/x then latitude/y), so I don't know to handle this to I am aborting.")
     }
   }
-  # if got "SpatialPolygonsDataFrame" rasterise the SpatialPolygonsDataFrame and make a cell list
-  else if(class(gridcells)[1] == "SpatialPolygonsDataFrame") {
+ 
+  # if it is an sf
+  else if("sf" %in% class(gridcells)) {
     
-    # first make a raster for the input field
+    # first make a SpatRast from the input object so that so that we can rasterise the sf object
     all.dims <- getDimInfo(x= dt, info = "full")
     all.unique.lonlats <- unique(all.dims[, c("Lon","Lat")])
     all.unique.lonlats[, Dummy := 1]
-    x_grid <- promoteToRaster(all.unique.lonlats)
-    x_grid <- raster::crop(x = x_grid, y = gridcells, snap = 'out')
+    x_grid <- terra::rast(all.unique.lonlats)
     
-    # if no threshold apply raster::rasterize() with getCover = FALSE and get a list of gridcells
-    # note that this is a bit more code than just using the case below but it should be faster that with getCover == TRUE
+    # rasterise the sf to a SpatRast (with cover fraction if requested)
+    cover_arg <- TRUE
     if(is.null(cover.threshold)) {
-
-      gridcells_rasterised <- raster::rasterize(x = gridcells, y = x_grid)
-      gridcells_dt <- as.data.table(raster::as.data.frame(gridcells_rasterised, xy = TRUE))
-      setnames(gridcells_dt, c("x", "y"), c("Lon", "Lat"))
-      selection.dt <- stats::na.omit(gridcells_dt)[, c("Lon", "Lat")]
-      
+      cover_arg <- FALSE
+      cover.threshold <- 0
     }
+    gridcells_spatrast <- terra::rasterize(gridcells, x_grid, cover = cover_arg)
     
-    # else rasterise with getCover = TRUE and apply the cover.threshold and get the list of gridcells
-    else {
+    # convert back to a data.table to produce the selection.dt
+    gridcells_dt <- as.data.table(terra::as.data.frame(gridcells_spatrast, xy = TRUE))
+    selection.dt <- gridcells_dt[layer >= cover.threshold,][, c("x", "y")]
+    setnames(selection.dt, c("Lon", "Lat"))
 
-      gridcells_rasterised <- raster::rasterize(x = gridcells, y = x_grid, getCover = TRUE)
-      gridcells_dt <- as.data.table(raster::as.data.frame(gridcells_rasterised, xy = TRUE))
-      setnames(gridcells_dt, c("Lon", "Lat", "SLM"))
-      gridcells_dt <- gridcells_dt[SLM >= cover.threshold, ]
-      selection.dt <- stats::na.omit(gridcells_dt)[, c("Lon", "Lat")]
-      
-    }
-    
-  }
-  # if it is map (not map should be made with fill = TRUE)
-  else if(class(gridcells)[1] == "map") {
-    
-    # convert the map to SpatialPolygons
-    IDs <- sapply(strsplit(gridcells$names, ":"), function(x) x[1])
-    gridcells.polygons <- maptools::map2SpatialPolygons(gridcells, IDs=IDs, proj4string=sp::CRS("+proj=longlat +datum=WGS84"))
-    
-    # rasterise the input Field
-    input.raster <- promoteToRaster(x)
-    gridcell.raster <- raster::rasterize(gridcells.polygons, input.raster)
-    gridcells_df <- raster::as.data.frame(gridcell.raster, xy = TRUE)
-    names(gridcells_df) <- c("Lon", "Lat", "Dummy")
-    selection.dt <- stats::na.omit(as.data.table(gridcells_df))[, c("Lon", "Lat")]
-    
   }
   
+  # else if it is a data.table or data.frame
   else if(!(is.data.table(gridcells) || is.data.frame(gridcells))) {
     stop(paste("Arguments 'gridcells' not of correct type in call to getGridcells(), it should be a 'data.table', 'data.frame', 'SpatialPolygonsDataFrame' or a two-element numeric vector (Lon, Lat), got ", class(gridcells)[1], sep = " "))
   }
@@ -158,6 +134,7 @@ selectGridcells <- function(x, gridcells, spatial.extent.id = NULL, tolerance = 
   
   # CASE 2: Inexact matching - much less efficient
   else if(is.numeric(tolerance) && length(tolerance) == 1) {
+    stop("tolerance argument not implemented yet in selectGridcell(), sorry...")
     #final.dt <- dt[abs(dt[["Lon"]] - lon) < tolerance & abs(dt[["Lat"]]- lat) < tolerence,]
   }
   

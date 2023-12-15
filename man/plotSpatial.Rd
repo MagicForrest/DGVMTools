@@ -27,7 +27,6 @@ plotSpatial(
   drop.cuts = TRUE,
   map.overlay = NULL,
   plot = TRUE,
-  interior.lines = TRUE,
   tile = FALSE,
   pixel.size = NULL,
   ...
@@ -80,13 +79,11 @@ Make it bigger if the text is too small on large plots and vice-versa.}
 \item{drop.cuts}{Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.
 Default is TRUE.  Ignored if 'cuts' argument is not used.}
 
-\item{map.overlay}{A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.
-Note that using these, especially "worldHires", can add quite a bit of time.}
+\item{map.overlay}{An optional character string specifying either "coastlines" (alternatively "ne_coastlines") or "countries" (alternatively "ne_countries" or,
+for backwards compatibility with previous versions "world") to plot either the coastlines or coastlines and country borders from the ranturalearth(data) packages.
+Other things can be overlain on the resulting plot with further ggplot2 commands, and check the rnaturalearth package family for higher res versions, lakes, etc.}
 
 \item{plot}{Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.}
-
-\item{interior.lines}{Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
-Other things can be overlain on the resulting plot with further ggplot2 commands.}
 
 \item{tile}{Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
 for example, be plotted on polar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.}

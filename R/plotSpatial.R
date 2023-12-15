@@ -42,10 +42,9 @@
 #' @param drop.cuts Logical, if TRUE then drop cut at each end which do not have any data in them in order more to fully use the colour scale.  
 #' Default is TRUE.  Ignored if 'cuts' argument is not used.
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
-#' @param map.overlay A character string specifying which map overlay (from the maps and mapdata packages) should be overlain.  
-#' Note that using these, especially "worldHires", can add quite a bit of time. 
-#' @param interior.lines Boolean, if TRUE plot country lines with the continent outlines of the the requested map.overlay
-#' Other things can be overlain on the resulting plot with further ggplot2 commands.
+#' @param map.overlay An optional character string specifying either "coastlines" (alternatively "ne_coastlines") or "countries" (alternatively "ne_countries" or,
+#' for backwards compatibility with previous versions "world") to plot either the coastlines or coastlines and country borders from the ranturalearth(data) packages.
+#' Other things can be overlain on the resulting plot with further ggplot2 commands, and check the rnaturalearth package family for higher res versions, lakes, etc.
 #' @param tile Logical, if TRUE use \code{geom_tile} instead of \code{geom_raster}.  The advantage is that plots made with \code{geom_tile} are more malleable and can, 
 #' for example, be plotted on polar coordinates.  However \code{geom_tile} is much slower than \code{geom_raster}.
 #' @param pixel.size Numeric, allows you to alter the plotted pixel size (height and width simultaneously using the same value).  This is useful 
@@ -95,7 +94,6 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
                         drop.cuts = TRUE,
                         map.overlay = NULL,
                         plot = TRUE,
-                        interior.lines = TRUE,
                         tile = FALSE,
                         pixel.size = NULL,
                         ...){
@@ -116,7 +114,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   ### SANITISE FIELDS, LAYERS AND STINFO
   
   ### 1. FIELDS - check the input Field objects (and if it is a single Field put it into a one-item list)
- 
+  
   fields <- santiseFieldsForPlotting(fields)
   if(is.null(fields)) return(NULL)
   
@@ -153,8 +151,8 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   continuous <- FALSE
   for(this.field in final.fields) {
     for(layer in layers(this.field)) {
-      if(class(this.field@data[[layer]]) == "factor" || class(this.field@data[[layer]]) == "logical" || class(this.field@data[[layer]]) == "ordered") discrete <- TRUE
-      if(class(this.field@data[[layer]]) == "numeric" || class(this.field@data[[layer]]) == "integer" ) continuous <- TRUE
+      if(is(this.field@data[[layer]], "factor") || is(this.field@data[[layer]], "logical") || is(this.field@data[[layer]], "ordered")) discrete <- TRUE
+      if(is(this.field@data[[layer]], "numeric") || is(this.field@data[[layer]], "integer" )) continuous <- TRUE
     }
     if(discrete & continuous) stop("plotSpatial cannot simultaneously plot discrete and continuous layers, check your layers") 
     if(!discrete & !continuous) stop("plotSpatial can only plot 'numeric', 'integer', 'factor' or 'logical' layers, check your layers")  
@@ -168,7 +166,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   if(length(final.fields) > 1){
     for(field.index.1 in 1:(length(final.fields)-1)){
       for(field.index.2 in (field.index.1+1):length(final.fields)){
-         if(identical(final.fields[[field.index.1]]@source@name, final.fields[[field.index.2]]@source@name)
+        if(identical(final.fields[[field.index.1]]@source@name, final.fields[[field.index.2]]@source@name)
            && (!identical(final.fields[[field.index.1]]@first.year, final.fields[[field.index.2]]@first.year)
                || !identical(final.fields[[field.index.1]]@last.year, final.fields[[field.index.2]]@last.year))){
           add.Years= TRUE
@@ -205,14 +203,14 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   }
   
   ### LEGEND TITLE
-
+  
   # attempt to convert the legend title to a string which can be evaluated as an expression using he units  package
   # (function includes exception handling)
   legend.title <- standardiseUnitString(legend.title)
-   
+  
   # convert said legend title to an expression (again includes exception handling)
   legend.title <- stringToExpression(legend.title)
-
+  
   
   # check the defined Layers present in the Fields and make a unique list
   # maybe also here check which one are actually in the layers to plot, since we have that information
@@ -247,11 +245,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     data.toplot <- data.toplot[Lon >= xlim[1] & Lon <= xlim[2],]
   }
   
-  # prepare overlay
-  all.lons <- sort(unique(data.toplot[["Lon"]]))
-  if(!is.null(map.overlay)) map.overlay.df <- makeMapOverlay(map.overlay, all.lons, interior.lines, xlim, ylim) 
-  
-  
+
   ### DO CUTS IF DEFINED
   #  variable is continuous but should be discretised
   has.been.discretized <- FALSE
@@ -580,7 +574,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   # colour bar
   if(continuous)  {
-  
+    
     mp <- mp + scale_fill_gradientn(name = legend.title,
                                     limits = limits,
                                     colors = cols,
@@ -614,7 +608,7 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   # labels and positioning
   mp <- mp + labs(title = title, subtitle = subtitle)
   mp <- mp + labs(y = "Latitude", x = "Longitude")
-
+  
   if(!is.null(legend.title)) {mp <- mp + labs(fill=legend.title) }
   else { mp <- mp + theme(legend.title = element_blank()) }
   mp <- mp + theme(plot.title = element_text(hjust = 0.5),
@@ -635,10 +629,9 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   
   
   
-  # map overlay - suppress warning about missing values
-  if(!is.null(map.overlay)) {
-    suppressWarnings(mp <- mp + geom_path(data=map.overlay.df, size=0.2, color = "black", aes(x=long, y=lat, group = group)))
-  }
+  # map overlay - suppress warning about additional coordinate system
+  if(!is.null(map.overlay)) {  suppressWarnings(mp <- addMapOverlay(mp, map.overlay)) }
+  
   
   return(mp)
   

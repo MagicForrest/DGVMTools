@@ -486,7 +486,7 @@ setMethod("writeNetCDF", signature(x="list", filename = "character"), function(x
   # Spatio-temporal iinfo if available
   if(!missing(.sta.info) & !is.null(.sta.info)) {
     
-    if(class(.sta.info@spatial.extent) == "Extent"){
+    if(inherits(.sta.info@spatial.extent, "Extent")){
       ncdf4::ncatt_put(outfile, 0, "xmin", .sta.info@spatial.extent@xmin)
       ncdf4::ncatt_put(outfile, 0, "xmax", .sta.info@spatial.extent@xmax)
       ncdf4::ncatt_put(outfile, 0, "ymin", .sta.info@spatial.extent@ymin)

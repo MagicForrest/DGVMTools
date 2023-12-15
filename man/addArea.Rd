@@ -4,7 +4,15 @@
 \alias{addArea}
 \title{Adds the gridcell area to a spatial Field or data.table/data.frame}
 \usage{
-addArea(input, unit = "m^2", ellipse = FALSE, verbose = TRUE, tolerance = NULL)
+addArea(
+  input,
+  unit = "m^2",
+  ellipse = FALSE,
+  verbose = TRUE,
+  tolerance = NULL,
+  lon_centres = NULL,
+  lat_centres = NULL
+)
 }
 \arguments{
 \item{input}{a spatial Field or a data.frame/data.table with at least the columns Lon and Lat.}
@@ -13,16 +21,21 @@ addArea(input, unit = "m^2", ellipse = FALSE, verbose = TRUE, tolerance = NULL)
 
 \item{ellipse}{If the eath should be assumed to be a ellipsoid instead of a sphere.}
 
-\item{verbose}{print some information.
-
-The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{\link{aggregateSpatial}} but it can
-be utilised by the user for any other purpose.}
+\item{verbose}{print some information.}
 
 \item{tolerance}{Numeric, passed to \code{\link{copyLayers}}. Defines how close the longitudes and latitudes of the gridcells in \code{input} and the internally calculated
 \code{area} data.table  need to be to the coordinates in order to get a match.  Can be a single numeric (for the same tolerance for both lon and lat) or a vector 
 of two numerics (for lon and lat separately).
 #' Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  
 This is a technical detail, you only need to use it if you have troubles because of coordinates with a few decimal places.}
+
+\item{lon_centres}{Optional, a numeric vector of the longitudes of the centres of the full grid.  This is useful for calculating gridcell areas on a regular but sparsely populated grid.}
+
+\item{lat_centres}{Optional, a numeric vector of the latitudes of the centres of the full grid.  This is useful for calculating gridcell areas on a regular but sparsely populated grid.
+ 
+
+The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{\link{aggregateSpatial}} but it can
+be utilised by the user for any other purpose.}
 }
 \value{
 same class as input
@@ -38,7 +51,7 @@ Unit conversion from "m^2" (default) to "km^2" and "ha" is supported.
 # Get an example Field
 africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools")
 africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
-field <- getField(source = africa.Source, var = "cmass", year.aggregate.method="mean")
+field <- getField(source = africa.Source, quant = "cmass", year.aggregate.method="mean")
 
 # add area in m^2 - note "Area" column follows immediately after Lon and Lat
 field.m2 <- addArea(input = field, unit = "m^2")

@@ -41,9 +41,9 @@ Basic calculation of new Fields by operation '+', '-', '*' or '/'
 # First define a Source and read a Field
 test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 test.Source <- defineSource(name = "Run 1", dir = test.dir,  format = GUESS)
-test.Field <- getField(source = test.Source, var = "lai", year.aggregate.method = "mean")
+test.Field <- getField(source = test.Source, quant = "lai", year.aggregate.method = "mean")
 test.Source.2 <- defineSource(name = "Run 2", dir = test.dir,  format = GUESS)
-test.Field.2 <- getField(source = test.Source.2, var = "lai", year.aggregate.method = "mean")
+test.Field.2 <- getField(source = test.Source.2, quant = "lai", year.aggregate.method = "mean")
 
 # division, result should be 1 or NA everywhere since Fields are the same 
 # (NAs come wherever the Field is zero)

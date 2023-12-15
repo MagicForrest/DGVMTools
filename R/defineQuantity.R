@@ -75,7 +75,7 @@
 #' # Define a Source and make a dummy test Field
 #' run.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 #' test.Source <- defineSource(id = "LPJ-GUESS_Example", dir = run.dir,  format = GUESS)
-#' test.Field <- getField(source = test.Source, var = "lai", spatial.aggregate.method = "mean", 
+#' test.Field <- getField(source = test.Source, quant = "lai", spatial.aggregate.method = "mean", 
 #'                        spatial.extent.id = "CentralEurope") 
 #'                        
 #' # Define a new Quantity and add it to the Source

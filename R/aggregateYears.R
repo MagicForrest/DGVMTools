@@ -122,7 +122,7 @@ aggregateYears.uncompiled <- function(x,
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A Field or data.table depending on the input object
 #' @export
-#' @import data.table
+#' @import compiler
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @examples 
 #' \donttest{
@@ -130,7 +130,7 @@ aggregateYears.uncompiled <- function(x,
 #' # Get an example Field
 #' test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 #' test.Source <- defineSource(name = "LPJ-GUESS", dir = test.dir,  format = GUESS)
-#' field <- getField(source = test.Source, var = "lai")
+#' field <- getField(source = test.Source, quant = "lai")
 #' 
 #' # calculate of mean of all years
 #' mean.allyears <- aggregateYears(x = field, method = "mean", verbose = TRUE)

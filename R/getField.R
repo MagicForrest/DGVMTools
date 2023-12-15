@@ -288,7 +288,7 @@ getField <- function(source,
     # if the provided spatial yields a valid extent, use the crop function
     possible.error <- try ( extent(sta.info@spatial.extent), silent=TRUE )
     # note that data.tables *do* return a valid extent, but we don't want to crop with that here (hence the second condition)
-    if (class(possible.error) != "try-error" && !is.data.table(spatial.extent)) {
+    if (!inherits(possible.error, "try-error") && !is.data.table(spatial.extent)) {
       this.Field <- crop(x = this.Field, y = sta.info@spatial.extent, spatial.extent.id = sta.info@spatial.extent.id)  
     }
     
@@ -347,7 +347,7 @@ getField <- function(source,
       
       if(verbose) message(paste("Spatially aggregating by method" , sta.info@spatial.aggregate.method, sep = " "))
       
-      this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose)
+      this.Field <- aggregateSpatial(this.Field, method = sta.info@spatial.aggregate.method, verbose = verbose, ...)
       
       if(verbose) {
         message("Head of spatially aggregated data.table:")

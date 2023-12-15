@@ -129,6 +129,9 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' #' Default is no rounding (value is NULL) and so is fine for most regular spaced grids.  
 #' This is a technical detail, you only need to use it if you have troubles because of coordinates with a few decimal places.
 #' @param verbose print some information.
+#' @param lon_centres Optional, a numeric vector of the longitudes of the centres of the full grid.  This is useful for calculating gridcell areas on a regular but sparsely populated grid.
+#' @param lat_centres Optional, a numeric vector of the latitudes of the centres of the full grid.  This is useful for calculating gridcell areas on a regular but sparsely populated grid.
+#'  
 #' 
 #' The main use of this function is to calculate gridcell areas internally for gridcells weighted sums and averages in \code{\link{aggregateSpatial}} but it can
 #' be utilised by the user for any other purpose.
@@ -146,7 +149,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' # Get an example Field
 #' africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools")
 #' africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
-#' field <- getField(source = africa.Source, var = "cmass", year.aggregate.method="mean")
+#' field <- getField(source = africa.Source, quant = "cmass", year.aggregate.method="mean")
 #' 
 #' # add area in m^2 - note "Area" column follows immediately after Lon and Lat
 #' field.m2 <- addArea(input = field, unit = "m^2")
@@ -174,7 +177,7 @@ extract.seq <- function(x, force.regular=FALSE, descending=FALSE) {
 #' print(p)
 #' 
 #' }
-addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = NULL) {
+addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = NULL, lon_centres = NULL, lat_centres = NULL) {
   ## to avoid "no visible binding for global variable" during check
   Lat = Lon = Area = NULL
   if (is.na(unit))
@@ -185,20 +188,36 @@ addArea <- function(input, unit="m^2", ellipse=FALSE, verbose=TRUE, tolerance = 
     ellipse=FALSE
   }
   
+  
+  # determine input data types and extract the input lons
   if (is.data.table(input) || is.data.frame(input)) {
-    if (verbose)
-      message("Input is a data.table or data.frame.")
-    lon <- extract.seq(input$Lon)
-    lat <- extract.seq(input$Lat)
+    if (verbose)  message("Input is a data.table or data.frame.")
+    lon_input <- extract.seq(input$Lon)
+    lat_input <- extract.seq(input$Lat)
   } else if (is.Field(input, spatial=TRUE)) {
-    if (verbose)
-      message("Input is a spatial Field.")
-    lon <- extract.seq(input@data$Lon)
-    lat <- extract.seq(input@data$Lat)
+    if (verbose) message("Input is a spatial Field.")
+    lon_input <- extract.seq(input@data$Lon)
+    lat_input <- extract.seq(input@data$Lat)
   } else {
     stop(paste("addArea: Don't know what to to with class", class(input)))
   }
   
+  # check and use lon and lat from argument (if defined)
+  if(missing(lon_centres) | is.null(lon_centres)) lon <- lon_input
+  else {
+    # check that the lons are actually in the arguments, and proceed if yes
+    if(!all(lon_input %in% lon_centres)) stop("In addArea(), not all longitudes in the data are present in the supplied in the 'longitude_centres' argument.")
+    else lon <- lon_centres
+  }
+  if(missing(lat_centres) | is.null(lat_centres)) lat <- lat_input
+  else {
+    # check that the lons are actually in the arguments, and proceed if yes
+    if(!all(lat_input %in% lat_centres)) stop("In addArea(), not all latitudes in the data are present in the supplied in the 'latitude_centres' argument.")
+    else lat <- lat_centres
+  }
+  
+  
+  # calculate the area based on the lons and lats
   area <- gridarea2d(lon, lat, ellipse=ellipse)
   
   if (is.data.table(input) || is.Field(input)) {
