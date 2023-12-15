@@ -1,7 +1,13 @@
+#' Checks if STAInfo matches between Fields
+#'
+#' This is an internal function, used when checking preprocessed Fields in getField().
+#'
 #' @param sta.requested The STAInfo requested (in the getField() call)
-#'@param sta.found The STAInfo found the in the existing Field (the one which will have been read from disk)
+#' @param sta.found The STAInfo found the in the existing Field (the one which will have been read from disk)
 #' @param verbose If TRUE give a lot of information for debugging/checking.
-
+#'
+#' @return Logical
+#'
 
 #' @keywords internal
 

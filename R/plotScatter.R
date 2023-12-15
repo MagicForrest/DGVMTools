@@ -63,7 +63,7 @@ plotScatter <- function(x, y = x, layer.x, layer.y = layer.x, alpha = 1, text.mu
   
   
   # make the scatter plot
-  scatter.plot <- ggplot(as.data.frame(stats::na.omit(to.plot)), aes_string(x=x.new, y=y.new)) +  geom_point(size=3, alpha = alpha)
+  scatter.plot <- ggplot(as.data.frame(stats::na.omit(to.plot)), aes(x=.data[[x.new]], y=.data[[y.new]])) +  geom_point(size=3, alpha = alpha)
   if(!missing(text.multiplier)) scatter.plot <- scatter.plot + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
   # labels depending on input type

@@ -8,7 +8,7 @@
 #' @param fields The data to plot. Can be a Field or a list of Fields.
 #' @param layers A list of strings specifying which layers to plot.  Defaults to all layers.  
 #' @param gridcells A list of gridcells to be plotted (either in different panels or the same panel). For formatting of this argument see \code{selectGridcells}.  
-#' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
+#' Leave empty or NULL to plot all gridsizrecells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.
 #' @param subtitle A character string to override the default subtitle.
 #' @param x.label,y.label Character strings (or expressions) for the x and y axes (optional)
@@ -21,12 +21,12 @@
 #' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/linetype/alpha values
 #' to particular Layers/Sources/Sites/Quantities/Regions.    
 #' @param col.labels,linetype.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
-#' number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/size/alpha values to particular Layers/Sources/Sites/Quantities/Region.    
-#' @param line.size Numeric, width of the lines on the plot (note the width is doubled for the aggregate/summary line)
-#' @param point.size Numeric, size of the points for the aggregate/summary data
+#' number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/linewtype/alpha values to particular Layers/Sources/Sites/Quantities/Region.    
+#' @param linewidth Numeric (as ggplot2), width of the lines on the plot, consistent with ggplot2. Note the width is doubled for the aggregate/summary line.
+#' @param size Numeric, size of the points for the aggregate/summary data, consistent with ggplot2.
 #' @param summary.function A function to summarise (aggregate) across year and plot on top.  Obvious choice is \code{mean}, but there is flexibility to anything that operates on 
 #' a vector of numerics - eg median, a 95th percentile, standard deviation.
-#' @param summary.function.label An optional character string to give a pretty label to for the summary function legend.
+#' @param summary.function.label An optional character string to give a pretty label to the summary function legend.
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
@@ -67,8 +67,8 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
                           alphas = NULL,
                           alpha.by = NULL,
                           alpha.labels = waiver(),
-                          line.size = 0.5,
-                          point.size = 3 ,
+                          linewidth = 0.5,
+                          size = 3 ,
                           y.label = NULL,
                           x.label = NULL,
                           summary.function,
@@ -92,7 +92,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
     } 
   }
   
-
+  
   
   ### SANITISE FIELDS, LAYERS AND DIMENSIONS
   
@@ -232,7 +232,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
     else if(is.null(subtitle)) subtitle <- waiver()
   }
   
-
+  
   
   ### MAKE THE GROUPS - these are columns for ggplot which are essentially interaction terms to group the data
   
@@ -247,7 +247,6 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   # include the other columns if required for an aesthetic
   if(!is.null(col.by)) {
-    print(col.by) 
     interaction_list <- append(interaction_list, col.by) # special case for col.by because if missing is taken to be "Year"
   }
   if(!missing(linetype.by) && !is.null(linetype.by)) interaction_list <- append(interaction_list, linetype.by)
@@ -260,7 +259,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   # The Stats Group - this is much easier since we every possible combination must have it's own stat
   stats_SDcols <- names(data.toplot) %in% c("Source", "Quantity", "Layer", "Region", "Site")
   data.toplot[, StatsGroup := interaction(.SD), .SDcols = stats_SDcols]
-
+  
   
   
   ###### MAKE THE PLOT #####
@@ -268,31 +267,37 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   # return the data if plot = FALSE
   if(!plot) return(data.toplot)
   
+  # make the "symbols" for the ggplot2 call.  A bit of a pain -since they ggplot2 folks took away aes_string()- but what can you do...
+  col.sym <- if(is.character(col.by)) ensym(col.by) else NULL  
+  alpha.sym <- if(is.character(alpha.by))  ensym(alpha.by) else NULL 
+  linetype.sym <- if(is.character(linetype.by)) ensym(linetype.by) else  NULL
   
   # build the basic plot
-  p <- ggplot(as.data.frame(data.toplot), aes_string(subannual.dimension, "Value", col = col.by, linetype = linetype.by, alpha = alpha.by,  group = "PlotGroup"))
+  p <- ggplot(as.data.frame(data.toplot), aes(x = .data[[subannual.dimension]], y = Value, group = PlotGroup,
+                                              col = !! col.sym, 
+                                              alpha = !! alpha.sym,
+                                              linetype = !! linetype.sym))
   
-  
-  
-  # build aesthetic arguments for geom_line call
-  
-  # line size if a fixed value for all 
-  aes.args <- list(data = as.data.frame(data.toplot), size = line.size)
-  
-  # colour, alpha and linetype are determined by a column
-  if(!missing(cols) && is.null(col.by)) aes.args[["colour"]] <- cols
-  if(!missing(alphas) && is.null(alpha.by)) aes.args[["alpha"]] <- alphas
-  if(!missing(linetypes) && is.null(linetype.by)) aes.args[["linetype"]] <- linetypes
+  # build arguments for aesthetics to geom_line/geom_line and/or fixed arguments outside
+  geom_args <- list()
 
-  # call geom_line (with aesthetics defined above) 
-  p <- p + do.call(geom_line, aes.args)
+  # col, alpha and linetyp
+  if(!is.null(cols) &&  is.null(col.by)) geom_args[["colour"]] <- cols
+  if(!is.null(alphas) && is.null(alpha.by)) geom_args[["alpha"]] <- alphas
+  if(!is.null(linetypes) &&  is.null(linetype.by)) geom_args[["linetype"]] <- linetypes
+  
+  # line width if a fixed value for all 
+  geom_args[["linewidth"]] <-  linewidth
+  
+  # call geom_line (with fixed aesthetics define above)
+  p <- p + do.call(geom_line, geom_args)
   
   
   # add scales for the defined aesthetics
   
   # colour scale is a special case for two reasons,
   # 1. if col.by not variable provided, then the special case is activated and colour by year (and hence we have a continuous colour scale)
-  # 2. if no colours provided, use a viridis pallete to over-ride ggplot2 
+  # 2. if no colours provided, use a viridis pallete to override ggplot2 
   if(special_case_year_colour) p <- p + viridis::scale_color_viridis(name = "Year")
   else if (!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
   else p <- p + viridis::scale_colour_viridis(discrete=TRUE, option = "C", end = 0.9 ) 
@@ -308,8 +313,6 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   p <- p + theme(legend.key.size = unit(2, 'lines'))
   
   
-  
-  
   # if chosen, plot the average year
   if(!missing(summary.function)) {
     
@@ -317,41 +320,41 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
     if(special_case_year_colour) {
       
       # NOTE in this case we always use black
-
+      
       # special case to add a line type scale if it wasn't already added
       # honestly not sure exactly why this works and many other things I tried didn't work
-      if(missing(linetype.by)) {
+      if(missing(linetype.by) || is.null(linetype.by)) {
         
-        p <- p + stat_summary(aes(group=col.by, linetype = "dummy string"), fun=summary.function, geom="line", color="black", size = line.size * 2)
+        p <- p + stat_summary(aes(group=col.by, linetype = "dummy string"), fun=summary.function, geom="line", color="black", linewidth = linewidth * 2)
         p <- p + scale_linetype_manual(values=c("dummy string"="solid"), labels = c("dummy string" = summary.function.label), name = element_blank())
-       
+        
       } 
       # if linetypes are already specified
       else{
-        p <- p + stat_summary(aes_string(group="StatsGroup", linetype = linetype.by), fun=summary.function, geom="line", color="black", size = line.size * 2)
+        p <- p + stat_summary(aes(group=StatsGroup, linetype = .data[[linetype.by]]), fun=summary.function, geom="line", color="black", linewidth = linewidth * 2)
         # title the legend
         p <- p + labs(linetype=summary.function.label) 
       }
       
-   
+      
       
     }
     #if *not* the special case where we colour by year
     else {
-     
+      
       # add the stats
-      p <- p + stat_summary(aes(group=StatsGroup, fill = get(col.by)), fun=summary.function, geom="point", color="black", shape = 21, size = point.size)
+      p <- p + stat_summary(aes(group=StatsGroup, fill = get(col.by)), fun=summary.function, geom="point", color="black", shape = 21, size = size)
       
       # colour the points appropriately
       if(!is.null(cols)) p <- p + scale_fill_manual(values = cols, name = summary.function.label, labels = col.labels)
       else p <- p + viridis::scale_fill_viridis(name = summary.function.label, labels = col.labels, discrete = TRUE, option = "C", end = 0.9 )
       p <- p + labs(shape=summary.function.label ) 
-
+      
       # also add linetype if necessary
-      if(!missing(linetype.by)) {
-        p <- p + stat_summary(aes_string(group="StatsGroup", linetype = linetype.by), fun=summary.function, geom="line", color="black", size = line.size * 2)
-       } 
-    
+      if(!missing(linetype.by) && !is.null(linetype.by)) {
+        p <- p + stat_summary(aes(group=StatsGroup, linetype = .data[[linetype.by]]), fun=summary.function, geom="line", color="black", linewidth = linewidth * 2)
+      } 
+      
     }
     
   }

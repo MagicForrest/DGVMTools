@@ -15,7 +15,8 @@
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "mode", "median", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
 #' @param verbose If TRUE give some progress update about the averaging.
-#' @param ... Extra arguments passed to addArea function if a weighted method is being used.
+#' @param ... Extra arguments passed to addArea function if a weighted method is being used. Note in particular the lon_centres and lat_centres arguments
+#' if you are using a regular but sparsely populated grid.
 #' @return A Field or data.table depending on the input object
 #' @keywords internal
 #' @import data.table
@@ -143,6 +144,7 @@ aggregateSpatial.uncompiled <- function(x,
 #' @inheritParams aggregateSpatial.uncompiled
 #' @return A Field or data.table depending on the input object
 #' @export
+#' @import compiler
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
 #' @details  For summing variables which are defined on a per \eqn{m^2} use the method = "w.sum" (or "weighted.sum) to scale from \eqn{m^-2} to gridcell
@@ -155,7 +157,7 @@ aggregateSpatial.uncompiled <- function(x,
 #' # Get an example Field
 #' africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools")
 #' africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
-#' field <- getField(source = africa.Source, var = "cmass")
+#' field <- getField(source = africa.Source, quant = "cmass")
 #' 
 #' # calculate mean over gridcells and look at the resulting data table
 #' spatial.mean <- aggregateSpatial(x = field, method = "mean", verbose = TRUE)

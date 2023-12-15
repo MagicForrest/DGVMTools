@@ -144,6 +144,7 @@ print(plotTemporal(LAI.spatial.mean))
 
 # save a temporal example plot for the reference publication
 temporal_example_plot <- plotTemporal(LAI.spatial.mean, 
+                                      col.by = NULL,
                                       text.multiplier = 3.5,
                                       layers = c("BNE", "BINE", "BNS", "IBS", "TeBS", "TeBE", "C3G", "Total"))
 

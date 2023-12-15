@@ -16,6 +16,9 @@ plotTemporal(
   linetypes = NULL,
   linetype.by = NULL,
   linetype.labels = waiver(),
+  linewidths = NULL,
+  linewidth.by = NULL,
+  linewidth.labels = waiver(),
   sizes = NULL,
   size.by = NULL,
   size.labels = waiver(),
@@ -50,22 +53,22 @@ Leave empty or NULL to plot all gridcells (but note that if this involves too ma
 
 \item{subtitle}{A character string to override the default subtitle. Set to NULL for no subtitle.}
 
-\item{cols, linetypes, sizes, shapes, alphas}{A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.
-Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/linetype/shape/alpha values
-to particular Layers/Sources/Sites/Quantities.}
+\item{cols, linetypes, linewidths, sizes, shapes, alphas}{Values of  colours, line types, line width, point sizes, point shapes or alpha values (respectively).
+These can either be a single values if the aesthetic has not specified by xxx.by argument above of a vector of values, or a vector of values which
+can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.}
 
-\item{col.by, linetype.by, size.by, shape.by, alpha.by}{Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
+\item{col.by, linetype.by, linewidth.by, size.by, shape.by, alpha.by}{Character strings defining the aspects of the data which which should be used to set the colour, line type, line width, point size and point shape and alpha (transparency).
 Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
-distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.}
+distinguished by different facet panels.  Thus the standard behaviour is that different Layers are distinguished by different colours, but everything is separated into different panels.}
 
-\item{col.labels, linetype.labels, size.labels, shape.labels, alpha.labels}{A vector of character strings which are used as the labels for the lines. Must have the same length as the
-number of Sources/Layers/Site/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.}
+\item{col.labels, linetype.labels, linewidth.labels, size.labels, shape.labels, alpha.labels}{A vector of character strings which are used as the labels for the lines/points. Must have the same length as the
+number of Sources/Layers/Site/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/linewidth/shape/alpha values to particular Layers/Sources/Sites/Quantities.}
 
 \item{x.label, y.label}{Character strings (or expressions) for the x and y axes (optional)}
 
 \item{x.lim, y.lim}{Limits for the x and y axes (each a two-element numeric, optional)}
 
-\item{points}{Logical, if TRUE plot data as points (with geom_points) instead of lines (witg geom_lines).
+\item{points}{Logical, if TRUE plot data as points (with geom_points) instead of lines (with geom_lines).
 Good for plotting time series with missing data where geom_lines joins lines over the gaps which is not helpful}
 
 \item{legend.position}{Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector}

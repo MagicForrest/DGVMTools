@@ -64,11 +64,11 @@
 #' 
 #' africa.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralAfrica", package = "DGVMTools")
 #' africa.Source <- defineSource(name = "LPJ-GUESS", dir = africa.dir,  format = GUESS)
-#' model.cmass <- getField(source = africa.Source, var = "cmass", year.aggregate.method="mean")
+#' model.cmass <- getField(source = africa.Source, quant = "cmass", year.aggregate.method="mean")
 #' 
 #' Saatchi.dir <- system.file("extdata", "NetCDF", "Saatchi2011", "HD", package = "DGVMTools")
 #' Saatchi.Source <- defineSource(name = "Saatchi Biomass", dir = Saatchi.dir,  format = NetCDF)
-#' Saatchi.cmass <- getField(source = Saatchi.Source , var = "vegC_std") #' 
+#' Saatchi.cmass <- getField(source = Saatchi.Source , quant = "vegC_std") #' 
 #'
 #' ## Calculate veg C of trees in model, compare layers, and print the statistics 
 #' model.cmass <- layerOp(model.cmass, "+", ".Tree", "Tree")
@@ -94,7 +94,7 @@
 #' 
 #' PNV.dir <- system.file("extdata", "NetCDF", "HandP_PNV", "HD", package = "DGVMTools")
 #' PNV.Source <- defineSource(name = "H and P PNV", dir = PNV.dir,  format = NetCDF)
-#' PNV.biomes <- getField(source = PNV.Source , var = "Smith2014")
+#' PNV.biomes <- getField(source = PNV.Source , quant = "Smith2014")
 #'
 #' ## Compare biomes, print the statistics
 #' biomes.comparison <- compareLayers(field1 = model.biomes, 
@@ -112,12 +112,12 @@
 #' # Load monthly LPJ-GUESS LAI data over Europe for two periods
 #' 
 #' mlai.2000_2005 <-  getField(source = europe.Source, 
-#'                             var = "mlai", 
+#'                             quant = "mlai", 
 #'                             year.aggregate.method = "mean", 
 #'                             first.year = 2000, last.year = 2005)
 #'                             
 #' mlai.2006_2010 <-  getField(source = europe.Source, 
-#'                             var = "mlai", 
+#'                             quant = "mlai", 
 #'                             year.aggregate.method = "mean", 
 #'                             first.year = 2006, last.year = 2010)
 #' 

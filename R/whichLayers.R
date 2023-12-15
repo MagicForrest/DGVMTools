@@ -36,7 +36,7 @@
 #' # Load a multi-Layer (one layer per-PFT) Field from the example data
 #' run.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 #' test.Source <- defineSource(id = "LPJ-GUESS_Example", dir = run.dir,  format = GUESS)
-#' test.Field.perLayer <- getField(source = test.Source, var = "lai") 
+#' test.Field.perLayer <- getField(source = test.Source, quant = "lai") 
 #' 
 #' # Perform the same examples as above but with the Field instead of a list of Layers objects
 #' 

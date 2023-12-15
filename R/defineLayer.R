@@ -84,7 +84,7 @@
 #' # Load a multi-Layer (one layer per-PFT) Field from the example data averaged in space
 #' run.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 #' test.Source <- defineSource(id = "LPJ-GUESS_Example", dir = run.dir,  format = GUESS)
-#' test.Field <- getField(source = test.Source, var = "lai", spatial.aggregate.method = "mean", 
+#' test.Field <- getField(source = test.Source, quant = "lai", spatial.aggregate.method = "mean", 
 #'                        spatial.extent.id = "CentralEurope") 
 #' 
 #' # make calculate Tree and Grass sums

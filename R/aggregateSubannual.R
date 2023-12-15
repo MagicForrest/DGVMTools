@@ -297,7 +297,7 @@ aggregateSubannual.uncompiled <- function(x,
 #' 
 #' @details Input data can be a Field or data.table with appropriate columns.
 #' 
-#' @import data.table
+#' @import compiler
 #' @export
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' 
@@ -307,7 +307,7 @@ aggregateSubannual.uncompiled <- function(x,
 #' # Get an example Field
 #' test.dir <- system.file("extdata", "LPJ-GUESS_Runs", "CentralEurope", package = "DGVMTools")
 #' test.Source <- defineSource(name = "LPJ-GUESS", dir = test.dir,  format = GUESS)
-#' field <- getField(source = test.Source, var = "mlai", year.aggregate.method = "mean")
+#' field <- getField(source = test.Source, quant = "mlai", year.aggregate.method = "mean")
 #' 
 #' # calculate of meteorological seasons (DJF, MAM, JJA, SON)
 #' seasonal.mean <- aggregateSubannual(x = field, method = "mean", 

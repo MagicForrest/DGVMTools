@@ -43,10 +43,10 @@ if (!isGeneric("crop")) {
 extractRasterExtent <- function(y) {
   
   # get raster::Extent for cropping
-  y_extent <- try ( extent(y), silent=TRUE )
-  if (class(y_extent) == "try-error") {
+  y_extent <- try ( raster::extent(y), silent=TRUE )
+  if (inherits(y_extent, "try-error")) {
     y_SpatExtent <- try ( terra::ext(y), silent=TRUE ) 
-    if(class(y_SpatExtent) != "try-error"){
+    if(!inherits(y_SpatExtent, "try-error")){
       y_extent <- raster::extent(as.vector(y_SpatExtent)) 
     }
     else {

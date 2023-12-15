@@ -9,17 +9,17 @@
 #' Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop) 
 #' @param title A character string to override the default title.  Set to NULL for no title.
 #' @param subtitle A character string to override the default subtitle. Set to NULL for no subtitle.
-#' @param col.by,linetype.by,size.by,shape.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line size (width) and alpha (transparency).
+#' @param col.by,linetype.by,linewidth.by,size.by,shape.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line width, point size and point shape and alpha (transparency).
 #' Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
-#' distinguished by different facet panels.  Thus the standard behaviour the that different Layers are distinguished by different colours, but everything is seperated into different panels.
-#' @param cols,linetypes,sizes,shapes,alphas A vector of colours, line types, line sizes or alpha values (respectively) to control the aesthetics of the lines.  
-#' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/size/linetype/shape/alpha values
-#' to particular Layers/Sources/Sites/Quantities.    
-#' @param col.labels,linetype.labels,size.labels,shape.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
-#' number of Sources/Layers/Site/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
+#' distinguished by different facet panels.  Thus the standard behaviour is that different Layers are distinguished by different colours, but everything is separated into different panels.
+#' @param cols,linetypes,linewidths,sizes,shapes,alphas Values of  colours, line types, line width, point sizes, point shapes or alpha values (respectively).
+#' These can either be a single values if the aesthetic has not specified by xxx.by argument above of a vector of values, or a vector of values which
+#' can/should be named to match particular col/size/linetype/shape/alpha values to particular Layers/Sources/Sites/Quantities.     
+#' @param col.labels,linetype.labels,linewidth.labels,size.labels,shape.labels,alpha.labels A vector of character strings which are used as the labels for the lines/points. Must have the same length as the
+#' number of Sources/Layers/Site/Quantities in the plot.  The vectors can/should be named to match particular col/size/linetype/linewidth/shape/alpha values to particular Layers/Sources/Sites/Quantities.    
 #' @param x.label,y.label Character strings (or expressions) for the x and y axes (optional)
 #' @param x.lim,y.lim Limits for the x and y axes (each a two-element numeric, optional)
-#' @param points Logical, if TRUE plot data as points (with geom_points) instead of lines (witg geom_lines).  
+#' @param points Logical, if TRUE plot data as points (with geom_points) instead of lines (with geom_lines).  
 #' Good for plotting time series with missing data where geom_lines joins lines over the gaps which is not helpful
 #' @param legend.position Position of the legend, in the ggplot2 style.  Passed to the ggplot function \code{theme()}. Can be "none", "top", "bottom", "left" or "right" or two-element numeric vector
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot. 
@@ -58,6 +58,9 @@ plotTemporal <- function(fields,
                          linetypes = NULL,
                          linetype.by = NULL,
                          linetype.labels = waiver(),
+                         linewidths = NULL,
+                         linewidth.by = NULL,
+                         linewidth.labels = waiver(),
                          sizes = NULL,
                          size.by = NULL,
                          size.labels = waiver(),
@@ -82,12 +85,19 @@ plotTemporal <- function(fields,
   
   
   # Just to avoid WARNINGS when checking
-  Time = Year = Season = Month = Day = Source = value = variable = Lat = Lon = NULL
+  Time = Year = Season = Month = Day = Source = Value = value = variable = Lat = Lon = NULL
   
-
+  
   ### 0. Check consistency of aesthetics
   
-  
+  if(points) {
+    if(!is.null(linetype.by)) {warning("With plotTemporal, specifying  'linetype.by' argument is not consistent with 'points = TRUE'.  ggplot2 may give a warning or possibly fail.")}
+    if(!is.null(linewidth.by)) {warning("With plotTemporal, specifying  'linewidth.by' argument is not consistent with 'points = TRUE'.  ggplot2 may give a warning or possibly fail.")}
+  }
+  else{
+    if(!is.null(shape.by)) {warning("With plotTemporal, specifying  'shape.by' argument is not consistent with 'points = FALSE'.  ggplot2 may give a warning or possibly fail.")}
+    if(!is.null(size.by)) {warning("With plotTemporal, specifying  'size.by' argument is not consistent with 'points = TRUE'.  ggplot2 may give a warning or possibly fail.")}
+  }
   
   
   
@@ -119,7 +129,7 @@ plotTemporal <- function(fields,
   ### 5. CHECK IF ALL LAYERS ARE CONTINOUS - if not fail
   for(this.field in final.fields) {
     for(layer in layers(this.field)) {
-      if(!(class(this.field@data[[layer]]) == "numeric" || class(this.field@data[[layer]]) == "integer" )) {
+      if(!(is(this.field@data[[layer]], "numeric") || is(this.field@data[[layer]], "integer" ))) {
         stop("plotTemoral can only plot continuous layers ie. 'integer' or 'numeric' types, not 'logical' or 'factor' data.")
       }
     }
@@ -222,16 +232,17 @@ plotTemporal <- function(fields,
   
   # all column names, used a lot below 
   all.columns <- names(data.toplot)
-
+  
   # check the "xxx.by" arguments 
   if(!missing(col.by) && !is.null(col.by) && !col.by %in% all.columns) stop(paste("Colouring by", col.by, "requested, but that is not available, so failing."))
   if(!missing(linetype.by) && !is.null(linetype.by) && !linetype.by %in% all.columns) stop(paste("Setting linetypes by", linetype.by, "requested, but that is not available, so failing."))
+  if(!missing(linewidth.by) && !is.null(linewidth.by) && !linewidth.by %in% all.columns) stop(paste("Setting linewidth by", linewidth.by, "requested, but that is not available, so failing."))
   if(!missing(size.by) && !is.null(size.by) && !size.by %in% all.columns) stop(paste("Setting sizes by", size.by, "requested, but that is not available, so failing."))
   if(!missing(shape.by) && !is.null(shape.by) && !shape.by %in% all.columns) stop(paste("Setting shapes by", shape.by, "requested, but that is not available, so failing."))
   if(!missing(alpha.by) && !is.null(alpha.by) && !alpha.by %in% all.columns) stop(paste("Setting alphas by", alpha.by, "requested, but that is not available, so failing."))
   
   # ar first assume facetting by everything except for...
-  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, linetype.by, size.by, shape.by, alpha.by)
+  dontFacet <- c("Value", "Time", "Year", "Month", "Season", "Day", "Lon", "Lat", col.by, linetype.by, linewidth.by,  size.by, shape.by, alpha.by)
   vars.facet <- all.columns[!all.columns %in% dontFacet]
   
   # then remove facets with only one unique value
@@ -272,29 +283,58 @@ plotTemporal <- function(fields,
   if(!plot) return(data.toplot)
   
   ### PLOT! - now make the plot
-  p <- ggplot(as.data.frame(data.toplot), aes_string(x = "Time", y = "Value", colour = col.by, linetype = linetype.by, size = size.by, alpha = alpha.by, shape = shape.by))
+  
+  # first make the "symbols" for the ggplot2 call.  A bit of a pain -since they ggplot2 folks took away aes_string()- but what can you do...
+  col.sym <- if(is.character(col.by)) ensym(col.by) else NULL  
+  alpha.sym <- if(is.character(alpha.by))  ensym(alpha.by) else NULL 
+  size.sym <- if(is.character(size.by)) ensym(size.by) else  NULL  
+  shape.sym <- if(is.character(shape.by)) ensym(shape.by) else NULL  
+  linewidth.sym <- if(is.character(linewidth.by)) ensym(linewidth.by) else NULL
+  linetype.sym <- if(is.character(linetype.by)) ensym(linetype.by) else  NULL
+ 
+  p <- ggplot(as.data.frame(data.toplot), aes(x = Time, y = Value, 
+                                              col = !! col.sym, 
+                                              alpha = !! alpha.sym,
+                                              size = !! size.sym,
+                                              shape = !! shape.sym,
+                                              linetype = !! linetype.sym,
+                                              linewidth = !! linewidth.sym))
   
   # add trend lines
   if(plotTrend) suppressWarnings( p <- p + stat_smooth(method = "lm", formula = y ~ x, ...) )
   
-  # build arguments for 'fixed' aesthetic to geom_line
-  aes.args <- list(data = data.toplot)
-  if(!missing(sizes) && is.null(size.by)) aes.args[["size"]] <- sizes
-  if(!missing(cols) && is.null(col.by)) aes.args[["colour"]] <- cols
-  if(!missing(alphas) && is.null(alpha.by)) aes.args[["alpha"]] <- alphas
-  if(!missing(linetypes) && is.null(linetype.by)) aes.args[["linetype"]] <- linetypes
-  if(!missing(shapes) && is.null(shape.by)) aes.args[["shape"]] <- shapes
+  # build arguments for aesthetics to geom_line/geom_line and/or fixed arguments outside
+  geom_args <- list()
+  # col and alpha (for both geom_points and geom_line)
+  if(!is.null(cols) && is.null(col.by)) geom_args[["col"]] <- cols
+  if(!is.null(alphas) && is.null(alpha.by)) geom_args[["alpha"]] <- alphas
+  # for points only  
+  if(points){
+    if(!is.null(shapes) && is.null(shape.by)) geom_args[["shape"]] <- shapes
+    if(!is.null(sizes) && is.null(size.by)) geom_args[["size"]] <- sizes
+  }
+  # for lines only
+  else{
+    if(!is.null(linetypes) && is.null(linetype.by)) geom_args[["linetype"]] <- linetypes
+    if(!is.null(linewidths) && is.null(linewidth.by)) geom_args[["linewidth"]] <- linewidths
+  }
   
-  # call geom_line (with fixed aesthetics define above)
-  if(!points) p <- p + do.call(geom_line, aes.args)
-  else p <- p + do.call(geom_point, aes.args)
+  # call geom_line or geom_point (with fixed aesthetics defined above)
+  if(points) p <- p + do.call(geom_point, geom_args)
+  else p <- p + do.call(geom_line, geom_args)
+
   
-  # line formatting
-  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels) 
-  if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
-  if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
+  # apply labels
+  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
-  
+  if(points){
+    if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
+    if(!is.null(shape.by) & !is.null(shapes)) p <- p + scale_shape_manual(values=shapes, labels=shape.labels)
+  }
+  else{
+    if(!is.null(linewidth.by) & !is.null(linewidths)) p <- p + scale_linewidth_manual(values=linewidths, labels=linewidth.labels)
+    if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
+  }
   
   # set the theme to theme_bw, simplest way to set the background to white
   p <- p + theme_bw()
