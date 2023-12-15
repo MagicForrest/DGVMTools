@@ -19,8 +19,8 @@ plotSubannual(
   alphas = NULL,
   alpha.by = NULL,
   alpha.labels = waiver(),
-  line.size = 0.5,
-  point.size = 3,
+  linewidth = 0.5,
+  size = 3,
   y.label = NULL,
   x.label = NULL,
   summary.function,
@@ -36,7 +36,7 @@ plotSubannual(
 \item{layers}{A list of strings specifying which layers to plot.  Defaults to all layers.}
 
 \item{gridcells}{A list of gridcells to be plotted (either in different panels or the same panel). For formatting of this argument see \code{selectGridcells}.
-Leave empty or NULL to plot all gridcells (but note that if this involves too many gridcells the code will stop)}
+Leave empty or NULL to plot all gridsizrecells (but note that if this involves too many gridcells the code will stop)}
 
 \item{title}{A character string to override the default title.}
 
@@ -53,18 +53,18 @@ the data are distinguished by different facet panels.  To change this behaviour 
 strings suggested above.}
 
 \item{col.labels, linetype.labels, alpha.labels}{A vector of character strings which are used as the labels for the lines. Must have the same length as the
-number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/size/alpha values to particular Layers/Sources/Sites/Quantities/Region.}
+number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/linewtype/alpha values to particular Layers/Sources/Sites/Quantities/Region.}
 
-\item{line.size}{Numeric, width of the lines on the plot (note the width is doubled for the aggregate/summary line)}
+\item{linewidth}{Numeric (as ggplot2), width of the lines on the plot, consistent with ggplot2. Note the width is doubled for the aggregate/summary line.}
 
-\item{point.size}{Numeric, size of the points for the aggregate/summary data}
+\item{size}{Numeric, size of the points for the aggregate/summary data, consistent with ggplot2.}
 
 \item{x.label, y.label}{Character strings (or expressions) for the x and y axes (optional)}
 
 \item{summary.function}{A function to summarise (aggregate) across year and plot on top.  Obvious choice is \code{mean}, but there is flexibility to anything that operates on 
 a vector of numerics - eg median, a 95th percentile, standard deviation.}
 
-\item{summary.function.label}{An optional character string to give a pretty label to for the summary function legend.}
+\item{summary.function.label}{An optional character string to give a pretty label to the summary function legend.}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}

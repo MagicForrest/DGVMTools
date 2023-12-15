@@ -525,10 +525,10 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
     
     # note that we add each facet as an individual layer to support multiple resolutions
     for(facet in levels(data.toplot[["Facet"]])){
-      if(!tile) mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value"))
+      if(!tile) mp <- mp + geom_raster(data = data.toplot[Facet == facet,], aes(x = Lon, y = Lat, fill = Value))
       else {
-        if(!missing(pixel.size) & !is.null(pixel.size)) mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value"), width = pixel.size, height = pixel.size)
-        else mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes_string(x = "Lon", y = "Lat", fill = "Value"))
+        if(!missing(pixel.size) & !is.null(pixel.size)) mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes(x = Lon, y = Lat, fill = Value), width = pixel.size, height = pixel.size)
+        else mp <- mp + geom_tile(data = data.toplot[Facet == facet,], aes(x = Lon, y = Lat, fill = Value))
       }
     }
     mp <- mp + facet_wrap(~Facet, ...)
@@ -536,10 +536,10 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   }
   # else simple case with no facetting
   else {
-    if(!tile) mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
+    if(!tile) mp <- mp + geom_raster(data = data.toplot, aes(x = Lon, y = Lat, fill = Value))
     else {
-      if(!missing(pixel.size) & !is.null(pixel.size)) mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"), width = pixel.size, height = pixel.size)
-      else mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
+      if(!missing(pixel.size) & !is.null(pixel.size)) mp <- mp + geom_tile(data = data.toplot, aes(x = Lon, y = Lat, fill = Value), width = pixel.size, height = pixel.size)
+      else mp <- mp + geom_tile(data = data.toplot, aes(x = Lon, y = Lat, fill = Value))
     }
   }
   
@@ -557,8 +557,8 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   #   
   #   # plot each layer inviidiually (to presevre different resolution on each plo)
   #   for(row.index in 1:NROW(all.facet.combos)) { 
-  #     if(!tile) mp <- mp + geom_raster(data = data.toplot[as.list(all.facet.combos[row.index])], aes_string(x = "Lon", y = "Lat", fill = "Value"))
-  #     else mp <- mp + geom_tile(data = data.toplot[as.list(all.facet.combos[row.index])], aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  #     if(!tile) mp <- mp + geom_raster(data = data.toplot[as.list(all.facet.combos[row.index])], aes(x = Lon, y = Lat, fill = Value))
+  #     else mp <- mp + geom_tile(data = data.toplot[as.list(all.facet.combos[row.index])], aes(x = Lon, y = Lat, fill = Value))
   #   }
   #   
   #   # This is the trouble
@@ -567,8 +567,8 @@ plotSpatial <- function(fields, # can be a Field or a list of Fields
   #   mp <- mp + facet_wrap(facet.vars2, ...)
   # }
   # else {
-  #   if(!tile) mp <- mp + geom_raster(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
-  #   else mp <- mp + geom_tile(data = data.toplot, aes_string(x = "Lon", y = "Lat", fill = "Value"))
+  #   if(!tile) mp <- mp + geom_raster(data = data.toplot, aes_(x = Lon, y = Lat, fill = Value))
+  #   else mp <- mp + geom_tile(data = data.toplot, aes(x = Lon, y = Lat, fill = Value))
   # }
   
   

@@ -33,7 +33,7 @@ These functions can do a lot of 'sensible and standard'stuff without too much di
 Secondly, the data is stored internally as a data.table (as opposed to a data.frame).  
 The advantage of this is that data.tables are very, very much faster than data.frames for many operations (check out the data.table package 
 documentation and webpage for more info).  This is obviously a great advantage when working with very large spatial-temporal datasets. 
-It should be noted that this advantage was very important compare to the now outdated raster package.  The replacement for raster (terra) is faster so this 
+It should be noted that this advantage was very important compared to the now outdated raster package.  The replacement for raster (terra) is faster so this 
 advantage is not as large.
 
 
