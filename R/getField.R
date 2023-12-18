@@ -24,8 +24,8 @@
 #' @param sta.info Optionally an \code{\linkS4class{STAInfo}} object defining the exact spatial-temporal-annual domain over which the data should be retrieved.  
 #' Can also be a Field object from which the STA info will de derived.
 #' If specified the following 9 arguments are ignored (with a warning)
-#' @param first.year The first year (as a numeric) of the data to be returned (if not specified or NULL start from the beginning of the data set)
-#' @param last.year The last year (as a numeric) of the data to be returned (if not specified or NULL take the data to the end of the data set)
+#' @param first.year The first year (as a numeric) of the data to be returned (if not specified or \code{NULL} start from the beginning of the data set)
+#' @param last.year The last year (as a numeric) of the data to be returned (if not specified or \code{NULL} take the data to the end of the data set)
 #' @param year.aggregate.method A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' See \code{\link{aggregateYears}} 
@@ -49,7 +49,7 @@
 #' @param ...  Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.  
 #' For all Formats, the followings arguments apply:
 #' \itemize{
-#'  \item{\code{cover.fraction}}  When selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, this optional arguement determines 
+#'  \item{\code{cover.fraction}}  When selecting gridcells based on a \code{sf} object (ie from a shapefile) as the \code{spatial.extent} argument, this optional arguement determines 
 #'  how much of the gridcell needs to be in the the polygon for it to be selected. Should be between 0 and 1.
 #' }
 #' For the aDGVM(1) Format, the following arguments apply:
@@ -104,10 +104,10 @@ getField <- function(source,
   Lon = Lat = Year = NULL  
   
   ### CHECK ARGUMENTS
-  if(!(missing(first.year) | is.null(first.year)) & !(missing(last.year) | is.null(last.year)) ) {
+  if(!is.null(first.year) && !is.null(last.year) ) {
     if(first.year > last.year) stop("first.year cannot be greater than last.year!")
   }
-  if(!missing(layers) && !is.character(layers) && !is.null(layers)) stop("The 'layers' argument must be a character string or a list of character strings.")
+  if(!is.character(layers) && !is.null(layers)) stop("The 'layers' argument must be a character string or a list of character strings.")
   
   
   ## QUICK READ ARGUMENTS AND AUTODELETE
@@ -153,36 +153,36 @@ getField <- function(source,
   
   
   ### TIDY THE RELEVANT STA ARGUMENTS INTO THE TARGET STA OBJECT
-  if(missing(sta.info)) {
+  if(is.null(sta.info)) {
     sta.info <- new("STAInfo")
-    if(!missing(first.year)) sta.info@first.year = first.year
-    if(!missing(last.year)) sta.info@last.year = last.year
-    if(!missing(year.aggregate.method)) sta.info@year.aggregate.method = year.aggregate.method
-    if(!missing(spatial.extent)) sta.info@spatial.extent = spatial.extent
-    if(!missing(spatial.extent.id)) sta.info@spatial.extent.id = spatial.extent.id
-    if(!missing(spatial.aggregate.method)) sta.info@spatial.aggregate.method = spatial.aggregate.method
-    if(!missing(subannual.resolution)) sta.info@subannual.resolution = subannual.resolution
-    if(!missing(subannual.original)) sta.info@subannual.original = subannual.original
-    if(!missing(subannual.aggregate.method)) sta.info@subannual.aggregate.method = subannual.aggregate.method
+    if(!is.null(first.year)) sta.info@first.year = first.year
+    if(!is.null(last.year)) sta.info@last.year = last.year
+    if(!is.null(year.aggregate.method)) sta.info@year.aggregate.method = year.aggregate.method
+    if(!is.null(spatial.extent)) sta.info@spatial.extent = spatial.extent
+    if(!is.null(spatial.extent.id))  sta.info@spatial.extent.id = spatial.extent.id
+    if(!is.null(spatial.aggregate.method)) sta.info@spatial.aggregate.method = spatial.aggregate.method
+    if(!is.null(subannual.resolution)) sta.info@subannual.resolution = subannual.resolution
+    if(!is.null(subannual.original)) sta.info@subannual.original = subannual.original
+    if(!is.null(subannual.aggregate.method)) sta.info@subannual.aggregate.method = subannual.aggregate.method
   }
   else {
     if(is.Field(sta.info)) sta.info <- as(sta.info, "STAInfo")
-    if(!missing(first.year)) warning("Since 'sta.info' argument has been specified, the 'first.year' argument will be ignored")
-    if(!missing(last.year)) warning("Since 'sta.info' argument has been specified, the 'last.year' argument will be ignored")
-    if(!missing(year.aggregate.method)) warning("Since 'sta.info' argument has been specified, the 'year.aggregate.method' argument will be ignored")
-    if(!missing(spatial.extent)) warning("Since 'sta.info' argument has been specified, the 'spatial.extent' argument will be ignored")
-    if(!missing(spatial.extent.id)) warning("Since 'sta.info' argument has been specified, the 'spatial.extent.id' argument will be ignored")
-    if(!missing(spatial.aggregate.method)) warning("Since 'sta.info' has been argument specified, the 'spatial.aggregate.method' argument will be ignored")
-    if(!missing(subannual.original)) warning("Since 'sta.info' argument has been specified, the 'subannual.original' argument will be ignored")
-    if(!missing(subannual.resolution)) warning("Since 'sta.info' argument has been specified, the 'subannual.resolution' argument will be ignored")
-    if(!missing(subannual.aggregate.method)) warning("Since 'sta.info' argument has been specified, the 'subannual.aggregate.method' argument will be ignored")
+    if(!is.null(first.year)) warning("Since 'sta.info' argument has been specified, the 'first.year' argument will be ignored")
+    if(!is.null(last.year)) warning("Since 'sta.info' argument has been specified, the 'last.year' argument will be ignored")
+    if(!is.null(year.aggregate.method)) warning("Since 'sta.info' argument has been specified, the 'year.aggregate.method' argument will be ignored")
+    if(!is.null(spatial.extent)) warning("Since 'sta.info' argument has been specified, the 'spatial.extent' argument will be ignored")
+    if(!is.null(spatial.extent.id)) warning("Since 'sta.info' argument has been specified, the 'spatial.extent.id' argument will be ignored")
+    if(!is.null(spatial.aggregate.method)) warning("Since 'sta.info' has been argument specified, the 'spatial.aggregate.method' argument will be ignored")
+    if(!is.null(subannual.original)) warning("Since 'sta.info' argument has been specified, the 'subannual.original' argument will be ignored")
+    if(!is.null(subannual.resolution)) warning("Since 'sta.info' argument has been specified, the 'subannual.resolution' argument will be ignored")
+    if(!is.null(subannual.aggregate.method)) warning("Since 'sta.info' argument has been specified, the 'subannual.aggregate.method' argument will be ignored")
   }
   
   
   
   ### CATCH AWKWARD CASE
   ### Fail when a spatial.extent is specified but no spatial.extent.id
-  if(!missing(spatial.extent) && missing(spatial.extent.id)){
+  if(!is.null(spatial.extent) && is.null(spatial.extent.id)){
     stop("Please specify a spatial.extent.id when specifying a spatial.extent (just a simple character string).  This is to maintain metadata integrity.")
   }
   
@@ -234,7 +234,7 @@ getField <- function(source,
         
         # check layers (if specified)
         layers.match <- TRUE
-        if(!missing(layers) && !is.null(layers)) {
+        if(!is.null(layers)) {
           layers.match <- identical(sort(layers), sort(layers(preprocessed.field)))
           if(verbose) {
             if(layers.match) message("*** Preprocessed file matches in terms of layers present. ***")
