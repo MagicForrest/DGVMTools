@@ -376,7 +376,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(length(facet.vars) > 0) p <- p + facet_wrap(facet.vars, ...)
   
   # overall text multiplier
-  if(!missing(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
+  if(!is.null(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
   
   return(p)
   
