@@ -354,7 +354,9 @@ plotTemporal <- function(fields,
   if(!is.null(x.lim)) p <- p + xlim(x.lim)
   if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
   else p <- p + labs(y = y.label)
-  
+
+  if (!is.null(x.label)) p <- p + labs(x = x.label)
+
   # facetting
   if(length(vars.facet > 0)){
     suppressWarnings( p <- p + facet_wrap(vars.facet, ...))
