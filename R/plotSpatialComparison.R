@@ -167,7 +167,7 @@ plotSpatialComparison <- function(comparisons,
       
       # get max value for making the scale symmetric
       if(symmetric.scale && missing(limits)) {
-        for(this.layer in layers.to.plot)  max.for.scale <- max(max.for.scale, max(abs(object@data[[this.layer]])))
+        for(this.layer in layers.to.plot)  max.for.scale <- max(max.for.scale, max(abs(object@data[[this.layer]]), na.rm = TRUE))
       }
       
     }
