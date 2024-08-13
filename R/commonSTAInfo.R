@@ -49,7 +49,7 @@ commonSTAInfo <- function(sta.objects, logical = FALSE) {
   
   # find overlap years if not already handled
   if(length(common.sta.info@first.year) == 0 | length(common.sta.info@last.year) == 0) {
-    
+
     for(counter in 1:length(sta.infos)) {
       if(length(sta.infos[[counter]]@first.year) > 0 & length(sta.infos[[counter]]@last.year) > 0){
         # get the years in this object
@@ -58,8 +58,11 @@ commonSTAInfo <- function(sta.objects, logical = FALSE) {
         if(counter == 1) common_years <- these_years 
         else common_years <- intersect(common_years, these_years)
       }
-      # if not valid for any one of the object, the assume zero overlap
-      else  these_years <- integer(0)
+      # if not valid for any one of the object, the assume zero overlap and break
+      else  {
+        these_years <- integer(0)
+        break
+      }
     }
     
     # if got some over lap years then save them
