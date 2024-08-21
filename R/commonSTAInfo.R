@@ -12,11 +12,12 @@
 commonSTAInfo <- function(sta.objects, logical = FALSE) {
   
   sta.infos <- list()
-  if(is.Field(sta.objects) || is.STAInfo(sta.objects)) sta.objects <- list(sta.objects)
+  if(is.Field(sta.objects) || is.STAInfo(sta.objects) ||is.Comparison(sta.objects)) sta.objects <- list(sta.objects)
   
   for(sta.object in sta.objects) {
     if(is.Field(sta.object)) sta.infos[[length(sta.infos)+1]] <-  as(sta.object, "STAInfo")
     else if(is.STAInfo(sta.object)) sta.infos[[length(sta.infos)+1]] <- sta.object
+    else if(is.Comparison(sta.object)) sta.infos[[length(sta.infos)+1]] <- commonSTAInfo(list(sta.object@sta.info1, sta.object@sta.info2))
     else warning(paste("No STAInfo can be derived from class", class(sta.object), "so ignoring it", sep = " "))
   }
   

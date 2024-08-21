@@ -126,6 +126,128 @@ santiseLayersForPlotting <- function(fields, layers) {
 }
 
 
+#' Sanitise input layers for X-Y plotting
+#' 
+#' This is an internal helper function which checks the layers requested to be plotted against the layers in the the fields to be plotted.  If layers is NULL, then 
+#' it returns all layers present in any fields
+#' 
+#' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
+#' @param layers The layers requested to be plotted
+#' @return Returns character vector of the layers to be plotted
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
+santiseLayersForPlottingXY <- function(fields1, fields2, layers1, layers2) {
+  
+  print(fields1)
+  print(fields2)
+  print(layers1)
+  print(layers2)
+  
+  
+  #### Must return a list of 2-element named, character vectors where the names are the Field  
+  
+  layers.superset <- c()
+  num.layers.x.fields <- 0
+  
+  # Work through all the possible combinations of fields and layers arguments
+  final_layers <- list()
+  plotting_dt <- data.table() 
+  
+  # for each fields1, copy layers from each fields2
+  all_comps <- list
+  for(fld1 in fields1){
+    for(fld2 in fields2){
+      all_comps <- compareLayers(field1 = fld1, field2 = fld2, layers1 = layers1, layers2 = layers2, show.stats = FALSE)
+    }
+  }
+  
+  print(plotting_dt)
+  return(plotting_dt)
+  
+  # a single field
+  if(length(fields) == 1){
+    
+    if(length(layers) == 1) {
+      stop("plotScatter: Failing. You gave me one Field, so I need at least two layers, you only specified one.")
+    }
+    else if(is.null(layers) || missing(layers)){
+      layers <- layers(fields[[1]])
+      print(layers)
+      # compare every layer to every other layer
+      layers_todo <- layers
+      
+      for(this_layer in layers){
+        print(this_layer)
+        # remove this layer from layers_todo
+        layers_todo <- layers_todo[-which(layers_todo == this_layer)]
+        print(layers_todo[!which(layers_todo == this_layer)])
+        print(layers_todo)
+        for(this_second_layer in layers_todo){
+          this_group <- 
+            plotting_dt < plotting_dt
+          final_layers[[paste0(this_layer, "_x_", this_second_layer)]] <- c( this_layer, this_second_layer)
+        }
+      }
+      
+    }
+  }
+  
+  print(final_layers)  
+  
+  
+  # if no layers argument supplied make a list of all layers present (in any object)
+  if(is.null(layers) || missing(layers)){
+    
+    for(object in fields){
+      temp.layers <- names(object)
+      num.layers.x.fields <- num.layers.x.fields + length(temp.layers)
+      layers.superset <- append(layers.superset, temp.layers)
+    } 
+    layers <- unique(layers.superset)
+    
+  }
+  else if(is.character(layers)) {
+    
+    
+    
+  }
+  
+  # else if layers have been specified check that we have some of the requested layers present
+  else{
+    
+    for(object in fields){
+      
+      layers.present <- intersect(names(object), layers)
+      num.layers.x.fields <- num.layers.x.fields + length(layers.present)
+      
+      if(length(layers.present) == 0) {warning("Some Fields to plot don't have all the layers that were requested to plot.\n")}
+      layers.superset <- append(layers.superset, layers.present)
+      
+    } 
+    
+    # Return empty plot if not layers found
+    if(num.layers.x.fields == 0){
+      warning("None of the specified layers found in the objects provided to plot.  Returning NULL.\n")
+      return(NULL)
+    }
+    
+    # Also check for missing layers and given a warning
+    missing.layers <- layers[!(layers %in% unique(layers.superset))]
+    if(length(missing.layers) != 0) { warning(paste("The following layers were requested to plot but not present in any of the supplied objects:", paste(missing.layers, collapse = " "), ".\n", sep = " ")) }
+    
+    # finally make a unique list of layers to be carried in to the actual plotting
+    layers <- unique(layers.superset)
+    
+  }
+  
+  return(layers)
+  
+}
+
+
+
 
 #' Sanitise STAInfo for plotting
 #' 
@@ -299,6 +421,95 @@ trimFieldsForPlotting <- function(fields, layers, years = NULL, days = NULL, mon
 }
 
 
+#' Subsets data from Field for XY plotting 
+#' 
+#' This is an internal helper function which pulls out the data needed to make a plot from a bunch of Fields, and returns 
+#' a list of the Field with only the required layers and points in space and time included  
+#' 
+#' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
+#' @param layers A character vector of the layers to be plotted
+#' @param years The years to be extracted (as a numeric vector), if NULL all years are used
+#' @param days The days to be extracted (as a numeric vector), if NULL all days are used
+#' @param months The months to be extracted (as a numeric vector), if NULL all months are used
+#' @param seasons The months to be extracted (as a character vector), if NULL all seasons are used
+#' @param gridcells The months to be extracted (as a character vector), if NULL all seasons are used
+#' @param dropEmpty Logical, if TRUE drop layers consisting only of zeros
+#' 
+#' @return Returns a list of Fields
+#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
+#' @keywords internal
+#' 
+#' 
+trimFieldsForPlottingXY <- function(fields, layers, years = NULL, days = NULL, months = NULL, seasons = NULL, gridcells = NULL, dropEmpty = FALSE) {
+  
+  J = Year = NULL
+  
+  discrete <- FALSE
+  continuous <- FALSE
+  
+  # Loop through the objects and select the layers and dimensions that we want for plotting
+  
+  final.fields <- list()
+  
+  for(object in fields){
+    
+    # check that at least one layer is present in this object and make a list of those which are
+    all.layers <- names(object)
+    layers.present <- c()
+    for(this.layer in layers) {
+      # if layer is present
+      if(this.layer %in% all.layers)  {
+        
+        # if dropEmpty is true check if it it non-zero before appending it
+        if(dropEmpty) {
+          if(!(object@data[[this.layer]][1] == 0 && all(duplicated(object@data[[this.layer]])[-1L]))){
+            layers.present <- append(layers.present, this.layer)
+          }
+        }
+        # else just append it
+        else {
+          layers.present <- append(layers.present, this.layer)
+        }
+        
+      } #  if layer present
+    }  # for all requested layers loop 
+    
+    # if at least one layer present subset it
+    if(length(layers.present) > 0) {
+      
+      # select the layers and time periods required and mash the data into shape
+      these.layers <- selectLayers(object, layers.present)
+      if(!is.null(years)) {
+        # set key to Year, subset by years, the set keys back
+        # note we are not doing selectYears() because we may want to select non-contiguous years
+        setkey(these.layers@data, Year)
+        these.layers@data <- these.layers@data[J(years)]
+        setKeyDGVM(these.layers@data)
+      }
+      if(!is.null(days)) these.layers <- selectDays(these.layers, days)
+      if(!is.null(months)) these.layers <- selectMonths(these.layers, months)
+      if(!is.null(seasons)) these.layers <- selectSeasons(these.layers, seasons)
+      if(!is.null(gridcells)) these.layers <- selectGridcells(these.layers, gridcells, spatial.extent.id = "Subset_For_Plotting")
+      
+      # check if layers are all continuous or discrete
+      for(layer in layers.present) {
+        if(is(object@data[[layer]], "factor") || is(object@data[[layer]], "logical") || is(object@data[[layer]], "ordered")) discrete <- TRUE
+        if(is(object@data[[layer]], "numeric") || is(object@data[[layer]],"integer" )) continuous <- TRUE
+      }
+      if(discrete & continuous) stop("Cannot simultaneously plot discrete and continuous layers, check your layers") 
+      if(!discrete & !continuous) stop("Can only plot 'numeric', 'integer', 'factor', 'ordered' or 'logical' layers, check your layers")   
+      
+      
+      final.fields <- append(final.fields, these.layers)
+      
+    } # end if length(layers.present) > 0
+    
+  }
+  
+  return(final.fields)
+  
+}
+
 #' Merge data from Field for plotting 
 #' 
 #' This is an internal helper function which pulls out the data from a bunch of Fields to be plotted, adds columns to describe the characteristics 
@@ -374,12 +585,13 @@ mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FA
 #' @keywords internal
 #' 
 
-makeYAxis <- function(final.fields) {
+makeYAxis <- function(objects) {
   
   # first extract the names and units and store them in a tuples (two element vector) for the Quantity from each Field
   all.quant.tuples <- list()
-  for(field in final.fields) {
-    all.quant.tuples[[length(all.quant.tuples)+1]] <- c(field@quant@name, field@quant@units)
+  for(object in objects) {
+   if(is.Field(object)) all.quant.tuples[[length(all.quant.tuples)+1]] <- c(object@quant@name, object@quant@units)
+   else if(is.Quantity(object)) all.quant.tuples[[length(all.quant.tuples)+1]] <- c(object@name, object@units)
   } 
   
   # select the unique ones

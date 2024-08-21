@@ -92,6 +92,7 @@ Collate:
     'plotSubannual.R'
     'plotTemporal.R'
     'plotTemporalComparison.R'
+    'plotXYComparison.R'
     'plotting-framework-functions.R'
     'read-netcdf-utility-functions.R'
     'renameLayers.R'

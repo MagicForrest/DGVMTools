@@ -134,9 +134,10 @@ makePlotTitle <- function(fields){
   layers.vec <- c()
   for(field in fields) {
     layers.vec <- append(layers.vec, names(field))
-    sources.vec <- append(sources.vec, field@source@name )
-    quants.vec <- append(quants.vec, field@quant@name )
-    quants.id.vec <- append(quants.id.vec, field@quant@id)
+    if(is.Field(field))  sources.vec <- append(sources.vec, field@source@name )
+    else if(is.Comparison(field))   sources.vec <- append(sources.vec, field@name )
+    if(is.Field(field)) quants.vec <- append(quants.vec, field@quant@name )
+    if(is.Field(field)) quants.id.vec <- append(quants.id.vec, field@quant@id)
   }
   sources.vec <- unique(sources.vec)
   quants.vec <- unique(quants.vec)

@@ -35,28 +35,20 @@
 #' @export 
 #' @seealso \link{plotSpatial},  \link{compareLayers}
 
-plotScatterComparison <- function(comparisons,
-                                  type = c("difference", "percentage.difference", "values", "nme"),
-                                  limits = NULL,
-                                  legend.title,
-                                  panel.bg.col = "white",
-                                  override.cols = NULL,
-                                  symmetric.scale = TRUE,
-                                  do.phase = FALSE,
+plotXYComparison <- function(comparisons,
+                                  type = c("points", "hex", "bin2d"),
+                                  fit_line_col = NULL, 
+                                  perfect_line_col = NULL,
+                                  matchLimits = TRUE,
                                   ...){
-  
-  addPerfect <- TRUE
-  matchLimits <- TRUE
-  doHex = TRUE
   
   Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = NULL
-  Difference = Percentage.Difference = NULL
-  
+
   # sort type argument
   type <- match.arg(type)
   
-  if(!missing(limits)) symmetric.scale <- FALSE
+
   
   ### CHECK TO SEE EXACTLY WHAT WE SHOULD PLOT
   
@@ -75,19 +67,21 @@ plotScatterComparison <- function(comparisons,
   
   ### 3. CONVERT - the Comparisons into a big data.table for plotting 
   
-  # 
-  objects.to.plot <- list()
-  layers.to.plot <- c()
   plotting_dt <- data.table()
-  for(object in comparisons){ 
+  fit_lines_dt <- data.table()
+  for(object in comparisons){
+    
+    pretty_comparison_name <- gsub(pattern = " - ", replacement = " vs ", x = object@name)
     
     tmp_dt <- copy(object@data)
     all_names <- names(tmp_dt)
     old_names <- all_names[(length(all_names)-2):length(all_names)]
     setnames(tmp_dt, old = old_names, new = c("Y", "X", "Difference"))
     tmp_dt[ , Difference := NULL]
-    tmp_dt[ , Comparison := gsub(pattern = " - ", replacement = " vs ", x = object@name)]
+    tmp_dt[ , Comparison := pretty_comparison_name]
     plotting_dt <- rbind(plotting_dt, tmp_dt)
+    fit_lines_dt <- rbind(data.table(slope = object@stats$m, intercept = object@stats$c, Comparison = pretty_comparison_name),
+                          fit_lines_dt)
    
     
     # # first make a list of the layers that we expect to be present in the data.table, based on the meta-data in the Comparison object
@@ -137,28 +131,57 @@ plotScatterComparison <- function(comparisons,
     #                                                     object@sta.info1)
     # 
   }
-  
+ 
   # make a legend title if one has not been supplied
   #if(missing(legend.title)) legend.title <- stringToExpression(standardiseUnitString(object@quant1@units))
   
-  this_plot <- ggplot(plotting_dt, aes(x = X, y = Y)) 
-  if(doHex){
-    this_plot <- this_plot + geom_hex()
-    this_plot <- this_plot + viridis::scale_fill_viridis(option = "F", direction = -1, trans = "log10")
-  }
-  else{
-    this_plot <- this_plot + geom_point()
+  # if plotting a single comparison object
+  #   - 
+  
+  # default labels
+  y_label <- "Change me with '+ ylab()'"
+  x_label <- "Change me with '+ xlab()'"
+  subtitle <- waiver()
+  titles <- makePlotTitle(comparisons)
+  subtitle <- titles[["subtitle"]]
+  title <-titles[["title"]]
+  if(length(comparisons) == 1) {
+    x_label <- stringToExpression(paste0(comparisons[[1]]@source1@name, " ", comparisons[[1]]@quant1@name, " (", standardiseUnitString(comparisons[[1]]@quant1@units), ")"))
+    y_label <- stringToExpression(paste0(comparisons[[1]]@source2@name, " ", comparisons[[1]]@quant2@name, " (", standardiseUnitString(comparisons[[1]]@quant2@units), ")"))
   }
   
-  this_plot <- this_plot + facet_wrap(facets = vars(Comparison))
+  scatter_plot <- ggplot(plotting_dt, aes(x = X, y = Y)) 
+  if(type == "hex"){
+    scatter_plot <- scatter_plot + geom_hex() + viridis::scale_fill_viridis(option = "F", direction = -1, trans = "log10")
+  }
+  else if(type == "points"){
+    scatter_plot <- scatter_plot + geom_point()
+  }
+  else if(type == "bin2d"){
+      scatter_plot <- scatter_plot + geom_bin2d() + viridis::scale_fill_viridis(option = "F", direction = -1, trans = "log10")
+  }
+  
+  if(length(comparisons) > 1) {
+    scatter_plot <- scatter_plot + facet_wrap(facets = vars(Comparison))
+  }
+  
   if(matchLimits) {
     mylims <- range(with(plotting_dt, c(X, Y)))
-    this_plot <- this_plot + coord_cartesian(xlim = mylims, ylim = mylims)
+    scatter_plot <- scatter_plot + coord_cartesian(xlim = mylims, ylim = mylims)
   } 
-  if(addPerfect)  this_plot <- this_plot + geom_abline(slope=1, intercept = 0, col = "black")
+  if(!missing(perfect_line_col) & !is.null(fit_line_col))  scatter_plot <- scatter_plot + geom_abline(slope=1, intercept = 0, col = perfect_line_col, linetype = "dashed")
+  if(!missing(fit_line_col) & !is.null(fit_line_col))   scatter_plot <- scatter_plot + geom_abline(data = fit_lines_dt, aes(slope=slope, intercept = intercept), col = fit_line_col)
+ 
   
+  scatter_plot <- scatter_plot + labs(title = title,
+                                      subtitle = subtitle,
+                                      y = y_label,
+                                      x = x_label)
   
-  return(this_plot)
+  # set the theme to theme_bw, simplest way to set the background to white
+  scatter_plot <- scatter_plot + theme_bw()
+  
+  return(scatter_plot)
   
   
   
