@@ -165,7 +165,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   
   # Pearson product moment correlation coefficient, and then R^2
   # MF: not the best thing in my opinion
-  r <- stats::cor(vector1, vector2, method = "pearson", )
+  r <- stats::cor(vector1, vector2, method = "pearson")
   r2 <- r^2
   
   # calculate a simple linear regression 

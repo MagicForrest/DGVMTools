@@ -85,7 +85,6 @@ Collate:
     'package-documentation.R'
     'periods.R'
     'plotScatter.R'
-    'plotScatterComparison.R'
     'plotScatter_old.R'
     'plotSpatial.R'
     'plotSpatialComparison.R'
