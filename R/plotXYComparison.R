@@ -14,7 +14,9 @@
 #' @param comparisons The data to plot, must be a Comparison or a list of Comparisons
 #' @param type A character specifying what type of plot to make. Can be "points" (default, for geom_points), "hex" (for hex binning), "bin2d" (for square binning).
 #' There might be more useful options to add later. 
-
+#' @param col.by,size.by,shape.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line width, point size and point shape and alpha (transparency).
+#' Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
+#' distinguished by different facet panels.  Thus the standard behaviour is that different Layers are distinguished by different colours, but everything is separated into different panels.
 
 #' @details  A wrapper for around \link{plotSpatial} to plot the spatial Comparisons as maps.  Extra arguments to \link{plotSpatial} can also be specified. 
 #' 
@@ -34,7 +36,7 @@ plotXYComparison <- function(comparisons,
                              metrics = c(),
                              metric_text_size = waiver(),
                              text.multiplier = NULL,
-                             
+                             col.by = NULL,
                              ...){
   
   Source = Value = Lat = Lon = Layer = long = lat = group = NULL
@@ -169,7 +171,15 @@ plotXYComparison <- function(comparisons,
     xy_plot <- xy_plot + geom_hex() + viridis::scale_fill_viridis(option = "F", direction = -1, trans = "log10")
   }
   else if(type == "points"){
-    xy_plot <- xy_plot + geom_point()
+    
+    # first make the "symbols" for the ggplot2 call.  A bit of a pain -since they ggplot2 folks took away aes_string()- but what can you do...
+    col.sym <- if(is.character(col.by)) ensym(col.by) else NULL  
+    #alpha.sym <- if(is.character(alpha.by))  ensym(alpha.by) else NULL 
+    #size.sym <- if(is.character(size.by)) ensym(size.by) else  NULL  
+    #shape.sym <- if(is.character(shape.by)) ensym(shape.by) else NULL  
+    #linewidth.sym <- if(is.character(linewidth.by)) ensym(linewidth.by) else NULL
+    #linetype.sym <- if(is.character(linetype.by)) ensym(linetype.by) else  NULL
+    xy_plot <- xy_plot + geom_point(aes(col = !! col.sym))
   }
   else if(type == "bin2d"){
     xy_plot <- xy_plot + geom_bin2d() + viridis::scale_fill_viridis(option = "F", direction = -1, trans = "log10")
@@ -183,7 +193,7 @@ plotXYComparison <- function(comparisons,
   
   
   #### HANDLE LIMITS ####
-  mylims <- range(with(plotting_dt, c(X, Y)))
+  mylims <- range(with(plotting_dt, c(X, Y)), na.rm = TRUE)
   if(matchLimits) {
     xy_plot <- xy_plot + coord_fixed(xlim = mylims, ylim = mylims)
   } 
@@ -215,11 +225,13 @@ plotXYComparison <- function(comparisons,
                             subtitle = subtitle,
                             y = y_label,
                             x = x_label)
+
   
-  
-  #### SET THEME ####
+  #### SET THEME AND OTHER LAYOUT OPTIONS ####
   # set the theme to theme_bw, simplest way to set the background to white
   xy_plot <- xy_plot + theme_bw()
+  xy_plot <- xy_plot + theme(plot.title = element_text(hjust = 0.5),
+                             plot.subtitle = element_text(hjust = 0.5))
   
   #### TEXT MULTIPLIER ####
   if(!is.null(text.multiplier)) xy_plot <- xy_plot + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
