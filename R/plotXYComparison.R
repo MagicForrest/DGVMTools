@@ -178,7 +178,7 @@ plotXYComparison <- function(comparisons,
   
   #### FACET IF NECESSARY ####
   if(length(comparisons) > 1) {
-    xy_plot <- xy_plot + facet_wrap(facets = vars(Comparison))
+    xy_plot <- xy_plot + facet_wrap(facets = vars(Comparison), ...)
   }
   
   
