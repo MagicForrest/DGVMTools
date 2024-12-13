@@ -1098,7 +1098,7 @@ GUESS.Layers <- list(
                         growth.form = "Tree",
                         leaf.form = "Broadleaved",
                         phenology = "Summergreen",
-                        climate.zone = "Temperate",
+                        climate.zone = "Boreal",
                         shade.tolerance = "None",
                         land.cover = "Natural")
   ),
