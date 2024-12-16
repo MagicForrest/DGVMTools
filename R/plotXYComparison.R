@@ -34,7 +34,9 @@ plotXYComparison <- function(comparisons,
                              perfect_line_col = NULL,
                              matchLimits = TRUE,
                              metrics = c(),
-                             metric_text_size = waiver(),
+                             metric_size = waiver(),
+                             metric_x_pos = 0.025,
+                             metric_y_pos = 0.975,
                              text.multiplier = NULL,
                              col.by = NULL,
                              ...){
@@ -67,10 +69,11 @@ plotXYComparison <- function(comparisons,
   plotting_dt <- data.table()
   fit_lines_dt <- data.table()
   metrics_dt <- data.table()
+  comparison_obj_factors <- c()
   for(object in comparisons){
-    
+   
     pretty_comparison_name <- gsub(pattern = " - ", replacement = " vs ", x = object@name)
-    
+    comparison_obj_factors <- append(comparison_obj_factors, pretty_comparison_name)
     tmp_dt <- copy(object@data)
     all_names <- names(tmp_dt)
     old_names <- all_names[(length(all_names)-2):length(all_names)]
@@ -83,68 +86,34 @@ plotXYComparison <- function(comparisons,
     if(length(metrics) > 0 ){
       tmp_metrics_list <- list()
       for(metric in metrics){
-        metric_text <- metric
-        if(metric == "m") metric_text <- "Slope"
-        if(metric == "c") metric_text <- "Intercept"
-        if(metric == "R2") metric_text <- "R^2"
-        if(metric == "r2") metric_text <- "r^2"
-        tmp_metrics_list[[metric_text]] <- paste0(metric_text, "==", signif(object@stats[[metric]], 2))
+        
+        # for something represing new lines
+        if(metric %in% c("", "\n")) {
+          tmp_metrics_list[[length(tmp_metrics_list)+1]] <- "\n"
+        }
+        # for a real metric
+        else {
+          metric_text <- metric
+          if(metric == "m") metric_text <- "Slope"
+          if(metric == "c") metric_text <- "Intercept"
+          if(metric == "R2") metric_text <- "R^2"
+          if(metric == "r2") metric_text <- "r^2"
+          tmp_metrics_list[[metric_text]] <- paste0(metric_text, "==", signif(object@stats[[metric]], 2))
+        }
       }
       tmp_metrics_string <- paste(tmp_metrics_list, collapse = " ")
       tmp_dt <- data.table(Comparison = pretty_comparison_name, label = gsub(" ", "~", tmp_metrics_string))
       metrics_dt <- rbind(metrics_dt, tmp_dt)
     }
-    
-    
-    
-    # # first make a list of the layers that we expect to be present in the data.table, based on the meta-data in the Comparison object
-    # layers.names <- names(object)
-    # expected.layers.1 <- paste(object@layers1, makeFieldID(source = object@source1, quant.string = object@quant1@id, sta.info = object@sta.info1), sep = ".")
-    # expected.layers.2 <- paste(object@layers2, makeFieldID(source = object@source2, quant.string = object@quant2@id, sta.info = object@sta.info2), sep = ".")
-    # 
-    # # check the layers
-    # for(this.layer in expected.layers.1) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))
-    # for(this.layer in expected.layers.2) if(!this.layer %in% layers.names) stop(paste("Layer", this.layer, "expected in Comparison object but not found"))
-    # 
-    # # adjust the source ids if they are identical 
-    # if(object@source1@id == object@source2@id) {
-    #   
-    #   # include the first and last years if they are not the same
-    #   if((object@sta.info1@first.year != object@sta.info2@first.year) && (object@sta.info1@last.year != object@sta.info2@last.year)){
-    #     object@source1@name <- paste0(object@source1@name, " (", object@sta.info1@first.year, "-", object@sta.info1@last.year, ")")
-    #     object@source2@name <- paste0(object@source2@name, " (", object@sta.info2@first.year, "-", object@sta.info2@last.year, ")")
-    #   }
-    #   
-    # }
-    # 
-    # 
-    # 
-    # # SECOND INFO - putting this first because this is the 'base' dataset ("one minus two" convention)
-    # new.dt <- object@data[, append(getDimInfo(object), expected.layers.2), with=FALSE]
-    # #setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant2@id )
-    # setnames(new.dt, expected.layers.2, object@layers2)
-    # layers.to.plot <- append(layers.to.plot, object@layers2)
-    # objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
-    #                                                     id = object@id,
-    #                                                     data = new.dt,
-    #                                                     quant = object@quant2,
-    #                                                     source = object@source2,
-    #                                                     object@sta.info2)
-    # 
-    # # FIRST INFO
-    # new.dt <- object@data[, append(getDimInfo(object), expected.layers.1), with=FALSE]
-    # #setnames(new.dt, names(new.dt)[length(names(new.dt))], object@quant1@id )
-    # setnames(new.dt, expected.layers.1, object@layers1 )
-    # layers.to.plot <- append(layers.to.plot, object@layers1)
-    # objects.to.plot[[length(objects.to.plot)+1]] <- new("Field",
-    #                                                     id = object@id,
-    #                                                     data = new.dt,
-    #                                                     quant = object@quant1,
-    #                                                     source = object@source1,
-    #                                                     object@sta.info1)
-    # 
+ 
   }
   
+  
+  #### set the facet ordering by using the factor - Gahhh!!  why doesn't this work??
+  plotting_dt[ , Comparison := factor(x = Comparison, 
+                                      levels = comparison_obj_factors)]
+  
+
   # make a legend title if one has not been supplied
   #if(missing(legend.title)) legend.title <- stringToExpression(standardiseUnitString(object@quant1@units))
   
@@ -185,13 +154,7 @@ plotXYComparison <- function(comparisons,
     xy_plot <- xy_plot + geom_bin2d() + viridis::scale_fill_viridis(option = "F", direction = -1, trans = "log10")
   }
   
-  
-  #### FACET IF NECESSARY ####
-  if(length(comparisons) > 1) {
-    xy_plot <- xy_plot + facet_wrap(facets = vars(Comparison))
-  }
-  
-  
+ 
   #### HANDLE LIMITS ####
   mylims <- range(with(plotting_dt, c(X, Y)), na.rm = TRUE)
   if(matchLimits) {
@@ -206,17 +169,19 @@ plotXYComparison <- function(comparisons,
   
   #### ADD METRICS ####
   if(length(metrics) > 0){
-    metrics_dt[ , x := mylims[1]]
-    metrics_dt[ , y := mylims[2]]
-    if(!is.null(text.multiplier)) metric_size <- theme_get()$text$size * text.multiplier
-    else metric_size <- theme_get()$text$size
+    xlims <- range(with(plotting_dt, c(X)), na.rm = TRUE)
+    ylims <- range(with(plotting_dt, c(Y)), na.rm = TRUE)
+    metrics_dt[ , x := xlims[2] * metric_x_pos]
+    metrics_dt[ , y := ylims[2] * metric_y_pos]
+    if(!is.null(text.multiplier)) metric_size <- metric_size * text.multiplier
     xy_plot <- xy_plot + geom_text(data = metrics_dt,  
                                    mapping = aes(x = x, y = y, label = label), 
                                    size = metric_size, 
                                    size.unit = "pt",
                                    vjust = 0, 
                                    hjust = 0,
-                                   parse = TRUE)
+                                   parse = TRUE,
+                                   lineheight = 100)
     #, size = settings$map_annotation_text_size)
   }
   
@@ -225,7 +190,7 @@ plotXYComparison <- function(comparisons,
                             subtitle = subtitle,
                             y = y_label,
                             x = x_label)
-
+  
   
   #### SET THEME AND OTHER LAYOUT OPTIONS ####
   # set the theme to theme_bw, simplest way to set the background to white
@@ -235,6 +200,16 @@ plotXYComparison <- function(comparisons,
   
   #### TEXT MULTIPLIER ####
   if(!is.null(text.multiplier)) xy_plot <- xy_plot + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
+  
+  #### DONT EXPAND LIMITS
+  xy_plot <- xy_plot + scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0))  
+  
+  
+  
+  #### FACET IF NECESSARY ####
+  if(length(comparisons) > 1) {
+    xy_plot <- xy_plot + facet_wrap(~Comparison, ...)
+  }
   
   return(xy_plot)
   
