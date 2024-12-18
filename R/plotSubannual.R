@@ -261,6 +261,16 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   data.toplot[, StatsGroup := interaction(.SD), .SDcols = stats_SDcols]
   
   
+  ### LEGEND ENTRY ORDERING
+  ## Fix order of items in legend(s) by making them factors with levels corresponding to the order of the input fields
+  all.sources <- list()
+  # first loop across the fields
+  for(this.field in fields) {
+    all.sources <- append(all.sources, this.field@source@name)
+  }
+  if("Source" %in% names(data.toplot)) data.toplot[, Source := factor(Source, levels = unique(all.sources))]
+  
+  
   
   ###### MAKE THE PLOT #####
   
