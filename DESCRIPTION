@@ -40,7 +40,7 @@ License: GPL | file LICENSE
 URL: https://www.bik-f.de
 BugReports: https://github.com/MagicForrest/DGVMTools/issues
 NeedsCompilation: no
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Encoding: UTF-8
 Collate:
@@ -84,8 +84,6 @@ Collate:
     'names-methods.R'
     'package-documentation.R'
     'periods.R'
-    'plotScatter.R'
-    'plotScatter_old.R'
     'plotSpatial.R'
     'plotSpatialComparison.R'
     'plotSubannual.R'

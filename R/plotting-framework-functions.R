@@ -126,129 +126,6 @@ santiseLayersForPlotting <- function(fields, layers) {
 }
 
 
-#' Sanitise input layers for X-Y plotting
-#' 
-#' This is an internal helper function which checks the layers requested to be plotted against the layers in the the fields to be plotted.  If layers is NULL, then 
-#' it returns all layers present in any fields
-#' 
-#' @param fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
-#' @param layers The layers requested to be plotted
-#' @return Returns character vector of the layers to be plotted
-#' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
-#' @keywords internal
-#' 
-#' 
-santiseLayersForPlottingXY <- function(fields1, fields2, layers1, layers2) {
-  
-  print(fields1)
-  print(fields2)
-  print(layers1)
-  print(layers2)
-  
-  
-  #### Must return a list of 2-element named, character vectors where the names are the Field  
-  
-  layers.superset <- c()
-  num.layers.x.fields <- 0
-  
-  # Work through all the possible combinations of fields and layers arguments
-  final_layers <- list()
-  plotting_dt <- data.table() 
-  
-  # for each fields1, copy layers from each fields2
-  all_comps <- list
-  for(fld1 in fields1){
-    for(fld2 in fields2){
-      all_comps <- compareLayers(field1 = fld1, field2 = fld2, layers1 = layers1, layers2 = layers2, show.stats = FALSE)
-    }
-  }
-  
-  print(plotting_dt)
-  return(plotting_dt)
-  
-  # a single field
-  if(length(fields) == 1){
-    
-    if(length(layers) == 1) {
-      stop("plotScatter: Failing. You gave me one Field, so I need at least two layers, you only specified one.")
-    }
-    else if(is.null(layers) || missing(layers)){
-      layers <- layers(fields[[1]])
-      print(layers)
-      # compare every layer to every other layer
-      layers_todo <- layers
-      
-      for(this_layer in layers){
-        print(this_layer)
-        # remove this layer from layers_todo
-        layers_todo <- layers_todo[-which(layers_todo == this_layer)]
-        print(layers_todo[!which(layers_todo == this_layer)])
-        print(layers_todo)
-        for(this_second_layer in layers_todo){
-          this_group <- 
-            plotting_dt < plotting_dt
-          final_layers[[paste0(this_layer, "_x_", this_second_layer)]] <- c( this_layer, this_second_layer)
-        }
-      }
-      
-    }
-  }
-  
-  print(final_layers)  
-  
-  
-  # if no layers argument supplied make a list of all layers present (in any object)
-  if(is.null(layers) || missing(layers)){
-    
-    for(object in fields){
-      temp.layers <- names(object)
-      num.layers.x.fields <- num.layers.x.fields + length(temp.layers)
-      layers.superset <- append(layers.superset, temp.layers)
-    } 
-    layers <- unique(layers.superset)
-    
-  }
-  else if(is.character(layers)) {
-    
-    
-    
-  }
-  
-  # else if layers have been specified check that we have some of the requested layers present
-  else{
-    
-    for(object in fields){
-      
-      layers.present <- intersect(names(object), layers)
-      num.layers.x.fields <- num.layers.x.fields + length(layers.present)
-      
-      if(length(layers.present) == 0) {warning("Some Fields to plot don't have all the layers that were requested to plot.\n")}
-      layers.superset <- append(layers.superset, layers.present)
-      
-    } 
-    
-    # Return empty plot if not layers found
-    if(num.layers.x.fields == 0){
-      warning("None of the specified layers found in the objects provided to plot.  Returning NULL.\n")
-      return(NULL)
-    }
-    
-    # Also check for missing layers and given a warning
-    missing.layers <- layers[!(layers %in% unique(layers.superset))]
-    if(length(missing.layers) != 0) { warning(paste("The following layers were requested to plot but not present in any of the supplied objects:", paste(missing.layers, collapse = " "), ".\n", sep = " ")) }
-    
-    # finally make a unique list of layers to be carried in to the actual plotting
-    layers <- unique(layers.superset)
-    
-  }
-  
-  return(layers)
-  
-}
-
-
-
-
 #' Sanitise STAInfo for plotting
 #' 
 #' This is an internal helper function which checks the dimensions of the Fields to be plotted 
@@ -578,7 +455,7 @@ mergeFieldsForPlotting <- function(fields,  add.Quantity = FALSE,  add.Site = FA
 #' 
 #' This is an internal helper function to build a y-axis for Temporal and Subannual plots, possibly with multiple Quantities
 #' 
-#' @param final.fields The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
+#' @param objects The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)
 #' 
 #' @return Returns the y-axis as a chatacter string,
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
@@ -590,8 +467,8 @@ makeYAxis <- function(objects) {
   # first extract the names and units and store them in a tuples (two element vector) for the Quantity from each Field
   all.quant.tuples <- list()
   for(object in objects) {
-   if(is.Field(object)) all.quant.tuples[[length(all.quant.tuples)+1]] <- c(object@quant@name, object@quant@units)
-   else if(is.Quantity(object)) all.quant.tuples[[length(all.quant.tuples)+1]] <- c(object@name, object@units)
+    if(is.Field(object)) all.quant.tuples[[length(all.quant.tuples)+1]] <- c(object@quant@name, object@quant@units)
+    else if(is.Quantity(object)) all.quant.tuples[[length(all.quant.tuples)+1]] <- c(object@name, object@units)
   } 
   
   # select the unique ones
@@ -705,6 +582,39 @@ addMapOverlay <- function(map_plot, map_overlay) {
   
 }
 
+# TODO
+makeMetricTableForPlotting <- function(comparisons, metrics, mode = "xy") {
+  
+  metrics_dt <- data.table()
+  for(object in comparisons){
+    
+    tmp_metrics_list <- list()
+    for(metric in metrics){
+      
+      # for something represing new lines
+      if(metric %in% c("", "\n")) {
+        tmp_metrics_list[[length(tmp_metrics_list)+1]] <- "\n"
+      }
+      # for a real metric
+      else {
+        metric_text <- metric
+        if(metric == "m") metric_text <- "Slope"
+        if(metric == "c") metric_text <- "Intercept"
+        if(metric == "R2") metric_text <- "R^2"
+        if(metric == "r2") metric_text <- "r^2"
+        tmp_metrics_list[[metric_text]] <- paste0(metric_text, "==", signif(object@stats[[metric]], 2))
+      }
+    }
+    tmp_metrics_string <- paste(tmp_metrics_list, collapse = " ")
+    if(mode == "xy")  tmp_dt <- data.table(Comparison = gsub(pattern = " - ", replacement = " vs ", x = object@name), label = gsub(" ", "~", tmp_metrics_string))
+    else if(mode == "spatial") tmp_dt <- data.table(Facet = object@name, label = gsub(" ", "~", tmp_metrics_string))
+    metrics_dt <- rbind(metrics_dt, tmp_dt)
+  }
+  
+  if(mode == "spatial") metrics_dt[ , Facet := factor(Facet)]
+  
+  return(metrics_dt)
+}
 
 #' @keywords internal
 #' @importFrom units as_units

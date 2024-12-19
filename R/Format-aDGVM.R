@@ -65,8 +65,6 @@ getField_aDGVM <- function(source,
 #' @param run A \code{\linkS4class{Source}} containing the meta-data about the aDGVM run
 #' @param quant A Quant to define what output file from the aDGVM run to open, 
 #' can also be a simple string defining the aDGVM output file if the \code{return.data.table} argument is TRUE
-#' @param first.year The first year (as a numeric) of the data to be return
-#' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
 #' This can be left blank, in which case the file name is automatically generated.
@@ -383,8 +381,6 @@ getYearlyField_aDGVM <- function(run,
 #' @param run A \code{\linkS4class{Source}} containing the meta-data about the aDGVM run
 #' @param quant A Quant to define what output file from the aDGVM run to open, 
 #' can also be a simple string defining the aDGVM output file if the \code{return.data.table} argument is TRUE
-#' @param first.year The first year (as a numeric) of the data to be return
-#' @param last.year The last year (as a numeric) of the data to be return
 #' @param verbose A logical, set to true to give progress/debug information
 #' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
 #' This can be left blank, in which case the file name is automatically generated.
@@ -799,8 +795,6 @@ getDailyField_aDGVM <- function(run,
 #' for each and every model to ensure completeness.
 #' @param run A \code{\linkS4class{Source}} containing the meta-data about the aDGVM run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param quant A Quantity to define what output file from the aDGVM run to open
-#' @param first.year The first year (as a numeric) of the data to be return
-#' @param last.year The last year (as a numeric) of the data to be return
 #' @param file.name An optional character string (or a list of character strings) holding the name of the file(s)
 #' This can be left blank, in which case the file name is automatically generated.
 #' @param verbose A logical, set to true to give progress/debug information

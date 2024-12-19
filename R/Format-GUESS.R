@@ -359,8 +359,6 @@ openLPJOutputFile <- function(run,
 #' @param run A \code{\linkS4class{Source}}  containing the meta-data about the LPJ-GUESS run
 #' @param quant A Quantity to define what output file from the LPJ-GUESS run to open.
 #' @param layers A character string (or a vector of character strings) specifying which layer columns are to be read.  NULL (default) means read all.
-#' @param first.year The first year (as a numeric) of the data to be return
-#' @param last.year The last year (as a numeric) of the data to be return
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
 #' "<quant@id>.out" (also "<quant@id>.out.gz")
 #' @param verbose A logical, set to true to give progress/debug information
@@ -756,8 +754,6 @@ openLPJOutputFile_FireMIP <- function(run,
 #' 
 #' @param run A \code{\linkS4class{Source}} containing the meta-data about the LPJ-GUESS run from which the data is to be read.  Most importantly it must contain the run.dara nd the offsets.
 #' @param quant A Quantity to define what output file from the LPJ-GUESS run to open
-#' @param first.year The first year (as a numeric) of the data to be return
-#' @param last.year The last year (as a numeric) of the data to be return
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is just taken to be 
 #' "<quant@id>.out" (also "<quant@id>.out.gz")
 #' @param verbose A logical, set to true to give progress/debug information

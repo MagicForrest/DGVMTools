@@ -908,7 +908,7 @@ FireMIPBiomeScheme <- new("Scheme",
 #' 
 #' lalala
 #' 
-#' @param fpc Vector of FPC values
+#' @param x Vector of FPC values
 #' @keywords internal
 FPCMegaBiomeRules <- function(x) {
   

@@ -14,7 +14,7 @@
 #' @param quant A Quantity object to specify what quantity should be opened. 
 #' @param layers A character string (or a vector of character strings) specifying which variables from the NetCDF file are to be read.
 #' NULL (default) means read all.
-#' @param target.sta.info An STAInfo object defining the spatial-temporal-annual extent over which we want the data
+#' @param target.STAInfo An STAInfo object defining the spatial-temporal-annual extent over which we want the data
 #' @param file.name Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated
 #' @param calendar Character string, sometimes the calendar string on the time axis can be incorrect or missing.  Here you can manually provide it.
 #' Note: A common error in paleo files is "standard" instead of "proleptic_gregorian". Specifically, if you have dates with years 1582 

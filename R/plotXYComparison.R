@@ -1,24 +1,45 @@
 #!/usr/bin/Rscript
 
 
-#################################################################################################################################################
-################################################## PLOT COMPARISON MAPS #########################################################################
-#################################################################################################################################################
+################################################################################################################################################
+################################################## PLOT XY COMPARISON  #########################################################################
+################################################################################################################################################
 
 
-#' Plot a comparison between two spatial layers
+#' Plot a scatter comparison between two layers
 #' 
-#' This function is for plotting maps from Comparison objects (or a list of those Comparisons).  Three types of comparisons plots are supported: 'difference' - 
-#' a difference map; "values" - the absolute values plotted in panels and "percentage.difference" - the percentage differences.  
+#' This produces X-Y scatter plots from Comparison objects (or a list of those Comparisons).  These plots can be rendered with points or point densities
+#'  with square binsor hexagonal bins.
 #' 
 #' @param comparisons The data to plot, must be a Comparison or a list of Comparisons
 #' @param type A character specifying what type of plot to make. Can be "points" (default, for geom_points), "hex" (for hex binning), "bin2d" (for square binning).
 #' There might be more useful options to add later. 
-#' @param col.by,size.by,shape.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line width, point size and point shape and alpha (transparency).
-#' Can meaningfully take the values "Layer", "Source", "Site" or "Quantity". By default \code{col.by} is set to "Layer" and all others set to NULL, which means the different aspects are 
-#' distinguished by different facet panels.  Thus the standard behaviour is that different Layers are distinguished by different colours, but everything is separated into different panels.
-
-#' @details  A wrapper for around \link{plotSpatial} to plot the spatial Comparisons as maps.  Extra arguments to \link{plotSpatial} can also be specified. 
+#' @param fit_line_col A colour for the fit line through the data (default is NULL meaning no fit line).
+#' @param perfect_line_col A colour for the perfect one-to-one line (default is NULL meaning no one-to-one line).
+#' @param col.by Character strings defining the aspects of the data which which should be used to set the colour of the points 
+#' @param matchLimits Logical, determins if the X and X axes should have the same range. Default is TRUE.
+#' (only works for \code{type = "points"}). Can meaningfully take the values of spatiotemporal dimensions which are in the dataset 
+#' such as "Day", "Month", "Season", "Year", "Lon" and "Lat". 
+#' By default \code{col.by} is set to NULL, which doesn't distinguish the points by colour.
+#' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
+#' Make it bigger if the text is too small on large plots and vice-versa.
+#' @param metrics A character vector specifying the metrics to put on the plots. For spatial data these can be: "ME", "NME", "NMSE", "RMSE", "NME_2", "NMSE_2", "NME_3", 
+#' "NSME_3", "r2_eff", "r", "r2", "m", "c". 
+#' @param metric_size A numeric value for the size of the metric text, note that this will be also be scaled by the \code{text.multiplier} argument.
+#' @param metric_x_pos,metric_y_pos A number value specifying the x/y location of the metric text as a fraction of the plot area.  Note, it uses the
+#' overall range of the plotting for calculating this (not the specific ranges of the axes), so using facets or grids with "free" scales will mess this up.
+#' 
+#' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
+#' \itemize{
+#'  \item{"nrow"}{The number of rows of facets}
+#'  \item{"ncol"}{The number of columns of facets}
+#'  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)
+#'  "free" (all facets can their x and y ranges), "free_x" and "free_y"  (only x and y ranges can vary, respectively).}
+#'  \item{"labeller"}{A function to define the labels for the facets.  This is a little tricky, please look to the ggplot2 documentation.
+#'  But basically what you want is to define a named character vector, the names are the previous facet names and the values are the new names.  
+#'  Then make this into a function by passing it to the ggplot function "as.labeller", and then that becomes your 'labeller' argument.} 
+#' }
+#' @details A wrapper for around \link{plotSpatial} to plot the spatial Comparisons as maps.  Extra arguments to \link{plotSpatial} can also be specified. 
 #' 
 #' @return Returns a ggplot object
 #'  
@@ -43,6 +64,7 @@ plotXYComparison <- function(comparisons,
   
   Source = Value = Lat = Lon = Layer = long = lat = group = NULL
   Day = Month = Year = Season = NULL
+  X = x = Y = y = slope = intercept = label = Difference = Comparison = NULL
   
   # sort type argument
   type <- match.arg(type)
@@ -71,7 +93,7 @@ plotXYComparison <- function(comparisons,
   metrics_dt <- data.table()
   comparison_obj_factors <- c()
   for(object in comparisons){
-   
+    
     pretty_comparison_name <- gsub(pattern = " - ", replacement = " vs ", x = object@name)
     comparison_obj_factors <- append(comparison_obj_factors, pretty_comparison_name)
     tmp_dt <- copy(object@data)
@@ -83,37 +105,18 @@ plotXYComparison <- function(comparisons,
     plotting_dt <- rbind(plotting_dt, tmp_dt)
     fit_lines_dt <- rbind(data.table(slope = object@stats$m, intercept = object@stats$c, Comparison = pretty_comparison_name),
                           fit_lines_dt)
-    if(length(metrics) > 0 ){
-      tmp_metrics_list <- list()
-      for(metric in metrics){
-        
-        # for something represing new lines
-        if(metric %in% c("", "\n")) {
-          tmp_metrics_list[[length(tmp_metrics_list)+1]] <- "\n"
-        }
-        # for a real metric
-        else {
-          metric_text <- metric
-          if(metric == "m") metric_text <- "Slope"
-          if(metric == "c") metric_text <- "Intercept"
-          if(metric == "R2") metric_text <- "R^2"
-          if(metric == "r2") metric_text <- "r^2"
-          tmp_metrics_list[[metric_text]] <- paste0(metric_text, "==", signif(object@stats[[metric]], 2))
-        }
-      }
-      tmp_metrics_string <- paste(tmp_metrics_list, collapse = " ")
-      tmp_dt <- data.table(Comparison = pretty_comparison_name, label = gsub(" ", "~", tmp_metrics_string))
-      metrics_dt <- rbind(metrics_dt, tmp_dt)
-    }
- 
+    
   }
   
+  #### METRICS - Make a table to store them
+  metrics_dt <- makeMetricTableForPlotting(comparisons, metrics)
+
   
   #### set the facet ordering by using the factor - Gahhh!!  why doesn't this work??
   plotting_dt[ , Comparison := factor(x = Comparison, 
                                       levels = comparison_obj_factors)]
   
-
+  
   # make a legend title if one has not been supplied
   #if(missing(legend.title)) legend.title <- stringToExpression(standardiseUnitString(object@quant1@units))
   
@@ -154,7 +157,7 @@ plotXYComparison <- function(comparisons,
     xy_plot <- xy_plot + geom_bin2d() + viridis::scale_fill_viridis(option = "F", direction = -1, trans = "log10")
   }
   
- 
+  
   #### HANDLE LIMITS ####
   mylims <- range(with(plotting_dt, c(X, Y)), na.rm = TRUE)
   if(matchLimits) {
@@ -169,6 +172,7 @@ plotXYComparison <- function(comparisons,
   
   #### ADD METRICS ####
   if(length(metrics) > 0){
+    
     xlims <- range(with(plotting_dt, c(X)), na.rm = TRUE)
     ylims <- range(with(plotting_dt, c(Y)), na.rm = TRUE)
     metrics_dt[ , x := xlims[2] * metric_x_pos]
