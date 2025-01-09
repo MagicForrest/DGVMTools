@@ -107,6 +107,7 @@ plotXYComparison <- function(comparisons,
                           fit_lines_dt)
     
   }
+  fit_lines_dt[ , Comparison := factor(Comparison)]
   
   #### METRICS - Make a table to store them
   metrics_dt <- makeMetricTableForPlotting(comparisons, metrics)

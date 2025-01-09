@@ -612,6 +612,7 @@ makeMetricTableForPlotting <- function(comparisons, metrics, mode = "xy") {
   }
   
   if(mode == "spatial") metrics_dt[ , Facet := factor(Facet)]
+  if(mode == "xy") metrics_dt[ , Comparison := factor(Comparison)]
   
   return(metrics_dt)
 }
