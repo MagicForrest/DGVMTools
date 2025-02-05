@@ -13,6 +13,10 @@ plotSpatialComparison(
   override.cols = NULL,
   symmetric.scale = TRUE,
   do.phase = FALSE,
+  metrics = c(),
+  metric_size = waiver(),
+  metric_x_pos = 0.025,
+  metric_y_pos = 0.975,
   ...
 )
 }
@@ -36,6 +40,14 @@ to facilitate expressions for nicely marked up subscript and superscript.}
 
 \item{do.phase}{Logical, only applies to plotting Comparison objects of type "seasonal".
 If TRUE plot the the seasonal phase, if FALSE (the default), plot the seasonal concentration.}
+
+\item{metrics}{A character vector specifying the metrics to put on the plots. For spatial data these can be: "ME", "NME", "NMSE", "RMSE", "NME_2", "NMSE_2", "NME_3", 
+"NSME_3", "r2_eff", "r", "r2", "m", "c".}
+
+\item{metric_size}{A numeric value for the size of the metric text, note that this will be also be scaled by the \code{text.multiplier} argument.}
+
+\item{metric_x_pos, metric_y_pos}{A number value specifying the x/y location of the metric text as a fraction of the plot area.  Note, it uses the
+overall range of the plotting for calculating this (not the specific ranges of the axes), so using facets or grids with "free" scales will mess this up.}
 
 \item{...}{Parameters passed to \link{plotSpatial}}
 }

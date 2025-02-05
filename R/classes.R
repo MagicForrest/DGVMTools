@@ -56,10 +56,10 @@ setClass("Format",
 #' @details 
 #' Since these are for the most part standard (ie. people commonly need the months, the seasons (DJF, MAM, JJA, SON) and annual) these are defined in simple list that might be commonly used and can be looped through.  These are:
 #' \describe{
-#'   \item{\code{months}}{which contains all the months.}
-#'   \item{\code{seasons}}{which contains all the seasons.}
-#'   \item{\code{annual}}{which only contains only the annual period.}
-#'   \item{\code{all.periods, periods}}{which contains all of the above.}
+#'   \item{all.months}{which contains all the months.}
+#'   \item{all.seasons}{which contains all the seasons.}
+#'   \item{annual}{which only contains only the annual period.}
+#'   \item{all.periods}{which contains all of the above.} 
 #' }
 #'  
 #' However other periods can be defined for specific growing seasons etc.
@@ -332,11 +332,11 @@ setClass("Quantity",
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string describing this comparison layer, is automatically generated
 #' @slot type A character string describing what type of comparisons this is (automatically determined).  Can be
-#' \itemize{
+#' \describe{
 #'  \item{"continuous"}{A comparison of two continous, numerical layers.}
 #'  \item{"categorical"}{A comparison of two categorical layers.}
-#'  \item{"relative.abundance"} {A comparison of multiple numerical layers whose sum equals unity.}
-#'  \item{"seasonal"} {A comparison of the seasonal concentration and phase calculated from two numerical layers which have monthly data.}
+#'  \item{"relative.abundance"}{A comparison of multiple numerical layers whose sum equals unity.}
+#'  \item{"seasonal"}{A comparison of the seasonal concentration and phase calculated from two numerical layers which have monthly data.}
 #' }
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant1 A \linkS4class{Quantity} object to define what quantity the data from first field represents
@@ -393,7 +393,7 @@ setClass("Comparison",
 #' @slot rules A function which is applied to every row of the data.table and describes the classification rules.
 #' @slot layers.needed List of vegetation layers needed to perform the classification and the name of the new layer, to be interpreted by \code{\link{layerOp}}, specified as a list of three- or four-item list 
 #' whose elements first element id the id of a \code{\linkS4class{Quantity}} and whose other elements are passed as arguments to the \code{\link{layerOp}} function.  
-#' For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
+#' For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "\+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
 #' which would make a layer called "Woody" which would be the sum of all LAI trees and shrubs.
 #' @slot data.reference Character string giving a reference where the data for this classification scheme comes from
 #' @slot published.reference Character string giving a reference where this model output classification scheme was published

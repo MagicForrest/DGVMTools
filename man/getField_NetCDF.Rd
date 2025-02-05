@@ -24,6 +24,8 @@ getField_NetCDF(
 \item{layers}{A character string (or a vector of character strings) specifying which variables from the NetCDF file are to be read.
 NULL (default) means read all.}
 
+\item{target.STAInfo}{An STAInfo object defining the spatial-temporal-annual extent over which we want the data}
+
 \item{file.name}{Character string holding the name of the file.  This can be left blank, in which case the file name is automatically generated}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
@@ -37,8 +39,6 @@ so it is handy to control that separately.}
 \item{calendar}{Character string, sometimes the calendar string on the time axis can be incorrect or missing.  Here you can manually provide it.
 Note: A common error in paleo files is "standard" instead of "proleptic_gregorian". Specifically, if you have dates with years 1582 
 (the start of the Gregorian calendar) and it includes leap years the calendar needs to be set to "proleptic_gregorian".}
-
-\item{target.sta.info}{An STAInfo object defining the spatial-temporal-annual extent over which we want the data}
 }
 \value{
 A list containing firstly the data.table containing the data, and secondly the STAInfo for the data that we have

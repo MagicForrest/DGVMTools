@@ -37,10 +37,10 @@ A simple S4 class to define a month, a season or a year used for aggregating mon
 \details{
 Since these are for the most part standard (ie. people commonly need the months, the seasons (DJF, MAM, JJA, SON) and annual) these are defined in simple list that might be commonly used and can be looped through.  These are:
 \describe{
-  \item{\code{months}}{which contains all the months.}
-  \item{\code{seasons}}{which contains all the seasons.}
-  \item{\code{annual}}{which only contains only the annual period.}
-  \item{\code{all.periods, periods}}{which contains all of the above.}
+  \item{all.months}{which contains all the months.}
+  \item{all.seasons}{which contains all the seasons.}
+  \item{annual}{which only contains only the annual period.}
+  \item{all.periods}{which contains all of the above.} 
 }
  
 However other periods can be defined for specific growing seasons etc.

@@ -50,7 +50,7 @@
 #' @param pixel.size Numeric, allows you to alter the plotted pixel size (height and width simultaneously using the same value).  This is useful 
 #' if you are plotting a collection of individual sites which do not have regular spacing.  Note the "tile = TRUE" (see above) will automatically set if you haven't done it manually.
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
-#' \itemize{
+#' \describe{
 #'  \item{"nrow"}{The number of rows of facets}
 #'  \item{"ncol"}{The number of columns of facets}
 #'  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)

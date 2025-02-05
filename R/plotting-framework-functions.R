@@ -585,6 +585,8 @@ addMapOverlay <- function(map_plot, map_overlay) {
 # TODO
 makeMetricTableForPlotting <- function(comparisons, metrics, mode = "xy") {
   
+  Comparison = NULL
+  
   metrics_dt <- data.table()
   for(object in comparisons){
     

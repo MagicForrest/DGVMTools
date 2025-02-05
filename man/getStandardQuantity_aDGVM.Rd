@@ -23,10 +23,6 @@ getStandardQuantity_aDGVM(
 This can be left blank, in which case the file name is automatically generated.}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
-
-\item{first.year}{The first year (as a numeric) of the data to be return}
-
-\item{last.year}{The last year (as a numeric) of the data to be return}
 }
 \value{
 a data.table (with the correct tear offset and lon-lat offsets applied)

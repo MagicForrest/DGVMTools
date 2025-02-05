@@ -25,7 +25,7 @@ It describes what how the model output (in the form of a data.table) must be pre
 
 \item{\code{layers.needed}}{List of vegetation layers needed to perform the classification and the name of the new layer, to be interpreted by \code{\link{layerOp}}, specified as a list of three- or four-item list 
 whose elements first element id the id of a \code{\linkS4class{Quantity}} and whose other elements are passed as arguments to the \code{\link{layerOp}} function.  
-For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
+For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "\+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
 which would make a layer called "Woody" which would be the sum of all LAI trees and shrubs.}
 
 \item{\code{data.reference}}{Character string giving a reference where the data for this classification scheme comes from}

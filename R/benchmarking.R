@@ -1,7 +1,7 @@
 
 #' Make linear fit equation string
 #' 
-#' Makes a string (form: y = ax + b, r^2 = r^2) for putting on plots from a linear model (lm)
+#' Makes a string (form: y = ax \+ b, r^2 = r^2) for putting on plots from a linear model (lm)
 #' 
 #' @param linear.model An object of class lm, should have been made with a simple \code{y ~ x} formula
 #' 

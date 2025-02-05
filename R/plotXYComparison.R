@@ -30,7 +30,7 @@
 #' overall range of the plotting for calculating this (not the specific ranges of the axes), so using facets or grids with "free" scales will mess this up.
 #' 
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()}.  See the ggplot2 documentation for full details but the following are particularly useful.
-#' \itemize{
+#' \describe{
 #'  \item{"nrow"}{The number of rows of facets}
 #'  \item{"ncol"}{The number of columns of facets}
 #'  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)

@@ -7,7 +7,7 @@
 commonSTAInfo(sta.objects, logical = FALSE)
 }
 \arguments{
-\item{sta.objects}{A list of Field and/or STAInfo objects which should be compared to dermine the common STAInfo}
+\item{sta.objects}{A list of Field and/or STAInfo objects which should be compared to determine the common STAInfo}
 
 \item{logical}{Logical, if TRUE return a simple TRUE/FALSE rather than an STAInfo object of common info.}
 }

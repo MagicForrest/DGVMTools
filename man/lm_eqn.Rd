@@ -13,7 +13,7 @@ lm_eqn(linear.model)
 A character string
 }
 \description{
-Makes a string (form: y = ax + b, r^2 = r^2) for putting on plots from a linear model (lm)
+Makes a string (form: y = ax \+ b, r^2 = r^2) for putting on plots from a linear model (lm)
 }
 \details{
 Make sure the model is \code{y ~ x} or this function doesn't really make sense

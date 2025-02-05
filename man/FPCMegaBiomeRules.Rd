@@ -7,7 +7,7 @@
 FPCMegaBiomeRules(x)
 }
 \arguments{
-\item{fpc}{Vector of FPC values}
+\item{x}{Vector of FPC values}
 }
 \description{
 lalala

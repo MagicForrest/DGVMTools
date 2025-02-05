@@ -27,7 +27,7 @@
 #' @param dropEmpty Logical, if TRUE don't plot time series lines consisting only of zeros (default is FALSE).
 #' @param plot Logical, if FALSE return the data.table of data instead of the plot
 #' @param ... Arguments passed to \code{ggplot2::facet_wrap()} and \code{ggplot2::stat_smooth()}.  See the ggplot2 documentation for full details but the following are particularly useful.
-#' \itemize{
+#' \describe{
 #'  \item{"nrow"}{The number of rows of facets. (facet_wrap)}
 #'  \item{"ncol"}{The number of columns of facets. (facet_wrap)}
 #'  \item{"scales"}{Whether the scales (ie. x and y ranges) should be fixed for all facets.  Options are "fixed" (same scales on all facets, default)

@@ -10,7 +10,7 @@
 #' To check what dimensions you have you can use \code{\link{getDimInfo}}  
 #' 
 #' @param source The \code{\linkS4class{Source}} object for which the \code{\linkS4class{Field}} should be built, typically a model run or a dataset.
-#' @param quant The \\code{\linkS4class{Quantity}} to be read - either a \code{\linkS4class{Quantity}} object or a string containing its \code{id}.  If it is a character string it will be checked
+#' @param quant The \code{\linkS4class{Quantity}} to be read - either a \code{\linkS4class{Quantity}} object or a string containing its \code{id}.  If it is a character string it will be checked
 #' against the predefined \code{Quantities} in the \code{\linkS4class{Source}} object and failing that a simple dummy \code{\linkS4class{Quantity}} will be be made.  For the \code{NetCDF Format}
 #' most \code{\linkS4class{Quantity}} metadata will be taken from the NetCDF file where possible (thus overriding this option).
 #' @param layers A list (or vector of character) of character strings to specify which Layers should be read from the file.  
