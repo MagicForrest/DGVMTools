@@ -114,7 +114,8 @@ setClass("STAInfo",
                    spatial.aggregate.method = "character",
                    subannual.resolution = "character",
                    subannual.aggregate.method = "character",
-                   subannual.original = "character"
+                   subannual.original = "character",
+                   user.processing.applied = "character"
          ),
          prototype  = list(first.year = numeric(0),
                         last.year = numeric(0),
@@ -124,7 +125,8 @@ setClass("STAInfo",
                         spatial.aggregate.method = "none",
                         subannual.resolution = character(0),
                         subannual.aggregate.method = "none",
-                        subannual.original = character(0)
+                        subannual.original = character(0),
+                        user.processing.applied = character(0)
          )
          
 )

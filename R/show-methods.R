@@ -60,9 +60,9 @@ setMethod("show", signature(object="Period"), function(object) {
   cat(paste0("id = ", "\"", object@id, "\"", "\n"))
   cat(paste0("name = ", "\"", object@name, "\"", "\n"))
   cat(paste0("abbreviation = ", "\"", object@abbreviation, "\"", "\n"))
-  cat(paste0("index = ", object@index, "\n"))
-  cat(paste0("padded.index = ", "\"", object@padded.index, "\"", "\n"))
-  cat(paste0("contains = ", object@contains, "\n"))
+  cat(paste0("index = ", paste(object@index, collapse = ","), "\n"))
+  cat(paste0("padded.index = ", "\"", paste(object@padded.index, collapse = "\",\""), "\"", "\n"))
+  cat(paste0("contains = ", "\"",paste(object@contains, collapse = "\",\""), "\"", "\n"))
   cat(paste0("days = ", object@days, "\n"))
   cat(paste0("days.leap = ", object@days.leap, "\n"))
   
@@ -118,7 +118,7 @@ setMethod("show", signature(object="STAInfo"), function(object) {
   cat(paste0("\t\tSubannual original = ",  object@subannual.original, "\n"))
   cat(paste0("\t\tSubannual aggregation = ",  object@subannual.aggregate.method, "\n"))
   cat(paste0("\t\tSubannual resolution = ",  object@subannual.resolution, "\n"))
-  
+  cat(paste0("\t\tUser processing applied = ",  object@user.processing.applied, "\n"))
 })
 
 

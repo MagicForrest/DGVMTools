@@ -153,7 +153,7 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   
   
   #### MORE 'STANDARD' METRICS MORE BASED ON LINEAR REGRESSION AND NOT FOCUSSED ON MODEL-OBSERVATION COMPARISON
-  if(!is.null(area.vec)) {
+  if(!is.null(area_vec)) {
     if(verbose) message("NOTE: metrics r and r2 are NOT weighted by gridcell area, the other metrics are.")
     warning("NOTE: metrics r and r2 are NOT weighted by gridcell area, the other metrics are.")
   }
