@@ -83,6 +83,8 @@ calcNMSE <- function(mod, obs, weights) {
 #' @export    
 continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE, tolerance = 0.01){
   
+  wghts <- NULL
+  
   # check the layers are present
   if(!layers1 %in% layers(x)) stop("Argument layers1 is not a column in x")
   if(!layers2 %in% layers(x)) stop("Argument layers2 is not a column in x")

@@ -91,13 +91,15 @@ setClass("Period",
 #' @param year.aggregate.method A character specifying how the years have been aggregated, for example "mean", or "sum" or "var". See aggregateYears.
 #' If no yearly aggregation has been applied it should be NULL.
 #' @param spatial.extent This can be of any type that can be used but DGVMTools::crop, and stores the current spatial extent.  
-#' But default (and with no cropping) it is simple teh raster::Extent object of the whole domain.
-#' @param spatial.aggregate.method A character method specifying how the spatial extent has been aggregated, for eample "mean" or "sum",
+#' But default (and with no cropping) it is simple the raster::Extent object of the whole domain.
+#' @param spatial.aggregate.method A character method specifying how the spatial extent has been aggregated, for example "mean" or "sum",
 #' see aggregateSpatial.  If no spatial aggregation has been applied it should be NULL.
 #' @param subannual.original A character string specifying the original sub-annual resolution of this data, eg. "Year", Month", "Day"
 #' @param subannual.resolution A character string specifying the current sub-annual resolution of this data, eg. "Year", Month", "Day"
 #' @param subannual.aggregate.method A character specifying how the subannual periods have been aggregated, for example "mean", "max", "sum" or "var". 
 #' See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.
+#' @param custom.processing  A character string which may be used by the user to specify other processing that has been applied.
+#' Not currently used by the the package, it is rather to give flexibility to users.
 #' 
 #' @details This is mostly a behind-the-scenes class which bundles together a lot of dimension information in a tidy form. 
 #' 
@@ -115,7 +117,7 @@ setClass("STAInfo",
                    subannual.resolution = "character",
                    subannual.aggregate.method = "character",
                    subannual.original = "character",
-                   user.processing.applied = "character"
+                   custom.processing = "character"
          ),
          prototype  = list(first.year = numeric(0),
                         last.year = numeric(0),
@@ -126,7 +128,7 @@ setClass("STAInfo",
                         subannual.resolution = character(0),
                         subannual.aggregate.method = "none",
                         subannual.original = character(0),
-                        user.processing.applied = character(0)
+                        custom.processing = character(0)
          )
          
 )
@@ -438,6 +440,8 @@ setClass("Scheme",
 #' @slot subannual.aggregate.method Method by which this Field has been subannually aggregated
 #' @slot subannual.original Original subannual resolution of this field
 #' @slot source A Source object which contains the metadata about the run which this Field belongs too.
+#' @param custom.processing  A character string which may be used by the user to specify other processing that has been applied.
+#' Not currently used by the the package, it is rather to give flexibility to users.
 #' @exportClass Field
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 

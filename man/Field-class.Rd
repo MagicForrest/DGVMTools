@@ -4,6 +4,10 @@
 \name{Field-class}
 \alias{Field-class}
 \title{Field-class contains data}
+\arguments{
+\item{custom.processing}{A character string which may be used by the user to specify other processing that has been applied.
+Not currently used by the the package, it is rather to give flexibility to users.}
+}
 \description{
 Field is a key class of the package as it actually holds the data (most other classes are for metadata).  A \code{\linkS4class{Field}} stores the data and metadata for one quantity
 that comes from a dataset or vegetation model run (including information about the run itself). For example LAI (Leaf Area Index), or evapotranspiration. 

@@ -118,7 +118,7 @@ setMethod("show", signature(object="STAInfo"), function(object) {
   cat(paste0("\t\tSubannual original = ",  object@subannual.original, "\n"))
   cat(paste0("\t\tSubannual aggregation = ",  object@subannual.aggregate.method, "\n"))
   cat(paste0("\t\tSubannual resolution = ",  object@subannual.resolution, "\n"))
-  cat(paste0("\t\tUser processing applied = ",  object@user.processing.applied, "\n"))
+  cat(paste0("\t\tCustom processing = ",  object@custom.processing, "\n"))
 })
 
 
