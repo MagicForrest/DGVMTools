@@ -28,18 +28,18 @@ lm_eqn <- function(linear.model) {
 #' 
 #' @param obs A numeric vector of observed values
 #' @param mod A numeric vector of modelled values (same size as obs)
-#' @param area A numeric vector of the areas by which to weight the values (same size as obs) 
+#' @param weights A numeric vector of weights the values, typically the gridcell areas (same size as obs) 
 #' 
 #' @details  No check currently done on vector lengths
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @return A numeric
-calcNME <- function(mod, obs, area) {
+calcNME <- function(mod, obs, weights) {
   
-  if(missing(area) || is.null(area))   return( sum(abs(mod - obs), na.rm=TRUE) / sum(abs(obs - mean(obs)), na.rm=TRUE)) 
+  if(missing(weights) || is.null(weights))   return( sum(abs(mod - obs), na.rm=TRUE) / sum(abs(obs - mean(obs)), na.rm=TRUE)) 
   else {
-    return( sum(abs(mod - obs) * area, na.rm=TRUE) / sum(abs(obs - mean(obs)) * area, na.rm=TRUE) ) 
+    return( sum(abs(mod - obs) * weights, na.rm=TRUE) / sum(abs(obs - mean(obs)) * weights, na.rm=TRUE) ) 
   }
 }
 
@@ -50,17 +50,17 @@ calcNME <- function(mod, obs, area) {
 #' 
 #' @param mod A numeric vector of observed values
 #' @param obs A numeric vector of modelled values (same size as mod)
-#' @param area A numeric vector of the areas by which to weight the values (same size as obs) 
+#' @param weights A numeric vector of weights the values, typically the gridcell areas (same size as obs) 
 #' 
 #' @details  No check currently done on vector lengths
 #' 
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @keywords internal
 #' @return A numeric
-calcNMSE <- function(mod, obs, area) {
+calcNMSE <- function(mod, obs, weights) {
   
-  if(missing(area) || is.null(area)) return( sum((mod - obs)^2, na.rm=TRUE) / sum((obs - mean(obs))^2 , na.rm=TRUE) ) 
-  else return( sum((mod - obs)^2  * area, na.rm=TRUE) / sum((obs - mean(obs))^2 * area, na.rm=TRUE)) 
+  if(missing(weights) || is.null(weights)) return( sum((mod - obs)^2, na.rm=TRUE) / sum((obs - mean(obs))^2 , na.rm=TRUE) ) 
+  else return( sum((mod - obs)^2  * weights, na.rm=TRUE) / sum((obs - mean(obs))^2 * weights, na.rm=TRUE)) 
   
 }
 
@@ -93,16 +93,16 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
     x.dims <- getDimInfo(x)
     
     if(!"Lon" %in% x.dims ||  !"Lat" %in% x.dims) {
-      warning("Comparison stats will not be weighted because Lon/Lat not present")
-      area.vec <- NULL
+      warning("Comparison stats will not be area weighted because Lon/Lat not present")
+      area_vec <- NULL
     } 
     else {
       x <- addArea(x, unit = "km^2", tolerance = tolerance)
-      area.vec <- x[["Area"]]
+      area_vec <- x[["Area"]]
     }
     
   }
-  else area.vec <- NULL
+  else area_vec <- NULL
   
   
   ###  STANDARD PACKAGE BENCHMARKS WHICH CAN RUN SIMPLY ON TWO VECTORS
@@ -122,43 +122,42 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   #### KELLEY ET AL 2013 METRICS
   
   # Unnormalised metrics:  ME, MSE and RSME
-  if(is.null(area.vec)) {
+  if(is.null(area_vec)) {
     ME <- mean(abs(vector1 - vector2))
     MSE <- mean((vector1 - vector2)^2, na.rm=TRUE)
   }
   else {
-    ME <- sum(abs(vector1 - vector2) * area.vec, na.rm=TRUE) / sum(area.vec)
-    MSE <- sum((vector1 - vector2)^2 * area.vec, na.rm=TRUE) / sum(area.vec)
+    ME <- sum(abs(vector1 - vector2) * area_vec, na.rm=TRUE) / sum(area_vec)
+    MSE <- sum((vector1 - vector2)^2 * area_vec, na.rm=TRUE) / sum(area_vec)
   }
   RMSE <- MSE^0.5
   
   # Normalised metrics: NME and NMSE (step 1)
-  NME <- calcNME(mod = vector1, obs = vector2, area = area.vec)
-  NMSE <- calcNMSE(mod = vector1, obs = vector2, area = area.vec)
+  NME <- calcNME(mod = vector1, obs = vector2, weights = area_vec)
+  NMSE <- calcNMSE(mod = vector1, obs = vector2, weights = area_vec)
   
   # and step 2 for NME and NMSE
   vector1_step2 <- vector1 - mean(vector1)
   vector2_step2 <- vector2 - mean(vector2)
-  NME_2 <- calcNME(mod = vector1_step2, obs = vector2_step2, area = area.vec)
-  NMSE_2 <- calcNMSE(mod = vector1_step2, obs = vector2_step2, area = area.vec)
+  NME_2 <- calcNME(mod = vector1_step2, obs = vector2_step2, weights = area_vec)
+  NMSE_2 <- calcNMSE(mod = vector1_step2, obs = vector2_step2, weights = area_vec)
   
   # and step 3 for NME and NMSE
   vector1_step3_NME <- vector1_step2 / sum(abs(vector1_step2 - mean(vector1_step2)))/ length(vector1_step2)
   vector2_step3_NME <- vector2_step2 / sum(abs(vector2_step2 - mean(vector2_step2)))/ length(vector2_step2)
-  NME_3 <- calcNME(mod = vector1_step3_NME, obs = vector2_step3_NME, area = area.vec)
+  NME_3 <- calcNME(mod = vector1_step3_NME, obs = vector2_step3_NME, weights = area_vec)
   
   vector1_step3_NMSE <- vector1_step2 / stats::var(vector1_step2)
   vector2_step3_NMSE <- vector2_step2 / stats::var(vector2_step2)
-  NMSE_3 <- calcNMSE(mod = vector1_step3_NMSE, obs = vector2_step3_NMSE, area = area.vec)
+  NMSE_3 <- calcNMSE(mod = vector1_step3_NMSE, obs = vector2_step3_NMSE, weights = area_vec)
   
   
   #### MORE 'STANDARD' METRICS MORE BASED ON LINEAR REGRESSION AND NOT FOCUSSED ON MODEL-OBSERVATION COMPARISON
-  
   if(!is.null(area.vec)) {
-    if(verbose) message("NOTE: metrics r, r2, m, and c are NOT weighted by gridcell area, the other metrics are.")
-    warning("NOTE: metrics r, r2, m, and c are NOT weighted by gridcell area, the other metrics are.")
-    
+    if(verbose) message("NOTE: metrics r and r2 are NOT weighted by gridcell area, the other metrics are.")
+    warning("NOTE: metrics r and r2 are NOT weighted by gridcell area, the other metrics are.")
   }
+  
   
   # r2_eff - Nash-Sutcliffe model efficiency (actually is focussed on model-obs Comparisons)
   r2_eff <- 1 - NMSE
@@ -169,7 +168,12 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
   r2 <- r^2
   
   # calculate a simple linear regression 
-  simple.regression <- stats::lm(formula = mod ~ obs, data = data.frame("mod" = vector1, "obs" = vector2))
+  if(is.null(area_vec)) {
+    simple.regression <- stats::lm(formula = mod ~ obs, data = data.frame("mod" = vector1, "obs" = vector2))
+  }
+  else{
+    simple.regression <- stats::lm(formula = mod ~ obs, data = data.frame("mod" = vector1, "obs" = vector2, "wghts" = area_vec), weights = wghts)
+  }
   c <- stats::coef(simple.regression)[1]
   m <- stats::coef(simple.regression)[2]
   
@@ -259,12 +263,25 @@ continuousComparison <- function(x, layers1, layers2, additional, verbose = TRUE
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
+proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE, tolerance = 0.01){
   
+  
+  # add the area if selected
   if(area) {
-    if(verbose) message("Gridcell area weighting not currently implemented for proportionsComparison")
-    warning("Gridcell area weighting not currently implemented for proportionsComparison")
+    
+    x.dims <- getDimInfo(x)
+    
+    if(!"Lon" %in% x.dims ||  !"Lat" %in% x.dims) {
+      warning("Comparison stats will not be area weighted because Lon/Lat not present")
+      area_vec <- NULL
+    } 
+    else {
+      x <- addArea(x, unit = "km^2", tolerance = tolerance)
+      area_vec <- x[["Area"]]
+    }
+    
   }
+  else area_vec <- NULL
   
   # check the layers are present
   if(!sum(layers1 %in% names(x)) == length(layers1)) stop("Some of argument layers1 are not a column in x")
@@ -292,20 +309,23 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
   SCD <- 0
   for(layer.index in 1:ncol(dt1)){
     
-    
     # for Manhattan Metric
     difference.vector <- abs(dt1[[layer.index]] - dt2[[layer.index]])
-    MM <- MM + sum(difference.vector)
+    if(is.null(area_vec))  MM <- MM + sum(difference.vector)
+    else MM <- MM + sum(difference.vector * area_vec)
     
     # for Square Chord Distance
-    difference.vector <- ((dt1[[layer.index]])^0.5 - (dt2[[layer.index]])^0.5)^2
-    SCD <- SCD + sum(difference.vector)
+    if(is.null(area_vec)) difference.vector <- ((dt1[[layer.index]])^0.5 - (dt2[[layer.index]])^0.5)^2
+    else SCD <- SCD + sum(difference.vector * area_vec)
     
   }
-  
-  MM <- MM/nrow(dt1)
-  SCD <- SCD/nrow(dt1)
-  
+  if(is.null(area_vec)) {
+    MM <- MM/nrow(dt1)
+    SCD <- SCD/nrow(dt1)
+  } else {
+    MM <- MM/(nrow(dt1) * area_vec * ncol(dt1)) # check if we really need the ncol(dt1) here
+    SCD <- SCD/(nrow(dt1) * area_vec * ncol(dt1)) # check if we really need the ncol(dt1) here
+  }
   
   stats <- list("MM" = MM, 
                 "SCD" = SCD
@@ -371,7 +391,7 @@ proportionsComparison <- function(x, layers1, layers2, additional, verbose = TRU
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE,  area = TRUE){
+categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE,  area = TRUE, tolerance = 0.01){
   
   if(area) {
     if(verbose) message("Gridcell area weighting not currently implemented for categoricalComparison")
@@ -534,12 +554,25 @@ categoricalComparison<- function(x, layers1, layers2, additional, verbose = TRUE
 #' @keywords internal
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 #' @export    
-seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE){
+seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE, area = TRUE, tolerance = 0.01){
   
+  
+  # add the area if selected
   if(area) {
-    if(verbose)  message("Gridcell area weighting not currently implemented for seasonalComparison")
-    warning("Gridcell area weighting not currently implemented for seasonalComparison")
+    
+    x.dims <- getDimInfo(x)
+    
+    if(!"Lon" %in% x.dims ||  !"Lat" %in% x.dims) {
+      warning("Comparison stats will not be area weighted because Lon/Lat not present")
+      area_vec <- NULL
+    } 
+    else {
+      x <- addArea(x, unit = "km^2", tolerance = tolerance)
+      area_vec <- x[["Area"]]
+    }
+    
   }
+  else area_vec <- NULL
   
   
   C_1 = C_2 = L_x_1 = L_x_2 = L_y_1 = L_y_2 = Lat = Lon = Month = P_1 = P_2 = Sigma_x_1 = Sigma_x_2 = Theta_t = NULL
@@ -590,23 +623,23 @@ seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE, 
   vector2 <- vector2[!is.na(vector2)]
   
   # Normalised metrics: NME and NMSE (step 1)
-  NME <- calcNME(mod = vector1, obs = vector2)
-  NMSE <- calcNMSE(mod = vector1, obs = vector2)
+  NME <- calcNME(mod = vector1, obs = vector2, weights = area_vec)
+  NMSE <- calcNMSE(mod = vector1, obs = vector2, weights = area_vec)
   
   # and step 2 for NME and NMSE
   vector1_step2 <- vector1 - mean(vector1)
   vector2_step2 <- vector2 - mean(vector2)
-  NME_2 <- calcNME(mod = vector1_step2, obs = vector2_step2)
-  NMSE_2 <- calcNMSE(mod = vector1_step2, obs = vector2_step2)
+  NME_2 <- calcNME(mod = vector1_step2, obs = vector2_step2, weights = area_vec)
+  NMSE_2 <- calcNMSE(mod = vector1_step2, obs = vector2_step2, weights = area_vec)
   
   # and step 3 for NME and NMSE
   vector1_step3_NME <- vector1_step2 / sum(abs(vector1_step2 - mean(vector1_step2)))/ length(vector1_step2)
   vector2_step3_NME <- vector2_step2 / sum(abs(vector2_step2 - mean(vector2_step2)))/ length(vector2_step2)
-  NME_3 <- calcNME(mod = vector1_step3_NME, obs = vector2_step3_NME)
+  NME_3 <- calcNME(mod = vector1_step3_NME, obs = vector2_step3_NME, weights = area_vec)
   
   vector1_step3_NMSE <- vector1_step2 / stats::var(vector1_step2)
   vector2_step3_NMSE <- vector2_step2 / stats::var(vector2_step2)
-  NMSE_3 <- calcNMSE(mod = vector1_step3_NMSE, obs = vector2_step3_NMSE)
+  NMSE_3 <- calcNMSE(mod = vector1_step3_NMSE, obs = vector2_step3_NMSE, weights = area_vec)
   
   #### PHASE
   # Preamble - extract vectors and remove NAs from both vectors 
@@ -616,12 +649,15 @@ seasonalComparison <- function(x, layers1, layers2, additional, verbose = TRUE, 
   # first remove where there are NAs in phase1
   phase2 <- phase2[!is.na(phase1)]
   phase1 <- phase1[!is.na(phase1)]
+  area_vec <- area_vec[!is.na(phase1)]
   # now for phase2
   phase1 <- phase1[!is.na(phase2)]
   phase2 <- phase2[!is.na(phase2)]
+  area_vec <- area_vec[!is.na(phase2)]
   
-  MPD <- (1/pi) * sum(acos (cos(phase1 - phase2))) / length(phase1)
-  
+  #### MEAN PHASE DIFFERENCE
+  if(is.null(area_vec)) MPD <- sum( (1/pi) * acos(cos(phase1 - phase2))) / length(phase1)
+  else MPD <- sum( (1/pi) * acos(cos(phase1 - phase2)) * area_vec) / sum(area_vec)
   
   #### COMPILE STATS
   stats <- list("NME_conc" = NME,
