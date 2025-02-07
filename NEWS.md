@@ -1,3 +1,23 @@
+# DGVMTools v1.2.0 release (2025-02-7)
+
+This is primarily a feature release (`plotXYComparison()`) with some enhancements and bugfixes.
+
+## Features
+
+* Based on popular demand, the new `plotXYComparison()` function produces X-Y plots (scatter plots but also binned/density plots) from `Comparison`  objects.
+* Agreement metrics can be placed automatically on the plots when using `plotXYComparison()` and `plotSpatialComparison()`
+
+
+## Enhancements
+
+ * Seasonal and proportional comparison metrics and the coefficients (m,c) or a regression line for continuous comparisons can now be area weighted.
+ * `custom.processing` slot addded to STAInfo so the user can record any additional processing steps if they wish.
+ 
+## Bugfixes
+
+ * The LPJ-GUESS PFT IBS have been reclassifed from Temperature to Boreal.
+ * Ordering of facets and legend entries should now work consistently across plot types (i.e. in the order that the Fields/Comparisons were specified).
+
 
 # DGVMTools v1.1.0 release (2023-12-15)
 
@@ -16,15 +36,13 @@ The primary purpose of this release is to ditch the dependencies on removed or d
 * `selectGridcels()` now takes `sf` objects instead of `maps` objects.  The  `rnaturalearth`  package is a good place to get country outlines to use here, it is a great replacement for `maps`.
 * The `plotSubannual()`  function now has arguments `size` and `linewidth` instead of `point.size` and `line.width` respectively.  
 
-##  Other improvements 
+## Other improvements 
 *  Can now specify lons and lats to function addArea() which is useful for area calculations in sparse grids.
 
 ## Bugfixes
 * Argument `text.multiplier` now handled properly in `plotSubannual()`.  Thanks Drew! 
 * Bugfix when first.year/last.year is NULL
 * Bugfix in `plotSubannual()` to use the specified summary function and not always the mean.
-
-
 
 
 
