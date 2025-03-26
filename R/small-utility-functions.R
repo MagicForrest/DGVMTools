@@ -22,11 +22,13 @@
 #' encountered in the original vector.
 #' 
 #' @param x vector from which to find the most common value
+#' @param na.rm Logical, whether or not to remove NAs before calculating mode  - i.e. the standard R usage.
 #' 
 #' @keywords internal
 #' @return The mode, ie the most common value. In case of ties the return is first in the original vector
 #' 
-stats_mode <- function(x) {
+stats_mode <- function(x, na.rm = TRUE) {
+  if(na.rm) x <- x[!is.na(x)]
   unique_x <- unique(x)
   unique_x[which.max(tabulate(match(x, unique_x)))]
 }

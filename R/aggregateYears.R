@@ -13,6 +13,7 @@
 #' @param x A Field or data.table (with a "Year" column)   
 #' @param method A character string describing the method by which to aggregate the data.  Can currently be "mean", "mode", "median", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
+#' @param na.rm Logical, passed to aggregation function to control whether or not to remove NAs before aggregating - i.e. the standard R usage.
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @return A Field or data.table depending on the input object
 #' @keywords internal
@@ -20,6 +21,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateYears.uncompiled <- function(x,
                                       method = "mean",
+                                      na.rm = TRUE,
                                       verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
@@ -37,7 +39,7 @@ aggregateYears.uncompiled <- function(x,
                             min = min,
                             sd = stats::sd,
                             var = stats::var,
-                            cv = function(x) {stats::sd(x)/mean(x)})
+                            cv = function(x,na.rm) {stats::sd(x,na.rm)/mean(x,0,na.rm)})
   
   
   # sort out the input object class
@@ -54,7 +56,7 @@ aggregateYears.uncompiled <- function(x,
   by.dims <- avail.dims[-which(avail.dims == "Year")]
   
   # and actually do it
-  output.dt <- input.dt[, lapply(.SD, method.function), by=by.dims]
+  output.dt <- input.dt[, lapply(.SD, method.function, na.rm = na.rm), by=by.dims]
   output.dt[, Year := NULL]
   
   # try another way - THIS IS SLOWER!!

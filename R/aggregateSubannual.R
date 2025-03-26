@@ -14,6 +14,7 @@
 #' For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
 #' @param target A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (also "Annual" is valid). 
 #' Default is year.  
+#' @param na.rm Logical, passed to aggregation function to control whether or not to remove NAs before aggregating - i.e. the standard R usage.
 #' @param verbose If TRUE give some progress update about the averaging.
 #' 
 #' Input data can be a Field or data.table with appropriate columns.
@@ -25,6 +26,7 @@
 aggregateSubannual.uncompiled <- function(x,
                                           method = "mean",
                                           target = "Year",
+                                          na.rm = TRUE,
                                           verbose = FALSE){
   
   # Messy solution to stop "notes" about undeclared global variables stemming from data.table syntax 
@@ -85,7 +87,7 @@ aggregateSubannual.uncompiled <- function(x,
                             min = min,
                             sd = stats::sd,
                             var = stats::var,
-                            cv = function(x) {stats::sd(x)/mean(x)})
+                            cv = function(x, na.rm) {stats::sd(x, na.rm)/mean(x, 0, na.rm)})
   
   
   # sort out the input object class
@@ -115,7 +117,7 @@ aggregateSubannual.uncompiled <- function(x,
     # FROM DAILY
     if("Day" %in% avail.dims) {
       if(verbose) message("Sub-annual aggregation from daily to annual")
-      output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
+      output.dt <- input.dt[,lapply(.SD, method.function, na.rm = na.rm), by=by.dims]
       output.dt[,Day:=NULL]
     }
     
@@ -126,7 +128,7 @@ aggregateSubannual.uncompiled <- function(x,
       
       # if not doing mean, simply apply the required function
       if(!identical(method.function, mean)){
-        output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
+        output.dt <- input.dt[,lapply(.SD, method.function, na.rm = na.rm), by=by.dims]
         output.dt[,Month:=NULL]
       }
       # else use the weighted mean, weighted by the days in the month
@@ -146,7 +148,7 @@ aggregateSubannual.uncompiled <- function(x,
       
       # if not doing mean, simply apply the required function
       if(!identical(method.function, mean)){
-        output.dt <- copy(input.dt)[,lapply(.SD, method.function), by=by.dims]
+        output.dt <- copy(input.dt)[,lapply(.SD, method.function, na.rm = na.rm), by=by.dims]
         output.dt[,Season:=NULL]
       }
       # else use the weighted mean by days in the season
@@ -201,7 +203,7 @@ aggregateSubannual.uncompiled <- function(x,
       if(!identical(method.function, mean)){
         
         output.dt <- output.dt[, Month:=NULL]
-        output.dt <- output.dt[,lapply(.SD, method.function), by=by.dims]
+        output.dt <- output.dt[,lapply(.SD, method.function, na.rm = na.rm), by=by.dims]
         
       }
       
@@ -246,7 +248,7 @@ aggregateSubannual.uncompiled <- function(x,
       output.dt <- copy(input.dt)[, Month := days.to.months[Day]]
       output.dt[,Day:=NULL]
       by.dims <- append(by.dims, "Month")
-      output.dt <- output.dt[,lapply(.SD, method.function), by=by.dims]
+      output.dt <- output.dt[,lapply(.SD, method.function, na.rm = na.rm), by=by.dims]
 
     }
     else if("Month" %in% avail.dims) {warning("Aggregation to monthly requested but data already are already monthly, so no averging done and returning original data!")
