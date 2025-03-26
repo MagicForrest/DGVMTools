@@ -128,7 +128,7 @@ setClass("STAInfo",
                         subannual.resolution = character(0),
                         subannual.aggregate.method = "none",
                         subannual.original = character(0),
-                        custom.processing = character(0)
+                        custom.processing = ""
          )
          
 )

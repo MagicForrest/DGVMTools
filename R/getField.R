@@ -305,7 +305,7 @@ getField <- function(source,
   }
   else if(is.null(sta.info@spatial.extent)) {
     
-    if(verbose) message(paste("No spatial extent specified, using full spatial extent of simulation: Lon = (",  actual.sta.info@spatial.extent@xmin, ",", actual.sta.info@spatial.extent@xmax, "), Lat = (" ,  actual.sta.info@spatial.extent@ymin, ",", actual.sta.info@spatial.extent@ymax, ").", sep = ""))
+    if(verbose) message(paste("No spatial extent specified, so not cropping and using full spatial extent of simulation of data"))
     
   }
   
