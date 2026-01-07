@@ -4,10 +4,12 @@
 \alias{stats_mode}
 \title{Statistical mode}
 \usage{
-stats_mode(x)
+stats_mode(x, na.rm = TRUE)
 }
 \arguments{
 \item{x}{vector from which to find the most common value}
+
+\item{na.rm}{Logical, whether or not to remove NAs before calculating mode  - i.e. the standard R usage.}
 }
 \value{
 The mode, ie the most common value. In case of ties the return is first in the original vector

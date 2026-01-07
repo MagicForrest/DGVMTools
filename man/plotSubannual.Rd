@@ -16,15 +16,18 @@ plotSubannual(
   linetypes = NULL,
   linetype.by = NULL,
   linetype.labels = waiver(),
+  linewidths = NULL,
+  linewidth.by = NULL,
+  linewidth.labels = waiver(),
   alphas = NULL,
   alpha.by = NULL,
   alpha.labels = waiver(),
-  linewidth = 0.5,
   size = 3,
   y.label = NULL,
   x.label = NULL,
   summary.function,
   summary.function.label = deparse(substitute(summary.function)),
+  summary.function.linewidth = 1,
   text.multiplier = NULL,
   plot = TRUE,
   ...
@@ -42,20 +45,18 @@ Leave empty or NULL to plot all gridsizrecells (but note that if this involves t
 
 \item{subtitle}{A character string to override the default subtitle.}
 
-\item{cols, linetypes, alphas}{A vector of colours, line types, or alpha values (respectively) to control the aesthetics of the lines.
-Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/linetype/alpha values
+\item{cols, linetypes, alphas, linewidths}{A vector of colours, line types, or alpha values (respectively) to control the aesthetics of the lines.
+Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/linetype/alpha/linewidth values
 to particular Layers/Sources/Sites/Quantities/Regions.}
 
-\item{col.by, linetype.by, alpha.by}{Character strings defining the aspects of the data which which should be used to set the colour, line type and alpha (transparency).
+\item{col.by, linetype.by, alpha.by, linewidth.by}{Character strings defining the aspects of the data which which should be used to set the colour, line type, line width and  alpha (transparency).
 Can meaningfully take the values "Layer", "Source", "Site", "Region" or "Quantity". 
 NOTE SPECIAL DEFAULT CASE:  By default, \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
 the data are distinguished by different facet panels.  To change this behaviour and colour the lines according to something different, set the "col.by" argument to one of the
 strings suggested above.}
 
-\item{col.labels, linetype.labels, alpha.labels}{A vector of character strings which are used as the labels for the lines. Must have the same length as the
+\item{col.labels, linetype.labels, alpha.labels, linewidth.labels}{A vector of character strings which are used as the labels for the lines. Must have the same length as the
 number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/linewtype/alpha values to particular Layers/Sources/Sites/Quantities/Region.}
-
-\item{linewidth}{Numeric (as ggplot2), width of the lines on the plot, consistent with ggplot2. Note the width is doubled for the aggregate/summary line.}
 
 \item{size}{Numeric, size of the points for the aggregate/summary data, consistent with ggplot2.}
 
@@ -65,6 +66,8 @@ number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should b
 a vector of numerics - eg median, a 95th percentile, standard deviation.}
 
 \item{summary.function.label}{An optional character string to give a pretty label to the summary function legend.}
+
+\item{summary.function.linewidth}{An optional number for the width of the summary.function (default is 1).}
 
 \item{text.multiplier}{A number specifying an overall multiplier for the text on the plot.
 Make it bigger if the text is too small on large plots and vice-versa.}

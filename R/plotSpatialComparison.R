@@ -155,8 +155,6 @@ plotSpatialComparison <- function(comparisons,
           else {
             temp.dt[,c(difference.column.name) := get(expected.layers.1[layer.counter]) - get(expected.layers.2[layer.counter])]
             if(type == "percentage.difference") temp.dt[,c(difference.column.name) := 100 * get(difference.column.name) / get(expected.layers.2[layer.counter])]
-            
-            
           }
         }
         
