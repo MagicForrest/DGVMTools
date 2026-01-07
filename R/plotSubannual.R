@@ -12,21 +12,21 @@
 #' @param title A character string to override the default title.
 #' @param subtitle A character string to override the default subtitle.
 #' @param x.label,y.label Character strings (or expressions) for the x and y axes (optional)
-#' @param col.by,linetype.by,alpha.by Character strings defining the aspects of the data which which should be used to set the colour, line type and alpha (transparency).
+#' @param col.by,linetype.by,alpha.by,linewidth.by Character strings defining the aspects of the data which which should be used to set the colour, line type, line width and  alpha (transparency).
 #' Can meaningfully take the values "Layer", "Source", "Site", "Region" or "Quantity". 
 #' NOTE SPECIAL DEFAULT CASE:  By default, \code{col.by} is set to "Year" which means that the years are plotted according to a colour gradient, and all other aspects of the 
 #' the data are distinguished by different facet panels.  To change this behaviour and colour the lines according to something different, set the "col.by" argument to one of the
 #' strings suggested above.
-#' @param cols,linetypes,alphas A vector of colours, line types, or alpha values (respectively) to control the aesthetics of the lines.  
-#' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/linetype/alpha values
+#' @param cols,linetypes,alphas,linewidths A vector of colours, line types, or alpha values (respectively) to control the aesthetics of the lines.  
+#' Only "cols" makes sense without a corresponding "xxx.by" argument (see above).  The vectors can/should be named to match particular col/linetype/alpha/linewidth values
 #' to particular Layers/Sources/Sites/Quantities/Regions.    
-#' @param col.labels,linetype.labels,alpha.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
+#' @param col.labels,linetype.labels,alpha.labels,linewidth.labels A vector of character strings which are used as the labels for the lines. Must have the same length as the
 #' number of Sources/Layers/Sites/Quantities in the plot.  The vectors can/should be named to match particular col/linewtype/alpha values to particular Layers/Sources/Sites/Quantities/Region.    
-#' @param linewidth Numeric (as ggplot2), width of the lines on the plot, consistent with ggplot2. Note the width is doubled for the aggregate/summary line.
 #' @param size Numeric, size of the points for the aggregate/summary data, consistent with ggplot2.
 #' @param summary.function A function to summarise (aggregate) across year and plot on top.  Obvious choice is \code{mean}, but there is flexibility to anything that operates on 
 #' a vector of numerics - eg median, a 95th percentile, standard deviation.
 #' @param summary.function.label An optional character string to give a pretty label to the summary function legend.
+#' @param summary.function.linewidth An optional number for the width of the summary.function (default is 1).
 #' @param text.multiplier A number specifying an overall multiplier for the text on the plot.  
 #' Make it bigger if the text is too small on large plots and vice-versa.
 #' @param plot Boolean, if FALSE return a data.table with the final data instead of the ggplot object.  This can be useful for inspecting the structure of the facetting columns, amongst other things.
@@ -64,15 +64,18 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
                           linetypes = NULL,
                           linetype.by = NULL,
                           linetype.labels = waiver(),
+                          linewidths = NULL,
+                          linewidth.by = NULL,
+                          linewidth.labels = waiver(),
                           alphas = NULL,
                           alpha.by = NULL,
                           alpha.labels = waiver(),
-                          linewidth = 0.5,
                           size = 3 ,
                           y.label = NULL,
                           x.label = NULL,
                           summary.function,
                           summary.function.label = deparse(substitute(summary.function)),
+                          summary.function.linewidth = 1,
                           text.multiplier = NULL,
                           plot = TRUE,
                           ...) {
@@ -281,12 +284,15 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   col.sym <- if(is.character(col.by)) ensym(col.by) else NULL  
   alpha.sym <- if(is.character(alpha.by))  ensym(alpha.by) else NULL 
   linetype.sym <- if(is.character(linetype.by)) ensym(linetype.by) else  NULL
+  linewidth.sym <- if(is.character(linewidth.by)) ensym(linewidth.by) else  NULL
+  
   
   # build the basic plot
   p <- ggplot(as.data.frame(data.toplot), aes(x = .data[[subannual.dimension]], y = Value, group = PlotGroup,
                                               col = !! col.sym, 
                                               alpha = !! alpha.sym,
-                                              linetype = !! linetype.sym))
+                                              linetype = !! linetype.sym,
+                                              linewidth = !! linewidth.sym))
   
   # build arguments for aesthetics to geom_line/geom_line and/or fixed arguments outside
   geom_args <- list()
@@ -295,9 +301,8 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   if(!is.null(cols) &&  is.null(col.by)) geom_args[["colour"]] <- cols
   if(!is.null(alphas) && is.null(alpha.by)) geom_args[["alpha"]] <- alphas
   if(!is.null(linetypes) &&  is.null(linetype.by)) geom_args[["linetype"]] <- linetypes
+  if(!is.null(linewidths) &&  is.null(linewidth.by)) geom_args[["linewidths"]] <- linewidths
   
-  # line width if a fixed value for all 
-  geom_args[["linewidth"]] <-  linewidth
   
   # call geom_line (with fixed aesthetics define above)
   p <- p + do.call(geom_line, geom_args)
@@ -314,6 +319,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
   
   # these are simply defined by the arguments, no special cases
   if(!is.null(linetype.by) & !is.null(linetypes)) p <- p + scale_linetype_manual(values=linetypes, labels=linetype.labels)
+  if(!is.null(linewidth.by) & !is.null(linewidths)) p <- p + scale_linewidth_manual(values=linewidths, labels=linewidth.labels)
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
   
   # set the theme to theme_bw, simplest way to set the background to white
@@ -335,13 +341,13 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
       # honestly not sure exactly why this works and many other things I tried didn't work
       if(missing(linetype.by) || is.null(linetype.by)) {
         
-        p <- p + stat_summary(aes(group=col.by, linetype = "dummy string"), fun=summary.function, geom="line", color="black", linewidth = linewidth * 2)
+        p <- p + stat_summary(aes(group=col.by, linetype = "dummy string"), fun=summary.function, geom="line", color="black", linewidth = summary.function.linewidth)
         p <- p + scale_linetype_manual(values=c("dummy string"="solid"), labels = c("dummy string" = summary.function.label), name = element_blank())
         
       } 
       # if linetypes are already specified
       else{
-        p <- p + stat_summary(aes(group=StatsGroup, linetype = .data[[linetype.by]]), fun=summary.function, geom="line", color="black", linewidth = linewidth * 2)
+        p <- p + stat_summary(aes(group=StatsGroup, linetype = .data[[linetype.by]]), fun=summary.function, geom="line", color="black", linewidth = summary.function.linewidth)
         # title the legend
         p <- p + labs(linetype=summary.function.label) 
       }
@@ -362,7 +368,7 @@ plotSubannual <- function(fields, # can be a Field or a list of Fields
       
       # also add linetype if necessary
       if(!missing(linetype.by) && !is.null(linetype.by)) {
-        p <- p + stat_summary(aes(group=StatsGroup, linetype = .data[[linetype.by]]), fun=summary.function, geom="line", color="black", linewidth = linewidth * 2)
+        p <- p + stat_summary(aes(group=StatsGroup, linetype = .data[[linetype.by]]), fun=summary.function, geom="line", color="black", linewidth = summary.function.linewidth)
       } 
       
     }
