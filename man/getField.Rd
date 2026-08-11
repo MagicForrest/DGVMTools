@@ -42,9 +42,9 @@ For the \code{GUESS}, \code{aDGVM} and \code{aDGVM2} Formats this is optional un
 standardised (although they have been renamed). However for the \code{NetCDF} Format this is pretty much always essential because random netCDF files don't tend to have 
 standardised file names in the same way that model output does.  Leave missing or set to \code{NULL} to use the standard file name for the particular Format.}
 
-\item{first.year}{The first year (as a numeric) of the data to be returned (if not specified or NULL start from the beginning of the data set)}
+\item{first.year}{The first year (as a numeric) of the data to be returned (if not specified or \code{NULL} start from the beginning of the data set)}
 
-\item{last.year}{The last year (as a numeric) of the data to be returned (if not specified or NULL take the data to the end of the data set)}
+\item{last.year}{The last year (as a numeric) of the data to be returned (if not specified or \code{NULL} take the data to the end of the data set)}
 
 \item{year.aggregate.method}{A character string describing the method by which to annual aggregate the data.  Leave blank to apply no annual aggregation. Can currently be "mean", "sum", "max", "min", "sd", "var and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!
@@ -83,7 +83,7 @@ found in the file match that which was requested by the arguments here).}
 \item{...}{Other arguments that are passed to the getField function for the specific Format or additional arguements for selecting space/time/years.
 For all Formats, the followings arguments apply:
 \itemize{
- \item{\code{cover.fraction}}  When selecting gridcells based on a SpatialPolygonsDataFrame (ie from a shapefile) as the \code{spatial.extent} argument, this optional arguement determines 
+ \item{\code{cover.fraction}}  When selecting gridcells based on a \code{sf} object (ie from a shapefile) as the \code{spatial.extent} argument, this optional arguement determines 
  how much of the gridcell needs to be in the the polygon for it to be selected. Should be between 0 and 1.
 }
 For the aDGVM(1) Format, the following arguments apply:
