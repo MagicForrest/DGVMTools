@@ -270,6 +270,12 @@ context("Selections and Cropping")
 GUESS.Field.selected.years.1 <- getField(GUESS.Europe.test.Source, "mlai", first.year = 2001, last.year = 2005)
 GUESS.Field.selected.years.2 <- selectYears(x = GUESS.mlai.Field.full, first = 2001, last = 2005)
 
+# years with NULL
+GUESS.Field.selected.years.null.first.year <- getField(GUESS.Europe.test.Source, "mlai", first.year = NULL, last.year = 2005)
+GUESS.Field.selected.years.null.last.year <- getField(GUESS.Europe.test.Source, "mlai", first.year = 2001, last.year = NULL)
+GUESS.Field.selected.years.null.both.years <- getField(GUESS.Europe.test.Source, "mlai", first.year = NULL, last.year = NULL)
+
+
 # months (not available in getField but test by numbers and abbreviation)
 GUESS.Field.selected.months.1 <- selectMonths(x = GUESS.mlai.Field.full, months = c(1,4,12) )
 GUESS.Field.selected.months.2 <- selectMonths(x = GUESS.mlai.Field.full, months = c("Jan","Apr","Dec") )
@@ -330,6 +336,9 @@ test_that("Selections and Cropping",{
   # check they give Fields
   expect_is(GUESS.Field.selected.years.1, "Field")
   expect_is(GUESS.Field.selected.years.2, "Field")
+  expect_is(GUESS.Field.selected.years.null.first.year, "Field")
+  expect_is(GUESS.Field.selected.years.null.last.year , "Field")
+  expect_is(GUESS.Field.selected.years.null.both.years, "Field")
   expect_is(GUESS.Field.selected.months.1, "Field")
   expect_is(GUESS.Field.selected.months.2, "Field")
   expect_is(GUESS.Field.selected.seasons.1, "Field")
