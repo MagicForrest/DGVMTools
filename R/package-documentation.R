@@ -1,10 +1,9 @@
 #' @title  An overview of the DGVMTools package
 #' 
 #' @name DGVMTools-package
-#' @docType package
 #' 
 #' @description This package is designed for reading, processing and plotting output from Dynamic Vegetation Models (DGVMs), land surface models from climate models and other 
-#' spatial representions of the terrestrial biosphere or land surface.  There are many such models and each have their own output format.  
+#' spatial representations of the terrestrial biosphere or land surface.  There are many such models and each have their own output format.  
 #' This package gives a framework for reading the different outputs from these models and putting them into a common internal representation.  Once this is done, 
 #' it provides many tools for analysing the model results and comparing them to data (and each other).  These include common tasks such as:
 #' 
@@ -28,10 +27,10 @@
 #' are explicit objects with their own meta-data (if you don't know what these concepts are then this package probably isn't for you).  
 #' Once these objects are correctly defined (which is not difficult),  analysis is very convenient.  
 #' Many common tasks are already coded efficiently into functions, and because of the meta-data attached to the objects,
-#' These functions can do a lot of 'sensible and standard'stuff without too much direction from the user.
+#' These functions can do a lot of 'sensible and standard' stuff without too much direction from the user.
 #' Secondly, the data is stored internally as a data.table (as opposed to a data.frame).  
 #' The advantage of this is that data.tables are very, very much faster than data.frames for many operations (check out the data.table package 
-#' documentation and webpage for more info).  This is obviously a great advantage when working with very large spatial-temporal datasets. 
+#' documentation and webpage for more info).  This is obviously a great advantage when working with very large spatial-temporal data sets. 
 #' It should be noted that this advantage was very important compared to the now outdated raster package.  The replacement for raster (terra) is faster so this 
 #' advantage is not as large.
 #' 
@@ -42,5 +41,4 @@
 #' functions. However, DGVMTools is intended to be a reasonably complete analysis environment in itself.  It should be possible to go from model output
 #'all the way to results and publication quality plots using only DGVMTools and some base R functionality for other tasks.  
 #' 
-
-NULL
+"_PACKAGE"

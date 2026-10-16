@@ -9,7 +9,7 @@
 #' @param y The second \code{\linkS4class{Field}}
 #' @param x.col the column of the first Field. If empty or NULL all columns are used.
 #' @param y.col the column of the second Field. If empty or NULL all columns are used.
-#' @param op which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/').
+#' @param op which arithmetic should be performed: addition ('+'), subtraction ('-'), multiplication ('*') or division ('/').
 #' @param quant new Quantity definition to use, if NULL it will be guessed.
 #' @param verbose print some messages.
 #' @return A new Field.

@@ -23,11 +23,11 @@ Generally these are not created directly by the user, but rather by the function
 \item{\code{name}}{A character string describing this comparison layer, is automatically generated}
 
 \item{\code{type}}{A character string describing what type of comparisons this is (automatically determined).  Can be
-\itemize{
+\describe{
  \item{"continuous"}{A comparison of two continous, numerical layers.}
  \item{"categorical"}{A comparison of two categorical layers.}
- \item{"relative.abundance"} {A comparison of multiple numerical layers whose sum equals unity.}
- \item{"seasonal"} {A comparison of the seasonal concentration and phase calculated from two numerical layers which have monthly data.}
+ \item{"relative.abundance"}{A comparison of multiple numerical layers whose sum equals unity.}
+ \item{"seasonal"}{A comparison of the seasonal concentration and phase calculated from two numerical layers which have monthly data.}
 }}
 
 \item{\code{data}}{A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.}

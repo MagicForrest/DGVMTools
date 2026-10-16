@@ -4,10 +4,10 @@
 \alias{makeYAxis}
 \title{Make y-axis}
 \usage{
-makeYAxis(final.fields)
+makeYAxis(objects)
 }
 \arguments{
-\item{final.fields}{The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)}
+\item{objects}{The list of Fields to be plotted (should have been check by santiseFieldsForPlotting first)}
 }
 \value{
 Returns the y-axis as a chatacter string,

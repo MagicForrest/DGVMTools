@@ -10,7 +10,8 @@ seasonalComparison(
   layers2,
   additional,
   verbose = TRUE,
-  area = TRUE
+  area = TRUE,
+  tolerance = 0.01
 )
 }
 \arguments{

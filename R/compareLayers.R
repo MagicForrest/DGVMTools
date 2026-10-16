@@ -26,7 +26,7 @@
 #' Default is no rounding (value is NULL) and so is fine for most regular spaced grids. However, setting this can be useful to force matching of 
 #' coordinates with many decimal places which may have lost a small amount of precision and so don't match exactly.
 #' @param show.stats Logical, if TRUE print the summary statistics
-#' @param area Logical, if TRUE (default) weight the comparison metrics by gridcell area (not yet implemented for seasonal, proportions or categorical comparisons)
+#' @param area Logical, if TRUE (default) weight the comparison metrics by gridcell area (not yet implemented for categorical comparisons)
 #' @param custom.metrics A named list of functions (defined by the user) to calculate additional custom metrics.  The functions must take a data.table and 
 #' two character vectors of layer names to be compared (in order in the case of multi-layer comparisons).  Spatial-temporal-annual column names of Lon, Lat, Year, Month and Day
 #' can be assumed in the data.table.  The name of the item in the list is used as the metric name.  

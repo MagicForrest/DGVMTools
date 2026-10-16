@@ -26,10 +26,6 @@ openLPJOutputFile_FireMIP(
 "<quant@id>.out" (also "<quant@id>.out.gz")}
 
 \item{verbose}{A logical, set to true to give progress/debug information}
-
-\item{first.year}{The first year (as a numeric) of the data to be return}
-
-\item{last.year}{The last year (as a numeric) of the data to be return}
 }
 \value{
 a data.table (with the correct tear offset and lon-lat offsets applied)

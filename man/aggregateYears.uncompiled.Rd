@@ -4,13 +4,15 @@
 \alias{aggregateYears.uncompiled}
 \title{Aggregate years}
 \usage{
-aggregateYears.uncompiled(x, method = "mean", verbose = FALSE)
+aggregateYears.uncompiled(x, method = "mean", na.rm = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{x}{A Field or data.table (with a "Year" column)}
 
 \item{method}{A character string describing the method by which to aggregate the data.  Can currently be "mean", "mode", "median", "sum", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
 For technical reasons these need to be implemented in the package in the code however it should be easy to implement more, please just contact the author!}
+
+\item{na.rm}{Logical, passed to aggregation function to control whether or not to remove NAs before aggregating - i.e. the standard R usage.}
 
 \item{verbose}{If TRUE give some progress update about the averaging.}
 }

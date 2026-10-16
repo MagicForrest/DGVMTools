@@ -4,7 +4,13 @@
 \alias{aggregateSubannual}
 \title{Sub-annual aggregation}
 \usage{
-aggregateSubannual(x, method = "mean", target = "Year", verbose = FALSE)
+aggregateSubannual(
+  x,
+  method = "mean",
+  target = "Year",
+  na.rm = TRUE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{data.table or Field}
@@ -14,6 +20,8 @@ For technical reasons these need to be implemented in the package in the code ho
 
 \item{target}{A character string defining the subannual period to which the data should be aggregate. Can be "Month", "Season" or "Year" (also "Annual" is valid). 
 Default is year.}
+
+\item{na.rm}{Logical, passed to aggregation function to control whether or not to remove NAs before aggregating - i.e. the standard R usage.}
 
 \item{verbose}{If TRUE give some progress update about the averaging.
 

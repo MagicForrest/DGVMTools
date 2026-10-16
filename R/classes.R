@@ -56,10 +56,10 @@ setClass("Format",
 #' @details 
 #' Since these are for the most part standard (ie. people commonly need the months, the seasons (DJF, MAM, JJA, SON) and annual) these are defined in simple list that might be commonly used and can be looped through.  These are:
 #' \describe{
-#'   \item{\code{months}}{which contains all the months.}
-#'   \item{\code{seasons}}{which contains all the seasons.}
-#'   \item{\code{annual}}{which only contains only the annual period.}
-#'   \item{\code{all.periods, periods}}{which contains all of the above.}
+#'   \item{all.months}{which contains all the months.}
+#'   \item{all.seasons}{which contains all the seasons.}
+#'   \item{annual}{which only contains only the annual period.}
+#'   \item{all.periods}{which contains all of the above.} 
 #' }
 #'  
 #' However other periods can be defined for specific growing seasons etc.
@@ -91,13 +91,15 @@ setClass("Period",
 #' @param year.aggregate.method A character specifying how the years have been aggregated, for example "mean", or "sum" or "var". See aggregateYears.
 #' If no yearly aggregation has been applied it should be NULL.
 #' @param spatial.extent This can be of any type that can be used but DGVMTools::crop, and stores the current spatial extent.  
-#' But default (and with no cropping) it is simple teh raster::Extent object of the whole domain.
-#' @param spatial.aggregate.method A character method specifying how the spatial extent has been aggregated, for eample "mean" or "sum",
+#' But default (and with no cropping) it is simple the raster::Extent object of the whole domain.
+#' @param spatial.aggregate.method A character method specifying how the spatial extent has been aggregated, for example "mean" or "sum",
 #' see aggregateSpatial.  If no spatial aggregation has been applied it should be NULL.
 #' @param subannual.original A character string specifying the original sub-annual resolution of this data, eg. "Year", Month", "Day"
 #' @param subannual.resolution A character string specifying the current sub-annual resolution of this data, eg. "Year", Month", "Day"
 #' @param subannual.aggregate.method A character specifying how the subannual periods have been aggregated, for example "mean", "max", "sum" or "var". 
 #' See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.
+#' @param custom.processing  A character string which may be used by the user to specify other processing that has been applied.
+#' Not currently used by the the package, it is rather to give flexibility to users.
 #' 
 #' @details This is mostly a behind-the-scenes class which bundles together a lot of dimension information in a tidy form. 
 #' 
@@ -114,7 +116,8 @@ setClass("STAInfo",
                    spatial.aggregate.method = "character",
                    subannual.resolution = "character",
                    subannual.aggregate.method = "character",
-                   subannual.original = "character"
+                   subannual.original = "character",
+                   custom.processing = "character"
          ),
          prototype  = list(first.year = numeric(0),
                         last.year = numeric(0),
@@ -124,7 +127,8 @@ setClass("STAInfo",
                         spatial.aggregate.method = "none",
                         subannual.resolution = character(0),
                         subannual.aggregate.method = "none",
-                        subannual.original = character(0)
+                        subannual.original = character(0),
+                        custom.processing = ""
          )
          
 )
@@ -332,11 +336,11 @@ setClass("Quantity",
 #' @slot id A unique character string to identify this particular vegetation object.  Recommended to be alphanumeric because it is used to construct file names.
 #' @slot name A character string describing this comparison layer, is automatically generated
 #' @slot type A character string describing what type of comparisons this is (automatically determined).  Can be
-#' \itemize{
+#' \describe{
 #'  \item{"continuous"}{A comparison of two continous, numerical layers.}
 #'  \item{"categorical"}{A comparison of two categorical layers.}
-#'  \item{"relative.abundance"} {A comparison of multiple numerical layers whose sum equals unity.}
-#'  \item{"seasonal"} {A comparison of the seasonal concentration and phase calculated from two numerical layers which have monthly data.}
+#'  \item{"relative.abundance"}{A comparison of multiple numerical layers whose sum equals unity.}
+#'  \item{"seasonal"}{A comparison of the seasonal concentration and phase calculated from two numerical layers which have monthly data.}
 #' }
 #' @slot data A data.table object.  This is used because is it very much faster for calculations that data.frame or raster layers.
 #' @slot quant1 A \linkS4class{Quantity} object to define what quantity the data from first field represents
@@ -393,7 +397,7 @@ setClass("Comparison",
 #' @slot rules A function which is applied to every row of the data.table and describes the classification rules.
 #' @slot layers.needed List of vegetation layers needed to perform the classification and the name of the new layer, to be interpreted by \code{\link{layerOp}}, specified as a list of three- or four-item list 
 #' whose elements first element id the id of a \code{\linkS4class{Quantity}} and whose other elements are passed as arguments to the \code{\link{layerOp}} function.  
-#' For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
+#' For example one element could be \code{Woody = list(quantity = "LAI_std", operator = "\+", layers = c(".Tree", ".Shrubs"), new.layer = "Woody")}, 
 #' which would make a layer called "Woody" which would be the sum of all LAI trees and shrubs.
 #' @slot data.reference Character string giving a reference where the data for this classification scheme comes from
 #' @slot published.reference Character string giving a reference where this model output classification scheme was published
@@ -436,6 +440,8 @@ setClass("Scheme",
 #' @slot subannual.aggregate.method Method by which this Field has been subannually aggregated
 #' @slot subannual.original Original subannual resolution of this field
 #' @slot source A Source object which contains the metadata about the run which this Field belongs too.
+#' @param custom.processing  A character string which may be used by the user to specify other processing that has been applied.
+#' Not currently used by the the package, it is rather to give flexibility to users.
 #' @exportClass Field
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 

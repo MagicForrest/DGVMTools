@@ -13,9 +13,9 @@
 If no yearly aggregation has been applied it should be NULL.}
 
 \item{spatial.extent}{This can be of any type that can be used but DGVMTools::crop, and stores the current spatial extent.
-But default (and with no cropping) it is simple teh raster::Extent object of the whole domain.}
+But default (and with no cropping) it is simple the raster::Extent object of the whole domain.}
 
-\item{spatial.aggregate.method}{A character method specifying how the spatial extent has been aggregated, for eample "mean" or "sum",
+\item{spatial.aggregate.method}{A character method specifying how the spatial extent has been aggregated, for example "mean" or "sum",
 see aggregateSpatial.  If no spatial aggregation has been applied it should be NULL.}
 
 \item{subannual.original}{A character string specifying the original sub-annual resolution of this data, eg. "Year", Month", "Day"}
@@ -24,6 +24,9 @@ see aggregateSpatial.  If no spatial aggregation has been applied it should be N
 
 \item{subannual.aggregate.method}{A character specifying how the subannual periods have been aggregated, for example "mean", "max", "sum" or "var". 
 See aggregateSubannual(). If no sub-annual aggregation has been applied it should be NULL.}
+
+\item{custom.processing}{A character string which may be used by the user to specify other processing that has been applied.
+Not currently used by the the package, it is rather to give flexibility to users.}
 }
 \description{
 This class encapsulations all the Spatial (the 'S', longitude and latitude), Temporal (the 'T', monthly, daily etc.) and Annual (the 'A', years included) 

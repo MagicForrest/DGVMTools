@@ -19,7 +19,7 @@ calcNewField(
 
 \item{y}{The second \code{\linkS4class{Field}}}
 
-\item{op}{which arithmetic should be performed: addition ('+'), substraction ('-'), multiplication ('*') or division ('/').}
+\item{op}{which arithmetic should be performed: addition ('+'), subtraction ('-'), multiplication ('*') or division ('/').}
 
 \item{x.col}{the column of the first Field. If empty or NULL all columns are used.}
 

@@ -5,18 +5,18 @@
 #' 
 #' @param x The x object on which we are operating.
 #' @param operator The operator we are applying, can be:
-#' \itemize{
-#'  \item{"+" (or "sum" or "add")} {Add the layers, can apply to any number of layers}
-#'  \item{"mean" (or "average")} {Average the layers, can apply to any number of layers}
-#'  \item{"*" (or "multiply" or "product")} {Multiply the layers, can apply to any number of layers}
-#'  \item{"-" (or "subtract" or "minus")} {Subtract one layer from another. Requires exactly two layers to be specified, subtracts the second from the first, ie. layer1 - layer 2.}
-#'  \item{"/" (or "divide" or "through")} {Divide one layer by another. Nore this does 'safe division' which returns zero if the denomination is zero. Requires exactly two layers to be specified, divides the first by the second, ie. layer1 / layer 2.}
-#'  \item{"max.layer"} {Gets the layer with the maximum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the max.}
-#'  \item{"min.layer"} {Gets the layer with the minimum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the min.}
-#'  \item{"mulc"/"divc"/"addc"/"subc"} {Multiplies, divides, adds or subtracts the layer with a numeric value in the "constant" argument}
-#'  \item{\emph{any numeric value}} {Sets each of the layers specified uniformly to the numeric value specified, most usefuly for 0.  Previously not existing layers in the layers and new.layer argument will be created.}
-#'  \item{\emph{NULL}} {A special case of the above which removes the layers from the Field}
-#'  \item{\emph{Whatever function}} {Now we are into crazy territory!  You can provide any function (the actual function, not a string ) that operates on a vector of numerics and it might just work!  Works for sd, var, min and max, but your mileage may vary.}
+#' \describe{
+#'  \item{"+" (or "sum" or "add")}{Add the layers, can apply to any number of layers}
+#'  \item{"mean" (or "average")}{Average the layers, can apply to any number of layers}
+#'  \item{"*" (or "multiply" or "product")}{Multiply the layers, can apply to any number of layers}
+#'  \item{"-" (or "subtract" or "minus")}{Subtract one layer from another. Requires exactly two layers to be specified, subtracts the second from the first, ie. layer1 - layer 2.}
+#'  \item{"/" (or "divide" or "through")}{Divide one layer by another. Nore this does 'safe division' which returns zero if the denomination is zero. Requires exactly two layers to be specified, divides the first by the second, ie. layer1 / layer 2.}
+#'  \item{"max.layer"}{Gets the layer with the maximum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the max.}
+#'  \item{"min.layer"}{Gets the layer with the minimum value from the input layers (is a layer of factors).  If they are all zero at a point then "None" is assigned. In the case of ties, the first layer in the layers arguement will be returned as the min.}
+#'  \item{"mulc"/"divc"/"addc"/"subc"}{Multiplies, divides, adds or subtracts the layer with a numeric value in the "constant" argument}
+#'  \item{\emph{any numeric value}}{Sets each of the layers specified uniformly to the numeric value specified, most usefuly for 0.  Previously not existing layers in the layers and new.layer argument will be created.}
+#'  \item{\emph{NULL}}{A special case of the above which removes the layers from the Field}
+#'  \item{\emph{Whatever function}}{Now we are into crazy territory!  You can provide any function (the actual function, not a string ) that operates on a vector of numerics and it might just work!  Works for sd, var, min and max, but your mileage may vary.}
 #'  \item{\emph{Something else?}}{Contact the author!}
 #' }
 #' @param layers The names of the layers upon which to operate (as a vector of characters).  Furthermore, one can utilise a handy trick whereby any layer specified, 

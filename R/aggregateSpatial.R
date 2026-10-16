@@ -14,6 +14,7 @@
 #' @param x Field (or data.table) to be averaged  
 #' @param method The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 #' "weighted.sum", "w.sum", "sum", "mode", "median", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).
+#' @param na.rm Logical, passed to aggregation function to control whether or not to remove NAs before aggregating - i.e. the standard R usage.
 #' @param verbose If TRUE give some progress update about the averaging.
 #' @param ... Extra arguments passed to addArea function if a weighted method is being used. Note in particular the lon_centres and lat_centres arguments
 #' if you are using a regular but sparsely populated grid.
@@ -23,6 +24,7 @@
 #' @author Matthew Forrest \email{matthew.forrest@@senckenberg.de}
 aggregateSpatial.uncompiled <- function(x,
                                         method = "mean",
+                                        na.rm = TRUE,
                                         verbose = FALSE,
                                         ...){
   
@@ -46,7 +48,7 @@ aggregateSpatial.uncompiled <- function(x,
                             min = min,
                             sd = stats::sd,
                             var = stats::var,
-                            cv = function(x) {stats::sd(x)/mean(x)})
+                            cv = function(x, na.rm) {stats::sd(x, na.rm)/mean(x, 0, na.rm)})
   
   if(method == "weighted.mean") method = "w.mean"
   if(method == "weighted.sum") method = "w.sum"
@@ -73,7 +75,7 @@ aggregateSpatial.uncompiled <- function(x,
     }
     if(verbose) message(paste("Spatially averaging (with area weighting) ...", sep = ""))
     
-    output.dt <- input.dt[,lapply(.SD, method.function, w=Area), by=by.dims]
+    output.dt <- input.dt[,lapply(.SD, method.function, w=Area, na.rm = na.rm), by=by.dims]
     output.dt[,Area:=NULL]
     
   } 
@@ -94,7 +96,7 @@ aggregateSpatial.uncompiled <- function(x,
     # check to see if Year is still a column name (it might have been averaged away)
     input.dt[, (col.names) := lapply(.SD, function(x) x * input.dt[['Area']] ), .SDcols = col.names]
     
-    output.dt <- input.dt[, lapply(.SD, method.function), by=by.dims]
+    output.dt <- input.dt[, lapply(.SD, method.function, na.rm = na.rm), by=by.dims]
     output.dt[,Area:=NULL]
     
   } 
@@ -103,7 +105,7 @@ aggregateSpatial.uncompiled <- function(x,
   else {
     if(verbose) message(paste("Spatially aggregating with function ", method," and no area-weighting ...", sep = ""))
     
-    output.dt <- input.dt[,lapply(.SD, method.function), by=by.dims]
+    output.dt <- input.dt[,lapply(.SD, method.function, na.rm = na.rm), by=by.dims]
     
   }
   

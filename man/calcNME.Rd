@@ -4,14 +4,14 @@
 \alias{calcNME}
 \title{Calculate Normalised Mean Error}
 \usage{
-calcNME(mod, obs, area)
+calcNME(mod, obs, weights)
 }
 \arguments{
 \item{mod}{A numeric vector of modelled values (same size as obs)}
 
 \item{obs}{A numeric vector of observed values}
 
-\item{area}{A numeric vector of the areas by which to weight the values (same size as obs)}
+\item{weights}{A numeric vector of weights the values, typically the gridcell areas (same size as obs)}
 }
 \value{
 A numeric

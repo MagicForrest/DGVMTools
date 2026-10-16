@@ -129,6 +129,13 @@ checkSTAMatches <- function(sta.requested, sta.found, verbose) {
   
   if(verbose)  message("* Subannual matched.")
   
+  
+  # check if file on disk has had no extra processing custom processing
+  if(length(sta.found@custom.processing) != 0) {
+    message(paste0("Attention: File on disk has had custome processing (", paste(sta.found@custom.processing, collapse = ","), "so I am not using it and reading the entire raw data again."))
+    return(FALSE)
+  }
+  
   return(TRUE)  
 
 

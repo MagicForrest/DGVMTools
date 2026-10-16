@@ -37,15 +37,15 @@
 #' @param .sta.info Advanced. An object of STAInfo for tracking spatio-temporal metadata.  IGNORED for for a Field as it is handled
 #' automatically when writing a Field. But can be added manually for a raster if you wish.  
 #' @param ... Other arguments that can usefully be passed to ncdf4::ncvar_def, in particular:
-#' \itemize{
-#'  \item{compression} {Integer to define compression level when define netCDF variables (1 = a little compression, 9 = a lot of compression). 
+#' \describe{
+#'  \item{compression}{Integer to define compression level when define netCDF variables (1 = a little compression, 9 = a lot of compression). 
 #'  Set to NA (default) for no compression.  Using compression forces netCDF version 4.}
-#'  \item{missval} {Numeric, for the missing value.  Default is NA which gives NaN as the missing value. NULL can be used to specify "no missing value"
+#'  \item{missval}{Numeric, for the missing value.  Default is NA which gives NaN as the missing value. NULL can be used to specify "no missing value"
 #'  although it is not clear what that does in the resultant netcdf file in practice.  TRENDY/GCP likes -99999.0 for missing values.}
-#'  \item{prec} {Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  
+#'  \item{prec}{Character, the output precision (although that is confusing terminology, 'type' would be more descriptive) to use in the netCDF file.  
 #'  See the 'prec' argument of ncdf4::ncvar_def, can be  'short', 'integer', 'float', 'double', 'char', 'byte').  Default is 'float'.}
-#'  \item{shuffle} {Logical, if TRUE turn on the shuffle filter see netCDF docs and ncdf4::ncvar_def for details}
-#'  \item{chunksize} {If set, this must be a vector of integers with a length equal to the number of dimensions in the variable. Potentially very useful 
+#'  \item{shuffle}{Logical, if TRUE turn on the shuffle filter see netCDF docs and ncdf4::ncvar_def for details}
+#'  \item{chunksize}{If set, this must be a vector of integers with a length equal to the number of dimensions in the variable. Potentially very useful 
 #'  to optimise the read and write time,  but rather advanced, see netCDF docs and ncdf4::ncvar_def for details}
 #'  }
 #' 

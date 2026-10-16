@@ -4,13 +4,15 @@
 \alias{aggregateSpatial}
 \title{Spatially aggregate a Field}
 \usage{
-aggregateSpatial(x, method = "mean", verbose = FALSE, ...)
+aggregateSpatial(x, method = "mean", na.rm = TRUE, verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{Field (or data.table) to be averaged}
 
 \item{method}{The method with which to spatially aggregate.  Can be "weighted.mean", "w.mean", "mean", 
 "weighted.sum", "w.sum", "sum", "mode", "median", "max", "min", "sd", "var" and "cv" (= coefficient of variation: sd/mean).}
+
+\item{na.rm}{Logical, passed to aggregation function to control whether or not to remove NAs before aggregating - i.e. the standard R usage.}
 
 \item{verbose}{If TRUE give some progress update about the averaging.}
 
