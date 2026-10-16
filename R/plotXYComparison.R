@@ -114,8 +114,8 @@ plotXYComparison <- function(comparisons,
 
   
   #### set the facet ordering by using the factor - Gahhh!!  why doesn't this work??
-  plotting_dt[ , Comparison := factor(x = Comparison, 
-                                      levels = comparison_obj_factors)]
+  #plotting_dt[ , Comparison := factor(x = Comparison, 
+  #                                    levels = comparison_obj_factors)]
   
   
   # make a legend title if one has not been supplied
