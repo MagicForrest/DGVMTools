@@ -291,7 +291,7 @@ plotTemporal <- function(fields,
   shape.sym <- if(is.character(shape.by)) ensym(shape.by) else NULL  
   linewidth.sym <- if(is.character(linewidth.by)) ensym(linewidth.by) else NULL
   linetype.sym <- if(is.character(linetype.by)) ensym(linetype.by) else  NULL
- 
+  
   p <- ggplot(as.data.frame(data.toplot), aes(x = Time, y = Value, 
                                               col = !! col.sym, 
                                               alpha = !! alpha.sym,
@@ -322,10 +322,17 @@ plotTemporal <- function(fields,
   # call geom_line or geom_point (with fixed aesthetics defined above)
   if(points) p <- p + do.call(geom_point, geom_args)
   else p <- p + do.call(geom_line, geom_args)
-
   
-  # apply labels
-  if(!is.null(col.by) & !is.null(cols)) p <- p + scale_color_manual(values=cols, labels=col.labels)
+  
+  # apply labels and aesthetics
+  # if cols provided
+  if(!is.null(col.by) & !is.null(cols)) { 
+    # if cols provided
+    p <- p + scale_color_manual(values=cols, labels=col.labels) 
+  } else if(!is.null(col.by)) {
+    # else use nice viridis cols
+    p <- p + viridis::scale_colour_viridis(discrete=TRUE, option = "C", end = 0.9, labels=col.labels) 
+  }
   if(!is.null(alpha.by) & !is.null(alphas)) p <- p + scale_alpha_manual(values=alphas, labels=alpha.labels)
   if(points){
     if(!is.null(size.by) & !is.null(sizes)) p <- p + scale_size_manual(values=sizes, labels=size.labels)
@@ -349,14 +356,14 @@ plotTemporal <- function(fields,
   
   # overall text multiplier
   if(!is.null(text.multiplier)) p <- p + theme(text = element_text(size = theme_get()$text$size * text.multiplier))
-
+  
   # set limits
   if(!is.null(x.lim)) p <- p + xlim(x.lim)
   if(!is.null(y.lim)) p <- p + scale_y_continuous(limits = y.lim, name = y.label)
   else p <- p + labs(y = y.label)
-
+  
   if (!is.null(x.label)) p <- p + labs(x = x.label)
-
+  
   # facetting
   if(length(vars.facet > 0)){
     suppressWarnings( p <- p + facet_wrap(vars.facet, ...))
