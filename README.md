@@ -41,7 +41,7 @@ devtools::install_github("MagicForrest/DGVMTools", ref = "master", dependencies 
 
 #### Method 3: Download package file and install through R
 
-If you can't install any version of devtools, you can download the source code and install it via the "Packages" panel in RStudio.  For Linux/Mac use the .tar.gz file available [here](https://github.com/MagicForrest/DGVMTools/archive/refs/tags/v1.0.0.tar.gz), for Windows use the .zip file from [here](https://github.com/MagicForrest/DGVMTools/archive/refs/tags/v1.0.0.zip).
+If you can't install any version of devtools, you can download the source code and install it via the "Packages" panel in RStudio.  For Linux/Mac use the .tar.gz file available [here](https://github.com/MagicForrest/DGVMTools/archive/refs/tags/v1.1.0.tar.gz), for Windows use the .zip file from [here](https://github.com/MagicForrest/DGVMTools/archive/refs/tags/v1.1.0.zip).
 
 
 #### Installation troubleshooting
